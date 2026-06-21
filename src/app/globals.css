@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #1A1033;
+  --accent: #7C5CFC;
+  --accent-d: #5538D4;
+  --accent-l: #EDE8FF;
+  --cream: #F0EDE8;
+  --ok: #22C55E;
+  --warn: #FB923C;
+  --danger: #EF4444;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  background: var(--cream);
+  color: var(--navy);
+}
+
+.font-fredoka { font-family: 'Fredoka One', cursive; }
+
+/* Safe area */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
+
+/* Scrollbar hide */
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Tap highlight */
+* { -webkit-tap-highlight-color: transparent; }
