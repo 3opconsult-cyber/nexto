@@ -3,6 +3,7 @@ name: Deploy to Vercel
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -14,20 +15,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Link project to Vercel
+        run: |
+          vercel link --yes \
+            --project nexto \
+            --scope nextoping \
+            --token ${{ secrets.VERCEL_TOKEN }} || true
+
+      - name: Pull Vercel env
+        run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Set Supabase env on Vercel
+        run: |
+          echo "Configuration des variables d'environnement sur Vercel"
+          vercel env add NEXT_PUBLIC_SUPABASE_URL production --token ${{ secrets.VERCEL_TOKEN }} --force <<< "${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" || true
+          vercel env add NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY production --token ${{ secrets.VERCEL_TOKEN }} --force <<< "${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}" || true
 
       - name: Build
-        run: npm run build
+        run: vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Deploy to Vercel
-        run: npx vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --yes --prod
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
