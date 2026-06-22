@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'supabase/nexto.sql'
+      - 'supabase/migrations/**'
       - '.github/workflows/db-migrate.yml'
 
 jobs:
@@ -20,11 +20,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
 
-      - name: Reset public schema + apply schema
+      - name: Reset public schema + apply initial schema
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -e
           psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres, anon, authenticated, service_role; GRANT ALL ON SCHEMA public TO public;"
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/nexto.sql
-          echo "✅ Migration appliquée"
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/001_initial_schema.sql
+          echo "✅ Schéma 001 appliqué"
