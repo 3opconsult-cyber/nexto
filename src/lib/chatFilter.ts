@@ -30,5 +30,5 @@ export function filterMessage(text: string): FilterResult {
     if (lower.includes(kw)) { reasons.push('coordonnées hors plateforme'); break }
   }
 
-  return { clean, blocked: reasons.length > 0, reasons: [...new Set(reasons)] }
+  return { clean, blocked: reasons.length > 0, reasons: Array.from(new Set(reasons)) }
 }
