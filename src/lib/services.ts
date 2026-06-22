@@ -13,11 +13,6 @@ export interface ProNearby {
   is_available: boolean
   legal_form: string
   vat_regime: string
-  lat?: number
-  lng?: number
-  services?: ServiceType[]
-  first_name?: string
-  bio?: string
 }
 
 export async function fetchProsNearby(
@@ -28,7 +23,7 @@ export async function fetchProsNearby(
 ): Promise<ProNearby[]> {
   const supabase = createClient()
   const { data, error } = await supabase.rpc('pros_nearby', {
-    lat, lng, radius_m: radiusM, service: service ?? null,
+    lat, lng, radius_m: radiusM, p_service: service ?? null,
   })
   if (error) { console.error('pros_nearby', error); return [] }
   return (data ?? []) as ProNearby[]
