@@ -15,39 +15,40 @@ export default function LandingPage() {
         <h2 className="font-fredoka text-3xl text-white leading-tight max-w-sm mb-4">
           Et si ce que vous cherchez se trouvait juste à côté ?
         </h2>
-        <p className="text-base max-w-xs leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.6)' }}>
-          Plombier, baby-sitter, ménage, jardinage — des pros vérifiés, autour de vous, payés en toute sécurité.
+        <p className="text-base max-w-xs leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          Plombier, baby-sitter, ménage, jardinage — des pros vérifiés, autour de vous, disponibles maintenant.
         </p>
 
-        {/* Bouton démo en avant */}
-        <Link href="/demo"
-          className="w-full max-w-xs block py-4 rounded-full font-fredoka text-lg text-center mb-3"
-          style={{ background: 'white', color: 'var(--navy)' }}>
-          🎬 Voir la démo (sans inscription)
-        </Link>
-
         <div className="w-full max-w-xs space-y-3">
-          <Link href="/auth/signup?role=client"
-            className="block w-full py-4 rounded-full text-white font-fredoka text-lg text-center"
-            style={{ background: 'var(--accent)' }}>
-            Je cherche un service
+          <Link href="/demo" className="block w-full py-4 rounded-full text-white font-fredoka text-lg text-center" style={{ background: 'var(--accent)' }}>
+            ▶️ Voir la démo
           </Link>
-          <Link href="/auth/signup?role=pro"
-            className="block w-full py-4 rounded-full font-fredoka text-lg text-center"
-            style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1.5px solid rgba(255,255,255,0.2)' }}>
-            Je suis un professionnel
+          <Link href="/presentation" className="block w-full py-3.5 rounded-full font-fredoka text-base text-center" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1.5px solid rgba(255,255,255,0.2)' }}>
+            Découvrir Nexto
           </Link>
+          <div className="flex gap-3 pt-2">
+            <Link href="/auth/signup?role=client" className="flex-1 py-3 rounded-full font-black text-sm text-center" style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}>
+              👤 Particulier
+            </Link>
+            <Link href="/auth/signup?role=pro" className="flex-1 py-3 rounded-full font-black text-sm text-center" style={{ background: 'rgba(255,255,255,0.08)', color: 'white' }}>
+              🔧 Pro
+            </Link>
+          </div>
         </div>
 
         <p className="mt-6 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          Déjà un compte ?{' '}
-          <Link href="/auth/login" className="underline" style={{ color: 'rgba(255,255,255,0.7)' }}>Se connecter</Link>
+          Déjà un compte ? <Link href="/auth/login" className="underline" style={{ color: 'rgba(255,255,255,0.7)' }}>Se connecter</Link>
         </p>
+        <Link href="/hub" className="mt-3 text-xs font-bold underline" style={{ color: 'rgba(255,255,255,0.3)' }}>Accès hub complet</Link>
       </div>
 
       <div className="px-6 pb-12">
         <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
-          {[{ icon: '🔒', label: 'Paiement séquestre' },{ icon: '✓', label: 'Pros vérifiés' },{ icon: '⭐', label: 'Avis garantis' }].map((b) => (
+          {[
+            { icon: '🔒', label: 'Paiement sécurisé' },
+            { icon: '✓', label: 'Pros vérifiés' },
+            { icon: '⭐', label: 'Avis garantis' },
+          ].map((b) => (
             <div key={b.label} className="flex flex-col items-center p-3 rounded-2xl text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
               <span className="text-2xl mb-1">{b.icon}</span>
               <span className="text-xs font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.6)' }}>{b.label}</span>
