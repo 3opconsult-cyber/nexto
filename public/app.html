@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#7C5CFC">
+<title>Nexto</title>
+<link rel="manifest" href="/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<!-- BRANCHEMENTS EN ATTENTE -->
+<!-- <script src="https://maps.googleapis.com/maps/api/js?key=VITE_GOOGLE_MAPS_KEY&libraries=places"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script> -->
+<!-- <script src="https://js.stripe.com/v3/"></script> -->
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root{
+  --navy:#1A1033; --accent:#7C5CFC; --accent-d:#5538D4; --accent-l:#EDE8FF;
+  --cream:#F0EDE8; --white:#fff;
+  --ok:#22C55E; --ok-l:#DCFCE7;
+  --warn:#FB923C; --warn-l:#FFF7ED;
+  --err:#EF4444; --err-l:#FEE2E2;
+  --muted:#9CA3AF; --muted-l:#F3F4F6; --muted-d:#4B5563;
+  --border:#E5E1DA;
+  --shadow:0 2px 16px rgba(26,16,51,.1);
+  --rs:10px; --rm:14px; --rl:20px; --rxl:28px;
+  --nb-h:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;}
+body{
+  font-family:'Nunito',sans-serif;font-weight:700;
+  background:var(--cream);color:var(--navy);
+  overflow:hidden;height:100%;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================
+   ROUTER — UN SEUL ÉCRAN VISIBLE À LA FOIS
+   ============================================================ */
+.screen{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  background:var(--cream);
+  transform:translateX(100%);
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  z-index:10;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.screen.active{transform:translateX(0);}
+.screen.prev{transform:translateX(-40%);}
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+.sb{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 20px 4px;font-size:12px;font-weight:800;
+  flex-shrink:0;
+}
+.sb.light{color:var(--white);}
+.sb-icons{display:flex;gap:5px;align-items:center;font-size:13px;}
+
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+.topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 16px 8px;flex-shrink:0;
+  background:var(--white);border-bottom:1px solid var(--border);
+}
+.back-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--muted-l);border:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;cursor:pointer;flex-shrink:0;
+}
+.topbar-title{font-family:'Fredoka One',cursive;font-size:18px;color:var(--navy);flex:1;}
+
+.btn-primary{
+  width:100%;padding:15px;
+  background:var(--accent);color:var(--white);
+  border:none;border-radius:100px;
+  font-family:'Fredoka One',cursive;font-size:17px;
+  cursor:pointer;flex-shrink:0;
+  box-shadow:0 4px 20px rgba(124,92,252,.3);
+  transition:transform .15s,box-shadow .15s;
+}
+.btn-primary:active{transform:scale(.97);}
+.btn-secondary{
+  width:100%;padding:14px;
+  background:var(--muted-l);color:var(--muted-d);
+  border:1.5px solid var(--border);border-radius:100px;
+  font-size:15px;font-weight:800;cursor:pointer;
+}
+
+.field-label{font-size:11px;font-weight:900;color:var(--muted-d);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.field-input{
+  width:100%;padding:13px 14px;
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:var(--rm);font-family:'Nunito',sans-serif;
+  font-size:15px;font-weight:700;color:var(--navy);
+  outline:none;transition:border-color .15s;
+  -webkit-appearance:none;
+}
+.field-input:focus{border-color:var(--accent);}
+.field-wrap{margin-bottom:14px;}
+
+.scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;}
+.scroll-body.pad-nb{padding-bottom:calc(var(--nb-h) + 24px);}
+
+.avatar{
+  width:48px;height:48px;border-radius:var(--rm);
+  background:var(--accent-l);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka One',cursive;font-size:18px;color:var(--accent);
+  flex-shrink:0;
+}
+.badge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:100px;}
+.badge.ok{background:var(--ok-l);color:#15803D;}
+.badge.purple{background:var(--accent-l);color:var(--accent-d);}
+.badge.warn{background:var(--warn-l);color:#C2410C;}
+.badge.err{background:var(--err-l);color:#B91C1C;}
+.stars{color:#F59E0B;letter-spacing:1px;font-size:13px;}
+
+.card{
+  background:var(--white);border-radius:var(--rl);
+  padding:16px;box-shadow:var(--shadow);margin-bottom:12px;
+}
+
+/* ============================================================
+   BOTTOM NAV
+   ============================================================ */
+.bottom-nav{
+  height:var(--nb-h);background:var(--white);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 6px;
+  flex-shrink:0;z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:2px;cursor:pointer;padding:6px 0;
+  font-size:10px;font-weight:800;color:var(--muted);
+  border:none;background:none;transition:color .2s;
+}
+.bn-item.active{color:var(--accent);}
+.bn-icon{font-size:20px;line-height:1;}
+.bn-ping{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(124,92,252,.4);
+  cursor:pointer;border:none;
+  transition:transform .15s;
+}
+.bn-ping:active{transform:scale(.92);}
+
+.pro-bottom-nav{
+  height:var(--nb-h);background:var(--navy);
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;padding:0 6px;
+  flex-shrink:0;z-index:200;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.pbn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:2px;cursor:pointer;padding:6px 0;
+  font-size:10px;font-weight:800;color:rgba(255,255,255,.35);
+  border:none;background:none;transition:color .2s;
+}
+.pbn-item.active{color:var(--white);}
+.pbn-icon{font-size:20px;line-height:1;}
+.pbn-qr{
+  width:50px;height:50px;border-radius:50%;
+  background:var(--warn);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(251,146,60,.4);
+  cursor:pointer;border:none;
+}
+
+/* ============================================================
+   SWITCH FAB
+   ============================================================ */
+.switch-fab{
+  position:absolute;top:52px;right:14px;z-index:400;
+  background:rgba(255,255,255,.95);
+  border:1.5px solid rgba(124,92,252,.3);
+  border-radius:100px;padding:6px 12px 6px 8px;
+  display:flex;align-items:center;gap:6px;
+  cursor:pointer;font-size:12px;font-weight:800;
+  box-shadow:var(--shadow);
+}
+.fab-dot{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+.fab-dot.u{background:var(--accent-l);color:var(--accent);}
+.fab-dot.p{background:var(--warn-l);color:var(--warn);}
+
+/* ============================================================
+   ONBOARDING
+   ============================================================ */
+#s-onboard{background:var(--navy);z-index:9000;}
+.ob-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center;}
+.ob-icon{width:100px;height:100px;border-radius:36px;background:rgba(124,92,252,.15);display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:28px;}
+.ob-title{font-family:'Fredoka One',cursive;font-size:26px;color:var(--white);margin-bottom:12px;line-height:1.25;}
+.ob-sub{font-size:15px;color:rgba(255,255,255,.6);line-height:1.65;max-width:290px;}
+.ob-foot{padding:20px 32px 36px;}
+.ob-dots{display:flex;justify-content:center;gap:8px;margin-bottom:20px;}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .3s;}
+.ob-dot.on{background:var(--accent);width:24px;border-radius:4px;}
+#ob-btn{width:100%;padding:16px;background:var(--accent);color:var(--white);border:none;border-radius:100px;font-family:'Fredoka One',cursive;font-size:18px;cursor:pointer;}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+#s-map{padding-top:0!important;}
+.map-wrap{flex:1;position:relative;overflow:hidden;}
+.map-svg-container{position:absolute;inset:0;}
+.map-you{
+  position:absolute;top:44%;left:37%;
+  width:18px;height:18px;border-radius:50%;
+  background:#3B82F6;border:3px solid white;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 0 8px rgba(59,130,246,.2);
+  animation:pulseU 2s ease-in-out infinite;
+  z-index:20;
+}
+@keyframes pulseU{0%,100%{box-shadow:0 0 0 8px rgba(59,130,246,.2)}50%{box-shadow:0 0 0 16px rgba(59,130,246,.06)}}
+.map-pin{
+  position:absolute;display:flex;flex-direction:column;align-items:center;
+  cursor:pointer;z-index:30;transition:transform .2s;
+}
+.map-pin:active{transform:scale(1.1);}
+.pin-bubble{
+  background:var(--white);border-radius:100px;
+  padding:5px 10px;font-size:11px;font-weight:800;color:var(--navy);
+  box-shadow:0 3px 12px rgba(0,0,0,.2);
+  white-space:nowrap;
+}
+.pin-bubble.hi{background:var(--accent);color:var(--white);}
+.pin-tail{width:2px;height:8px;background:var(--white);border-radius:1px;}
+.pin-tail.hi{background:var(--accent);}
+
+.map-searchbar{position:absolute;top:54px;left:12px;right:110px;z-index:100;}
+.map-si{
+  width:100%;background:var(--white);border-radius:var(--rl);
+  padding:12px 16px 12px 42px;
+  font-size:15px;font-weight:700;color:var(--navy);
+  border:none;box-shadow:0 4px 20px rgba(0,0,0,.15);
+  outline:none;font-family:'Nunito',sans-serif;
+}
+.map-si-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;color:var(--muted);}
+
+.map-sb-fab{
+  position:absolute;top:54px;right:12px;z-index:101;
+  background:rgba(255,255,255,.95);
+  border:1.5px solid rgba(124,92,252,.25);
+  border-radius:100px;padding:8px 12px 8px 8px;
+  display:flex;align-items:center;gap:6px;
+  cursor:pointer;font-size:12px;font-weight:800;
+  box-shadow:0 4px 16px rgba(26,16,51,.12);
+}
+
+.map-filters{
+  position:absolute;bottom:80px;left:0;right:0;z-index:100;
+  overflow-x:auto;display:flex;gap:8px;padding:0 14px;
+  scrollbar-width:none;
+}
+.map-filters::-webkit-scrollbar{display:none;}
+.chip{
+  background:var(--white);border-radius:100px;
+  padding:8px 14px;font-size:12px;font-weight:800;
+  color:var(--navy);white-space:nowrap;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+  cursor:pointer;border:2px solid transparent;transition:all .2s;
+  flex-shrink:0;
+}
+.chip.on{background:var(--accent);color:var(--white);border-color:var(--accent);}
+
+.map-nb{position:absolute;bottom:0;left:0;right:0;z-index:150;}
+
+/* Bottom sheet fiche pro */
+.bs{
+  position:absolute;bottom:0;left:0;right:0;z-index:300;
+  background:var(--white);border-radius:var(--rxl) var(--rxl) 0 0;
+  padding:14px 16px 20px;
+  box-shadow:0 -4px 24px rgba(0,0,0,.12);
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.bs.open{transform:translateY(0);}
+.bs-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.bs-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.bs-info{flex:1;}
+.tarif-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--muted-l);}
+.tarif-row:last-child{border:none;}
+.tarif-lbl{font-size:13px;color:var(--muted);}
+.tarif-val{font-size:13px;font-weight:800;}
+
+/* ============================================================
+   FULL SCREEN OVERLAYS (QR, MODAL)
+   ============================================================ */
+.overlay{
+  position:fixed;inset:0;z-index:8000;
+  background:var(--navy);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:36px 24px;
+  transform:translateY(100%);
+  transition:transform .4s cubic-bezier(.4,0,.2,1);
+}
+.overlay.open{transform:translateY(0);}
+.ov-close{
+  position:absolute;top:20px;right:20px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.1);border:none;color:var(--white);
+  font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.qr-box{
+  width:180px;height:180px;background:var(--white);
+  border-radius:20px;padding:12px;margin:20px 0;
+  box-shadow:0 0 0 4px rgba(124,92,252,.3),0 16px 48px rgba(0,0,0,.4);
+}
+.qr-grid{display:grid;grid-template-columns:repeat(11,1fr);gap:2px;width:100%;height:100%;}
+.qc{border-radius:1px;}
+.qr-code{
+  font-family:monospace;font-size:26px;font-weight:800;
+  color:var(--white);letter-spacing:10px;margin-bottom:6px;text-align:center;
+}
+.ov-title{font-family:'Fredoka One',cursive;font-size:22px;color:var(--white);text-align:center;margin-bottom:6px;}
+.ov-sub{font-size:13px;color:rgba(255,255,255,.5);text-align:center;}
+
+/* ============================================================
+   PRO HEADER
+   ============================================================ */
+.pro-header{background:var(--navy);padding:10px 16px 0;flex-shrink:0;}
+.pro-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.pro-greeting{font-size:11px;color:rgba(255,255,255,.45);}
+.pro-name-big{font-family:'Fredoka One',cursive;font-size:20px;color:var(--white);}
+.dispo-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(34,197,94,.15);border-radius:100px;
+  padding:6px 12px;cursor:pointer;border:none;
+}
+.dispo-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);}
+.dispo-lbl{font-size:11px;font-weight:800;color:var(--ok);}
+.pro-tabs{display:flex;gap:0;}
+.pro-tab{
+  flex:1;padding:10px 4px;text-align:center;
+  font-size:10px;font-weight:800;color:rgba(255,255,255,.4);
+  cursor:pointer;border:none;background:none;
+  border-bottom:2.5px solid transparent;
+  transition:all .2s;white-space:nowrap;
+}
+.pro-tab.on{color:var(--white);border-bottom-color:var(--accent);}
+
+.kpi-row{display:flex;gap:8px;padding:10px 12px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;}
+.kpi{flex:1;background:var(--muted-l);border-radius:var(--rm);padding:10px;text-align:center;}
+.kpi-v{font-family:'Fredoka One',cursive;font-size:17px;color:var(--navy);}
+.kpi-l{font-size:10px;color:var(--muted);margin-top:1px;}
+
+.pro-view{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.pro-view.on{display:block;}
+
+/* ============================================================
+   MAP SVG STYLE CÔTE D'AZUR
+   ============================================================ */
+.map-cda-bg{
+  position:absolute;inset:0;
+  background:#EAE6DF;
+}
+
+/* ============================================================
+   DEVIS ÉDITEUR
+   ============================================================ */
+.devis-line-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 0;border-bottom:1px solid var(--muted-l);
+}
+.devis-line-row:last-child{border:none;}
+.dl-lbl{flex:1;font-size:13px;}
+.dl-price{font-size:13px;font-weight:800;min-width:50px;text-align:right;}
+.dl-del{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--err-l);color:var(--err);
+  border:none;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.devis-total-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;background:var(--accent);border-radius:var(--rm);
+  color:var(--white);margin-top:12px;
+}
+.dt-lbl{font-size:13px;font-weight:800;}
+.dt-val{font-family:'Fredoka One',cursive;font-size:18px;}
+
+/* ============================================================
+   CHAT
+   ============================================================ */
+.chat-messages{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch;}
+.msg{max-width:78%;padding:10px 13px;border-radius:18px;font-size:14px;line-height:1.4;}
+.msg.from{background:var(--muted-l);align-self:flex-start;border-bottom-left-radius:4px;color:var(--navy);}
+.msg.to{background:var(--accent);color:var(--white);align-self:flex-end;border-bottom-right-radius:4px;}
+.msg-time{font-size:10px;color:var(--muted);margin-top:2px;}
+.msg-to-time{font-size:10px;color:rgba(124,92,252,.6);margin-top:2px;text-align:right;}
+.devis-bubble{
+  background:var(--accent-l);border:1.5px solid var(--accent);
+  border-radius:var(--rm);padding:12px;align-self:flex-start;max-width:85%;
+  cursor:pointer;
+}
+.db-title{font-size:13px;font-weight:800;color:var(--accent-d);margin-bottom:4px;}
+.db-amount{font-family:'Fredoka One',cursive;font-size:20px;color:var(--accent);margin-bottom:6px;}
+.db-cta{
+  width:100%;padding:9px;background:var(--accent);color:var(--white);
+  border:none;border-radius:var(--rs);font-family:'Fredoka One',cursive;font-size:14px;cursor:pointer;
+}
+.chat-input-row{
+  display:flex;gap:8px;padding:10px 14px;
+  background:var(--white);border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.chat-input{
+  flex:1;padding:10px 14px;background:var(--muted-l);
+  border:none;border-radius:100px;font-family:'Nunito',sans-serif;
+  font-size:14px;font-weight:700;outline:none;
+}
+.chat-send{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--accent);color:var(--white);
+  border:none;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ============================================================
+   AVIS
+   ============================================================ */
+.rating-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--muted-l);}
+.rating-row:last-child{border:none;}
+.rating-lbl{font-size:14px;}
+.star-btns{display:flex;gap:6px;}
+.star-btn{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--border);background:var(--white);
+  font-size:16px;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;
+}
+.star-btn.on{background:var(--warn-l);border-color:var(--warn);}
+
+.tag-grid{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
+.tag{
+  padding:7px 14px;border-radius:100px;
+  font-size:13px;font-weight:800;cursor:pointer;
+  background:var(--muted-l);color:var(--muted-d);
+  border:2px solid transparent;transition:all .2s;
+}
+.tag.on{background:var(--accent-l);color:var(--accent-d);border-color:var(--accent);}
+
+/* ============================================================
+   GPS MINI
+   ============================================================ */
+.gps-mini{
+  height:90px;border-radius:var(--rm);overflow:hidden;
+  position:relative;margin-top:12px;
+}
+.gps-mini-map{position:absolute;inset:0;background:linear-gradient(135deg,#3a7a52,#4a9a69);}
+.gps-lbl{
+  position:absolute;bottom:8px;left:10px;right:10px;
+  background:var(--white);border-radius:100px;
+  padding:6px 12px;font-size:11px;font-weight:800;
+  display:flex;align-items:center;gap:6px;
+}
+.gps-eta{color:var(--accent);font-weight:900;}
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+.prog-bar{height:5px;background:var(--muted-l);border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.prog-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .5s;}
+.step-li{display:flex;align-items:center;gap:10px;font-size:13px;padding:3px 0;}
+.step-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.step-dot.done{background:var(--ok);}
+.step-dot.cur{background:var(--accent);}
+.step-dot.todo{background:var(--border);}
+.step-li.done-t{color:var(--muted);}
+.step-li.cur-t{color:var(--accent);font-weight:800;}
+
+/* ============================================================
+   INSCRIPTION
+   ============================================================ */
+.insc-header{
+  background:var(--accent);padding:28px 24px 24px;
+  flex-shrink:0;
+}
+.insc-logo{font-family:'Fredoka One',cursive;font-size:28px;color:var(--white);margin-bottom:4px;}
+.insc-sub{font-size:14px;color:rgba(255,255,255,.7);}
+.insc-step{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;}
+.insc-prog{display:flex;gap:4px;margin-top:12px;}
+.insc-prog-dot{flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;}
+.insc-prog-dot.on{background:var(--white);}
+
+.card-mock{
+  background:linear-gradient(135deg,#1A1033,#3A206A);
+  border-radius:var(--rm);padding:20px;margin-bottom:14px;
+  color:var(--white);
+}
+.card-number{font-family:monospace;font-size:18px;letter-spacing:4px;margin:12px 0;}
+.card-row{display:flex;justify-content:space-between;font-size:12px;opacity:.7;}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast{
+  position:fixed;bottom:90px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--navy);color:var(--white);
+  padding:10px 20px;border-radius:100px;
+  font-size:13px;font-weight:800;white-space:nowrap;
+  z-index:9999;opacity:0;transition:all .3s;
+  pointer-events:none;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ============================================================
+   PING ANIMATION
+   ============================================================ */
+.ping-wave{
+  width:90px;height:90px;border-radius:50%;
+  background:rgba(124,92,252,.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;position:relative;
+  margin:0 auto 12px;
+}
+.ping-wave::before,.ping-wave::after{
+  content:'';position:absolute;border-radius:50%;
+  border:2px solid rgba(124,92,252,.3);
+}
+.ping-wave::before{width:120%;height:120%;animation:pw 1.6s ease-out infinite;}
+.ping-wave::after{width:145%;height:145%;animation:pw 1.6s ease-out .5s infinite;}
+@keyframes pw{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.5);opacity:0}}
+
+/* ============================================================
+   PHOTO UPLOAD MOCK
+   ============================================================ */
+.photo-area{
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.photo-slot{
+  width:80px;height:80px;border-radius:var(--rm);
+  border:2px dashed var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;cursor:pointer;background:var(--muted-l);
+  transition:all .2s;
+}
+.photo-slot:active{border-color:var(--accent);}
+.photo-slot.filled{background:var(--accent-l);border-color:var(--accent);}
+
+/* ============================================================
+   SÉQUESTRE BANNER
+   ============================================================ */
+.seq-banner{
+  background:var(--ok-l);border-radius:var(--rm);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;
+  font-size:13px;color:#14532D;margin-bottom:12px;
+}
+
+/* ============================================================
+   RESPONSIVE SAFE AREAS
+   ============================================================ */
+@media(max-height:700px){
+  .ob-icon{width:72px;height:72px;font-size:30px;margin-bottom:18px;}
+  .ob-title{font-size:22px;}
+}
+@supports(padding-top:env(safe-area-inset-top)){
+  .screen{padding-top:env(safe-area-inset-top);}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SCREENS
+     ============================================================ -->
+
+<!-- =================== ONBOARDING =================== -->
+<div id="s-onboard" class="screen active">
+  <div class="sb light"><span style="font-family:'Fredoka One',cursive">9:41</span><div class="sb-icons"><span>📶</span><span>🔋</span></div></div>
+  <div class="ob-body" id="ob-body">
+    <div class="ob-icon" id="ob-icon">📍</div>
+    <div class="ob-title" id="ob-title">Et si ce que vous cherchez se trouvait juste à côté ?</div>
+    <div class="ob-sub" id="ob-sub">Plombier, baby-sitter, aide ménagère, jardinage, manutention — des vraies personnes, autour de vous, disponibles maintenant.</div>
+  </div>
+  <div class="ob-foot">
+    <div class="ob-dots">
+      <div class="ob-dot on" id="od0"></div>
+      <div class="ob-dot" id="od1"></div>
+      <div class="ob-dot" id="od2"></div>
+    </div>
+    <button id="ob-btn" onclick="obNext()">Suivant →</button>
+  </div>
+</div>
+
+<!-- =================== INSCRIPTION CLIENT 1 =================== -->
+<div id="s-insc1" class="screen">
+  <div class="insc-header">
+    <div class="insc-logo">Nexto</div>
+    <div class="insc-sub">Créez votre compte</div>
+    <div class="insc-step">Étape 1 sur 2 — Votre profil</div>
+    <div class="insc-prog"><div class="insc-prog-dot on"></div><div class="insc-prog-dot"></div></div>
+  </div>
+  <div class="scroll-body">
+    <div class="field-wrap"><div class="field-label">Prénom</div><input class="field-input" type="text" placeholder="Sophie" value="Sophie"></div>
+    <div class="field-wrap"><div class="field-label">Nom</div><input class="field-input" type="text" placeholder="Laurent" value="Laurent"></div>
+    <div class="field-wrap"><div class="field-label">Email</div><input class="field-input" type="email" placeholder="sophie@gmail.com" value="sophie@gmail.com"></div>
+    <div class="field-wrap"><div class="field-label">Téléphone</div><input class="field-input" type="tel" placeholder="+33 6 00 00 00 00" value="+33 6 12 34 56 78"></div>
+    <div class="field-wrap"><div class="field-label">Adresse</div><input class="field-input" type="text" placeholder="12 rue des Lilas, Grasse" value="12 rue des Lilas, 06130 Grasse"></div>
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;">
+      <input type="checkbox" id="cgu" checked style="margin-top:3px;width:18px;height:18px;accent-color:var(--accent);">
+      <label for="cgu" style="font-size:13px;color:var(--muted-d);line-height:1.5;">J'accepte les <span style="color:var(--accent)">Conditions Générales</span> et la <span style="color:var(--accent)">Politique de confidentialité</span></label>
+    </div>
+    <button class="btn-primary" onclick="go('s-insc2')">Continuer · Paiement →</button>
+  </div>
+</div>
+
+<!-- =================== INSCRIPTION CLIENT 2 =================== -->
+<div id="s-insc2" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Moyen de paiement</div></div>
+  <div class="scroll-body">
+    <div class="card-mock">
+      <div style="font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.08em;">Nexto Secure Pay</div>
+      <div class="card-number">•••• •••• •••• 4291</div>
+      <div class="card-row"><span>Sophie Laurent</span><span>12/28</span></div>
+    </div>
+    <div class="field-wrap"><div class="field-label">Numéro de carte</div><input class="field-input" type="text" placeholder="1234 5678 9012 3456"></div>
+    <div style="display:flex;gap:10px;">
+      <div class="field-wrap" style="flex:1"><div class="field-label">Expiration</div><input class="field-input" type="text" placeholder="MM/AA"></div>
+      <div class="field-wrap" style="flex:1"><div class="field-label">CVV</div><input class="field-input" type="text" placeholder="•••"></div>
+    </div>
+    <div style="background:var(--ok-l);border-radius:var(--rm);padding:10px 14px;font-size:12px;color:#14532D;margin-bottom:16px;display:flex;gap:8px;align-items:center;">
+      <span>🔒</span><span>Sécurisé par Stripe · Aucun débit avant intervention</span>
+    </div>
+    <button class="btn-primary" onclick="go('s-map')" style="margin-bottom:12px;">Créer mon compte 🚀</button>
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:12px;">— ou —</div>
+    <button class="btn-secondary" onclick="go('s-map')" style="margin-bottom:8px;">🍎 Apple Pay</button>
+    <button class="btn-secondary" onclick="go('s-map')">🟢 Google Pay</button>
+  </div>
+</div>
+
+<!-- =================== MAP (écran principal client) =================== -->
+<div id="s-map" class="screen" style="padding-top:0;">
+  <div class="sb" style="position:absolute;top:0;left:0;right:0;z-index:200;background:transparent;padding-top:calc(8px + env(safe-area-inset-top))">
+    <span style="font-family:'Fredoka One',cursive;background:rgba(255,255,255,.9);padding:2px 10px;border-radius:100px;font-size:12px;">9:41</span>
+    <div class="sb-icons"><span>📶</span><span>🔋</span></div>
+  </div>
+  <div class="map-wrap">
+    <div class="map-cda-bg"></div>
+    <!-- SVG CARTE CÔTE D'AZUR -->
+    <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="600" fill="#EAE6DF"/>
+      <!-- Mer -->
+      <path d="M0 520 Q80 505 160 518 Q240 532 320 514 Q360 505 400 518L400 600H0Z" fill="#A8C8E8" opacity=".95"/>
+      <path d="M0 535 Q70 522 140 530 Q210 538 280 525 Q340 516 400 528L400 600H0Z" fill="#BDD6EE" opacity=".7"/>
+      <!-- Promenade -->
+      <rect x="0" y="500" width="400" height="8" fill="#F5D060" opacity=".7" rx="2"/>
+      <!-- Parcs -->
+      <rect x="8" y="65" width="72" height="52" fill="#C8DFA0" rx="7"/>
+      <rect x="13" y="70" width="62" height="42" fill="#B8D480" rx="5"/>
+      <rect x="278" y="148" width="88" height="62" fill="#C8DFA0" rx="7"/>
+      <rect x="283" y="153" width="78" height="52" fill="#B8D480" rx="5"/>
+      <rect x="48" y="328" width="58" height="48" fill="#C8DFA0" rx="6"/>
+      <rect x="52" y="332" width="50" height="40" fill="#B8D480" rx="4"/>
+      <!-- Bâtiments -->
+      <rect x="88" y="65" width="42" height="28" fill="#DDD8D0" rx="3"/>
+      <rect x="134" y="65" width="54" height="28" fill="#D8D3CB" rx="3"/>
+      <rect x="88" y="97" width="26" height="22" fill="#E0DBD3" rx="3"/>
+      <rect x="118" y="97" width="70" height="22" fill="#DDD8D0" rx="3"/>
+      <rect x="8" y="128" width="72" height="26" fill="#DDD8D0" rx="3"/>
+      <rect x="84" y="128" width="46" height="26" fill="#D8D3CB" rx="3"/>
+      <rect x="198" y="65" width="74" height="30" fill="#DDD8D0" rx="3"/>
+      <rect x="198" y="99" width="52" height="22" fill="#D8D3CB" rx="3"/>
+      <rect x="254" y="99" width="22" height="22" fill="#E0DBD3" rx="3"/>
+      <rect x="8" y="162" width="56" height="30" fill="#DDD8D0" rx="3"/>
+      <rect x="68" y="162" width="66" height="30" fill="#D8D3CB" rx="3"/>
+      <rect x="138" y="162" width="42" height="30" fill="#E0DBD3" rx="3"/>
+      <rect x="184" y="162" width="82" height="30" fill="#DDD8D0" rx="3"/>
+      <rect x="198" y="216" width="62" height="28" fill="#DDD8D0" rx="3"/>
+      <rect x="264" y="216" width="46" height="28" fill="#D8D3CB" rx="3"/>
+      <rect x="8" y="216" width="82" height="28" fill="#DDD8D0" rx="3"/>
+      <rect x="94" y="216" width="46" height="28" fill="#E0DBD3" rx="3"/>
+      <rect x="8" y="258" width="56" height="24" fill="#D8D3CB" rx="3"/>
+      <rect x="68" y="258" width="72" height="24" fill="#DDD8D0" rx="3"/>
+      <rect x="144" y="258" width="52" height="24" fill="#D8D3CB" rx="3"/>
+      <rect x="200" y="258" width="88" height="24" fill="#DDD8D0" rx="3"/>
+      <rect x="8" y="380" width="62" height="28" fill="#DDD8D0" rx="3"/>
+      <rect x="74" y="380" width="46" height="28" fill="#D8D3CB" rx="3"/>
+      <rect x="148" y="380" width="76" height="28" fill="#DDD8D0" rx="3"/>
+      <rect x="228" y="380" width="56" height="28" fill="#E0DBD3" rx="3"/>
+      <rect x="308" y="380" width="82" height="28" fill="#DDD8D0" rx="3"/>
+      <rect x="148" y="418" width="92" height="24" fill="#DDD8D0" rx="3"/>
+      <rect x="244" y="418" width="62" height="24" fill="#D8D3CB" rx="3"/>
+      <rect x="8" y="418" width="72" height="24" fill="#D8D3CB" rx="3"/>
+      <rect x="148" y="452" width="124" height="22" fill="#DDD8D0" rx="3"/>
+      <rect x="276" y="452" width="82" height="22" fill="#D8D3CB" rx="3"/>
+      <rect x="8" y="452" width="92" height="22" fill="#DDD8D0" rx="3"/>
+      <!-- Immeubles hauts -->
+      <rect x="144" y="65" width="20" height="34" fill="#C8C3BB" rx="3"/>
+      <rect x="208" y="65" width="18" height="38" fill="#CAC5BD" rx="3"/>
+      <rect x="308" y="216" width="82" height="32" fill="#C8C3BB" rx="3"/>
+      <!-- ROUTES PRINCIPALES -->
+      <rect x="0" y="362" width="400" height="12" fill="#fff" opacity=".95" rx="2"/>
+      <rect x="0" y="363" width="400" height="10" fill="#F5F0E8" opacity=".8" rx="1"/>
+      <rect x="136" y="0" width="12" height="520" fill="#fff" opacity=".95" rx="2"/>
+      <rect x="137" y="0" width="10" height="520" fill="#F5F0E8" opacity=".8" rx="1"/>
+      <rect x="292" y="0" width="10" height="520" fill="#fff" opacity=".9" rx="2"/>
+      <rect x="0" y="198" width="400" height="8" fill="#fff" opacity=".85" rx="1"/>
+      <rect x="0" y="52" width="400" height="7" fill="#fff" opacity=".8" rx="1"/>
+      <rect x="0" y="286" width="400" height="5" fill="#fff" opacity=".7" rx="1"/>
+      <rect x="0" y="316" width="400" height="5" fill="#fff" opacity=".65" rx="1"/>
+      <rect x="0" y="444" width="400" height="5" fill="#fff" opacity=".65" rx="1"/>
+      <rect x="53" y="0" width="6" height="520" fill="#fff" opacity=".62" rx="1"/>
+      <rect x="198" y="0" width="6" height="520" fill="#fff" opacity=".62" rx="1"/>
+      <rect x="352" y="0" width="5" height="520" fill="#fff" opacity=".58" rx="1"/>
+      <!-- Marquages -->
+      <line x1="0" y1="368" x2="400" y2="368" stroke="#F0C040" stroke-width="1" stroke-dasharray="12,10" opacity=".5"/>
+      <line x1="142" y1="0" x2="142" y2="520" stroke="#F0C040" stroke-width="1" stroke-dasharray="12,10" opacity=".4"/>
+      <!-- Ronds-points -->
+      <circle cx="142" cy="366" r="13" fill="#fff" opacity=".9"/>
+      <circle cx="142" cy="366" r="9" fill="#EDE8E0" opacity=".8"/>
+      <circle cx="142" cy="366" r="4" fill="#C8DFA0" opacity=".9"/>
+      <circle cx="292" cy="198" r="11" fill="#fff" opacity=".85"/>
+      <circle cx="292" cy="198" r="7" fill="#EDE8E0" opacity=".8"/>
+      <circle cx="292" cy="198" r="3" fill="#C8DFA0" opacity=".9"/>
+      <!-- Arbres -->
+      <circle cx="38" cy="358" r="5" fill="#8DB86A" opacity=".8"/>
+      <circle cx="74" cy="358" r="5" fill="#9AC278" opacity=".8"/>
+      <circle cx="110" cy="358" r="5" fill="#8DB86A" opacity=".8"/>
+      <circle cx="174" cy="358" r="5" fill="#9AC278" opacity=".8"/>
+      <circle cx="218" cy="358" r="5" fill="#8DB86A" opacity=".8"/>
+      <circle cx="258" cy="358" r="5" fill="#9AC278" opacity=".8"/>
+      <circle cx="328" cy="358" r="5" fill="#8DB86A" opacity=".8"/>
+      <circle cx="374" cy="358" r="5" fill="#9AC278" opacity=".8"/>
+      <!-- Palmiers promenade -->
+      <line x1="28" y1="498" x2="28" y2="484" stroke="#7A6040" stroke-width="2.5"/>
+      <circle cx="28" cy="482" r="5" fill="#4A8040" opacity=".85"/>
+      <line x1="88" y1="498" x2="88" y2="484" stroke="#7A6040" stroke-width="2.5"/>
+      <circle cx="88" cy="482" r="5" fill="#4A8040" opacity=".85"/>
+      <line x1="158" y1="498" x2="158" y2="484" stroke="#7A6040" stroke-width="2.5"/>
+      <circle cx="158" cy="482" r="5" fill="#4A8040" opacity=".85"/>
+      <line x1="238" y1="498" x2="238" y2="484" stroke="#7A6040" stroke-width="2.5"/>
+      <circle cx="238" cy="482" r="5" fill="#4A8040" opacity=".85"/>
+      <line x1="318" y1="498" x2="318" y2="484" stroke="#7A6040" stroke-width="2.5"/>
+      <circle cx="318" cy="482" r="5" fill="#4A8040" opacity=".85"/>
+      <!-- Labels rues -->
+      <text x="142" y="398" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#999" transform="rotate(-90,142,398)" dy="3">Bd Victor Hugo</text>
+      <text x="200" y="354" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#999">Promenade des Anglais</text>
+      <text x="292" y="215" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#999" transform="rotate(-90,292,215)" dy="3">Av. Jean Médecin</text>
+      <!-- Vagues -->
+      <path d="M18 548 Q50 543 82 548 Q114 553 146 548 Q178 543 210 548" stroke="#7AAED0" stroke-width="1.5" fill="none" opacity=".5"/>
+      <path d="M200 562 Q234 557 268 562 Q302 567 336 562 Q368 557 400 562" stroke="#7AAED0" stroke-width="1.5" fill="none" opacity=".4"/>
+    </svg>
+
+    <!-- Point utilisateur -->
+    <div class="map-you"></div>
+
+    <!-- Pins cliquables -->
+    <div class="map-pin" style="top:20%;left:8%" onclick="showPro('Sophie M.','Aide ménagère','SM','0.4 km','4.9','84','18 €/h','Ménage, repassage, vitres')">
+      <div class="pin-bubble">🧹 0.4 km</div><div class="pin-tail"></div>
+    </div>
+    <div class="map-pin" style="top:25%;right:5%" onclick="showPro('Jean Martin','Plombier','JM','0.9 km','4.8','127','45 €/h','Plomberie, chauffe-eau, sanitaires')">
+      <div class="pin-bubble hi">🔧 0.9 km</div><div class="pin-tail hi"></div>
+    </div>
+    <div class="map-pin" style="top:53%;left:12%" onclick="showPro('Amina K.','Baby-sitter','AK','1.1 km','5.0','42','15 €/h','Garde enfants, aide devoirs')">
+      <div class="pin-bubble">🍼 1.1 km</div><div class="pin-tail"></div>
+    </div>
+    <div class="map-pin" style="top:38%;left:52%" onclick="showPro('Marc D.','Jardinier','MD','1.4 km','4.7','58','20 €/h','Tonte, taille, entretien')">
+      <div class="pin-bubble">🌿 1.4 km</div><div class="pin-tail"></div>
+    </div>
+    <div class="map-pin" style="top:46%;right:4%" onclick="showPro('Pierre L.','Manutention','PL','1.8 km','4.6','31','18 €/h','Déménagement, montage meubles')">
+      <div class="pin-bubble">📦 1.8 km</div><div class="pin-tail"></div>
+    </div>
+
+    <!-- Searchbar + FAB -->
+    <div class="map-searchbar">
+      <input class="map-si" id="map-search" placeholder="Plombier, baby-sitter, ménage…">
+      <span class="map-si-icon">🔍</span>
+    </div>
+    <div class="map-sb-fab" onclick="switchMode()">
+      <div class="fab-dot u">👤</div>
+      <span id="fab-lbl">Mode Pro</span>
+    </div>
+
+    <!-- Chips filtres -->
+    <div class="map-filters">
+      <div class="chip on" onclick="setChip(this)">Tous</div>
+      <div class="chip" onclick="setChip(this)">⚡ Urgent</div>
+      <div class="chip" onclick="setChip(this)">📅 Programmé</div>
+      <div class="chip" onclick="setChip(this)">🧹 Ménage</div>
+      <div class="chip" onclick="setChip(this)">🍼 Baby-sitting</div>
+      <div class="chip" onclick="setChip(this)">🔧 Plomberie</div>
+      <div class="chip" onclick="setChip(this)">🌿 Jardinage</div>
+      <div class="chip" onclick="setChip(this)">📦 Manutention</div>
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="map-nb">
+      <nav class="bottom-nav">
+        <button class="bn-item active" id="bn-map" onclick="clientNav('map')"><div class="bn-icon">🗺️</div>Carte</button>
+        <button class="bn-item" id="bn-fav" onclick="clientNav('fav')"><div class="bn-icon">❤️</div>Favoris</button>
+        <button class="bn-ping" onclick="go('s-ping')">📡</button>
+        <button class="bn-item" id="bn-cours" onclick="clientNav('cours')"><div class="bn-icon">🔄</div>En cours</button>
+        <button class="bn-item" id="bn-moi" onclick="clientNav('moi')"><div class="bn-icon">👤</div>Moi</button>
+      </nav>
+    </div>
+
+    <!-- Bottom sheet fiche pro -->
+    <div class="bs" id="bs">
+      <div class="bs-handle"></div>
+      <div class="bs-row">
+        <div class="avatar" id="bs-av">JM</div>
+        <div class="bs-info">
+          <div style="font-size:16px;font-weight:800;" id="bs-name">Jean Martin</div>
+          <div style="font-size:12px;color:var(--muted);" id="bs-meta">Plombier · 0.9 km · Disponible</div>
+          <div class="stars" id="bs-stars">★★★★★</div>
+          <div style="font-size:11px;color:var(--muted)" id="bs-avis">4.8 · 127 avis</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        <span class="badge ok">✓ Vérifié</span>
+        <span class="badge purple">RC Pro</span>
+        <span class="badge warn" id="bs-badge">⭐ Top Pro</span>
+      </div>
+      <div class="tarif-row"><span class="tarif-lbl">Tarif horaire</span><span class="tarif-val" id="bs-rate">45 €/h</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Déplacement</span><span class="tarif-val">15 €</span></div>
+      <button class="btn-primary" style="margin-top:12px" onclick="startDemande()">Envoyer une demande →</button>
+    </div>
+  </div>
+</div>
+
+<!-- =================== FICHE PRO =================== -->
+<div id="s-fiche" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title" id="fiche-title">Jean Martin</div></div>
+  <div class="scroll-body">
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;">
+      <div class="avatar" style="width:64px;height:64px;font-size:22px;" id="fiche-av">JM</div>
+      <div>
+        <div style="font-size:18px;font-weight:800;" id="fiche-name">Jean Martin</div>
+        <div style="font-size:13px;color:var(--muted);" id="fiche-meta">Plombier · Grasse · Disponible</div>
+        <div class="stars">★★★★★</div>
+        <div style="font-size:12px;color:var(--muted)" id="fiche-note">4.8 · 127 avis</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      <span class="badge ok">✓ Vérifié</span>
+      <span class="badge purple">RC Pro</span>
+      <span class="badge purple">Décennale</span>
+      <span class="badge warn">⭐ Top Pro</span>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:8px;">Statut professionnel</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="fiche-statuts">
+        <span class="badge purple">🧾 Auto-entrepreneur</span>
+        <span class="badge ok">TVA non applicable (art. 293 B)</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;">SIRET 847 293 018 00024 · Facturation conforme à votre statut</div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:8px;">Tarifs</div>
+      <div class="tarif-row"><span class="tarif-lbl">Tarif horaire</span><span class="tarif-val" id="fiche-rate">45 €/h</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Déplacement</span><span class="tarif-val">15 €</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Majoration urgence</span><span class="tarif-val">+30%</span></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:8px;">À propos</div>
+      <div style="font-size:14px;color:var(--muted-d);line-height:1.6;" id="fiche-desc">Plombier professionnel depuis 12 ans. Spécialiste en dépannage urgent, installation sanitaire et chauffe-eau. RC Pro et garantie décennale.</div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:10px;">Derniers avis</div>
+      <div style="margin-bottom:10px;"><div class="stars" style="font-size:12px;">★★★★★</div><div style="font-size:13px;margin-top:3px;">"Très rapide et professionnel. Fuite réparée en 30 min !"</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Marie P. · il y a 3 jours</div></div>
+      <div><div class="stars" style="font-size:12px;">★★★★★</div><div style="font-size:13px;margin-top:3px;">"Excellent travail, je recommande vivement."</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Thomas C. · il y a 1 semaine</div></div>
+    </div>
+    <button class="btn-primary" onclick="go('s-dem1')">Envoyer une demande →</button>
+  </div>
+</div>
+
+<!-- =================== DEMANDE 1 =================== -->
+<div id="s-dem1" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Votre demande (1/3)</div></div>
+  <div class="scroll-body">
+    <div class="field-wrap">
+      <div class="field-label">Niveau d'urgence</div>
+      <div style="display:flex;gap:8px;margin-top:2px;">
+        <div class="chip on" id="urg-1" onclick="setUrgency(this,'urgent')">🔴 Urgent</div>
+        <div class="chip" id="urg-2" onclick="setUrgency(this,'today')">🟠 Aujourd'hui</div>
+        <div class="chip" id="urg-3" onclick="setUrgency(this,'planned')">🟢 Programmé</div>
+      </div>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Description du problème</div>
+      <textarea class="field-input" rows="4" placeholder="Ex : Fuite sous l'évier de la cuisine, eau qui coule depuis ce matin…" style="resize:none;height:110px">Fuite sous l'évier de la cuisine depuis ce matin. J'ai coupé l'eau principale.</textarea>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Photos (optionnel)</div>
+      <div class="photo-area">
+        <div class="photo-slot" onclick="showToast('📸 Appareil photo — disponible après branchement')">📷</div>
+        <div class="photo-slot" onclick="showToast('📸 Galerie — disponible après branchement')">🖼️</div>
+        <div class="photo-slot filled">✓</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="go('s-dem2')">Continuer →</button>
+  </div>
+</div>
+
+<!-- =================== DEMANDE 2 =================== -->
+<div id="s-dem2" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Adresse & accès (2/3)</div></div>
+  <div class="scroll-body">
+    <div class="field-wrap"><div class="field-label">Adresse d'intervention</div><input class="field-input" type="text" value="12 rue des Lilas, 06130 Grasse"></div>
+    <div style="display:flex;gap:10px;">
+      <div class="field-wrap" style="flex:1"><div class="field-label">Étage</div><input class="field-input" type="text" placeholder="RDC" value="2ème"></div>
+      <div class="field-wrap" style="flex:1"><div class="field-label">Code accès</div><input class="field-input" type="text" placeholder="4587" value="4587B"></div>
+    </div>
+    <div class="field-wrap"><div class="field-label">Créneau souhaité</div>
+      <select class="field-input">
+        <option>Dès que possible</option>
+        <option>Ce matin (9h-12h)</option>
+        <option>Cet après-midi (14h-18h)</option>
+        <option>Demain matin</option>
+      </select>
+    </div>
+    <div class="field-wrap"><div class="field-label">Téléphone de contact</div><input class="field-input" type="tel" value="+33 6 12 34 56 78"></div>
+    <button class="btn-primary" onclick="go('s-dem3')">Voir le récapitulatif →</button>
+  </div>
+</div>
+
+<!-- =================== DEMANDE 3 (récap) =================== -->
+<div id="s-dem3" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Confirmation (3/3)</div></div>
+  <div class="scroll-body">
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:10px;">Récapitulatif</div>
+      <div class="tarif-row"><span class="tarif-lbl">Pro</span><span class="tarif-val" id="recap-pro">Jean Martin</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Service</span><span class="tarif-val">Plomberie · Urgent</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Adresse</span><span class="tarif-val" style="font-size:12px">12 rue des Lilas, Grasse</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Créneau</span><span class="tarif-val">Dès que possible</span></div>
+    </div>
+    <div style="background:var(--accent-l);border-radius:var(--rm);padding:12px;font-size:13px;color:var(--accent-d);margin-bottom:16px;">
+      📩 Jean Martin recevra votre demande et vous enverra un devis dans les 15 minutes. Aucun paiement maintenant.
+    </div>
+    <button class="btn-primary" onclick="go('s-conv')">Envoyer la demande 📤</button>
+  </div>
+</div>
+
+<!-- =================== CONVERSATION =================== -->
+<div id="s-conv" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="back()">←</button>
+    <div style="display:flex;align-items:center;gap:10px;flex:1">
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;">JM</div>
+      <div><div style="font-size:14px;font-weight:800">Jean Martin</div><div style="font-size:11px;color:var(--ok)">● En ligne</div></div>
+    </div>
+  </div>
+  <div class="chat-messages" id="conv-msgs">
+    <div><div class="msg from">Bonjour ! Je prends votre demande. Je peux être chez vous dans 20 min. Voici mon devis :</div><div class="msg-time">14:02</div></div>
+    <div class="devis-bubble" onclick="go('s-devis-recu')">
+      <div class="db-title">📋 Devis · Plomberie</div>
+      <div style="font-size:12px;color:var(--muted-d);margin-bottom:6px">Main d'œuvre 2h · Déplacement · Matériel</div>
+      <div class="db-amount">127 €</div>
+      <button class="db-cta">Voir et accepter →</button>
+    </div>
+    <div style="align-self:flex-end"><div class="msg to">Super, j'attends votre arrivée !</div><div class="msg-to-time">14:05</div></div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="conv-input" placeholder="Message…" onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="chat-send" onclick="sendMsg()">→</button>
+  </div>
+</div>
+
+<!-- =================== DEVIS REÇU =================== -->
+<div id="s-devis-recu" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Devis reçu</div></div>
+  <div class="scroll-body">
+    <div class="bs-row" style="margin-bottom:12px;">
+      <div class="avatar">JM</div>
+      <div><div style="font-size:15px;font-weight:800">Jean Martin</div><div class="stars" style="font-size:12px;">★★★★★ 4.8</div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:10px;">Détail du devis</div>
+      <div class="tarif-row"><span class="tarif-lbl">Main d'œuvre 2h × 45€</span><span class="tarif-val">90 €</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Déplacement</span><span class="tarif-val">15 €</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Joint siphon + coude</span><span class="tarif-val">22 €</span></div>
+      <div class="tarif-row" style="border-top:2px solid var(--border);padding-top:10px;"><span style="font-weight:800">Total TTC</span><span style="font-weight:800;font-size:16px;">127 €</span></div>
+    </div>
+    <div class="card">
+      <div class="tarif-row"><span class="tarif-lbl">Frais Nexto (client)</span><span class="tarif-val" style="color:var(--muted)">+3,8 €</span></div>
+      <div class="tarif-row"><span style="font-weight:800">Vous payez</span><span style="font-weight:800;color:var(--accent);font-size:16px;">130,8 €</span></div>
+    </div>
+    <div class="seq-banner">🔒 Fonds bloqués · libérés seulement après votre validation</div>
+    <button class="btn-primary" onclick="go('s-prepay')">Accepter et payer →</button>
+    <button class="btn-secondary" style="margin-top:10px" onclick="back()">Négocier</button>
+  </div>
+</div>
+
+<!-- =================== PRÉ-PAIEMENT =================== -->
+<div id="s-prepay" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Paiement</div></div>
+  <div class="scroll-body">
+    <div class="card-mock" style="margin-bottom:16px;">
+      <div style="font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.08em;">Carte enregistrée</div>
+      <div class="card-number">•••• •••• •••• 4291</div>
+      <div class="card-row"><span>Sophie Laurent</span><span>12/28</span></div>
+    </div>
+    <div class="card">
+      <div class="tarif-row"><span class="tarif-lbl">Intervention</span><span class="tarif-val">127,00 €</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Frais Nexto</span><span class="tarif-val">3,81 €</span></div>
+      <div class="tarif-row" style="border-top:2px solid var(--border);padding-top:10px;"><span style="font-weight:800">Total prélevé</span><span style="font-weight:800;font-size:16px;color:var(--accent)">130,81 €</span></div>
+    </div>
+    <div class="seq-banner">🔒 Séquestre Nexto · Vos fonds restent bloqués jusqu'à validation</div>
+    <button class="btn-primary" onclick="go('s-3ds')">Payer 130,81 € →</button>
+    <button class="btn-secondary" style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="go('s-3ds')">🍎 Apple Pay</button>
+  </div>
+</div>
+
+<!-- =================== 3DS =================== -->
+<div id="s-3ds" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Vérification 3D Secure</div></div>
+  <div class="scroll-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding-top:40px;">
+    <div style="width:80px;height:80px;background:var(--accent-l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:24px;">🔐</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:22px;margin-bottom:8px;text-align:center;">Code de vérification</div>
+    <div style="font-size:14px;color:var(--muted-d);text-align:center;margin-bottom:28px;">Un code a été envoyé au<br>+33 6 12 •• •• 78</div>
+    <div style="display:flex;gap:10px;margin-bottom:28px;" id="otp-boxes">
+      <input type="text" maxlength="1" class="field-input" style="width:46px;text-align:center;font-size:24px;padding:12px 0;" oninput="otpNext(this,0)">
+      <input type="text" maxlength="1" class="field-input" style="width:46px;text-align:center;font-size:24px;padding:12px 0;" oninput="otpNext(this,1)">
+      <input type="text" maxlength="1" class="field-input" style="width:46px;text-align:center;font-size:24px;padding:12px 0;" oninput="otpNext(this,2)">
+      <input type="text" maxlength="1" class="field-input" style="width:46px;text-align:center;font-size:24px;padding:12px 0;" oninput="otpNext(this,3)">
+      <input type="text" maxlength="1" class="field-input" style="width:46px;text-align:center;font-size:24px;padding:12px 0;" oninput="otpNext(this,4)">
+      <input type="text" maxlength="1" class="field-input" style="width:46px;text-align:center;font-size:24px;padding:12px 0;" oninput="otpNext(this,5)">
+    </div>
+    <button class="btn-primary" onclick="go('s-pay-ok')">Valider →</button>
+    <button onclick="showToast('Code renvoyé !')" style="background:none;border:none;color:var(--accent);font-size:13px;font-weight:800;margin-top:16px;cursor:pointer;">Renvoyer le code</button>
+  </div>
+</div>
+
+<!-- =================== PAIEMENT OK =================== -->
+<div id="s-pay-ok" class="screen">
+  <div class="scroll-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding-top:40px;text-align:center;">
+    <div style="width:100px;height:100px;background:var(--ok-l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:24px;">✓</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:26px;margin-bottom:8px;color:var(--ok)">Paiement confirmé !</div>
+    <div style="font-size:14px;color:var(--muted-d);margin-bottom:6px">130,81 € · Séquestre actif</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:32px;">Réf. NXT-4829</div>
+    <div class="card" style="width:100%;text-align:left;margin-bottom:16px;">
+      <div class="tarif-row"><span class="tarif-lbl">Jean Martin</span><span class="badge ok">En route</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">ETA estimé</span><span class="tarif-val">⏱ 12 min</span></div>
+    </div>
+    <button class="btn-primary" onclick="go('s-suivi')">Suivre l'intervention →</button>
+  </div>
+</div>
+
+<!-- =================== SUIVI GPS =================== -->
+<div id="s-suivi" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Jean Martin · En route</div></div>
+  <div class="scroll-body">
+    <div class="gps-mini">
+      <div class="gps-mini-map"></div>
+      <div class="gps-lbl">🚗 Jean Martin · <span class="gps-eta" id="eta-txt">ETA 12 min</span></div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <div class="prog-bar"><div class="prog-fill" style="width:40%"></div></div>
+      <div class="step-li done-t"><div class="step-dot done"></div>Devis accepté · 127 €</div>
+      <div class="step-li done-t"><div class="step-dot done"></div>Paiement séquestre confirmé</div>
+      <div class="step-li cur-t"><div class="step-dot cur"></div>Jean Martin en route</div>
+      <div class="step-li"><div class="step-dot todo"></div>Validation QR arrivée</div>
+      <div class="step-li"><div class="step-dot todo"></div>Fin de travaux + note</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn-secondary" style="flex:1" onclick="showToast('Appel en cours…')">📞 Appeler</button>
+      <button class="btn-secondary" style="flex:1" onclick="go('s-conv')">💬 Message</button>
+    </div>
+    <button class="btn-primary" style="margin-top:12px" onclick="go('s-qr-arrive')">📱 Afficher mon QR code</button>
+  </div>
+</div>
+
+<!-- =================== QR ARRIVÉE =================== -->
+<div id="s-qr-arrive" class="screen" style="background:var(--navy);">
+  <div class="sb light"><span style="font-family:'Fredoka One',cursive">9:41</span><div class="sb-icons"><span>📶</span><span>🔋</span></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;">
+    <button onclick="back()" style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:16px;background:rgba(255,255,255,.1);border:none;color:var(--white);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;">←</button>
+    <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--white);margin-bottom:6px;">📱 Fais scanner ce QR</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px;">par Jean Martin · Début d'intervention</div>
+    <div class="qr-box">
+      <div class="qr-grid" id="qr1"></div>
+    </div>
+    <div class="qr-code">4 8 2 9 1 7</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4);">Code 6 chiffres si pas de réseau</div>
+    <button class="btn-primary" style="margin-top:28px;background:rgba(255,255,255,.1);box-shadow:none;border:1.5px solid rgba(255,255,255,.2);" onclick="go('s-qr-fin')">✓ Confirmer l'arrivée →</button>
+  </div>
+</div>
+
+<!-- =================== QR FIN =================== -->
+<div id="s-qr-fin" class="screen" style="background:var(--navy);">
+  <div class="sb light"><span style="font-family:'Fredoka One',cursive">9:41</span><div class="sb-icons"><span>📶</span><span>🔋</span></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;">
+    <button onclick="back()" style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:16px;background:rgba(255,255,255,.1);border:none;color:var(--white);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;">←</button>
+    <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--white);margin-bottom:6px;">🏁 Fin de travaux</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px;">Validation mutuelle · Jean Martin</div>
+    <div class="qr-box"><div class="qr-grid" id="qr2"></div></div>
+    <div class="qr-code">7 3 5 1 0 8</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:28px;">Confirmer que les travaux sont terminés</div>
+    <button class="btn-primary" style="background:var(--ok);box-shadow:0 4px 16px rgba(34,197,94,.4);" onclick="go('s-rappel')">✓ Tout est OK · Valider →</button>
+    <button style="margin-top:12px;background:none;border:none;color:var(--err-l);font-size:13px;font-weight:800;cursor:pointer;" onclick="go('s-litige')">⚠️ Ouvrir un litige</button>
+  </div>
+</div>
+
+<!-- =================== RAPPEL 24H =================== -->
+<div id="s-rappel" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Validation requise</div></div>
+  <div class="scroll-body" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:32px;">
+    <div style="font-size:40px;margin-bottom:16px;">⏰</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:22px;margin-bottom:8px;">Validation auto dans 2h</div>
+    <div style="font-size:14px;color:var(--muted-d);margin-bottom:24px;line-height:1.6;">Si vous ne faites rien, les fonds seront libérés automatiquement à Jean Martin dans 2 heures.</div>
+    <div class="card" style="width:100%;text-align:left;margin-bottom:24px;">
+      <div class="tarif-row"><span class="tarif-lbl">Intervention</span><span class="tarif-val">Plomberie · NXT-4829</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Montant séquestre</span><span class="tarif-val">130,81 €</span></div>
+    </div>
+    <div style="font-size:15px;font-weight:800;margin-bottom:14px;">Tout s'est bien passé ?</div>
+    <button class="btn-primary" style="margin-bottom:10px;background:var(--ok);box-shadow:0 4px 16px rgba(34,197,94,.4);" onclick="go('s-avis')">✓ Oui · Valider et noter</button>
+    <button class="btn-secondary" style="color:var(--err);border-color:var(--err);" onclick="go('s-litige')">⚠️ Il y a un problème · Litige</button>
+  </div>
+</div>
+
+<!-- =================== AVIS =================== -->
+<div id="s-avis" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Votre avis</div></div>
+  <div class="scroll-body">
+    <div class="bs-row" style="margin-bottom:16px;">
+      <div class="avatar">JM</div>
+      <div><div style="font-size:15px;font-weight:800">Jean Martin</div><div style="font-size:12px;color:var(--muted)">Plomberie · NXT-4829</div></div>
+    </div>
+    <div class="card">
+      <div class="rating-row"><span class="rating-lbl">Ponctualité</span><div class="star-btns" id="r0"><button class="star-btn on" onclick="rate(0,1)">★</button><button class="star-btn on" onclick="rate(0,2)">★</button><button class="star-btn on" onclick="rate(0,3)">★</button><button class="star-btn on" onclick="rate(0,4)">★</button><button class="star-btn on" onclick="rate(0,5)">★</button></div></div>
+      <div class="rating-row"><span class="rating-lbl">Qualité</span><div class="star-btns" id="r1"><button class="star-btn on" onclick="rate(1,1)">★</button><button class="star-btn on" onclick="rate(1,2)">★</button><button class="star-btn on" onclick="rate(1,3)">★</button><button class="star-btn on" onclick="rate(1,4)">★</button><button class="star-btn on" onclick="rate(1,5)">★</button></div></div>
+      <div class="rating-row"><span class="rating-lbl">Propreté</span><div class="star-btns" id="r2"><button class="star-btn on" onclick="rate(2,1)">★</button><button class="star-btn on" onclick="rate(2,2)">★</button><button class="star-btn on" onclick="rate(2,3)">★</button><button class="star-btn on" onclick="rate(2,4)">★</button><button class="star-btn" onclick="rate(2,5)">★</button></div></div>
+      <div class="rating-row"><span class="rating-lbl">Communication</span><div class="star-btns" id="r3"><button class="star-btn on" onclick="rate(3,1)">★</button><button class="star-btn on" onclick="rate(3,2)">★</button><button class="star-btn on" onclick="rate(3,3)">★</button><button class="star-btn on" onclick="rate(3,4)">★</button><button class="star-btn on" onclick="rate(3,5)">★</button></div></div>
+    </div>
+    <div style="font-size:13px;font-weight:900;color:var(--muted-d);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px;">Tags</div>
+    <div class="tag-grid">
+      <div class="tag on" onclick="this.classList.toggle('on')">Très pro</div>
+      <div class="tag on" onclick="this.classList.toggle('on')">Rapide</div>
+      <div class="tag" onclick="this.classList.toggle('on')">À recommander</div>
+      <div class="tag" onclick="this.classList.toggle('on')">Soigné</div>
+      <div class="tag" onclick="this.classList.toggle('on')">Ponctuel</div>
+      <div class="tag" onclick="this.classList.toggle('on')">Bon rapport qualité/prix</div>
+    </div>
+    <div class="field-wrap" style="margin-top:12px;"><div class="field-label">Commentaire (optionnel)</div><textarea class="field-input" rows="3" placeholder="Dites-nous comment s'est passée l'intervention…" style="resize:none;height:80px"></textarea></div>
+    <button class="btn-primary" onclick="go('s-fonds')">Publier l'avis ⭐</button>
+  </div>
+</div>
+
+<!-- =================== FONDS LIBÉRÉS =================== -->
+<div id="s-fonds" class="screen">
+  <div class="scroll-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding-top:40px;text-align:center;">
+    <div style="width:100px;height:100px;background:var(--ok-l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:24px;">💶</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:24px;margin-bottom:8px;color:var(--ok)">Paiement libéré !</div>
+    <div style="font-size:14px;color:var(--muted-d);margin-bottom:28px;">Jean Martin recevra son virement sous 48h</div>
+    <div class="card" style="width:100%;text-align:left;">
+      <div class="tarif-row"><span class="tarif-lbl">Intervention</span><span class="tarif-val">127,00 €</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Frais Nexto</span><span class="tarif-val">3,81 €</span></div>
+      <div class="tarif-row"><span style="font-weight:800">Total payé</span><span style="font-weight:800;font-size:16px;">130,81 €</span></div>
+    </div>
+    <button class="btn-primary" style="margin-top:20px;width:100%" onclick="showToast('Facture téléchargée 📄')">Télécharger la facture</button>
+    <button class="btn-secondary" style="margin-top:10px;width:100%" onclick="go('s-map')">Retour à la carte</button>
+  </div>
+</div>
+
+<!-- =================== LITIGE =================== -->
+<div id="s-litige" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Ouvrir un litige</div></div>
+  <div class="scroll-body">
+    <div style="background:var(--err-l);border-radius:var(--rm);padding:12px;color:#B91C1C;font-size:13px;margin-bottom:14px;">⚠️ Les fonds seront gelés pendant l'analyse · Réponse sous 24-48h</div>
+    <div class="field-wrap"><div class="field-label">Description du problème</div><textarea class="field-input" rows="4" placeholder="Décrivez ce qui ne s'est pas passé comme prévu…" style="resize:none;height:100px"></textarea></div>
+    <div class="field-wrap">
+      <div class="field-label">Photos justificatives</div>
+      <div class="photo-area">
+        <div class="photo-slot" onclick="showToast('📸 Photo ajoutée')">📷</div>
+        <div class="photo-slot" onclick="showToast('📸 Photo ajoutée')">🖼️</div>
+      </div>
+    </div>
+    <button class="btn-primary" style="background:var(--err);box-shadow:0 4px 16px rgba(239,68,68,.3);" onclick="showToast('Litige soumis · Nexto vous contactera sous 24h')">Soumettre à Nexto →</button>
+  </div>
+</div>
+
+<!-- =================== FAVORIS =================== -->
+<div id="s-fav" class="screen">
+  <div class="topbar"><div class="topbar-title">❤️ Mes favoris</div></div>
+  <div class="scroll-body pad-nb">
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="showPro('Sophie M.','Aide ménagère','SM','0.4 km','4.9','84','18 €/h','Ménage, repassage');go('s-fiche')">
+      <div class="avatar">SM</div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:800">Sophie M.</div><div style="font-size:12px;color:var(--muted)">Aide ménagère · ★ 4.9 · 0.4 km</div><span class="badge ok" style="margin-top:4px;display:inline-block">Disponible</span></div>
+      <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="event.stopPropagation();go('s-dem1')">Demander</button>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="showPro('Jean Martin','Plombier','JM','0.9 km','4.8','127','45 €/h','Plomberie');go('s-fiche')">
+      <div class="avatar">JM</div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:800">Jean Martin</div><div style="font-size:12px;color:var(--muted)">Plombier · ★ 4.8 · 0.9 km</div><span class="badge purple" style="margin-top:4px;display:inline-block">RC Pro</span></div>
+      <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="event.stopPropagation();go('s-dem1')">Demander</button>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="showPro('Amina K.','Baby-sitter','AK','1.1 km','5.0','42','15 €/h','Garde enfants');go('s-fiche')">
+      <div class="avatar" style="background:#DCFCE7;color:#15803D">AK</div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:800">Amina K.</div><div style="font-size:12px;color:var(--muted)">Baby-sitter · ★ 5.0 · 1.1 km</div><span class="badge ok" style="margin-top:4px;display:inline-block">✓ Vérifiée</span></div>
+      <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="event.stopPropagation();go('s-dem1')">Demander</button>
+    </div>
+  </div>
+  <nav class="bottom-nav" style="position:absolute;bottom:0;left:0;right:0;">
+    <button class="bn-item" onclick="go('s-map')"><div class="bn-icon">🗺️</div>Carte</button>
+    <button class="bn-item active"><div class="bn-icon">❤️</div>Favoris</button>
+    <button class="bn-ping" onclick="go('s-ping')">📡</button>
+    <button class="bn-item" onclick="go('s-cours')"><div class="bn-icon">🔄</div>En cours</button>
+    <button class="bn-item" onclick="go('s-moi')"><div class="bn-icon">👤</div>Moi</button>
+  </nav>
+</div>
+
+<!-- =================== PING =================== -->
+<div id="s-ping" class="screen">
+  <div style="background:var(--navy);padding:16px 20px 20px;flex-shrink:0;">
+    <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--white);margin-bottom:4px;">📡 Ping !</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);">Trouve un pro disponible maintenant</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;" id="ping-scroll">
+    <div id="ping-form">
+      <div style="padding:16px 16px 8px;">
+        <div class="field-label" style="margin-bottom:10px;">Service recherché</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="cat-grid">
+          <div class="cat-card on" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">🔧</div><div style="font-size:11px;font-weight:800;">Plombier</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">⚡</div><div style="font-size:11px;font-weight:800;">Électricien</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">🔑</div><div style="font-size:11px;font-weight:800;">Serrurier</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">🧹</div><div style="font-size:11px;font-weight:800;">Ménage</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">🍼</div><div style="font-size:11px;font-weight:800;">Baby-sitter</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">🌿</div><div style="font-size:11px;font-weight:800;">Jardinier</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">📦</div><div style="font-size:11px;font-weight:800;">Manutention</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">🔨</div><div style="font-size:11px;font-weight:800;">Bricolage</div></div>
+          <div class="cat-card" onclick="selCat(this)"><div style="font-size:22px;margin-bottom:4px;">🐾</div><div style="font-size:11px;font-weight:800;">Pet-sitting</div></div>
+        </div>
+      </div>
+      <div style="padding:8px 16px 4px;">
+        <div class="field-label" style="margin-bottom:10px;">Rayon de recherche</div>
+        <div style="display:flex;gap:8px;" id="radius-btns">
+          <div class="chip" onclick="selRadius(this)">2 km</div>
+          <div class="chip on" onclick="selRadius(this)">5 km</div>
+          <div class="chip" onclick="selRadius(this)">10 km</div>
+          <div class="chip" onclick="selRadius(this)">20 km</div>
+        </div>
+      </div>
+      <div style="padding:14px 16px;">
+        <button class="btn-primary" onclick="launchPing()">📡 Envoyer le Ping</button>
+        <button class="btn-secondary" style="margin-top:10px" onclick="go('s-map')">← Retour à la carte</button>
+      </div>
+    </div>
+    <div id="ping-anim" style="display:none;padding:32px;text-align:center;">
+      <div class="ping-wave">📡</div>
+      <div style="font-size:14px;font-weight:700;color:var(--muted)" id="ping-txt">Recherche en cours…</div>
+    </div>
+    <div id="ping-results" style="display:none;padding:0 0 80px;">
+      <div style="padding:10px 16px;font-size:13px;font-weight:800;color:var(--muted)">3 pros trouvés autour de vous</div>
+      <div class="card" style="margin:0 12px 10px;display:flex;gap:12px;align-items:center;cursor:pointer" onclick="showPro('Sophie M.','Aide ménagère','SM','0.4 km','4.9','84','18 €/h','Ménage');go('s-fiche')">
+        <div class="avatar" style="font-size:15px">SM</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:800">Sophie M.</div><div style="font-size:12px;color:var(--muted)">Aide ménagère · ★ 4.9 · 0.4 km</div><div style="font-size:13px;font-weight:800;color:var(--accent)">18 €/h · Dépl. 0 €</div></div>
+        <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="event.stopPropagation();go('s-dem1')">Voir →</button>
+      </div>
+      <div class="card" style="margin:0 12px 10px;display:flex;gap:12px;align-items:center;cursor:pointer" onclick="showPro('Amina K.','Ménage & repassage','AK','0.8 km','4.8','61','16 €/h','Ménage');go('s-fiche')">
+        <div class="avatar" style="font-size:15px;background:#DCFCE7;color:#15803D">AK</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:800">Amina K.</div><div style="font-size:12px;color:var(--muted)">Ménage & repassage · ★ 4.8 · 0.8 km</div><div style="font-size:13px;font-weight:800;color:var(--accent)">16 €/h · Dépl. 5 €</div></div>
+        <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="event.stopPropagation();go('s-dem1')">Voir →</button>
+      </div>
+      <div class="card" style="margin:0 12px 10px;display:flex;gap:12px;align-items:center;cursor:pointer" onclick="showPro('Marc T.','Multi-services','MT','1.3 km','4.7','38','20 €/h','Multi-services');go('s-fiche')">
+        <div class="avatar" style="font-size:15px;background:#FFF7ED;color:#C2410C">MT</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:800">Marc T.</div><div style="font-size:12px;color:var(--muted)">Multi-services · ★ 4.7 · 1.3 km</div><div style="font-size:13px;font-weight:800;color:var(--accent)">20 €/h · Dépl. 10 €</div></div>
+        <button class="btn-primary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="event.stopPropagation();go('s-dem1')">Voir →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== EN COURS =================== -->
+<div id="s-cours" class="screen">
+  <div class="topbar"><div class="topbar-title">🔄 En cours</div></div>
+  <div class="scroll-body pad-nb">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px var(--ok-l);flex-shrink:0;"></div>
+        <div><div style="font-size:15px;font-weight:800;">Plomberie — Fuite cuisine</div><div style="font-size:12px;color:var(--muted);">Jean Martin · Réf. NXT-4829</div></div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:60%"></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px;">
+        <div class="step-li done-t"><div class="step-dot done"></div>Devis accepté · 127 €</div>
+        <div class="step-li done-t"><div class="step-dot done"></div>Paiement séquestre confirmé</div>
+        <div class="step-li cur-t"><div class="step-dot cur"></div>Jean Martin en route — 7 min</div>
+        <div class="step-li"><div class="step-dot todo"></div>Validation QR arrivée</div>
+        <div class="step-li"><div class="step-dot todo"></div>Fin de travaux + note</div>
+      </div>
+      <div class="gps-mini">
+        <div class="gps-mini-map"></div>
+        <div class="gps-lbl">🚗 Jean Martin · <span class="gps-eta">ETA 7 min</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn-secondary" style="flex:1" onclick="go('s-conv')">💬 Chat</button>
+        <button class="btn-primary" style="flex:1" onclick="go('s-qr-arrive')">📱 QR code</button>
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav" style="position:absolute;bottom:0;left:0;right:0;">
+    <button class="bn-item" onclick="go('s-map')"><div class="bn-icon">🗺️</div>Carte</button>
+    <button class="bn-item" onclick="go('s-fav')"><div class="bn-icon">❤️</div>Favoris</button>
+    <button class="bn-ping" onclick="go('s-ping')">📡</button>
+    <button class="bn-item active"><div class="bn-icon">🔄</div>En cours</button>
+    <button class="bn-item" onclick="go('s-moi')"><div class="bn-icon">👤</div>Moi</button>
+  </nav>
+</div>
+
+<!-- =================== MOI (profil) =================== -->
+<div id="s-moi" class="screen">
+  <div class="topbar"><div class="topbar-title">Mon profil</div></div>
+  <div class="scroll-body pad-nb">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:20px 0 24px;">
+      <div class="avatar" style="width:72px;height:72px;font-size:26px;margin-bottom:10px;">SL</div>
+      <div style="font-size:18px;font-weight:800;">Sophie Laurent</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:3px;">sophie@gmail.com</div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:10px;">Mon compte</div>
+      <div class="tarif-row" style="cursor:pointer" onclick="showToast('Modifier le profil')"><span>Mes informations</span><span style="color:var(--muted)">›</span></div>
+      <div class="tarif-row" style="cursor:pointer" onclick="showToast('Moyen de paiement')"><span>Paiement</span><span style="color:var(--muted)">›</span></div>
+      <div class="tarif-row" style="cursor:pointer" onclick="showToast('Notifications')"><span>Notifications</span><span style="color:var(--muted)">›</span></div>
+      <div class="tarif-row" style="cursor:pointer" onclick="go('s-pro-insc1')"><span>Mes statuts professionnels</span><span class="badge purple">Modifier</span></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:10px;">Mon activité</div>
+      <div class="tarif-row" style="cursor:pointer" onclick="go('s-cours')"><span>En cours</span><span class="badge ok">1</span></div>
+      <div class="tarif-row" style="cursor:pointer" onclick="showToast('Historique')"><span>Historique</span><span style="color:var(--muted)">›</span></div>
+    </div>
+    <button class="btn-primary" style="background:linear-gradient(135deg,var(--accent),var(--warn));box-shadow:0 4px 20px rgba(124,92,252,.3);" onclick="switchMode()">🔧 Passer en mode Pro</button>
+    <button class="btn-secondary" style="margin-top:10px;" onclick="go('s-onboard')">Se déconnecter</button>
+  </div>
+  <nav class="bottom-nav" style="position:absolute;bottom:0;left:0;right:0;">
+    <button class="bn-item" onclick="go('s-map')"><div class="bn-icon">🗺️</div>Carte</button>
+    <button class="bn-item" onclick="go('s-fav')"><div class="bn-icon">❤️</div>Favoris</button>
+    <button class="bn-ping" onclick="go('s-ping')">📡</button>
+    <button class="bn-item" onclick="go('s-cours')"><div class="bn-icon">🔄</div>En cours</button>
+    <button class="bn-item active"><div class="bn-icon">👤</div>Moi</button>
+  </nav>
+</div>
+
+<!-- =================== INSCRIPTION PRO 1 — STATUT JURIDIQUE =================== -->
+<div id="s-pro-insc1" class="screen">
+  <div class="insc-header" style="background:var(--navy);">
+    <div class="insc-logo">Nexto Pro</div>
+    <div class="insc-sub">Votre statut professionnel</div>
+    <div class="insc-step">Étape 1 sur 5 — Statut juridique</div>
+    <div class="insc-prog"><div class="insc-prog-dot on"></div><div class="insc-prog-dot"></div><div class="insc-prog-dot"></div><div class="insc-prog-dot"></div><div class="insc-prog-dot"></div></div>
+  </div>
+  <div class="scroll-body">
+    <div style="background:var(--accent-l);border-radius:var(--rm);padding:10px 14px;font-size:12px;color:var(--accent-d);margin-bottom:14px;">
+      💡 Vous pouvez sélectionner <strong>un ou plusieurs statuts</strong>. Vous pourrez en changer ou en ajouter à tout moment depuis votre profil.
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Statut(s) juridique(s)</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px;" id="statut-grid">
+        <div class="chip on" onclick="toggleStatut(this,'auto')" style="text-align:center">🧾 Auto-entrepreneur</div>
+        <div class="chip" onclick="toggleStatut(this,'ei')" style="text-align:center">👤 Entreprise individuelle</div>
+        <div class="chip" onclick="toggleStatut(this,'eurl')" style="text-align:center">🏢 EURL</div>
+        <div class="chip" onclick="toggleStatut(this,'sarl')" style="text-align:center">🏢 SARL</div>
+        <div class="chip" onclick="toggleStatut(this,'sas')" style="text-align:center">🏢 SAS</div>
+        <div class="chip" onclick="toggleStatut(this,'sasu')" style="text-align:center">🏢 SASU</div>
+        <div class="chip" onclick="toggleStatut(this,'sa')" style="text-align:center">🏢 SA</div>
+        <div class="chip" onclick="toggleStatut(this,'artisan')" style="text-align:center">🔧 Artisan</div>
+        <div class="chip" onclick="toggleStatut(this,'cesu')" style="text-align:center">🏠 CESU</div>
+        <div class="chip" onclick="toggleStatut(this,'particulier')" style="text-align:center">👥 Particulier employeur</div>
+      </div>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Régime de TVA</div>
+      <select class="field-input" id="tva-regime">
+        <option value="franchise">Franchise en base (art. 293 B) — pas de TVA</option>
+        <option value="reel_simplifie">Réel simplifié</option>
+        <option value="reel_normal">Réel normal</option>
+        <option value="non_assujetti">Non assujetti (CESU / particulier)</option>
+      </select>
+    </div>
+    <div class="field-wrap"><div class="field-label">SIRET</div><input class="field-input" type="text" placeholder="123 456 789 00012" value="847 293 018 00024"><div style="font-size:11px;color:var(--ok);margin-top:4px;">✓ SIRET vérifié · Jean Martin Plomberie</div></div>
+    <div class="field-wrap"><div class="field-label">Raison sociale / Nom commercial</div><input class="field-input" type="text" value="Jean Martin Plomberie"></div>
+    <button class="btn-primary" style="background:var(--navy);" onclick="go('s-pro-insc1b')">Continuer · Services →</button>
+    <button class="btn-secondary" style="margin-top:10px;" onclick="go('s-moi')">← Annuler</button>
+  </div>
+</div>
+
+<!-- =================== INSCRIPTION PRO 1b — SERVICES & ZONE =================== -->
+<div id="s-pro-insc1b" class="screen">
+  <div class="insc-header" style="background:var(--navy);">
+    <div class="insc-logo">Nexto Pro</div>
+    <div class="insc-sub">Vos services</div>
+    <div class="insc-step">Étape 2 sur 5 — Activité</div>
+    <div class="insc-prog"><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot"></div><div class="insc-prog-dot"></div><div class="insc-prog-dot"></div></div>
+  </div>
+  <div class="scroll-body">
+    <div class="field-wrap">
+      <div class="field-label">Services proposés</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px;">
+        <div class="chip on" onclick="this.classList.toggle('on')" style="text-align:center">🔧 Plomberie</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">⚡ Électricité</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">🔑 Serrurerie</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">🧹 Ménage</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">🍼 Baby-sitting</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">🌿 Jardinage</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">📦 Manutention</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">🔨 Bricolage</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">🎨 Peinture</div>
+        <div class="chip" onclick="this.classList.toggle('on')" style="text-align:center">🔥 Chauffage</div>
+      </div>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Zone d'intervention</div>
+      <select class="field-input">
+        <option>5 km</option><option selected>10 km</option><option>20 km</option><option>50 km</option>
+      </select>
+    </div>
+    <button class="btn-primary" style="background:var(--navy);" onclick="go('s-pro-insc2')">Continuer · Documents →</button>
+    <button class="btn-secondary" style="margin-top:10px;" onclick="back()">← Retour</button>
+  </div>
+</div>
+
+<!-- =================== INSCRIPTION PRO 2 — DOCUMENTS =================== -->
+<div id="s-pro-insc2" class="screen">
+  <div class="insc-header" style="background:var(--navy);">
+    <div class="insc-logo">Nexto Pro</div>
+    <div class="insc-sub">Documents professionnels</div>
+    <div class="insc-step">Étape 3 sur 5 — Documents</div>
+    <div class="insc-prog"><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot"></div><div class="insc-prog-dot"></div></div>
+  </div>
+  <div class="scroll-body">
+    <div style="background:var(--accent-l);border-radius:var(--rm);padding:10px 14px;font-size:12px;color:var(--accent-d);margin-bottom:14px;">
+      📎 Documents adaptés à votre statut. Chiffrés, accessibles uniquement à l'équipe Nexto pour validation.
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;" onclick="showToast('📷 Upload Pièce identité…')">
+      <div style="font-size:28px">🪪</div>
+      <div style="flex:1"><div style="font-weight:800">Pièce d'identité</div><div style="font-size:12px;color:var(--muted)">CNI ou passeport en cours de validité</div></div>
+      <span class="badge err">Requis</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;" onclick="showToast('📷 Upload Kbis…')">
+      <div style="font-size:28px">📄</div>
+      <div style="flex:1"><div style="font-weight:800">Extrait Kbis</div><div style="font-size:12px;color:var(--muted)">Moins de 3 mois (SARL, SAS, SASU, EURL, SA)</div></div>
+      <span class="badge warn">Selon statut</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;" onclick="showToast('📷 Upload SIRET…')">
+      <div style="font-size:28px">📋</div>
+      <div style="flex:1"><div style="font-weight:800">Certificat SIRET / INSEE</div><div style="font-size:12px;color:var(--muted)">Auto-entrepreneur, EI</div></div>
+      <span class="badge warn">Selon statut</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;" onclick="showToast('📷 Upload RC Pro…')">
+      <div style="font-size:28px">🛡️</div>
+      <div style="flex:1"><div style="font-weight:800">RC Professionnelle</div><div style="font-size:12px;color:var(--muted)">Assurance responsabilité civile pro</div></div>
+      <span class="badge err">Requis</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;" onclick="showToast('📷 Upload Décennale…')">
+      <div style="font-size:28px">🏗️</div>
+      <div style="flex:1"><div style="font-weight:800">Garantie décennale</div><div style="font-size:12px;color:var(--muted)">Obligatoire BTP (plomberie, électricité, maçonnerie)</div></div>
+      <span class="badge warn">Selon métier</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;" onclick="showToast('📷 Upload URSSAF…')">
+      <div style="font-size:28px">📑</div>
+      <div style="flex:1"><div style="font-weight:800">Attestation URSSAF</div><div style="font-size:12px;color:var(--muted)">Attestation de vigilance à jour</div></div>
+      <span class="badge warn">Recommandé</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:10px;" onclick="showToast('📷 Upload RIB…')">
+      <div style="font-size:28px">🏦</div>
+      <div style="flex:1"><div style="font-weight:800">RIB / IBAN</div><div style="font-size:12px;color:var(--muted)">Pour recevoir les virements</div></div>
+      <span class="badge err">Requis</span>
+    </div>
+    <button class="btn-primary" style="background:var(--navy);margin-top:6px;" onclick="go('s-pro-insc3')">Continuer · Paiement →</button>
+    <button class="btn-secondary" style="margin-top:10px;" onclick="back()">← Retour</button>
+  </div>
+</div>
+
+<!-- =================== INSCRIPTION PRO 3 =================== -->
+<div id="s-pro-insc3" class="screen">
+  <div class="insc-header" style="background:var(--navy);">
+    <div class="insc-logo">Nexto Pro</div>
+    <div class="insc-sub">Coordonnées bancaires</div>
+    <div class="insc-step">Étape 4 sur 5 — Paiement</div>
+    <div class="insc-prog"><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot"></div></div>
+  </div>
+  <div class="scroll-body">
+    <div class="field-wrap"><div class="field-label">IBAN</div><input class="field-input" type="text" placeholder="FR76 3000 6000 0112 3456 7890 189"></div>
+    <div class="field-wrap"><div class="field-label">BIC / SWIFT</div><input class="field-input" type="text" placeholder="BNPAFRPP"></div>
+    <div style="background:var(--ok-l);border-radius:var(--rm);padding:12px;font-size:12px;color:#14532D;margin-bottom:16px;">
+      💶 Vos virements SEPA arrivent sous 48h après chaque intervention validée. Géré par Stripe Connect.
+    </div>
+    <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:12px;">Abonnement</div>
+    <div class="card" style="border:2px solid var(--accent);margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800">Gratuit</div><span class="badge ok">Sélectionné</span></div>
+      <div style="font-size:12px;color:var(--muted-d);margin-top:4px;">Commission Nexto uniquement · 0 € / mois</div>
+    </div>
+    <div class="card" style="cursor:pointer;margin-bottom:10px;" onclick="showToast('Abonnement Premium — bientôt')">
+      <div style="display:flex;justify-content:space-between;"><div style="font-weight:800">Pro Premium</div><div style="font-weight:800;color:var(--accent)">29 €/mois</div></div>
+      <div style="font-size:12px;color:var(--muted-d);margin-top:4px;">Commission réduite + priorité dans les résultats</div>
+    </div>
+    <button class="btn-primary" style="background:var(--navy);" onclick="go('s-pro-insc4')">Continuer · Profil public →</button>
+    <button class="btn-secondary" style="margin-top:10px;" onclick="back()">← Retour</button>
+  </div>
+</div>
+
+<!-- =================== INSCRIPTION PRO 4 =================== -->
+<div id="s-pro-insc4" class="screen">
+  <div class="insc-header" style="background:var(--navy);">
+    <div class="insc-logo">Nexto Pro</div>
+    <div class="insc-sub">Votre profil public</div>
+    <div class="insc-step">Étape 5 sur 5 — Profil</div>
+    <div class="insc-prog"><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div><div class="insc-prog-dot on"></div></div>
+  </div>
+  <div class="scroll-body">
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:20px;">
+      <div class="avatar" style="width:72px;height:72px;font-size:26px;margin-bottom:10px;cursor:pointer" onclick="showToast('Changer la photo de profil')">JM</div>
+      <button onclick="showToast('📷 Upload photo')" style="background:none;border:none;color:var(--accent);font-size:13px;font-weight:800;cursor:pointer;">Ajouter une photo</button>
+    </div>
+    <div class="field-wrap"><div class="field-label">Bio (160 caractères max)</div><textarea class="field-input" rows="3" maxlength="160" style="resize:none;height:75px">Plombier professionnel depuis 12 ans. Urgences 7j/7. RC Pro et décennale.</textarea></div>
+    <div style="display:flex;gap:10px;">
+      <div class="field-wrap" style="flex:1"><div class="field-label">Tarif horaire</div><input class="field-input" type="number" value="45"></div>
+      <div class="field-wrap" style="flex:1"><div class="field-label">Déplacement</div><input class="field-input" type="number" value="15"></div>
+    </div>
+    <div class="field-wrap">
+      <div class="field-label">Photos de réalisations</div>
+      <div class="photo-area">
+        <div class="photo-slot filled" onclick="showToast('Photo 1')">✓</div>
+        <div class="photo-slot filled" onclick="showToast('Photo 2')">✓</div>
+        <div class="photo-slot" onclick="showToast('Ajouter une photo')">📷</div>
+        <div class="photo-slot" onclick="showToast('Ajouter une photo')">📷</div>
+      </div>
+    </div>
+    <button class="btn-primary" style="background:var(--navy);" onclick="go('s-pro-attente')">Soumettre mon profil →</button>
+    <button class="btn-secondary" style="margin-top:10px;" onclick="back()">← Retour</button>
+  </div>
+</div>
+
+<!-- =================== PRO — ATTENTE VALIDATION =================== -->
+<div id="s-pro-attente" class="screen">
+  <div class="scroll-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding-top:40px;text-align:center;">
+    <div style="font-size:64px;margin-bottom:20px;">⏳</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:24px;margin-bottom:8px;">Profil soumis !</div>
+    <div style="font-size:14px;color:var(--muted-d);margin-bottom:24px;line-height:1.6;max-width:280px;">Notre équipe vérifie vos documents et activera votre profil sous <strong>24-48h</strong>. Vous recevrez une notification dès la validation.</div>
+    <div class="card" style="width:100%;text-align:left;margin-bottom:20px;">
+      <div class="tarif-row"><span>Documents</span><span class="badge warn">En cours de vérification</span></div>
+      <div class="tarif-row"><span>Profil public</span><span class="badge warn">En attente activation</span></div>
+    </div>
+    <button class="btn-primary" style="background:var(--navy);width:100%" onclick="go('s-pro-dash')">Accéder au dashboard →</button>
+  </div>
+</div>
+
+<!-- =================== MODE PRO — DASHBOARD =================== -->
+<div id="s-pro-dash" class="screen" style="padding-top:0;">
+  <div class="sb light" style="background:var(--navy);padding-top:calc(8px + env(safe-area-inset-top));">
+    <span style="font-family:'Fredoka One',cursive">9:41</span>
+    <div class="sb-icons"><span>📶</span><span>🔋</span></div>
+  </div>
+  <div class="pro-header">
+    <div class="pro-header-top">
+      <div>
+        <div class="pro-greeting">Bonjour 👋</div>
+        <div class="pro-name-big">Jean Martin</div>
+      </div>
+      <button class="dispo-pill" id="dispo-btn" onclick="toggleDispo()">
+        <div class="dispo-dot" id="dispo-dot"></div>
+        <span class="dispo-lbl" id="dispo-lbl">Disponible</span>
+      </button>
+    </div>
+    <div class="pro-tabs">
+      <button class="pro-tab on" id="ptab-dem" onclick="proTab('dem')">Demandes</button>
+      <button class="pro-tab" id="ptab-devis" onclick="proTab('devis')">Devis</button>
+      <button class="pro-tab" id="ptab-regl" onclick="proTab('regl')">Règlements</button>
+      <button class="pro-tab" id="ptab-msg" onclick="proTab('msg')">Messages</button>
+      <button class="pro-tab" id="ptab-map" onclick="proTab('map')">Map</button>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-v">247 €</div><div class="kpi-l">Aujourd'hui</div></div>
+    <div class="kpi"><div class="kpi-v">1 840 €</div><div class="kpi-l">Ce mois</div></div>
+    <div class="kpi"><div class="kpi-v">J+2</div><div class="kpi-l">Prochain vir.</div></div>
+  </div>
+  <!-- DEMANDES -->
+  <div class="pro-view on" id="pv-dem">
+    <div style="padding:10px 0 80px;">
+      <div class="card" style="margin:10px;border-left:3px solid var(--err);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span class="badge err">🔴 Urgent</span>
+          <span style="font-size:11px;color:var(--warn);font-weight:800;margin-left:auto;" id="timer-dem">⏱ 14:23</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+          <div class="avatar" style="width:38px;height:38px;font-size:14px;background:#DCFCE7;color:#15803D">MP</div>
+          <div><div style="font-size:14px;font-weight:800">Marie P.</div><div style="font-size:11px;color:var(--muted)">Plomberie · 2.3 km · ★ 4.8</div></div>
+        </div>
+        <div style="font-size:13px;color:var(--muted-d);margin-bottom:6px;line-height:1.4;">"Fuite sous l'évier depuis ce matin. J'ai coupé l'eau !"</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">📍 12 rue des Lilas, Grasse · Étage 2 · Code 4587B</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-secondary" style="flex:0.4;padding:10px 0;" onclick="showToast('Demande refusée')">Refuser</button>
+          <button class="btn-primary" style="flex:1;" onclick="go('s-pro-creer-devis')">📝 Faire un devis →</button>
+        </div>
+      </div>
+      <div class="card" style="margin:0 10px 10px;border-left:3px solid var(--warn);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span class="badge warn">🟠 Aujourd'hui</span>
+          <span style="font-size:11px;color:var(--warn);font-weight:800;margin-left:auto;">⏱ 08:41</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">
+          <div class="avatar" style="width:38px;height:38px;font-size:14px;">TC</div>
+          <div><div style="font-size:14px;font-weight:800">Thomas C.</div><div style="font-size:11px;color:var(--muted)">Plomberie · 4.1 km · ★ 4.6</div></div>
+        </div>
+        <div style="font-size:13px;color:var(--muted-d);margin-bottom:6px;line-height:1.4;">"Robinet qui goutte depuis 3 jours. Ce soir si possible."</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-secondary" style="flex:0.4;padding:10px 0;" onclick="showToast('Demande refusée')">Refuser</button>
+          <button class="btn-primary" style="flex:1;" onclick="go('s-pro-creer-devis')">📝 Faire un devis →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- DEVIS -->
+  <div class="pro-view" id="pv-devis">
+    <div style="padding:10px 0 80px;">
+      <div class="card" style="margin:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div><div style="font-size:14px;font-weight:800">Marie P. — Plomberie</div><div style="font-size:11px;color:var(--muted)">Envoyé il y a 5 min</div></div>
+          <span class="badge warn">En attente</span>
+        </div>
+        <div class="tarif-row"><span class="tarif-lbl">Main d'œuvre 2h</span><span class="tarif-val">90 €</span></div>
+        <div class="tarif-row"><span class="tarif-lbl">Déplacement</span><span class="tarif-val">15 €</span></div>
+        <div class="tarif-row"><span class="tarif-lbl">Matériel</span><span class="tarif-val">22 €</span></div>
+        <div style="background:var(--accent);border-radius:var(--rs);padding:8px 12px;display:flex;justify-content:space-between;color:var(--white);margin-top:8px;">
+          <span style="font-weight:800">Total TTC</span><span style="font-family:'Fredoka One',cursive;font-size:16px">127 €</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">Net reçu : <strong>112 €</strong></div>
+      </div>
+      <div class="card" style="margin:0 10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div><div style="font-size:14px;font-weight:800">Paul R. — Chauffe-eau</div><div style="font-size:11px;color:var(--muted)">Hier 16h30</div></div>
+          <span class="badge ok">✓ Accepté</span>
+        </div>
+        <div class="tarif-row"><span class="tarif-lbl">Remplacement chauffe-eau</span><span class="tarif-val">320 €</span></div>
+        <div class="tarif-row"><span class="tarif-lbl">Main d'œuvre 3h</span><span class="tarif-val">135 €</span></div>
+        <div style="background:var(--accent);border-radius:var(--rs);padding:8px 12px;display:flex;justify-content:space-between;color:var(--white);margin-top:8px;">
+          <span style="font-weight:800">Total TTC</span><span style="font-family:'Fredoka One',cursive;font-size:16px">455 €</span>
+        </div>
+        <button class="btn-primary" style="margin-top:10px;" onclick="go('s-pro-enroute')">🚗 Me mettre en route →</button>
+      </div>
+    </div>
+  </div>
+  <!-- RÈGLEMENTS -->
+  <div class="pro-view" id="pv-regl">
+    <div style="padding:10px 0 80px;">
+      <div class="card" style="margin:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar" style="font-size:14px">PR</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:800">Paul R. — Chauffe-eau</div>
+            <div style="font-size:11px;color:var(--muted)">Intervention du 9 mai</div>
+            <span class="badge ok" style="margin-top:4px;display:inline-block">✓ Paiement libéré</span>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">Virement SEPA J+2</div>
+          </div>
+          <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--ok)">+404 €</div>
+        </div>
+      </div>
+      <div class="card" style="margin:0 10px 10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar" style="font-size:14px;background:#DCFCE7;color:#15803D">MP</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:800">Marie P. — Plomberie</div>
+            <div style="font-size:11px;color:var(--muted)">En attente de validation client</div>
+            <span class="badge warn" style="margin-top:4px;display:inline-block">⏳ Séquestre</span>
+          </div>
+          <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--warn)">112 €</div>
+        </div>
+      </div>
+      <div style="background:var(--ok-l);border-radius:var(--rl);padding:14px;margin:0 10px;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:12px;color:#15803D;font-weight:800">Total ce mois</div><div style="font-family:'Fredoka One',cursive;font-size:26px;color:#14532D">1 840 €</div></div>
+        <div style="text-align:right;font-size:11px;color:#15803D"><div>12 interventions</div><div>Note moy. ★ 4.8</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- MESSAGES -->
+  <div class="pro-view" id="pv-msg">
+    <div style="padding:8px 0 80px;">
+      <div style="display:flex;gap:10px;padding:10px;background:var(--white);margin:0 10px 8px;border-radius:var(--rl);box-shadow:var(--shadow);cursor:pointer;" onclick="go('s-pro-chat')">
+        <div class="avatar" style="width:42px;height:42px;font-size:15px">MP</div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;"><span style="font-size:14px;font-weight:800">Marie P.</span><span style="font-size:11px;color:var(--muted)">14:32</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Parfait, j'attends votre devis !</div>
+        </div>
+        <div style="width:18px;height:18px;border-radius:50%;background:var(--accent);color:var(--white);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;">2</div>
+      </div>
+      <div style="display:flex;gap:10px;padding:10px;background:var(--white);margin:0 10px 8px;border-radius:var(--rl);box-shadow:var(--shadow);cursor:pointer;" onclick="go('s-pro-chat')">
+        <div class="avatar" style="width:42px;height:42px;font-size:15px;background:#DCFCE7;color:#15803D">PR</div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;"><span style="font-size:14px;font-weight:800">Paul R.</span><span style="font-size:11px;color:var(--muted)">Hier</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Super intervention, merci !</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- MAP PRO -->
+  <div class="pro-view" id="pv-map">
+    <div style="flex:1;position:relative;min-height:280px;background:#EAE6DF;overflow:hidden;">
+      <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 340" preserveAspectRatio="xMidYMid slice">
+        <rect width="400" height="340" fill="#EAE6DF"/>
+        <rect x="0" y="200" width="400" height="7" fill="#fff" opacity=".9" rx="1"/>
+        <rect x="138" y="0" width="10" height="340" fill="#fff" opacity=".9" rx="1"/>
+        <rect x="290" y="0" width="8" height="340" fill="#fff" opacity=".85" rx="1"/>
+        <rect x="0" y="110" width="400" height="6" fill="#fff" opacity=".75" rx="1"/>
+        <rect x="60" y="0" width="5" height="340" fill="#fff" opacity=".65" rx="1"/>
+        <rect x="200" y="0" width="5" height="340" fill="#fff" opacity=".65" rx="1"/>
+        <rect x="50" y="70" width="80" height="35" fill="#DDD8D0" rx="3"/>
+        <rect x="160" y="50" width="60" height="55" fill="#D8D3CB" rx="3"/>
+        <rect x="250" y="70" width="55" height="35" fill="#DDD8D0" rx="3"/>
+        <rect x="10" y="140" width="120" height="55" fill="#C8DFA0" rx="6"/>
+        <rect x="200" y="130" width="90" height="65" fill="#C8DFA0" rx="6"/>
+        <rect x="30" y="240" width="55" height="30" fill="#DDD8D0" rx="3"/>
+        <rect x="100" y="240" width="80" height="30" fill="#D8D3CB" rx="3"/>
+        <rect x="200" y="240" width="100" height="30" fill="#DDD8D0" rx="3"/>
+        <rect x="320" y="240" width="70" height="30" fill="#D8D3CB" rx="3"/>
+        <!-- Zone Ping -->
+        <circle cx="200" cy="170" r="90" fill="none" stroke="rgba(251,146,60,.4)" stroke-width="2" stroke-dasharray="8,6"/>
+        <circle cx="200" cy="170" r="90" fill="rgba(251,146,60,.04)"/>
+        <!-- Pro point -->
+        <circle cx="200" cy="170" r="10" fill="#FB923C" stroke="white" stroke-width="3"/>
+        <!-- Demandes -->
+        <circle cx="110" cy="90" r="8" fill="#EF4444" stroke="white" stroke-width="2"/>
+        <text x="110" y="94" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="bold">!</text>
+        <circle cx="310" cy="250" r="7" fill="#FB923C" stroke="white" stroke-width="2"/>
+        <text x="310" y="254" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="bold">!</text>
+      </svg>
+      <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:var(--warn);color:var(--white);padding:6px 16px;border-radius:100px;font-size:11px;font-weight:800;box-shadow:0 4px 12px rgba(251,146,60,.4);">📡 Ping actif · 5 km</div>
+      <div style="position:absolute;top:8px;left:8px;background:var(--err-l);border:1px solid var(--err);padding:4px 10px;border-radius:100px;font-size:11px;font-weight:800;color:var(--err);cursor:pointer" onclick="proTab('dem')">🔴 Marie P. · 2.3 km</div>
+      <div style="position:absolute;bottom:50px;right:8px;background:var(--warn-l);border:1px solid var(--warn);padding:4px 10px;border-radius:100px;font-size:11px;font-weight:800;color:#C2410C;cursor:pointer" onclick="proTab('dem')">🟠 Thomas C. · 4.1 km</div>
+    </div>
+    <div style="padding:10px;background:var(--white);">
+      <button class="btn-primary" style="background:var(--warn);box-shadow:0 4px 16px rgba(251,146,60,.4);" onclick="showToast('Ping désactivé')">Désactiver le Ping</button>
+    </div>
+  </div>
+  <!-- PRO BOTTOM NAV -->
+  <div class="pro-bottom-nav" style="position:absolute;bottom:0;left:0;right:0;">
+    <button class="pbn-item on" id="pbn-dem" onclick="proTab('dem')"><div class="pbn-icon">📩</div>Demandes</button>
+    <button class="pbn-item" id="pbn-devis" onclick="proTab('devis')"><div class="pbn-icon">📝</div>Devis</button>
+    <button class="pbn-qr" onclick="go('s-pro-qr')">📱</button>
+    <button class="pbn-item" id="pbn-regl" onclick="proTab('regl')"><div class="pbn-icon">💶</div>Règl.</button>
+    <button class="pbn-item" id="pbn-map" onclick="proTab('map')"><div class="pbn-icon">🗺️</div>Map</button>
+  </div>
+</div>
+
+<!-- =================== PRO — CRÉER DEVIS =================== -->
+<div id="s-pro-creer-devis" class="screen">
+  <div class="topbar" style="background:var(--navy);">
+    <button class="back-btn" style="background:rgba(255,255,255,.1);color:var(--white);" onclick="back()">←</button>
+    <div class="topbar-title" style="color:var(--white);">Créer un devis</div>
+  </div>
+  <div class="scroll-body" id="devis-body">
+    <div style="background:var(--navy);margin:-16px -16px 16px;padding:12px 16px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div class="avatar" style="width:36px;height:36px;font-size:13px;background:#DCFCE7;color:#15803D">MP</div>
+        <div><div style="font-size:13px;font-weight:800;color:var(--white)">Marie P. — Plomberie</div><div style="font-size:11px;color:rgba(255,255,255,.5)">Fuite sous l'évier · Urgent · 2.3 km</div></div>
+      </div>
+    </div>
+    <div id="devis-lines">
+      <div class="devis-line-row">
+        <div class="dl-lbl">Main d'œuvre 2h × 45€</div>
+        <div class="dl-price">90 €</div>
+        <button class="dl-del" onclick="removeDevisLine(0)">×</button>
+      </div>
+      <div class="devis-line-row">
+        <div class="dl-lbl">Déplacement</div>
+        <div class="dl-price">15 €</div>
+        <button class="dl-del" onclick="removeDevisLine(1)">×</button>
+      </div>
+      <div class="devis-line-row">
+        <div class="dl-lbl">Joint siphon + coude</div>
+        <div class="dl-price">22 €</div>
+        <button class="dl-del" onclick="removeDevisLine(2)">×</button>
+      </div>
+    </div>
+    <button onclick="addDevisLine()" style="width:100%;margin-top:10px;padding:10px;border:2px dashed var(--border);border-radius:var(--rm);background:none;color:var(--muted-d);font-size:13px;font-weight:800;cursor:pointer;">+ Ajouter une ligne</button>
+    <div class="devis-total-bar" style="margin-top:16px;">
+      <span class="dt-lbl">Total TTC</span>
+      <span class="dt-val" id="devis-total">127 €</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:right">Net reçu après commission : <strong>112 €</strong></div>
+    <div class="field-wrap" style="margin-top:14px;"><div class="field-label">Note pour le client</div><textarea class="field-input" rows="2" placeholder="Optionnel…" style="resize:none;height:60px"></textarea></div>
+    <button class="btn-primary" onclick="go('s-pro-dash');showToast('Devis envoyé à Marie P. 📩')">Envoyer le devis →</button>
+  </div>
+</div>
+
+<!-- =================== PRO — EN ROUTE =================== -->
+<div id="s-pro-enroute" class="screen" style="padding-top:0;">
+  <div class="sb light" style="background:var(--navy);padding-top:calc(8px + env(safe-area-inset-top));"><span style="font-family:'Fredoka One',cursive">9:41</span><div class="sb-icons"><span>📶</span><span>🔋</span></div></div>
+  <div style="background:var(--navy);padding:12px 16px 14px;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="back-btn" style="background:rgba(255,255,255,.1);color:var(--white);" onclick="back()">←</button>
+      <div><div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--white)">En route · Paul R.</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Chauffe-eau · 455 € · 18 av. des Fleurs, Grasse</div></div>
+    </div>
+  </div>
+  <div style="flex:1;position:relative;background:#2d5a3d;overflow:hidden;min-height:260px;">
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#3a7a52,#4a9a69)"></div>
+    <div style="position:absolute;bottom:12px;left:12px;right:12px;background:var(--white);border-radius:100px;padding:10px 16px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">🚗</span>
+      <div><div style="font-size:13px;font-weight:800">ETA <span style="color:var(--accent)" id="pro-eta">8 min</span></div><div style="font-size:11px;color:var(--muted)">18 av. des Fleurs, Grasse</div></div>
+      <button class="btn-primary" style="width:auto;padding:8px 16px;font-size:13px;margin-left:auto;" onclick="go('s-pro-qr')">Je suis arrivé 📱</button>
+    </div>
+  </div>
+  <div class="scroll-body" style="flex:0;padding:12px 16px 90px;">
+    <div style="display:flex;gap:8px;">
+      <button class="btn-secondary" style="flex:1" onclick="showToast('Appel en cours…')">📞 Appeler Paul</button>
+      <button class="btn-secondary" style="flex:1" onclick="go('s-pro-chat')">💬 Message</button>
+    </div>
+  </div>
+  <div class="pro-bottom-nav" style="position:absolute;bottom:0;left:0;right:0;">
+    <button class="pbn-item" onclick="proTab('dem');go('s-pro-dash')"><div class="pbn-icon">📩</div>Demandes</button>
+    <button class="pbn-item on"><div class="pbn-icon">🚗</div>En route</button>
+    <button class="pbn-qr" onclick="go('s-pro-qr')">📱</button>
+    <button class="pbn-item" onclick="proTab('regl');go('s-pro-dash')"><div class="pbn-icon">💶</div>Règl.</button>
+    <button class="pbn-item" onclick="proTab('map');go('s-pro-dash')"><div class="pbn-icon">🗺️</div>Map</button>
+  </div>
+</div>
+
+<!-- =================== PRO QR SCAN =================== -->
+<div id="s-pro-qr" class="screen" style="background:var(--navy);">
+  <div class="sb light" style="padding-top:calc(8px + env(safe-area-inset-top));"><span style="font-family:'Fredoka One',cursive">9:41</span><div class="sb-icons"><span>📶</span><span>🔋</span></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
+    <button onclick="back()" style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:16px;background:rgba(255,255,255,.1);border:none;color:var(--white);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;">←</button>
+    <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--white);margin-bottom:6px;">Scanne le QR du client</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:20px;">ou entre le code 6 chiffres</div>
+    <div class="qr-box"><div class="qr-grid" id="qr-pro"></div></div>
+    <div style="display:flex;gap:8px;width:100%;margin:16px 0;">
+      <input type="text" placeholder="Code 6 chiffres…" maxlength="6" style="flex:1;padding:12px;border-radius:var(--rm);border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:var(--white);font-size:18px;text-align:center;font-family:'Fredoka One',cursive;letter-spacing:4px;outline:none;" id="qr-code-input" oninput="checkCode(this.value)">
+      <button onclick="go('s-pro-intervention');showToast('Intervention démarrée ✓')" style="padding:12px 16px;background:var(--warn);color:var(--white);border:none;border-radius:var(--rm);font-weight:800;font-size:13px;cursor:pointer;">Valider</button>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.35)">Code partagé par le client · valable 30 min</div>
+  </div>
+</div>
+
+<!-- =================== PRO INTERVENTION =================== -->
+<div id="s-pro-intervention" class="screen">
+  <div class="topbar" style="background:var(--navy);">
+    <button class="back-btn" style="background:rgba(255,255,255,.1);color:var(--white);" onclick="back()">←</button>
+    <div class="topbar-title" style="color:var(--white);">Intervention en cours</div>
+    <div style="font-family:monospace;font-size:16px;font-weight:800;color:var(--warn);" id="inter-timer">00:00</div>
+  </div>
+  <div class="scroll-body" style="padding-bottom:90px;">
+    <div style="background:var(--navy);margin:-16px -16px 16px;padding:12px 16px;">
+      <div style="display:flex;align-items:center;gap:8px;color:var(--white);">
+        <div class="avatar" style="width:34px;height:34px;font-size:12px;">PR</div>
+        <div><div style="font-size:13px;font-weight:800">Paul R. — Chauffe-eau</div><div style="font-size:11px;color:rgba(255,255,255,.5)">18 av. des Fleurs, Grasse · 455 €</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-d);margin-bottom:10px;">Photos chantier</div>
+      <div style="font-size:12px;color:var(--ok);font-weight:800;margin-bottom:8px;">📍 Géolocalisation + horodatage automatique</div>
+      <div class="photo-area">
+        <div class="photo-slot filled" onclick="showToast('Photo AVANT enregistrée ✓')">📷 Avant</div>
+        <div class="photo-slot" onclick="showToast('📸 Photo prise et géolocalisée')">📷 +</div>
+        <div class="photo-slot" onclick="showToast('📸 Photo prise et géolocalisée')">📷 +</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:12px;">
+      <button class="btn-secondary" style="flex:1" onclick="go('s-pro-supp-devis')">📋 Devis supp.</button>
+      <button class="btn-secondary" style="flex:1" onclick="go('s-pro-chat')">💬 Chat client</button>
+    </div>
+    <button class="btn-primary" style="background:var(--ok);box-shadow:0 4px 16px rgba(34,197,94,.4);" onclick="go('s-pro-qr-fin')">🏁 Terminer l'intervention →</button>
+  </div>
+</div>
+
+<!-- =================== PRO QR FIN =================== -->
+<div id="s-pro-qr-fin" class="screen" style="background:var(--navy);">
+  <div class="sb light" style="padding-top:calc(8px + env(safe-area-inset-top));"><span style="font-family:'Fredoka One',cursive">9:41</span><div class="sb-icons"><span>📶</span><span>🔋</span></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
+    <button onclick="back()" style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:16px;background:rgba(255,255,255,.1);border:none;color:var(--white);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;">←</button>
+    <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--white);margin-bottom:6px;">🏁 Fin de travaux</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:20px;">Montre ce QR au client pour valider</div>
+    <div class="qr-box"><div class="qr-grid" id="qr-pro-fin"></div></div>
+    <div class="qr-code" style="font-size:22px;">7 3 5 1 0 8</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:24px">Le client confirme que tout est OK</div>
+    <button class="btn-primary" style="background:var(--ok);box-shadow:0 4px 16px rgba(34,197,94,.4);width:100%;" onclick="go('s-pro-pay-ok')">✓ Client a validé → Terminer</button>
+  </div>
+</div>
+
+<!-- =================== PRO DEVIS SUPP =================== -->
+<div id="s-pro-supp-devis" class="screen">
+  <div class="topbar" style="background:var(--navy);">
+    <button class="back-btn" style="background:rgba(255,255,255,.1);color:var(--white);" onclick="back()">←</button>
+    <div class="topbar-title" style="color:var(--white);">Devis supplémentaire</div>
+  </div>
+  <div class="scroll-body">
+    <div style="background:var(--warn-l);border-radius:var(--rm);padding:12px;color:#C2410C;font-size:13px;margin-bottom:14px;">
+      ⚠️ Problème découvert en cours de travaux. Le client devra valider et payer avant que vous continuez.
+    </div>
+    <div class="field-wrap"><div class="field-label">Description du problème supplémentaire</div><textarea class="field-input" rows="3" placeholder="Ex : Tuyau d'évacuation fissuré nécessitant remplacement…" style="resize:none;height:80px"></textarea></div>
+    <div class="field-wrap"><div class="field-label">Montant supplémentaire</div><input class="field-input" type="number" placeholder="0" value="85"></div>
+    <div class="photo-area" style="margin-bottom:14px;">
+      <div class="photo-slot" onclick="showToast('Photo du problème ajoutée')">📷</div>
+      <div class="photo-slot" onclick="showToast('Photo ajoutée')">📷</div>
+    </div>
+    <button class="btn-primary" onclick="back();showToast('Devis supp. envoyé · attente validation client')">Envoyer au client →</button>
+    <button class="btn-secondary" style="margin-top:10px" onclick="back()">Annuler</button>
+  </div>
+</div>
+
+<!-- =================== PRO PAIEMENT OK =================== -->
+<div id="s-pro-pay-ok" class="screen">
+  <div class="scroll-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding-top:40px;text-align:center;">
+    <div style="font-size:64px;margin-bottom:20px;">💶</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:24px;margin-bottom:8px;color:var(--ok)">Paiement libéré !</div>
+    <div style="font-size:14px;color:var(--muted-d);margin-bottom:28px;">Votre virement arrive sous 48h</div>
+    <div class="card" style="width:100%;text-align:left;margin-bottom:16px;">
+      <div class="tarif-row"><span>Paul R. — Chauffe-eau</span><span class="badge ok">✓ Validé</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Montant brut</span><span class="tarif-val">455 €</span></div>
+      <div class="tarif-row"><span class="tarif-lbl">Commission Nexto</span><span class="tarif-val">−51 €</span></div>
+      <div class="tarif-row"><span style="font-weight:800">Net reçu</span><span style="font-weight:800;font-size:16px;color:var(--ok)">404 €</span></div>
+    </div>
+    <div style="background:var(--ok-l);border-radius:var(--rm);padding:10px 14px;font-size:12px;color:#14532D;width:100%;margin-bottom:20px;">🏦 Virement SEPA J+2 · IBAN ••4291 · Réf. NXT-4829</div>
+    <button class="btn-primary" style="background:var(--navy);width:100%;" onclick="go('s-pro-dash')">Retour au dashboard →</button>
+  </div>
+</div>
+
+<!-- =================== PRO CHAT =================== -->
+<div id="s-pro-chat" class="screen">
+  <div class="topbar" style="background:var(--navy);">
+    <button class="back-btn" style="background:rgba(255,255,255,.1);color:var(--white);" onclick="back()">←</button>
+    <div style="display:flex;align-items:center;gap:8px;flex:1">
+      <div class="avatar" style="width:30px;height:30px;font-size:11px;">MP</div>
+      <div><div style="font-size:14px;font-weight:800;color:var(--white)">Marie P.</div><div style="font-size:10px;color:var(--ok)">● En ligne</div></div>
+    </div>
+  </div>
+  <div class="chat-messages">
+    <div><div class="msg from">Bonjour ! Fuite sous l'évier depuis ce matin. J'ai coupé l'eau !</div><div class="msg-time">13:55</div></div>
+    <div style="align-self:flex-end"><div class="msg to">Bonjour Marie ! Je regarde votre demande. Je peux être là dans 20 min.</div><div class="msg-to-time">13:58</div></div>
+    <div><div class="msg from">Parfait, j'attends votre devis !</div><div class="msg-time">14:02</div></div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="pro-chat-input" placeholder="Message…" onkeydown="if(event.key==='Enter')sendProMsg()">
+    <button class="chat-send" onclick="sendProMsg()">→</button>
+  </div>
+</div>
+
+<!-- =================== TOAST =================== -->
+<div id="toast"></div>
+
+<!-- =================== QR PATTERN CSS =================== -->
+<style>
+.cat-card{background:var(--muted-l);border-radius:var(--rm);padding:12px 8px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+.cat-card.on{background:var(--accent-l);border-color:var(--accent);}
+</style>
+
+<script>
+/* ============================================================
+   QR DATA
+   ============================================================ */
+const QR_DATA = [
+  1,1,1,1,1,1,1,0,1,0,0,
+  1,0,0,0,0,0,1,0,0,1,1,
+  1,0,1,1,1,0,1,0,1,0,1,
+  1,0,1,1,1,0,1,0,0,0,0,
+  1,0,1,1,1,0,1,0,1,1,0,
+  1,0,0,0,0,0,1,0,0,1,1,
+  1,1,1,1,1,1,1,0,1,0,1,
+  0,0,0,0,0,0,0,0,0,1,0,
+  1,1,0,1,1,0,1,0,1,0,0,
+  0,1,0,0,1,1,0,1,1,0,1,
+  1,0,1,0,0,1,1,0,0,1,0,
+];
+
+function buildQR(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.innerHTML='';
+  QR_DATA.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='qc';
+    d.style.background=c?'#1A1033':'#fff';
+    el.appendChild(d);
+  });
+}
+['qr1','qr2','qr-pro','qr-pro-fin'].forEach(buildQR);
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+let history=[];
+let currentScreen='s-onboard';
+
+function go(id){
+  const prev=document.getElementById(currentScreen);
+  const next=document.getElementById(id);
+  if(!next||currentScreen===id)return;
+  prev.classList.remove('active');
+  prev.classList.add('prev');
+  next.classList.add('active');
+  history.push(currentScreen);
+  currentScreen=id;
+  setTimeout(()=>prev.classList.remove('prev'),350);
+}
+
+function back(){
+  if(!history.length)return;
+  const prevId=history.pop();
+  const cur=document.getElementById(currentScreen);
+  const prev=document.getElementById(prevId);
+  cur.classList.remove('active');
+  cur.style.transform='translateX(100%)';
+  prev.classList.remove('prev');
+  prev.classList.add('active');
+  currentScreen=prevId;
+  setTimeout(()=>{cur.style.transform='';},350);
+}
+
+/* ============================================================
+   ONBOARDING
+   ============================================================ */
+const OB=[
+  {icon:'📍',title:'Et si ce que vous cherchez\nse trouvait juste à côté ?',sub:'Plombier, baby-sitter, aide ménagère, jardinage, manutention — des vraies personnes, autour de vous, disponibles maintenant.'},
+  {icon:'🔒',title:'Simple. Sécurisé. Déclaré.',sub:'Devis transparent, paiement en séquestre, avis vérifiés, pros assurés. Et vous aussi, proposez vos services en 2 clics.'},
+  {icon:'📲',title:'Ajoutez Nexto à votre écran d\'accueil',sub:'Safari : appuyez sur Partager → "Sur l\'écran d\'accueil". Chrome : ⋮ → "Ajouter à l\'écran d\'accueil".'},
+];
+let obIdx=0;
+
+function obNext(){
+  const btn=document.getElementById('ob-btn');
+  if(obIdx<OB.length-1){
+    obIdx++;
+    document.getElementById('ob-icon').textContent=OB[obIdx].icon;
+    document.getElementById('ob-title').textContent=OB[obIdx].title;
+    document.getElementById('ob-sub').textContent=OB[obIdx].sub;
+    document.querySelectorAll('.ob-dot').forEach((d,i)=>d.classList.toggle('on',i===obIdx));
+    if(obIdx===OB.length-1)btn.textContent="C'est parti !";
+  }else{
+    go('s-insc1');
+  }
+}
+
+/* ============================================================
+   PRO DATA (current shown pro in fiche)
+   ============================================================ */
+let currentPro={};
+
+/* ============================================================
+   STATUTS JURIDIQUES PRO (multi-sélection + changement)
+   ============================================================ */
+const STATUT_LABELS = {
+  auto:'Auto-entrepreneur', ei:'Entreprise individuelle', eurl:'EURL', sarl:'SARL',
+  sas:'SAS', sasu:'SASU', sa:'SA', artisan:'Artisan', cesu:'CESU', particulier:'Particulier employeur'
+};
+let proStatuts = ['auto'];
+function toggleStatut(el, code){
+  el.classList.toggle('on');
+  if(el.classList.contains('on')){
+    if(!proStatuts.includes(code)) proStatuts.push(code);
+  } else {
+    proStatuts = proStatuts.filter(s=>s!==code);
+  }
+  // Au moins un statut requis
+  if(proStatuts.length===0){ el.classList.add('on'); proStatuts.push(code); showToast('Au moins un statut requis'); }
+}
+function showPro(name,meta,av,dist,rating,count,rate,desc){
+  currentPro={name,meta,av,dist,rating,count,rate,desc:desc||meta};
+  document.getElementById('bs-av').textContent=av;
+  document.getElementById('bs-name').textContent=name;
+  document.getElementById('bs-meta').textContent=meta+' · '+dist+' · Disponible';
+  document.getElementById('bs-avis').textContent=rating+' · '+count+' avis';
+  document.getElementById('bs-rate').textContent=rate;
+  document.getElementById('bs').classList.add('open');
+  // Also fill fiche
+  document.getElementById('fiche-title').textContent=name;
+  document.getElementById('fiche-av').textContent=av;
+  document.getElementById('fiche-name').textContent=name;
+  document.getElementById('fiche-meta').textContent=meta+' · Grasse · Disponible';
+  document.getElementById('fiche-note').textContent=rating+' · '+count+' avis';
+  document.getElementById('fiche-rate').textContent=rate;
+  document.getElementById('fiche-desc').textContent=desc||meta;
+  document.getElementById('recap-pro').textContent=name;
+}
+
+function startDemande(){
+  document.getElementById('bs').classList.remove('open');
+  go('s-fiche');
+}
+
+// Close BS on map tap
+document.getElementById('s-map').addEventListener('click',function(e){
+  if(!e.target.closest('.map-pin')&&!e.target.closest('#bottomsheet'))
+    document.getElementById('bs').classList.remove('open');
+});
+
+/* ============================================================
+   MAP CHIPS
+   ============================================================ */
+function setChip(el){
+  document.querySelectorAll('#s-map .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ============================================================
+   PING
+   ============================================================ */
+function selCat(el){
+  document.querySelectorAll('#cat-grid .cat-card').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+function selRadius(el){
+  document.querySelectorAll('#radius-btns .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+function launchPing(){
+  document.getElementById('ping-form').style.display='none';
+  const anim=document.getElementById('ping-anim');
+  const res=document.getElementById('ping-results');
+  anim.style.display='block';
+  const msgs=['Recherche en cours…','Analyse de la zone…','3 pros disponibles !'];
+  let i=0;
+  const t=document.getElementById('ping-txt');
+  const iv=setInterval(()=>{
+    t.textContent=msgs[i++];
+    if(i>=msgs.length){
+      clearInterval(iv);
+      setTimeout(()=>{anim.style.display='none';res.style.display='block';},400);
+    }
+  },700);
+}
+
+/* ============================================================
+   MODE SWITCH CLIENT ↔ PRO
+   ============================================================ */
+function switchMode(){
+  const moi=document.getElementById('s-moi');
+  if(currentScreen==='s-moi'||currentScreen==='s-map'||currentScreen==='s-fav'||currentScreen==='s-cours'){
+    go('s-pro-insc1');
+  }else{
+    go('s-map');
+  }
+}
+
+/* ============================================================
+   NAVIGATION CLIENT
+   ============================================================ */
+function clientNav(tab){
+  const map={map:'s-map',fav:'s-fav',cours:'s-cours',moi:'s-moi'};
+  if(map[tab])go(map[tab]);
+}
+
+/* ============================================================
+   PRO TABS
+   ============================================================ */
+const proTabMap={dem:'pv-dem',devis:'pv-devis',regl:'pv-regl',msg:'pv-msg',map:'pv-map'};
+function proTab(tab){
+  Object.keys(proTabMap).forEach(k=>{
+    const pv=document.getElementById(proTabMap[k]);
+    if(pv){pv.classList.toggle('on',k===tab);}
+    const pt=document.getElementById('ptab-'+k);
+    const pb=document.getElementById('pbn-'+k==='map'?'map':k);
+    if(pt)pt.classList.toggle('on',k===tab);
+    if(pb)pb.classList.toggle('on',k===tab);
+  });
+  // handle map specially
+  const pvm=document.getElementById('pv-map');
+  if(tab==='map'&&pvm){pvm.style.display='block';pvm.classList.add('on');}
+}
+
+/* ============================================================
+   DISPO TOGGLE PRO
+   ============================================================ */
+let dispo=true;
+function toggleDispo(){
+  dispo=!dispo;
+  const dot=document.getElementById('dispo-dot');
+  const lbl=document.getElementById('dispo-lbl');
+  dot.style.background=dispo?'var(--ok)':'var(--muted)';
+  lbl.textContent=dispo?'Disponible':'Indisponible';
+  lbl.style.color=dispo?'var(--ok)':'rgba(255,255,255,.4)';
+  const pill=document.getElementById('dispo-btn');
+  pill.style.background=dispo?'rgba(34,197,94,.15)':'rgba(255,255,255,.05)';
+  showToast(dispo?'Vous êtes disponible':'Vous êtes indisponible');
+}
+
+/* ============================================================
+   TIMER DEMANDES
+   ============================================================ */
+let timerSecs=14*60+23;
+setInterval(()=>{
+  if(timerSecs>0)timerSecs--;
+  const m=String(Math.floor(timerSecs/60)).padStart(2,'0');
+  const s=String(timerSecs%60).padStart(2,'0');
+  const el=document.getElementById('timer-dem');
+  if(el)el.textContent='⏱ '+m+':'+s;
+},1000);
+
+/* ============================================================
+   TIMER INTERVENTION
+   ============================================================ */
+let interSecs=0;
+let interRunning=false;
+document.getElementById('s-pro-intervention').addEventListener('transitionend',()=>{
+  if(currentScreen==='s-pro-intervention'&&!interRunning){
+    interRunning=true;
+    setInterval(()=>{
+      interSecs++;
+      const m=String(Math.floor(interSecs/60)).padStart(2,'0');
+      const s=String(interSecs%60).padStart(2,'0');
+      const el=document.getElementById('inter-timer');
+      if(el)el.textContent=m+':'+s;
+    },1000);
+  }
+});
+
+/* ============================================================
+   URGENCY SELECT
+   ============================================================ */
+function setUrgency(el,val){
+  ['urg-1','urg-2','urg-3'].forEach(id=>document.getElementById(id)?.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ============================================================
+   CHAT CLIENT
+   ============================================================ */
+function sendMsg(){
+  const input=document.getElementById('conv-input');
+  const text=input.value.trim();
+  if(!text)return;
+  const msgs=document.getElementById('conv-msgs');
+  const d=document.createElement('div');
+  d.innerHTML='<div class="msg to">'+escHtml(text)+'</div><div class="msg-to-time">maintenant</div>';
+  msgs.appendChild(d);
+  msgs.scrollTop=msgs.scrollHeight;
+  input.value='';
+}
+
+function sendProMsg(){
+  const input=document.getElementById('pro-chat-input');
+  const text=input.value.trim();
+  if(!text)return;
+  showToast('Message envoyé');
+  input.value='';
+}
+
+function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ============================================================
+   OTP 3DS
+   ============================================================ */
+function otpNext(el,idx){
+  if(el.value.length===1){
+    const boxes=document.getElementById('otp-boxes').querySelectorAll('input');
+    if(idx<5)boxes[idx+1].focus();
+    if(idx===5){
+      setTimeout(()=>go('s-pay-ok'),400);
+    }
+  }
+}
+
+/* ============================================================
+   AVIS (stars)
+   ============================================================ */
+function rate(row,val){
+  const group=document.getElementById('r'+row);
+  group.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('on',i<val));
+}
+
+/* ============================================================
+   DEVIS LINES
+   ============================================================ */
+const devisData=[
+  {label:'Main d\'œuvre 2h × 45€',price:90},
+  {label:'Déplacement',price:15},
+  {label:'Joint siphon + coude',price:22},
+];
+
+function removeDevisLine(idx){
+  devisData.splice(idx,1);
+  renderDevis();
+}
+function addDevisLine(){
+  devisData.push({label:'Nouvelle ligne',price:0});
+  renderDevis();
+  showToast('Ligne ajoutée');
+}
+function renderDevis(){
+  const c=document.getElementById('devis-lines');
+  c.innerHTML=devisData.map((l,i)=>`
+    <div class="devis-line-row">
+      <div class="dl-lbl" contenteditable="true" style="flex:1;outline:none;min-width:0;font-size:13px;">${l.label}</div>
+      <input type="number" class="dl-price" value="${l.price}" style="width:60px;border:1px solid var(--border);border-radius:6px;text-align:right;font-size:13px;font-weight:800;padding:4px 6px;background:var(--muted-l);" oninput="updatePrice(${i},this.value)">
+      <button class="dl-del" onclick="removeDevisLine(${i})">×</button>
+    </div>
+  `).join('');
+  const total=devisData.reduce((s,l)=>s+Number(l.price||0),0);
+  document.getElementById('devis-total').textContent=total+' €';
+}
+function updatePrice(idx,val){
+  devisData[idx].price=Number(val)||0;
+  const total=devisData.reduce((s,l)=>s+Number(l.price||0),0);
+  document.getElementById('devis-total').textContent=total+' €';
+}
+
+/* ============================================================
+   QR CODE INPUT
+   ============================================================ */
+function checkCode(val){
+  if(val.length===6){
+    showToast('Code accepté ✓');
+    setTimeout(()=>go('s-pro-intervention'),600);
+  }
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+/* ============================================================
+   SERVICE WORKER
+   ============================================================ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
