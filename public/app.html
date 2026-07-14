@@ -674,6 +674,36 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
 .ag-d{font-size:12px;color:var(--muted-d);line-height:1.5;}
 .ag-view{display:none;}
 .ag-view.on{display:block;}
+
+/* ===== SWITCH CLIENT / PRO (façon Airbnb) ===== */
+.pv-mode{
+  display:flex;gap:3px;background:rgba(255,255,255,.08);
+  border-radius:100px;padding:3px;margin-left:8px;flex-shrink:0;
+}
+.pv-mode-b{
+  border:none;border-radius:100px;padding:4px 11px;
+  font-size:10px;font-weight:900;cursor:pointer;
+  background:transparent;color:rgba(255,255,255,.5);
+  font-family:'Nunito',sans-serif;transition:all .15s;white-space:nowrap;
+}
+.pv-mode-b.on{background:#7C5CFC;color:#fff;}
+.pv-mode-b.on.pro{background:#FB923C;}
+
+/* Switch dans l'app réelle */
+.mode-switch{
+  display:flex;align-items:center;gap:9px;
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:var(--rl);padding:12px 14px;
+  cursor:pointer;box-shadow:var(--shadow);margin-bottom:12px;
+}
+.ms-ic{
+  width:40px;height:40px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;
+}
+.ms-ic.toclient{background:var(--accent-l);}
+.ms-ic.topro{background:var(--warn-l);}
+.ms-t{font-size:14px;font-weight:900;}
+.ms-d{font-size:11px;color:var(--muted);margin-top:1px;}
 </style>
 </head>
 <body>
@@ -683,6 +713,10 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
   <div class="pv-head">
     <span class="pv-logo">Nexto<b>.</b></span>
     <span class="pv-tag">Preview</span>
+    <div class="pv-mode">
+      <button class="pv-mode-b on" id="pvm-client" onclick="pvMode('client')">👤 Client</button>
+      <button class="pv-mode-b pro" id="pvm-pro" onclick="pvMode('pro')">🔧 Pro</button>
+    </div>
     <span class="pv-cur" id="pv-cur">—</span>
   </div>
   <div class="pv-tabs" id="pv-tabs"></div>
@@ -1445,7 +1479,14 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
       <div class="tarif-row" style="cursor:pointer" onclick="go('s-cours')"><span>En cours</span><span class="badge ok">1</span></div>
       <div class="tarif-row" style="cursor:pointer" onclick="showToast('Historique')"><span>Historique</span><span style="color:var(--muted)">›</span></div>
     </div>
-    <button class="btn-primary" style="background:linear-gradient(135deg,var(--accent),var(--warn));box-shadow:0 4px 20px rgba(124,92,252,.3);" onclick="switchMode()">🔧 Passer en mode Pro</button>
+    <div class="mode-switch" onclick="switchMode()">
+      <div class="ms-ic topro">🔧</div>
+      <div style="flex:1;">
+        <div class="ms-t">Passer en mode Pro</div>
+        <div class="ms-d">Proposez vos services · même compte</div>
+      </div>
+      <span style="color:var(--muted);font-size:18px;">›</span>
+    </div>
     <button class="btn-secondary" style="margin-top:10px;" onclick="go('s-onboard')">Se déconnecter</button>
   </div>
   <nav class="bottom-nav" style="position:absolute;bottom:0;left:0;right:0;">
@@ -1673,10 +1714,13 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
         <div class="pro-greeting">Bonjour 👋</div>
         <div class="pro-name-big">Jean Martin</div>
       </div>
-      <button class="dispo-pill" id="dispo-btn" onclick="toggleDispo()">
-        <div class="dispo-dot" id="dispo-dot"></div>
-        <span class="dispo-lbl" id="dispo-lbl">Disponible</span>
-      </button>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <button class="dispo-pill" id="dispo-btn" onclick="toggleDispo()">
+          <div class="dispo-dot" id="dispo-dot"></div>
+          <span class="dispo-lbl" id="dispo-lbl">Disponible</span>
+        </button>
+        <button onclick="switchMode()" style="background:rgba(255,255,255,.12);border:none;border-radius:100px;padding:7px 11px;color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;">👤 Mode Client</button>
+      </div>
     </div>
     <div class="pro-tabs">
       <button class="pro-tab on" id="ptab-dem" onclick="proTab('dem')">Demandes</button>
@@ -2300,32 +2344,30 @@ const PREVIEW = new URLSearchParams(location.search).get('preview') === '1';
 const PV_SCREENS = [
   ['Découverte', [
     ['s-onboard','Onboarding'],
-    ['s-insc1','Inscription 1'],
+    ['s-args','Arguments'],
+    ['s-insc1','Inscription'],
     ['s-insc2','Paiement CB'],
-  ]],
-  ['Client', [
+  ], null],
+  ['Recherche', [
     ['s-map','Carte'],
     ['s-ping','Ping'],
     ['s-fiche','Fiche pro'],
     ['s-vitrine','Vitrine pro'],
-    ['s-args','Arguments'],
     ['s-fav','Favoris'],
-    ['s-cours','En cours'],
-    ['s-moi','Profil'],
-  ]],
+  ], 'client'],
   ['Demande', [
-    ['s-dem1','Demande 1'],
+    ['s-dem1','Demande'],
     ['s-dem2','Adresse'],
     ['s-dem3','Récap'],
     ['s-conv','Chat'],
     ['s-devis-recu','Devis reçu'],
-  ]],
+  ], 'client'],
   ['Paiement', [
     ['s-prepay','Pré-paiement'],
     ['s-3ds','3D Secure'],
     ['s-pay-ok','Paiement OK'],
     ['s-suivi','Suivi GPS'],
-  ]],
+  ], 'client'],
   ['Validation', [
     ['s-qr-arrive','QR arrivée'],
     ['s-qr-fin','QR fin'],
@@ -2333,18 +2375,22 @@ const PV_SCREENS = [
     ['s-avis','Avis'],
     ['s-fonds','Fonds libérés'],
     ['s-litige','Litige'],
-  ]],
+  ], 'client'],
+  ['Mon espace', [
+    ['s-cours','En cours'],
+    ['s-moi','Profil'],
+  ], 'client'],
   ['Pro — Inscription', [
     ['s-pro-insc1','Statut juridique'],
     ['s-pro-insc1b','Services'],
     ['s-pro-insc2','Documents'],
     ['s-pro-insc3','Bancaire'],
     ['s-pro-insc4','Profil public'],
-    ['s-pro-vitrine','Ma vitrine'],
     ['s-pro-attente','Attente valid.'],
-  ]],
+  ], 'pro'],
   ['Pro — Activité', [
     ['s-pro-dash','Dashboard'],
+    ['s-pro-vitrine','Ma vitrine'],
     ['s-pro-creer-devis','Créer devis'],
     ['s-pro-chat','Chat pro'],
     ['s-pro-enroute','En route'],
@@ -2353,7 +2399,7 @@ const PV_SCREENS = [
     ['s-pro-supp-devis','Devis supp.'],
     ['s-pro-qr-fin','QR fin pro'],
     ['s-pro-pay-ok','Paiement libéré'],
-  ]],
+  ], 'pro'],
 ];
 
 function pvGo(id){
@@ -2374,33 +2420,36 @@ function pvGo(id){
   try{ localStorage.setItem('nexto_pv_last', id); }catch(e){}
 }
 
-function pvInit(){
-  document.body.classList.add('preview-on');
+function pvRenderTabs(){
   const tabs = document.getElementById('pv-tabs');
-  let firstId = null;
-  PV_SCREENS.forEach(([grp, items])=>{
+  if(!tabs) return;
+  tabs.innerHTML = '';
+  PV_SCREENS.forEach(([grp, items, scope])=>{
+    if(scope && scope !== APP_MODE) return;
     const g = document.createElement('div');
     g.className = 'pv-grp';
     g.textContent = grp;
     tabs.appendChild(g);
     items.forEach(([id,label])=>{
       if(!document.getElementById(id)) return;
-      if(!firstId) firstId = id;
       const b = document.createElement('button');
-      b.className = 'pv-tab';
+      b.className = 'pv-tab' + (id===currentScreen ? ' on' : '');
       b.dataset.id = id;
       b.textContent = label;
       b.onclick = ()=>pvGo(id);
       tabs.appendChild(b);
     });
   });
-  // Reprendre le dernier écran consulté, sinon la carte
+}
+
+function pvInit(){
+  document.body.classList.add('preview-on');
+  setMode(APP_MODE, false);
+  pvRenderTabs();
   let start = null;
   try{ start = localStorage.getItem('nexto_pv_last'); }catch(e){}
-  if(!start || !document.getElementById(start)) start = document.getElementById('s-map') ? 's-map' : firstId;
+  if(!start || !document.getElementById(start)) start = (APP_MODE==='pro') ? 's-pro-dash' : 's-map';
   pvGo(start);
-
-  // Raccourcis clavier ← →
   document.addEventListener('keydown', e=>{
     const all = Array.from(document.querySelectorAll('.pv-tab')).map(b=>b.dataset.id);
     const i = all.indexOf(currentScreen);
@@ -2408,6 +2457,7 @@ function pvInit(){
     if(e.key==='ArrowLeft'  && i > 0)            pvGo(all[i-1]);
   });
 }
+
 
 let history=[];
 let currentScreen='s-onboard';
@@ -2466,6 +2516,35 @@ function obNext(){
 /* ============================================================
    PRO DATA (current shown pro in fiche)
    ============================================================ */
+
+
+/* ============================================================
+   MODE CLIENT / PRO — un seul compte, deux casquettes (Airbnb)
+   ============================================================ */
+let APP_MODE = 'client';
+try{ APP_MODE = localStorage.getItem('nexto_mode') || 'client'; }catch(e){}
+
+function setMode(m, navigate){
+  APP_MODE = m;
+  try{ localStorage.setItem('nexto_mode', m); }catch(e){}
+  document.querySelectorAll('.pv-mode-b').forEach(b=>b.classList.remove('on'));
+  const btn = document.getElementById(m==='pro' ? 'pvm-pro' : 'pvm-client');
+  if(btn) btn.classList.add('on');
+  if(PREVIEW) pvRenderTabs();
+  if(navigate){
+    if(PREVIEW) pvGo(m==='pro' ? 's-pro-dash' : 's-map');
+    else go(m==='pro' ? 's-pro-dash' : 's-map');
+  }
+}
+
+/* Switch depuis l'app réelle (profil) */
+function switchMode(){
+  const next = (APP_MODE==='pro') ? 'client' : 'pro';
+  setMode(next, true);
+}
+
+/* Switch depuis la barre preview */
+function pvMode(m){ setMode(m, true); }
 
 function agView(v){
   document.getElementById('ag-pro').classList.toggle('on', v==='pro');
@@ -2560,17 +2639,6 @@ function launchPing(){
   },700);
 }
 
-/* ============================================================
-   MODE SWITCH CLIENT ↔ PRO
-   ============================================================ */
-function switchMode(){
-  const moi=document.getElementById('s-moi');
-  if(currentScreen==='s-moi'||currentScreen==='s-map'||currentScreen==='s-fav'||currentScreen==='s-cours'){
-    go('s-pro-insc1');
-  }else{
-    go('s-map');
-  }
-}
 
 /* ============================================================
    NAVIGATION CLIENT
