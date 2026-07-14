@@ -704,11 +704,110 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
 .ms-ic.topro{background:var(--warn-l);}
 .ms-t{font-size:14px;font-weight:900;}
 .ms-d{font-size:11px;color:var(--muted);margin-top:1px;}
+
+/* ============================================================
+   PREVIEW — CADRE TÉLÉPHONE RESPONSIVE
+   Mobile : plein écran · Desktop : mockup iPhone centré
+   ============================================================ */
+
+/* --- MOBILE (défaut) : plein écran, barre compacte en haut --- */
+body.preview-on{background:var(--cream);}
+
+/* --- DESKTOP : scène sombre + téléphone centré --- */
+@media (min-width:900px){
+  body.preview-on{
+    background:#0B0719;
+    overflow:hidden;
+  }
+  body.preview-on::after{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(ellipse 600px 600px at -5% -10%, rgba(124,92,252,.16) 0%, transparent 65%),
+      radial-gradient(ellipse 500px 500px at 105% 105%, rgba(251,146,60,.08) 0%, transparent 65%);
+  }
+
+  /* Le téléphone */
+  body.preview-on .screen{
+    position:fixed!important;
+    inset:auto!important;
+    left:50%!important;
+    top:118px!important;
+    width:390px!important;
+    height:788px!important;
+    max-height:calc(100vh - 150px)!important;
+    transform:translateX(-50%)!important;
+    border-radius:44px!important;
+    overflow:hidden!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,.12),
+      0 0 0 7px rgba(255,255,255,.035),
+      0 24px 70px rgba(0,0,0,.85);
+    z-index:10;
+  }
+  /* Un seul écran visible : pas de fantômes hors-cadre */
+  body.preview-on .screen:not(.active){display:none!important;}
+  body.preview-on .screen.active{transform:translateX(-50%)!important;}
+
+  /* Encoche */
+  body.preview-on #pv-notch{
+    display:block;
+    position:fixed;z-index:60;
+    left:50%;top:118px;
+    transform:translateX(-50%);
+    width:150px;height:26px;
+    background:#0a0612;
+    border-radius:0 0 14px 14px;
+    pointer-events:none;
+  }
+
+  /* Barre d'onglets : centrée, largeur confortable */
+  #preview-bar{
+    background:rgba(11,7,25,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(124,92,252,.22);
+  }
+  .pv-tabs{padding:0 22px 10px;justify-content:flex-start;}
+
+  /* Pied : navigation ← → */
+  body.preview-on #pv-foot{display:flex;}
+}
+
+#pv-notch{display:none;}
+
+/* --- Pied de navigation (desktop) --- */
+#pv-foot{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:99998;
+  align-items:center;justify-content:center;gap:12px;
+  padding:14px;
+}
+.pv-nav{
+  background:rgba(255,255,255,.09);
+  border:1.5px solid rgba(255,255,255,.14);
+  color:#fff;border-radius:100px;
+  padding:9px 20px;font-size:13px;font-weight:800;
+  cursor:pointer;font-family:'Nunito',sans-serif;
+  transition:all .15s;
+}
+.pv-nav:hover{background:rgba(124,92,252,.32);border-color:#7C5CFC;}
+.pv-nav:disabled{opacity:.28;cursor:default;}
+.pv-pos{
+  font-size:11px;color:rgba(255,255,255,.45);font-weight:800;
+  font-family:monospace;min-width:74px;text-align:center;
+}
 </style>
 </head>
 <body>
 
 <!-- ============ BARRE MODE PREVIEW (masquée en prod) ============ -->
+
+<div id="pv-notch"></div>
+<div id="pv-foot">
+  <button class="pv-nav" id="pv-prev" onclick="pvStep(-1)">← Précédent</button>
+  <span class="pv-pos" id="pv-pos">— / —</span>
+  <button class="pv-nav" id="pv-next" onclick="pvStep(1)">Suivant →</button>
+</div>
 <div id="preview-bar">
   <div class="pv-head">
     <span class="pv-logo">Nexto<b>.</b></span>
@@ -2417,7 +2516,29 @@ function pvGo(id){
   if(cur) cur.textContent = id;
   const btn = document.querySelector('.pv-tab[data-id="'+id+'"]');
   if(btn) btn.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
+  pvSyncFoot();
   try{ localStorage.setItem('nexto_pv_last', id); }catch(e){}
+}
+
+
+function pvList(){
+  return Array.from(document.querySelectorAll('.pv-tab')).map(b=>b.dataset.id);
+}
+function pvStep(d){
+  const all = pvList();
+  const i = all.indexOf(currentScreen);
+  const n = i + d;
+  if(n >= 0 && n < all.length) pvGo(all[n]);
+}
+function pvSyncFoot(){
+  const all = pvList();
+  const i = all.indexOf(currentScreen);
+  const pos = document.getElementById('pv-pos');
+  const p = document.getElementById('pv-prev');
+  const n = document.getElementById('pv-next');
+  if(pos) pos.textContent = (i+1) + ' / ' + all.length;
+  if(p) p.disabled = (i <= 0);
+  if(n) n.disabled = (i >= all.length-1);
 }
 
 function pvRenderTabs(){
@@ -2440,6 +2561,7 @@ function pvRenderTabs(){
       tabs.appendChild(b);
     });
   });
+  pvSyncFoot();
 }
 
 function pvInit(){
