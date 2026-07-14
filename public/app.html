@@ -625,6 +625,55 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
 }
 .pv-tab:hover{background:rgba(124,92,252,.25);color:#fff;}
 .pv-tab.on{background:#7C5CFC;color:#fff;border-color:#7C5CFC;}
+
+/* ===== VITRINE PRO ===== */
+.vt-hero{position:relative;height:180px;background:linear-gradient(135deg,#5538D4,#7C5CFC);overflow:hidden;flex-shrink:0;}
+.vt-hero-grid{position:absolute;inset:0;display:grid;grid-template-columns:2fr 1fr;gap:2px;}
+.vt-ph{background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;}
+.vt-ph-col{display:grid;grid-template-rows:1fr 1fr;gap:2px;}
+.vt-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;border-radius:100px;padding:5px 12px;font-size:11px;font-weight:800;}
+.vt-anon{
+  background:var(--warn-l);border:1px solid var(--warn);border-radius:var(--rm);
+  padding:9px 12px;font-size:11px;color:#C2410C;font-weight:700;
+  display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;
+}
+.vt-sec{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-d);margin-bottom:9px;}
+.vt-doc{
+  display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--muted-l);
+}
+.vt-doc:last-child{border:none;}
+.vt-doc-i{width:34px;height:34px;border-radius:10px;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.vt-doc-n{flex:1;font-size:13px;font-weight:800;}
+.vt-doc-s{font-size:11px;color:var(--muted);}
+.vt-rev{padding:12px 0;border-bottom:1px solid var(--muted-l);}
+.vt-rev:last-child{border:none;}
+.vt-rev-h{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.vt-rev-av{width:30px;height:30px;border-radius:50%;background:var(--accent-l);color:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;}
+.vt-verif{background:var(--ok-l);color:#15803D;border-radius:100px;padding:2px 7px;font-size:9px;font-weight:900;margin-left:auto;white-space:nowrap;}
+.vt-svc{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--muted-l);}
+.vt-svc:last-child{border:none;}
+
+/* ===== ARGUMENTS COMMERCIAUX ===== */
+.ag-hero{background:var(--navy);padding:26px 20px 22px;flex-shrink:0;text-align:center;}
+.ag-t{font-family:'Fredoka One',cursive;font-size:23px;color:#fff;line-height:1.25;margin-bottom:7px;}
+.ag-s{font-size:13px;color:rgba(255,255,255,.55);line-height:1.55;}
+.ag-sw{display:flex;gap:5px;padding:12px 16px 4px;flex-shrink:0;}
+.ag-sw-b{
+  flex:1;padding:9px;border-radius:100px;border:1.5px solid var(--border);
+  background:var(--white);font-size:12px;font-weight:800;color:var(--muted-d);
+  cursor:pointer;font-family:'Nunito',sans-serif;
+}
+.ag-sw-b.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ag-card{
+  display:flex;gap:12px;background:var(--white);border-radius:var(--rl);
+  padding:14px;box-shadow:var(--shadow);margin-bottom:10px;
+}
+.ag-ic{width:42px;height:42px;border-radius:13px;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ag-h{font-size:14px;font-weight:900;margin-bottom:3px;}
+.ag-d{font-size:12px;color:var(--muted-d);line-height:1.5;}
+.ag-view{display:none;}
+.ag-view.on{display:block;}
 </style>
 </head>
 <body>
@@ -2001,6 +2050,203 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
   </div>
 </div>
 
+
+<!-- =================== VITRINE PRO (profil public) =================== -->
+<div id="s-vitrine" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="back()">←</button><div class="topbar-title">Jean M.</div></div>
+  <div class="scroll-body" style="padding:0;">
+    <div class="vt-hero">
+      <div class="vt-hero-grid">
+        <div class="vt-ph" onclick="showToast('Galerie réalisations')">🔧</div>
+        <div class="vt-ph-col">
+          <div class="vt-ph" onclick="showToast('Galerie réalisations')">🚿</div>
+          <div class="vt-ph" onclick="showToast('Galerie réalisations')">🛠️</div>
+        </div>
+      </div>
+      <div class="vt-count">📷 12 réalisations</div>
+    </div>
+
+    <div style="padding:16px;">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+        <div class="avatar" style="width:56px;height:56px;font-size:19px;">JM</div>
+        <div style="flex:1;">
+          <div style="font-size:17px;font-weight:900;">Jean M.</div>
+          <div style="font-size:12px;color:var(--muted);">Plomberie · Chauffage · Grasse · 0.9 km</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
+            <span class="stars" style="font-size:12px;">★★★★★</span>
+            <span style="font-size:12px;font-weight:800;">4.8</span>
+            <span style="font-size:11px;color:var(--muted);">· 127 avis vérifiés</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;">
+        <span class="badge ok">✓ Identité vérifiée</span>
+        <span class="badge purple">RC Pro</span>
+        <span class="badge purple">Décennale</span>
+        <span class="badge warn">⭐ Top Pro</span>
+      </div>
+
+      <div class="vt-anon">
+        <span>🔒</span>
+        <span>Identité complète et documents révélés après validation du devis — protection mutuelle.</span>
+      </div>
+
+      <div class="card">
+        <div class="vt-sec">Présentation</div>
+        <div style="font-size:13px;color:var(--muted-d);line-height:1.6;">
+          Plombier depuis 12 ans dans le bassin grassois. Spécialiste dépannage urgent, chauffe-eau et mise aux normes. Devis clair, travail propre, je laisse le chantier net.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="vt-sec">Prestations & tarifs</div>
+        <div class="vt-svc"><span style="font-size:13px;">Dépannage fuite</span><span style="font-size:13px;font-weight:900;">à partir de 90 €</span></div>
+        <div class="vt-svc"><span style="font-size:13px;">Remplacement chauffe-eau</span><span style="font-size:13px;font-weight:900;">à partir de 455 €</span></div>
+        <div class="vt-svc"><span style="font-size:13px;">Taux horaire</span><span style="font-size:13px;font-weight:900;">45 €/h</span></div>
+        <div class="vt-svc"><span style="font-size:13px;">Déplacement</span><span style="font-size:13px;font-weight:900;">15 €</span></div>
+      </div>
+
+      <div class="card">
+        <div class="vt-sec">Garanties vérifiées par Nexto</div>
+        <div class="vt-doc">
+          <div class="vt-doc-i">🪪</div>
+          <div style="flex:1;"><div class="vt-doc-n">Pièce d'identité</div><div class="vt-doc-s">Contrôlée le 12/03/2026</div></div>
+          <span class="badge ok">✓</span>
+        </div>
+        <div class="vt-doc">
+          <div class="vt-doc-i">🛡️</div>
+          <div style="flex:1;"><div class="vt-doc-n">RC Professionnelle</div><div class="vt-doc-s">Valide jusqu'au 31/12/2026</div></div>
+          <span class="badge ok">✓</span>
+        </div>
+        <div class="vt-doc">
+          <div class="vt-doc-i">🏗️</div>
+          <div style="flex:1;"><div class="vt-doc-n">Garantie décennale</div><div class="vt-doc-s">Valide jusqu'au 30/06/2027</div></div>
+          <span class="badge ok">✓</span>
+        </div>
+        <div class="vt-doc">
+          <div class="vt-doc-i">📄</div>
+          <div style="flex:1;"><div class="vt-doc-n">Kbis · SIRET</div><div class="vt-doc-s">Vérifié — visible après contrat</div></div>
+          <span class="badge warn">🔒</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;margin-bottom:6px;">
+          <div class="vt-sec" style="margin:0;">Avis</div>
+          <span class="vt-verif">✓ 100% mission payée</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;">
+          Seul un client ayant payé et terminé une mission peut noter. Aucun avis ne peut être acheté.
+        </div>
+        <div class="vt-rev">
+          <div class="vt-rev-h">
+            <div class="vt-rev-av">MP</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:800;">Marie P.</div><div style="font-size:10px;color:var(--muted);">Fuite cuisine · il y a 3 jours</div></div>
+            <span class="stars" style="font-size:11px;">★★★★★</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted-d);line-height:1.5;">Très rapide et professionnel. Fuite réparée en 30 min, chantier laissé nickel.</div>
+        </div>
+        <div class="vt-rev">
+          <div class="vt-rev-h">
+            <div class="vt-rev-av" style="background:#DCFCE7;color:#15803D;">TC</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:800;">Thomas C.</div><div style="font-size:10px;color:var(--muted);">Chauffe-eau · il y a 1 semaine</div></div>
+            <span class="stars" style="font-size:11px;">★★★★★</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted-d);line-height:1.5;">Devis clair, aucune surprise. Je recommande vivement.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:12px 16px;background:var(--white);border-top:1px solid var(--border);flex-shrink:0;">
+    <button class="btn-primary" onclick="go('s-dem1')">Demander un devis →</button>
+  </div>
+</div>
+
+<!-- =================== PRO — GÉRER SA VITRINE =================== -->
+<div id="s-pro-vitrine" class="screen">
+  <div class="topbar" style="background:var(--navy);">
+    <button class="back-btn" style="background:rgba(255,255,255,.1);color:#fff;" onclick="back()">←</button>
+    <div class="topbar-title" style="color:#fff;">Ma vitrine</div>
+  </div>
+  <div class="scroll-body">
+    <div class="vt-anon" style="background:var(--accent-l);border-color:var(--accent);color:var(--accent-d);">
+      <span>💡</span>
+      <span>Votre vitrine est visible sur la carte. Votre nom complet reste masqué jusqu'à l'acceptation du devis.</span>
+    </div>
+
+    <div class="card">
+      <div class="vt-sec">Photos de réalisations</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+        Montrez votre travail. Les photos comportant un logo, un numéro de téléphone ou une plaque de véhicule sont automatiquement refusées.
+      </div>
+      <div class="photo-area">
+        <div class="photo-slot filled" onclick="showToast('Réalisation 1')">✓</div>
+        <div class="photo-slot filled" onclick="showToast('Réalisation 2')">✓</div>
+        <div class="photo-slot filled" onclick="showToast('Réalisation 3')">✓</div>
+        <div class="photo-slot" onclick="showToast('📷 Ajouter une photo')">📷</div>
+      </div>
+      <div style="font-size:11px;color:var(--ok);font-weight:800;margin-top:8px;">🔒 Métadonnées de localisation supprimées automatiquement</div>
+    </div>
+
+    <div class="card">
+      <div class="vt-sec">Présentation de mon activité</div>
+      <textarea class="field-input" rows="4" maxlength="300" style="resize:none;height:92px;">Plombier depuis 12 ans dans le bassin grassois. Spécialiste dépannage urgent, chauffe-eau et mise aux normes. Devis clair, travail propre, je laisse le chantier net.</textarea>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;">300 caractères max · Pas de coordonnées ni de lien externe</div>
+    </div>
+
+    <div class="card">
+      <div class="vt-sec">Ma réputation</div>
+      <div style="display:flex;gap:8px;">
+        <div class="kpi"><div class="kpi-v">4.8</div><div class="kpi-l">Note</div></div>
+        <div class="kpi"><div class="kpi-v">127</div><div class="kpi-l">Avis vérifiés</div></div>
+        <div class="kpi"><div class="kpi-v">340</div><div class="kpi-l">Missions</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted-d);margin-top:10px;line-height:1.5;">
+        Vos avis vous appartiennent et restent dans Nexto. Ils ne sont pas indexés par Google et ne peuvent pas être achetés.
+      </div>
+    </div>
+
+    <button class="btn-primary" style="background:var(--navy);" onclick="showToast('Vitrine enregistrée ✓')">Enregistrer ma vitrine</button>
+  </div>
+</div>
+
+<!-- =================== ARGUMENTS COMMERCIAUX =================== -->
+<div id="s-args" class="screen">
+  <div class="ag-hero">
+    <div class="ag-t">Pourquoi passer par Nexto ?</div>
+    <div class="ag-s">La proximité, sans le risque.</div>
+  </div>
+  <div class="ag-sw">
+    <button class="ag-sw-b on" id="agb-pro" onclick="agView('pro')">🔧 Je suis pro</button>
+    <button class="ag-sw-b" id="agb-cli" onclick="agView('cli')">👤 Je cherche un pro</button>
+  </div>
+  <div class="scroll-body" style="padding:12px 16px 24px;">
+
+    <div class="ag-view on" id="ag-pro">
+      <div class="ag-card"><div class="ag-ic">💶</div><div><div class="ag-h">Payé sous 24-48h, jamais d'impayé</div><div class="ag-d">Le client paie avant votre intervention. L'argent est bloqué en séquestre, puis viré automatiquement. Vous ne courez plus après votre argent.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">⭐</div><div><div class="ag-h">Des avis que personne ne peut acheter</div><div class="ag-d">Seul un client ayant payé une mission terminée peut vous noter. Votre réputation se construit sur du réel, pas sur du SEO.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">📍</div><div><div class="ag-h">Votre réseau local, sur la carte</div><div class="ag-d">Vous apparaissez auprès des clients autour de vous. Pas de mise en concurrence sur 12 devis, pas d'intermédiaire qui filtre.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">🧾</div><div><div class="ag-h">Vos factures générées toutes seules</div><div class="ag-d">Devis, facture conforme, mentions légales, export PDF pour votre comptable. Zéro paperasse.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">🛡️</div><div><div class="ag-h">Vous êtes couvert en cas de litige</div><div class="ag-d">Photos horodatées, QR d'arrivée et de fin, chat archivé. Vous avez des preuves, pas votre parole contre la sienne.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">📸</div><div><div class="ag-h">Une vraie vitrine</div><div class="ag-d">Vos réalisations, votre présentation, vos tarifs. Vous vous démarquez sur autre chose que le prix le plus bas.</div></div></div>
+    </div>
+
+    <div class="ag-view" id="ag-cli">
+      <div class="ag-card"><div class="ag-ic">✅</div><div><div class="ag-h">De vrais avis, pas des avis payés</div><div class="ag-d">Chaque avis vient d'un client qui a réellement payé et terminé la mission. Impossible d'en acheter un seul.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">🔍</div><div><div class="ag-h">Des informations vérifiées</div><div class="ag-d">Identité, RC Pro, décennale, Kbis : contrôlés par Nexto. Vous savez qui entre chez vous.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">🔒</div><div><div class="ag-h">Votre argent est protégé</div><div class="ag-d">Il reste bloqué en séquestre et n'est libéré que 24 à 48h après la fin des travaux, si tout va bien.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">⚡</div><div><div class="ag-h">Un pro autour de vous, maintenant</div><div class="ag-d">Pas de rappel dans 3 jours, pas de 12 devis à comparer. Vous voyez qui est dispo à côté, vous choisissez.</div></div></div>
+      <div class="ag-card"><div class="ag-ic">⚖️</div><div><div class="ag-h">Un litige ? Vous n'êtes pas seul</div><div class="ag-d">Le paiement est gelé, Nexto instruit, et vous accédez aux assurances du pro. Pas de « débrouillez-vous ».</div></div></div>
+      <div class="ag-card"><div class="ag-ic">🧾</div><div><div class="ag-h">Une facture en règle</div><div class="ag-d">Émise automatiquement, conforme, avec le crédit d'impôt 50% quand vous y avez droit.</div></div></div>
+    </div>
+
+  </div>
+  <div style="padding:12px 16px;background:var(--white);border-top:1px solid var(--border);flex-shrink:0;">
+    <button class="btn-primary" onclick="go('s-map')">Voir les pros autour de moi →</button>
+  </div>
+</div>
+
 <!-- =================== TOAST =================== -->
 <div id="toast"></div>
 
@@ -2061,6 +2307,8 @@ const PV_SCREENS = [
     ['s-map','Carte'],
     ['s-ping','Ping'],
     ['s-fiche','Fiche pro'],
+    ['s-vitrine','Vitrine pro'],
+    ['s-args','Arguments'],
     ['s-fav','Favoris'],
     ['s-cours','En cours'],
     ['s-moi','Profil'],
@@ -2092,6 +2340,7 @@ const PV_SCREENS = [
     ['s-pro-insc2','Documents'],
     ['s-pro-insc3','Bancaire'],
     ['s-pro-insc4','Profil public'],
+    ['s-pro-vitrine','Ma vitrine'],
     ['s-pro-attente','Attente valid.'],
   ]],
   ['Pro — Activité', [
@@ -2217,6 +2466,14 @@ function obNext(){
 /* ============================================================
    PRO DATA (current shown pro in fiche)
    ============================================================ */
+
+function agView(v){
+  document.getElementById('ag-pro').classList.toggle('on', v==='pro');
+  document.getElementById('ag-cli').classList.toggle('on', v==='cli');
+  document.getElementById('agb-pro').classList.toggle('on', v==='pro');
+  document.getElementById('agb-cli').classList.toggle('on', v==='cli');
+}
+
 let currentPro={};
 
 /* ============================================================
