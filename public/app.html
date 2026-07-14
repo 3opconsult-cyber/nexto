@@ -581,50 +581,7 @@ body{
   .screen{padding-top:env(safe-area-inset-top);}
 }
 
-/* ============================================================
-   MODE PREVIEW (activé par ?preview=1) — jamais visible en prod
-   ============================================================ */
-#preview-bar{
-  position:fixed;top:0;left:0;right:0;z-index:99999;
-  background:#0B0719;border-bottom:1px solid rgba(124,92,252,.3);
-  display:none;flex-direction:column;
-  box-shadow:0 4px 24px rgba(0,0,0,.5);
-}
-body.preview-on #preview-bar{display:flex;}
-body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!important;}
-.pv-head{
-  display:flex;align-items:center;gap:10px;
-  padding:8px 14px 6px;
-}
-.pv-logo{font-family:'Fredoka One',cursive;font-size:15px;color:#fff;}
-.pv-logo b{color:#7C5CFC;}
-.pv-tag{
-  background:rgba(124,92,252,.22);color:#c4b5fd;
-  border-radius:100px;padding:3px 10px;
-  font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
-}
-.pv-cur{margin-left:auto;font-size:10px;color:rgba(255,255,255,.4);font-weight:800;font-family:monospace;}
-.pv-tabs{
-  display:flex;gap:5px;overflow-x:auto;
-  padding:0 12px 9px;scrollbar-width:none;
-}
-.pv-tabs::-webkit-scrollbar{display:none;}
-.pv-grp{
-  font-size:8px;font-weight:900;color:rgba(255,255,255,.28);
-  text-transform:uppercase;letter-spacing:1px;
-  display:flex;align-items:center;padding:0 4px;flex-shrink:0;
-  border-left:1px solid rgba(255,255,255,.1);margin-left:4px;padding-left:8px;
-}
-.pv-grp:first-child{border:none;margin:0;padding-left:0;}
-.pv-tab{
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
-  border-radius:100px;padding:5px 11px;
-  font-size:11px;font-weight:800;color:rgba(255,255,255,.65);
-  white-space:nowrap;cursor:pointer;flex-shrink:0;
-  font-family:'Nunito',sans-serif;transition:all .15s;
-}
-.pv-tab:hover{background:rgba(124,92,252,.25);color:#fff;}
-.pv-tab.on{background:#7C5CFC;color:#fff;border-color:#7C5CFC;}
+
 
 /* ===== VITRINE PRO ===== */
 .vt-hero{position:relative;height:180px;background:linear-gradient(135deg,#5538D4,#7C5CFC);overflow:hidden;flex-shrink:0;}
@@ -705,96 +662,90 @@ body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!import
 .ms-t{font-size:14px;font-weight:900;}
 .ms-d{font-size:11px;color:var(--muted);margin-top:1px;}
 
+
+
 /* ============================================================
-   PREVIEW — CADRE TÉLÉPHONE RESPONSIVE
-   Mobile : plein écran · Desktop : mockup iPhone centré
+   MODE PREVIEW — simple, lisible, sans cadre décoratif
+   Mobile : plein écran · Desktop : colonne centrée
    ============================================================ */
+#preview-bar{
+  position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:#1A1033;
+  display:none;flex-direction:column;
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+}
+body.preview-on #preview-bar{display:flex;}
 
-/* --- MOBILE (défaut) : plein écran, barre compacte en haut --- */
-body.preview-on{background:var(--cream);}
+.pv-head{display:flex;align-items:center;gap:8px;padding:9px 14px 5px;}
+.pv-logo{font-family:'Fredoka One',cursive;font-size:15px;color:#fff;flex-shrink:0;}
+.pv-logo b{color:#7C5CFC;}
+.pv-tag{
+  background:rgba(124,92,252,.25);color:#c4b5fd;border-radius:100px;
+  padding:3px 9px;font-size:9px;font-weight:900;letter-spacing:1px;
+  text-transform:uppercase;flex-shrink:0;
+}
+.pv-mode{display:flex;gap:3px;background:rgba(255,255,255,.08);border-radius:100px;padding:3px;flex-shrink:0;}
+.pv-mode-b{
+  border:none;border-radius:100px;padding:4px 11px;
+  font-size:10px;font-weight:900;cursor:pointer;
+  background:transparent;color:rgba(255,255,255,.5);
+  font-family:'Nunito',sans-serif;white-space:nowrap;transition:all .15s;
+}
+.pv-mode-b.on{background:#7C5CFC;color:#fff;}
+.pv-mode-b.on.pro{background:#FB923C;}
+.pv-arrows{display:flex;gap:4px;margin-left:auto;flex-shrink:0;}
+.pv-ar{
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);
+  color:#fff;border-radius:50%;width:26px;height:26px;
+  font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.pv-ar:disabled{opacity:.25;cursor:default;}
+.pv-cur{font-size:10px;color:rgba(255,255,255,.4);font-weight:800;font-family:monospace;flex-shrink:0;}
 
-/* --- DESKTOP : scène sombre + téléphone centré --- */
+.pv-tabs{display:flex;gap:5px;overflow-x:auto;padding:0 12px 9px;scrollbar-width:none;}
+.pv-tabs::-webkit-scrollbar{display:none;}
+.pv-grp{
+  font-size:8px;font-weight:900;color:rgba(255,255,255,.3);
+  text-transform:uppercase;letter-spacing:1px;
+  display:flex;align-items:center;flex-shrink:0;
+  border-left:1px solid rgba(255,255,255,.12);
+  margin-left:5px;padding-left:9px;
+}
+.pv-grp:first-child{border:none;margin:0;padding-left:0;}
+.pv-tab{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:100px;padding:6px 12px;
+  font-size:12px;font-weight:800;color:rgba(255,255,255,.7);
+  white-space:nowrap;cursor:pointer;flex-shrink:0;
+  font-family:'Nunito',sans-serif;transition:all .15s;
+}
+.pv-tab:hover{background:rgba(124,92,252,.3);color:#fff;}
+.pv-tab.on{background:#7C5CFC;color:#fff;border-color:#7C5CFC;}
+
+/* --- L'ÉCRAN : occupe tout l'espace sous la barre, scroll interne intact --- */
+body.preview-on .screen{
+  position:fixed!important;
+  top:var(--pvh,84px)!important;
+  left:0!important; right:0!important; bottom:0!important;
+  width:auto!important; height:auto!important;
+  transform:none!important;
+  padding-top:0!important;
+  padding-bottom:0!important;
+  display:none!important;
+  border-radius:0!important;
+}
+body.preview-on .screen.active{display:flex!important;}
+
+/* --- Desktop : colonne centrée, fond clair, PAS de cadre --- */
 @media (min-width:900px){
-  body.preview-on{
-    background:#0B0719;
-    overflow:hidden;
-  }
-  body.preview-on::after{
-    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:
-      radial-gradient(ellipse 600px 600px at -5% -10%, rgba(124,92,252,.16) 0%, transparent 65%),
-      radial-gradient(ellipse 500px 500px at 105% 105%, rgba(251,146,60,.08) 0%, transparent 65%);
-  }
-
-  /* Le téléphone */
+  body.preview-on{background:#DEDBD5;}
   body.preview-on .screen{
-    position:fixed!important;
-    inset:auto!important;
-    left:50%!important;
-    top:118px!important;
-    width:390px!important;
-    height:788px!important;
-    max-height:calc(100vh - 150px)!important;
+    left:50%!important; right:auto!important;
+    width:430px!important;
     transform:translateX(-50%)!important;
-    border-radius:44px!important;
-    overflow:hidden!important;
-    padding-top:0!important;
-    padding-bottom:0!important;
-    box-shadow:
-      0 0 0 2px rgba(255,255,255,.12),
-      0 0 0 7px rgba(255,255,255,.035),
-      0 24px 70px rgba(0,0,0,.85);
-    z-index:10;
+    box-shadow:0 0 0 1px rgba(0,0,0,.08), 0 8px 40px rgba(0,0,0,.14);
   }
-  /* Un seul écran visible : pas de fantômes hors-cadre */
-  body.preview-on .screen:not(.active){display:none!important;}
   body.preview-on .screen.active{transform:translateX(-50%)!important;}
-
-  /* Encoche */
-  body.preview-on #pv-notch{
-    display:block;
-    position:fixed;z-index:60;
-    left:50%;top:118px;
-    transform:translateX(-50%);
-    width:150px;height:26px;
-    background:#0a0612;
-    border-radius:0 0 14px 14px;
-    pointer-events:none;
-  }
-
-  /* Barre d'onglets : centrée, largeur confortable */
-  #preview-bar{
-    background:rgba(11,7,25,.92);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid rgba(124,92,252,.22);
-  }
-  .pv-tabs{padding:0 22px 10px;justify-content:flex-start;}
-
-  /* Pied : navigation ← → */
-  body.preview-on #pv-foot{display:flex;}
-}
-
-#pv-notch{display:none;}
-
-/* --- Pied de navigation (desktop) --- */
-#pv-foot{
-  display:none;position:fixed;bottom:0;left:0;right:0;z-index:99998;
-  align-items:center;justify-content:center;gap:12px;
-  padding:14px;
-}
-.pv-nav{
-  background:rgba(255,255,255,.09);
-  border:1.5px solid rgba(255,255,255,.14);
-  color:#fff;border-radius:100px;
-  padding:9px 20px;font-size:13px;font-weight:800;
-  cursor:pointer;font-family:'Nunito',sans-serif;
-  transition:all .15s;
-}
-.pv-nav:hover{background:rgba(124,92,252,.32);border-color:#7C5CFC;}
-.pv-nav:disabled{opacity:.28;cursor:default;}
-.pv-pos{
-  font-size:11px;color:rgba(255,255,255,.45);font-weight:800;
-  font-family:monospace;min-width:74px;text-align:center;
 }
 </style>
 </head>
@@ -802,21 +753,19 @@ body.preview-on{background:var(--cream);}
 
 <!-- ============ BARRE MODE PREVIEW (masquée en prod) ============ -->
 
-<div id="pv-notch"></div>
-<div id="pv-foot">
-  <button class="pv-nav" id="pv-prev" onclick="pvStep(-1)">← Précédent</button>
-  <span class="pv-pos" id="pv-pos">— / —</span>
-  <button class="pv-nav" id="pv-next" onclick="pvStep(1)">Suivant →</button>
-</div>
 <div id="preview-bar">
   <div class="pv-head">
     <span class="pv-logo">Nexto<b>.</b></span>
-    <span class="pv-tag">Preview</span>
+    <span class="pv-tag">Aperçu</span>
     <div class="pv-mode">
       <button class="pv-mode-b on" id="pvm-client" onclick="pvMode('client')">👤 Client</button>
       <button class="pv-mode-b pro" id="pvm-pro" onclick="pvMode('pro')">🔧 Pro</button>
     </div>
-    <span class="pv-cur" id="pv-cur">—</span>
+    <div class="pv-arrows">
+      <button class="pv-ar" id="pv-prev" onclick="pvStep(-1)">←</button>
+      <span class="pv-cur" id="pv-cur">—</span>
+      <button class="pv-ar" id="pv-next" onclick="pvStep(1)">→</button>
+    </div>
   </div>
   <div class="pv-tabs" id="pv-tabs"></div>
 </div>
@@ -2533,12 +2482,14 @@ function pvStep(d){
 function pvSyncFoot(){
   const all = pvList();
   const i = all.indexOf(currentScreen);
-  const pos = document.getElementById('pv-pos');
+  const cur = document.getElementById('pv-cur');
   const p = document.getElementById('pv-prev');
   const n = document.getElementById('pv-next');
-  if(pos) pos.textContent = (i+1) + ' / ' + all.length;
+  if(cur) cur.textContent = (i+1) + '/' + all.length;
   if(p) p.disabled = (i <= 0);
   if(n) n.disabled = (i >= all.length-1);
+  const bar = document.getElementById('preview-bar');
+  if(bar) document.documentElement.style.setProperty('--pvh', bar.offsetHeight + 'px');
 }
 
 function pvRenderTabs(){
@@ -2940,7 +2891,6 @@ function checkCode(val){
    ============================================================ */
 let toastT;
 function showToast(msg){
-  if(PREVIEW) return;
   const t=document.getElementById('toast');
   t.textContent=msg;
   t.classList.add('show');
@@ -2957,7 +2907,7 @@ if('serviceWorker' in navigator && !PREVIEW){
   });
 }
 
-if(PREVIEW){ pvInit(); }
+if(PREVIEW){ pvInit(); window.addEventListener('resize', pvSyncFoot); }
 </script>
 </body>
 </html>
