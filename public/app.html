@@ -580,9 +580,64 @@ body{
 @supports(padding-top:env(safe-area-inset-top)){
   .screen{padding-top:env(safe-area-inset-top);}
 }
+
+/* ============================================================
+   MODE PREVIEW (activé par ?preview=1) — jamais visible en prod
+   ============================================================ */
+#preview-bar{
+  position:fixed;top:0;left:0;right:0;z-index:99999;
+  background:#0B0719;border-bottom:1px solid rgba(124,92,252,.3);
+  display:none;flex-direction:column;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);
+}
+body.preview-on #preview-bar{display:flex;}
+body.preview-on .screen{padding-top:calc(env(safe-area-inset-top) + 86px)!important;}
+.pv-head{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 14px 6px;
+}
+.pv-logo{font-family:'Fredoka One',cursive;font-size:15px;color:#fff;}
+.pv-logo b{color:#7C5CFC;}
+.pv-tag{
+  background:rgba(124,92,252,.22);color:#c4b5fd;
+  border-radius:100px;padding:3px 10px;
+  font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+}
+.pv-cur{margin-left:auto;font-size:10px;color:rgba(255,255,255,.4);font-weight:800;font-family:monospace;}
+.pv-tabs{
+  display:flex;gap:5px;overflow-x:auto;
+  padding:0 12px 9px;scrollbar-width:none;
+}
+.pv-tabs::-webkit-scrollbar{display:none;}
+.pv-grp{
+  font-size:8px;font-weight:900;color:rgba(255,255,255,.28);
+  text-transform:uppercase;letter-spacing:1px;
+  display:flex;align-items:center;padding:0 4px;flex-shrink:0;
+  border-left:1px solid rgba(255,255,255,.1);margin-left:4px;padding-left:8px;
+}
+.pv-grp:first-child{border:none;margin:0;padding-left:0;}
+.pv-tab{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:100px;padding:5px 11px;
+  font-size:11px;font-weight:800;color:rgba(255,255,255,.65);
+  white-space:nowrap;cursor:pointer;flex-shrink:0;
+  font-family:'Nunito',sans-serif;transition:all .15s;
+}
+.pv-tab:hover{background:rgba(124,92,252,.25);color:#fff;}
+.pv-tab.on{background:#7C5CFC;color:#fff;border-color:#7C5CFC;}
 </style>
 </head>
 <body>
+
+<!-- ============ BARRE MODE PREVIEW (masquée en prod) ============ -->
+<div id="preview-bar">
+  <div class="pv-head">
+    <span class="pv-logo">Nexto<b>.</b></span>
+    <span class="pv-tag">Preview</span>
+    <span class="pv-cur" id="pv-cur">—</span>
+  </div>
+  <div class="pv-tabs" id="pv-tabs"></div>
+</div>
 
 <!-- ============================================================
      SCREENS
@@ -1989,10 +2044,127 @@ function buildQR(id){
 /* ============================================================
    ROUTER
    ============================================================ */
+
+/* ============================================================
+   MODE PREVIEW — code réel, navigation libre, zéro écriture
+   Activé uniquement par ?preview=1
+   ============================================================ */
+const PREVIEW = new URLSearchParams(location.search).get('preview') === '1';
+
+const PV_SCREENS = [
+  ['Découverte', [
+    ['s-onboard','Onboarding'],
+    ['s-insc1','Inscription 1'],
+    ['s-insc2','Paiement CB'],
+  ]],
+  ['Client', [
+    ['s-map','Carte'],
+    ['s-ping','Ping'],
+    ['s-fiche','Fiche pro'],
+    ['s-fav','Favoris'],
+    ['s-cours','En cours'],
+    ['s-moi','Profil'],
+  ]],
+  ['Demande', [
+    ['s-dem1','Demande 1'],
+    ['s-dem2','Adresse'],
+    ['s-dem3','Récap'],
+    ['s-conv','Chat'],
+    ['s-devis-recu','Devis reçu'],
+  ]],
+  ['Paiement', [
+    ['s-prepay','Pré-paiement'],
+    ['s-3ds','3D Secure'],
+    ['s-pay-ok','Paiement OK'],
+    ['s-suivi','Suivi GPS'],
+  ]],
+  ['Validation', [
+    ['s-qr-arrive','QR arrivée'],
+    ['s-qr-fin','QR fin'],
+    ['s-rappel','Rappel 24h'],
+    ['s-avis','Avis'],
+    ['s-fonds','Fonds libérés'],
+    ['s-litige','Litige'],
+  ]],
+  ['Pro — Inscription', [
+    ['s-pro-insc1','Statut juridique'],
+    ['s-pro-insc1b','Services'],
+    ['s-pro-insc2','Documents'],
+    ['s-pro-insc3','Bancaire'],
+    ['s-pro-insc4','Profil public'],
+    ['s-pro-attente','Attente valid.'],
+  ]],
+  ['Pro — Activité', [
+    ['s-pro-dash','Dashboard'],
+    ['s-pro-creer-devis','Créer devis'],
+    ['s-pro-chat','Chat pro'],
+    ['s-pro-enroute','En route'],
+    ['s-pro-qr','Scan QR'],
+    ['s-pro-intervention','Intervention'],
+    ['s-pro-supp-devis','Devis supp.'],
+    ['s-pro-qr-fin','QR fin pro'],
+    ['s-pro-pay-ok','Paiement libéré'],
+  ]],
+];
+
+function pvGo(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active','prev');
+    s.style.transform = '';
+  });
+  const t = document.getElementById(id);
+  if(!t) return;
+  t.classList.add('active');
+  currentScreen = id;
+  history = [];
+  document.querySelectorAll('.pv-tab').forEach(b=>b.classList.toggle('on', b.dataset.id===id));
+  const cur = document.getElementById('pv-cur');
+  if(cur) cur.textContent = id;
+  const btn = document.querySelector('.pv-tab[data-id="'+id+'"]');
+  if(btn) btn.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
+  try{ localStorage.setItem('nexto_pv_last', id); }catch(e){}
+}
+
+function pvInit(){
+  document.body.classList.add('preview-on');
+  const tabs = document.getElementById('pv-tabs');
+  let firstId = null;
+  PV_SCREENS.forEach(([grp, items])=>{
+    const g = document.createElement('div');
+    g.className = 'pv-grp';
+    g.textContent = grp;
+    tabs.appendChild(g);
+    items.forEach(([id,label])=>{
+      if(!document.getElementById(id)) return;
+      if(!firstId) firstId = id;
+      const b = document.createElement('button');
+      b.className = 'pv-tab';
+      b.dataset.id = id;
+      b.textContent = label;
+      b.onclick = ()=>pvGo(id);
+      tabs.appendChild(b);
+    });
+  });
+  // Reprendre le dernier écran consulté, sinon la carte
+  let start = null;
+  try{ start = localStorage.getItem('nexto_pv_last'); }catch(e){}
+  if(!start || !document.getElementById(start)) start = document.getElementById('s-map') ? 's-map' : firstId;
+  pvGo(start);
+
+  // Raccourcis clavier ← →
+  document.addEventListener('keydown', e=>{
+    const all = Array.from(document.querySelectorAll('.pv-tab')).map(b=>b.dataset.id);
+    const i = all.indexOf(currentScreen);
+    if(e.key==='ArrowRight' && i < all.length-1) pvGo(all[i+1]);
+    if(e.key==='ArrowLeft'  && i > 0)            pvGo(all[i-1]);
+  });
+}
+
 let history=[];
 let currentScreen='s-onboard';
 
 function go(id){
+  if(PREVIEW){ pvGo(id); return; }
   const prev=document.getElementById(currentScreen);
   const next=document.getElementById(id);
   if(!next||currentScreen===id)return;
@@ -2005,6 +2177,7 @@ function go(id){
 }
 
 function back(){
+  if(PREVIEW) return;
   if(!history.length)return;
   const prevId=history.pop();
   const cur=document.getElementById(currentScreen);
@@ -2188,7 +2361,7 @@ function toggleDispo(){
    TIMER DEMANDES
    ============================================================ */
 let timerSecs=14*60+23;
-setInterval(()=>{
+if(!PREVIEW) setInterval(()=>{
   if(timerSecs>0)timerSecs--;
   const m=String(Math.floor(timerSecs/60)).padStart(2,'0');
   const s=String(timerSecs%60).padStart(2,'0');
@@ -2202,6 +2375,7 @@ setInterval(()=>{
 let interSecs=0;
 let interRunning=false;
 document.getElementById('s-pro-intervention').addEventListener('transitionend',()=>{
+  if(PREVIEW) return;
   if(currentScreen==='s-pro-intervention'&&!interRunning){
     interRunning=true;
     setInterval(()=>{
@@ -2254,7 +2428,7 @@ function otpNext(el,idx){
   if(el.value.length===1){
     const boxes=document.getElementById('otp-boxes').querySelectorAll('input');
     if(idx<5)boxes[idx+1].focus();
-    if(idx===5){
+    if(idx===5 && !PREVIEW){
       setTimeout(()=>go('s-pay-ok'),400);
     }
   }
@@ -2308,7 +2482,7 @@ function updatePrice(idx,val){
    QR CODE INPUT
    ============================================================ */
 function checkCode(val){
-  if(val.length===6){
+  if(val.length===6 && !PREVIEW){
     showToast('Code accepté ✓');
     setTimeout(()=>go('s-pro-intervention'),600);
   }
@@ -2319,6 +2493,7 @@ function checkCode(val){
    ============================================================ */
 let toastT;
 function showToast(msg){
+  if(PREVIEW) return;
   const t=document.getElementById('toast');
   t.textContent=msg;
   t.classList.add('show');
@@ -2329,11 +2504,13 @@ function showToast(msg){
 /* ============================================================
    SERVICE WORKER
    ============================================================ */
-if('serviceWorker' in navigator){
+if('serviceWorker' in navigator && !PREVIEW){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('/sw.js').catch(()=>{});
   });
 }
+
+if(PREVIEW){ pvInit(); }
 </script>
 </body>
 </html>
