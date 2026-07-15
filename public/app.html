@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#7C5CFC">
 <title>Nexto</title>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#1A1033; --ac:#7C5CFC; --acd:#5538D4; --acl:#EFEBFF;
@@ -337,7 +337,7 @@ body.pv .screen{
     <div class="fw"><label class="fl2">Numéro de carte</label><input class="fi" placeholder="1234 5678 9012 3456"></div>
     <div style="display:flex;gap:11px;"><div class="fw" style="flex:1;"><label class="fl2">Expiration</label><input class="fi" placeholder="MM/AA"></div><div class="fw" style="flex:1;"><label class="fl2">CVV</label><input class="fi" placeholder="•••"></div></div>
     <div class="esc"><span>🔒</span><span>Sécurisé par Stripe. Nexto ne stocke jamais votre numéro de carte.</span></div>
-    <button class="btn" onclick="go('s-home')">Créer mon compte 🚀</button>
+    <button class="btn" onclick="go('s-map')">Créer mon compte 🚀</button>
   </div>
 </div>
 
@@ -345,7 +345,7 @@ body.pv .screen{
   <div class="hero">
     <div class="hero-t">Bonjour Sophie 👋</div>
     <div class="hero-s">Que cherchez-vous aujourd'hui ?</div>
-    <div class="srch" onclick="go('s-search')">
+    <div class="srch" onclick="go('s-map')">
       <span class="srch-i">🔍</span>
       <div style="flex:1;"><div class="srch-t">Plombier, ménage, baby-sitter…</div><div class="srch-s">Grasse (06) · Autour de moi</div></div>
     </div>
@@ -353,14 +353,14 @@ body.pv .screen{
   <div class="bd nb">
     <div class="ct">Services</div>
     <div class="cats" style="margin-bottom:22px;">
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">🔧</div><div class="cat-l">Plomberie</div></div>
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">⚡</div><div class="cat-l">Électricité</div></div>
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">🧹</div><div class="cat-l">Ménage</div></div>
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">🍼</div><div class="cat-l">Baby-sitting</div></div>
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">🌿</div><div class="cat-l">Jardinage</div></div>
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">📦</div><div class="cat-l">Manutention</div></div>
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">🔑</div><div class="cat-l">Serrurerie</div></div>
-      <div class="cat" onclick="go('s-search')"><div class="cat-i">🔨</div><div class="cat-l">Bricolage</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">🔧</div><div class="cat-l">Plomberie</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">⚡</div><div class="cat-l">Électricité</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">🧹</div><div class="cat-l">Ménage</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">🍼</div><div class="cat-l">Baby-sitting</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">🌿</div><div class="cat-l">Jardinage</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">📦</div><div class="cat-l">Manutention</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">🔑</div><div class="cat-l">Serrurerie</div></div>
+      <div class="cat" onclick="go('s-map')"><div class="cat-i">🔨</div><div class="cat-l">Bricolage</div></div>
     </div>
 
     <div class="cd" style="background:var(--navy);padding:18px;" onclick="go('s-annonce')">
@@ -393,7 +393,7 @@ body.pv .screen{
   </div>
   <nav class="nav">
     <button class="nv on"><div class="nvi">🏠</div>Accueil</button>
-    <button class="nv" onclick="go('s-search')"><div class="nvi">🔍</div>Recherche</button>
+    <button class="nv" onclick="go('s-map')"><div class="nvi">🔍</div>Recherche</button>
     <button class="nvc" onclick="go('s-ping')">📡</button>
     <button class="nv" onclick="go('s-cours')"><div class="nvi">🔄</div>En cours</button>
     <button class="nv" onclick="go('s-moi')"><div class="nvi">👤</div>Moi</button>
@@ -446,122 +446,95 @@ body.pv .screen{
 </div>
 
 <div id="s-map" class="screen">
-  <div class="nxmap" style="position:absolute;inset:0;overflow:hidden;background:#EAE6DF;">
-    <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice">
-      <rect width="400" height="600" fill="#EAE6DF"/>
-      <path d="M0 520 Q80 505 160 518 Q240 532 320 514 Q360 505 400 518L400 600H0Z" fill="#A8C8E8" opacity=".95"/>
-      <rect x="0" y="500" width="400" height="8" fill="#F5D060" opacity=".7" rx="2"/>
-      <rect x="8" y="65" width="72" height="52" fill="#C8DFA0" rx="7"/>
-      <rect x="278" y="148" width="88" height="62" fill="#C8DFA0" rx="7"/>
-      <rect x="48" y="328" width="58" height="48" fill="#C8DFA0" rx="6"/>
-      <rect x="88" y="65" width="42" height="28" fill="#DDD8D0" rx="3"/>
-      <rect x="134" y="65" width="54" height="28" fill="#D8D3CB" rx="3"/>
-      <rect x="198" y="65" width="74" height="30" fill="#DDD8D0" rx="3"/>
-      <rect x="8" y="162" width="56" height="30" fill="#DDD8D0" rx="3"/>
-      <rect x="68" y="162" width="66" height="30" fill="#D8D3CB" rx="3"/>
-      <rect x="184" y="162" width="82" height="30" fill="#DDD8D0" rx="3"/>
-      <rect x="8" y="216" width="82" height="28" fill="#DDD8D0" rx="3"/>
-      <rect x="198" y="216" width="62" height="28" fill="#D8D3CB" rx="3"/>
-      <rect x="8" y="380" width="62" height="28" fill="#DDD8D0" rx="3"/>
-      <rect x="148" y="380" width="76" height="28" fill="#DDD8D0" rx="3"/>
-      <rect x="308" y="380" width="82" height="28" fill="#D8D3CB" rx="3"/>
-      <rect x="0" y="362" width="400" height="12" fill="#fff" opacity=".95" rx="2"/>
-      <rect x="136" y="0" width="12" height="520" fill="#fff" opacity=".95" rx="2"/>
-      <rect x="292" y="0" width="10" height="520" fill="#fff" opacity=".9" rx="2"/>
-      <rect x="0" y="198" width="400" height="8" fill="#fff" opacity=".85" rx="1"/>
-      <circle cx="142" cy="366" r="13" fill="#fff" opacity=".9"/>
-      <circle cx="142" cy="366" r="5" fill="#C8DFA0"/>
-      <circle cx="38" cy="358" r="5" fill="#8DB86A" opacity=".8"/>
-      <circle cx="110" cy="358" r="5" fill="#9AC278" opacity=".8"/>
-      <circle cx="218" cy="358" r="5" fill="#8DB86A" opacity=".8"/>
-      <circle cx="328" cy="358" r="5" fill="#9AC278" opacity=".8"/>
-      <text x="200" y="354" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#999">Bd Victor Hugo</text>
+  <div style="position:absolute;inset:0;overflow:hidden;background:#ECEAE6;font-family:'Inter',system-ui,sans-serif;color:#1C1A26;">
+    <svg viewBox="0 0 376 668" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+      <rect width="376" height="668" fill="#EAE7E2"/>
+      <rect x="18" y="60" width="130" height="96" rx="7" fill="#E1DED7"/>
+      <rect x="238" y="40" width="120" height="120" rx="7" fill="#E1DED7"/>
+      <rect x="40" y="220" width="118" height="110" rx="7" fill="#E1DED7"/>
+      <rect x="250" y="240" width="110" height="150" rx="7" fill="#DFE6D5"/>
+      <rect x="30" y="470" width="120" height="150" rx="7" fill="#E1DED7"/>
+      <rect x="236" y="450" width="130" height="170" rx="7" fill="#DFE6D5"/>
+      <g stroke="#F5F3EF" stroke-width="15" stroke-linecap="round"><line x1="0" y1="184" x2="376" y2="184"/><line x1="0" y1="410" x2="376" y2="410"/><line x1="168" y1="0" x2="168" y2="668"/><line x1="342" y1="0" x2="342" y2="668"/></g>
     </svg>
-    <div style="position:absolute;left:50%;top:44%;width:132px;height:132px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid var(--ac);background:rgba(124,92,252,.07);"></div>
-    <div class="mp-you" style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);"></div>
+    <div style="position:absolute;left:50%;top:42%;width:128px;height:128px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(107,92,224,.4);background:rgba(107,92,224,.06);"></div>
+    <div style="position:absolute;left:50%;top:42%;width:14px;height:14px;transform:translate(-50%,-50%);border-radius:50%;background:#6B5CE0;border:2.5px solid #fff;box-shadow:0 0 0 1px rgba(107,92,224,.3);"></div>
     <div id="nxpins" style="position:absolute;inset:0;z-index:3;"></div>
-
-    <div style="position:absolute;top:14px;left:14px;right:14px;z-index:5;">
-      <div style="display:flex;align-items:center;gap:9px;background:var(--w);border:1px solid var(--line);border-radius:26px;padding:11px 15px;box-shadow:var(--sh);">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink3)" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-        <input placeholder="Rechercher autour de moi" aria-label="Rechercher" style="border:none;background:transparent;flex:1;font-family:'Nunito';font-weight:700;font-size:14px;color:var(--ink);outline:none;"/>
+    <div style="position:absolute;top:16px;left:16px;right:16px;z-index:5;">
+      <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #ECE9E4;border-radius:14px;padding:12px 14px;box-shadow:0 2px 10px rgba(28,26,38,.06);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A5A1AF" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+        <span style="flex:1;font-size:14px;color:#A5A1AF;">Rechercher autour de moi</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6676" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
       </div>
-      <div id="nxchips" style="display:flex;gap:7px;margin-top:9px;overflow-x:auto;"></div>
+      <div id="nxchips" style="display:flex;gap:7px;margin-top:10px;overflow-x:auto;"></div>
     </div>
-
-    <div id="nxsheet" style="position:absolute;left:0;right:0;bottom:0;z-index:4;background:var(--w);border-radius:20px 20px 0 0;box-shadow:0 -4px 24px rgba(26,16,51,.09);padding:9px 0 14px;transition:transform .26s;">
-      <div style="width:36px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 10px;"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px 9px;">
-        <span style="font-weight:900;font-size:15px;">Pros autour de vous</span>
-        <span id="nxfavc" style="font-size:12px;color:var(--ink2);font-weight:700;">0 favori</span>
+    <div id="nxsheet" style="position:absolute;left:0;right:0;bottom:0;z-index:4;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -3px 20px rgba(28,26,38,.08);padding:10px 0 16px;">
+      <div style="width:34px;height:4px;border-radius:2px;background:#E4E1DB;margin:2px auto 12px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 18px 10px;">
+        <span style="font-size:15px;font-weight:600;">Autour de vous</span>
+        <span id="nxfavc" style="font-size:12px;color:#6B6676;">0 favori</span>
       </div>
-      <div id="nxcards" style="display:flex;gap:10px;overflow-x:auto;padding:2px 16px 4px;"></div>
+      <div id="nxcards" style="display:flex;gap:11px;overflow-x:auto;padding:2px 18px 4px;"></div>
     </div>
-
-    <div id="nxfiche" style="position:absolute;left:0;right:0;bottom:0;height:78%;z-index:6;background:var(--w);border-radius:20px 20px 0 0;box-shadow:0 -4px 24px rgba(26,16,51,.12);transform:translateY(100%);transition:transform .28s;display:flex;flex-direction:column;"></div>
-    <div id="nxchat" style="position:absolute;left:0;right:0;bottom:0;height:72%;z-index:7;background:var(--w);border-radius:20px 20px 0 0;box-shadow:0 -4px 24px rgba(26,16,51,.14);transform:translateY(100%);transition:transform .28s;display:flex;flex-direction:column;"></div>
+    <div id="nxfiche" style="position:absolute;left:0;right:0;bottom:0;height:80%;z-index:6;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -3px 24px rgba(28,26,38,.12);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;"></div>
+    <div id="nxchat" style="position:absolute;left:0;right:0;bottom:0;height:74%;z-index:7;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -3px 24px rgba(28,26,38,.14);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;"></div>
   </div>
-
   <script>
   (function(){
+   var A="#6B5CE0",AT="#EEEBFB",AI="#4B3FBF",INK="#1C1A26",I2="#6B6676",I3="#A5A1AF",LN="#ECE9E4",L2="#F5F3F0",AM="#E29A2E";
    var P=[
-    {id:1,i:"SM",n:"Sophie M.",m:"Ménage",r:"4.9",rc:"84",d:"0.4 km",p:"18 €/h",x:14,y:22,hi:0},
-    {id:2,i:"JM",n:"Jean M.",m:"Plomberie · Chauffage",r:"4.8",rc:"127",d:"0.9 km",p:"45 €/h",x:70,y:27,hi:1},
-    {id:3,i:"AK",n:"Amina K.",m:"Baby-sitting",r:"5.0",rc:"42",d:"1.1 km",p:"15 €/h",x:16,y:54,hi:0},
-    {id:4,i:"MD",n:"Marc D.",m:"Jardinage",r:"4.7",rc:"58",d:"1.4 km",p:"20 €/h",x:54,y:40,hi:0},
-    {id:5,i:"PL",n:"Pierre L.",m:"Manutention",r:"4.6",rc:"31",d:"1.8 km",p:"18 €/h",x:78,y:48,hi:0}
+    {id:1,i:"SM",n:"Sophie M.",m:"Ménage",r:"4.9",rc:"84",d:"400 m",p:"18 €/h",c:"#3BA55C",x:16,y:24},
+    {id:2,i:"JM",n:"Jean M.",m:"Plomberie",r:"4.8",rc:"127",d:"900 m",p:"45 €/h",c:"#2E7CD6",x:70,y:28},
+    {id:3,i:"AK",n:"Amina K.",m:"Baby-sitting",r:"5.0",rc:"42",d:"1,1 km",p:"15 €/h",c:"#D6733B",x:17,y:56},
+    {id:4,i:"MD",n:"Marc D.",m:"Jardinage",r:"4.7",rc:"58",d:"1,4 km",p:"20 €/h",c:"#5BAA2E",x:52,y:40},
+    {id:5,i:"PL",n:"Pierre L.",m:"Manutention",r:"4.6",rc:"31",d:"1,8 km",p:"18 €/h",c:"#8A6BD6",x:78,y:50}
    ];
-   var CH=["Tous","Plomberie","Ménage","Jardinage","Baby-sitting","Manutention"];
-   var fav={},sel=null;
-   var $=function(id){return document.getElementById(id);};
-   function ht(id){return fav[id]?'♥':'♡';}
-   function hc(id){return fav[id]?'var(--ac)':'var(--ink3)';}
-   function chips(){$('nxchips').innerHTML=CH.map(function(c,k){var on=k===0;return '<button style="flex:0 0 auto;border:1px solid '+(on?'var(--ac)':'var(--line)')+';background:'+(on?'var(--acl)':'var(--w)')+';color:'+(on?'var(--acd)':'var(--ink2)')+';border-radius:20px;padding:6px 13px;font-family:\'Nunito\';font-weight:800;font-size:12px;">'+c+'</button>';}).join('');}
-   function pins(){$('nxpins').innerHTML=P.map(function(p){var on=sel===p.id;return '<button aria-label="'+p.n+'" onclick="nxOpen('+p.id+')" style="position:absolute;left:'+p.x+'%;top:'+p.y+'%;transform:translate(-50%,-100%);border:none;background:transparent;cursor:pointer;padding:0;"><span style="display:inline-flex;align-items:center;gap:4px;background:'+(on?'var(--ac)':'var(--w)')+';color:'+(on?'#fff':'var(--ink)')+';border:1px solid '+(on?'var(--ac)':'var(--line)')+';border-radius:20px;padding:5px 10px;font-family:\'Nunito\';font-weight:900;font-size:12px;box-shadow:var(--sh);">★ '+p.r+'</span></button>';}).join('');}
-   function cards(){$('nxcards').innerHTML=P.map(function(p){return '<div onclick="nxOpen('+p.id+')" style="flex:0 0 176px;background:var(--w);border:1px solid '+(sel===p.id?'var(--ac)':'var(--line)')+';border-radius:14px;padding:11px;cursor:pointer;">'
-     +'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
-     +'<div style="width:38px;height:38px;border-radius:50%;background:var(--acl);color:var(--acd);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;">'+p.i+'</div>'
-     +'<button aria-label="Favori" onclick="event.stopPropagation();nxFav('+p.id+')" style="border:none;background:transparent;cursor:pointer;font-size:19px;line-height:1;color:'+hc(p.id)+';">'+ht(p.id)+'</button></div>'
-     +'<div style="font-weight:900;margin-top:7px;font-size:14px;">'+p.n+'</div>'
-     +'<div style="color:var(--ink2);font-size:12px;font-weight:700;">'+p.m+'</div>'
-     +'<div style="display:flex;gap:9px;font-size:12px;color:var(--ink2);font-weight:700;margin-top:5px;"><span style="color:var(--wa);">★ '+p.r+'</span><span>'+p.d+'</span></div></div>';}).join('');}
-   function updf(){var n=0;for(var k in fav){if(fav[k])n++;}$('nxfavc').textContent=n+(n>1?' favoris':' favori');}
+   var CH=["Tous","Ménage","Plomberie","Jardinage","Garde d’enfants"];
+   var fav={},sel=null,$=function(x){return document.getElementById(x);};
+   function star(){return '<svg width="12" height="12" viewBox="0 0 24 24" fill="'+AM+'" style="vertical-align:-1px"><path d="M12 2l3 6.9 7.5.6-5.7 4.9 1.8 7.3L12 17.8 5.4 21.7l1.8-7.3L1.5 9.5 9 8.9z"/></svg>';}
+   function hsvg(f){return '<svg width="19" height="19" viewBox="0 0 24 24" fill="'+(f?A:"none")+'" stroke="'+(f?A:I3)+'" stroke-width="2"><path d="M12 21s-7-4.6-9.3-8.6C1 9 2.6 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.4 0 5 3.5 3.3 6.9C19 16.4 12 21 12 21z"/></svg>';}
+   function chips(){$("nxchips").innerHTML=CH.map(function(c,k){var on=k===0;return '<button style="flex:0 0 auto;border:1px solid '+(on?A:LN)+';background:'+(on?AT:"#fff")+';color:'+(on?AI:I2)+';border-radius:18px;padding:7px 14px;font-family:inherit;font-size:12.5px;font-weight:500;box-shadow:0 1px 4px rgba(28,26,38,.04)">'+c+'</button>';}).join('');}
+   function pins(){$("nxpins").innerHTML=P.map(function(p){var on=sel===p.id;return '<button aria-label="'+p.n+'" onclick="nxOpen('+p.id+')" style="position:absolute;left:'+p.x+'%;top:'+p.y+'%;transform:translate(-50%,-100%);border:none;background:transparent;cursor:pointer;padding:0"><span style="display:inline-flex;align-items:center;gap:5px;background:'+(on?A:"#fff")+';color:'+(on?"#fff":INK)+';border:1px solid '+(on?A:LN)+';border-radius:16px;padding:6px 10px;font-family:inherit;font-size:12.5px;font-weight:600;box-shadow:0 2px 8px rgba(28,26,38,.14)"><span style="width:7px;height:7px;border-radius:50%;background:'+(on?"#fff":p.c)+'"></span>'+p.r+'</span></button>';}).join('');}
+   function cards(){$("nxcards").innerHTML=P.map(function(p){var f=!!fav[p.id];return '<div onclick="nxOpen('+p.id+')" style="flex:0 0 184px;background:#fff;border:1px solid '+(sel===p.id?A:LN)+';border-radius:16px;padding:13px;cursor:pointer">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="width:40px;height:40px;border-radius:50%;background:'+AT+';color:'+AI+';display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:600;font-size:13px">'+p.i+'</div>'
+    +'<button aria-label="Favori" onclick="event.stopPropagation();nxFav('+p.id+')" style="border:none;background:transparent;cursor:pointer;padding:0;line-height:0">'+hsvg(f)+'</button></div>'
+    +'<div style="font-weight:600;margin-top:9px;font-size:14.5px">'+p.n+'</div>'
+    +'<div style="color:'+I2+';font-size:12.5px;margin-top:1px">'+p.m+'</div>'
+    +'<div style="display:flex;gap:10px;font-size:12.5px;color:'+I2+';margin-top:7px;align-items:center"><span>'+star()+' <span style="color:'+INK+';font-weight:500">'+p.r+'</span></span><span>'+p.d+'</span></div></div>';}).join('');}
+   function updf(){var n=0;for(var k in fav)if(fav[k])n++;$("nxfavc").textContent=n+(n>1?" favoris":" favori");}
    window.nxFav=function(id){fav[id]=!fav[id];cards();updf();};
-   window.nxOpen=function(id){sel=id;var p=null;for(var k=0;k<P.length;k++){if(P[k].id===id)p=P[k];}pins();cards();
-     $('nxfiche').innerHTML='<div style="padding:9px 0 4px;"><div style="width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto;"></div></div>'
-      +'<div style="padding:6px 18px 12px;overflow-y:auto;flex:1;">'
-      +'<div style="display:flex;align-items:center;gap:12px;">'
-      +'<div style="width:56px;height:56px;border-radius:50%;background:var(--acl);color:var(--acd);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;">'+p.i+'</div>'
-      +'<div style="flex:1;"><div style="font-weight:900;font-size:17px;">'+p.n+'</div><div style="color:var(--ink2);font-weight:700;font-size:13px;">'+p.m+' · '+p.d+'</div><div style="font-size:12px;color:var(--ink2);font-weight:700;margin-top:2px;"><span style="color:var(--wa);">★ '+p.r+'</span> ('+p.rc+') · Documents vérifiés</div></div>'
-      +'<button aria-label="Favori" onclick="nxFav('+id+')" style="border:none;background:transparent;cursor:pointer;font-size:23px;line-height:1;color:'+hc(id)+';">'+ht(id)+'</button></div>'
-      +'<div style="display:flex;gap:7px;margin-top:14px;">'
-      +'<span style="background:var(--line2);border-radius:10px;padding:9px 10px;font-size:12px;font-weight:800;flex:1;text-align:center;">Répond ~15 min</span>'
-      +'<span style="background:var(--line2);border-radius:10px;padding:9px 10px;font-size:12px;font-weight:800;flex:1;text-align:center;">Assuré</span>'
-      +'<span style="background:var(--line2);border-radius:10px;padding:9px 10px;font-size:12px;font-weight:800;flex:1;text-align:center;">'+p.p+'</span></div>'
-      +'<div style="font-weight:900;margin-top:16px;font-size:14px;">Prestations</div>'
-      +'<div style="color:var(--ink2);font-size:13px;font-weight:700;line-height:1.7;margin-top:4px;">Dépannage · Devis gratuit · Intervention rapide</div>'
-      +'<div style="font-weight:900;margin-top:16px;font-size:14px;">Avis récents</div>'
-      +'<div style="background:var(--line2);border-radius:12px;padding:11px;margin-top:6px;font-size:13px;color:var(--ink2);font-weight:700;">« Ponctuel et soigné. » <span style="color:var(--wa);">★★★★★</span></div></div>'
-      +'<div style="padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:10px;">'
-      +'<button onclick="nxClose()" style="flex:0 0 auto;border:1px solid var(--line);background:var(--w);border-radius:11px;padding:11px 14px;font-family:\'Nunito\';font-weight:900;font-size:16px;">←</button>'
-      +'<button onclick="nxChat('+id+')" style="flex:1;background:var(--ac);color:#fff;border:none;border-radius:11px;font-family:\'Nunito\';font-weight:900;font-size:14px;">Contacter</button></div>';
-     $('nxchat').style.transform='translateY(100%)';$('nxfiche').style.transform='translateY(0)';};
-   window.nxClose=function(){$('nxfiche').style.transform='translateY(100%)';sel=null;pins();cards();};
-   window.nxChat=function(id){var p=null;for(var k=0;k<P.length;k++){if(P[k].id===id)p=P[k];}
-     $('nxchat').innerHTML='<div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;">'
-      +'<button onclick="nxCloseChat()" aria-label="Retour" style="border:none;background:transparent;font-size:18px;font-weight:900;">⌄</button>'
-      +'<div style="width:34px;height:34px;border-radius:50%;background:var(--acl);color:var(--acd);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;">'+p.i+'</div>'
-      +'<div><div style="font-weight:900;font-size:14px;">'+p.n+'</div><div style="font-size:11px;color:var(--ok);font-weight:700;">en ligne</div></div></div>'
-      +'<div style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">'
-      +'<div style="align-self:flex-start;background:var(--line2);border-radius:14px;padding:9px 13px;max-width:76%;font-size:13px;font-weight:700;">Bonjour, en quoi puis-je vous aider ?</div>'
-      +'<div style="align-self:flex-end;background:var(--ac);color:#fff;border-radius:14px;padding:9px 13px;max-width:76%;font-size:13px;font-weight:700;">J’ai une fuite sous l’évier.</div>'
-      +'<div style="align-self:flex-start;background:var(--line2);border-radius:14px;padding:9px 13px;max-width:76%;font-size:13px;font-weight:700;">Je peux passer aujourd’hui. Je vous fais un devis.</div>'
-      +'<div style="align-self:center;font-size:11px;color:var(--ink3);font-weight:700;">Coordonnées révélées après validation</div></div>'
-      +'<div style="padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;">'
-      +'<input placeholder="Votre message" aria-label="Message" style="flex:1;border:1px solid var(--line);border-radius:20px;padding:9px 13px;font-family:\'Nunito\';font-weight:700;font-size:13px;outline:none;"/>'
-      +'<button aria-label="Envoyer" style="background:var(--ac);color:#fff;border:none;border-radius:11px;padding:9px 14px;font-family:\'Nunito\';font-weight:900;">→</button></div>';
-     $('nxchat').style.transform='translateY(0)';};
-   window.nxCloseChat=function(){$('nxchat').style.transform='translateY(100%)';};
+   window.nxOpen=function(id){sel=id;var p;for(var k=0;k<P.length;k++)if(P[k].id===id)p=P[k];pins();cards();
+    $("nxfiche").innerHTML='<div style="padding:10px 0 2px"><div style="width:34px;height:4px;border-radius:2px;background:#E4E1DB;margin:0 auto"></div></div>'
+     +'<div style="padding:10px 20px 14px;overflow-y:auto;flex:1">'
+     +'<div style="display:flex;align-items:center;gap:13px"><div style="width:58px;height:58px;border-radius:50%;background:'+AT+';color:'+AI+';display:flex;align-items:center;justify-content:center;font-weight:600;font-size:19px">'+p.i+'</div>'
+     +'<div style="flex:1"><div style="font-weight:600;font-size:18px">'+p.n+'</div><div style="color:'+I2+';font-size:13.5px;margin-top:1px">'+p.m+' · '+p.d+'</div><div style="font-size:12.5px;color:'+I2+';margin-top:3px">'+star()+' <span style="color:'+INK+';font-weight:500">'+p.r+'</span> ('+p.rc+') · Vérifié</div></div>'
+     +'<button aria-label="Favori" onclick="nxFav('+id+')" style="border:none;background:transparent;cursor:pointer;padding:0;line-height:0">'+hsvg(!!fav[id])+'</button></div>'
+     +'<div style="display:flex;gap:8px;margin-top:16px">'
+     +'<span style="background:'+L2+';border-radius:10px;padding:10px;font-size:12px;color:'+I2+';flex:1;text-align:center">Répond ~15 min</span>'
+     +'<span style="background:'+L2+';border-radius:10px;padding:10px;font-size:12px;color:'+I2+';flex:1;text-align:center">Assuré</span>'
+     +'<span style="background:'+L2+';border-radius:10px;padding:10px;font-size:12px;color:'+INK+';font-weight:500;flex:1;text-align:center">'+p.p+'</span></div>'
+     +'<div style="font-weight:600;margin-top:20px;font-size:14px">Prestations</div><div style="color:'+I2+';font-size:13.5px;line-height:1.7;margin-top:5px">Dépannage · Devis gratuit · Intervention rapide</div>'
+     +'<div style="font-weight:600;margin-top:18px;font-size:14px">Avis</div><div style="background:'+L2+';border-radius:12px;padding:12px;margin-top:7px;font-size:13.5px;color:'+I2+'">« Ponctuel et soigné. »</div></div>'
+     +'<div style="padding:13px 18px;border-top:1px solid '+LN+';display:flex;gap:11px">'
+     +'<button onclick="nxClose()" style="flex:0 0 auto;border:1px solid '+LN+';background:#fff;border-radius:12px;padding:0 16px;font-family:inherit;font-size:17px;color:'+I2+'">‹</button>'
+     +'<button onclick="nxChat('+id+')" style="flex:1;background:'+A+';color:#fff;border:none;border-radius:12px;font-family:inherit;font-weight:600;font-size:14.5px;padding:13px">Contacter</button></div>';
+    $("nxchat").style.transform="translateY(100%)";$("nxfiche").style.transform="translateY(0)";};
+   window.nxClose=function(){$("nxfiche").style.transform="translateY(100%)";sel=null;pins();cards();};
+   window.nxChat=function(id){var p;for(var k=0;k<P.length;k++)if(P[k].id===id)p=P[k];
+    $("nxchat").innerHTML='<div style="padding:14px 18px;border-bottom:1px solid '+LN+';display:flex;align-items:center;gap:11px">'
+     +'<button onclick="nxCloseChat()" aria-label="Fermer" style="border:none;background:transparent;font-size:20px;color:'+I2+';line-height:1">⌄</button>'
+     +'<div style="width:34px;height:34px;border-radius:50%;background:'+AT+';color:'+AI+';display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px">'+p.i+'</div>'
+     +'<div><div style="font-weight:600;font-size:14px">'+p.n+'</div><div style="font-size:11px;color:#3BA55C">en ligne</div></div></div>'
+     +'<div style="flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:9px">'
+     +'<div style="align-self:flex-start;background:'+L2+';border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:78%;font-size:13.5px">Bonjour, en quoi puis-je vous aider ?</div>'
+     +'<div style="align-self:flex-end;background:'+A+';color:#fff;border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:78%;font-size:13.5px">J’ai une fuite sous l’évier.</div>'
+     +'<div style="align-self:flex-start;background:'+L2+';border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:78%;font-size:13.5px">Je peux passer aujourd’hui, je vous fais un devis.</div>'
+     +'<div style="align-self:center;font-size:11px;color:'+I3+';margin-top:4px">Coordonnées révélées après validation</div></div>'
+     +'<div style="padding:12px 16px;border-top:1px solid '+LN+';display:flex;gap:9px;align-items:center">'
+     +'<input placeholder="Message" aria-label="Message" style="flex:1;border:1px solid '+LN+';border-radius:18px;padding:10px 14px;font-family:inherit;font-size:13.5px;outline:none;color:'+INK+'"/>'
+     +'<button aria-label="Envoyer" style="background:'+A+';color:#fff;border:none;border-radius:12px;padding:10px 15px;font-size:15px">›</button></div>';
+    $("nxchat").style.transform="translateY(0)";};
+   window.nxCloseChat=function(){$("nxchat").style.transform="translateY(100%)";};
    chips();pins();cards();
   })();
   </script>
@@ -803,7 +776,7 @@ body.pv .screen{
   </div>
   <nav class="nav">
     <button class="nv" onclick="go('s-home')"><div class="nvi">🏠</div>Accueil</button>
-    <button class="nv" onclick="go('s-search')"><div class="nvi">🔍</div>Recherche</button>
+    <button class="nv" onclick="go('s-map')"><div class="nvi">🔍</div>Recherche</button>
     <button class="nvc" onclick="go('s-ping')">📡</button>
     <button class="nv on"><div class="nvi">🔄</div>En cours</button>
     <button class="nv" onclick="go('s-moi')"><div class="nvi">👤</div>Moi</button>
@@ -997,7 +970,7 @@ body.pv .screen{
     <div class="ct">Rayon</div>
     <div class="chips" style="margin-bottom:22px;"><div class="chip" onclick="pick(this)">2 km</div><div class="chip on" onclick="pick(this)">5 km</div><div class="chip" onclick="pick(this)">10 km</div><div class="chip" onclick="pick(this)">20 km</div></div>
     <div class="wrn"><span>⏱</span><span>Les pros ont 15 minutes pour répondre. Passé ce délai, la demande passe au suivant. Aucune pénalité.</span></div>
-    <button class="btn" onclick="go('s-search')">📡 Envoyer le Ping</button>
+    <button class="btn" onclick="go('s-map')">📡 Envoyer le Ping</button>
   </div>
 </div>
 
@@ -1023,7 +996,7 @@ body.pv .screen{
   </div>
   <nav class="nav">
     <button class="nv" onclick="go('s-home')"><div class="nvi">🏠</div>Accueil</button>
-    <button class="nv" onclick="go('s-search')"><div class="nvi">🔍</div>Recherche</button>
+    <button class="nv" onclick="go('s-map')"><div class="nvi">🔍</div>Recherche</button>
     <button class="nvc" onclick="go('s-ping')">📡</button>
     <button class="nv" onclick="go('s-cours')"><div class="nvi">🔄</div>En cours</button>
     <button class="nv on"><div class="nvi">👤</div>Moi</button>
