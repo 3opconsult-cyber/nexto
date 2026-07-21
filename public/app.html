@@ -1615,6 +1615,7 @@ const SCREENS = [
   ['Clôture', [['s-attente','Délai 24-48h'],['s-avis','Avis'],['s-fonds','Fonds libérés'],['s-facture','Facture']], 'client'],
   ['Litige', [['s-litige','Signaler'],['s-litige-suivi','Suivi litige']], 'client'],
   ['Mon espace', [['s-moi','Profil']], 'client'],
+  ['Super-admin', [['s-sa','Tableau de bord']], null],
   ['Pro — Inscription', [['s-p-home','Accueil pro'],['s-p1','Statut juridique'],['s-p2','Identité'],['s-p3','Entreprise'],['s-p4','Documents'],['s-p5','Prestations'],['s-p6','Vitrine'],['s-p-attente','Validation']], 'pro'],
   ['Pro — Activité', [['s-p-dash','Tableau de bord'],['s-pro-devis','Créer devis'],['s-p-route','En route'],['s-p-scan','Scan QR'],['s-p-inter','Intervention'],['s-p-supp','Devis supp.'],['s-p-qrfin','QR fin']], 'pro'],
   ['Pro — Clôture', [['s-p-payok','Paiement'],['s-p-facture','Facture 2026'],['s-p-vitrine','Ma vitrine'],['s-p-litige','Litige']], 'pro'],
@@ -1855,5 +1856,71 @@ if(PREVIEW){
   show('s-ob');
 }
 </script>
+<div id="s-sa" class="screen">
+  <div style="position:absolute;inset:0;overflow-y:auto;background:#F6F5F2;font-family:'Inter',system-ui,sans-serif;color:#1C1A26;padding:18px 16px 90px;">
+    <div style="font-size:12px;color:#8A8593;font-weight:600;letter-spacing:.4px;">SUPER-ADMIN</div>
+    <div style="font-size:22px;font-weight:600;margin-top:2px;">Tableau de bord</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
+      <div style="background:#fff;border:1px solid #ECE9E4;border-radius:14px;padding:13px;"><div style="font-size:20px;font-weight:600;">128</div><div style="font-size:11.5px;color:#6B6676;">Transactions</div></div>
+      <div style="background:#fff;border:1px solid #ECE9E4;border-radius:14px;padding:13px;"><div style="font-size:20px;font-weight:600;">14 720 €</div><div style="font-size:11.5px;color:#6B6676;">Volume</div></div>
+      <div style="background:#fff;border:1px solid #ECE9E4;border-radius:14px;padding:13px;"><div style="font-size:20px;font-weight:600;color:#4B3FBF;">2 090 €</div><div style="font-size:11.5px;color:#6B6676;">Marge nette Nexto</div></div>
+      <div style="background:#fff;border:1px solid #ECE9E4;border-radius:14px;padding:13px;"><div style="font-size:20px;font-weight:600;color:#C2410C;">3</div><div style="font-size:11.5px;color:#6B6676;">Litiges</div></div>
+    </div>
+
+    <div style="font-size:15px;font-weight:600;margin:22px 0 10px;">Flux par transaction</div>
+    <div id="sa-list"></div>
+  </div>
+
+  <div id="sa-sheet" style="position:absolute;left:0;right:0;bottom:0;height:88%;z-index:6;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -3px 24px rgba(28,26,38,.14);transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;font-family:'Inter',system-ui,sans-serif;color:#1C1A26;"></div>
+
+  <script>
+  (function(){
+   var AC="#6B5CE0",AI="#4B3FBF",INK="#1C1A26",I2="#6B6676",I3="#A5A1AF",LN="#ECE9E4",L2="#F5F3F0",OK="#2E9E5B",WA="#C2410C";
+   var STEPS=["Pay\u00e9","S\u00e9questre","QR arriv\u00e9e","QR fin","D\u00e9lai 48h","Lib\u00e9r\u00e9"];
+   var TX=[
+    {id:"NX-2041",cl:"Marie D.",pr:"Jean M.",sv:"Plomberie",s:120,r:0.11,st:5,dt:"14 juil. 14:32"},
+    {id:"NX-2040",cl:"Paul R.",pr:"Sophie M.",sv:"M\u00e9nage",s:54,r:0.10,st:4,dt:"14 juil. 11:05"},
+    {id:"NX-2039",cl:"Amine T.",pr:"Marc D.",sv:"Jardinage",s:80,r:0.12,st:3,dt:"14 juil. 09:20"},
+    {id:"NX-2038",cl:"Lucie B.",pr:"Amina K.",sv:"Baby-sitting",s:45,r:0.10,st:1,dt:"13 juil. 18:40"},
+    {id:"NX-2037",cl:"Karim S.",pr:"Pierre L.",sv:"Manutention",s:150,r:0.13,st:2,dt:"13 juil. 16:12"}
+   ];
+   var $=function(x){return document.getElementById(x);};
+   var eu=function(v){return v.toFixed(2).replace(".",",")+" \u20ac";};
+   function badge(st){var c=st>=5?[OK,"#DCFCE7"]:(st>=2?[AI,"#EEEBFB"]:[WA,"#FFF1E6"]);var t=st>=5?"Lib\u00e9r\u00e9":(st>=2?"En cours":"Nouveau");return '<span style="background:'+c[1]+';color:'+c[0]+';border-radius:8px;padding:3px 9px;font-size:11px;font-weight:600;">'+t+'</span>';}
+   function fees(t){var clientPays=t.s*1.05,buyerFee=t.s*0.05,sellerFee=t.s*t.r,commission=buyerFee+sellerFee,stripe=clientPays*0.015+0.25+0.25,infra=0.05,net=commission-stripe-infra,proNet=t.s-sellerFee;return {clientPays:clientPays,buyerFee:buyerFee,sellerFee:sellerFee,commission:commission,stripe:stripe,infra:infra,net:net,proNet:proNet};}
+   function list(){$("sa-list").innerHTML=TX.map(function(t){return '<div onclick="saOpen(\''+t.id+'\')" style="background:#fff;border:1px solid '+LN+';border-radius:14px;padding:13px;margin-bottom:10px;cursor:pointer;">'
+     +'<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;font-size:14px;">'+t.cl+' \u2192 '+t.pr+'</span>'+badge(t.st)+'</div>'
+     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;"><span style="color:'+I2+';font-size:12.5px;">'+t.sv+' \u00b7 '+t.dt+'</span><span style="font-weight:600;font-size:13.5px;">'+eu(t.s*1.05)+'</span></div></div>';}).join('');}
+   window.saOpen=function(id){var t=null;for(var k=0;k<TX.length;k++)if(TX[k].id===id)t=TX[k];var f=fees(t);
+     var tl=STEPS.map(function(s,i){var on=i<=t.st;return '<div style="flex:1;text-align:center;"><div style="width:12px;height:12px;border-radius:50%;margin:0 auto;background:'+(on?AC:"#E4E1DB")+';"></div><div style="font-size:9px;color:'+(on?INK:I3)+';margin-top:4px;line-height:1.1;">'+s+'</div></div>';}).join('<div style="flex:0 0 6px;height:1px;background:#E4E1DB;margin-top:6px;"></div>');
+     function row(l,v,bold,col){return '<div style="display:flex;justify-content:space-between;padding:4px 0;'+(bold?'border-top:1px solid '+LN+';margin-top:4px;padding-top:8px;':'')+'"><span style="color:'+(bold?INK:I2)+';font-size:13px;'+(bold?'font-weight:600;':'')+'">'+l+'</span><span style="color:'+(col||INK)+';font-size:13px;font-weight:'+(bold?600:500)+';">'+v+'</span></div>';}
+     $("sa-sheet").innerHTML='<div style="padding:10px 0 4px;"><div style="width:34px;height:4px;border-radius:2px;background:#E4E1DB;margin:0 auto;"></div></div>'
+       +'<div style="padding:8px 20px 16px;overflow-y:auto;flex:1;">'
+       +'<div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-weight:600;font-size:17px;">'+t.cl+' \u2192 '+t.pr+'</div><div style="color:'+I2+';font-size:12.5px;">'+t.sv+' \u00b7 '+t.id+' \u00b7 '+t.dt+'</div></div>'+badge(t.st)+'</div>'
+       +'<div style="font-weight:600;font-size:13px;margin:18px 0 8px;">Parcours escrow</div>'
+       +'<div style="display:flex;align-items:flex-start;background:'+L2+';border-radius:12px;padding:12px 8px;">'+tl+'</div>'
+       +'<div style="font-weight:600;font-size:13px;margin:18px 0 4px;">R\u00e9partition des frais</div>'
+       +row("Client paie",eu(f.clientPays))
+       +row("Commission acheteur (5 %)",eu(f.buyerFee),false,I2)
+       +row("Commission vendeur ("+Math.round(t.r*100)+" %)",eu(f.sellerFee),false,I2)
+       +row("Co\u00fbt Stripe",eu(-f.stripe),false,I2)
+       +row("Co\u00fbt infra",eu(-f.infra),false,I2)
+       +row("Marge nette Nexto",eu(f.net),true,AI)
+       +'<div style="background:'+L2+';border-radius:10px;padding:10px 12px;margin-top:10px;display:flex;justify-content:space-between;"><span style="font-size:12.5px;color:'+I2+';">Le pro re\u00e7oit (net)</span><span style="font-size:13px;font-weight:600;">'+eu(f.proNet)+'</span></div>'
+       +'<div style="font-weight:600;font-size:13px;margin:18px 0 8px;">Factures</div>'
+       +'<div style="display:flex;gap:8px;"><button style="flex:1;border:1px solid '+LN+';background:#fff;border-radius:10px;padding:10px;font-family:inherit;font-size:12.5px;font-weight:500;">Re\u00e7u client</button><button style="flex:1;border:1px solid '+LN+';background:#fff;border-radius:10px;padding:10px;font-family:inherit;font-size:12.5px;font-weight:500;">Facture commission</button></div>'
+       +'</div>'
+       +'<div style="padding:13px 18px;border-top:1px solid '+LN+';display:flex;gap:11px;">'
+       +'<button onclick="saClose()" style="flex:0 0 auto;border:1px solid '+LN+';background:#fff;border-radius:12px;padding:0 16px;font-family:inherit;font-size:17px;color:'+I2+';">\u2039</button>'
+       +'<button style="flex:1;border:1px solid '+LN+';background:#fff;color:'+WA+';border-radius:12px;font-family:inherit;font-weight:600;font-size:13.5px;padding:12px;">Rembourser (arbitrage)</button>'
+       +'<button style="flex:1;background:'+AC+';color:#fff;border:none;border-radius:12px;font-family:inherit;font-weight:600;font-size:13.5px;padding:12px;">Lib\u00e9rer</button></div>';
+     $("sa-sheet").style.transform="translateY(0)";};
+   window.saClose=function(){$("sa-sheet").style.transform="translateY(100%)";};
+   list();
+  })();
+  </script>
+</div>
+
 </body>
 </html>
