@@ -1804,3 +1804,19 @@ fit();setActiveTab('v_map');renderMenu();openPv(0);closePreview();syncLit();setT
   window.pingTrack('page_view');
 })();
 </script>
+<script>
+/* Lien réel vers l'inscription — additif, ne touche à aucun écran existant */
+(function(){
+  var btn=document.createElement('a');
+  btn.textContent='Créer mon compte (réel) →';
+  btn.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;background:#123644;color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:12.5px;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px rgba(0,0,0,.25)';
+  function buildHref(){
+    var utm=JSON.parse(localStorage.getItem('ping_utm')||'{}');
+    var qs=new URLSearchParams(utm).toString();
+    return '/auth/signup'+(qs?('?'+qs):'');
+  }
+  btn.href=buildHref();
+  btn.onclick=function(){ if(window.pingTrack) window.pingTrack('real_signup_click'); };
+  document.body ? document.body.appendChild(btn) : window.addEventListener('DOMContentLoaded',function(){document.body.appendChild(btn);});
+})();
+</script>
