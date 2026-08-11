@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
+import { trackEvent } from '@/lib/tracking'
 
 const DEFAULT_POS = { lat: 43.6584, lng: 6.9225 } // Grasse
 
@@ -14,6 +15,8 @@ export default function MapPage() {
   const [pros, setPros] = useState<ProviderNearby[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<ProviderNearby | null>(null)
+
+  useEffect(() => { trackEvent('page_view') }, [])
 
   useEffect(() => {
     if (navigator.geolocation) {
