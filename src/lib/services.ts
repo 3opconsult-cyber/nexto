@@ -22,3 +22,19 @@ export async function fetchProvidersNearby(
   if (error) { console.error('providers_nearby', error); return [] }
   return (data ?? []) as ProviderNearby[]
 }
+
+export async function fetchProDetail(proId: string) {
+  const supabase = createClient()
+  const { data: pro } = await supabase
+    .from('provider_profiles')
+    .select('*, profiles(full_name, avatar_hue)')
+    .eq('id', proId)
+    .single()
+  const { data: reviews } = await supabase
+    .from('reviews')
+    .select('*, profiles!reviews_rater_id_fkey(full_name)')
+    .eq('ratee_id', proId)
+    .order('created_at', { ascending: false })
+    .limit(20)
+  return { pro, reviews: reviews ?? [] }
+}
