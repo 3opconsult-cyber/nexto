@@ -32,7 +32,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--navy)' }}>
       <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <Link href="/" className="font-fredoka text-4xl text-white mb-8">Nexto</Link>
+        <Link href="/" className="font-fredoka text-4xl text-white mb-8">PING</Link>
         <div className="w-full max-w-sm bg-white rounded-3xl p-7 shadow-2xl">
           <h2 className="font-fredoka text-2xl text-navy mb-6">Connexion</h2>
           <form onSubmit={handleLogin} className="space-y-4">
