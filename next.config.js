@@ -5,8 +5,10 @@ const nextConfig = {
       beforeFiles: [
         { source: '/admin', destination: '/admin.html' },
         { source: '/presentation', destination: '/presentation.html' },
-        { source: '/:path((?!_next/|api/|auth/|map$|admin\\.html|app\\.html|presentation\\.html).*)', destination: '/app.html' },
+        { source: '/:path((?!_next/|api/|auth/|admin\\.html|app\\.html|presentation\\.html).*)', destination: '/app.html' },
       ],
+      afterFiles: [],
+      fallback: [],
     }
   },
 }
