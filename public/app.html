@@ -1763,3 +1763,44 @@ window.addEventListener('resize',fit);
 window.addEventListener('load',()=>{fit();setActiveTab('v_map');});
 fit();setActiveTab('v_map');renderMenu();openPv(0);closePreview();syncLit();setTimeout(()=>doPing('v_map'),500);
 </script>
+<script>
+/* ================= SUIVI RÉEL — UTM + pages vues + scans QR ================= */
+(function(){
+  var SB_URL='https://wmiawwaxwlvascyflpba.supabase.co';
+  var SB_KEY='sb_publishable_ehRFsNEJD1hnkOyi7vdfEA_NJey8yfP';
+
+  function getSessionId(){
+    var id=localStorage.getItem('ping_sid');
+    if(!id){ id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()); localStorage.setItem('ping_sid',id); }
+    return id;
+  }
+  function captureUTM(){
+    var p=new URLSearchParams(window.location.search);
+    var keys=['utm_source','utm_medium','utm_campaign','utm_content','qr'];
+    var has=false, data={};
+    keys.forEach(function(k){ var v=p.get(k); if(v){ data[k]=v; has=true; } });
+    if(has) localStorage.setItem('ping_utm', JSON.stringify(data));
+    return JSON.parse(localStorage.getItem('ping_utm')||'{}');
+  }
+  window.pingTrack=function(eventType, extra){
+    try{
+      var utm=captureUTM();
+      var body={
+        session_id:getSessionId(),
+        event_type:eventType,
+        path:window.location.pathname+window.location.search,
+        qr_code:utm.qr||null,
+        metadata:Object.assign({},utm,extra||{}),
+        user_agent:navigator.userAgent
+      };
+      fetch(SB_URL+'/rest/v1/events',{
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(body)
+      }).catch(function(){});
+    }catch(e){}
+  };
+  captureUTM();
+  window.pingTrack('page_view');
+})();
+</script>
