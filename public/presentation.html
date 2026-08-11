@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PING · Animation d'accroche</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+:root{--ink:#123644;--ink2:#0e2a34;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;--teal:#12B39C;--tealD:#0C8F7E;--gold:#F2A93B;--slate:#6E8592;--line:#E7EDEB;--paper:#F3F6F5;--blue:#3B82F6;--fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;--D:46s;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
+.cap{color:#9fb6bc;font-size:13px;text-align:center;max-width:470px;line-height:1.5}
+.frame{width:min(84vw,300px);aspect-ratio:390/844;border-radius:34px;overflow:hidden;position:relative;background:#fff;box-shadow:0 30px 70px rgba(0,0,0,.55);border:2px solid #000}
+.scr{position:absolute;inset:0}
+
+.topbar{position:absolute;top:0;left:0;right:0;padding:16px 16px 0;display:flex;align-items:center;gap:9px;z-index:20}
+.topbar .lg{width:32px;height:32px;border-radius:9px;background:var(--ink);display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.topbar b{font-family:var(--fh);font-weight:700;font-size:16px;color:var(--ink)}
+.topbar.onmap .lg{background:#fff}.topbar.onmap .lg svg{stroke:var(--ink)}
+
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:58px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;z-index:15;padding-bottom:4px}
+.tabbar .ti{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--slate)}
+.tabbar .ti.on{color:var(--tealD)}
+.tabbar .ti span{font-size:8.5px;font-weight:700;font-family:var(--fh)}
+
+.cursor{position:absolute;width:26px;height:26px;z-index:30;opacity:0;transform:translate(-50%,-50%)}
+.cursor svg{filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
+.cursor .ripple{position:absolute;left:6px;top:4px;width:16px;height:16px;border-radius:50%;border:2px solid var(--teal);opacity:0}
+
+/* ===== PANEL 1 : MAP ===== */
+#pMap{opacity:0;animation:pMap var(--D) linear infinite}
+@keyframes pMap{0%,1%{opacity:0}2%{opacity:1}34%{opacity:1}36%{opacity:0}100%{opacity:0}}
+.mapsvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.searchbar{position:absolute;left:16px;right:16px;top:56px;background:#fff;border-radius:13px;box-shadow:0 8px 20px rgba(18,54,68,.18);padding:11px 13px;display:flex;align-items:center;gap:9px;opacity:0;animation:sbar var(--D) linear infinite;z-index:6}
+@keyframes sbar{0%,2%{opacity:0;transform:translateY(6px)}4%{opacity:1;transform:translateY(0)}33%{opacity:1}35%{opacity:0}100%{opacity:0}}
+.searchbar svg{flex:0 0 auto;color:var(--slate)}
+.typetext{font-family:var(--fb);font-weight:600;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;width:0;border-right:2px solid var(--tealD);animation:type var(--D) steps(6) infinite}
+@keyframes type{0%,4%{width:0}9%{width:6.1ch}31%{width:6.1ch}32%,100%{width:6.1ch;border-color:transparent}}
+.maptop{gap:9px;padding-right:16px}
+.searchinline{flex:1;min-width:0;background:#fff;border-radius:12px;box-shadow:0 6px 16px rgba(18,54,68,.16);padding:9px 12px;display:flex;align-items:center;gap:8px}
+.searchinline>svg{color:var(--slate);flex:0 0 auto}
+
+/* point GPS client (centre) */
+.gps{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);z-index:5;opacity:0;animation:gpsin var(--D) linear infinite}
+@keyframes gpsin{0%,9%{opacity:0}11%{opacity:1}34%{opacity:1}36%{opacity:0}100%{opacity:0}}
+.gps .halo{position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:50%;background:rgba(59,130,246,.14);transform:translate(-50%,-50%);animation:halo 2.4s ease-in-out infinite}
+@keyframes halo{0%,100%{transform:translate(-50%,-50%) scale(.8);opacity:.7}50%{transform:translate(-50%,-50%) scale(1.1);opacity:.35}}
+.gps .dot{position:relative;width:18px;height:18px;border-radius:50%;background:var(--blue);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.gps .lbl{position:absolute;left:50%;top:22px;transform:translateX(-50%);white-space:nowrap;background:#fff;border-radius:8px;padding:3px 8px;font-size:9px;font-weight:700;color:var(--ink);box-shadow:0 3px 8px rgba(18,54,68,.16)}
+
+/* prestataires (apparition une à une) */
+.pin{position:absolute;z-index:6}
+.pinmark{width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(45deg);border:2.1px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.22)}
+.pinAlt{background:#9fb0b8;display:grid;place-items:center}
+.pinMain{background:var(--teal);width:26px;height:26px;display:grid;place-items:center}
+.pinav{transform:rotate(-45deg);font-family:var(--fh);font-weight:700;font-size:9.5px;color:#fff}
+.pin .in{transform:translate(-50%,-100%) scale(0)}
+.p1 .in{animation:pop1 var(--D) linear infinite}
+.p2 .in{animation:pop2 var(--D) linear infinite}
+.p3 .in{animation:pop3 var(--D) linear infinite}
+.p4 .in{animation:pop4 var(--D) linear infinite}
+.p5 .in{animation:pop5 var(--D) linear infinite}
+.p6 .in{animation:pop6 var(--D) linear infinite}
+.pMainpin .in{animation:popMain var(--D) linear infinite}
+@keyframes pop1{0%,12%{transform:translate(-50%,-100%) scale(0)}14%{transform:translate(-50%,-100%) scale(1.15)}15.5%{transform:translate(-50%,-100%) scale(1)}34%{transform:translate(-50%,-100%) scale(1);opacity:1}36%{opacity:0}100%{opacity:0}}
+@keyframes pop2{0%,14.5%{transform:translate(-50%,-100%) scale(0)}16.5%{transform:translate(-50%,-100%) scale(1.15)}18%{transform:translate(-50%,-100%) scale(1)}34%{transform:translate(-50%,-100%) scale(1);opacity:1}36%{opacity:0}100%{opacity:0}}
+@keyframes pop3{0%,17%{transform:translate(-50%,-100%) scale(0)}19%{transform:translate(-50%,-100%) scale(1.15)}20.5%{transform:translate(-50%,-100%) scale(1)}34%{transform:translate(-50%,-100%) scale(1);opacity:1}36%{opacity:0}100%{opacity:0}}
+@keyframes pop4{0%,19.5%{transform:translate(-50%,-100%) scale(0)}21.5%{transform:translate(-50%,-100%) scale(1.15)}23%{transform:translate(-50%,-100%) scale(1)}34%{transform:translate(-50%,-100%) scale(1);opacity:1}36%{opacity:0}100%{opacity:0}}
+@keyframes pop5{0%,22%{transform:translate(-50%,-100%) scale(0)}24%{transform:translate(-50%,-100%) scale(1.15)}25.5%{transform:translate(-50%,-100%) scale(1)}34%{transform:translate(-50%,-100%) scale(1);opacity:1}36%{opacity:0}100%{opacity:0}}
+@keyframes pop6{0%,24.5%{transform:translate(-50%,-100%) scale(0)}26.5%{transform:translate(-50%,-100%) scale(1.15)}28%{transform:translate(-50%,-100%) scale(1)}34%{transform:translate(-50%,-100%) scale(1);opacity:1}36%{opacity:0}100%{opacity:0}}
+@keyframes popMain{0%,27%{transform:translate(-50%,-100%) scale(0)}29.5%{transform:translate(-50%,-100%) scale(1.3)}31%{transform:translate(-50%,-100%) scale(1)}34%{transform:translate(-50%,-100%) scale(1);opacity:1}36%{opacity:0}100%{opacity:0}}
+.ring{position:absolute;left:50%;top:13px;width:0;height:0;border-radius:50%;border:2.3px solid var(--teal);transform:translate(-50%,-50%);opacity:0;animation:ringp var(--D) linear infinite}
+@keyframes ringp{0%,29%{width:0;height:0;opacity:0}31%{opacity:.85}34%{width:52px;height:52px;opacity:0}100%{opacity:0}}
+
+/* curseur : va vers Sofia puis clique */
+.curMap{animation:curMap var(--D) linear infinite}
+@keyframes curMap{
+ 0%,4%{opacity:0;transform:translate(-50%,-50%)}
+ 6%{opacity:1;left:55%;top:9%;transform:translate(-50%,-50%)}
+ 10%{opacity:1;left:55%;top:9%;transform:translate(-50%,-50%)}
+ 28%{opacity:1;left:38%;top:47%;transform:translate(-50%,-50%)}
+ 29.5%{left:38%;top:47%;transform:translate(-50%,-50%) scale(.72)}
+ 31%{left:38%;top:47%;transform:translate(-50%,-50%) scale(1)}
+ 33%{opacity:1;left:38%;top:47%;transform:translate(-50%,-50%)}
+ 34.5%{opacity:0}100%{opacity:0}}
+.curMap .ripple{animation:ripMap var(--D) linear infinite}
+@keyframes ripMap{0%,29.5%{opacity:0;width:16px;height:16px}30%{opacity:1;width:16px;height:16px}33%{opacity:0;width:40px;height:40px}100%{opacity:0}}
+
+.avpop{position:absolute;left:38%;top:47%;transform:translate(-50%,-160%) scale(0);z-index:9;background:#fff;border-radius:16px;box-shadow:0 10px 24px rgba(18,54,68,.22);padding:8px 12px;display:flex;align-items:center;gap:8px;animation:avpopin var(--D) linear infinite}
+@keyframes avpopin{0%,30.5%{transform:translate(-50%,-160%) scale(0);opacity:0}32.5%{transform:translate(-50%,-190%) scale(1.06);opacity:1}33.5%{transform:translate(-50%,-180%) scale(1);opacity:1}34.5%{opacity:0}100%{opacity:0}}
+.avpop .a{width:28px;height:28px;border-radius:50%;background:var(--teal);display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:12px;flex:0 0 auto}
+.avpop .t{font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap}
+.avpop .s{font-size:9.5px;color:var(--tealD);font-weight:700}
+
+/* ===== PANEL 2 : FICHE PRO ===== */
+#pProfile{opacity:0;background:#fff;animation:pProfile var(--D) linear infinite}
+@keyframes pProfile{0%,36%{opacity:0}37.5%{opacity:1}49%{opacity:1}50.5%{opacity:0}100%{opacity:0}}
+.profhero{position:absolute;top:0;left:0;right:0;height:150px;background:radial-gradient(130% 120% at 80% 0,#1c4d5d,#0e2a34);padding:54px 20px 0;color:#fff}
+.profhero .pn{font-family:var(--fh);font-weight:700;font-size:20px}
+.profhero .pm{font-size:11.5px;opacity:.85;margin-top:3px;display:flex;align-items:center;gap:6px}
+.profav{position:absolute;top:44px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--teal);border:3px solid #fff;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:22px}
+.profbody{position:absolute;top:150px;left:0;right:0;bottom:76px;padding:16px 20px;overflow:hidden}
+.prow{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.prow .k{font-size:11px;color:var(--slate);font-weight:600}
+.prow .v{font-family:var(--fh);font-weight:700;font-size:13px;color:var(--ink)}
+.qtitle{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin:12px 0 8px}
+.qchips{display:flex;flex-wrap:wrap;gap:6px}
+.qchips .c{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:700;color:var(--ink)}
+.qbadges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.qb{display:flex;align-items:center;gap:4px;background:rgba(18,179,156,.1);border-radius:7px;padding:4px 8px;font-size:9.5px;font-weight:700;color:var(--tealD)}
+.chatcta{position:absolute;left:16px;right:16px;bottom:16px;background:var(--ink);color:#fff;font-family:var(--fh);font-weight:700;font-size:13px;text-align:center;padding:13px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;animation:pressP var(--D) linear infinite;z-index:5}
+@keyframes pressP{0%,47%{transform:scale(1)}48%{transform:scale(.96)}49%{transform:scale(1)}100%{transform:scale(1)}}
+.curProf{animation:curProf var(--D) linear infinite}
+@keyframes curProf{0%,46.5%{opacity:0}47%{opacity:1;transform:translate(-50%,-50%) scale(1)}48%{transform:translate(-50%,-50%) scale(.72)}49%{transform:translate(-50%,-50%) scale(1)}50%{opacity:0}100%{opacity:0}}
+.curProf .ripple{animation:ripProf var(--D) linear infinite}
+@keyframes ripProf{0%,47.5%{opacity:0;width:16px;height:16px}48%{opacity:1;width:16px;height:16px}50%{opacity:0;width:38px;height:38px}100%{opacity:0}}
+
+/* ===== PANEL 3 : CHAT ===== */
+#pChat{opacity:0;background:var(--paper);animation:pChat var(--D) linear infinite}
+@keyframes pChat{0%,50.5%{opacity:0}52%{opacity:1}73%{opacity:1}74.5%{opacity:0}100%{opacity:0}}
+.chathd{position:absolute;top:60px;left:16px;right:16px;background:#fff;border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:10px;box-shadow:0 3px 10px rgba(18,54,68,.06);z-index:5}
+.chathd .cav{width:34px;height:34px;border-radius:50%;background:var(--teal);display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:12px}
+.chathd .n{font-family:var(--fh);font-weight:700;font-size:12.5px;color:var(--ink)}
+.chathd .s{font-size:10px;color:var(--tealD);font-weight:700;display:flex;align-items:center;gap:4px;margin-top:2px}
+.chathd .s .d{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+.chatbody{position:absolute;top:114px;left:16px;right:16px;bottom:150px;display:flex;flex-direction:column;gap:7px;justify-content:flex-start}
+.bubble{border-radius:12px;padding:8px 11px;font-size:11px;line-height:1.35;max-width:82%;opacity:0;transform:translateY(6px)}
+.bubble.pro{background:#fff;border-radius:12px 12px 12px 3px;color:var(--ink);align-self:flex-start;box-shadow:0 2px 7px rgba(18,54,68,.07)}
+.bubble.usr{background:var(--teal);border-radius:12px 12px 3px 12px;color:#fff;align-self:flex-end;font-weight:600}
+.m1{animation:m1 var(--D) linear infinite}@keyframes m1{0%,53%{opacity:0;transform:translateY(6px)}54.5%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+.m2{animation:m2 var(--D) linear infinite}@keyframes m2{0%,56%{opacity:0;transform:translateY(6px)}57.5%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+.m3{animation:m3 var(--D) linear infinite}@keyframes m3{0%,59%{opacity:0;transform:translateY(6px)}60.5%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+.m4{animation:m4 var(--D) linear infinite}@keyframes m4{0%,62%{opacity:0;transform:translateY(6px)}63.5%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+.m5{animation:m5 var(--D) linear infinite}@keyframes m5{0%,65%{opacity:0;transform:translateY(6px)}66.5%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+.paysheet{position:absolute;left:12px;right:12px;bottom:70px;background:#fff;border-radius:16px;padding:13px;box-shadow:0 -8px 24px rgba(18,54,68,.16);opacity:0;animation:paysheetin var(--D) linear infinite;z-index:6}
+@keyframes paysheetin{0%,67%{opacity:0;transform:translateY(10px)}68.5%{opacity:1;transform:translateY(0)}100%{opacity:1}}
+.payrow{display:flex;align-items:center;justify-content:space-between}
+.paylbl{font-size:10.5px;color:var(--slate);font-weight:600}
+.paytot{font-family:var(--fh);font-weight:700;font-size:15px;color:var(--ink)}
+.paysub{font-size:9.5px;color:var(--slate);margin-top:4px}
+.paybtn{margin-top:10px;background:var(--tealD);color:#fff;font-family:var(--fh);font-weight:700;font-size:12px;text-align:center;padding:11px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:7px;animation:press2 var(--D) linear infinite}
+@keyframes press2{0%,70%{transform:scale(1)}71.5%{transform:scale(.95)}73%{transform:scale(1)}100%{transform:scale(1)}}
+.curChat{animation:curChat var(--D) linear infinite}
+@keyframes curChat{0%,69.5%{opacity:0}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}71.5%{transform:translate(-50%,-50%) scale(.72)}73%{transform:translate(-50%,-50%) scale(1)}74%{opacity:0}100%{opacity:0}}
+.curChat .ripple{animation:ripChat var(--D) linear infinite}
+@keyframes ripChat{0%,71%{opacity:0;width:16px;height:16px}71.5%{opacity:1;width:16px;height:16px}74%{opacity:0;width:38px;height:38px}100%{opacity:0}}
+
+/* ===== PANEL 4 : ARRIVEE ===== */
+#pTrack{opacity:0;background:var(--ink2);animation:pTrack var(--D) linear infinite}
+@keyframes pTrack{0%,74.5%{opacity:0}76%{opacity:1}82%{opacity:1}83.5%{opacity:0}100%{opacity:0}}
+.trackwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 26px;color:#fff}
+.route{width:100%;height:4px;background:rgba(255,255,255,.16);border-radius:99px;position:relative;overflow:hidden}
+.route i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--teal);border-radius:99px;animation:routefill var(--D) linear infinite}
+@keyframes routefill{0%,76.5%{width:0}81%{width:100%}100%{width:100%}}
+.trlbl{font-family:var(--fh);font-weight:700;font-size:14.5px;opacity:0;animation:trlblin var(--D) linear infinite}
+@keyframes trlblin{0%,75.8%{opacity:0}77%{opacity:1}100%{opacity:1}}
+.qrwrap{width:58px;height:58px;border-radius:16px;background:rgba(255,255,255,.12);display:grid;place-items:center;transform:scale(0);animation:qrin var(--D) linear infinite}
+@keyframes qrin{0%,80.5%{transform:scale(0)}82%{transform:scale(1.12)}82.8%{transform:scale(1)}100%{transform:scale(1)}}
+
+/* ===== PANEL 5 : NOTE ===== */
+#pRate{opacity:0;background:#fff;animation:pRate var(--D) linear infinite}
+@keyframes pRate{0%,83.5%{opacity:0}85%{opacity:1}92%{opacity:1}93.5%{opacity:0}100%{opacity:0}}
+.ratewrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 24px}
+.ratewrap .lbl{font-family:var(--fh);font-weight:700;font-size:15px;color:var(--ink)}
+.starsbig{display:flex;gap:6px}
+.starsbig svg{width:26px;height:26px;color:var(--gold)}
+.s1{animation:st1 var(--D) linear infinite}.s2{animation:st2 var(--D) linear infinite}.s3{animation:st3 var(--D) linear infinite}.s4{animation:st4 var(--D) linear infinite}.s5{animation:st5 var(--D) linear infinite}
+@keyframes st1{0%,85.5%{opacity:.25;transform:scale(.6)}86.3%{opacity:1;transform:scale(1.2)}87%{opacity:1;transform:scale(1)}100%{opacity:1;transform:scale(1)}}
+@keyframes st2{0%,86.5%{opacity:.25;transform:scale(.6)}87.3%{opacity:1;transform:scale(1.2)}88%{opacity:1;transform:scale(1)}100%{opacity:1;transform:scale(1)}}
+@keyframes st3{0%,87.5%{opacity:.25;transform:scale(.6)}88.3%{opacity:1;transform:scale(1.2)}89%{opacity:1;transform:scale(1)}100%{opacity:1;transform:scale(1)}}
+@keyframes st4{0%,88.5%{opacity:.25;transform:scale(.6)}89.3%{opacity:1;transform:scale(1.2)}90%{opacity:1;transform:scale(1)}100%{opacity:1;transform:scale(1)}}
+@keyframes st5{0%,89.5%{opacity:.25;transform:scale(.6)}90.3%{opacity:1;transform:scale(1.2)}91%{opacity:1;transform:scale(1)}100%{opacity:1;transform:scale(1)}}
+.thumb{width:52px;height:52px;border-radius:50%;background:var(--paper);border:1px solid var(--line);display:grid;place-items:center;color:var(--slate);animation:thumbin var(--D) linear infinite}
+@keyframes thumbin{0%,91%{background:var(--paper);color:var(--slate);transform:scale(1)}91.8%{transform:scale(.85)}92.6%{background:var(--teal);color:#fff;transform:scale(1.12)}93.2%{background:var(--teal);color:#fff;transform:scale(1)}100%{background:var(--teal);color:#fff;transform:scale(1)}}
+.curRate{animation:curRate var(--D) linear infinite}
+@keyframes curRate{0%,90.5%{opacity:0}91%{opacity:1;transform:translate(-50%,-50%) scale(1)}91.8%{transform:translate(-50%,-50%) scale(.72)}92.6%{transform:translate(-50%,-50%) scale(1)}93.4%{opacity:0}100%{opacity:0}}
+.curRate .ripple{animation:ripRate var(--D) linear infinite}
+@keyframes ripRate{0%,91.3%{opacity:0;width:16px;height:16px}91.8%{opacity:1;width:16px;height:16px}93%{opacity:0;width:38px;height:38px}100%{opacity:0}}
+
+/* ===== PANEL 6 : FIN ===== */
+#pEnd{opacity:0;background:radial-gradient(130% 110% at 82% 0,#1c4d5d,#0e2a34);animation:pEnd var(--D) linear infinite}
+@keyframes pEnd{0%,93.5%{opacity:0}95%{opacity:1}99%{opacity:1}100%{opacity:0}}
+.endwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 30px;color:#fff;text-align:center}
+.endlogo{width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);display:grid;place-items:center}
+.endtxt{font-family:var(--fh);font-weight:700;font-size:20px;line-height:1.25;animation:endpulse 1.6s ease-in-out infinite}
+@keyframes endpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+.endacc{width:36px;height:4px;border-radius:99px;background:var(--gold)}
+</style></head>
+<body>
+<div class="cap">Démo cliquée (~46 s, boucle) : carte + position GPS du client → prestataires apparaissant un à un autour → clic sur Sofia → fiche (tarif, spécialités, qualifications) → chat → devis → validation → arrivée → note → fin.</div>
+<div class="frame">
+
+  <!-- MAP -->
+  <div class="scr" id="pMap">
+    <svg class="mapsvg" viewBox="0 0 90 160" preserveAspectRatio="xMidYMid slice">
+      <rect width="90" height="160" fill="var(--land)"/>
+      <path d="M90 0 L64 0 C58 22 74 40 66 60 C60 76 70 96 62 116 C56 132 66 148 60 160 L90 160 Z" fill="var(--water)"/>
+      <path d="M8 104 C4 92 22 88 28 98 C34 108 30 128 16 128 C6 128 8 116 8 104 Z" fill="var(--park)"/>
+      <g fill="#E2DED3"><rect x="5" y="26" width="7" height="6" rx="1"/><rect x="13" y="27" width="5" height="5" rx="1"/><rect x="22" y="54" width="7" height="7" rx="1"/><rect x="30" y="55" width="6" height="6" rx="1"/><rect x="46" y="54" width="7" height="6" rx="1"/><rect x="44" y="98" width="7" height="7" rx="1"/><rect x="30" y="132" width="7" height="6" rx="1"/></g>
+      <g stroke="var(--roadcase)" stroke-width="6" fill="none" stroke-linecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166"/><path d="M-6 46 C22 42 52 52 96 44"/><path d="M-6 128 C26 118 52 100 96 78"/></g>
+      <g stroke="var(--roadcase)" stroke-width="3.6" fill="none" stroke-linecap="round"><path d="M16 -6 C14 40 18 92 14 166"/><path d="M66 -6 C64 30 70 60 66 92"/></g>
+      <g stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166"/><path d="M-6 46 C22 42 52 52 96 44"/><path d="M-6 128 C26 118 52 100 96 78"/></g>
+      <g stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M16 -6 C14 40 18 92 14 166"/><path d="M66 -6 C64 30 70 60 66 92"/></g>
+      <text x="19" y="40" font-family="Inter" font-size="2.7" fill="#A8A498" transform="rotate(-4 19 40)">Avenue de Provence</text>
+      <text x="10" y="100" font-family="Inter" font-size="2.6" fill="#8FA87E">Parc de la Ville</text>
+    </svg>
+
+    <!-- position GPS client -->
+    <div class="gps"><div class="halo"></div><div class="dot"></div><div class="lbl">Vous êtes ici</div></div>
+
+    <!-- prestataires autour, un à un -->
+    <div class="pin p1" style="left:66%;top:30%"><div class="in"><div class="pinmark pinAlt"><span class="pinav">M</span></div></div></div>
+    <div class="pin p2" style="left:26%;top:34%"><div class="in"><div class="pinmark pinAlt"><span class="pinav">J</span></div></div></div>
+    <div class="pin p3" style="left:74%;top:60%"><div class="in"><div class="pinmark pinAlt"><span class="pinav">T</span></div></div></div>
+    <div class="pin p4" style="left:20%;top:64%"><div class="in"><div class="pinmark pinAlt"><span class="pinav">L</span></div></div></div>
+    <div class="pin p5" style="left:60%;top:74%"><div class="in"><div class="pinmark pinAlt"><span class="pinav">N</span></div></div></div>
+    <div class="pin p6" style="left:34%;top:22%"><div class="in"><div class="pinmark pinAlt"><span class="pinav">A</span></div></div></div>
+    <div class="pin pMainpin" style="left:38%;top:47%"><div class="ring"></div><div class="in"><div class="pinmark pinMain"><span class="pinav">S</span></div></div></div>
+
+    <div class="avpop"><div class="a">S</div><div><div class="t">Sofia</div><div class="s">Disponible</div></div></div>
+
+    <div class="cursor curMap" style="left:50%;top:22%"><span class="ripple"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="var(--ink)"><path d="M6 2l14 8-6 1.5L18 18l-2 1-4-6.5L8 16z"/></svg></div>
+
+    <div class="topbar onmap maptop"><div class="lg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><div class="searchinline"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span class="typetext">Ménage</span></div></div>
+    <div class="tabbar">
+      <div class="ti on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"/></svg><span>Carte</span></div>
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Recherche</span></div>
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></div>
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg><span>Agenda</span></div>
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg><span>Profil</span></div>
+    </div>
+  </div>
+
+  <!-- FICHE PRO -->
+  <div class="scr" id="pProfile">
+    <div class="profhero">
+      <div class="pn">Sofia</div>
+      <div class="pm">★★★★★ 4,9 (128 avis) · à 300 m</div>
+      <div class="profav">S</div>
+    </div>
+    <div class="topbar onmap" style="z-index:25"><div class="lg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><b>PING</b></div>
+    <div class="profbody">
+      <div class="prow"><span class="k">Tarif horaire</span><span class="v">25 €/h</span></div>
+      <div class="prow"><span class="k">Forfait remise à blanc</span><span class="v">180 €</span></div>
+      <div class="prow"><span class="k">Disponibilité</span><span class="v" style="color:var(--tealD)">Maintenant</span></div>
+      <div class="qtitle">Spécialités</div>
+      <div class="qchips"><span class="c">Ménage</span><span class="c">Remise à blanc</span><span class="c">Repassage</span><span class="c">Vitres</span></div>
+      <div class="qtitle">Qualifications déclarées</div>
+      <div class="qbadges">
+        <div class="qb"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Pièce d'identité fournie</div>
+        <div class="qb"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Assurance renseignée</div>
+      </div>
+    </div>
+    <div class="chatcta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Contacter par chat</div>
+    <div class="cursor curProf" style="left:50%;top:91%"><span class="ripple"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="var(--ink)"><path d="M6 2l14 8-6 1.5L18 18l-2 1-4-6.5L8 16z"/></svg></div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="scr" id="pChat">
+    <div class="topbar"><div class="lg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><b>PING</b></div>
+    <div class="chathd"><div class="cav">S</div><div><div class="n">Sofia · Ménage</div><div class="s"><span class="d"></span>25 €/h · Disponible</div></div></div>
+    <div class="chatbody">
+      <div class="bubble usr m1">Bonjour, vous êtes disponible pour le ménage ?</div>
+      <div class="bubble pro m2">Oui ! De quoi s'agit-il ?</div>
+      <div class="bubble usr m3">110 m², une remise à blanc.</div>
+      <div class="bubble pro m4">Oui, pas de problème pour une remise à blanc.</div>
+      <div class="bubble pro m5">Je vous propose 180 € de forfait + 25 €/h.</div>
+    </div>
+    <div class="paysheet">
+      <div class="payrow"><span class="paylbl">Ménage · remise à blanc</span><span class="paytot">180 € + 25 €/h</span></div>
+      <div class="paysub">Paiement sécurisé (séquestre)</div>
+      <div class="paybtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Valider</div>
+    </div>
+    <div class="cursor curChat" style="left:50%;top:87%"><span class="ripple"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="var(--ink)"><path d="M6 2l14 8-6 1.5L18 18l-2 1-4-6.5L8 16z"/></svg></div>
+    <div class="tabbar">
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"/></svg><span>Carte</span></div>
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Recherche</span></div>
+      <div class="ti on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></div>
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg><span>Agenda</span></div>
+      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg><span>Profil</span></div>
+    </div>
+  </div>
+
+  <!-- ARRIVEE -->
+  <div class="scr" id="pTrack">
+    <div class="trackwrap">
+      <div class="trlbl">Sofia arrive chez vous</div>
+      <div class="route"><i></i></div>
+      <div class="qrwrap"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="trlbl" style="font-size:12px;opacity:.75;font-weight:600">Arrivée validée</div>
+    </div>
+  </div>
+
+  <!-- NOTE -->
+  <div class="scr" id="pRate">
+    <div class="ratewrap">
+      <div class="lbl">Comment s'est passée la prestation ?</div>
+      <div class="starsbig">
+        <svg class="s1" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l3 6.5 7 .8-5 4.8 1.3 6.9L12 18.8 5.4 22l1.3-6.9-5-4.8 7-.8z"/></svg>
+        <svg class="s2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l3 6.5 7 .8-5 4.8 1.3 6.9L12 18.8 5.4 22l1.3-6.9-5-4.8 7-.8z"/></svg>
+        <svg class="s3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l3 6.5 7 .8-5 4.8 1.3 6.9L12 18.8 5.4 22l1.3-6.9-5-4.8 7-.8z"/></svg>
+        <svg class="s4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l3 6.5 7 .8-5 4.8 1.3 6.9L12 18.8 5.4 22l1.3-6.9-5-4.8 7-.8z"/></svg>
+        <svg class="s5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l3 6.5 7 .8-5 4.8 1.3 6.9L12 18.8 5.4 22l1.3-6.9-5-4.8 7-.8z"/></svg>
+      </div>
+      <div class="thumb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 22V11M2 13v7a2 2 0 0 0 2 2h12.5a2 2 0 0 0 2-1.4l2-7A2 2 0 0 0 18.6 11H14V5a2 2 0 0 0-2-2l-3 7v10"/></svg></div>
+      <div class="cursor curRate" style="left:50%;top:65%"><span class="ripple"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="var(--ink)"><path d="M6 2l14 8-6 1.5L18 18l-2 1-4-6.5L8 16z"/></svg></div>
+    </div>
+  </div>
+
+  <!-- FIN -->
+  <div class="scr" id="pEnd">
+    <div class="endwrap">
+      <div class="endlogo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div>
+      <div class="endtxt">Vous payez.<br>C'est réglé.<br>Juste à côté de vous.</div>
+      <div class="endacc"></div>
+    </div>
+  </div>
+
+</div>
+</body></html>
