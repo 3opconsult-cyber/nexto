@@ -45,7 +45,7 @@ function SignupForm() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--navy)' }}>
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        <Link href="/" className="font-fredoka text-4xl text-white mb-6">Nexto</Link>
+        <Link href="/" className="font-fredoka text-4xl text-white mb-6">PING</Link>
 
         {/* Role switcher */}
         <div className="flex gap-2 p-1 rounded-full mb-6" style={{ background: 'rgba(255,255,255,0.1)' }}>
@@ -129,7 +129,7 @@ function SignupForm() {
                   <input type="checkbox" required className="mt-1 w-4 h-4 accent-accent" />
                   <label className="text-xs font-bold" style={{ color: 'var(--accent-d)' }}>
                     J'accepte les <Link href="/cgu" className="underline">Conditions Générales</Link> et la{' '}
-                    <Link href="/privacy" className="underline">Politique de confidentialité</Link> de Nexto
+                    <Link href="/privacy" className="underline">Politique de confidentialité</Link> de PING
                   </label>
                 </div>
               </>
