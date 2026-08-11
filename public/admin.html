@@ -661,7 +661,8 @@ textarea.minput{min-height:120px;resize:vertical}
 
       <section class="section" id="s_prospects">
         <div class="subtabs">
-          <div class="on" data-p="leads" onclick="pTab('leads')">Leads entrants</div>
+          <div class="on" data-p="flash" onclick="pTab('flash')">Flash terrain</div>
+          <div data-p="leads" onclick="pTab('leads')">Leads entrants</div>
           <div data-p="pipe" onclick="pTab('pipe')">Prospects (CRM)</div>
           <div data-p="partner" onclick="pTab('partner')">Partenariats</div>
           <div data-p="cahier" onclick="pTab('cahier')">Cahier des actions</div>
@@ -672,7 +673,28 @@ textarea.minput{min-height:120px;resize:vertical}
           <div data-p="land" onclick="pTab('land')">Landing souscription</div>
         </div>
 
-        <div class="ptab on" id="pt_leads">
+        <div class="ptab on" id="pt_flash">
+          <p class="note" style="margin-bottom:14px">Pour une personne en face de toi, sur le terrain : montre le QR pour qu'elle s'inscrive elle-même, ou envoie-lui directement le lien par WhatsApp.</p>
+          <div class="split">
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center">QR à montrer</h3>
+              <div id="flashQrBox" style="width:200px;margin:14px auto"></div>
+              <p class="muted" style="font-size:12px">Chaque scan est enregistré (date, heure) — visible dans Campagnes &amp; QR.</p>
+              <div class="btn" style="margin-top:10px;display:inline-block" onclick="regenFlashQr()">Générer un nouveau code</div>
+            </div>
+            <div class="card">
+              <h3>Envoyer par WhatsApp</h3>
+              <label class="muted" style="font-size:12px">Prénom (optionnel)</label>
+              <input id="flashName" type="text" placeholder="Ex. Karim" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;margin:5px 0 12px;font-size:13.5px">
+              <label class="muted" style="font-size:12px">Numéro de téléphone</label>
+              <input id="flashPhone" type="tel" placeholder="06 12 34 56 78" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;margin:5px 0 14px;font-size:13.5px">
+              <div class="btn" style="background:#25D366;text-align:center" onclick="sendFlashWhatsapp()">Ouvrir WhatsApp avec le message prêt</div>
+              <p class="muted" style="font-size:11.5px;margin-top:10px">Ouvre WhatsApp (application ou web) avec le message et le lien déjà rédigés — tu n'as plus qu'à appuyer sur envoyer.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ptab" id="pt_leads">
           <div class="grid k4">
             <div class="kpi click" onclick="clearLeadFilter();document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><div class="l">Leads entrants · 60 j</div><div class="v">49</div><div class="d up">tous canaux confondus</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
             <div class="kpi click" onclick="document.getElementById('funnelCard').scrollIntoView({behavior:'smooth'})"><div class="l">Taux nouveau → inscrit</div><div class="v">35 %</div><div class="d up">17 inscrits sur 49</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir l'entonnoir ›</div></div>
@@ -2124,6 +2146,31 @@ function qrSVG(text,size){
   }}
  return '<svg viewBox="0 0 '+size+' '+size+'" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#fff"/><g fill="#123644">'+rects+'</g></svg>';
 }
+
+/* ---- Flash terrain : QR + WhatsApp, prospection en direct ---- */
+function flashSignupUrl(code){
+ return 'https://nexto-eta.vercel.app/auth/signup?utm_source=terrain&utm_medium=qr&utm_campaign=flash&qr='+code;
+}
+function regenFlashQr(){
+ const code='t'+Math.random().toString(36).slice(2,8);
+ const url=flashSignupUrl(code);
+ const box=document.getElementById('flashQrBox');
+ if(box) box.innerHTML=qrSVG(url,200);
+}
+function sendFlashWhatsapp(){
+ const name=(document.getElementById('flashName').value||'').trim();
+ let phone=(document.getElementById('flashPhone').value||'').replace(/[^0-9+]/g,'');
+ if(phone.startsWith('0')) phone='+33'+phone.slice(1);
+ if(!phone.startsWith('+')) phone='+'+phone;
+ if(phone.length<8){ alert('Numéro de téléphone incomplet.'); return; }
+ const code='w'+Math.random().toString(36).slice(2,8);
+ const url=flashSignupUrl(code).replace('utm_medium=qr','utm_medium=whatsapp');
+ const hello=name?('Bonjour '+name+' !'):'Bonjour !';
+ const msg=hello+' Voici le lien pour vous inscrire sur PING : '+url;
+ window.open('https://wa.me/'+phone.replace('+','')+'?text='+encodeURIComponent(msg),'_blank');
+}
+window.addEventListener('load',function(){ if(document.getElementById('flashQrBox')) regenFlashQr(); });
+
 let campFilter=null;
 let campSortState={field:null,dir:'asc'};
 function sortCampBy(field){
