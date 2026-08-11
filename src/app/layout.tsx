@@ -9,7 +9,7 @@ const nunito = Nunito({
 })
 
 export const metadata: Metadata = {
-  title: 'Nexto — Et si ce que vous cherchez se trouvait juste à côté ?',
+  title: 'PING — Et si ce que vous cherchez se trouvait juste à côté de vous ?',
   description: 'Marketplace géolocalisée de services de proximité. Plombier, ménage, baby-sitter, jardinage, manutention.',
   manifest: '/manifest.json',
   themeColor: '#7C5CFC',
