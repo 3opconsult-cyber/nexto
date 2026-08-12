@@ -22,10 +22,10 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-    // Redirect based on role
-    const { data: profile } = await supabase.from('profiles').select('role').single()
-    if (profile?.role === 'pro') router.push('/pro/dashboard')
-    else if (profile?.role === 'admin') router.push('/admin')
+    // Redirection selon le profil reel (is_admin / is_pro, plus de colonne role)
+    const { data: profile } = await supabase.from('profiles').select('is_admin, is_pro').single()
+    if (profile?.is_admin) router.push('/admin')
+    else if (profile?.is_pro) router.push('/pro/dashboard')
     else router.push('/map')
   }
 
