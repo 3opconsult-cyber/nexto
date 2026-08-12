@@ -1,31 +1,54 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
-// Protection temporaire par cle partagee, en attendant un vrai systeme de
-// roles (profiles.role a ete retire lors de la reconstruction du schema
-// mono-produit). Le cookie posé une fois suffit ensuite.
-const ADMIN_KEY = 'ping-sa-2026'
+// Cle partagee conservee en secours (pendant la periode de transition),
+// mais la vraie protection est desormais un vrai compte avec is_admin=true.
+const FALLBACK_KEY = 'ping-sa-2026'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
+  if (!path.startsWith('/admin')) return NextResponse.next()
 
-  if (path.startsWith('/admin')) {
-    const url = request.nextUrl
-    const keyParam = url.searchParams.get('key')
-    const hasCookie = request.cookies.get('ping_admin')?.value === ADMIN_KEY
+  let response = NextResponse.next({ request })
 
-    if (keyParam === ADMIN_KEY) {
-      const res = NextResponse.next()
-      res.cookies.set('ping_admin', ADMIN_KEY, { maxAge: 60 * 60 * 24 * 30, httpOnly: true, sameSite: 'lax' })
-      return res
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+        },
+      },
     }
-    if (!hasCookie) {
-      return new NextResponse('Acces refuse', { status: 401 })
-    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.is_admin) return response
   }
 
-  return NextResponse.next()
+  // Secours transitoire : cle partagee (a retirer une fois le compte admin confirme actif)
+  const keyParam = request.nextUrl.searchParams.get('key')
+  const hasCookie = request.cookies.get('ping_admin')?.value === FALLBACK_KEY
+  if (keyParam === FALLBACK_KEY) {
+    response.cookies.set('ping_admin', FALLBACK_KEY, { maxAge: 60 * 60 * 24 * 30, httpOnly: true, sameSite: 'lax' })
+    return response
+  }
+  if (hasCookie) return response
+
+  return new NextResponse('Accès refusé — connectez-vous avec le compte administrateur', { status: 401 })
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/admin/:path*', '/admin'],
 }
