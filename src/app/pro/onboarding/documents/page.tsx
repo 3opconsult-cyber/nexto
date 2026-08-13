@@ -2,123 +2,96 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { DocumentType, DOCUMENT_LABELS } from '@/types'
+import { trackEvent } from '@/lib/tracking'
+
+const DOC_TYPES: { key: 'identite' | 'rcpro' | 'kbis'; label: string; desc: string; required: boolean }[] = [
+  { key: 'identite', label: "Pièce d'identité", desc: 'Carte d\'identité ou passeport', required: true },
+  { key: 'rcpro', label: 'Assurance responsabilité civile', desc: 'Attestation en cours de validité', required: true },
+  { key: 'kbis', label: 'Justificatif de statut', desc: 'SIRET, Kbis ou attestation auto-entrepreneur', required: false },
+]
 
 export default function ProDocuments() {
   const router = useRouter()
-  const [uploads, setUploads] = useState<Record<DocumentType, string>>({} as Record<DocumentType, string>)
-  const [uploading, setUploading] = useState<DocumentType | null>(null)
-  const [done, setDone] = useState(false)
+  const [uploads, setUploads] = useState<Record<string, string>>({})
+  const [uploading, setUploading] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const [currentDoc, setCurrentDoc] = useState<DocumentType | null>(null)
+  const [currentDoc, setCurrentDoc] = useState<string | null>(null)
 
-  async function handleUpload(docType: DocumentType, file: File) {
+  async function handleUpload(docType: string, file: File) {
     setUploading(docType)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
     const ext = file.name.split('.').pop()
-    const path = `pro-docs/${user.id}/${docType}-${Date.now()}.${ext}`
+    const path = `${user.id}/${docType}-${Date.now()}.${ext}`
 
-    const { error: upErr } = await supabase.storage
-      .from('documents')
-      .upload(path, file, { upsert: true })
+    const { error: upErr } = await supabase.storage.from('documents').upload(path, file, { upsert: true })
 
     if (!upErr) {
-      const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(path)
-      const { data: pro } = await supabase.from('pro_profiles').select('id').eq('user_id', user.id).single()
-      if (pro) {
-        await supabase.from('pro_documents').upsert({
-          pro_id: pro.id, doc_type: docType,
-          file_url: publicUrl, file_name: file.name,
-          status: 'pending'
-        }, { onConflict: 'pro_id,doc_type' })
-      }
+      await supabase.from('documents').upsert({
+        owner_id: user.id, kind: docType, storage_path: path, status: 'pending',
+      }, { onConflict: 'owner_id,kind' })
       setUploads(u => ({ ...u, [docType]: file.name }))
+      trackEvent('document_uploaded', { kind: docType })
     }
     setUploading(null)
   }
 
-  const docTypes: DocumentType[] = ['id_card', 'kbis', 'rc_pro', 'decennale', 'urssaf', 'siret_cert', 'iban_cert']
-
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--navy)' }}>
-      <div className="px-5 pt-8 pb-4">
-        <div className="font-fredoka text-2xl text-white mb-1">Documents</div>
-        <div className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>
-          Upload sécurisé · Vérification sous 24-48h
-        </div>
+    <div style={{ minHeight: '100vh', background: '#123644' }}>
+      <div style={{ padding: '32px 20px 16px' }}>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff', marginBottom: 4 }}>Documents</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.55)' }}>Dépôt libre, à votre rythme — n'empêche pas d'être visible</div>
       </div>
 
-      <div className="flex-1 bg-white rounded-t-3xl px-5 py-6 overflow-y-auto">
-        <input ref={inputRef} type="file" className="hidden"
-          accept=".pdf,.jpg,.jpeg,.png"
+      <div style={{ flex: 1, background: '#fff', borderRadius: '24px 24px 0 0', padding: '24px 20px', minHeight: 'calc(100vh - 100px)' }}>
+        <input ref={inputRef} type="file" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png"
           onChange={e => {
-            if (e.target.files?.[0] && currentDoc) {
-              handleUpload(currentDoc, e.target.files[0])
-              e.target.value = ''
-            }
+            if (e.target.files?.[0] && currentDoc) { handleUpload(currentDoc, e.target.files[0]); e.target.value = '' }
           }}
         />
 
-        <div className="space-y-3 mb-6">
-          {docTypes.map(docType => {
-            const doc = DOCUMENT_LABELS[docType]
-            const uploaded = uploads[docType]
-            const isUploading = uploading === docType
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+          {DOC_TYPES.map(doc => {
+            const uploaded = uploads[doc.key]
+            const isUploading = uploading === doc.key
             return (
-              <div key={docType}
-                className="flex items-center gap-3 p-4 rounded-2xl border-2 transition-all"
-                style={{ borderColor: uploaded ? '#22C55E' : '#F0EDE8', background: uploaded ? '#F0FFF4' : 'white' }}
-              >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: uploaded ? '#DCFCE7' : 'var(--accent-l)' }}>
-                  {uploaded ? '✅' : '📄'}
+              <div key={doc.key} style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16,
+                border: uploaded ? '2px solid #12B39C' : '2px solid #E7EDEB',
+                background: uploaded ? 'rgba(18,179,156,.06)' : '#fff',
+              }}>
+                <div style={{ width: 38, height: 38, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0, background: uploaded ? 'rgba(18,179,156,.14)' : '#F3F6F5' }}>
+                  {uploaded ? '✓' : '📄'}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-black text-sm text-navy">{doc.label}</div>
-                  <div className="text-xs text-gray-400 font-bold mt-0.5 truncate">
-                    {uploaded ? uploaded : doc.description}
-                  </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{doc.label}</div>
+                  <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{uploaded || doc.desc}</div>
                 </div>
                 {doc.required && !uploaded && (
-                  <span className="text-xs font-black px-2 py-1 rounded-full flex-shrink-0"
-                    style={{ background: '#FEE2E2', color: '#B91C1C' }}>Requis</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 99, background: '#FDE8E4', color: '#C0503A', flexShrink: 0 }}>Requis</span>
                 )}
-                <button
-                  onClick={() => { setCurrentDoc(docType); inputRef.current?.click() }}
-                  disabled={isUploading}
-                  className="px-3 py-2 rounded-xl text-xs font-black flex-shrink-0 transition-all"
-                  style={{
-                    background: uploaded ? '#DCFCE7' : 'var(--accent-l)',
-                    color: uploaded ? '#15803D' : 'var(--accent-d)'
-                  }}
-                >
-                  {isUploading ? '...' : uploaded ? 'Remplacer' : 'Uploader'}
+                <button onClick={() => { setCurrentDoc(doc.key); inputRef.current?.click() }} disabled={isUploading}
+                  style={{ padding: '8px 12px', borderRadius: 10, fontSize: 11.5, fontWeight: 700, border: 'none', flexShrink: 0, background: uploaded ? 'rgba(18,179,156,.14)' : '#F3F6F5', color: uploaded ? '#0C8F7E' : '#123644' }}>
+                  {isUploading ? '...' : uploaded ? 'Remplacer' : 'Ajouter'}
                 </button>
               </div>
             )
           })}
         </div>
 
-        <div className="p-4 rounded-2xl mb-6" style={{ background: '#FFF7ED', border: '1px solid #FB923C' }}>
-          <div className="text-xs font-black" style={{ color: '#C2410C' }}>
-            Formats acceptés : PDF, JPG, PNG · Max 10 MB par fichier.
-            Documents stockés de manière chiffrée. Accessibles uniquement à l'équipe Nexto sur demande justifiée.
+        <div style={{ padding: 14, borderRadius: 14, marginBottom: 22, background: '#FFF7ED', border: '1px solid #F2A93B' }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: '#8a6520' }}>
+            PDF, JPG ou PNG, 10 Mo maximum par fichier. Stockage privé — visible uniquement par vous et l'équipe PING.
           </div>
         </div>
 
-        <button
-          onClick={() => router.push('/pro/attente')}
-          className="w-full py-4 rounded-full text-white font-fredoka text-lg"
-          style={{ background: 'var(--accent)' }}
-        >
-          Soumettre mon dossier →
+        <button onClick={() => router.push('/pro/attente')} style={{ width: '100%', padding: 15, borderRadius: 999, border: 'none', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, background: '#12B39C' }}>
+          Terminer →
         </button>
-        <button onClick={() => router.push('/pro/attente')}
-          className="w-full py-3 text-center text-sm font-bold text-gray-400 mt-2">
-          Passer pour l'instant (upload ultérieur)
+        <button onClick={() => router.push('/map')} style={{ width: '100%', padding: 12, textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: '#6E8592', background: 'none', border: 'none', marginTop: 4 }}>
+          Plus tard — voir mon profil sur la carte
         </button>
       </div>
     </div>
