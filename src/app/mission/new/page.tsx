@@ -3,9 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
-
-const BUYER_RATE = 0.05
-const SELLER_RATE = 0.11
+import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
 
 function MissionForm() {
   const router = useRouter()
@@ -41,10 +39,22 @@ function MissionForm() {
 
     const sellerFee = Math.round(subtotalCents * SELLER_RATE)
 
+    const { data: reqRow, error: reqError } = await supabase.from('requests').insert({
+      requester_id: user.id,
+      category: pro?.trade || 'menage',
+      description: description || '(aucune description fournie)',
+      address: address.trim(),
+      budget_cents: subtotalCents,
+      status: 'matched',
+    }).select().single()
+
+    if (reqError || !reqRow) { setError(reqError?.message || 'Erreur de création.'); setLoading(false); return }
+
     const { data: tx, error: dbError } = await supabase.from('transactions').insert({
       kind: 'service',
       buyer_id: user.id,
       seller_id: proId,
+      request_id: reqRow.id,
       subtotal_cents: subtotalCents,
       buyer_fee_cents: buyerFee,
       seller_fee_cents: sellerFee,

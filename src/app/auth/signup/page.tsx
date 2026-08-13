@@ -33,6 +33,7 @@ function SignupForm() {
           last_name: form.lastName,
           phone: form.phone,
           birthdate: form.birthdate,
+          address: form.address,
           role,
         }
       }
@@ -57,7 +58,7 @@ function SignupForm() {
                 : { color: 'rgba(255,255,255,0.6)' }
               }
             >
-              {r === 'client' ? '👤 Particulier' : '🔧 Professionnel'}
+              {r === 'client' ? 'Particulier' : 'Professionnel'}
             </button>
           ))}
         </div>
@@ -139,7 +140,7 @@ function SignupForm() {
               className="w-full py-4 rounded-full text-white font-fredoka text-lg disabled:opacity-60"
               style={{ background: 'var(--accent)' }}
             >
-              {loading ? 'Création...' : step === 1 ? 'Continuer →' : 'Créer mon compte 🚀'}
+              {loading ? 'Création...' : step === 1 ? 'Continuer →' : 'Créer mon compte'}
             </button>
           </form>
           <p className="text-center text-sm text-gray-400 mt-4">

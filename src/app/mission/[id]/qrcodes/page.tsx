@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import QrCode from '@/components/QrCode'
 
 export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
@@ -17,7 +18,6 @@ export default function MissionQrCodes() {
   const base = 'https://nexto-eta.vercel.app'
   const arrivalUrl = `${base}/mission/${tx.id}/scan/arrival?token=${tx.qr_arrival_token}`
   const completeUrl = `${base}/mission/${tx.id}/scan/complete?token=${tx.qr_complete_token}`
-  const qrImg = (data: string) => `https://api.qrserver.com/v1/create-qr-code/?size=220x220&color=123644&data=${encodeURIComponent(data)}`
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', padding: '28px 20px', fontFamily: 'Inter, sans-serif' }}>
@@ -29,13 +29,13 @@ export default function MissionQrCodes() {
 
         <div style={{ background: '#fff', border: '1px solid #DCE5E3', borderRadius: 18, padding: 20, marginBottom: 16, textAlign: 'center' }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginBottom: 10 }}>Code d'arrivée</div>
-          <img src={qrImg(arrivalUrl)} alt="QR arrivée" style={{ width: 180, height: 180, margin: '0 auto' }} />
+          <div style={{ display: 'flex', justifyContent: 'center' }}><QrCode data={arrivalUrl} size={180} /></div>
           <p style={{ fontSize: 11, color: '#6E8592', marginTop: 10 }}>À scanner en arrivant sur place{tx.hourly_rate_cents ? ' — démarre le compteur horaire' : ''}.</p>
         </div>
 
         <div style={{ background: '#fff', border: '1px solid #DCE5E3', borderRadius: 18, padding: 20, textAlign: 'center' }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginBottom: 10 }}>Code de sortie</div>
-          <img src={qrImg(completeUrl)} alt="QR sortie" style={{ width: 180, height: 180, margin: '0 auto' }} />
+          <div style={{ display: 'flex', justifyContent: 'center' }}><QrCode data={completeUrl} size={180} /></div>
           <p style={{ fontSize: 11, color: '#6E8592', marginTop: 10 }}>À scanner en partant{tx.hourly_rate_cents ? ' — arrête le compteur, calcule le temps réel' : ''}.</p>
         </div>
       </div>

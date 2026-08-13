@@ -28,7 +28,10 @@ body {
   color: var(--navy);
 }
 
-.font-fredoka { font-family: 'Fredoka One', cursive; }
+/* font-fredoka est piloté par tailwind.config.ts (-> Quicksand). Ne pas
+   redéfinir ici : une ancienne règle 'Fredoka One', cursive écrasait
+   silencieusement Quicksand sur /auth/signup, /auth/login et d'autres —
+   trouvé en auditant le parcours d'inscription (13/08). */
 
 /* Safe area */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }

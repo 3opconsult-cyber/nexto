@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
+import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
 
 export default function ScanQR() {
   const params = useParams<{ id: string; phase: string }>()
@@ -36,9 +37,23 @@ export default function ScanQR() {
         if (!tx.arrived_at) { setStatus('error'); setMessage("L'arrivée n'a pas encore été scannée — impossible de clôturer."); return }
         if (tx.completed_at) { setStatus('ok'); setMessage('Sortie déjà enregistrée.'); return }
         const now = new Date()
-        await supabase.from('transactions').update({ completed_at: now.toISOString(), status: 'completed' }).eq('id', tx.id)
-
         const mins = Math.max(0, Math.round((now.getTime() - new Date(tx.arrived_at).getTime()) / 60000))
+
+        const updates: Record<string, unknown> = {
+          completed_at: now.toISOString(), status: 'completed', duration_minutes: mins,
+        }
+        if (tx.hourly_rate_cents) {
+          const subtotal = Math.round(tx.hourly_rate_cents * (mins / 60))
+          const buyerFee = Math.round(subtotal * BUYER_RATE)
+          const sellerFee = Math.round(subtotal * SELLER_RATE)
+          updates.subtotal_cents = subtotal
+          updates.buyer_fee_cents = buyerFee
+          updates.seller_fee_cents = sellerFee
+          updates.total_charged_cents = subtotal + buyerFee
+          updates.payout_cents = subtotal - sellerFee
+        }
+        await supabase.from('transactions').update(updates).eq('id', tx.id)
+
         const h = Math.floor(mins / 60), m = mins % 60
         setDuration(`${h > 0 ? h + ' h ' : ''}${m} min`)
         setStatus('ok'); setMessage('Sortie validée.')
