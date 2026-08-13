@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Quicksand, Inter } from 'next/font/google'
 import './globals.css'
 
@@ -17,8 +17,25 @@ export const metadata: Metadata = {
   title: 'PING — Et si ce que vous cherchez se trouvait juste à côté de vous ?',
   description: 'Ménage, repassage, nettoyage : trouvez un prestataire disponible près de chez vous, paiement sous séquestre.',
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'PING',
+  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: '#12B39C',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 }
 
 export default function RootLayout({
