@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { fetchProDetail } from '@/lib/services'
-import { SERVICE_LABELS, ServiceType } from '@/types'
+import { createClient } from '@/lib/supabase/client'
+
+const TRADES: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
 
 export default function ProDetailPage() {
   const params = useParams()
@@ -10,149 +12,116 @@ export default function ProDetailPage() {
   const proId = params.id as string
   const [pro, setPro] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
+  const [extraServices, setExtraServices] = useState<any[]>([])
+  const [hasDocuments, setHasDocuments] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'apropos' | 'avis' | 'galerie'>('apropos')
+  const [tab, setTab] = useState<'apropos' | 'avis'>('apropos')
 
   useEffect(() => {
+    let cancelled = false
     fetchProDetail(proId).then(({ pro, reviews }) => {
+      if (cancelled) return
       setPro(pro); setReviews(reviews); setLoading(false)
     })
+    const supabase = createClient()
+    supabase.from('services').select('name, price_cents').eq('provider_id', proId)
+      .then(({ data }) => { if (!cancelled) setExtraServices(data ?? []) })
+    supabase.from('documents').select('id', { count: 'exact', head: true }).eq('owner_id', proId)
+      .then(({ count }) => { if (!cancelled) setHasDocuments((count ?? 0) > 0) })
+    return () => { cancelled = true }
   }, [proId])
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--navy)' }}>
-      <div className="text-white font-fredoka text-xl">Chargement...</div>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#123644' }}>
+      <div style={{ color: '#fff', fontFamily: 'Quicksand, sans-serif', fontSize: 18 }}>Chargement…</div>
     </div>
   )
 
   if (!pro) return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--navy)' }}>
-      <div className="text-4xl mb-3">❌</div>
-      <div className="text-white font-fredoka text-xl mb-4">Pro introuvable</div>
-      <button onClick={() => router.push('/map')} className="px-6 py-3 rounded-full font-black text-white" style={{ background: 'var(--accent)' }}>Retour carte</button>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#123644' }}>
+      <div style={{ color: '#fff', fontFamily: 'Quicksand, sans-serif', fontSize: 18, marginBottom: 16 }}>Prestataire introuvable</div>
+      <button onClick={() => router.push('/map')} style={{ padding: '12px 24px', borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>Retour à la carte</button>
     </div>
   )
 
-  const services: ServiceType[] = (pro.pro_services ?? []).map((s: any) => s.service)
-  const initials = pro.company_name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+  const displayName = pro.profiles?.full_name?.trim() || TRADES[pro.trade] || pro.trade
+  const initials = displayName.split(' ').map((w: string) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '•'
+  const price = pro.pricing_type === 'horaire'
+    ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h`
+    : `${(pro.base_price_cents / 100).toFixed(2)} € forfait`
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--cream)' }}>
-      {/* Header navy */}
-      <div className="px-5 pt-5 pb-8" style={{ background: 'var(--navy)' }}>
-        <button onClick={() => router.back()} className="text-white mb-4 text-sm font-black">← Retour</button>
-        <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center font-fredoka text-2xl text-white border-4 border-white/10"
-            style={{ background: 'var(--accent)' }}>{initials}</div>
-          <div className="flex-1">
-            <h1 className="font-fredoka text-2xl text-white">{pro.company_name}</h1>
-            <div className="text-sm font-bold mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              ⭐ {pro.rating_avg?.toFixed(1) ?? '—'} · {pro.rating_count} avis · {pro.mission_count} missions
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
+      <div style={{ padding: '20px 20px 32px', background: '#123644' }}>
+        <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700, marginBottom: 16 }}>← Retour</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff', background: '#12B39C', flexShrink: 0 }}>{initials}</div>
+          <div>
+            <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>{displayName}</h1>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>
+              {Number(pro.rating) > 0 ? `${Number(pro.rating).toFixed(1)} ★` : 'Nouveau'} · {pro.reviews_count} avis
             </div>
-            {pro.is_available && (
-              <span className="inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-black"
-                style={{ background: '#DCFCE7', color: '#15803D' }}>● Disponible</span>
+            {pro.is_active && (
+              <span style={{ display: 'inline-block', marginTop: 8, padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(18,179,156,.18)', color: '#5EEAD4' }}>Actif</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="bg-white rounded-t-3xl -mt-4 px-5 py-5 min-h-screen">
-        {/* Tarifs */}
-        <div className="flex gap-2 mb-5">
-          <div className="flex-1 p-3 rounded-2xl text-center" style={{ background: 'var(--cream)' }}>
-            <div className="font-fredoka text-xl" style={{ color: 'var(--accent)' }}>{pro.hourly_rate ?? '—'} €</div>
-            <div className="text-xs font-black text-gray-400">/ heure</div>
-          </div>
-          <div className="flex-1 p-3 rounded-2xl text-center" style={{ background: 'var(--cream)' }}>
-            <div className="font-fredoka text-xl" style={{ color: 'var(--accent)' }}>{pro.travel_fee ?? 0} €</div>
-            <div className="text-xs font-black text-gray-400">déplacement</div>
-          </div>
-          <div className="flex-1 p-3 rounded-2xl text-center" style={{ background: 'var(--cream)' }}>
-            <div className="font-fredoka text-xl" style={{ color: 'var(--accent)' }}>{pro.radius_km} km</div>
-            <div className="text-xs font-black text-gray-400">rayon</div>
+      <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', marginTop: -14, padding: '22px 20px', minHeight: '60vh' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <div style={{ flex: 1, padding: 14, borderRadius: 14, textAlign: 'center', background: '#F3F6F5' }}>
+            <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#12B39C' }}>{price}</div>
+            <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>{TRADES[pro.trade] || pro.trade}</div>
           </div>
         </div>
 
-        {/* Services */}
-        <div className="flex flex-wrap gap-2 mb-5">
-          {services.map(s => (
-            <span key={s} className="px-3 py-1.5 rounded-full text-xs font-black"
-              style={{ background: 'var(--accent-l)', color: 'var(--accent-d)' }}>
-              {SERVICE_LABELS[s]?.emoji} {SERVICE_LABELS[s]?.label}
-            </span>
-          ))}
-        </div>
+        {extraServices.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+            {extraServices.map((s, i) => (
+              <span key={i} style={{ padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: 'rgba(18,179,156,.1)', color: '#0C8F7E' }}>{s.name}</span>
+            ))}
+          </div>
+        )}
 
-        {/* Tabs */}
-        <div className="flex gap-1 p-1 rounded-2xl mb-4" style={{ background: 'var(--cream)' }}>
-          {([['apropos', 'À propos'], ['avis', 'Avis'], ['galerie', 'Galerie']] as const).map(([k, label]) => (
-            <button key={k} onClick={() => setTab(k)}
-              className="flex-1 py-2.5 rounded-xl text-sm font-black transition-all"
-              style={tab === k ? { background: 'white', color: 'var(--navy)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' } : { color: '#9CA3AF' }}>
-              {label}
-            </button>
+        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 14, background: '#F3F6F5', marginBottom: 18 }}>
+          {([['apropos', 'À propos'], ['avis', 'Avis']] as const).map(([k, label]) => (
+            <button key={k} onClick={() => setTab(k)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', fontSize: 13, fontWeight: 700, background: tab === k ? '#fff' : 'transparent', color: tab === k ? '#123644' : '#6E8592' }}>{label}</button>
           ))}
         </div>
 
         {tab === 'apropos' && (
           <div>
-            <p className="text-sm font-bold text-gray-600 leading-relaxed mb-4">{pro.bio || 'Aucune description.'}</p>
-            {/* Garanties / vérifications */}
-            <div className="space-y-2">
-              {[
-                { icon: '🪪', label: 'Identité vérifiée', ok: true },
-                { icon: '📋', label: 'Documents fournis', ok: true },
-                { icon: '🛡️', label: 'RC Professionnelle', ok: true },
-                { icon: '💳', label: 'Paiement sécurisé Nexto', ok: true },
-              ].map(g => (
-                <div key={g.label} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--cream)' }}>
-                  <span className="text-lg">{g.icon}</span>
-                  <span className="flex-1 text-sm font-black text-navy">{g.label}</span>
-                  <span style={{ color: 'var(--ok)' }}>✓</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-3 rounded-xl text-xs font-bold text-gray-400" style={{ background: '#FFF7ED' }}>
-              Nexto met à disposition les documents sur demande justifiée mais ne garantit pas leur authenticité.
-              Plateforme de mise en relation — n'achète ni ne revend aucun service.
+            <p style={{ fontSize: 13.5, color: '#3d5560', lineHeight: 1.6, marginBottom: 16 }}>{pro.bio || "Ce prestataire n'a pas encore ajouté de description."}</p>
+            {hasDocuments && (
+              <div style={{ padding: 12, borderRadius: 12, background: '#F3F6F5', fontSize: 12, color: '#6E8592', fontWeight: 600 }}>
+                Pièce d'identité et justificatifs fournis lors de l'inscription.
+              </div>
+            )}
+            <div style={{ marginTop: 14, padding: 12, borderRadius: 12, background: '#FFF7ED', fontSize: 11.5, color: '#8a6520', fontWeight: 600 }}>
+              PING met en relation clients et prestataires mais n'emploie ni ne supervise ce prestataire.
             </div>
           </div>
         )}
 
         {tab === 'avis' && (
-          <div className="space-y-3">
-            {reviews.length === 0 && <div className="text-center py-8 text-gray-300 font-bold">Aucun avis pour l'instant</div>}
-            {reviews.map(r => (
-              <div key={r.id} className="p-4 rounded-2xl" style={{ background: 'var(--cream)' }}>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-black text-sm text-navy">{r.profiles?.first_name ?? 'Client'}</span>
-                  <span className="text-sm">{'⭐'.repeat(r.rating)}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {reviews.length === 0 && <div style={{ textAlign: 'center', padding: '32px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Aucun avis pour l'instant</div>}
+            {reviews.map((r: any) => (
+              <div key={r.id} style={{ padding: 14, borderRadius: 14, background: '#F3F6F5' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, fontSize: 13 }}>{r.profiles?.full_name?.split(' ')[0] || 'Client'}</span>
+                  <span style={{ fontSize: 12, color: '#F59E0B' }}>{'★'.repeat(r.stars)}</span>
                 </div>
-                {r.comment && <p className="text-sm font-bold text-gray-600">{r.comment}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === 'galerie' && (
-          <div className="grid grid-cols-3 gap-2">
-            {[1,2,3,4,5,6].map(i => (
-              <div key={i} className="aspect-square rounded-2xl flex items-center justify-center"
-                style={{ background: 'var(--cream)' }}>
-                <span className="text-2xl opacity-30">📷</span>
+                {r.comment && <p style={{ fontSize: 13, color: '#3d5560' }}>{r.comment}</p>}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* CTA sticky */}
-      <div className="sticky bottom-0 bg-white px-5 py-4 border-t border-gray-100 flex gap-3">
-        <button onClick={() => router.push(`/mission/new?pro=${proId}`)}
-          className="flex-1 py-4 rounded-full text-white font-fredoka text-lg"
-          style={{ background: 'var(--accent)' }}>
+      <div style={{ position: 'sticky', bottom: 0, background: '#fff', padding: '14px 20px', borderTop: '1px solid #E7EDEB' }}>
+        <button onClick={() => router.push(`/mission/new?pro=${proId}`)} style={{ width: '100%', padding: 15, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>
           Demander un devis
         </button>
       </div>

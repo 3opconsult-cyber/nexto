@@ -3,224 +3,210 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const TRADES: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
+
+const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  pending:   { label: 'En attente',      color: '#8a6520', bg: '#FFF7ED' },
+  held:      { label: 'Confirmée',       color: '#0C8F7E', bg: 'rgba(18,179,156,.1)' },
+  arrived:   { label: 'En cours',        color: '#0C8F7E', bg: 'rgba(18,179,156,.1)' },
+  completed: { label: 'Terminée',        color: '#123644', bg: '#F3F6F5' },
+  released:  { label: 'Réglée',          color: '#15803D', bg: '#DCFCE7' },
+  disputed:  { label: 'En litige',       color: '#B91C1C', bg: '#FEE2E2' },
+  refunded:  { label: 'Remboursée',      color: '#6E8592', bg: '#F3F6F5' },
+  cancelled: { label: 'Annulée',         color: '#6E8592', bg: '#F3F6F5' },
+}
+
 export default function ProDashboard() {
   const router = useRouter()
-  const [proName, setProName] = useState('...')
+  const [firstName, setFirstName] = useState('')
   const [pro, setPro] = useState<any>(null)
-  const [missions, setMissions] = useState<any[]>([])
+  const [transactions, setTransactions] = useState<any[]>([])
   const [invoices, setInvoices] = useState<any[]>([])
   const [available, setAvailable] = useState(true)
-  const [qrCode, setQrCode] = useState('')
-  const [tab, setTab] = useState<'overview'|'missions'|'factures'|'kit'>('overview')
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<'overview' | 'missions' | 'factures' | 'profil'>('overview')
 
   useEffect(() => {
     const supabase = createClient()
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
+
       const { data: profile } = await supabase.from('profiles').select('first_name').eq('id', user.id).single()
-      const { data: pp } = await supabase.from('pro_profiles').select('*').eq('user_id', user.id).single()
-      if (profile) setProName(profile.first_name)
-      if (pp) {
-        setPro(pp); setAvailable(pp.is_available)
-        const { data: ms } = await supabase.from('missions').select('*').eq('pro_id', pp.id).order('created_at', { ascending: false })
-        const { data: inv } = await supabase.from('invoices').select('*').eq('pro_id', pp.id).order('created_at', { ascending: false })
-        const { data: qr } = await supabase.from('pro_qr_codes').select('code').eq('pro_id', pp.id).single()
-        setMissions(ms ?? []); setInvoices(inv ?? [])
-        if (qr) setQrCode(qr.code)
-      }
+      if (profile) setFirstName(profile.first_name || '')
+
+      const { data: pp } = await supabase.from('provider_profiles').select('*').eq('id', user.id).single()
+      if (!pp) { router.push('/pro/onboarding'); return }
+      setPro(pp); setAvailable(pp.is_active)
+
+      const { data: tx } = await supabase.from('transactions').select('*').eq('seller_id', pp.id).order('created_at', { ascending: false })
+      setTransactions(tx ?? [])
+
+      const { data: inv } = await supabase.from('invoices').select('*').eq('issuer_id', pp.id).order('created_at', { ascending: false })
+      setInvoices(inv ?? [])
+
+      setLoading(false)
     }
     load()
   }, [router])
 
   async function toggleAvailable() {
+    if (!pro) return
     const supabase = createClient()
     const newVal = !available
     setAvailable(newVal)
-    if (pro) await supabase.from('pro_profiles').update({ is_available: newVal }).eq('id', pro.id)
+    await supabase.from('provider_profiles').update({ is_active: newVal }).eq('id', pro.id)
   }
 
-  // KPIs calculés
-  const caMois = invoices.filter(i => {
-    const d = new Date(i.issued_at); const now = new Date()
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-  }).reduce((s, i) => s + (parseFloat(i.net_pro) || 0), 0)
-  const totalComm = invoices.reduce((s, i) => s + (parseFloat(i.nexto_commission) || 0), 0)
-  const status = pro?.status ?? 'pending'
+  const now = new Date()
+  const completedStatuses = ['completed', 'released']
+  const txThisMonth = transactions.filter(t => {
+    const d = new Date(t.created_at)
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && completedStatuses.includes(t.status)
+  })
+  const caMoisCents = txThisMonth.reduce((s, t) => s + (t.payout_cents || 0), 0)
+  const completedCount = transactions.filter(t => completedStatuses.includes(t.status)).length
+  const totalCommissionCents = transactions
+    .filter(t => completedStatuses.includes(t.status))
+    .reduce((s, t) => s + (t.seller_fee_cents || 0), 0)
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#123644' }}>
+        <div style={{ color: '#fff', fontFamily: 'Quicksand, sans-serif', fontSize: 16 }}>Chargement…</div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--navy)' }}>
+    <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
       {/* Header */}
-      <div className="px-5 pt-8 pb-4 flex justify-between items-center">
+      <div style={{ padding: '28px 20px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div className="text-xs font-black uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Espace Pro 👋</div>
-          <div className="font-fredoka text-2xl text-white">{proName}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.45)', marginBottom: 4 }}>Espace prestataire</div>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>{firstName || 'Bonjour'}</div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={toggleAvailable}
-            className="px-3 py-2 rounded-full text-xs font-black transition-all"
-            style={available ? { background: '#22C55E', color: 'white' } : { background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
-            {available ? '● Disponible' : '○ Indispo'}
-          </button>
-        </div>
+        <button onClick={toggleAvailable}
+          style={{ padding: '9px 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
+          {available ? '● Visible sur la carte' : '○ Masqué'}
+        </button>
       </div>
 
-      {status === 'pending' && (
-        <div className="mx-4 mb-3 p-3 rounded-2xl" style={{ background: '#FFF7ED', border: '2px solid #FB923C' }}>
-          <div className="font-black text-xs" style={{ color: '#C2410C' }}>⏳ Profil en vérification (24-48h)</div>
-        </div>
-      )}
-
       {/* Tabs */}
-      <div className="px-4 flex gap-1 mb-1">
-        {([['overview','Résumé'],['missions','Missions'],['factures','Factures'],['kit','Kit Com']] as const).map(([k,label]) => (
+      <div style={{ padding: '0 16px', display: 'flex', gap: 4 }}>
+        {([['overview', 'Résumé'], ['missions', 'Missions'], ['factures', 'Factures'], ['profil', 'Profil']] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
-            className="flex-1 py-2.5 rounded-t-xl text-xs font-black transition-all"
-            style={tab === k ? { background: 'white', color: 'var(--navy)' } : { color: 'rgba(255,255,255,0.5)' }}>
+            style={{ flex: 1, padding: '10px 0', borderRadius: '12px 12px 0 0', border: 'none', fontSize: 12, fontWeight: 700, background: tab === k ? '#fff' : 'transparent', color: tab === k ? '#123644' : 'rgba(255,255,255,.5)' }}>
             {label}
           </button>
         ))}
       </div>
 
-      <div className="bg-white rounded-t-2xl min-h-screen px-5 py-5">
+      <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '22px 18px', minHeight: '70vh' }}>
         {tab === 'overview' && (
           <>
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              <div className="p-4 rounded-2xl" style={{ background: 'var(--accent-l)' }}>
-                <div className="font-fredoka text-2xl" style={{ color: 'var(--accent-d)' }}>{caMois.toFixed(0)} €</div>
-                <div className="text-xs font-black text-gray-500 mt-1 uppercase tracking-wider">Revenus ce mois</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+              <div style={{ padding: 16, borderRadius: 16, background: 'rgba(18,179,156,.08)' }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#0C8F7E' }}>{(caMoisCents / 100).toFixed(0)} €</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Revenus ce mois</div>
               </div>
-              <div className="p-4 rounded-2xl border-2 border-gray-100">
-                <div className="font-fredoka text-2xl text-navy">{pro?.mission_count ?? 0}</div>
-                <div className="text-xs font-black text-gray-400 mt-1 uppercase tracking-wider">Missions</div>
+              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB' }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{completedCount}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Missions terminées</div>
               </div>
-              <div className="p-4 rounded-2xl border-2 border-gray-100">
-                <div className="font-fredoka text-2xl" style={{ color: '#F59E0B' }}>⭐ {pro?.rating_avg?.toFixed(1) ?? '—'}</div>
-                <div className="text-xs font-black text-gray-400 mt-1 uppercase tracking-wider">{pro?.rating_count ?? 0} avis</div>
+              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB' }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#F59E0B' }}>{Number(pro?.rating) > 0 ? Number(pro.rating).toFixed(1) : '—'}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>{pro?.reviews_count ?? 0} avis</div>
               </div>
-              <div className="p-4 rounded-2xl border-2 border-gray-100">
-                <div className="font-fredoka text-2xl text-navy">{totalComm.toFixed(0)} €</div>
-                <div className="text-xs font-black text-gray-400 mt-1 uppercase tracking-wider">Commissions Nexto</div>
+              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB' }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{(totalCommissionCents / 100).toFixed(0)} €</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Commission PING versée</div>
               </div>
             </div>
 
-            {/* Bloc paiement Stripe - souscription */}
-            {!pro?.stripe_account_id && (
-              <div className="p-4 rounded-2xl mb-4" style={{ background: 'linear-gradient(135deg, #635BFF 0%, #7C5CFC 100%)' }}>
-                <div className="font-fredoka text-lg text-white mb-1">💳 Activez les paiements</div>
-                <div className="text-xs font-bold text-white/80 mb-3">
-                  Connectez votre compte pour recevoir vos virements automatiquement après chaque mission validée.
-                </div>
-                <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener noreferrer"
-                  className="block w-full py-3 rounded-full text-center font-fredoka text-sm"
-                  style={{ background: 'white', color: '#635BFF' }}>
-                  Connecter mon compte bancaire →
-                </a>
+            {transactions.length === 0 && (
+              <div style={{ padding: 18, borderRadius: 14, background: '#F3F6F5', fontSize: 12.5, color: '#6E8592', fontWeight: 600, textAlign: 'center' }}>
+                Aucune mission pour l'instant. Votre profil est {available ? 'visible sur la carte' : 'actuellement masqué'} — les demandes apparaîtront ici dès qu'un client vous contacte.
               </div>
             )}
-
-            {/* Formule premium */}
-            <div className="p-4 rounded-2xl mb-4 border-2" style={{ borderColor: 'var(--accent)' }}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="font-fredoka text-lg text-navy">⭐ Nexto Pro+</div>
-                <span className="text-xs font-black px-2 py-1 rounded-full" style={{ background: 'var(--accent-l)', color: 'var(--accent-d)' }}>Premium</span>
-              </div>
-              <div className="text-xs font-bold text-gray-500 mb-3">
-                Placement prioritaire sur la carte · Photos & vidéos illimitées · Système de remises · Badge mis en avant.
-              </div>
-              <button className="w-full py-3 rounded-full text-white font-fredoka text-sm" style={{ background: 'var(--accent)' }}>
-                Passer Premium — 19€/mois
-              </button>
-            </div>
           </>
         )}
 
         {tab === 'missions' && (
-          <div className="space-y-2">
-            {missions.length === 0 ? (
-              <div className="text-center py-12 text-gray-300">
-                <div className="text-3xl mb-2">📭</div>
-                <div className="font-bold text-sm text-gray-400">Aucune mission pour l'instant</div>
-              </div>
-            ) : missions.map(m => (
-              <button key={m.id} onClick={() => router.push(`/mission/${m.id}/chat`)}
-                className="w-full text-left p-4 rounded-2xl border-2 border-gray-100 hover:border-accent transition-all">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-black text-sm text-navy">{m.ref}</span>
-                  <span className="text-xs font-black px-2 py-0.5 rounded-full" style={{ background: 'var(--accent-l)', color: 'var(--accent-d)' }}>{m.status}</span>
-                </div>
-                <div className="text-xs font-bold text-gray-400">{m.description?.slice(0,50)}</div>
-                {m.amount_ttc && <div className="text-sm font-black mt-1" style={{ color: 'var(--accent)' }}>{m.amount_ttc} € TTC</div>}
-              </button>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {transactions.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Aucune mission pour l'instant</div>
+            ) : transactions.map(t => {
+              const st = STATUS_LABELS[t.status] || STATUS_LABELS.pending
+              return (
+                <button key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
+                  style={{ textAlign: 'left', padding: 14, borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#123644' }}>
+                      {new Date(t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: st.bg, color: st.color }}>{st.label}</span>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#0C8F7E' }}>{((t.payout_cents || 0) / 100).toFixed(2)} € net</div>
+                </button>
+              )
+            })}
           </div>
         )}
 
         {tab === 'factures' && (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {invoices.length === 0 ? (
-              <div className="text-center py-12 text-gray-300">
-                <div className="text-3xl mb-2">🧾</div>
-                <div className="font-bold text-sm text-gray-400">Aucune facture émise</div>
-                <div className="text-xs text-gray-400 font-bold mt-1">Les factures sont générées après chaque mission payée et purgée de litige.</div>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>
+                Aucune facture émise pour l'instant.
+                <div style={{ fontSize: 11.5, marginTop: 6 }}>Les factures apparaissent ici après chaque mission réglée.</div>
               </div>
             ) : invoices.map(i => (
-              <div key={i.id} className="p-4 rounded-2xl border-2 border-gray-100">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-black text-sm text-navy">{i.ref}</span>
-                  <span className="text-sm font-black" style={{ color: 'var(--accent)' }}>{i.total_ttc} €</span>
-                </div>
-                <div className="flex justify-between text-xs font-bold text-gray-400">
-                  <span>Net : {i.net_pro} €</span>
-                  <span>Commission : {i.nexto_commission} €</span>
+              <div key={i.id} style={{ padding: 14, borderRadius: 14, border: '1px solid #E7EDEB' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#123644' }}>{i.number}</span>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: '#0C8F7E' }}>{(i.net_cents / 100).toFixed(2)} €</span>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {tab === 'kit' && (
-          <div>
-            <div className="text-center p-6 rounded-2xl mb-4" style={{ background: 'var(--cream)' }}>
-              <div className="font-fredoka text-lg text-navy mb-3">Votre QR code Nexto</div>
-              <div className="w-40 h-40 mx-auto rounded-2xl flex items-center justify-center mb-3" style={{ background: 'white', border: '2px solid var(--accent-l)' }}>
-                <div className="text-center">
-                  <div className="text-5xl mb-1">▦</div>
-                  <div className="font-mono font-black text-sm" style={{ color: 'var(--accent)' }}>{qrCode || '...'}</div>
-                </div>
-              </div>
-              <div className="text-xs font-bold text-gray-500">
-                Collez ce QR sur votre véhicule, vos factures, votre vitrine. Vos clients le scannent et vous gardent en favori.
+        {tab === 'profil' && pro && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Service principal</div>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{TRADES[pro.trade] || pro.trade}</div>
+            </div>
+            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Tarif</div>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>
+                {pro.pricing_type === 'horaire' ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h` : `${(pro.base_price_cents / 100).toFixed(2)} € forfait`}
               </div>
             </div>
-            <div className="space-y-2">
-              <button className="w-full py-3 rounded-2xl font-black text-sm text-white" style={{ background: 'var(--accent)' }}>
-                📥 Télécharger le QR (PNG)
-              </button>
-              <button className="w-full py-3 rounded-2xl font-black text-sm" style={{ background: 'var(--cream)', color: 'var(--navy)' }}>
-                🖨️ Kit autocollant véhicule
-              </button>
+            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Description</div>
+              <div style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5 }}>{pro.bio || 'Aucune description ajoutée.'}</div>
             </div>
-            <div className="mt-4 p-4 rounded-2xl" style={{ background: 'var(--accent-l)' }}>
-              <div className="font-black text-sm mb-2" style={{ color: 'var(--accent-d)' }}>📊 Votre fichier client</div>
-              <div className="text-xs font-bold" style={{ color: 'var(--accent-d)' }}>
-                Chaque scan ajoute le client à votre CRM. Nexto peut envoyer vos promos et relances directement.
-              </div>
-            </div>
+            <button onClick={() => router.push('/pro/onboarding')}
+              style={{ width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
+              Modifier mes informations
+            </button>
+            <button onClick={() => router.push('/pro/onboarding/documents')}
+              style={{ width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
+              Gérer mes documents
+            </button>
           </div>
         )}
       </div>
 
       {/* Nav bas */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 flex justify-around">
-        <button onClick={() => router.push('/pro/dashboard')} className="flex flex-col items-center gap-0.5">
-          <span className="text-xl">📊</span><span className="text-xs font-black" style={{ color: 'var(--accent)' }}>Tableau</span>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #E7EDEB', padding: '10px 24px', display: 'flex', justifyContent: 'space-around' }}>
+        <button onClick={() => router.push('/pro/dashboard')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#12B39C' }}>Tableau</span>
         </button>
-        <button onClick={() => router.push('/map')} className="flex flex-col items-center gap-0.5">
-          <span className="text-xl opacity-40">🗺️</span><span className="text-xs font-black text-gray-400">Carte</span>
-        </button>
-        <button onClick={() => router.push('/pro/profil')} className="flex flex-col items-center gap-0.5">
-          <span className="text-xl opacity-40">⚙️</span><span className="text-xs font-black text-gray-400">Profil</span>
+        <button onClick={() => router.push('/map')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF' }}>Carte</span>
         </button>
       </div>
     </div>

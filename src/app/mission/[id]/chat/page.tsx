@@ -7,15 +7,14 @@ import { filterMessage } from '@/lib/chatFilter'
 interface Msg {
   id: string
   sender_id: string
-  content: string
-  type: string
+  body: string
   created_at: string
 }
 
 export default function ChatPage() {
   const params = useParams()
   const router = useRouter()
-  const missionId = params.id as string
+  const transactionId = params.id as string
   const [msgs, setMsgs] = useState<Msg[]>([])
   const [input, setInput] = useState('')
   const [userId, setUserId] = useState('')
@@ -28,23 +27,23 @@ export default function ChatPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) setUserId(user.id)
       const { data } = await supabase.from('messages')
-        .select('*').eq('mission_id', missionId).order('created_at')
+        .select('*').eq('transaction_id', transactionId).order('created_at')
       setMsgs((data ?? []) as Msg[])
     }
     init()
 
-    const channel = supabase.channel(`chat:${missionId}`)
+    const channel = supabase.channel(`chat:${transactionId}`)
       .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `mission_id=eq.${missionId}` },
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `transaction_id=eq.${transactionId}` },
         payload => setMsgs(m => [...m, payload.new as Msg]))
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [missionId])
+  }, [transactionId])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
 
   async function send() {
-    if (!input.trim()) return
+    if (!input.trim() || !userId) return
     const result = filterMessage(input)
     if (result.blocked) {
       setWarning(`Message filtré : ${result.reasons.join(', ')} interdits hors plateforme.`)
@@ -52,47 +51,45 @@ export default function ChatPage() {
     }
     const supabase = createClient()
     await supabase.from('messages').insert({
-      mission_id: missionId,
+      transaction_id: transactionId,
       sender_id: userId,
-      content: result.clean,
-      type: 'text',
+      body: result.clean,
     })
     setInput('')
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--cream)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-3 sticky top-0 z-10" style={{ background: 'var(--navy)' }}>
-        <button onClick={() => router.back()} className="text-white font-black">←</button>
-        <div className="flex-1">
-          <div className="font-fredoka text-white">Conversation sécurisée</div>
-          <div className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>🔒 Protégée par Nexto</div>
+      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, position: 'sticky', top: 0, zIndex: 10, background: '#123644' }}>
+        <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontWeight: 700, fontSize: 15 }}>←</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#fff' }}>Conversation</div>
+          <div style={{ fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,.5)' }}>Protégée par PING</div>
         </div>
       </div>
 
       {/* Bannière sécurité */}
-      <div className="px-4 py-2 text-xs font-bold text-center" style={{ background: 'var(--accent-l)', color: 'var(--accent-d)' }}>
-        🛡️ Pour votre protection, les échanges de coordonnées et paiements hors plateforme sont bloqués.
+      <div style={{ padding: '8px 16px', fontSize: 11.5, fontWeight: 600, textAlign: 'center', background: 'rgba(18,179,156,.1)', color: '#0C8F7E' }}>
+        Pour votre protection, les échanges de coordonnées et paiements hors plateforme sont bloqués.
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {msgs.length === 0 && (
-          <div className="text-center py-12 text-gray-300">
-            <div className="text-3xl mb-2">💬</div>
-            <div className="font-bold text-sm text-gray-400">Démarrez la conversation</div>
-          </div>
+          <div style={{ textAlign: 'center', padding: '48px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
         )}
         {msgs.map(m => {
           const mine = m.sender_id === userId
           return (
-            <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              <div className="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm font-bold"
-                style={mine
-                  ? { background: 'var(--accent)', color: 'white', borderBottomRightRadius: 4 }
-                  : { background: 'white', color: 'var(--navy)', borderBottomLeftRadius: 4 }}>
-                {m.content}
+            <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
+              <div style={{
+                maxWidth: '75%', padding: '10px 14px', borderRadius: 16, fontSize: 13.5, fontWeight: 500,
+                ...(mine
+                  ? { background: '#12B39C', color: '#fff', borderBottomRightRadius: 4 }
+                  : { background: '#fff', color: '#123644', borderBottomLeftRadius: 4, border: '1px solid #E7EDEB' }),
+              }}>
+                {m.body}
               </div>
             </div>
           )
@@ -102,22 +99,19 @@ export default function ChatPage() {
 
       {/* Warning */}
       {warning && (
-        <div className="mx-4 mb-2 px-4 py-2 rounded-xl text-xs font-black text-center"
-          style={{ background: '#FEE2E2', color: '#B91C1C' }}>
+        <div style={{ margin: '0 16px 8px', padding: '9px 14px', borderRadius: 12, fontSize: 11.5, fontWeight: 700, textAlign: 'center', background: '#FEE2E2', color: '#B91C1C' }}>
           {warning}
         </div>
       )}
 
       {/* Input */}
-      <div className="px-4 py-3 bg-white flex gap-2 items-center border-t border-gray-100">
+      <div style={{ padding: '12px 16px', background: '#fff', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #E7EDEB' }}>
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          className="flex-1 px-4 py-3 rounded-full text-sm font-bold outline-none"
-          style={{ background: 'var(--cream)' }}
-          placeholder="Votre message..." />
+          style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
+          placeholder="Votre message…" />
         <button onClick={send}
-          className="w-11 h-11 rounded-full flex items-center justify-center text-white font-black"
-          style={{ background: 'var(--accent)' }}>↑</button>
+          style={{ width: 42, height: 42, borderRadius: '50%', border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>↑</button>
       </div>
     </div>
   )
