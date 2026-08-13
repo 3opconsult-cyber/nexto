@@ -1,12 +1,8 @@
 name: db-migrate
 
+# DESACTIVE — declenchement manuel uniquement (voir avertissement ci-dessous).
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'supabase/migrations/**'
-      - '.github/workflows/db-migrate.yml'
 
 jobs:
   migrate:
@@ -15,16 +11,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install psql
+      - name: ATTENTION — workflow retire, ne pas relancer sans relire ce fichier
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Reset public schema + apply initial schema
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          set -e
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres, anon, authenticated, service_role; GRANT ALL ON SCHEMA public TO public;"
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/001_initial_schema.sql
-          echo "✅ Schéma 001 appliqué"
+          echo "::error::Ce workflow etait DESTRUCTEUR : il faisait DROP SCHEMA public CASCADE"
+          echo "::error::puis ne reappliquait que supabase/migrations/001_initial_schema.sql,"
+          echo "::error::qui est un schema PERIME (ancien pro_profiles/missions/litiges)."
+          echo "::error::Declenche automatiquement a chaque push touchant supabase/migrations/**,"
+          echo "::error::il aurait efface le vrai schema de production (profiles/provider_profiles/"
+          echo "::error::transactions/...) pour le remplacer par l'ancien schema, cassant tout le site."
+          echo "::error::Trouve casse le 13/08/2026 (echec avant la partie destructrice, base intacte)."
+          echo "::error::Neutralise : declenchement push retire, corps du job vide."
+          echo "::error::Les migrations sont desormais appliquees directement via le connecteur"
+          echo "::error::Supabase (MCP), en revue une par une, puis documentees dans supabase/migrations/"
+          echo "::error::pour que le depot reste source de verite en lecture. Ne pas reintroduire"
+          echo "::error::d'application automatique de schema sans un vrai systeme de migrations"
+          echo "::error::incrementales (table de suivi des migrations deja appliquees)."
+          exit 1
