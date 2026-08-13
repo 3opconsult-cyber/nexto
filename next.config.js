@@ -7,12 +7,9 @@ const nextConfig = {
         { source: '/demo', destination: '/app.html' },
         { source: '/admin', destination: '/admin.html' },
         { source: '/presentation', destination: '/presentation.html' },
-        // Pages reelles mais pas encore compatibles avec le nouveau schema —
-        // neutralisees vers la demo en attendant leur remise a niveau.
+        // Pages reelles pas encore compatibles — neutralisees vers la demo.
         { source: '/hub', destination: '/app.html' },
         { source: '/pro/dashboard', destination: '/app.html' },
-        { source: '/pro/onboarding', destination: '/app.html' },
-        { source: '/pro/onboarding/:path*', destination: '/app.html' },
         { source: '/mission/:path*', destination: '/app.html' },
         { source: '/client/:path*', destination: '/app.html' },
       ],
