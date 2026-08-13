@@ -1,12 +1,22 @@
 "use client"
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
 import { trackEvent } from '@/lib/tracking'
 
+const LiveMap = dynamic(() => import('@/components/LiveMap'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F3F6F5' }}>
+      <span style={{ color: '#6E8592', fontSize: 13, fontWeight: 600 }}>Chargement de la carte…</span>
+    </div>
+  ),
+})
+
 const DEFAULT_POS = { lat: 43.6584, lng: 6.9225 } // Grasse
 
-const TRADES: Record<string,string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
+const TRADES: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
 
 export default function MapPage() {
   const router = useRouter()
@@ -15,15 +25,19 @@ export default function MapPage() {
   const [pros, setPros] = useState<ProviderNearby[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<ProviderNearby | null>(null)
+  const [locStatus, setLocStatus] = useState<'locating' | 'granted' | 'default'>('locating')
 
   useEffect(() => { trackEvent('page_view') }, [])
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        p => setPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        () => {}, { timeout: 5000 }
+        p => { setPos({ lat: p.coords.latitude, lng: p.coords.longitude }); setLocStatus('granted') },
+        () => setLocStatus('default'),
+        { timeout: 5000 }
       )
+    } else {
+      setLocStatus('default')
     }
   }, [])
 
@@ -36,13 +50,25 @@ export default function MapPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
-      <div style={{ padding: '16px', display: 'flex', gap: 8, alignItems: 'center', borderBottom: '1px solid #E7EDEB' }}>
-        <button onClick={() => setTrade(null)} style={{ padding: '8px 14px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, background: !trade ? '#123644' : '#fff', color: !trade ? '#fff' : '#123644', boxShadow: !trade ? 'none' : '0 0 0 1px #E7EDEB' }}>Tous</button>
-        {Object.entries(TRADES).map(([k,label]) => (
-          <button key={k} onClick={() => setTrade(k)} style={{ padding: '8px 14px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, background: trade===k ? '#123644' : '#fff', color: trade===k ? '#fff' : '#123644', boxShadow: trade===k ? 'none' : '0 0 0 1px #E7EDEB' }}>{label}</button>
+      {/* Carte */}
+      <div style={{ position: 'relative', width: '100%', height: '46vh', minHeight: 280, background: '#F3F6F5' }}>
+        <LiveMap userPos={pos} pros={pros} onSelect={setSelected} />
+        {locStatus === 'default' && (
+          <div style={{ position: 'absolute', top: 10, left: 10, right: 10, zIndex: 1000, background: 'rgba(18,54,68,.92)', color: '#fff', fontSize: 11.5, fontWeight: 600, padding: '8px 12px', borderRadius: 10, textAlign: 'center' }}>
+            Localisation non partagée — carte centrée sur Grasse par défaut
+          </div>
+        )}
+      </div>
+
+      {/* Filtres */}
+      <div style={{ padding: '14px 16px', display: 'flex', gap: 8, alignItems: 'center', borderBottom: '1px solid #E7EDEB', overflowX: 'auto' }}>
+        <button onClick={() => setTrade(null)} style={{ padding: '8px 14px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, background: !trade ? '#123644' : '#fff', color: !trade ? '#fff' : '#123644', boxShadow: !trade ? 'none' : '0 0 0 1px #E7EDEB', flexShrink: 0 }}>Tous</button>
+        {Object.entries(TRADES).map(([k, label]) => (
+          <button key={k} onClick={() => setTrade(k)} style={{ padding: '8px 14px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, background: trade === k ? '#123644' : '#fff', color: trade === k ? '#fff' : '#123644', boxShadow: trade === k ? 'none' : '0 0 0 1px #E7EDEB', flexShrink: 0 }}>{label}</button>
         ))}
       </div>
 
+      {/* Liste */}
       <div style={{ padding: 16 }}>
         {loading && <p style={{ color: '#6E8592', fontSize: 13 }}>Recherche de prestataires…</p>}
         {!loading && pros.length === 0 && (
@@ -55,15 +81,15 @@ export default function MapPage() {
           <div key={p.id} onClick={() => setSelected(p)} style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <strong style={{ fontFamily: 'Quicksand, sans-serif' }}>{TRADES[p.trade] || p.trade}</strong>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>{(p.base_price_cents/100).toFixed(2)} €</span>
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>{(p.base_price_cents / 100).toFixed(2)} €</span>
             </div>
-            <div style={{ color: '#6E8592', fontSize: 12.5 }}>{p.rating}★ ({p.reviews_count}) · {(p.distance_m/1000).toFixed(1)} km</div>
+            <div style={{ color: '#6E8592', fontSize: 12.5 }}>{p.rating}★ ({p.reviews_count}) · {(p.distance_m / 1000).toFixed(1)} km</div>
           </div>
         ))}
       </div>
 
       {selected && (
-        <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', alignItems: 'flex-end' }}>
+        <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', alignItems: 'flex-end', zIndex: 2000 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', borderRadius: '20px 20px 0 0', padding: 20 }}>
             <h3 style={{ fontFamily: 'Quicksand, sans-serif' }}>{TRADES[selected.trade] || selected.trade}</h3>
             <p style={{ color: '#6E8592', fontSize: 13, marginTop: 6 }}>{selected.bio}</p>

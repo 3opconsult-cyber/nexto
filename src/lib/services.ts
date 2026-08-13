@@ -10,6 +10,10 @@ export interface ProviderNearby {
   is_active: boolean
   distance_m: number
   bio: string
+  lat: number
+  lng: number
+  pricing_type: 'forfait' | 'horaire'
+  hourly_rate_cents: number | null
 }
 
 export async function fetchProvidersNearby(
