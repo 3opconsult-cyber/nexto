@@ -10,8 +10,11 @@ const nextConfig = {
         // Pages reelles pas encore compatibles — neutralisees vers la demo.
         { source: '/hub', destination: '/app.html' },
         { source: '/pro/dashboard', destination: '/app.html' },
-        { source: '/mission/:path*', destination: '/app.html' },
+        { source: '/mission/:id/chat', destination: '/app.html' },
+        { source: '/mission/:id/facture', destination: '/app.html' },
+        { source: '/mission/:id/litige', destination: '/app.html' },
         { source: '/client/:path*', destination: '/app.html' },
+        // /mission/new, /mission/:id/qrcodes, /mission/:id/scan/:phase : reelles
       ],
       fallback: [
         { source: '/:path*', destination: '/app.html' },
