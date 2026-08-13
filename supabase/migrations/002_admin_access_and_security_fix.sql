@@ -12,13 +12,21 @@
 -- 1) admin_stats() etait reste branche sur l'ancien schema (pro_profiles,
 --    missions, litiges, invoices.nexto_commission...) qui n'existe plus —
 --    aurait plante des le premier appel. Reecrite pour le schema reel.
+--    Etait aussi appelable par N'IMPORTE QUI (SECURITY DEFINER sans garde,
+--    execute accordee a "public" par defaut) : n'importe quel visiteur
+--    non connecte aurait pu lire volume/commission/effectifs globaux.
+--    Ajout d'une verification is_admin() + retrait du droit d'execution anon.
 CREATE OR REPLACE FUNCTION public.admin_stats()
 RETURNS jsonb
-LANGUAGE sql
+LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $function$
-  SELECT jsonb_build_object(
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'access denied';
+  END IF;
+  RETURN jsonb_build_object(
     'total_providers', (SELECT COUNT(*) FROM provider_profiles),
     'active_providers', (SELECT COUNT(*) FROM provider_profiles WHERE is_active = true),
     'inactive_providers', (SELECT COUNT(*) FROM provider_profiles WHERE is_active = false),
@@ -33,7 +41,13 @@ AS $function$
     'total_commission_cents', COALESCE((SELECT SUM(buyer_fee_cents + seller_fee_cents) FROM transactions), 0),
     'pending_documents', (SELECT COUNT(*) FROM documents WHERE status = 'pending')
   );
+END;
 $function$;
+
+-- NB: cette fonction utilise is_admin(), definie plus bas dans ce fichier (section 3).
+-- Sur une base neuve, executer la section 3 avant de creer admin_stats().
+
+REVOKE EXECUTE ON FUNCTION public.admin_stats() FROM anon;
 
 -- NB: generate_invoice(p_mission_id uuid) est egalement restee sur l'ancien
 -- schema (missions, pro_profiles, invoices.mission_id/nexto_commission...)
