@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --navy: #1A1033;
-  --accent: #7C5CFC;
-  --accent-d: #5538D4;
-  --accent-l: #EDE8FF;
-  --cream: #F0EDE8;
-  --ok: #22C55E;
-  --warn: #FB923C;
-  --danger: #EF4444;
+  --navy: #123644;
+  --accent: #12B39C;
+  --accent-d: #0C8F7E;
+  --accent-l: #E3F5F2;
+  --cream: #F3F6F5;
+  --ok: #12B39C;
+  --warn: #F2A93B;
+  --danger: #FF7A66;
 }
 
 * { box-sizing: border-box; }
@@ -22,8 +22,8 @@ html, body {
 }
 
 body {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
   background: var(--cream);
   color: var(--navy);
 }
