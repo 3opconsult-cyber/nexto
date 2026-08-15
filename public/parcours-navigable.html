@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PING — Parcours navigable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --navy:#123644; --accent:#12B39C; --accent-d:#0C8F7E; --accent-l:#E3F5F2;
+    --cream:#F3F6F5; --warn-bg:#FFF7ED; --warn-fg:#8a6520;
+    --slate:#6E8592; --mute:#9CA3AF; --line:#E7EDEB; --border:#DCE5E3;
+    --danger-bg:#FEE2E2; --danger-fg:#B91C1C; --green-bg:#DCFCE7; --green-fg:#15803D;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#DCE5E3;}
+  body{font-family:'Inter',sans-serif;font-weight:500;color:var(--navy);-webkit-font-smoothing:antialiased;}
+  .qs{font-family:'Quicksand',sans-serif;font-weight:700;}
+
+  /* ---------- top chrome ---------- */
+  .topbar{position:relative;z-index:5;background:var(--navy);padding:12px 14px 0;}
+  .topbar-inner{max-width:460px;margin:0 auto;}
+  .toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .wordmark{color:#fff;font-size:16px;}
+  .journey-switch{display:flex;gap:4px;background:rgba(255,255,255,.08);border-radius:999px;padding:3px;}
+  .journey-switch button{border:none;background:transparent;color:rgba(255,255,255,.6);font-family:'Inter',sans-serif;font-weight:700;font-size:12px;padding:7px 14px;border-radius:999px;cursor:pointer;}
+  .journey-switch button.active{background:var(--accent);color:#fff;}
+  .jumpstrip{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none;}
+  .jumpstrip::-webkit-scrollbar{display:none;}
+  .jumpstrip button{flex:0 0 auto;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.55);font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px;cursor:pointer;white-space:nowrap;}
+  .jumpstrip button.on{border-color:var(--accent);color:#fff;background:rgba(18,179,156,.25);}
+
+  /* ---------- device frame ---------- */
+  .stage{max-width:460px;margin:0 auto;padding:18px 14px 40px;}
+  .device{position:relative;width:100%;max-width:390px;height:760px;margin:0 auto;border-radius:32px;overflow:hidden;box-shadow:0 24px 60px rgba(18,54,68,.28);border:6px solid #0c2029;background:#000;}
+  .screen{display:none;width:100%;height:100%;overflow-y:auto;flex-direction:column;}
+  .screen.active{display:flex;}
+  @media(max-width:460px){
+    .device{border-radius:0;border:none;box-shadow:none;height:calc(100vh - 150px);}
+    .stage{padding:14px 0 30px;}
+  }
+
+  /* ---------- onboarding chrome (matches OnboardingStep.tsx) ---------- */
+  .ob{min-height:100%;background:var(--navy);display:flex;flex-direction:column;}
+  .ob-top{padding:20px 20px 16px;display:flex;align-items:center;gap:14px;}
+  .ob-back{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.1);color:#fff;font-size:15px;font-weight:700;flex-shrink:0;cursor:pointer;}
+  .ob-back.hidden{visibility:hidden;}
+  .ob-progress{flex:1;display:flex;gap:5px;}
+  .ob-seg{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.15);}
+  .ob-seg.on{background:var(--accent);}
+  .ob-sheet{flex:1;background:#fff;border-radius:24px 24px 0 0;padding:30px 22px 22px;display:flex;flex-direction:column;}
+  .ob-title{font-size:21px;color:var(--navy);line-height:1.3;margin:0;}
+  .ob-subtitle{font-size:13px;color:var(--slate);margin:8px 0 0;line-height:1.5;}
+  .ob-body{flex:1;margin-top:22px;}
+  .ob-foot{margin-top:20px;}
+  .ob-cta{width:100%;padding:15px;border-radius:999px;border:none;background:var(--accent);color:#fff;font-family:'Quicksand',sans-serif;font-weight:700;font-size:15px;cursor:pointer;}
+  .ob-skip{width:100%;padding:12px 0 0;background:none;border:none;color:var(--slate);font-size:12.5px;font-weight:700;cursor:pointer;}
+
+  .field{display:block;margin-bottom:16px;}
+  .field span{font-size:12.5px;color:var(--slate);font-weight:600;}
+  .field input,.field textarea{display:block;width:100%;margin-top:6px;border:1px solid var(--border);border-radius:12px;padding:13px 14px;font-size:15px;font-family:inherit;color:var(--navy);background:#fff;}
+  .field textarea{resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .choice{width:100%;text-align:left;padding:16px;border-radius:14px;margin-bottom:10px;border:2px solid var(--line);background:#fff;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;}
+  .choice.on{border-color:var(--accent);background:rgba(18,179,156,.06);}
+  .choice small{display:block;font-size:12px;font-weight:500;color:var(--slate);margin-top:3px;}
+
+  .toggle2{display:flex;gap:8px;margin-bottom:18px;}
+  .toggle2 button{flex:1;padding:12px 0;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:14px;color:var(--navy);cursor:pointer;}
+  .toggle2 button.on{border-color:var(--accent);background:rgba(18,179,156,.06);}
+
+  .result-row{display:block;width:100%;text-align:left;padding:11px 14px;border:none;border-bottom:1px solid #F3F6F5;background:#fff;cursor:pointer;}
+  .result-row .n{font-weight:700;font-size:13.5px;color:var(--navy);}
+  .result-row .a{font-size:11.5px;color:var(--slate);margin-top:2px;}
+  .confirm-strip{margin-top:12px;padding:12px;border-radius:12px;background:rgba(18,179,156,.08);font-size:12.5px;color:var(--accent-d);font-weight:600;}
+  .link-btn{margin-top:14px;background:none;border:none;color:var(--slate);font-size:12.5px;font-weight:700;text-decoration:underline;cursor:pointer;}
+
+  .geo-btn{width:100%;padding:14px;border-radius:12px;border:none;background:rgba(18,179,156,.1);color:var(--accent-d);font-weight:700;font-size:14px;margin-bottom:14px;cursor:pointer;}
+
+  /* ---------- pricing rows (per service) ---------- */
+  .price-row-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .price-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;}
+  .price-row-head b{font-family:'Quicksand',sans-serif;font-size:14px;color:var(--navy);}
+  .row-remove{border:none;background:none;color:var(--slate);font-size:11.5px;font-weight:700;text-decoration:underline;cursor:pointer;}
+  .add-service-btn{width:100%;padding:12px;border-radius:12px;border:1.5px dashed var(--border);background:none;color:var(--accent-d);font-weight:700;font-size:13px;cursor:pointer;}
+  .badge{flex:0 0 auto;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--accent-l);color:var(--accent-d);}
+  .badge.alt{background:var(--warn-bg);color:var(--warn-fg);}
+
+  /* ---------- explainer ---------- */
+  .exp-step{display:flex;gap:12px;margin-bottom:16px;}
+  .exp-n{flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-family:'Quicksand',sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .exp-step b{display:block;font-size:14px;color:var(--navy);margin-bottom:2px;}
+  .exp-step span{font-size:12.5px;color:var(--slate);line-height:1.5;}
+  .exp-reassure{margin-top:6px;padding:12px;border-radius:12px;background:var(--accent-l);color:var(--accent-d);font-size:12px;font-weight:600;line-height:1.5;}
+
+  /* ---------- invoices ---------- */
+  .invoice-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;}
+  .invoice-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px;}
+  .invoice-top b{font-family:'Quicksand',sans-serif;font-size:13px;}
+  .invoice-desc{font-size:11.5px;color:var(--slate);margin-bottom:8px;line-height:1.4;}
+  .invoice-amt{font-family:'Quicksand',sans-serif;font-weight:700;font-size:17px;color:var(--navy);}
+
+  /* ---------- chat system messages ---------- */
+  .sys-msg{align-self:center;max-width:85%;background:var(--accent-l);color:var(--accent-d);font-size:11px;font-weight:700;padding:7px 14px;border-radius:999px;text-align:center;}
+
+  /* ---------- documents ---------- */
+  .doc-icon-wrap{display:flex;flex-direction:column;align-items:center;padding-top:10px;}
+  .doc-icon{width:92px;height:92px;border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:22px;}
+  .doc-icon.done{background:rgba(18,179,156,.12);border:2px solid var(--accent);}
+  .doc-icon.todo{background:var(--cream);border:2px solid var(--line);}
+  .doc-name{font-weight:700;font-size:14px;color:var(--navy);}
+  .doc-status{font-size:12px;color:var(--accent-d);font-weight:600;margin-top:4px;}
+  .doc-upload-btn{padding:13px 26px;border-radius:999px;border:none;background:var(--navy);color:#fff;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;cursor:pointer;}
+
+  /* ---------- attente / plain navy pages ---------- */
+  .plain-navy{min-height:100%;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;color:#fff;}
+  .plain-navy h1{font-size:24px;margin:0 0 10px;}
+  .plain-navy p.lead{font-size:13.5px;font-weight:500;color:rgba(255,255,255,.6);max-width:300px;line-height:1.6;margin:0 0 28px;}
+  .doclist{width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;}
+  .doclist-box{padding:16px;border-radius:16px;text-align:left;background:rgba(255,255,255,.08);}
+  .doclist-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:rgba(255,255,255,.4);margin-bottom:10px;}
+  .doc-row{display:flex;align-items:center;gap:10px;padding:5px 0;}
+  .doc-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+  .doc-row .lbl{font-size:13px;font-weight:600;}
+  .doc-row .st{margin-left:auto;font-size:11px;font-weight:600;color:rgba(255,255,255,.45);}
+  .ghost-btn{width:100%;padding:14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;cursor:pointer;}
+  .solid-btn{width:100%;padding:14px;border-radius:999px;border:none;background:var(--accent);color:#fff;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;cursor:pointer;}
+
+  /* ---------- dashboard ---------- */
+  .dash{min-height:100%;background:var(--navy);display:flex;flex-direction:column;}
+  .dash-head{padding:26px 20px 12px;display:flex;justify-content:space-between;align-items:flex-start;}
+  .dash-head .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.45);margin-bottom:4px;}
+  .dash-head .name{font-size:22px;color:#fff;}
+  .avail-pill{padding:9px 14px;border-radius:999px;border:none;font-size:12px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;}
+  .avail-pill.avail-off{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);}
+  .dash-tabs{padding:0 14px;display:flex;gap:4px;}
+  .dash-tabs button{flex:1;padding:10px 0;border-radius:12px 12px 0 0;border:none;font-size:12px;font-weight:700;background:transparent;color:rgba(255,255,255,.5);cursor:pointer;}
+  .dash-tabs button.on{background:#fff;color:var(--navy);}
+  .dash-body{background:#fff;border-radius:18px 18px 0 0;padding:22px 18px;flex:1;}
+  .dash-pane{display:none;}
+  .dash-pane.on{display:block;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+  .stat{padding:16px;border-radius:16px;}
+  .stat.teal{background:rgba(18,179,156,.08);}
+  .stat.plain{border:1px solid var(--line);}
+  .stat .v{font-size:22px;}
+  .stat .l{font-size:11px;font-weight:700;color:var(--mute);margin-top:4px;text-transform:uppercase;letter-spacing:.03em;}
+  .empty-box{padding:18px;border-radius:14px;background:var(--cream);font-size:12.5px;color:var(--slate);font-weight:600;text-align:center;}
+  .empty-box .sub{font-size:11.5px;margin-top:6px;}
+  .profile-block{padding:16px;border-radius:16px;background:var(--cream);margin-bottom:14px;}
+  .profile-block .k{font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
+  .profile-block .v{font-size:15px;color:var(--navy);}
+  .outline-btn{width:100%;padding:13px;border-radius:999px;border:1.5px solid var(--border);background:#fff;color:var(--navy);font-family:'Quicksand',sans-serif;font-weight:700;font-size:13.5px;margin-bottom:10px;cursor:pointer;}
+
+  /* ---------- map (client) ---------- */
+  .mapwrap{position:relative;min-height:100%;background:var(--cream);display:flex;flex-direction:column;}
+  .leaf{width:100%;height:230px;background:var(--cream);flex-shrink:0;}
+  .chips{padding:12px 14px;display:flex;gap:8px;border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;}
+  .chip{padding:8px 14px;border-radius:999px;border:none;font-weight:700;font-size:13px;background:#fff;color:var(--navy);box-shadow:inset 0 0 0 1px var(--line);flex-shrink:0;cursor:pointer;}
+  .chip.on{background:var(--navy);color:#fff;box-shadow:none;}
+  .plist{padding:14px;}
+  .pcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;}
+  .pcard .top{display:flex;justify-content:space-between;}
+  .pcard .top b{font-family:'Quicksand',sans-serif;}
+  .pcard .top .price{font-family:'Quicksand',sans-serif;font-weight:700;}
+  .pcard .meta{color:var(--slate);font-size:12.5px;margin-top:3px;}
+
+  .sheet-overlay{position:absolute;inset:0;background:rgba(18,54,68,.4);display:none;align-items:flex-end;z-index:10;}
+  .sheet-overlay.on{display:flex;}
+  .sheet-card{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:20px;}
+  .sheet-card h3{font-size:17px;margin:0 0 6px;}
+  .sheet-card p{color:var(--slate);font-size:13px;margin:0 0 14px;}
+
+  /* ---------- fiche pro (client) ---------- */
+  .fiche{min-height:100%;background:var(--cream);display:flex;flex-direction:column;}
+  .fiche-head{padding:20px 20px 32px;background:var(--navy);}
+  .fiche-back{color:#fff;background:none;border:none;font-size:13px;font-weight:700;margin-bottom:16px;cursor:pointer;padding:0;}
+  .fiche-id{display:flex;align-items:center;gap:14px;}
+  .avatar{width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:'Quicksand',sans-serif;font-weight:700;font-size:20px;color:#fff;background:var(--accent);flex-shrink:0;}
+  .fiche-id h1{font-size:20px;color:#fff;margin:0;}
+  .fiche-id .sub{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;}
+  .active-pill{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(18,179,156,.18);color:#5EEAD4;}
+  .fiche-body{background:#fff;border-radius:20px 20px 0 0;margin-top:-14px;padding:22px 20px;flex:1;}
+  .price-row{display:flex;gap:8px;margin-bottom:20px;}
+  .price-box{flex:1;padding:14px;border-radius:14px;text-align:center;background:var(--cream);}
+  .price-box .p{font-family:'Quicksand',sans-serif;font-weight:700;font-size:17px;color:var(--accent);}
+  .price-box .s{font-size:11px;color:var(--slate);font-weight:600;margin-top:2px;}
+  .fiche-tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--cream);margin-bottom:18px;}
+  .fiche-tabs button{flex:1;padding:10px 0;border-radius:10px;border:none;font-size:13px;font-weight:700;background:transparent;color:var(--slate);cursor:pointer;}
+  .fiche-tabs button.on{background:#fff;color:var(--navy);}
+  .fiche-pane{display:none;}
+  .fiche-pane.on{display:block;}
+  .disclaimer{margin-top:14px;padding:12px;border-radius:12px;background:var(--warn-bg);font-size:11.5px;color:var(--warn-fg);font-weight:600;}
+  .review-card{padding:14px;border-radius:14px;background:var(--cream);margin-bottom:10px;}
+  .review-card .top{display:flex;justify-content:space-between;margin-bottom:4px;}
+  .review-card .top b{font-size:13px;}
+  .review-card .stars{font-size:12px;color:#F59E0B;}
+  .fiche-cta-wrap{position:sticky;bottom:0;background:#fff;padding:14px 20px;border-top:1px solid var(--line);}
+
+  /* ---------- reserver ---------- */
+  .reserv{min-height:100%;background:var(--navy);display:flex;flex-direction:column;}
+  .reserv-top{padding:28px 20px 16px;}
+  .reserv-back{color:#fff;background:none;border:none;font-size:13px;font-weight:700;margin-bottom:10px;cursor:pointer;padding:0;}
+  .reserv-top h1{font-size:22px;color:#fff;margin:0;}
+  .reserv-top .sub{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;}
+  .reserv-body{background:#fff;border-radius:24px 24px 0 0;padding:24px 20px;flex:1;}
+  .recap{background:var(--cream);border-radius:14px;padding:16px;margin-bottom:22px;}
+  .recap .r{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+  .recap .r span:first-child{color:var(--slate);}
+  .recap .tot{display:flex;justify-content:space-between;font-family:'Quicksand',sans-serif;font-weight:700;font-size:16px;border-top:1px solid var(--border);padding-top:10px;margin-top:4px;}
+
+  /* ---------- qrcodes ---------- */
+  .qrpage{min-height:100%;background:var(--cream);padding:28px 20px;}
+  .qrpage h1{font-size:20px;color:var(--navy);text-align:center;margin:0;}
+  .qrpage .sub{color:var(--slate);font-size:13px;text-align:center;margin:6px 0 26px;}
+  .qr-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:16px;text-align:center;}
+  .qr-card .t{font-weight:700;font-size:14px;color:var(--navy);margin-bottom:10px;}
+  .qr-card .note{font-size:11px;color:var(--slate);margin-top:10px;}
+  .qr-caption{font-size:10px;color:var(--mute);margin-top:6px;}
+
+  /* ---------- chat ---------- */
+  .chat{min-height:100%;background:var(--cream);display:flex;flex-direction:column;}
+  .chat-head{padding:14px 16px;display:flex;align-items:center;gap:12px;background:var(--navy);flex-shrink:0;}
+  .chat-head .b{color:#fff;background:none;border:none;font-weight:700;font-size:15px;cursor:pointer;}
+  .chat-head .t1{font-size:15px;color:#fff;}
+  .chat-head .t2{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.5);}
+  .chat-banner{padding:8px 16px;font-size:11.5px;font-weight:600;text-align:center;background:rgba(18,179,156,.1);color:var(--accent-d);flex-shrink:0;}
+  .chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+  .bubble{max-width:75%;padding:10px 14px;border-radius:16px;font-size:13.5px;font-weight:500;}
+  .bubble.mine{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px;}
+  .bubble.theirs{align-self:flex-start;background:#fff;color:var(--navy);border:1px solid var(--line);border-bottom-left-radius:4px;}
+  .chat-cap{font-size:11px;color:var(--mute);text-align:center;padding:2px 0 8px;}
+  .chat-input{padding:12px 16px;background:#fff;display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);flex-shrink:0;}
+  .chat-input input{flex:1;padding:11px 16px;border-radius:999px;font-size:13.5px;border:1px solid var(--border);outline:none;background:var(--cream);}
+  .chat-input button{width:42px;height:42px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:16px;flex-shrink:0;cursor:pointer;}
+
+  /* ---------- scan ---------- */
+  .scanpage{min-height:100%;background:var(--cream);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .scan-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:28px;max-width:300px;width:100%;text-align:center;}
+  .scan-ic{width:56px;height:56px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(18,179,156,.12);color:var(--accent);}
+  .scan-card h1{font-size:17px;color:var(--navy);margin:0;}
+  .scan-dur{margin-top:14px;padding:12px;border-radius:12px;background:var(--cream);}
+  .scan-dur .l{font-size:11px;color:var(--slate);font-weight:600;}
+  .scan-dur .v{font-size:20px;color:var(--navy);margin-top:2px;}
+  .scan-dur .n{font-size:10.5px;color:var(--slate);margin-top:4px;}
+
+  .foot-caption{max-width:390px;margin:10px auto 0;text-align:center;font-size:11px;color:#5a6f77;font-family:'Inter',sans-serif;}
+  code.route{font-family:monospace;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="toprow">
+      <div class="wordmark qs">PING · navigable</div>
+      <div class="journey-switch">
+        <button id="btn-pro" class="active" onclick="setJourney('pro')">Prestataire</button>
+        <button id="btn-client" onclick="setJourney('client')">Client</button>
+      </div>
+    </div>
+    <div class="jumpstrip" id="jumpstrip"></div>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="device" id="device">
+
+    <!-- ============ P-SIGNUP 1 ============ -->
+    <div class="screen" data-seq="pro" id="p-signup1">
+      <div class="ob" style="align-items:center;justify-content:center;padding:28px 0;">
+        <div style="width:100%;max-width:340px;margin:0 auto;padding:0 20px;">
+          <div class="qs" style="color:#fff;font-size:34px;text-align:center;margin-bottom:20px;">PING</div>
+          <div style="display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(255,255,255,.1);margin:0 auto 22px;width:fit-content;">
+            <span style="padding:8px 18px;border-radius:999px;font-size:13px;font-weight:900;color:rgba(255,255,255,.6);">Particulier</span>
+            <span style="padding:8px 18px;border-radius:999px;font-size:13px;font-weight:900;background:var(--accent);color:#fff;">Professionnel</span>
+          </div>
+          <div style="background:#fff;border-radius:24px;padding:26px;box-shadow:0 20px 40px rgba(0,0,0,.25);">
+            <div style="display:flex;gap:8px;margin-bottom:18px;">
+              <div style="flex:1;height:4px;border-radius:4px;background:var(--accent);"></div>
+              <div style="flex:1;height:4px;border-radius:4px;background:var(--line);"></div>
+            </div>
+            <div class="qs" style="font-size:22px;color:var(--navy);margin-bottom:2px;">Vos informations</div>
+            <div style="font-size:11px;color:var(--mute);font-weight:700;margin-bottom:18px;">Étape 1 sur 2</div>
+            <div class="row2">
+              <div class="field"><span>Prénom</span><input value="Karim"></div>
+              <div class="field"><span>Nom</span><input value="Benali"></div>
+            </div>
+            <div class="field"><span>Date de naissance</span><input value="14/03/1994"></div>
+            <div class="field"><span>Téléphone</span><input value="+33 6 12 34 56 78"></div>
+            <div class="field" style="margin-bottom:6px;"><span>Adresse</span><input value="12 avenue de Provence, Grasse"></div>
+            <button class="ob-cta" style="margin-top:14px;" onclick="go('p-signup2')">Continuer →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-SIGNUP 2 ============ -->
+    <div class="screen" data-seq="pro" id="p-signup2">
+      <div class="ob" style="align-items:center;justify-content:center;padding:28px 0;">
+        <div style="width:100%;max-width:340px;margin:0 auto;padding:0 20px;">
+          <div class="qs" style="color:#fff;font-size:34px;text-align:center;margin-bottom:20px;">PING</div>
+          <div style="display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(255,255,255,.1);margin:0 auto 22px;width:fit-content;">
+            <span style="padding:8px 18px;border-radius:999px;font-size:13px;font-weight:900;color:rgba(255,255,255,.6);">Particulier</span>
+            <span style="padding:8px 18px;border-radius:999px;font-size:13px;font-weight:900;background:var(--accent);color:#fff;">Professionnel</span>
+          </div>
+          <div style="background:#fff;border-radius:24px;padding:26px;box-shadow:0 20px 40px rgba(0,0,0,.25);">
+            <div style="display:flex;gap:8px;margin-bottom:18px;">
+              <div style="flex:1;height:4px;border-radius:4px;background:var(--accent);"></div>
+              <div style="flex:1;height:4px;border-radius:4px;background:var(--accent);"></div>
+            </div>
+            <div class="qs" style="font-size:22px;color:var(--navy);margin-bottom:2px;">Finaliser</div>
+            <div style="font-size:11px;color:var(--mute);font-weight:700;margin-bottom:18px;">Étape 2 sur 2</div>
+            <div class="field"><span>Email</span><input value="karim.benali@email.com"></div>
+            <div class="field"><span>Mot de passe</span><input type="password" value="••••••••"></div>
+            <div style="display:flex;gap:10px;padding:12px;border-radius:12px;background:var(--accent-l);margin-bottom:16px;">
+              <input type="checkbox" checked style="margin-top:2px;">
+              <span style="font-size:11.5px;font-weight:700;color:var(--accent-d);">J'accepte les Conditions Générales et la Politique de confidentialité de PING</span>
+            </div>
+            <button class="ob-cta" onclick="go('p-service')">Créer mon compte</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-SERVICE ============ -->
+    <div class="screen" data-seq="pro" id="p-service">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back hidden">←</button>
+          <div class="ob-progress">
+            <div class="ob-seg on"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div>
+          </div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Quel service proposez-vous ?</h1>
+          <p class="ob-subtitle">Vous pourrez en ajouter d'autres plus tard.</p>
+          <div class="ob-body">
+            <button class="choice on" onclick="toggleMulti(this)">Ménage</button>
+            <button class="choice on" onclick="toggleMulti(this)">Repassage</button>
+            <button class="choice" onclick="toggleMulti(this)">Nettoyage</button>
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-tarif')">Continuer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-TARIF ============ -->
+    <div class="screen" data-seq="pro" id="p-tarif">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-service')">←</button>
+          <div class="ob-progress">
+            <div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div>
+          </div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Votre tarif</h1>
+          <p class="ob-subtitle">Un forfait et/ou un taux horaire par service — ajoutez ou retirez un service à tout moment.</p>
+          <div class="ob-body">
+            <div class="price-row-card">
+              <div class="price-row-head"><b>Ménage</b><button class="row-remove" onclick="removeRow(this)">Retirer</button></div>
+              <div class="row2">
+                <div class="field" style="margin-bottom:0;"><span>Forfait €</span><input value="25"></div>
+                <div class="field" style="margin-bottom:0;"><span>Taux horaire €/h</span><input value="18"></div>
+              </div>
+            </div>
+            <div class="price-row-card">
+              <div class="price-row-head"><b>Repassage</b><button class="row-remove" onclick="removeRow(this)">Retirer</button></div>
+              <div class="row2">
+                <div class="field" style="margin-bottom:0;"><span>Forfait €</span><input value="15"></div>
+                <div class="field" style="margin-bottom:0;"><span>Taux horaire €/h</span><input value="15"></div>
+              </div>
+            </div>
+            <div class="price-row-card" id="row-nettoyage" style="display:none;">
+              <div class="price-row-head"><b>Nettoyage</b><button class="row-remove" onclick="removeRow(this)">Retirer</button></div>
+              <div class="row2">
+                <div class="field" style="margin-bottom:0;"><span>Forfait €</span><input value="40"></div>
+                <div class="field" style="margin-bottom:0;"><span>Taux horaire €/h</span><input value="22"></div>
+              </div>
+            </div>
+            <button class="add-service-btn" id="addServiceBtn" onclick="addServiceRow()">+ Ajouter Nettoyage</button>
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-statut')">Continuer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-STATUT ============ -->
+    <div class="screen" data-seq="pro" id="p-statut">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-tarif')">←</button>
+          <div class="ob-progress">
+            <div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div>
+          </div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Vous êtes…</h1>
+          <div class="ob-body">
+            <button class="choice" onclick="selectOne(this)">Un particulier<small>Voisin, étudiant… pas de structure déclarée</small></button>
+            <button class="choice on" onclick="selectOne(this)">Un professionnel<small>Auto-entrepreneur, société…</small></button>
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-entreprise')">Continuer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-ENTREPRISE ============ -->
+    <div class="screen" data-seq="pro" id="p-entreprise">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-statut')">←</button>
+          <div class="ob-progress">
+            <div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg"></div><div class="ob-seg"></div><div class="ob-seg"></div>
+          </div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Votre entreprise</h1>
+          <p class="ob-subtitle">Tapez son nom, on retrouve le SIRET et l'adresse pour vous.</p>
+          <div class="ob-body">
+            <div class="field" style="margin-bottom:0;"><input value="Sofia Services"></div>
+            <div style="margin-top:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden;">
+              <button class="result-row" onclick="pickCompanyRow(this)"><div class="n">SOFIA SERVICES</div><div class="a">12 rue des Oliviers, 06130 Grasse</div></button>
+              <button class="result-row" style="border-bottom:none;" onclick="pickCompanyRow(this)"><div class="n">SOFIA SERVICES NETTOYAGE</div><div class="a">Adresse non communiquée</div></button>
+            </div>
+            <div class="confirm-strip" id="companyConfirm">SIRET 812 345 678 00021 · pré-rempli, à valider aux étapes suivantes</div>
+            <button class="link-btn" onclick="toggleManual()">Je ne trouve pas mon entreprise, saisir le SIRET à la main</button>
+            <input id="manualSiret" placeholder="Numéro SIRET (14 chiffres)" style="display:none;width:100%;margin-top:10px;border:1px solid var(--border);border-radius:12px;padding:13px 14px;font-size:15px;font-family:inherit;color:var(--navy);">
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-adresse')">Continuer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-ADRESSE ============ -->
+    <div class="screen" data-seq="pro" id="p-adresse">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-entreprise')">←</button>
+          <div class="ob-progress">
+            <div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg"></div><div class="ob-seg"></div>
+          </div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Où intervenez-vous ?</h1>
+          <p class="ob-subtitle">Pour apparaître au bon endroit sur la carte.</p>
+          <div class="ob-body">
+            <button class="geo-btn">✓ Position enregistrée</button>
+            <div class="field"><span>Adresse (facultatif, affichée sur votre profil)</span><input value="12 avenue de Provence, Grasse"></div>
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-telephone')">Continuer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-TELEPHONE ============ -->
+    <div class="screen" data-seq="pro" id="p-telephone">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-adresse')">←</button>
+          <div class="ob-progress">
+            <div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg"></div>
+          </div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Votre numéro de téléphone</h1>
+          <p class="ob-subtitle">Visible uniquement par PING, jamais publié.</p>
+          <div class="ob-body"><div class="field"><input value="06 12 34 56 78"></div></div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-bio')">Continuer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-BIO ============ -->
+    <div class="screen" data-seq="pro" id="p-bio">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-telephone')">←</button>
+          <div class="ob-progress">
+            <div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div>
+          </div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Un mot pour vous présenter</h1>
+          <p class="ob-subtitle">Une phrase suffit. Vous pourrez la modifier plus tard.</p>
+          <div class="ob-body"><div class="field"><textarea rows="4">Ménage soigné, ponctuel, 5 ans d'expérience.</textarea></div></div>
+          <div class="ob-foot">
+            <button class="ob-cta" onclick="go('p-doc1')">Terminer</button>
+            <button class="ob-skip" onclick="go('p-doc1')">Passer et terminer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-DOC1 ============ -->
+    <div class="screen" data-seq="pro" id="p-doc1">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back hidden">←</button>
+          <div class="ob-progress"><div class="ob-seg on"></div><div class="ob-seg"></div><div class="ob-seg"></div></div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Avez-vous une pièce d'identité à télécharger ?</h1>
+          <p class="ob-subtitle">PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Ça n'empêche pas d'être visible sur la carte.</p>
+          <div class="ob-body">
+            <div class="doc-icon-wrap">
+              <div class="doc-icon done" style="color:var(--accent);font-size:32px;">✓</div>
+              <div class="doc-name">carte-identite.pdf</div>
+              <div class="doc-status">Déposé — en attente de vérification</div>
+              <button class="link-btn">Remplacer le fichier</button>
+            </div>
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-doc2')">Continuer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-DOC2 ============ -->
+    <div class="screen" data-seq="pro" id="p-doc2">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-doc1')">←</button>
+          <div class="ob-progress"><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg"></div></div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Avez-vous une assurance en cours de validité ?</h1>
+          <p class="ob-subtitle">PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Ça n'empêche pas d'être visible sur la carte.</p>
+          <div class="ob-body">
+            <div class="doc-icon-wrap" id="doc2wrap">
+              <div class="doc-icon todo">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#123644" stroke-width="1.6"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+              </div>
+              <button class="doc-upload-btn" onclick="uploadDoc2()">Télécharger le document</button>
+            </div>
+          </div>
+          <div class="ob-foot">
+            <button class="ob-cta" id="doc2cta" onclick="go('p-doc3')">Continuer sans ce document</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-DOC3 ============ -->
+    <div class="screen" data-seq="pro" id="p-doc3">
+      <div class="ob">
+        <div class="ob-top">
+          <button class="ob-back" onclick="go('p-doc2')">←</button>
+          <div class="ob-progress"><div class="ob-seg on"></div><div class="ob-seg on"></div><div class="ob-seg on"></div></div>
+        </div>
+        <div class="ob-sheet">
+          <h1 class="ob-title">Avez-vous un justificatif SIRET ou Kbis ?</h1>
+          <p class="ob-subtitle">PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Ça n'empêche pas d'être visible sur la carte.</p>
+          <div class="ob-body">
+            <div class="doc-icon-wrap">
+              <div class="doc-icon done" style="color:var(--accent);font-size:32px;">✓</div>
+              <div class="doc-name">kbis-2026.pdf</div>
+              <div class="doc-status">Déposé — en attente de vérification</div>
+              <button class="link-btn">Remplacer le fichier</button>
+            </div>
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('p-attente')">Terminer</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-ATTENTE ============ -->
+    <div class="screen" data-seq="pro" id="p-attente">
+      <div class="plain-navy">
+        <h1 class="qs">Votre profil est en ligne</h1>
+        <p class="lead">Vous êtes dès à présent visible sur la carte et joignable par les clients à proximité.</p>
+        <div class="doclist">
+          <div class="doclist-box">
+            <div class="doclist-title">Documents</div>
+            <div class="doc-row"><div class="doc-dot" style="background:rgba(255,255,255,.2);"></div><span class="lbl">Pièce d'identité</span><span class="st">En cours de vérification</span></div>
+            <div class="doc-row"><div class="doc-dot" style="background:rgba(255,255,255,.08);"></div><span class="lbl" style="color:rgba(255,255,255,.4);">Assurance RC Pro</span><span class="st">Non fourni</span></div>
+            <div class="doc-row"><div class="doc-dot" style="background:rgba(255,255,255,.2);"></div><span class="lbl">Justificatif de statut</span><span class="st">En cours de vérification</span></div>
+          </div>
+          <button class="ghost-btn" onclick="go('p-doc1')">Compléter mes documents</button>
+          <button class="solid-btn" onclick="go('p-dashboard')">Accéder à mon tableau de bord →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-DASHBOARD ============ -->
+    <div class="screen" data-seq="pro" id="p-dashboard">
+      <div class="dash">
+        <div class="dash-head">
+          <div><div class="eyebrow">Espace prestataire</div><div class="name qs">Karim</div></div>
+          <button class="avail-pill" onclick="toggleAvail(this)">● Visible sur la carte</button>
+        </div>
+        <div class="dash-tabs">
+          <button class="on" onclick="dashTab(this,'d-resume')">Résumé</button>
+          <button onclick="dashTab(this,'d-missions')">Missions</button>
+          <button onclick="dashTab(this,'d-factures')">Factures</button>
+          <button onclick="dashTab(this,'d-profil')">Profil</button>
+        </div>
+        <div class="dash-body">
+          <div class="dash-pane on" id="d-resume">
+            <div class="stat-grid">
+              <div class="stat teal"><div class="v qs" style="color:var(--accent-d);">23 €</div><div class="l">Revenus ce mois</div></div>
+              <div class="stat plain"><div class="v qs">1</div><div class="l">Missions terminées</div></div>
+              <div class="stat plain"><div class="v qs" style="color:#F59E0B;">—</div><div class="l">0 avis</div></div>
+              <div class="stat plain"><div class="v qs">3 €</div><div class="l">Commission PING versée</div></div>
+            </div>
+            <div class="empty-box">Votre profil est visible sur la carte — les nouvelles demandes apparaîtront ici dès qu'un client vous contacte.</div>
+          </div>
+          <div class="dash-pane" id="d-missions">
+            <div class="pcard" style="border:1px solid var(--line);cursor:pointer;" onclick="go('p-mission-detail')">
+              <div class="top"><b class="qs">13 août</b><span class="badge">Réglée</span></div>
+              <div class="meta" style="color:var(--accent-d);font-weight:700;">23,25 € net</div>
+            </div>
+            <div style="font-size:11.5px;color:var(--mute);background:var(--cream);border-radius:10px;padding:9px 11px;margin-top:10px;line-height:1.4;">Tape la mission pour voir l'heure d'arrivée, l'heure de sortie et le résumé — sans les coordonnées complètes du client.</div>
+          </div>
+          <div class="dash-pane" id="d-factures">
+            <div class="invoice-card">
+              <div class="invoice-top"><b>FACT-2026-0142</b><span class="badge">Votre facture</span></div>
+              <div class="invoice-desc">Ménage — 8 rue Jean Jaurès, Grasse · sur votre propre en-tête, jamais celui de PING</div>
+              <div class="invoice-amt">25,00 €</div>
+            </div>
+            <div class="invoice-card">
+              <div class="invoice-top"><b>PING-C-0142</b><span class="badge alt">Commission PING</span></div>
+              <div class="invoice-desc">Frais de service acheteur (5 %)</div>
+              <div class="invoice-amt">1,25 €</div>
+            </div>
+            <div class="invoice-card">
+              <div class="invoice-top"><b>PING-V-0142</b><span class="badge alt">Commission PING</span></div>
+              <div class="invoice-desc">Commission vendeur (11 %)</div>
+              <div class="invoice-amt">2,75 €</div>
+            </div>
+            <div class="empty-box" style="text-align:left;">Trois factures distinctes par mission : la vôtre, et les deux commissions PING — PING ne facture jamais à votre place.</div>
+          </div>
+          <div class="dash-pane" id="d-profil">
+            <div class="profile-block"><div class="k">Service principal</div><div class="v qs">Ménage</div></div>
+            <div class="profile-block"><div class="k">Tarif</div><div class="v qs">25,00 € forfait</div></div>
+            <div class="profile-block"><div class="k">Description</div><div class="v" style="font-size:13px;line-height:1.5;">Ménage soigné, ponctuel, 5 ans d'expérience.</div></div>
+            <button class="outline-btn" onclick="go('p-service')">Modifier mes informations</button>
+            <button class="outline-btn" onclick="go('p-doc1')">Gérer mes documents</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P-MISSION DETAIL ============ -->
+    <div class="screen" data-seq="pro" id="p-mission-detail">
+      <div class="ob" style="justify-content:flex-start;">
+        <div class="ob-top"><button class="ob-back" onclick="go('p-dashboard')">←</button><div style="flex:1;"></div></div>
+        <div class="ob-sheet" style="padding-top:14px;">
+          <h1 class="ob-title">Mission du 13 août</h1>
+          <p class="ob-subtitle">Ménage · Réglée</p>
+          <div class="ob-body">
+            <div class="profile-block"><div class="k">Adresse</div><div class="v" style="font-size:14px;">8 rue Jean Jaurès, Grasse</div></div>
+            <div class="profile-block"><div class="k">Client</div><div class="v" style="font-size:14px;">Nadia K.</div></div>
+            <div class="stat-grid" style="margin-bottom:14px;">
+              <div class="stat plain"><div class="v qs" style="font-size:17px;">14h02</div><div class="l">Arrivée</div></div>
+              <div class="stat plain"><div class="v qs" style="font-size:17px;">16h17</div><div class="l">Sortie</div></div>
+            </div>
+            <div class="profile-block"><div class="k">Résumé</div><div class="v" style="font-size:13px;line-height:1.5;">Appartement 65 m², ménage complet avant état des lieux. Durée réelle : 2 h 15.</div></div>
+            <div class="stat teal" style="margin-bottom:14px;"><div class="v qs" style="color:var(--accent-d);">23,25 €</div><div class="l">Net perçu</div></div>
+            <div style="font-size:11px;color:var(--mute);margin-bottom:14px;line-height:1.4;">Coordonnées complètes non partagées — les échanges passent par la messagerie PING.</div>
+            <button class="outline-btn" onclick="goToInvoice()">Voir la facture →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CLIENT: MAP ============ -->
+    <div class="screen" data-seq="client" id="c-map">
+      <div class="mapwrap">
+        <div class="leaf" id="leafletMap"></div>
+        <div class="chips">
+          <button class="chip on" onclick="selectChip(this)">Tous</button>
+          <button class="chip" onclick="selectChip(this)">Ménage</button>
+          <button class="chip" onclick="selectChip(this)">Repassage</button>
+          <button class="chip" onclick="selectChip(this)">Nettoyage</button>
+        </div>
+        <div class="plist">
+          <div class="pcard" onclick="openSheet()">
+            <div class="top"><b class="qs">Ménage</b><span class="price qs">25,00 €</span></div>
+            <div class="meta">4.8★ (12) · 1.2 km</div>
+          </div>
+          <div class="pcard" onclick="go('c-fiche')">
+            <div class="top"><b class="qs">Nettoyage</b><span class="price qs">40,00 €</span></div>
+            <div class="meta">Nouveau · 3.4 km</div>
+          </div>
+        </div>
+        <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+          <div class="sheet-card" onclick="event.stopPropagation()">
+            <h3 class="qs">Ménage</h3>
+            <p>Ménage soigné, ponctuel, 5 ans d'expérience.</p>
+            <button class="solid-btn" onclick="go('c-fiche')">Voir la fiche complète</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CLIENT: FICHE ============ -->
+    <div class="screen" data-seq="client" id="c-fiche">
+      <div class="fiche">
+        <div class="fiche-head">
+          <button class="fiche-back" onclick="go('c-map')">← Retour</button>
+          <div class="fiche-id">
+            <div class="avatar qs">KB</div>
+            <div>
+              <h1 class="qs">Karim Benali</h1>
+              <div class="sub">4.8 ★ · 12 avis</div>
+              <span class="active-pill">Actif</span>
+            </div>
+          </div>
+        </div>
+        <div class="fiche-body">
+          <div class="price-row">
+            <div class="price-box"><div class="p qs">25,00 € forfait</div><div class="s">Ménage</div></div>
+          </div>
+          <div class="fiche-tabs">
+            <button class="on" onclick="ficheTab(this,'f-apropos')">À propos</button>
+            <button onclick="ficheTab(this,'f-avis')">Avis</button>
+          </div>
+          <div class="fiche-pane on" id="f-apropos">
+            <p style="font-size:13.5px;color:#3d5560;line-height:1.6;margin-bottom:16px;">Ménage soigné, ponctuel, 5 ans d'expérience.</p>
+            <div style="padding:12px;border-radius:12px;background:var(--cream);font-size:12px;color:var(--slate);font-weight:600;">Pièce d'identité et justificatifs fournis lors de l'inscription.</div>
+            <div class="disclaimer">PING met en relation clients et prestataires mais n'emploie ni ne supervise ce prestataire.</div>
+          </div>
+          <div class="fiche-pane" id="f-avis">
+            <div class="review-card"><div class="top"><b>Nadia</b><span class="stars">★★★★★</span></div><p style="font-size:13px;color:#3d5560;margin:0;">Ponctuel et très soigneux, je recommande.</p></div>
+            <div class="review-card"><div class="top"><b>Julien</b><span class="stars">★★★★☆</span></div><p style="font-size:13px;color:#3d5560;margin:0;">Bon travail, un peu en retard.</p></div>
+          </div>
+        </div>
+        <div class="fiche-cta-wrap"><button class="solid-btn" onclick="go('c-reserver')">Demander un devis</button></div>
+      </div>
+    </div>
+
+    <!-- ============ CLIENT: RESERVER ============ -->
+    <div class="screen" data-seq="client" id="c-reserver">
+      <div class="reserv">
+        <div class="reserv-top">
+          <button class="reserv-back" onclick="go('c-fiche')">← Retour</button>
+          <h1 class="qs">Réserver</h1>
+          <div class="sub">menage — 25,00 € forfait</div>
+        </div>
+        <div class="reserv-body">
+          <div class="field"><span>Adresse</span><input value="8 rue Jean Jaurès, Grasse"></div>
+          <div class="field"><span>Description</span><textarea rows="3">Appartement 65 m², ménage complet avant état des lieux.</textarea></div>
+          <div class="recap">
+            <div class="r"><span>Sous-total</span><span>25,00 €</span></div>
+            <div class="r"><span>Frais de service (5 %)</span><span>1,25 €</span></div>
+            <div class="tot"><span>Total</span><span>26,25 €</span></div>
+          </div>
+          <button class="solid-btn" onclick="go('c-signup')">Confirmer la réservation</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CLIENT: QRCODES ============ -->
+    <div class="screen" data-seq="client" id="c-qrcodes">
+      <div class="qrpage">
+        <h1 class="qs">Réservation confirmée</h1>
+        <p class="sub">Deux codes, générés automatiquement pour cette réservation — à scanner à l'arrivée et à la sortie.</p>
+        <div class="qr-card">
+          <div class="t">Code d'arrivée</div>
+          <div id="qr1"></div>
+          <p class="note">À scanner en arrivant sur place.</p>
+          <p class="qr-caption">Aperçu — motif non scannable dans cet aperçu</p>
+        </div>
+        <div class="qr-card">
+          <div class="t">Code de sortie</div>
+          <div id="qr2"></div>
+          <p class="note">À scanner en partant — arrête le compteur, calcule le temps réel.</p>
+          <p class="qr-caption">Aperçu — motif non scannable dans cet aperçu</p>
+        </div>
+        <button class="outline-btn" onclick="go('shared-howitworks')">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- ============ SHARED: CHAT ============ -->
+    <div class="screen" data-seq="pro client" id="shared-chat">
+      <div class="chat">
+        <div class="chat-head">
+          <button class="b" onclick="backFrom('shared-chat')">←</button>
+          <div><div class="t1 qs">Conversation</div><div class="t2">Protégée par PING</div></div>
+        </div>
+        <div class="chat-banner">Pour votre protection, les échanges de coordonnées et paiements hors plateforme sont bloqués.</div>
+        <div class="chat-cap">À partir d'ici : exemple avec une mission déjà en cours</div>
+        <div class="chat-msgs">
+          <div class="bubble theirs">Bonjour, je suis disponible jeudi à 14h, ça vous va ?</div>
+          <div class="bubble mine">Parfait, je vous laisse le code au portail.</div>
+          <div class="bubble theirs">Reçu, à jeudi.</div>
+          <div class="sys-msg">✓ Arrivée scannée à 14h02 — le chrono démarre</div>
+          <div class="sys-msg">✓ Sortie scannée à 16h17 — 2 h 15, 26,25 € facturés</div>
+        </div>
+        <div class="chat-input"><input id="chatInput" placeholder="Votre message…" onkeydown="if(event.key==='Enter') sendMsg()"><button onclick="sendMsg()">↑</button></div>
+      </div>
+    </div>
+
+    <!-- ============ SHARED: SCAN ARRIVAL ============ -->
+    <div class="screen" data-seq="pro client" id="shared-scan1">
+      <div class="scanpage">
+        <div class="scan-card">
+          <div class="scan-ic">✓</div>
+          <h1 class="qs">Arrivée validée. Le temps commence à courir.</h1>
+          <button class="outline-btn" style="margin-top:20px;" onclick="go('shared-scan2')">Voir le scan de sortie →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SHARED: SCAN COMPLETE ============ -->
+    <div class="screen" data-seq="pro client" id="shared-scan2">
+      <div class="scanpage">
+        <div class="scan-card">
+          <div class="scan-ic">✓</div>
+          <h1 class="qs">Sortie validée.</h1>
+          <div class="scan-dur">
+            <div class="l">Durée réelle de la prestation</div>
+            <div class="v qs">2 h 15 min</div>
+            <div class="n">Ce relevé fait foi en cas de litige.</div>
+          </div>
+          <button class="outline-btn" style="margin-top:20px;" onclick="go('shared-cesu')">Voir les documents utiles →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SHARED: HOW IT WORKS ============ -->
+    <div class="screen" data-seq="pro client" id="shared-howitworks">
+      <div class="ob" style="justify-content:flex-start;">
+        <div class="ob-top"><button class="ob-back hidden">←</button><div style="flex:1;"></div></div>
+        <div class="ob-sheet" style="padding-top:14px;">
+          <h1 class="ob-title">Comment fonctionne le suivi horaire</h1>
+          <p class="ob-subtitle">Deux scans suffisent à calculer une durée exacte — et à éviter tout désaccord après coup.</p>
+          <div class="ob-body">
+            <div class="exp-step"><div class="exp-n">1</div><div><b>Scan à l'arrivée</b><span>Le prestataire scanne le code du client en arrivant. Le chrono démarre.</span></div></div>
+            <div class="exp-step"><div class="exp-n">2</div><div><b>La prestation se déroule</b><span>Le temps réel s'écoule, sans action à faire de part et d'autre.</span></div></div>
+            <div class="exp-step"><div class="exp-n">3</div><div><b>Scan au départ</b><span>La durée exacte est calculée automatiquement, et le montant final ajusté en conséquence pour les tarifs à l'heure.</span></div></div>
+            <div class="exp-reassure">Ce relevé fait foi en cas de désaccord — la même donnée est visible du côté client et du côté prestataire, publiée directement dans la conversation.</div>
+          </div>
+          <div class="ob-foot"><button class="ob-cta" onclick="go('shared-chat')">Compris</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CLIENT: SIGNUP GATE ============ -->
+    <div class="screen" data-seq="client" id="c-signup">
+      <div class="ob" style="align-items:center;justify-content:center;padding:28px 0;">
+        <div style="width:100%;max-width:340px;margin:0 auto;padding:0 20px;">
+          <div class="qs" style="color:#fff;font-size:34px;text-align:center;margin-bottom:20px;">PING</div>
+          <div style="display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(255,255,255,.1);margin:0 auto 22px;width:fit-content;">
+            <span style="padding:8px 18px;border-radius:999px;font-size:13px;font-weight:900;background:var(--accent);color:#fff;">Particulier</span>
+            <span style="padding:8px 18px;border-radius:999px;font-size:13px;font-weight:900;color:rgba(255,255,255,.6);">Professionnel</span>
+          </div>
+          <div style="background:#fff;border-radius:24px;padding:26px;box-shadow:0 20px 40px rgba(0,0,0,.25);">
+            <div class="qs" style="font-size:20px;color:var(--navy);margin-bottom:4px;">Encore une étape</div>
+            <p style="font-size:12.5px;color:var(--slate);margin:0 0 18px;line-height:1.5;">Créez votre compte pour confirmer votre réservation — votre adresse et votre description restent enregistrées.</p>
+            <div class="field"><span>Email</span><input value="nadia.klein@email.com"></div>
+            <div class="field"><span>Mot de passe</span><input type="password" value="••••••••"></div>
+            <div style="display:flex;gap:10px;padding:12px;border-radius:12px;background:var(--accent-l);margin-bottom:16px;">
+              <input type="checkbox" checked style="margin-top:2px;">
+              <span style="font-size:11.5px;font-weight:700;color:var(--accent-d);">J'accepte les Conditions Générales et la Politique de confidentialité de PING</span>
+            </div>
+            <button class="ob-cta" onclick="go('c-qrcodes')">Confirmer et créer mon compte</button>
+            <p style="text-align:center;font-size:12px;color:var(--slate);margin-top:12px;">Déjà un compte ? <span style="color:var(--accent-d);font-weight:700;">Se connecter</span></p>
+          </div>
+          <p style="text-align:center;font-size:11px;color:rgba(255,255,255,.5);margin-top:16px;line-height:1.5;">Ce mur d'inscription n'apparaît qu'ici — jusqu'à cet instant, tout se visite librement, comme sur Booking ou Airbnb.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SHARED: CESU / DOCUMENTS ============ -->
+    <div class="screen" data-seq="pro client" id="shared-cesu">
+      <div class="ob" style="justify-content:flex-start;">
+        <div class="ob-top"><button class="ob-back hidden">←</button><div style="flex:1;"></div></div>
+        <div class="ob-sheet" style="padding-top:14px;">
+          <h1 class="ob-title">Documents liés à la mission</h1>
+          <p class="ob-subtitle">Ce dernier bloc concerne surtout les missions avec un prestataire au statut « Particulier ».</p>
+          <div class="ob-body">
+            <div class="price-row-card">
+              <div class="price-row-head"><b>Relevé de mission</b><span class="badge">Prêt</span></div>
+              <p style="font-size:12.5px;color:var(--slate);margin:0;">Reprend automatiquement les données du scan : arrivée, sortie, durée, montant. Sert de base à toute déclaration ultérieure.</p>
+            </div>
+            <div class="price-row-card">
+              <div class="price-row-head"><b>Déclaration Cesu</b><span class="badge alt">À confirmer</span></div>
+              <p style="font-size:12.5px;color:var(--slate);margin:0 0 8px;">Quand le prestataire n'a pas de statut déclaré, le Cesu régularise la relation — le client devient l'employeur pour ces heures. Règle générale du Cesu : déclaration après la prestation, au plus tard le 5 du mois suivant.</p>
+              <p style="font-size:11.5px;color:var(--warn-fg);margin:0;">Reste à décider : PING pré-remplit-il ce relevé, ou le client déclare-t-il lui-même sur cesu.urssaf.fr ?</p>
+            </div>
+            <div class="price-row-card">
+              <div class="price-row-head"><b>Décompte / décharge</b><span class="badge alt">À confirmer</span></div>
+              <p style="font-size:12.5px;color:var(--slate);margin:0;">Le décompte peut être exactement le relevé de mission ci-dessus. Reste à confirmer si une décharge signée est nécessaire en plus.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="foot-caption">Réplique visuelle des écrans réels — copie et logique tirées du dépôt <code class="route">3opconsult-cyber/nexto</code>, données d'exemple.</div>
+</div>
+
+<script>
+  var PRO_SEQ = ['p-signup1','p-signup2','p-service','p-tarif','p-statut','p-entreprise','p-adresse','p-telephone','p-bio','p-doc1','p-doc2','p-doc3','p-attente','p-dashboard','p-mission-detail','shared-howitworks','shared-chat','shared-scan1','shared-scan2','shared-cesu'];
+  var CLIENT_SEQ = ['c-map','c-fiche','c-reserver','c-signup','c-qrcodes','shared-howitworks','shared-chat','shared-scan1','shared-scan2','shared-cesu'];
+  var LABELS = {
+    'p-signup1':'Compte 1','p-signup2':'Compte 2','p-service':'Service','p-tarif':'Tarif','p-statut':'Statut',
+    'p-entreprise':'Entreprise','p-adresse':'Adresse','p-telephone':'Téléphone','p-bio':'Bio',
+    'p-doc1':'Doc 1','p-doc2':'Doc 2','p-doc3':'Doc 3','p-attente':'Attente','p-dashboard':'Dashboard','p-mission-detail':'Détail mission',
+    'c-map':'Carte','c-fiche':'Fiche pro','c-reserver':'Réserver','c-signup':'Compte','c-qrcodes':'QR codes',
+    'shared-howitworks':'Fonctionnement','shared-chat':'Chat','shared-scan1':'Arrivée','shared-scan2':'Sortie','shared-cesu':'Documents'
+  };
+  var currentJourney = 'pro';
+  var leafletInit = false;
+
+  function seqFor(j){ return j === 'pro' ? PRO_SEQ : CLIENT_SEQ; }
+
+  function buildStrip(){
+    var strip = document.getElementById('jumpstrip');
+    strip.innerHTML = '';
+    seqFor(currentJourney).forEach(function(id){
+      var b = document.createElement('button');
+      b.textContent = LABELS[id] || id;
+      b.dataset.target = id;
+      b.onclick = function(){ go(id); };
+      strip.appendChild(b);
+    });
+  }
+
+  function setJourney(j){
+    currentJourney = j;
+    document.getElementById('btn-pro').classList.toggle('active', j==='pro');
+    document.getElementById('btn-client').classList.toggle('active', j==='client');
+    buildStrip();
+    go(seqFor(j)[0]);
+  }
+
+  function go(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    var el = document.getElementById(id);
+    if(el) el.classList.add('active');
+    document.querySelectorAll('#jumpstrip button').forEach(function(b){
+      b.classList.toggle('on', b.dataset.target === id);
+    });
+    if(id === 'c-map'){ setTimeout(initLeaflet, 30); }
+    document.getElementById('device').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  function backFrom(id){
+    var seq = seqFor(currentJourney);
+    var i = seq.indexOf(id);
+    go(i > 0 ? seq[i-1] : seq[0]);
+  }
+
+  function dashTab(btn, paneId){
+    document.querySelectorAll('.dash-tabs button').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    document.querySelectorAll('.dash-pane').forEach(function(p){ p.classList.remove('on'); });
+    document.getElementById(paneId).classList.add('on');
+  }
+  function ficheTab(btn, paneId){
+    document.querySelectorAll('.fiche-tabs button').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    document.querySelectorAll('.fiche-pane').forEach(function(p){ p.classList.remove('on'); });
+    document.getElementById(paneId).classList.add('on');
+  }
+  function openSheet(){ document.getElementById('sheetOverlay').classList.add('on'); }
+  function closeSheet(e){ document.getElementById('sheetOverlay').classList.remove('on'); }
+
+  function toggleMulti(btn){ btn.classList.toggle('on'); }
+  function selectOne(btn){
+    var group = btn.parentElement.querySelectorAll('.choice');
+    group.forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+  }
+  function selectChip(btn){
+    var group = btn.parentElement.querySelectorAll('.chip');
+    group.forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+  }
+  function removeRow(btn){
+    var card = btn.closest('.price-row-card');
+    if(!card) return;
+    card.style.display = 'none';
+    if(card.id === 'row-nettoyage'){
+      var addBtn = document.getElementById('addServiceBtn');
+      if(addBtn) addBtn.style.display = 'block';
+    }
+  }
+  function addServiceRow(){
+    var row = document.getElementById('row-nettoyage');
+    var addBtn = document.getElementById('addServiceBtn');
+    if(row) row.style.display = 'block';
+    if(addBtn) addBtn.style.display = 'none';
+  }
+  function pickCompanyRow(btn){
+    var group = btn.parentElement.querySelectorAll('.result-row');
+    group.forEach(function(r){ r.style.background = '#fff'; });
+    btn.style.background = 'rgba(18,179,156,.08)';
+    var strip = document.getElementById('companyConfirm');
+    if(strip) strip.style.display = 'block';
+  }
+  function toggleManual(){
+    var el = document.getElementById('manualSiret');
+    if(!el) return;
+    el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none';
+  }
+  function uploadDoc2(){
+    var wrap = document.getElementById('doc2wrap');
+    if(wrap){
+      wrap.innerHTML =
+        '<div class="doc-icon done" style="color:var(--accent);font-size:32px;">\u2713</div>'+
+        '<div class="doc-name">assurance-rc-pro.pdf</div>'+
+        '<div class="doc-status">Déposé — en attente de vérification</div>';
+    }
+    var cta = document.getElementById('doc2cta');
+    if(cta) cta.textContent = 'Continuer';
+  }
+  function toggleAvail(btn){
+    var off = btn.classList.toggle('avail-off');
+    btn.textContent = off ? '○ Masqué' : '● Visible sur la carte';
+  }
+  function goToInvoice(){
+    go('p-dashboard');
+    var tabBtns = document.querySelectorAll('.dash-tabs button');
+    tabBtns.forEach(function(b){ b.classList.remove('on'); });
+    if(tabBtns[2]) tabBtns[2].classList.add('on');
+    document.querySelectorAll('.dash-pane').forEach(function(p){ p.classList.remove('on'); });
+    var pane = document.getElementById('d-factures');
+    if(pane) pane.classList.add('on');
+  }
+  function sendMsg(){
+    var input = document.getElementById('chatInput');
+    if(!input || !input.value.trim()) return;
+    var wrap = document.querySelector('#shared-chat .chat-msgs');
+    var div = document.createElement('div');
+    div.className = 'bubble mine';
+    div.textContent = input.value.trim();
+    wrap.appendChild(div);
+    input.value = '';
+    div.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  function initLeaflet(){
+    if(leafletInit || typeof L === 'undefined') return;
+    var mapEl = document.getElementById('leafletMap');
+    if(!mapEl || mapEl.offsetParent === null) return;
+    var map = L.map('leafletMap', {zoomControl:false, attributionControl:false}).setView([43.6584, 6.9225], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:18}).addTo(map);
+    function pin(lat,lng,label){
+      var icon = L.divIcon({
+        className:'', html:'<div style="width:30px;height:30px;border-radius:50% 50% 50% 0;background:#12B39C;border:2px solid #fff;transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.3);"></div>',
+        iconSize:[30,30], iconAnchor:[15,30]
+      });
+      L.marker([lat,lng], {icon:icon}).addTo(map).bindPopup(label);
+    }
+    pin(43.661, 6.918, 'Ménage · 25,00 €');
+    pin(43.655, 6.930, 'Nettoyage · 40,00 €');
+    pin(43.663, 6.926, 'Repassage · 18,00 €');
+    leafletInit = true;
+    setTimeout(function(){ map.invalidateSize(); }, 60);
+  }
+
+  function pseudoQr(containerId, seedText, fg){
+    var size = 156, n = 21, cell = size/n;
+    var seed = 0; for(var i=0;i<seedText.length;i++) seed = (seed*31 + seedText.charCodeAt(i)) >>> 0;
+    function rnd(){ seed = (seed*1103515245 + 12345) >>> 0; return (seed >> 16) % 100; }
+    var svg = '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'"><rect width="'+size+'" height="'+size+'" fill="#fff"/>';
+    function finder(x,y){
+      svg += '<rect x="'+x+'" y="'+y+'" width="'+cell*7+'" height="'+cell*7+'" fill="'+fg+'"/>';
+      svg += '<rect x="'+(x+cell)+'" y="'+(y+cell)+'" width="'+cell*5+'" height="'+cell*5+'" fill="#fff"/>';
+      svg += '<rect x="'+(x+cell*2)+'" y="'+(y+cell*2)+'" width="'+cell*3+'" height="'+cell*3+'" fill="'+fg+'"/>';
+    }
+    finder(0,0); finder(size-cell*7,0); finder(0,size-cell*7);
+    for(var r=0;r<n;r++){
+      for(var c=0;c<n;c++){
+        var inFinder = (r<7&&c<7)||(r<7&&c>=n-7)||(r>=n-7&&c<7);
+        if(inFinder) continue;
+        if(rnd() < 46){ svg += '<rect x="'+(c*cell)+'" y="'+(r*cell)+'" width="'+cell+'" height="'+cell+'" fill="'+fg+'"/>'; }
+      }
+    }
+    svg += '</svg>';
+    document.getElementById(containerId).innerHTML = svg;
+  }
+
+  buildStrip();
+  go('p-signup1');
+  pseudoQr('qr1', 'arrival-token-demo', '#123644');
+  pseudoQr('qr2', 'complete-token-demo', '#123644');
+</script>
+
+</body>
+</html>
