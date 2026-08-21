@@ -26,6 +26,7 @@ export default function ProOnboarding() {
   const [selectedCompany, setSelectedCompany] = useState<CompanyMatch | null>(null)
   const [manualEntry, setManualEntry] = useState(false)
   const [siret, setSiret] = useState('')
+  const [sapNumber, setSapNumber] = useState('')
   const [address, setAddress] = useState('')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [locating, setLocating] = useState(false)
@@ -105,6 +106,7 @@ export default function ProOnboarding() {
       is_active: true,
       legal_status: legalStatus,
       siret: status === 'professionnel' ? (siret || null) : null,
+      sap_number: status === 'professionnel' ? (sapNumber.trim() || null) : null,
       company_name: status === 'professionnel' ? (selectedCompany?.name || companyQuery || null) : null,
       lat: coords?.lat ?? null,
       lng: coords?.lng ?? null,
@@ -219,6 +221,12 @@ export default function ProOnboarding() {
           <input value={siret} onChange={e => setSiret(e.target.value)} placeholder="Numéro SIRET (14 chiffres)"
             style={{ ...inputStyle, marginTop: 10 }} />
         )}
+        <label style={{ display: 'block', marginTop: 16 }}>
+          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Numéro de déclaration SAP (facultatif)</span>
+          <input value={sapNumber} onChange={e => setSapNumber(e.target.value)} placeholder="Ex. SAP812345678"
+            style={{ ...inputStyle, marginTop: 6 }} />
+          <span style={{ display: 'block', fontSize: 11.5, color: '#9CA3AF', marginTop: 5 }}>Si vous l'avez, vos clients peuvent bénéficier du crédit d'impôt de 50 %. Pas de déclaration ? Vous pouvez continuer sans, et la renseigner plus tard.</span>
+        </label>
       </OnboardingStep>
     )
   }

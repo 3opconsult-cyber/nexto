@@ -83,6 +83,12 @@ export default function ProDetailPage() {
           )}
         </div>
 
+        {pro.sap_number && (
+          <div style={{ marginBottom: 20, padding: 12, borderRadius: 12, background: 'rgba(18,179,156,.08)', fontSize: 12, fontWeight: 700, color: '#0C8F7E' }}>
+            Crédit d'impôt de 50 % — déclaration SAP {pro.sap_number}
+          </div>
+        )}
+
         {extraServices.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
             {extraServices.map((s, i) => (
