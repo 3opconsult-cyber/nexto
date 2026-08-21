@@ -942,6 +942,7 @@
     });
     if(id === 'c-map'){ setTimeout(initLeaflet, 30); }
     document.getElementById('device').scrollIntoView({behavior:'smooth', block:'nearest'});
+    try{ history.replaceState(null, '', '#'+id); }catch(e){}
   }
 
   function backFrom(id){
@@ -1081,8 +1082,28 @@
     document.getElementById(containerId).innerHTML = svg;
   }
 
-  buildStrip();
-  go('p-signup1');
+  function initFromHash(){
+    var hash = window.location.hash.replace('#','');
+    var journey = 'pro';
+    if(hash){
+      if(CLIENT_SEQ.indexOf(hash) !== -1 && PRO_SEQ.indexOf(hash) === -1){
+        journey = 'client';
+      } else if(PRO_SEQ.indexOf(hash) !== -1){
+        journey = 'pro';
+      } else {
+        hash = null;
+      }
+    } else {
+      hash = null;
+    }
+    currentJourney = journey;
+    document.getElementById('btn-pro').classList.toggle('active', journey==='pro');
+    document.getElementById('btn-client').classList.toggle('active', journey==='client');
+    buildStrip();
+    go(hash || seqFor(journey)[0]);
+  }
+
+  initFromHash();
   pseudoQr('qr1', 'arrival-token-demo', '#123644');
   pseudoQr('qr2', 'complete-token-demo', '#123644');
 </script>
