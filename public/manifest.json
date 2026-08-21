@@ -2,7 +2,7 @@
   "name": "PING — Proximité de confiance",
   "short_name": "PING",
   "description": "Trouvez un prestataire disponible près de chez vous.",
-  "start_url": "/demo",
+  "start_url": "/map",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
