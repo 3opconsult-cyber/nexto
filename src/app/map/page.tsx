@@ -66,6 +66,7 @@ export default function MapPage() {
         {Object.entries(TRADES).map(([k, label]) => (
           <button key={k} onClick={() => setTrade(k)} style={{ padding: '8px 14px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, background: trade === k ? '#123644' : '#fff', color: trade === k ? '#fff' : '#123644', boxShadow: trade === k ? 'none' : '0 0 0 1px #E7EDEB', flexShrink: 0 }}>{label}</button>
         ))}
+        <button onClick={() => router.push('/client/profil')} style={{ marginLeft: 'auto', padding: '8px 14px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, background: '#fff', color: '#6E8592', boxShadow: '0 0 0 1px #E7EDEB', flexShrink: 0 }}>Mon profil</button>
       </div>
 
       {/* Liste */}

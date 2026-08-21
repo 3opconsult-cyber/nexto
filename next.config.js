@@ -12,7 +12,7 @@ const nextConfig = {
         { source: '/hub', destination: '/app.html' },
         { source: '/mission/:id/facture', destination: '/app.html' },
         { source: '/mission/:id/litige', destination: '/app.html' },
-        { source: '/client/:path*', destination: '/app.html' },
+        // /client/profil : reecrit pour le nouveau schema, reel desormais
         // /pro/dashboard, /mission/:id/chat : reecrites pour le nouveau schema, reelles
         // /mission/new, /mission/:id/qrcodes, /mission/:id/scan/:phase : reelles
       ],

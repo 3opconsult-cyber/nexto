@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 export default function ClientProfil() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
-  const [missions, setMissions] = useState<any[]>([])
+  const [txs, setTxs] = useState<any[]>([])
 
   useEffect(() => {
     const supabase = createClient()
@@ -14,9 +14,10 @@ export default function ClientProfil() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      const { data: m } = await supabase.from('missions')
-        .select('*').eq('client_id', user.id).order('created_at', { ascending: false })
-      setProfile(p); setMissions(m ?? [])
+      const { data: t } = await supabase.from('transactions')
+        .select('*, requests(address, description)')
+        .eq('buyer_id', user.id).order('created_at', { ascending: false })
+      setProfile(p); setTxs(t ?? [])
     }
     load()
   }, [router])
@@ -25,6 +26,11 @@ export default function ClientProfil() {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/')
+  }
+
+  const STATUS_LABELS: Record<string, string> = {
+    pending: 'En attente', held: 'En attente', arrived: 'En cours', completed: 'Terminée',
+    released: 'Réglée', disputed: 'En litige', refunded: 'Remboursée', cancelled: 'Annulée',
   }
 
   return (
@@ -38,29 +44,29 @@ export default function ClientProfil() {
           </div>
           <div>
             <div className="font-fredoka text-xl text-white">{profile?.first_name} {profile?.last_name}</div>
-            <div className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>{profile?.phone}</div>
+            <div className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>{profile?.address || 'Adresse non renseignée'}</div>
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-t-3xl -mt-4 px-5 py-5 min-h-screen">
-        <h2 className="font-fredoka text-lg text-navy mb-3">Mes demandes</h2>
-        {missions.length === 0 ? (
+        <h2 className="font-fredoka text-lg text-navy mb-3">Mes missions</h2>
+        {txs.length === 0 ? (
           <div className="text-center py-12 text-gray-300">
-            <div className="text-3xl mb-2">📭</div>
-            <div className="font-bold text-sm text-gray-400">Aucune demande pour l'instant</div>
+            <div className="font-bold text-sm text-gray-400">Aucune mission pour l'instant</div>
           </div>
         ) : (
           <div className="space-y-2 mb-6">
-            {missions.map(m => (
-              <button key={m.id} onClick={() => router.push(`/mission/${m.id}/chat`)}
+            {txs.map(t => (
+              <button key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
                 className="w-full text-left p-4 rounded-2xl border-2 border-gray-100 hover:border-accent transition-all">
                 <div className="flex justify-between items-center">
-                  <span className="font-black text-sm text-navy">{m.ref}</span>
+                  <span className="font-black text-sm text-navy">{t.requests?.address || 'Adresse non renseignée'}</span>
                   <span className="text-xs font-black px-2 py-0.5 rounded-full"
-                    style={{ background: 'var(--accent-l)', color: 'var(--accent-d)' }}>{m.status}</span>
+                    style={{ background: 'var(--accent-l)', color: 'var(--accent-d)' }}>{STATUS_LABELS[t.status] || t.status}</span>
                 </div>
-                <div className="text-xs font-bold text-gray-400 mt-1">{m.description?.slice(0, 60)}</div>
+                <div className="text-xs font-bold text-gray-400 mt-1">{t.requests?.description?.slice(0, 60)}</div>
+                <div className="text-xs font-bold text-gray-400 mt-1">{(t.total_charged_cents / 100).toFixed(2)} €</div>
               </button>
             ))}
           </div>

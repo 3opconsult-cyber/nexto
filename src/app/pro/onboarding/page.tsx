@@ -18,8 +18,8 @@ export default function ProOnboarding() {
   const router = useRouter()
 
   const [services, setServices] = useState<string[]>([])
-  const [pricingType, setPricingType] = useState<'forfait' | 'horaire'>('forfait')
-  const [rate, setRate] = useState('')
+  const [flatRate, setFlatRate] = useState('')
+  const [hourlyRate, setHourlyRate] = useState('')
   const [status, setStatus] = useState<Status>(null)
   const [companyQuery, setCompanyQuery] = useState('')
   const [companyResults, setCompanyResults] = useState<CompanyMatch[]>([])
@@ -83,7 +83,8 @@ export default function ProOnboarding() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/signup?role=pro'); return }
 
-    const cents = Math.round(Number(rate || 0) * 100)
+    const flatCents = Math.round(Number(flatRate || 0) * 100)
+    const hourlyCents = hourlyRate ? Math.round(Number(hourlyRate) * 100) : null
     const legalStatus = status === 'particulier'
       ? 'particulier'
       : (selectedCompany ? guessLegalStatus(selectedCompany.natureJuridique) : 'auto_entrepreneur')
@@ -97,9 +98,9 @@ export default function ProOnboarding() {
     const { error: dbError } = await supabase.from('provider_profiles').upsert({
       id: user.id,
       trade: services[0],
-      pricing_type: pricingType,
-      base_price_cents: cents,
-      hourly_rate_cents: pricingType === 'horaire' ? cents : null,
+      pricing_type: flatCents > 0 ? 'forfait' : 'horaire',
+      base_price_cents: flatCents,
+      hourly_rate_cents: hourlyCents,
       bio,
       is_active: true,
       legal_status: legalStatus,
@@ -113,11 +114,11 @@ export default function ProOnboarding() {
 
     if (services.length > 1) {
       await supabase.from('services').insert(
-        services.slice(1).map(s => ({ provider_id: user.id, name: s, price_cents: cents }))
+        services.slice(1).map(s => ({ provider_id: user.id, name: s, price_cents: flatCents || hourlyCents || 0 }))
       )
     }
 
-    trackEvent('pro_onboarding_completed', { services, pricingType, status })
+    trackEvent('pro_onboarding_completed', { services, flatCents, hourlyCents, status })
     router.push('/pro/onboarding/documents')
   }
 
@@ -152,19 +153,15 @@ export default function ProOnboarding() {
     return (
       <OnboardingStep step={stepIndex} total={visibleSteps.length}
         title="Votre tarif"
-        subtitle="Au forfait pour une prestation fixe, à l'heure sinon."
-        onBack={back} onCta={next} ctaDisabled={!rate || Number(rate) <= 0}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
-          {(['forfait', 'horaire'] as const).map(t => (
-            <button key={t} onClick={() => setPricingType(t)}
-              style={{ flex: 1, padding: '12px 0', borderRadius: 12, border: pricingType === t ? '2px solid #12B39C' : '2px solid #E7EDEB', background: pricingType === t ? 'rgba(18,179,156,.06)' : '#fff', fontWeight: 700, fontSize: 14, color: '#123644' }}>
-              {t === 'forfait' ? 'Forfait' : 'À l\u2019heure'}
-            </button>
-          ))}
-        </div>
+        subtitle="Un forfait, un taux horaire, ou les deux — à vous de fixer le prix."
+        onBack={back} onCta={next} ctaDisabled={!flatRate && !hourlyRate}>
         <label>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Montant en euros {pricingType === 'horaire' ? '/ heure' : ''}</span>
-          <input type="number" min="0" step="0.5" value={rate} onChange={e => setRate(e.target.value)} placeholder="25" style={{ ...inputStyle, marginTop: 6 }} />
+          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Forfait (€)</span>
+          <input type="number" min="0" step="0.5" value={flatRate} onChange={e => setFlatRate(e.target.value)} placeholder="25" style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
+        </label>
+        <label>
+          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Taux horaire (€/h)</span>
+          <input type="number" min="0" step="0.5" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} placeholder="18" style={{ ...inputStyle, marginTop: 6 }} />
         </label>
       </OnboardingStep>
     )

@@ -46,9 +46,8 @@ export default function ProDetailPage() {
 
   const displayName = pro.profiles?.full_name?.trim() || TRADES[pro.trade] || pro.trade
   const initials = displayName.split(' ').map((w: string) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '•'
-  const price = pro.pricing_type === 'horaire'
-    ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h`
-    : `${(pro.base_price_cents / 100).toFixed(2)} € forfait`
+  const hasFlat = pro.base_price_cents > 0
+  const hasHourly = pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
@@ -70,10 +69,18 @@ export default function ProDetailPage() {
 
       <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', marginTop: -14, padding: '22px 20px', minHeight: '60vh' }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          <div style={{ flex: 1, padding: 14, borderRadius: 14, textAlign: 'center', background: '#F3F6F5' }}>
-            <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#12B39C' }}>{price}</div>
-            <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>{TRADES[pro.trade] || pro.trade}</div>
-          </div>
+          {hasFlat && (
+            <div style={{ flex: 1, padding: 14, borderRadius: 14, textAlign: 'center', background: '#F3F6F5' }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#12B39C' }}>{(pro.base_price_cents / 100).toFixed(2)} €</div>
+              <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>Forfait · {TRADES[pro.trade] || pro.trade}</div>
+            </div>
+          )}
+          {hasHourly && (
+            <div style={{ flex: 1, padding: 14, borderRadius: 14, textAlign: 'center', background: '#F3F6F5' }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#12B39C' }}>{(pro.hourly_rate_cents / 100).toFixed(2)} €/h</div>
+              <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>Taux horaire</div>
+            </div>
+          )}
         </div>
 
         {extraServices.length > 0 && (

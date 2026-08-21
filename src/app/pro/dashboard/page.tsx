@@ -181,7 +181,10 @@ export default function ProDashboard() {
             <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Tarif</div>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>
-                {pro.pricing_type === 'horaire' ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h` : `${(pro.base_price_cents / 100).toFixed(2)} € forfait`}
+                {[
+                  pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(2)} € forfait` : null,
+                  (pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0) ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h` : null,
+                ].filter(Boolean).join(' · ')}
               </div>
             </div>
             <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
