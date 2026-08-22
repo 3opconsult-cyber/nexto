@@ -8,6 +8,11 @@
 body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
 .cap{color:#9fb6bc;font-size:13px;text-align:center;max-width:470px;line-height:1.5}
 .frame{width:min(84vw,300px);aspect-ratio:390/844;border-radius:34px;overflow:hidden;position:relative;background:#fff;box-shadow:0 30px 70px rgba(0,0,0,.55);border:2px solid #000}
+@media (max-width:480px){
+  body{padding:0;gap:0}
+  .cap{display:none}
+  .frame{width:100vw;height:100vh;aspect-ratio:unset;border-radius:0;border:none;box-shadow:none}
+}
 .scr{position:absolute;inset:0}
 
 .topbar{position:absolute;top:0;left:0;right:0;padding:16px 16px 0;display:flex;align-items:center;gap:9px;z-index:20}
