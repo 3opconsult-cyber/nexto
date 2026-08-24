@@ -21,6 +21,7 @@ export default function ChatPage() {
   const [userId, setUserId] = useState('')
   const [warning, setWarning] = useState('')
   const [tx, setTx] = useState<any>(null)
+  const [counterpart, setCounterpart] = useState<string>('Conversation')
   const [editingPrice, setEditingPrice] = useState(false)
   const [newAmount, setNewAmount] = useState('')
   const [reporting, setReporting] = useState(false)
@@ -38,6 +39,11 @@ export default function ChatPage() {
       setMsgs((data ?? []) as Msg[])
       const { data: t } = await supabase.from('transactions').select('*').eq('id', transactionId).single()
       setTx(t)
+      if (t && user) {
+        const otherId = user.id === t.buyer_id ? t.seller_id : t.buyer_id
+        const { data: p } = await supabase.from('profiles').select('first_name, last_name').eq('id', otherId).single()
+        if (p) setCounterpart(`${p.first_name || ''} ${p.last_name ? p.last_name.charAt(0) + '.' : ''}`.trim() || 'Conversation')
+      }
     }
     init()
 
@@ -109,20 +115,22 @@ export default function ChatPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       {/* Header */}
-      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, position: 'sticky', top: 0, zIndex: 10, background: '#123644' }}>
-        <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontWeight: 700, fontSize: 15 }}>←</button>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#fff' }}>Conversation</div>
-          <div style={{ fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,.5)' }}>Protégée par PING</div>
+      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, position: 'sticky', top: 0, zIndex: 10, background: '#fff', borderBottom: '1px solid #E7EDEB' }}>
+        <button onClick={() => router.back()} style={{ color: '#123644', background: 'none', border: 'none', padding: 4, display: 'flex' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644' }}>{counterpart}</span>
+          <span style={{ fontSize: 11, color: '#12B39C', fontWeight: 600 }}>● en ligne · identité masquée</span>
         </div>
         {tx && (
           <button onClick={() => { setNewAmount(String(tx.subtotal_cents / 100)); setEditingPrice(true) }}
-            style={{ padding: '7px 12px', borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.1)', color: '#fff', fontSize: 12, fontWeight: 700 }}>
+            style={{ padding: '6px 11px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontSize: 11.5, fontWeight: 700 }}>
             {(tx.subtotal_cents / 100).toFixed(2)} € · Modifier
           </button>
         )}
-        <button onClick={() => setReporting(true)} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,122,102,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF7A66" strokeWidth="2"><path d="M12 9v4M12 17h.01M10.3 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.7 3.86a2 2 0 00-3.4 0z" /></svg>
+        <button onClick={() => setReporting(true)} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0 }}>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
         </button>
       </div>
 
@@ -166,7 +174,7 @@ export default function ChatPage() {
 
       {/* Bannière sécurité */}
       <div style={{ padding: '8px 16px', fontSize: 11.5, fontWeight: 600, textAlign: 'center', background: 'rgba(18,179,156,.1)', color: '#0C8F7E' }}>
-        Pour votre protection, les échanges de coordonnées et paiements hors plateforme sont bloqués.
+        Coordonnées protégées jusqu'au QR de fin
       </div>
 
       {/* Messages */}
@@ -178,12 +186,13 @@ export default function ChatPage() {
           if (m.sender_id === null && m.body.startsWith('OFFER::')) {
             const [, centsStr, label] = m.body.split('::')
             return (
-              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1px solid #DCE5E3', borderRadius: 14, padding: '14px 16px' }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Tarif</div>
+              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '2px solid #12B39C', borderRadius: 14, padding: '14px 16px' }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: '#12B39C', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Devis</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                   <span style={{ fontSize: 12, color: '#6E8592', maxWidth: '65%' }}>{label}</span>
                   <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>{(Number(centsStr) / 100).toFixed(2)} €</span>
                 </div>
+                <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#0C8F7E' }}>✓ Appliqué à la mission</div>
               </div>
             )
           }
@@ -223,9 +232,11 @@ export default function ChatPage() {
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
           style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
-          placeholder="Votre message…" />
+          placeholder="Écrire un message…" />
         <button onClick={send}
-          style={{ width: 42, height: 42, borderRadius: '50%', border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>↑</button>
+          style={{ width: 42, height: 42, borderRadius: '50%', border: 'none', background: '#12B39C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" /></svg>
+        </button>
       </div>
     </div>
   )
