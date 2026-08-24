@@ -5,8 +5,6 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { ProviderNearby } from '@/lib/services'
 
-import { TRADES } from '@/lib/trades'
-
 // Icônes en divIcon (HTML/CSS inline) : évite le piège classique de Leaflet sous
 // webpack/Next.js où les PNG de marqueurs par défaut ne se résolvent pas et où
 // les pins deviennent invisibles.
@@ -19,12 +17,24 @@ function userIcon() {
   })
 }
 
-function proIcon(priceLabel: string, active: boolean) {
+const TRADE_ICON_PATHS: Record<string, string> = {
+  menage: '<path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z"/>',
+  repassage: '<path d="M4 20h16M6 20V9l6-5 6 5v11"/><path d="M10 20v-5h4v5"/>',
+  nettoyage: '<rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M12 4v16M4 12h16"/>',
+}
+
+function proIcon(trade: string, active: boolean) {
+  const iconPath = TRADE_ICON_PATHS[trade] || TRADE_ICON_PATHS.menage
+  const bg = active ? '#12B39C' : '#9CA3AF'
   return L.divIcon({
     className: '',
-    html: `<div style="display:flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:999px;background:${active ? '#123644' : '#9CA3AF'};color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 2px 8px rgba(18,54,68,.35);border:2px solid #fff">${priceLabel}</div>`,
-    iconSize: undefined,
-    iconAnchor: [30, 14],
+    html: `<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;background:${bg};transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center;">
+      <div style="transform:rotate(45deg);display:flex;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">${iconPath}</svg>
+      </div>
+    </div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 34],
   })
 }
 
@@ -55,19 +65,14 @@ export default function LiveMap({
       />
       <Recenter lat={userPos.lat} lng={userPos.lng} />
       <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()} />
-      {pros.filter(p => p.lat != null && p.lng != null).map(p => {
-        const price = p.pricing_type === 'horaire'
-          ? `${(p.hourly_rate_cents ?? 0) / 100}€/h`
-          : `${(p.base_price_cents / 100).toFixed(0)}€`
-        return (
-          <Marker
-            key={p.id}
-            position={[p.lat, p.lng]}
-            icon={proIcon(`${TRADES[p.trade] || p.trade} · ${price}`, p.is_active)}
-            eventHandlers={{ click: () => onSelect(p) }}
-          />
-        )
-      })}
+      {pros.filter(p => p.lat != null && p.lng != null).map(p => (
+        <Marker
+          key={p.id}
+          position={[p.lat, p.lng]}
+          icon={proIcon(p.trade, p.is_active)}
+          eventHandlers={{ click: () => onSelect(p) }}
+        />
+      ))}
     </MapContainer>
   )
 }

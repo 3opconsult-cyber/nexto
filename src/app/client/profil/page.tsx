@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
-import RoleSwitcher from '@/components/RoleSwitcher'
+import NavDrawer from '@/components/NavDrawer'
 
 export default function ClientProfil() {
   const router = useRouter()
@@ -47,8 +47,8 @@ export default function ClientProfil() {
     <div className="min-h-screen" style={{ background: 'var(--cream)' }}>
       <div className="px-5 pt-5 pb-8" style={{ background: 'var(--navy)' }}>
         <div className="flex items-center justify-between mb-5">
+          <NavDrawer />
           <button onClick={() => router.push('/map')} className="text-white text-sm font-black">← Carte</button>
-          <RoleSwitcher />
         </div>
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-fredoka text-xl text-white flex-shrink-0"
