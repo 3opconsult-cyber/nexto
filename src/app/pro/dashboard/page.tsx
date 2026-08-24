@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 import { TRADES } from '@/lib/trades'
+import RoleSwitcher from '@/components/RoleSwitcher'
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   pending:   { label: 'En attente',      color: '#8a6520', bg: '#FFF7ED' },
@@ -80,6 +81,7 @@ export default function ProDashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
+      <div style={{ padding: '16px 20px 0' }}><RoleSwitcher /></div>
       {/* Header */}
       <div style={{ padding: '28px 20px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>

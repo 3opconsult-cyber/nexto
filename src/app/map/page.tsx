@@ -6,6 +6,7 @@ import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
 import { trackEvent } from '@/lib/tracking'
 import { TRADES } from '@/lib/trades'
 import BottomTabBar from '@/components/BottomTabBar'
+import RoleSwitcher from '@/components/RoleSwitcher'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), {
   ssr: false,
@@ -97,9 +98,12 @@ export default function MapPage() {
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644', paddingBottom: 60 }}>
 
       {/* Barre du haut */}
-      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', borderBottom: '1px solid #E7EDEB' }}>
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>PING</span>
-        <button onClick={() => router.push('/client/profil')} style={{ padding: '8px 14px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 12.5, background: '#F3F6F5', color: '#6E8592' }}>Mon profil</button>
+      <div style={{ padding: '14px 16px', background: '#123644' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>PING</span>
+          <button onClick={() => router.push('/client/profil')} style={{ padding: '7px 13px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 12, background: 'rgba(255,255,255,.1)', color: 'rgba(255,255,255,.8)' }}>Mon profil</button>
+        </div>
+        <RoleSwitcher />
       </div>
 
       {/* Carte réelle */}
