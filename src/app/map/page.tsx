@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
 import { trackEvent } from '@/lib/tracking'
+import { TRADES } from '@/lib/trades'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), {
   ssr: false,
@@ -15,8 +16,6 @@ const LiveMap = dynamic(() => import('@/components/LiveMap'), {
 })
 
 const DEFAULT_POS = { lat: 43.6584, lng: 6.9225 } // Grasse
-
-const TRADES: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
 
 const TRADE_ICONS: Record<string, JSX.Element> = {
   menage: <path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z" />,

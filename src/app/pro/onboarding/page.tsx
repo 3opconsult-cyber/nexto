@@ -5,12 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { searchCompany, guessLegalStatus, CompanyMatch } from '@/lib/legalLookup'
 import OnboardingStep from '@/components/OnboardingStep'
-
-const SERVICES = [
-  { key: 'menage', label: 'Ménage' },
-  { key: 'repassage', label: 'Repassage' },
-  { key: 'nettoyage', label: 'Nettoyage' },
-]
+import { TRADE_LIST as SERVICES } from '@/lib/trades'
 
 type Status = 'particulier' | 'professionnel' | null
 

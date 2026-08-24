@@ -5,7 +5,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { ProviderNearby } from '@/lib/services'
 
-const TRADES: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
+import { TRADES } from '@/lib/trades'
 
 // Icônes en divIcon (HTML/CSS inline) : évite le piège classique de Leaflet sous
 // webpack/Next.js où les PNG de marqueurs par défaut ne se résolvent pas et où

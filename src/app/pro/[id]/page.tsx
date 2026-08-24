@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { fetchProDetail } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
 
-const TRADES: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
+import { TRADES } from '@/lib/trades'
 
 export default function ProDetailPage() {
   const params = useParams()
