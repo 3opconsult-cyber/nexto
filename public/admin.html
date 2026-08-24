@@ -1157,7 +1157,7 @@ function nav(s){
  render(stack[0]);
  closeNav();
  if(s==='live'&&window.loadLiveData)window.loadLiveData();
- if(s==='live'&&window.loadLiveMap)window.loadLiveMap();
+ if((s==='live'||s==='overview')&&window.loadLiveMap)window.loadLiveMap();
  if(s==='docs'&&window.loadLiveInvoices)window.loadLiveInvoices();
 }
 function navBack(){
@@ -3064,4 +3064,9 @@ window.loadLiveMap = async function () {
   })
   setTimeout(() => { if (liveMapInstance) liveMapInstance.invalidateSize() }, 80)
 }
+
+// Vue d'ensemble est l'onglet affiche par defaut au chargement, avant meme que
+// ce module (differe) soit pret — sans cet appel, la carte reelle ne s'active
+// jamais tant que personne ne re-clique sur un onglet apres coup.
+if (document.querySelector('.section.on')?.id === 's_overview') { window.loadLiveMap() }
 </script>
