@@ -10,6 +10,10 @@ interface Msg {
   sender_id: string | null
   body: string
   created_at: string
+  kind: 'text' | 'offer'
+  offer_cents: number | null
+  offer_status: 'pending' | 'accepted' | 'declined' | null
+  photo_path: string | null
 }
 
 export default function ChatPage() {
@@ -24,6 +28,10 @@ export default function ChatPage() {
   const [counterpart, setCounterpart] = useState<string>('Conversation')
   const [editingPrice, setEditingPrice] = useState(false)
   const [newAmount, setNewAmount] = useState('')
+  const [newAmountReason, setNewAmountReason] = useState('')
+  const [newAmountPhoto, setNewAmountPhoto] = useState<File | null>(null)
+  const [sendingOffer, setSendingOffer] = useState(false)
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({})
   const [reporting, setReporting] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [reportSent, setReportSent] = useState(false)
@@ -36,7 +44,9 @@ export default function ChatPage() {
       if (user) setUserId(user.id)
       const { data } = await supabase.from('messages')
         .select('*').eq('transaction_id', transactionId).order('created_at')
-      setMsgs((data ?? []) as Msg[])
+      const loaded = (data ?? []) as Msg[]
+      setMsgs(loaded)
+      resolvePhotoUrls(loaded)
       const { data: t } = await supabase.from('transactions').select('*').eq('id', transactionId).single()
       setTx(t)
       if (t && user) {
@@ -47,10 +57,25 @@ export default function ChatPage() {
     }
     init()
 
+    async function resolvePhotoUrls(list: Msg[]) {
+      const withPhoto = list.filter(m => m.photo_path)
+      for (const m of withPhoto) {
+        const { data } = await supabase.storage.from('offer-photos').createSignedUrl(m.photo_path as string, 3600)
+        if (data?.signedUrl) setPhotoUrls(prev => ({ ...prev, [m.id]: data.signedUrl }))
+      }
+    }
+
     const channel = supabase.channel(`chat:${transactionId}`)
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `transaction_id=eq.${transactionId}` },
-        payload => setMsgs(m => [...m, payload.new as Msg]))
+        payload => {
+          const m = payload.new as Msg
+          setMsgs(prev => [...prev, m])
+          if (m.photo_path) resolvePhotoUrls([m])
+        })
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `transaction_id=eq.${transactionId}` },
+        payload => setMsgs(prev => prev.map(m => m.id === payload.new.id ? payload.new as Msg : m)))
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [transactionId])
@@ -73,9 +98,40 @@ export default function ChatPage() {
     setInput('')
   }
 
-  async function applyNewPrice() {
+  async function proposeOffer() {
     const cents = Math.round(Number(newAmount || 0) * 100)
-    if (!cents || cents <= 0) return
+    if (!cents || cents <= 0 || !userId) return
+    setSendingOffer(true)
+    const supabase = createClient()
+
+    let photoPath: string | null = null
+    if (newAmountPhoto) {
+      const ext = newAmountPhoto.name.split('.').pop()
+      const path = `${transactionId}/${userId}-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('offer-photos').upload(path, newAmountPhoto)
+      if (!upErr) photoPath = path
+    }
+
+    await supabase.from('messages').insert({
+      transaction_id: transactionId,
+      sender_id: userId,
+      kind: 'offer',
+      offer_cents: cents,
+      offer_status: 'pending',
+      photo_path: photoPath,
+      body: newAmountReason.trim() || `Nouveau tarif proposé (au lieu de ${(tx.subtotal_cents / 100).toFixed(2)} €)`,
+    })
+
+    setEditingPrice(false)
+    setNewAmount('')
+    setNewAmountReason('')
+    setNewAmountPhoto(null)
+    setSendingOffer(false)
+  }
+
+  async function acceptOffer(m: Msg) {
+    if (!m.offer_cents) return
+    const cents = m.offer_cents
     const buyerFee = Math.round(cents * BUYER_RATE)
     const sellerFee = Math.round(cents * SELLER_RATE)
     const supabase = createClient()
@@ -88,14 +144,15 @@ export default function ChatPage() {
     }).eq('id', transactionId).select().single()
     if (!error && updated) {
       setTx(updated)
-      await supabase.from('messages').insert({
-        transaction_id: transactionId,
-        sender_id: null,
-        body: `OFFER::${cents}::Tarif ajusté d'un commun accord (au lieu de ${(tx.subtotal_cents / 100).toFixed(2)} €)`,
-      })
+      await supabase.from('messages').update({ offer_status: 'accepted' }).eq('id', m.id)
+      setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'accepted' } : x))
     }
-    setEditingPrice(false)
-    setNewAmount('')
+  }
+
+  async function declineOffer(m: Msg) {
+    const supabase = createClient()
+    await supabase.from('messages').update({ offer_status: 'declined' }).eq('id', m.id)
+    setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'declined' } : x))
   }
 
   async function submitReport() {
@@ -161,12 +218,19 @@ export default function ChatPage() {
       {editingPrice && (
         <div onClick={() => setEditingPrice(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
-            <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Ajuster le tarif</h3>
-            <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>À faire uniquement après accord avec l'autre partie dans la conversation. Le changement est publié dans le chat pour que ce soit tracé des deux côtés.</p>
-            <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5"
-              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 14 }} />
-            <button onClick={applyNewPrice} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
-              Valider le nouveau tarif
+            <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Proposer un nouveau tarif</h3>
+            <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
+            <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5" placeholder="Nouveau montant en €"
+              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 10 }} />
+            <textarea value={newAmountReason} onChange={e => setNewAmountReason(e.target.value)} rows={2} placeholder="Motif (facultatif)"
+              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, fontFamily: 'inherit' }} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 12, border: '1px dashed #DCE5E3', marginBottom: 14, cursor: 'pointer' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="12" cy="12" r="3" /></svg>
+              <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>{newAmountPhoto ? newAmountPhoto.name : 'Ajouter une photo à l\u2019appui (facultatif)'}</span>
+              <input type="file" accept="image/*" onChange={e => setNewAmountPhoto(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+            </label>
+            <button onClick={proposeOffer} disabled={sendingOffer} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+              {sendingOffer ? 'Envoi…' : 'Envoyer la proposition'}
             </button>
           </div>
         </div>
@@ -183,16 +247,35 @@ export default function ChatPage() {
           <div style={{ textAlign: 'center', padding: '48px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
         )}
         {msgs.map(m => {
-          if (m.sender_id === null && m.body.startsWith('OFFER::')) {
-            const [, centsStr, label] = m.body.split('::')
+          if (m.kind === 'offer') {
+            const mine = m.sender_id === userId
             return (
               <div key={m.id} style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '2px solid #12B39C', borderRadius: 14, padding: '14px 16px' }}>
                 <div style={{ fontSize: 10.5, fontWeight: 700, color: '#12B39C', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Devis</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                  <span style={{ fontSize: 12, color: '#6E8592', maxWidth: '65%' }}>{label}</span>
-                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>{(Number(centsStr) / 100).toFixed(2)} €</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: m.body ? 6 : 0 }}>
+                  <span style={{ fontSize: 12, color: '#6E8592', maxWidth: '65%' }}>{m.body}</span>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>{((m.offer_cents || 0) / 100).toFixed(2)} €</span>
                 </div>
-                <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#0C8F7E' }}>✓ Appliqué à la mission</div>
+                {m.photo_path && (
+                  photoUrls[m.id]
+                    ? <img src={photoUrls[m.id]} alt="Photo à l'appui" style={{ width: '100%', borderRadius: 10, marginTop: 8, display: 'block' }} />
+                    : <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8 }}>Photo jointe…</div>
+                )}
+                {m.offer_status === 'pending' && !mine && (
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <button onClick={() => declineOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#6E8592', fontWeight: 700, fontSize: 12.5 }}>Refuser</button>
+                    <button onClick={() => acceptOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
+                  </div>
+                )}
+                {m.offer_status === 'pending' && mine && (
+                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#8a6520' }}>En attente de validation</div>
+                )}
+                {m.offer_status === 'accepted' && (
+                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#0C8F7E' }}>✓ Accepté — appliqué à la mission</div>
+                )}
+                {m.offer_status === 'declined' && (
+                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#9CA3AF' }}>Refusé</div>
+                )}
               </div>
             )
           }
