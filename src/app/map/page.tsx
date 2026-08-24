@@ -107,6 +107,9 @@ export default function MapPage() {
       {/* Carte réelle */}
       <div style={{ position: 'relative', width: '100%', height: '28vh', minHeight: 190, background: '#F3F6F5' }}>
         <LiveMap userPos={pos} pros={pros} onSelect={setSelected} />
+        <div style={{ position: 'absolute', bottom: 4, right: 6, zIndex: 900, fontSize: 9, color: 'rgba(18,54,68,.4)', background: 'rgba(255,255,255,.6)', padding: '1px 5px', borderRadius: 4, pointerEvents: 'none' }}>
+          © OpenStreetMap © CARTO
+        </div>
         {locStatus === 'default' && (
           <div style={{ position: 'absolute', top: 10, left: 10, right: 10, zIndex: 1000, background: 'rgba(18,54,68,.92)', color: '#fff', fontSize: 11.5, fontWeight: 600, padding: '8px 12px', borderRadius: 10, textAlign: 'center' }}>
             Localisation non partagée — carte centrée sur Grasse par défaut

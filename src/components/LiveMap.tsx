@@ -57,11 +57,13 @@ export default function LiveMap({
       zoom={13}
       scrollWheelZoom={true}
       style={{ width: '100%', height: '100%' }}
-      attributionControl={true}
+      attributionControl={false}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        attribution='&copy; OpenStreetMap &copy; CARTO'
+        subdomains="abcd"
+        maxZoom={20}
       />
       <Recenter lat={userPos.lat} lng={userPos.lng} />
       <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()} />
