@@ -45,8 +45,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`}>
-        {children}
+      <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`} style={{ background: '#DCE5E3' }}>
+        <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100vh', background: '#F3F6F5', boxShadow: '0 0 40px rgba(18,54,68,.08)' }}>
+          {children}
+        </div>
       </body>
     </html>
   )

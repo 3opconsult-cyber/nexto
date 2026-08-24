@@ -187,8 +187,8 @@ export default function MapPage() {
       </div>
 
       {selected && (
-        <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', alignItems: 'flex-end', zIndex: 2000 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', borderRadius: '20px 20px 0 0', padding: 20 }}>
+        <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
             <h3 style={{ fontFamily: 'Quicksand, sans-serif' }}>{selected.full_name?.trim() || TRADES[selected.trade] || selected.trade}</h3>
             <p style={{ color: '#6E8592', fontSize: 13, marginTop: 6 }}>{selected.bio}</p>
             <button onClick={() => router.push(`/pro/${selected.id}`)} style={{ width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>Voir la fiche complète</button>
