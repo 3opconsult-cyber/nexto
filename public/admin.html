@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PING Admin">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 :root{--ink:#123644;--paper:#F3F6F5;--teal:#12B39C;--tealD:#0C8F7E;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#6E8592;--line:#E7EDEB;--side:#0F2A33;
@@ -1156,6 +1158,7 @@ function nav(s){
  render(stack[0]);
  closeNav();
  if(s==='live'&&window.loadLiveData)window.loadLiveData();
+ if(s==='live'&&window.loadLiveMap)window.loadLiveMap();
 }
 function navBack(){
  if(!navHistory.length)return;
@@ -2961,5 +2964,62 @@ window.loadLiveData = async function () {
   })
 
   liveLoading = false
+}
+
+/* Carte en direct — reelle. Remplace le SVG illustratif par un vrai Leaflet
+   avec les positions et statuts reels des prestataires actifs. N'affecte
+   toujours aucune autre section du fichier — meme logique d'isolation que
+   le reste de ce module. */
+let liveMapInstance = null
+window.loadLiveMap = async function () {
+  const svgBox = document.getElementById('liveMapSvg')
+  if (!svgBox) return
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) return
+
+  const { data: pros } = await supabaseLive.from('provider_profiles')
+    .select('id, trade, is_active, lat, lng, profiles(full_name)')
+    .eq('is_active', true)
+    .not('lat', 'is', null)
+  const { data: activeTx } = await supabaseLive.from('transactions')
+    .select('seller_id').eq('status', 'arrived')
+
+  const onJobIds = new Set((activeTx || []).map(t => t.seller_id))
+  const list = pros || []
+
+  const connectedEl = document.getElementById('mapKpiConnected')
+  const onJobEl = document.getElementById('mapKpiOnJob')
+  if (connectedEl) connectedEl.textContent = String(list.length)
+  if (onJobEl) onJobEl.textContent = String(list.filter(p => onJobIds.has(p.id)).length)
+
+  const noteEl = svgBox.parentElement && svgBox.parentElement.querySelector('.note')
+  if (noteEl) noteEl.textContent = 'Réel — positions au dernier enregistrement de chaque prestataire (géolocalisation prise à l\u2019inscription), pas un flux GPS continu. Statut « en prestation » basé sur le scan d\u2019arrivée réel.'
+
+  if (!list.length) {
+    svgBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--slate);font-size:12.5px;font-weight:600">Aucun prestataire actif avec position enregistrée</div>'
+    return
+  }
+
+  if (!document.getElementById('liveMapDiv')) {
+    svgBox.innerHTML = '<div id="liveMapDiv" style="width:100%;height:100%"></div>'
+  }
+  if (liveMapInstance) { liveMapInstance.remove(); liveMapInstance = null }
+
+  const avgLat = list.reduce((s, p) => s + p.lat, 0) / list.length
+  const avgLng = list.reduce((s, p) => s + p.lng, 0) / list.length
+  liveMapInstance = L.map('liveMapDiv', { zoomControl: false, attributionControl: false }).setView([avgLat, avgLng], 13)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(liveMapInstance)
+
+  list.forEach(p => {
+    const onJob = onJobIds.has(p.id)
+    const color = onJob ? '#c0503a' : '#2FD06E'
+    const icon = L.divIcon({
+      className: '', iconSize: [16, 16],
+      html: '<div style="width:14px;height:14px;border-radius:50%;background:' + color + ';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>',
+    })
+    const name = (p.profiles && p.profiles.full_name) || TRADES_LIVE[p.trade] || p.trade
+    L.marker([p.lat, p.lng], { icon }).addTo(liveMapInstance).bindPopup(name + (onJob ? ' · en prestation' : ' · connecté'))
+  })
+  setTimeout(() => { if (liveMapInstance) liveMapInstance.invalidateSize() }, 80)
 }
 </script>

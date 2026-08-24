@@ -85,7 +85,7 @@ export default function ChatPage() {
       await supabase.from('messages').insert({
         transaction_id: transactionId,
         sender_id: null,
-        body: `✓ Tarif mis à jour d'un commun accord : ${(cents / 100).toFixed(2)} € (au lieu de ${(tx.subtotal_cents / 100).toFixed(2)} €)`,
+        body: `OFFER::${cents}::Tarif ajusté d'un commun accord (au lieu de ${(tx.subtotal_cents / 100).toFixed(2)} €)`,
       })
     }
     setEditingPrice(false)
@@ -175,6 +175,18 @@ export default function ChatPage() {
           <div style={{ textAlign: 'center', padding: '48px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
         )}
         {msgs.map(m => {
+          if (m.sender_id === null && m.body.startsWith('OFFER::')) {
+            const [, centsStr, label] = m.body.split('::')
+            return (
+              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1px solid #DCE5E3', borderRadius: 14, padding: '14px 16px' }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Tarif</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <span style={{ fontSize: 12, color: '#6E8592', maxWidth: '65%' }}>{label}</span>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>{(Number(centsStr) / 100).toFixed(2)} €</span>
+                </div>
+              </div>
+            )
+          }
           if (m.sender_id === null) {
             return (
               <div key={m.id} style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>

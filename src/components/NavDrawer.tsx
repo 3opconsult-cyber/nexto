@@ -3,6 +3,22 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const ICONS: Record<string, JSX.Element> = {
+  map: <><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" /></>,
+  off: <><rect x="3" y="5" width="18" height="15" rx="2" /><path d="M3 10h18M8 14h8" /></>,
+  msg: <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />,
+  ag: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9h18M8 3v4M16 3v4" /></>,
+  prof: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
+  ent: <><path d="M3 21V9l9-6 9 6v12" /><path d="M9 21v-6h6v6" /></>,
+  doc: <><path d="M6 2h9l3 3v17H6z" /><path d="M9 9h6M9 13h6M9 17h4" /></>,
+  heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />,
+  gift: <><rect x="3" y="8" width="18" height="13" rx="1" /><path d="M3 12h18M12 8v13" /><path d="M12 8c-1.5-4-6-4-6-1s3 1 6 1zM12 8c1.5-4 6-4 6-1s-3 1-6 1z" /></>,
+}
+
+function Icon({ name }: { name: string }) {
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2" style={{ flexShrink: 0 }}>{ICONS[name] || ICONS.doc}</svg>
+}
+
 export default function NavDrawer() {
   const router = useRouter()
   const pathname = usePathname()
@@ -36,30 +52,30 @@ export default function NavDrawer() {
   }
 
   const clientLinks = [
-    { label: 'Carte', path: '/map' },
-    { label: 'Mes demandes', path: '/client/profil' },
-    { label: 'Messages', path: '/messages' },
-    { label: 'Agenda', path: '/agenda' },
-    { label: 'Litiges', path: '/litiges' },
-    { label: 'Profil', path: '/client/profil' },
+    { label: 'Carte', path: '/map', icon: 'map' },
+    { label: 'Mes demandes', path: '/client/profil', icon: 'off' },
+    { label: 'Messages', path: '/messages', icon: 'msg' },
+    { label: 'Agenda', path: '/agenda', icon: 'ag' },
+    { label: 'Litiges', path: '/litiges', icon: 'doc' },
+    { label: 'Profil', path: '/client/profil', icon: 'prof' },
   ]
   const clientLinksBottom = [
-    { label: 'Mon parrainage', path: '/client/parrainage' },
-    { label: 'Mes favoris', path: '/client/favoris' },
+    { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
+    { label: 'Mes favoris', path: '/client/favoris', icon: 'heart' },
   ]
   const proLinks = [
-    { label: 'Carte', path: '/map' },
-    { label: 'Missions autour de moi', path: '/pro/dashboard' },
-    { label: 'Messages', path: '/messages' },
-    { label: 'Agenda', path: '/agenda' },
-    { label: 'Litiges', path: '/litiges' },
-    { label: 'Mon entreprise', path: '/pro/dashboard' },
+    { label: 'Carte', path: '/map', icon: 'map' },
+    { label: 'Missions autour de moi', path: '/pro/dashboard', icon: 'off' },
+    { label: 'Messages', path: '/messages', icon: 'msg' },
+    { label: 'Agenda', path: '/agenda', icon: 'ag' },
+    { label: 'Litiges', path: '/litiges', icon: 'doc' },
+    { label: 'Mon entreprise', path: '/pro/dashboard', icon: 'ent' },
   ]
   const proLinksBottom = [
-    { label: 'Tableau de bord', path: '/pro/dashboard' },
-    { label: 'Factures & documents', path: '/pro/dashboard' },
-    { label: 'Mes pièces', path: '/pro/onboarding/documents' },
-    { label: 'Mon parrainage', path: '/client/parrainage' },
+    { label: 'Tableau de bord', path: '/pro/dashboard', icon: 'doc' },
+    { label: 'Factures & documents', path: '/pro/dashboard', icon: 'doc' },
+    { label: 'Mes pièces', path: '/pro/onboarding/documents', icon: 'doc' },
+    { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
   ]
   const links = onProSide ? proLinks : clientLinks
   const linksBottom = onProSide ? proLinksBottom : clientLinksBottom
@@ -85,15 +101,15 @@ export default function NavDrawer() {
             <div style={{ padding: '8px 8px', flex: 1 }}>
               {links.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
-                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
-                  {l.label}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
+                  <Icon name={l.icon} />{l.label}
                 </button>
               ))}
               <div style={{ height: 1, background: '#E7EDEB', margin: '6px 12px' }} />
               {linksBottom.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
-                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
-                  {l.label}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
+                  <Icon name={l.icon} />{l.label}
                 </button>
               ))}
             </div>
