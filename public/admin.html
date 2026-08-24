@@ -543,12 +543,11 @@ textarea.minput{min-height:120px;resize:vertical}
       <section class="section" id="s_docs">
         <div class="card"><h3>Documents &amp; factures <span class="muted">horodatés · conservation 10 ans</span></h3>
           <table class="tbl">
-            <tr><th>N°</th><th>Type</th><th>Émetteur</th><th>Client</th><th>Jour / date / heure</th><th>Transaction</th><th>Montant</th><th></th></tr>
-            <tr><td class="mono">2026-0142</td><td><span class="tag ok">Facture</span></td><td>Sofia Services</td><td>Julie R.</td><td class="mono">lun. 14 juil. 2026 · 15h42</td><td class="mono">TX-8842</td><td>95,55 €</td><td><span class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></span></td></tr>
-            <tr><td class="mono">R-0142</td><td><span class="tag wait">Reçu</span></td><td>PING</td><td>Julie R.</td><td class="mono">lun. 14 juil. 2026 · 15h42</td><td class="mono">TX-8842</td><td>110,25 €</td><td><span class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></span></td></tr>
-            <tr><td class="mono">D-0142</td><td><span class="tag ink">Devis</span></td><td>Sofia Services</td><td>Julie R.</td><td class="mono">lun. 14 juil. 2026 · 14h05</td><td class="mono">—</td><td>105,00 €</td><td><span class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></span></td></tr>
-            <tr><td class="mono">2026-0141</td><td><span class="tag ok">Facture</span></td><td>Léa Nettoyage</td><td>Karim B.</td><td class="mono">dim. 13 juil. 2026 · 11h20</td><td class="mono">TX-8841</td><td>54,60 €</td><td><span class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></span></td></tr>
+            <tr><th>N°</th><th>Type</th><th>Émetteur</th><th>Client</th><th>Jour / date / heure</th><th>Transaction</th><th>Montant</th></tr>
+            <tbody id="liveInvoicesBody"></tbody>
           </table>
+          <div id="liveInvoicesEmpty" class="muted" style="padding:16px 0;display:none">Aucune mission terminée pour l'instant — les factures apparaissent ici automatiquement dès qu'une mission se conclut. Réel, pas une démo — voir la note ci-dessous.</div>
+          <p class="note">Réel — généré à partir des vraies transactions terminées. Les numéros (FACT-/PING-C-/PING-V-) suivent le modèle à trois factures déjà validé. Aucun PDF téléchargeable pour l'instant : la génération de document n'est pas encore construite, seul l'enregistrement en base l'est.</p>
           <div class="mt" style="display:flex;gap:10px"><button class="btn ghost">Exporter la période (comptable)</button><button class="btn ghost">Archiver</button></div>
         </div>
       </section>
@@ -1159,6 +1158,7 @@ function nav(s){
  closeNav();
  if(s==='live'&&window.loadLiveData)window.loadLiveData();
  if(s==='live'&&window.loadLiveMap)window.loadLiveMap();
+ if(s==='docs'&&window.loadLiveInvoices)window.loadLiveInvoices();
 }
 function navBack(){
  if(!navHistory.length)return;
@@ -2970,6 +2970,48 @@ window.loadLiveData = async function () {
    avec les positions et statuts reels des prestataires actifs. N'affecte
    toujours aucune autre section du fichier — meme logique d'isolation que
    le reste de ce module. */
+window.loadLiveInvoices = async function () {
+  const body = document.getElementById('liveInvoicesBody')
+  if (!body) return
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) return
+
+  const { data: txs } = await supabaseLive.from('transactions')
+    .select('id, subtotal_cents, buyer_fee_cents, seller_fee_cents, created_at, seller_id, seller:profiles!transactions_seller_id_fkey(full_name), buyer:profiles!transactions_buyer_id_fkey(full_name)')
+    .in('status', ['completed', 'released'])
+    .order('created_at', { ascending: true })
+
+  const emptyEl = document.getElementById('liveInvoicesEmpty')
+  const list = txs || []
+  if (!list.length) {
+    body.innerHTML = ''
+    if (emptyEl) emptyEl.style.display = 'block'
+    return
+  }
+  if (emptyEl) emptyEl.style.display = 'none'
+
+  const sellerIds = [...new Set(list.map(t => t.seller_id))]
+  const { data: companies } = await supabaseLive.from('provider_profiles').select('id, company_name').in('id', sellerIds)
+  const companyById = {}
+  ;(companies || []).forEach(c => { if (c.company_name) companyById[c.id] = c.company_name })
+
+  const rows = []
+  list.forEach((t, i) => {
+    const seq = String(i + 1).padStart(4, '0')
+    const year = new Date(t.created_at).getFullYear()
+    const when = new Date(t.created_at).toLocaleString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const seller = companyById[t.seller_id] || (t.seller && t.seller.full_name) || '—'
+    const buyer = (t.buyer && t.buyer.full_name) || '—'
+    const short = t.id.slice(0, 8)
+    const mkRow = (num, type, tag, emitter, cents) =>
+      '<tr><td class="mono">' + num + '</td><td><span class="tag ' + tag + '">' + type + '</span></td><td>' + emitter + '</td><td>' + buyer + '</td><td class="mono">' + when + '</td><td class="mono">' + short + '</td><td>' + euros(cents) + '</td></tr>'
+    rows.push(mkRow('FACT-' + year + '-' + seq, 'Facture', 'ok', seller, t.subtotal_cents))
+    rows.push(mkRow('PING-C-' + seq, 'Commission PING', 'wait', 'PING', t.buyer_fee_cents))
+    rows.push(mkRow('PING-V-' + seq, 'Commission PING', 'wait', 'PING', t.seller_fee_cents))
+  })
+  body.innerHTML = rows.reverse().join('')
+}
+
 let liveMapInstance = null
 window.loadLiveMap = async function () {
   const svgBox = document.getElementById('liveMapSvg')
