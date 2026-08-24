@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
 import { trackEvent } from '@/lib/tracking'
 import { TRADES } from '@/lib/trades'
+import BottomTabBar from '@/components/BottomTabBar'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), {
   ssr: false,
@@ -56,7 +57,7 @@ export default function MapPage() {
 
   useEffect(() => { trackEvent('page_view') }, [])
 
-  useEffect(() => {
+  function relocate() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         p => { setPos({ lat: p.coords.latitude, lng: p.coords.longitude }); setLocStatus('granted') },
@@ -66,7 +67,9 @@ export default function MapPage() {
     } else {
       setLocStatus('default')
     }
-  }, [])
+  }
+
+  useEffect(() => { relocate() }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -91,7 +94,7 @@ export default function MapPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644', paddingBottom: 60 }}>
 
       {/* Barre du haut */}
       <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', borderBottom: '1px solid #E7EDEB' }}>
@@ -192,6 +195,7 @@ export default function MapPage() {
           </div>
         </div>
       )}
+      <BottomTabBar onPing={relocate} />
     </div>
   )
 }

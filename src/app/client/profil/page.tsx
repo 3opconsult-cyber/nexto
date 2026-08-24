@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import BottomTabBar from '@/components/BottomTabBar'
 
 export default function ClientProfil() {
   const router = useRouter()
@@ -49,7 +50,7 @@ export default function ClientProfil() {
         </div>
       </div>
 
-      <div className="bg-white rounded-t-3xl -mt-4 px-5 py-5 min-h-screen">
+      <div className="bg-white rounded-t-3xl -mt-4 px-5 py-5 min-h-screen" style={{ paddingBottom: 76 }}>
         <h2 className="font-fredoka text-lg text-navy mb-3">Mes missions</h2>
         {txs.length === 0 ? (
           <div className="text-center py-12 text-gray-300">
@@ -84,6 +85,7 @@ export default function ClientProfil() {
           Se déconnecter
         </button>
       </div>
+      <BottomTabBar />
     </div>
   )
 }
