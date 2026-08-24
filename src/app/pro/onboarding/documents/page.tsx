@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import OnboardingStep from '@/components/OnboardingStep'
+import { DOC_TYPES } from '@/lib/documents'
 
 const ICONS: Record<string, JSX.Element> = {
   identite: (
@@ -15,13 +16,10 @@ const ICONS: Record<string, JSX.Element> = {
   kbis: (
     <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="1.6"><path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/><path d="M8 13h8M8 16.5h5"/></svg>
   ),
+  diplome: (
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="1.6"><path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"/><path d="M21 8v6"/></svg>
+  ),
 }
-
-const DOC_TYPES: { key: 'identite' | 'rcpro' | 'kbis'; label: string; question: string }[] = [
-  { key: 'identite', label: "Pièce d'identité", question: 'Avez-vous une pièce d\u2019identité à télécharger ?' },
-  { key: 'rcpro', label: 'Assurance RC Pro', question: 'Avez-vous une assurance en cours de validité ?' },
-  { key: 'kbis', label: 'Justificatif de statut', question: 'Avez-vous un justificatif SIRET ou Kbis ?' },
-]
 
 export default function ProDocuments() {
   const router = useRouter()
@@ -84,7 +82,7 @@ export default function ProDocuments() {
       step={stepIndex}
       total={DOC_TYPES.length}
       title={doc.question}
-      subtitle="PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Ça n'empêche pas d'être visible sur la carte."
+      subtitle={doc.subtitle || "PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Ça n'empêche pas d'être visible sur la carte."}
       onBack={stepIndex > 0 ? () => setStepIndex(i => i - 1) : undefined}
       onSkip={goNext}
       skipLabel="Passer, je le ferai plus tard"

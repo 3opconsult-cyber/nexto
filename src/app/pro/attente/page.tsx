@@ -2,12 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-
-const DOC_TYPES: { key: string; label: string }[] = [
-  { key: 'identite', label: "Pièce d'identité" },
-  { key: 'rcpro', label: 'Assurance RC Pro' },
-  { key: 'kbis', label: 'Justificatif de statut' },
-]
+import { DOC_TYPES } from '@/lib/documents'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'En cours de vérification',
