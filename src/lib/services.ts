@@ -14,6 +14,10 @@ export interface ProviderNearby {
   lng: number
   pricing_type: 'forfait' | 'horaire'
   hourly_rate_cents: number | null
+  full_name: string | null
+  avatar_hue: number | null
+  has_identity: boolean
+  has_rcpro: boolean
 }
 
 export async function fetchProvidersNearby(
