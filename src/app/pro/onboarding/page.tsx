@@ -51,6 +51,35 @@ export default function ProOnboarding() {
     return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
   }, [companyQuery, selectedCompany])
 
+  // Pré-remplissage si un profil existe déjà : "Modifier mes informations" doit
+  // éditer les vraies valeurs, pas repartir d'un formulaire vide qui écraserait
+  // ce qui a déjà été renseigné (SIRET, tarif, bio...) au moment de valider.
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data: pp } = await supabase.from('provider_profiles').select('*').eq('id', user.id).single()
+      if (pp) {
+        const { data: extra } = await supabase.from('services').select('name').eq('provider_id', user.id)
+        const extraNames = (extra ?? []).map((s: any) => s.name).filter((n: string) => n && n !== pp.trade)
+        if (pp.trade) setServices([pp.trade, ...extraNames])
+        setFlatRate(pp.base_price_cents > 0 ? String(pp.base_price_cents / 100) : '')
+        setHourlyRate(pp.hourly_rate_cents != null ? String(pp.hourly_rate_cents / 100) : '')
+        setStatus(pp.legal_status === 'particulier' ? 'particulier' : 'professionnel')
+        setSiret(pp.siret || '')
+        setSapNumber(pp.sap_number || '')
+        if (pp.company_name) setCompanyQuery(pp.company_name)
+        if (pp.lat != null && pp.lng != null) setCoords({ lat: pp.lat, lng: pp.lng })
+        setBio(pp.bio || '')
+      }
+      const { data: prof } = await supabase.from('profiles').select('address, phone_enc').eq('id', user.id).single()
+      if (prof) {
+        if (prof.address) setAddress(prof.address)
+        if (prof.phone_enc) setPhone(prof.phone_enc)
+      }
+    })
+  }, [])
+
   function pickCompany(c: CompanyMatch) {
     setSelectedCompany(c)
     setCompanyQuery(c.name)

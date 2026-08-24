@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
@@ -8,6 +8,7 @@ import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
 export default function ScanQR() {
   const params = useParams<{ id: string; phase: string }>()
   const search = useSearchParams()
+  const router = useRouter()
   const token = search.get('token') || ''
   const [status, setStatus] = useState<'checking' | 'ok' | 'error'>('checking')
   const [message, setMessage] = useState('Vérification du code…')
@@ -32,6 +33,11 @@ export default function ScanQR() {
         await supabase.from('transactions').update({ arrived_at: new Date().toISOString(), status: 'arrived' }).eq('id', tx.id)
         setStatus('ok'); setMessage('Arrivée validée.')
         if (tx.hourly_rate_cents) setMessage(m => m + ' Le temps commence à courir.')
+        const now = new Date()
+        await supabase.from('messages').insert({
+          transaction_id: tx.id, sender_id: null,
+          body: `✓ Arrivée scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}${tx.hourly_rate_cents ? ' — le chrono démarre' : ''}`,
+        })
         trackEvent('qr_scan_arrival', { transaction_id: tx.id })
       } else {
         if (!tx.arrived_at) { setStatus('error'); setMessage("L'arrivée n'a pas encore été scannée — impossible de clôturer."); return }
@@ -57,6 +63,11 @@ export default function ScanQR() {
         const h = Math.floor(mins / 60), m = mins % 60
         setDuration(`${h > 0 ? h + ' h ' : ''}${m} min`)
         setStatus('ok'); setMessage('Sortie validée.')
+        const finalTotal = (updates.total_charged_cents as number | undefined) ?? tx.total_charged_cents
+        await supabase.from('messages').insert({
+          transaction_id: tx.id, sender_id: null,
+          body: `✓ Sortie scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — ${h > 0 ? h + ' h ' : ''}${m} min, ${(finalTotal / 100).toFixed(2)} € facturés`,
+        })
         trackEvent('qr_scan_complete', { transaction_id: tx.id, duration_minutes: mins })
       }
     }
@@ -79,6 +90,12 @@ export default function ScanQR() {
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644', marginTop: 2 }}>{duration}</div>
             <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 4 }}>Ce relevé fait foi en cas de litige.</div>
           </div>
+        )}
+        {status !== 'checking' && (
+          <button onClick={() => router.push(`/mission/${params.id}/chat`)}
+            style={{ width: '100%', marginTop: 18, padding: 13, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
+            Retour à la conversation
+          </button>
         )}
       </div>
     </div>

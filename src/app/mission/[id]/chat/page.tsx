@@ -3,10 +3,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { filterMessage } from '@/lib/chatFilter'
+import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
 
 interface Msg {
   id: string
-  sender_id: string
+  sender_id: string | null
   body: string
   created_at: string
 }
@@ -19,6 +20,9 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [userId, setUserId] = useState('')
   const [warning, setWarning] = useState('')
+  const [tx, setTx] = useState<any>(null)
+  const [editingPrice, setEditingPrice] = useState(false)
+  const [newAmount, setNewAmount] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -29,6 +33,8 @@ export default function ChatPage() {
       const { data } = await supabase.from('messages')
         .select('*').eq('transaction_id', transactionId).order('created_at')
       setMsgs((data ?? []) as Msg[])
+      const { data: t } = await supabase.from('transactions').select('*').eq('id', transactionId).single()
+      setTx(t)
     }
     init()
 
@@ -58,6 +64,31 @@ export default function ChatPage() {
     setInput('')
   }
 
+  async function applyNewPrice() {
+    const cents = Math.round(Number(newAmount || 0) * 100)
+    if (!cents || cents <= 0) return
+    const buyerFee = Math.round(cents * BUYER_RATE)
+    const sellerFee = Math.round(cents * SELLER_RATE)
+    const supabase = createClient()
+    const { data: updated, error } = await supabase.from('transactions').update({
+      subtotal_cents: cents,
+      buyer_fee_cents: buyerFee,
+      seller_fee_cents: sellerFee,
+      total_charged_cents: cents + buyerFee,
+      payout_cents: cents - sellerFee,
+    }).eq('id', transactionId).select().single()
+    if (!error && updated) {
+      setTx(updated)
+      await supabase.from('messages').insert({
+        transaction_id: transactionId,
+        sender_id: null,
+        body: `✓ Tarif mis à jour d'un commun accord : ${(cents / 100).toFixed(2)} € (au lieu de ${(tx.subtotal_cents / 100).toFixed(2)} €)`,
+      })
+    }
+    setEditingPrice(false)
+    setNewAmount('')
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       {/* Header */}
@@ -67,7 +98,27 @@ export default function ChatPage() {
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#fff' }}>Conversation</div>
           <div style={{ fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,.5)' }}>Protégée par PING</div>
         </div>
+        {tx && (
+          <button onClick={() => { setNewAmount(String(tx.subtotal_cents / 100)); setEditingPrice(true) }}
+            style={{ padding: '7px 12px', borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.1)', color: '#fff', fontSize: 12, fontWeight: 700 }}>
+            {(tx.subtotal_cents / 100).toFixed(2)} € · Modifier
+          </button>
+        )}
       </div>
+
+      {editingPrice && (
+        <div onClick={() => setEditingPrice(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
+            <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Ajuster le tarif</h3>
+            <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>À faire uniquement après accord avec l'autre partie dans la conversation. Le changement est publié dans le chat pour que ce soit tracé des deux côtés.</p>
+            <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5"
+              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 14 }} />
+            <button onClick={applyNewPrice} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+              Valider le nouveau tarif
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Bannière sécurité */}
       <div style={{ padding: '8px 16px', fontSize: 11.5, fontWeight: 600, textAlign: 'center', background: 'rgba(18,179,156,.1)', color: '#0C8F7E' }}>
@@ -80,6 +131,13 @@ export default function ChatPage() {
           <div style={{ textAlign: 'center', padding: '48px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
         )}
         {msgs.map(m => {
+          if (m.sender_id === null) {
+            return (
+              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>
+                {m.body}
+              </div>
+            )
+          }
           const mine = m.sender_id === userId
           return (
             <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }}>

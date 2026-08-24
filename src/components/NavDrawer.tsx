@@ -36,8 +36,8 @@ export default function NavDrawer() {
   }
 
   const links = onProSide
-    ? [{ label: 'Carte', path: '/map' }, { label: 'Tableau de bord', path: '/pro/dashboard' }]
-    : [{ label: 'Carte', path: '/map' }, { label: 'Mes demandes', path: '/client/profil' }, { label: 'Profil', path: '/client/profil' }]
+    ? [{ label: 'Carte', path: '/map' }, { label: 'Tableau de bord', path: '/pro/dashboard' }, { label: 'Messages', path: '/messages' }]
+    : [{ label: 'Carte', path: '/map' }, { label: 'Mes demandes', path: '/client/profil' }, { label: 'Messages', path: '/messages' }, { label: 'Profil', path: '/client/profil' }]
 
   return (
     <>
