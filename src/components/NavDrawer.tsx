@@ -35,22 +35,34 @@ export default function NavDrawer() {
     router.push(onProSide ? '/map' : (isPro ? '/pro/dashboard' : '/pro/onboarding'))
   }
 
-  const links = onProSide
-    ? [
-        { label: 'Carte', path: '/map' },
-        { label: 'Tableau de bord', path: '/pro/dashboard' },
-        { label: 'Mes documents', path: '/pro/onboarding/documents' },
-        { label: 'Messages', path: '/messages' },
-        { label: 'Mon parrainage', path: '/client/parrainage' },
-      ]
-    : [
-        { label: 'Carte', path: '/map' },
-        { label: 'Mes missions', path: '/client/profil' },
-        { label: 'Mes favoris', path: '/client/favoris' },
-        { label: 'Messages', path: '/messages' },
-        { label: 'Mon parrainage', path: '/client/parrainage' },
-        { label: 'Mon profil', path: '/client/profil' },
-      ]
+  const clientLinks = [
+    { label: 'Carte', path: '/map' },
+    { label: 'Mes demandes', path: '/client/profil' },
+    { label: 'Messages', path: '/messages' },
+    { label: 'Agenda', path: '/agenda' },
+    { label: 'Litiges', path: '/litiges' },
+    { label: 'Profil', path: '/client/profil' },
+  ]
+  const clientLinksBottom = [
+    { label: 'Mon parrainage', path: '/client/parrainage' },
+    { label: 'Mes favoris', path: '/client/favoris' },
+  ]
+  const proLinks = [
+    { label: 'Carte', path: '/map' },
+    { label: 'Missions autour de moi', path: '/pro/dashboard' },
+    { label: 'Messages', path: '/messages' },
+    { label: 'Agenda', path: '/agenda' },
+    { label: 'Litiges', path: '/litiges' },
+    { label: 'Mon entreprise', path: '/pro/dashboard' },
+  ]
+  const proLinksBottom = [
+    { label: 'Tableau de bord', path: '/pro/dashboard' },
+    { label: 'Factures & documents', path: '/pro/dashboard' },
+    { label: 'Mes pièces', path: '/pro/onboarding/documents' },
+    { label: 'Mon parrainage', path: '/client/parrainage' },
+  ]
+  const links = onProSide ? proLinks : clientLinks
+  const linksBottom = onProSide ? proLinksBottom : clientLinksBottom
 
   return (
     <>
@@ -72,6 +84,13 @@ export default function NavDrawer() {
 
             <div style={{ padding: '8px 8px', flex: 1 }}>
               {links.map(l => (
+                <button key={l.label} onClick={() => go(l.path)}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
+                  {l.label}
+                </button>
+              ))}
+              <div style={{ height: 1, background: '#E7EDEB', margin: '6px 12px' }} />
+              {linksBottom.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
                   style={{ display: 'block', width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
                   {l.label}

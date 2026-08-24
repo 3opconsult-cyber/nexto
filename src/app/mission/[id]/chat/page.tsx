@@ -23,6 +23,9 @@ export default function ChatPage() {
   const [tx, setTx] = useState<any>(null)
   const [editingPrice, setEditingPrice] = useState(false)
   const [newAmount, setNewAmount] = useState('')
+  const [reporting, setReporting] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportSent, setReportSent] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -89,6 +92,20 @@ export default function ChatPage() {
     setNewAmount('')
   }
 
+  async function submitReport() {
+    if (!reportReason.trim() || !userId) return
+    const supabase = createClient()
+    await supabase.from('disputes').insert({
+      transaction_id: transactionId, opener_id: userId, reason: reportReason.trim(),
+    })
+    await supabase.from('messages').insert({
+      transaction_id: transactionId, sender_id: null,
+      body: '⚠ Un litige a été ouvert sur cette mission.',
+    })
+    setReportSent(true)
+    setReportReason('')
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       {/* Header */}
@@ -104,7 +121,34 @@ export default function ChatPage() {
             {(tx.subtotal_cents / 100).toFixed(2)} € · Modifier
           </button>
         )}
+        <button onClick={() => setReporting(true)} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,122,102,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF7A66" strokeWidth="2"><path d="M12 9v4M12 17h.01M10.3 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.7 3.86a2 2 0 00-3.4 0z" /></svg>
+        </button>
       </div>
+
+      {reporting && (
+        <div onClick={() => setReporting(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
+            {reportSent ? (
+              <>
+                <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 6 }}>Litige ouvert</h3>
+                <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>C'est publié dans la conversation et visible dans "Litiges" pour les deux parties.</p>
+                <button onClick={() => { setReporting(false); setReportSent(false) }} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Fermer</button>
+              </>
+            ) : (
+              <>
+                <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler un problème</h3>
+                <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>Décris ce qui ne va pas — c'est tracé et visible par les deux parties.</p>
+                <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} rows={3}
+                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
+                <button onClick={submitReport} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+                  Ouvrir le litige
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {editingPrice && (
         <div onClick={() => setEditingPrice(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
