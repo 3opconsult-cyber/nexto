@@ -117,6 +117,7 @@ export default function ProOnboarding() {
     const { error: profileErr } = await supabase.from('profiles').update({
       phone_enc: phone || null,
       address: address || null,
+      is_pro: true,
     }).eq('id', user.id)
     if (profileErr) { setError(profileErr.message); setLoading(false); return }
 
