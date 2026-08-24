@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
+import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { TRADES } from '@/lib/trades'
 import BottomTabBar from '@/components/BottomTabBar'
@@ -55,8 +56,32 @@ export default function MapPage() {
   const [fNear, setFNear] = useState(false)
   const [fRating, setFRating] = useState(false)
   const [sort, setSort] = useState<SortKey>('distance')
+  const [favIds, setFavIds] = useState<Set<string>>(new Set())
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => { trackEvent('page_view') }, [])
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      setUserId(user.id)
+      supabase.from('favorites').select('provider_id').eq('user_id', user.id)
+        .then(({ data }) => setFavIds(new Set((data ?? []).map((f: any) => f.provider_id))))
+    })
+  }, [])
+
+  async function toggleFav(providerId: string) {
+    if (!userId) { router.push('/auth/login'); return }
+    const supabase = createClient()
+    if (favIds.has(providerId)) {
+      await supabase.from('favorites').delete().eq('user_id', userId).eq('provider_id', providerId)
+      setFavIds(s => { const n = new Set(s); n.delete(providerId); return n })
+    } else {
+      await supabase.from('favorites').insert({ user_id: userId, provider_id: providerId })
+      setFavIds(s => new Set(s).add(providerId))
+    }
+  }
 
   function relocate() {
     if (navigator.geolocation) {
@@ -171,9 +196,10 @@ export default function MapPage() {
             const initial = name.charAt(0).toUpperCase()
             const bg = p.avatar_hue != null ? `hsl(${p.avatar_hue}, 55%, 45%)` : '#12B39C'
             const badges = [p.has_identity && 'identité fournie', p.has_rcpro && 'assurance RC renseignée'].filter(Boolean).join(' · ')
+            const fav = favIds.has(p.id)
             return (
               <div key={p.id} onClick={() => router.push(`/pro/${p.id}`)}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 12, marginBottom: 10, cursor: 'pointer' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 12, marginBottom: 10, cursor: 'pointer' }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: bg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>{initial}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>{name}</div>
@@ -181,6 +207,9 @@ export default function MapPage() {
                     {TRADES[p.trade] || p.trade}{badges ? ` · ${badges}` : ''} · à {p.distance_m < 1000 ? `${Math.round(p.distance_m)} m` : `${(p.distance_m / 1000).toFixed(1)} km`}
                   </div>
                 </div>
+                <button onClick={e => { e.stopPropagation(); toggleFav(p.id) }} style={{ border: 'none', background: 'none', padding: 4, flexShrink: 0, cursor: 'pointer' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill={fav ? '#FF7A66' : 'none'} stroke={fav ? '#FF7A66' : '#9CA3AF'} strokeWidth="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>
+                </button>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>{p.rating > 0 ? p.rating.toFixed(1) : 'Nouveau'}{p.rating > 0 && <span style={{ color: '#F59E0B' }}> ★</span>}</div>
                   <div style={{ color: '#6E8592', fontSize: 12 }}>{priceLabel(p)}</div>

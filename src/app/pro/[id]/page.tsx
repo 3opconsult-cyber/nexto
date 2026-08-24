@@ -16,6 +16,8 @@ export default function ProDetailPage() {
   const [hasDocuments, setHasDocuments] = useState(false)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'apropos' | 'avis'>('apropos')
+  const [userId, setUserId] = useState<string | null>(null)
+  const [isFav, setIsFav] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -28,8 +30,26 @@ export default function ProDetailPage() {
       .then(({ data }) => { if (!cancelled) setExtraServices(data ?? []) })
     supabase.from('documents').select('id', { count: 'exact', head: true }).eq('owner_id', proId)
       .then(({ count }) => { if (!cancelled) setHasDocuments((count ?? 0) > 0) })
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user || cancelled) return
+      setUserId(user.id)
+      supabase.from('favorites').select('provider_id').eq('user_id', user.id).eq('provider_id', proId).maybeSingle()
+        .then(({ data }) => { if (!cancelled) setIsFav(!!data) })
+    })
     return () => { cancelled = true }
   }, [proId])
+
+  async function toggleFav() {
+    if (!userId) { router.push('/auth/login'); return }
+    const supabase = createClient()
+    if (isFav) {
+      await supabase.from('favorites').delete().eq('user_id', userId).eq('provider_id', proId)
+      setIsFav(false)
+    } else {
+      await supabase.from('favorites').insert({ user_id: userId, provider_id: proId })
+      setIsFav(true)
+    }
+  }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#123644' }}>
@@ -52,7 +72,12 @@ export default function ProDetailPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
       <div style={{ padding: '20px 20px 32px', background: '#123644' }}>
-        <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700, marginBottom: 16 }}>← Retour</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700 }}>← Retour</button>
+          <button onClick={toggleFav} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? '#FF7A66' : 'none'} stroke={isFav ? '#FF7A66' : '#fff'} strokeWidth="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>
+          </button>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 64, height: 64, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff', background: '#12B39C', flexShrink: 0 }}>{initials}</div>
           <div>
