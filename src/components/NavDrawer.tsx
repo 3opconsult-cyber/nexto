@@ -42,12 +42,10 @@ export default function NavDrawer() {
   const avatarBg = profile?.avatar_hue != null ? `hsl(${profile.avatar_hue}, 55%, 45%)` : '#12B39C'
 
   function go(path: string) {
-    setOpen(false)
     router.push(path)
   }
 
   function switchMode() {
-    setOpen(false)
     router.push(onProSide ? '/map' : (isPro ? '/pro/dashboard' : '/pro/onboarding'))
   }
 
@@ -92,23 +90,26 @@ export default function NavDrawer() {
 
             <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #E7EDEB', display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: avatarBg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, flexShrink: 0 }}>{initial}</div>
-              <div style={{ minWidth: 0 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{profile?.first_name || 'Vous'}</div>
                 <div style={{ fontSize: 12, color: '#6E8592', fontWeight: 600 }}>{[profile?.city, memberYear ? `membre depuis ${memberYear}` : null].filter(Boolean).join(' · ') || '—'}</div>
               </div>
+              <button onClick={() => setOpen(false)} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
             </div>
 
             <div style={{ padding: '8px 8px', flex: 1 }}>
               {links.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
                   <Icon name={l.icon} />{l.label}
                 </button>
               ))}
               <div style={{ height: 1, background: '#E7EDEB', margin: '6px 12px' }} />
               {linksBottom.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
                   <Icon name={l.icon} />{l.label}
                 </button>
               ))}
