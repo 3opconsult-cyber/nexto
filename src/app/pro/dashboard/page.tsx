@@ -6,6 +6,17 @@ import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import NavDrawer from '@/components/NavDrawer'
 
+const LEGAL_STATUS_LABELS: Record<string, string> = {
+  particulier: 'Particulier',
+  auto_entrepreneur: 'Auto-entrepreneur',
+  eirl: 'EIRL',
+  eurl: 'EURL',
+  sarl: 'SARL',
+  sas: 'SAS',
+  sasu: 'SASU',
+  association: 'Association',
+}
+
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   pending:   { label: 'En attente',      color: '#8a6520', bg: '#FFF7ED' },
   held:      { label: 'Confirmée',       color: '#0C8F7E', bg: 'rgba(18,179,156,.1)' },
@@ -188,6 +199,10 @@ export default function ProDashboard() {
                   (pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0) ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h` : null,
                 ].filter(Boolean).join(' · ')}
               </div>
+            </div>
+            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Statut</div>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status}</div>
             </div>
             <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Description</div>

@@ -41,12 +41,14 @@ export default function NavDrawer() {
         { label: 'Tableau de bord', path: '/pro/dashboard' },
         { label: 'Mes documents', path: '/pro/onboarding/documents' },
         { label: 'Messages', path: '/messages' },
+        { label: 'Mon parrainage', path: '/client/parrainage' },
       ]
     : [
         { label: 'Carte', path: '/map' },
         { label: 'Mes missions', path: '/client/profil' },
         { label: 'Mes favoris', path: '/client/favoris' },
         { label: 'Messages', path: '/messages' },
+        { label: 'Mon parrainage', path: '/client/parrainage' },
         { label: 'Mon profil', path: '/client/profil' },
       ]
 

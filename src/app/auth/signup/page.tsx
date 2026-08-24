@@ -39,6 +39,15 @@ function SignupForm() {
       }
     })
     if (signupError) { setError(signupError.message); setLoading(false); return }
+
+    const refCode = params.get('ref')
+    if (refCode && data.user) {
+      const { data: referrer } = await supabase.from('profiles').select('id').eq('referral_code', refCode.toUpperCase()).maybeSingle()
+      if (referrer && referrer.id !== data.user.id) {
+        await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: data.user.id })
+      }
+    }
+
     if (role === 'pro') router.push('/pro/onboarding')
     else router.push('/map')
   }
