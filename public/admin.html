@@ -421,9 +421,10 @@ textarea.minput{min-height:120px;resize:vertical}
           </div>
           <div id="mapPeopleList" style="display:none;margin-bottom:14px"></div>
           <div id="liveMapSvg" style="border-radius:14px;overflow:hidden;border:1px solid var(--line);height:280px"></div>
-          <div style="display:flex;gap:18px;margin-top:10px;font-size:11.5px;color:var(--slate)">
+          <div style="display:flex;gap:18px;margin-top:10px;font-size:11.5px;color:var(--slate);flex-wrap:wrap">
             <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#2FD06E;display:inline-block"></span> Connecté, GPS actif</span>
             <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--coral);display:inline-block"></span> En prestation</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#3B82F6;display:inline-block"></span> Client (mission active)</span>
           </div>
           <p class="note">Prototype : positions et statuts illustratifs, actualisés au chargement de la page — clique un point pour ouvrir la fiche. Câblage réel (GPS live, websocket) prévu au lot L7.</p>
         </div>
@@ -3076,6 +3077,37 @@ window.loadLiveMap = async function () {
     const name = (p.profiles && p.profiles.full_name) || TRADES_LIVE[p.trade] || p.trade
     L.marker([p.lat, p.lng], { icon }).addTo(liveMapInstance).bindPopup(name + (onJob ? ' · en prestation' : ' · connecté'))
   })
+
+  // Clients : pas de lat/lng stockee, on geocode leur adresse de mission active
+  // via Nominatim (OSM, gratuit, sans cle) — un point par adresse, en cache pour
+  // ne pas re-geocoder a chaque rechargement.
+  window.__geoCache = window.__geoCache || {}
+  const { data: activeReq } = await supabaseLive.from('transactions')
+    .select('id, buyer:profiles!transactions_buyer_id_fkey(full_name), requests(address)')
+    .in('status', ['pending', 'arrived'])
+  const clientIcon = L.divIcon({
+    className: '', iconSize: [16, 16],
+    html: '<div style="width:14px;height:14px;border-radius:50%;background:#3B82F6;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>',
+  })
+  for (const t of (activeReq || [])) {
+    const addr = t.requests && t.requests.address
+    if (!addr) continue
+    let pos = window.__geoCache[addr]
+    if (pos === undefined) {
+      try {
+        const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr))
+        const json = await res.json()
+        pos = json && json[0] ? [parseFloat(json[0].lat), parseFloat(json[0].lon)] : null
+        window.__geoCache[addr] = pos
+        await new Promise(r => setTimeout(r, 1000)) // respecte la limite de Nominatim (~1 req/s)
+      } catch (e) { pos = null }
+    }
+    if (pos) {
+      L.marker(pos, { icon: clientIcon }).addTo(liveMapInstance)
+        .bindPopup(((t.buyer && t.buyer.full_name) || 'Client') + ' · mission active')
+    }
+  }
+
   setTimeout(() => { if (liveMapInstance) liveMapInstance.invalidateSize() }, 80)
 }
 
