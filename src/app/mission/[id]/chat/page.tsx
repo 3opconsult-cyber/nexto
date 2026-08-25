@@ -155,6 +155,14 @@ export default function ChatPage() {
     setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'declined' } : x))
   }
 
+  async function counterOffer(m: Msg) {
+    await declineOffer(m)
+    setNewAmount(m.offer_cents ? String(m.offer_cents / 100) : '')
+    setNewAmountReason('')
+    setNewAmountPhoto(null)
+    setEditingPrice(true)
+  }
+
   async function submitReport() {
     if (!reportReason.trim() || !userId) return
     const supabase = createClient()
@@ -181,10 +189,9 @@ export default function ChatPage() {
           <span style={{ fontSize: 11, color: '#12B39C', fontWeight: 600 }}>● en ligne · identité masquée</span>
         </div>
         {tx && (
-          <button onClick={() => { setNewAmount(String(tx.subtotal_cents / 100)); setEditingPrice(true) }}
-            style={{ padding: '6px 11px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontSize: 11.5, fontWeight: 700 }}>
-            {(tx.subtotal_cents / 100).toFixed(2)} € · Modifier
-          </button>
+          <span style={{ padding: '6px 11px', borderRadius: 999, background: '#F3F6F5', color: '#6E8592', fontSize: 11.5, fontWeight: 700 }}>
+            {(tx.subtotal_cents / 100).toFixed(2)} €
+          </span>
         )}
         <button onClick={() => setReporting(true)} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0 }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
@@ -263,7 +270,7 @@ export default function ChatPage() {
                 )}
                 {m.offer_status === 'pending' && !mine && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                    <button onClick={() => declineOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#6E8592', fontWeight: 700, fontSize: 12.5 }}>Refuser</button>
+                    <button onClick={() => counterOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#6E8592', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
                     <button onClick={() => acceptOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
                   </div>
                 )}
@@ -307,6 +314,15 @@ export default function ChatPage() {
       {warning && (
         <div style={{ margin: '0 16px 8px', padding: '9px 14px', borderRadius: 12, fontSize: 11.5, fontWeight: 700, textAlign: 'center', background: '#FEE2E2', color: '#B91C1C' }}>
           {warning}
+        </div>
+      )}
+
+      {tx && !msgs.some(m => m.kind === 'offer' && m.offer_status === 'pending') && (
+        <div style={{ padding: '0 16px 8px', textAlign: 'center' }}>
+          <button onClick={() => { setNewAmount(String(tx.subtotal_cents / 100)); setNewAmountReason(''); setNewAmountPhoto(null); setEditingPrice(true) }}
+            style={{ background: 'none', border: 'none', color: '#0C8F7E', fontSize: 12, fontWeight: 700 }}>
+            + Proposer un tarif
+          </button>
         </div>
       )}
 
