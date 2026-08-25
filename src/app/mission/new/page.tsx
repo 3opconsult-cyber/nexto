@@ -14,7 +14,6 @@ function MissionForm() {
   const [description, setDescription] = useState('')
   const [estimatedHours, setEstimatedHours] = useState('2')
   const [mode, setMode] = useState<'forfait' | 'horaire' | null>(null)
-  const [paymentPending, setPaymentPending] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -40,28 +39,34 @@ function MissionForm() {
   const buyerFee = Math.round(subtotalCents * BUYER_RATE)
   const totalTtc = subtotalCents + buyerFee
 
-  function submit() {
-    if (!address.trim()) { setError('Indique une adresse.'); return }
-    setError('')
-    trackEvent('mission_payment_pending_stripe', { pro_id: proId, subtotal_cents: subtotalCents })
-    setPaymentPending(true)
-  }
+  const [creating, setCreating] = useState(false)
 
-  if (paymentPending) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ background: '#fff', borderRadius: 20, padding: 28, maxWidth: 340, width: '100%', textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, background: 'rgba(242,169,59,.14)' }}>…</div>
-          <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17, color: '#123644', marginBottom: 8 }}>Paiement en ligne — bientôt disponible</h1>
-          <p style={{ fontSize: 13, color: '#6E8592', lineHeight: 1.5, marginBottom: 20 }}>
-            La connexion Stripe est en cours d'intégration. Cette réservation n'a pas été enregistrée, aucun montant n'a été débité.
-          </p>
-          <button onClick={() => router.push('/map')} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 14, borderRadius: 999 }}>
-            Retour à la carte
-          </button>
-        </div>
-      </div>
-    )
+  async function submit() {
+    if (!address.trim()) { setError('Indique une adresse.'); return }
+    if (!pro || !mode) return
+    setError('')
+    setCreating(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/auth/login'); return }
+
+    const { data: req, error: reqErr } = await supabase.from('requests').insert({
+      requester_id: user.id, category: pro.trade, description: description || null,
+      address: address.trim(), budget_cents: totalTtc, status: 'matched',
+    }).select().single()
+    if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
+
+    const sellerFee = Math.round(subtotalCents * (11 / 100))
+    const { data: tx, error: txErr } = await supabase.from('transactions').insert({
+      kind: 'service', buyer_id: user.id, seller_id: pro.id, request_id: req.id,
+      subtotal_cents: subtotalCents, buyer_fee_cents: buyerFee, seller_fee_cents: sellerFee,
+      total_charged_cents: totalTtc, payout_cents: subtotalCents - sellerFee,
+      hourly_rate_cents: mode === 'horaire' ? pro.hourly_rate_cents : null, status: 'pending',
+    }).select().single()
+    if (txErr || !tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
+
+    trackEvent('mission_booked', { pro_id: proId, subtotal_cents: subtotalCents })
+    router.push(`/mission/${tx.id}/qrcodes`)
   }
 
   return (
@@ -120,9 +125,12 @@ function MissionForm() {
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
-        <button onClick={submit} disabled={!pro || !mode} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999 }}>
-          Confirmer la réservation
+        <button onClick={submit} disabled={!pro || !mode || creating} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
+          {creating ? 'Confirmation…' : 'Confirmer la réservation'}
         </button>
+        <p style={{ fontSize: 11, color: '#9CA3AF', textAlign: 'center', marginTop: 10 }}>
+          Le paiement en ligne arrive bientôt — votre réservation est enregistrée dès maintenant, réglez directement avec le prestataire en attendant.
+        </p>
       </div>
     </div>
   )

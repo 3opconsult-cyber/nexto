@@ -488,26 +488,22 @@ textarea.minput{min-height:120px;resize:vertical}
 
       <!-- USERS (fusion Entreprises + Utilisateurs, session 13) -->
       <section class="section" id="s_users">
+        <input id="usersFilter" placeholder="Filtrer par nom, ville, métier…" oninput="window.filterLiveUsers()"
+          style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);font-size:13px;margin-bottom:14px" />
         <div class="seg2"><div class="on" onclick="segUsers(this,'pros')">Propose des services</div><div onclick="segUsers(this,'clients')">Réserve des services</div></div>
-        <div class="card" id="userPros"><h3>Utilisateurs — propose des services <span class="muted">312 actifs · 7 en attente de vérification</span></h3>
+        <div class="card" id="userPros"><h3>Utilisateurs — propose des services <span class="muted" id="proCountLabel">chargement…</span></h3>
           <table class="tbl">
-            <tr><th>Utilisateur</th><th>Métier</th><th>Statut</th><th>Conformité</th><th>CA (mois)</th><th>Note</th><th></th></tr>
-            <tr><td><div class="who"><div class="av">P</div>Sofia Services</div></td><td>Nettoyage</td><td>Auto-entrepreneur</td><td><span class="tag ok">Qualifiée</span></td><td>3 240 €</td><td>4,9</td><td><span class="link">Ouvrir</span></td></tr>
-            <tr><td><div class="who"><div class="av gold">S</div>Léa Nettoyage</div></td><td>Ménage</td><td>Micro-entreprise</td><td><span class="tag ok">Qualifiée</span></td><td>1 980 €</td><td>4,8</td><td><span class="link">Ouvrir</span></td></tr>
-            <tr><td><div class="who"><div class="av">E</div>Nadia Repassage</div></td><td>Repassage</td><td>EURL</td><td><span class="tag ok">Qualifiée</span></td><td>5 120 €</td><td>4,9</td><td><span class="link">Ouvrir</span></td></tr>
-            <tr><td><div class="who"><div class="av g">B</div>Bruno Ménage</div></td><td>Nettoyage</td><td>Auto-entrepreneur</td><td><span class="tag wait">Assurance complémentaire manquante</span></td><td>640 €</td><td>4,2</td><td><span class="link">Vérifier</span></td></tr>
-            <tr><td><div class="who"><div class="av g">L</div>Léo Services</div></td><td>Remise en état</td><td>Particulier</td><td><span class="tag ink">Non pro</span></td><td>210 €</td><td>—</td><td><span class="link">Voir</span></td></tr>
+            <tr><th>Utilisateur</th><th>Métier</th><th>Statut</th><th>Ville</th><th>Note</th><th></th></tr>
+            <tbody id="liveProsBody"></tbody>
           </table>
-          <p class="note">Statut Pro (auto-entrepreneur, micro-entreprise, EURL…) ou Particulier — les deux peuvent proposer des services sur PING. « Non pro » = sous les seuils légaux, pas d'obligation de statut.</p>
+          <div id="liveProsEmpty" class="muted" style="padding:16px 0;display:none">Aucun prestataire pour l'instant.</div>
         </div>
-        <div class="card" id="userClients" style="display:none"><h3>Utilisateurs — réserve des services <span class="muted">particuliers · identité vérifiée</span></h3>
+        <div class="card" id="userClients" style="display:none"><h3>Utilisateurs — réserve des services <span class="muted" id="clientCountLabel">chargement…</span></h3>
           <table class="tbl">
-            <tr><th>Client</th><th>Ville</th><th>Identité</th><th>Réservations</th><th>Revenus perçus (P2P)</th><th>Signalé DAC7</th></tr>
-            <tr><td><div class="who"><div class="av coral">J</div>Julie Robert</div></td><td>Grasse</td><td><span class="tag ok">Vérifiée</span></td><td>4</td><td>1 180 €</td><td><span class="tag ink">Sous seuil</span></td></tr>
-            <tr><td><div class="who"><div class="av coral">K</div>Karim Benali</div></td><td>Grasse</td><td><span class="tag ok">Vérifiée</span></td><td>7</td><td>2 640 €</td><td><span class="tag wait">Signalé</span></td></tr>
-            <tr><td><div class="who"><div class="av coral">S</div>Sophie Martin</div></td><td>Mouans-Sartoux</td><td><span class="tag wait">À vérifier</span></td><td>1</td><td>0 €</td><td><span class="tag ink">Sous seuil</span></td></tr>
+            <tr><th>Client</th><th>Ville</th><th>Membre depuis</th><th></th></tr>
+            <tbody id="liveClientsBody"></tbody>
           </table>
-          <p class="note">« Signalé DAC7 » = au-delà de 30 opérations ou 2 000 €/an sur la vente de biens. Vente occasionnelle de biens personnels : en général non imposable.</p>
+          <div id="liveClientsEmpty" class="muted" style="padding:16px 0;display:none">Aucun client pour l'instant.</div>
         </div>
       </section>
 
@@ -1161,6 +1157,7 @@ function nav(s){
  if(s==='live'&&window.loadLiveData)window.loadLiveData();
  if((s==='live'||s==='overview')&&window.loadLiveMap)window.loadLiveMap();
  if(s==='docs'&&window.loadLiveInvoices)window.loadLiveInvoices();
+ if(s==='users'&&window.loadLiveUsers)window.loadLiveUsers();
 }
 function navBack(){
  if(!navHistory.length)return;
@@ -3292,5 +3289,67 @@ window.sendSupportMsg = async function (userId) {
   await supabaseLive.from('admin_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id)
   input.disabled = false
   window.openPersonDetail(userId)
+}
+
+// CRM Utilisateurs — vraie liste de tous les prestataires et particuliers,
+// avec un filtre local (nom, ville, metier) et acces direct a la fiche
+// personne deja construite.
+let __allPros = [], __allClients = []
+window.loadLiveUsers = async function () {
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) return
+
+  const [{ data: pros }, { data: clients }] = await Promise.all([
+    supabaseLive.from('provider_profiles').select('id, trade, legal_status, rating, profiles!provider_profiles_id_fkey(full_name, city)'),
+    supabaseLive.from('profiles').select('id, full_name, city, created_at').eq('is_pro', false),
+  ])
+  __allPros = pros || []
+  __allClients = clients || []
+  window.renderLiveUsers(__allPros, __allClients)
+}
+
+window.renderLiveUsers = function (pros, clients) {
+  const proBody = document.getElementById('liveProsBody')
+  const clientBody = document.getElementById('liveClientsBody')
+  const proEmpty = document.getElementById('liveProsEmpty')
+  const clientEmpty = document.getElementById('liveClientsEmpty')
+  const proLabel = document.getElementById('proCountLabel')
+  const clientLabel = document.getElementById('clientCountLabel')
+  if (!proBody || !clientBody) return
+
+  proLabel.textContent = pros.length + ' actif' + (pros.length > 1 ? 's' : '')
+  clientLabel.textContent = clients.length + ' particulier' + (clients.length > 1 ? 's' : '')
+
+  proBody.innerHTML = pros.map(p => {
+    const name = (p.profiles && p.profiles.full_name) || '—'
+    const initial = (name || '?').charAt(0).toUpperCase()
+    return '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail(\'' + p.id + '\')">' +
+      '<td><div class="who"><div class="av">' + initial + '</div>' + name + '</div></td>' +
+      '<td>' + (TRADES_LIVE[p.trade] || p.trade || '—') + '</td>' +
+      '<td>' + (p.legal_status || '—') + '</td>' +
+      '<td>' + ((p.profiles && p.profiles.city) || '—') + '</td>' +
+      '<td>' + (p.rating ? p.rating + ' ★' : '—') + '</td>' +
+      '<td><span class="link">Ouvrir</span></td></tr>'
+  }).join('')
+  proEmpty.style.display = pros.length ? 'none' : 'block'
+
+  clientBody.innerHTML = clients.map(c => {
+    const initial = (c.full_name || '?').charAt(0).toUpperCase()
+    return '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail(\'' + c.id + '\')">' +
+      '<td><div class="who"><div class="av coral">' + initial + '</div>' + (c.full_name || '—') + '</div></td>' +
+      '<td>' + (c.city || '—') + '</td>' +
+      '<td>' + new Date(c.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) + '</td>' +
+      '<td><span class="link">Ouvrir</span></td></tr>'
+  }).join('')
+  clientEmpty.style.display = clients.length ? 'none' : 'block'
+}
+
+window.filterLiveUsers = function () {
+  const q = (document.getElementById('usersFilter').value || '').toLowerCase().trim()
+  if (!q) { window.renderLiveUsers(__allPros, __allClients); return }
+  const matchPro = p => [(p.profiles && p.profiles.full_name), TRADES_LIVE[p.trade], p.trade, (p.profiles && p.profiles.city)]
+    .filter(Boolean).some(v => v.toLowerCase().includes(q))
+  const matchClient = c => [c.full_name, c.city].filter(Boolean).some(v => v.toLowerCase().includes(q))
+  window.renderLiveUsers(__allPros.filter(matchPro), __allClients.filter(matchClient))
 }
 </script>
