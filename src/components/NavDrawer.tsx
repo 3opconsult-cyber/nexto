@@ -58,6 +58,7 @@ export default function NavDrawer() {
     { label: 'Profil', path: '/client/profil', icon: 'prof' },
   ]
   const clientLinksBottom = [
+    { label: 'Comment ça marche', path: '/comment-ca-marche', icon: 'doc' },
     { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
     { label: 'Mes favoris', path: '/client/favoris', icon: 'heart' },
     { label: 'Support PING', path: '/support', icon: 'msg' },
@@ -71,6 +72,7 @@ export default function NavDrawer() {
     { label: 'Mon entreprise', path: '/pro/dashboard', icon: 'ent' },
   ]
   const proLinksBottom = [
+    { label: 'Comment ça marche', path: '/comment-ca-marche', icon: 'doc' },
     { label: 'Tableau de bord', path: '/pro/dashboard', icon: 'doc' },
     { label: 'Factures & documents', path: '/pro/dashboard', icon: 'doc' },
     { label: 'Mes pièces', path: '/pro/onboarding/documents', icon: 'doc' },
