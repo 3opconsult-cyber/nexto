@@ -3075,36 +3075,40 @@ window.loadLiveMap = async function () {
       html: '<div style="width:14px;height:14px;border-radius:50%;background:' + color + ';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>',
     })
     const name = (p.profiles && p.profiles.full_name) || TRADES_LIVE[p.trade] || p.trade
-    L.marker([p.lat, p.lng], { icon }).addTo(liveMapInstance).bindPopup(name + (onJob ? ' · en prestation' : ' · connecté'))
+    L.marker([p.lat, p.lng], { icon }).addTo(liveMapInstance)
+      .bindPopup(name + (onJob ? ' · en prestation' : ' · connecté'))
+      .on('click', () => window.openPersonDetail(p.id))
   })
 
-  // Clients : pas de lat/lng stockee, on geocode leur adresse de mission active
-  // via Nominatim (OSM, gratuit, sans cle) — un point par adresse, en cache pour
-  // ne pas re-geocoder a chaque rechargement.
-  window.__geoCache = window.__geoCache || {}
+  // Clients : geocodage fait une seule fois puis sauvegarde sur la demande
+  // (requests.lat/lng) — les chargements suivants relisent ces colonnes,
+  // plus aucun appel a Nominatim ni delai d'1s par adresse deja connue.
   const { data: activeReq } = await supabaseLive.from('transactions')
-    .select('id, buyer:profiles!transactions_buyer_id_fkey(full_name), requests(address)')
+    .select('id, buyer_id, buyer:profiles!transactions_buyer_id_fkey(full_name), requests(id, address, lat, lng)')
     .in('status', ['pending', 'arrived'])
   const clientIcon = L.divIcon({
     className: '', iconSize: [16, 16],
     html: '<div style="width:14px;height:14px;border-radius:50%;background:#3B82F6;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>',
   })
   for (const t of (activeReq || [])) {
-    const addr = t.requests && t.requests.address
-    if (!addr) continue
-    let pos = window.__geoCache[addr]
-    if (pos === undefined) {
+    const req = t.requests
+    if (!req || !req.address) continue
+    let pos = (req.lat != null && req.lng != null) ? [req.lat, req.lng] : null
+    if (!pos) {
       try {
-        const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr))
+        const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(req.address))
         const json = await res.json()
-        pos = json && json[0] ? [parseFloat(json[0].lat), parseFloat(json[0].lon)] : null
-        window.__geoCache[addr] = pos
-        await new Promise(r => setTimeout(r, 1000)) // respecte la limite de Nominatim (~1 req/s)
+        if (json && json[0]) {
+          pos = [parseFloat(json[0].lat), parseFloat(json[0].lon)]
+          await supabaseLive.from('requests').update({ lat: pos[0], lng: pos[1] }).eq('id', req.id)
+        }
+        await new Promise(r => setTimeout(r, 1000)) // limite Nominatim, seulement pour une adresse jamais vue
       } catch (e) { pos = null }
     }
     if (pos) {
       L.marker(pos, { icon: clientIcon }).addTo(liveMapInstance)
         .bindPopup(((t.buyer && t.buyer.full_name) || 'Client') + ' · mission active')
+        .on('click', () => window.openPersonDetail(t.buyer_id))
     }
   }
 
@@ -3201,6 +3205,55 @@ window.openTxDetail = async function (txId) {
 
     '<h3 class="mt">Litiges</h3>' + disputeHtml +
     '<h3 class="mt">Conversation</h3><div style="max-height:220px;overflow:auto">' + msgRows + '</div>' +
+    '</div>'
+}
+
+// Fiche personne — ouverte au clic sur un point de la carte (client ou
+// prestataire). Montre le role, et renvoie vers la fiche transaction deja
+// construite si une mission est active.
+window.openPersonDetail = async function (userId) {
+  let modal = document.getElementById('personModal')
+  if (!modal) {
+    modal = document.createElement('div')
+    modal.id = 'personModal'
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(18,54,68,.5);z-index:5100;display:flex;align-items:center;justify-content:center;padding:20px'
+    modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+    document.body.appendChild(modal)
+  }
+  modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:24px"><div class="muted">Chargement…</div></div>'
+
+  const { data: prof } = await supabaseLive.from('profiles').select('*').eq('id', userId).single()
+  if (!prof) {
+    modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px">Profil introuvable.<div class="mt"><button class="btn ghost" onclick="document.getElementById(\'personModal\').remove()">Fermer</button></div></div>'
+    return
+  }
+
+  let pro = null
+  if (prof.is_pro) {
+    const { data } = await supabaseLive.from('provider_profiles').select('*').eq('id', userId).single()
+    pro = data
+  }
+
+  const { data: activeTx } = await supabaseLive.from('transactions')
+    .select('id')
+    .or('buyer_id.eq.' + userId + ',seller_id.eq.' + userId)
+    .in('status', ['pending', 'arrived'])
+    .limit(1)
+  const tx = activeTx && activeTx[0]
+
+  const emailRes = await supabaseLive.rpc('admin_get_email', { target_id: userId })
+
+  modal.innerHTML =
+    '<div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:24px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+    '<div><h3 style="margin:0">' + (prof.full_name || (prof.first_name + ' ' + (prof.last_name || ''))) + '</h3>' +
+    '<span class="tag ' + (prof.is_pro ? 'ok' : 'wait') + '" style="margin-top:6px;display:inline-block">' + (prof.is_pro ? 'Prestataire' : 'Particulier') + '</span></div>' +
+    '<button onclick="document.getElementById(\'personModal\').remove()" style="border:none;background:none;font-size:22px;cursor:pointer;color:#9CA3AF;line-height:1">×</button></div>' +
+    '<div class="muted mt" style="font-size:12.5px">' + (prof.city || '') + ' · ' + (prof.phone_enc || 'Téléphone non renseigné') + ' · ' + ((emailRes && emailRes.data) || 'Email indisponible') + '</div>' +
+    (pro ? '<div class="grid k2 mt"><div class="kpi"><div class="l">Métier</div><div class="v" style="font-size:16px">' + (TRADES_LIVE[pro.trade] || pro.trade) + '</div></div><div class="kpi"><div class="l">Note</div><div class="v" style="font-size:16px">' + (pro.rating || '—') + ' ★</div></div></div>' : '') +
+    (tx
+      ? '<button class="btn" style="width:100%;margin-top:16px" onclick="document.getElementById(\'personModal\').remove();window.openTxDetail(\'' + tx.id + '\')">Voir la mission active →</button>'
+      : '<div class="muted mt">Aucune mission active en ce moment.</div>') +
     '</div>'
 }
 </script>
