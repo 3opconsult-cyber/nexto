@@ -3243,8 +3243,19 @@ window.openPersonDetail = async function (userId) {
 
   const emailRes = await supabaseLive.rpc('admin_get_email', { target_id: userId })
 
+  let { data: conv } = await supabaseLive.from('admin_conversations').select('id').eq('user_id', userId).maybeSingle()
+  let supportMsgs = []
+  if (conv) {
+    const { data } = await supabaseLive.from('admin_messages').select('*').eq('conversation_id', conv.id).order('created_at')
+    supportMsgs = data || []
+  }
+  const supportRows = supportMsgs.map(m =>
+    '<div style="display:flex;justify-content:' + (m.sender_is_admin ? 'flex-end' : 'flex-start') + ';margin-top:6px">' +
+    '<div style="max-width:80%;padding:7px 11px;border-radius:12px;font-size:12.5px;' + (m.sender_is_admin ? 'background:#123644;color:#fff' : 'background:var(--cream,#F3F6F5);color:var(--navy)') + '">' + m.body + '</div></div>'
+  ).join('') || '<div class="muted" style="font-size:12px">Aucun message de support pour l\u2019instant.</div>'
+
   modal.innerHTML =
-    '<div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:24px">' +
+    '<div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:24px;max-height:88vh;overflow:auto">' +
     '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
     '<div><h3 style="margin:0">' + (prof.full_name || (prof.first_name + ' ' + (prof.last_name || ''))) + '</h3>' +
     '<span class="tag ' + (prof.is_pro ? 'ok' : 'wait') + '" style="margin-top:6px;display:inline-block">' + (prof.is_pro ? 'Prestataire' : 'Particulier') + '</span></div>' +
@@ -3253,7 +3264,33 @@ window.openPersonDetail = async function (userId) {
     (pro ? '<div class="grid k2 mt"><div class="kpi"><div class="l">Métier</div><div class="v" style="font-size:16px">' + (TRADES_LIVE[pro.trade] || pro.trade) + '</div></div><div class="kpi"><div class="l">Note</div><div class="v" style="font-size:16px">' + (pro.rating || '—') + ' ★</div></div></div>' : '') +
     (tx
       ? '<button class="btn" style="width:100%;margin-top:16px" onclick="document.getElementById(\'personModal\').remove();window.openTxDetail(\'' + tx.id + '\')">Voir la mission active →</button>'
-      : '<div class="muted mt">Aucune mission active en ce moment.</div>') +
+      : '') +
+    '<h3 class="mt">Support PING</h3>' +
+    '<div id="supportThread" style="max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px">' + supportRows + '</div>' +
+    '<div style="display:flex;gap:8px;margin-top:8px">' +
+    '<input id="supportInput" placeholder="Écrire à ' + (prof.first_name || 'cet utilisateur') + '…" style="flex:1;padding:9px 12px;border-radius:999px;border:1px solid var(--line);font-size:12.5px" onkeydown="if(event.key===\'Enter\')window.sendSupportMsg(\'' + userId + '\')" />' +
+    '<button class="btn" style="padding:9px 16px" onclick="window.sendSupportMsg(\'' + userId + '\')">Envoyer</button>' +
+    '</div>' +
     '</div>'
+}
+
+window.sendSupportMsg = async function (userId) {
+  const input = document.getElementById('supportInput')
+  const body = input && input.value.trim()
+  if (!body) return
+  input.value = ''
+  input.disabled = true
+
+  let { data: conv } = await supabaseLive.from('admin_conversations').select('id').eq('user_id', userId).maybeSingle()
+  if (!conv) {
+    const { data } = await supabaseLive.from('admin_conversations').insert({ user_id: userId }).select().single()
+    conv = data
+  }
+  if (!conv) { input.disabled = false; return }
+
+  await supabaseLive.from('admin_messages').insert({ conversation_id: conv.id, sender_is_admin: true, body, read_by_admin: true })
+  await supabaseLive.from('admin_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id)
+  input.disabled = false
+  window.openPersonDetail(userId)
 }
 </script>
