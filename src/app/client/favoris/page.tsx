@@ -17,7 +17,7 @@ export default function FavorisPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       const { data } = await supabase.from('favorites')
-        .select('created_at, provider_profiles(id, trade, base_price_cents, hourly_rate_cents, rating, reviews_count, profiles(full_name, avatar_hue))')
+        .select('created_at, provider_profiles(id, trade, base_price_cents, hourly_rate_cents, rating, reviews_count, profiles!provider_profiles_id_fkey(full_name, avatar_hue))')
         .eq('user_id', user.id).order('created_at', { ascending: false })
       setRows(data ?? [])
       setLoading(false)

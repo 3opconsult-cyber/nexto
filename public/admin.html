@@ -2852,8 +2852,8 @@ window.loadLiveData = async function () {
 
   const [statsRes, prosRes, docsRes, txRes, disputesRes] = await Promise.all([
     supabaseLive.rpc('admin_stats'),
-    supabaseLive.from('provider_profiles').select('id, trade, pricing_type, base_price_cents, hourly_rate_cents, is_active, created_at, profiles(full_name)').order('created_at', { ascending: false }).limit(8),
-    supabaseLive.from('documents').select('id, kind, status, created_at, owner_id, profiles(full_name)').eq('status', 'pending').order('created_at', { ascending: true }).limit(8),
+    supabaseLive.from('provider_profiles').select('id, trade, pricing_type, base_price_cents, hourly_rate_cents, is_active, created_at, profiles!provider_profiles_id_fkey(full_name)').order('created_at', { ascending: false }).limit(8),
+    supabaseLive.from('documents').select('id, kind, status, created_at, owner_id, profiles!documents_owner_id_fkey(full_name)').eq('status', 'pending').order('created_at', { ascending: true }).limit(8),
     supabaseLive.from('transactions').select('id, created_at, status, subtotal_cents, buyer_fee_cents, seller_fee_cents, total_charged_cents').order('created_at', { ascending: false }).limit(8),
     supabaseLive.from('disputes').select('id, created_at, reason, status').eq('status', 'open').order('created_at', { ascending: false }).limit(8),
   ])
@@ -3027,7 +3027,7 @@ window.loadLiveMap = async function () {
   }
 
   const { data: pros, error: prosErr } = await supabaseLive.from('provider_profiles')
-    .select('id, trade, is_active, lat, lng, profiles(full_name)')
+    .select('id, trade, is_active, lat, lng, profiles!provider_profiles_id_fkey(full_name)')
     .eq('is_active', true)
     .not('lat', 'is', null)
   const { data: activeTx, error: txErr } = await supabaseLive.from('transactions')

@@ -35,7 +35,7 @@ export async function fetchProDetail(proId: string) {
   const supabase = createClient()
   const { data: pro } = await supabase
     .from('provider_profiles')
-    .select('*, profiles(full_name, avatar_hue)')
+    .select('*, profiles!provider_profiles_id_fkey(full_name, avatar_hue)')
     .eq('id', proId)
     .single()
   const { data: reviews } = await supabase
