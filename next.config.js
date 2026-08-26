@@ -3,7 +3,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|presentation|parcours-navigable).html',
+        source: '/:path(admin|demo|presentation|parcours-navigable|landing-particulier|landing-pro).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
     ]
@@ -16,6 +16,8 @@ const nextConfig = {
         { source: '/admin', destination: '/admin.html' },
         { source: '/presentation', destination: '/presentation.html' },
         { source: '/parcours-navigable', destination: '/parcours-navigable.html' },
+        { source: '/landing-particulier', destination: '/landing-particulier.html' },
+        { source: '/landing-pro', destination: '/landing-pro.html' },
         // Pages reelles pas encore compatibles — neutralisees vers la demo.
         { source: '/hub', destination: '/app.html' },
         { source: '/mission/:id/facture', destination: '/app.html' },

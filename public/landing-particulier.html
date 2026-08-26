@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PING — Et si ce que vous cherchez se trouvait juste à côté de vous ?</title>
+<meta name="description" content="Ménage, repassage, nettoyage — des prestataires disponibles près de chez vous, réservables en un geste.">
+<link rel="icon" href="/icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+:root{--navy:#123644;--teal:#12B39C;--cream:#F3F6F5;--slate:#6E8592;--line:#DCE5E3}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;color:var(--navy);background:#fff}
+.wrap{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+header{padding:20px 24px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Quicksand',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.01em}
+.switchlink{font-size:12.5px;font-weight:600;color:var(--slate);text-decoration:none}
+.hero{background:var(--navy);border-radius:28px;margin:4px 16px 0;padding:44px 26px 38px;text-align:center;color:#fff}
+.hero h1{font-family:'Quicksand',sans-serif;font-weight:700;font-size:26px;line-height:1.28}
+.hero p{font-size:14px;color:rgba(255,255,255,.65);margin-top:14px;line-height:1.55;max-width:340px;margin-left:auto;margin-right:auto}
+.cta{display:inline-block;margin-top:26px;background:var(--teal);color:#fff;font-family:'Quicksand',sans-serif;font-weight:700;font-size:15px;padding:15px 30px;border-radius:999px;text-decoration:none}
+.benefits{padding:32px 24px 8px;display:flex;flex-direction:column;gap:18px}
+.benefit{display:flex;gap:14px;align-items:flex-start}
+.benefit .ic{width:38px;height:38px;border-radius:11px;background:var(--cream);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.benefit .tx b{font-size:13.5px;display:block;margin-bottom:2px}
+.benefit .tx span{font-size:12.5px;color:var(--slate);line-height:1.5}
+footer{margin-top:auto;padding:28px 24px;text-align:center;font-size:11px;color:var(--slate)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">ping</div>
+    <a class="switchlink" href="/landing-pro" id="switchLink">Vous êtes prestataire ?</a>
+  </header>
+
+  <div class="hero">
+    <h1>Et si ce que vous cherchez<br>se trouvait juste à côté de vous ?</h1>
+    <p>Ménage, repassage, nettoyage — des prestataires disponibles près de chez vous, réservables en un geste.</p>
+    <a class="cta" href="/map" id="ctaMain">Trouver un prestataire</a>
+  </div>
+
+  <div class="benefits">
+    <div class="benefit">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/></svg></div>
+      <div class="tx"><b>Autour de vous, en temps réel</b><span>La carte montre qui est disponible près de chez vous, maintenant.</span></div>
+    </div>
+    <div class="benefit">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M8 14h8"/></svg></div>
+      <div class="tx"><b>Tarif net, affiché à l'avance</b><span>Vous savez ce que vous payez avant de réserver — pas de surprise.</span></div>
+    </div>
+    <div class="benefit">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
+      <div class="tx"><b>Arrivée et départ validés</b><span>Un code scanné à l'arrivée, un autre au départ — tout est tracé.</span></div>
+    </div>
+  </div>
+
+  <footer>PING — services de proximité</footer>
+</div>
+
+<script>
+(function(){
+  var qs = window.location.search;
+  if (qs) {
+    var cta = document.getElementById('ctaMain');
+    var sw = document.getElementById('switchLink');
+    cta.href = '/map' + qs;
+    sw.href = '/landing-pro' + qs;
+  }
+})();
+</script>
+</body>
+</html>
