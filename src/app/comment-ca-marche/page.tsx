@@ -48,14 +48,14 @@ const SLIDES: Record<Mode, Slide[]> = {
     },
   ],
   pro: [
-    { kicker: 'Prestataires de services', title: 'Et si vos prochains clients\nétaient juste à côté ?', body: 'Pro ou particulier, tout le monde peut commencer — le statut auto-entrepreneur suffit pour démarrer.' },
-    { kicker: 'Comment ça marche · 1', icon: 'map', title: 'Vous devenez visible', body: 'Deux repères vous rendent trouvable : votre adresse, et votre position en direct sur la carte.' },
-    { kicker: 'Comment ça marche · 2', icon: 'radar', title: 'Chez un client ? Activez PING.', body: 'Un geste suffit pour apparaître sur la carte à chaque déplacement.' },
+    { kicker: 'Prestataires de services', title: 'Et si vos prochains clients\nétaient juste à côté ?', body: 'Pro ou particulier, tout le monde peut commencer.' },
+    { kicker: 'Comment ça marche · 1', icon: 'map', title: 'Devenez visible\nà chaque déplacement', body: 'Réduisez les trajets, intervenez à côté. Développez votre clientèle là où vous travaillez déjà !' },
+    { kicker: 'Comment ça marche · 2', icon: 'radar', title: 'Paiement en ligne', body: 'Facture générée automatiquement. Paiement sécurisé.' },
     { kicker: 'Comment ça marche · 3', icon: 'qr', title: 'Le client paie, vous intervenez', body: 'C\u2019est noté, et payé d\u2019avance. Pas de litige : c\u2019est déjà réglé avant même que vous arriviez.' },
     {
       kicker: 'Pourquoi PING', title: 'Moins de temps sur l\u2019administratif,\nplus de temps sur le terrain', body: '',
       cards: [
-        { icon: 'doc', title: 'Zéro devis, zéro facture', body: 'Une vraie traçabilité, sans paperasse.' },
+        { icon: 'doc', title: 'Moins de devis, moins de factures', body: 'Plus de temps pour l\u2019opérationnel.' },
         { icon: 'coin', title: 'Paiement garanti d\u2019avance', body: 'La mission est déjà financée.' },
         { icon: 'shield', title: 'Un appui en cas de désaccord', body: 'Une équipe qui vous épaule.' },
       ],
