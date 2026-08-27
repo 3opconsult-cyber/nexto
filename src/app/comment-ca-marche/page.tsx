@@ -2,9 +2,6 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 type Mode = 'particulier' | 'pro'
 type Slide = { kicker: string; title: string; body: string; icon?: string; cards?: { icon: string; title: string; body: string }[] }
 
