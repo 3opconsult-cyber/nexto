@@ -6,6 +6,10 @@ const nextConfig = {
         source: '/:path(admin|demo|presentation|parcours-navigable|landing-particulier|landing-pro).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
+      {
+        source: '/:path(icon-64|icon-192|icon-512|apple-touch-icon|favicon).:ext(png|ico)',
+        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
+      },
     ]
   },
   async rewrites() {
