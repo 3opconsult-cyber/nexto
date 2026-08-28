@@ -33,11 +33,16 @@ export async function fetchProvidersNearby(
 
 export async function fetchProDetail(proId: string) {
   const supabase = createClient()
-  const { data: pro } = await supabase
-    .from('provider_profiles')
-    .select('*, profiles!provider_profiles_id_fkey(full_name, avatar_hue)')
-    .eq('id', proId)
-    .single()
+  // Le nom passe par une fonction dediee, pas par un embed sur profiles :
+  // profiles est en lecture strictement personnelle (auth.uid() = id), donc
+  // l'embed renvoyait toujours null et la fiche s'affichait sans nom, en repli
+  // sur le libelle du metier. provider_public_name ne sort que le nom affiche
+  // et la teinte d'avatar d'un prestataire actif — ni telephone, ni adresse.
+  const [{ data: pro }, { data: pub }] = await Promise.all([
+    supabase.from('provider_profiles').select('*').eq('id', proId).single(),
+    supabase.rpc('provider_public_name', { provider_id: proId }),
+  ])
+  if (pro && pub && pub.length) (pro as any).profiles = pub[0]
   const { data: reviews } = await supabase
     .from('reviews')
     .select('*, profiles!reviews_rater_id_fkey(full_name)')
