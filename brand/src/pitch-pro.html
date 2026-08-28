@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+@page{size:297mm 210mm;margin:0}
+:root{--M:17mm;--U:8.5mm}
+.sheet{width:297mm;height:210mm}
+.two{display:flex;gap:calc(var(--U)*2.4);flex:1;align-items:center}
+.col{flex:1;max-width:132mm}
+.aside{width:78mm;display:flex;align-items:center;justify-content:flex-end}
+h1{font-size:34pt;max-width:170mm}
+h2{font-size:22pt;max-width:130mm}
+p{font-size:11pt;max-width:118mm;margin-top:calc(var(--U)*.7)}
+.pnum{position:absolute;bottom:var(--M);right:var(--M);font-size:8pt;color:var(--slate)}
+.dark .pnum{color:rgba(255,255,255,.4)}
+.top{display:flex;align-items:baseline;justify-content:space-between}
+.big{font-family:var(--fh);font-weight:700;font-size:64pt;color:var(--teal);line-height:1;letter-spacing:-.03em}
+.dark .big{color:var(--green)}
+</style></head><body>
+
+<!-- 1 -->
+<section class="sheet dark">
+  {{MARK 22pt|#ffffff}}
+  <div class="grow"></div>
+  <div class="two">
+    <div class="col">
+      <h1>Un service à proposer&nbsp;?<br>Soyez vu, juste à côté.</h1>
+      <p>Devenez visible dès qu'un client a besoin de vous, exactement là où vous êtes. Pro ou particulier, tout le monde peut commencer.</p>
+    </div>
+    <div class="aside">{{DEVICE 78mm|#ffffff|#4FD3BE}}</div>
+  </div>
+  <div class="grow"></div>
+</section>
+
+<!-- 2 -->
+<section class="sheet">
+  <div class="kicker">Le point de départ</div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Vous passez déjà devant<br>vos prochains clients.</h2>
+    <p>Une intervention dans une rue, trois immeubles sans personne pour le même besoin. Le temps de trajet coûte plus cher que la prestation, et la prospection se fait au hasard.</p>
+  </div><div class="aside">{{SIGN 46mm|#DCE5E3|#DCE5E3}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">2</div>
+</section>
+
+<!-- 3 -->
+<section class="sheet">
+  <div class="top"><div class="kicker">Comment ça marche</div><div class="big">01</div></div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Visible à chaque déplacement</h2>
+    <p>Activez PING chez un client : vous apparaissez sur la carte, en direct, pour tout le voisinage. Réduisez les trajets, intervenez à côté.</p>
+  </div><div class="aside">{{SIGN 46mm}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">3</div>
+</section>
+
+<!-- 4 -->
+<section class="sheet">
+  <div class="top"><div class="kicker">Comment ça marche</div><div class="big">02</div></div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Payé d'avance, pas de litige</h2>
+    <p>Le client règle avant votre intervention — c'est déjà réglé quand vous arrivez. Vous ne courez plus après un paiement.</p>
+  </div><div class="aside">{{SIGN 46mm}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">4</div>
+</section>
+
+<!-- 5 -->
+<section class="sheet">
+  <div class="top"><div class="kicker">Comment ça marche</div><div class="big">03</div></div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Moins de devis, moins de factures</h2>
+    <p>Arrivée et départ scannés, durée réelle enregistrée. Une vraie traçabilité, sans paperasse à gérer vous-même — plus de temps sur le terrain.</p>
+  </div><div class="aside">{{SIGN 46mm}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">5</div>
+</section>
+
+<!-- 6 -->
+<section class="sheet dark">
+  <div class="kicker">Pourquoi PING</div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Votre zone de travail devient<br>votre zone de prospection.</h2>
+    <p>Vous ne cherchez plus les clients : ils vous voient là où vous êtes déjà. Et en cas de désaccord, une équipe reprend le dossier avec vous.</p>
+  </div><div class="aside">{{DEVICE 64mm|#ffffff|#4FD3BE}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">6</div>
+</section>
+
+<!-- 7 -->
+<section class="sheet">
+  {{MARK 22pt}}
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Créez votre fiche,<br>apparaissez sur la carte.</h2>
+    <p>nexto-eta.vercel.app</p>
+  </div><div class="aside">{{QR ppr|46mm}}</div></div>
+  <div class="grow"></div>
+</section>
+
+</body></html>

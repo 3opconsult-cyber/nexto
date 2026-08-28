@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="PING">
+  <!-- Le signe PING : anneaux concentriques + point vert.
+       Le geste réel du bouton qui scanne la carte. Verrouillé 27/08/2026. -->
+  <circle cx="32" cy="32" r="30"  fill="none" stroke="#12B39C" stroke-width="2"   opacity=".26"/>
+  <circle cx="32" cy="32" r="19.8" fill="none" stroke="#12B39C" stroke-width="2.9" opacity=".55"/>
+  <circle cx="32" cy="32" r="7.7"  fill="#2FD06E"/>
+</svg>

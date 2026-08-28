@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Présentation A4 paysage. Une idée par page, jamais deux.
+   Colonne de texte à gauche sur la marge, respiration à droite. */
+@page{size:297mm 210mm;margin:0}
+:root{--M:17mm;--U:8.5mm}
+.sheet{width:297mm;height:210mm}
+.two{display:flex;gap:calc(var(--U)*2.4);flex:1;align-items:center}
+.col{flex:1;max-width:132mm}
+.aside{width:78mm;display:flex;align-items:center;justify-content:flex-end}
+h1{font-size:34pt;max-width:170mm}
+h2{font-size:22pt;max-width:130mm}
+p{font-size:11pt;max-width:118mm;margin-top:calc(var(--U)*.7)}
+.pnum{position:absolute;bottom:var(--M);right:var(--M);font-size:8pt;color:var(--slate)}
+.dark .pnum{color:rgba(255,255,255,.4)}
+.top{display:flex;align-items:baseline;justify-content:space-between}
+.big{font-family:var(--fh);font-weight:700;font-size:64pt;color:var(--teal);line-height:1;letter-spacing:-.03em}
+.dark .big{color:var(--green)}
+</style></head><body>
+
+<!-- 1 — couverture -->
+<section class="sheet dark">
+  {{MARK 22pt|#ffffff}}
+  <div class="grow"></div>
+  <div class="two">
+    <div class="col">
+      <h1>Et si ce que vous cherchez<br>se trouvait juste à côté&nbsp;?</h1>
+      <p>Ménage, repassage, nettoyage — des prestataires disponibles autour de vous, réservables en un geste.</p>
+    </div>
+    <div class="aside">{{DEVICE 78mm|#ffffff|#4FD3BE}}</div>
+  </div>
+  <div class="grow"></div>
+</section>
+
+<!-- 2 — le problème -->
+<section class="sheet">
+  <div class="kicker">Le point de départ</div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Trouver quelqu'un de confiance<br>repose encore sur la chance.</h2>
+    <p>Un numéro passé de voisin en voisin, un prix annoncé au téléphone, une disponibilité incertaine. Rien n'est tracé, rien n'est garanti, et personne n'intervient si ça se passe mal.</p>
+  </div><div class="aside">{{SIGN 46mm|#DCE5E3|#DCE5E3}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">2</div>
+</section>
+
+<!-- 3 -->
+<section class="sheet">
+  <div class="top"><div class="kicker">Comment ça marche</div><div class="big">01</div></div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Une carte, en temps réel</h2>
+    <p>Les prestataires disponibles près de chez vous s'affichent directement sur la carte, avec leur tarif. Pas d'annuaire à éplucher : vous voyez qui peut venir, maintenant.</p>
+  </div><div class="aside">{{SIGN 46mm}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">3</div>
+</section>
+
+<!-- 4 -->
+<section class="sheet">
+  <div class="top"><div class="kicker">Comment ça marche</div><div class="big">02</div></div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Vous choisissez, vous réservez</h2>
+    <p>Le tarif est net, affiché à l'avance. Aucun devis à négocier, aucune surprise au moment de payer.</p>
+  </div><div class="aside">{{SIGN 46mm}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">4</div>
+</section>
+
+<!-- 5 -->
+<section class="sheet">
+  <div class="top"><div class="kicker">Comment ça marche</div><div class="big">03</div></div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Arrivée et départ validés</h2>
+    <p>Un code scanné en arrivant, un autre en partant. La durée réelle est enregistrée automatiquement — et sert de preuve si quelque chose ne va pas.</p>
+  </div><div class="aside">{{SIGN 46mm}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">5</div>
+</section>
+
+<!-- 6 — pourquoi -->
+<section class="sheet dark">
+  <div class="kicker">Pourquoi PING</div>
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Une tranquillité que le<br>bouche-à-oreille ne garantit pas.</h2>
+    <p>Chaque étape est horodatée. Le montant est clair avant de réserver. Et en cas de désaccord, une équipe reprend le dossier — vous n'êtes pas seul face au prestataire.</p>
+  </div><div class="aside">{{DEVICE 64mm|#ffffff|#4FD3BE}}</div></div>
+  <div class="grow"></div>
+  <div class="pnum">6</div>
+</section>
+
+<!-- 7 — fin -->
+<section class="sheet">
+  {{MARK 22pt}}
+  <div class="grow"></div>
+  <div class="two"><div class="col">
+    <h2>Voyez qui est disponible<br>autour de vous.</h2>
+    <p>nexto-eta.vercel.app</p>
+  </div><div class="aside">{{QR pp|46mm}}</div></div>
+  <div class="grow"></div>
+</section>
+
+</body></html>

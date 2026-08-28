@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 130" width="300" height="130" role="img" aria-label="PING">
+  <!-- PIN·G — le logotype. Le i est l'épingle, son trou est le signal.
+       Le message est dans le mot : PING contient PIN. -->
+  <text x="10" y="98" font-family="Quicksand" font-weight="700" font-size="76" fill="#123644" letter-spacing="-1.5">p</text>
+  <path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="#123644"/>
+  <circle cx="90" cy="53" r="8.6" fill="#2FD06E"/>
+  <text x="118" y="98" font-family="Quicksand" font-weight="700" font-size="76" fill="#123644" letter-spacing="-1.5">ng</text>
+</svg>

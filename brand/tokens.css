@@ -1,0 +1,36 @@
+/* ============================================================
+   PING — jetons de marque. SOURCE DE VÉRITÉ UNIQUE.
+   Verrouillé le 27-28/08/2026. Ne pas redéfinir ailleurs.
+   La page Notion "2 · Design system" (violet/Fredoka) est OBSOLÈTE.
+   ============================================================ */
+
+@font-face { font-family:'Quicksand'; src:url('fonts/quicksand-latin-500-normal.woff2') format('woff2'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Quicksand'; src:url('fonts/quicksand-latin-600-normal.woff2') format('woff2'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Quicksand'; src:url('fonts/quicksand-latin-700-normal.woff2') format('woff2'); font-weight:700; font-style:normal; }
+@font-face { font-family:'Inter'; src:url('fonts/inter-latin-400-normal.woff2') format('woff2'); font-weight:400; font-style:normal; }
+@font-face { font-family:'Inter'; src:url('fonts/inter-latin-500-normal.woff2') format('woff2'); font-weight:500; font-style:normal; }
+@font-face { font-family:'Inter'; src:url('fonts/inter-latin-600-normal.woff2') format('woff2'); font-weight:600; font-style:normal; }
+@font-face { font-family:'Inter'; src:url('fonts/inter-latin-700-normal.woff2') format('woff2'); font-weight:700; font-style:normal; }
+
+:root{
+  /* Couleurs — verrouillées */
+  --ink:    #123644;   /* fond profond, texte principal */
+  --ink2:   #0e2a34;   /* variante plus sombre */
+  --teal:   #12B39C;   /* accent primaire, anneaux du logo */
+  --tealD:  #0C8F7E;
+  --coral:  #FF7A66;   /* accent secondaire — usage rare */
+  --gold:   #F2A93B;   /* accent tertiaire — usage rare */
+  --green:  #2FD06E;   /* le point. Le signal. Jamais autre chose. */
+  --paper:  #F3F6F5;
+  --line:   #DCE5E3;
+  --slate:  #6E8592;   /* texte secondaire */
+
+  /* Typo */
+  --fh: 'Quicksand', sans-serif;  /* titres */
+  --fb: 'Inter', sans-serif;      /* texte */
+
+  /* Grille stricte : UNE seule marge, UNE seule unité de rythme.
+     Tout se pose dessus. Aucun espacement arbitraire ailleurs. */
+  --M: 12mm;   /* marge unique — identique sur les 4 côtés */
+  --U: 6mm;    /* unité de rythme vertical (M = 2U) */
+}

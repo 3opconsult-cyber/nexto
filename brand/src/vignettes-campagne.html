@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Vignettes de campagne — prospection directe vers les prestataires.
+   Une vignette = une objection levée. À joindre en DM, une seule à la fois.
+   Toutes portent le même lien tracé : utm_source=prospection_directe. */
+@page{size:210mm 297mm;margin:0}
+:root{--M:14mm;--U:7mm}
+.sheet{width:210mm;height:297mm;background:#fff}
+.title{font-family:var(--fh);font-weight:700;font-size:11pt}
+.note{font-size:8pt;color:var(--slate);margin-top:1.5mm;max-width:150mm;line-height:1.5}
+.board{margin-top:calc(var(--U)*1.4);display:flex;flex-wrap:wrap;gap:7mm}
+.v{width:78mm;height:78mm;border-radius:5mm;padding:8mm;display:flex;flex-direction:column;overflow:hidden}
+.ink{background:var(--ink);color:#fff}
+.pap{background:var(--paper);color:var(--ink)}
+.tl{font-family:var(--fh);font-weight:700;font-size:13.5pt;line-height:1.22;letter-spacing:-.012em;margin-top:auto}
+.bd{font-size:8.5pt;line-height:1.55;color:var(--slate);margin-top:3mm}
+.ink .bd{color:rgba(255,255,255,.6)}
+.hd{display:flex;align-items:center;justify-content:space-between}
+</style></head><body>
+
+<section class="sheet">
+  <div class="title">PING — vignettes de campagne, prestataires</div>
+  <div class="note">Une vignette par message. Ne jamais en envoyer deux d'un coup : chacune lève une objection précise. Lien tracé <b>utm_source=prospection_directe</b> — les inscriptions remontent dans l'onglet Leads entrants de l'admin.</div>
+
+  <div class="board">
+    <div class="v ink">
+      <div class="hd">{{MARK 13pt|#ffffff}}{{SIGN 11mm|#4FD3BE}}</div>
+      <div class="tl">Vous passez déjà devant<br>vos prochains clients.</div>
+      <div class="bd">Activez PING chez un client : vous apparaissez sur la carte pour tout le voisinage.</div>
+    </div>
+
+    <div class="v pap">
+      <div class="hd">{{MARK 13pt}}</div>
+      <div class="tl">« Je ne veux pas<br>courir après l'argent. »</div>
+      <div class="bd">Le client règle avant votre intervention. C'est déjà payé quand vous arrivez.</div>
+    </div>
+
+    <div class="v pap">
+      <div class="hd">{{MARK 13pt}}</div>
+      <div class="tl">« Je perds mes journées<br>en trajets. »</div>
+      <div class="bd">Les demandes arrivent d'à côté, pas de l'autre bout du département.</div>
+    </div>
+
+    <div class="v ink">
+      <div class="hd">{{MARK 13pt|#ffffff}}{{SIGN 11mm|#4FD3BE}}</div>
+      <div class="tl">« La paperasse me<br>prend mes soirées. »</div>
+      <div class="bd">Arrivée et départ scannés, durée réelle enregistrée. Moins de devis, moins de factures.</div>
+    </div>
+
+    <div class="v pap">
+      <div class="hd">{{MARK 13pt}}</div>
+      <div class="tl">« Et si ça se passe mal&nbsp;? »</div>
+      <div class="bd">Chaque étape est horodatée et une équipe reprend le dossier avec vous.</div>
+    </div>
+
+    <div class="v ink" style="align-items:flex-start">
+      <div class="hd" style="width:100%">{{MARK 13pt|#ffffff}}</div>
+      <div style="margin-top:auto">{{QR dm|30mm|#123644|#ffffff}}</div>
+      <div class="bd">Créez votre fiche en quelques minutes — nexto-eta.vercel.app</div>
+    </div>
+  </div>
+</section>
+
+</body></html>

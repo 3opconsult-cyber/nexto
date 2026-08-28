@@ -1,0 +1,6 @@
+__pycache__/
+out/_*
+out/.*
+# Le .gitignore racine ignore "out" partout : on ré-autorise le lot final de
+# supports, pour qu'il reste récupérable sans avoir à relancer un build.
+!out/

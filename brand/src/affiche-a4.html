@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Affiche A4 — hall d'immeuble, vitrine de commerce, tableau de syndic.
+   Lue à 2 m : une seule phrase, un seul signe, un seul QR. Rien d'autre. */
+@page{size:210mm 297mm;margin:0}
+:root{--M:17mm;--U:8.5mm}
+.sheet{width:210mm;height:297mm}
+.q{font-family:var(--fh);font-weight:700;font-size:32pt;line-height:1.16;letter-spacing:-.02em;max-width:176mm}
+.svc{font-size:13pt;color:rgba(255,255,255,.55);margin-top:calc(var(--U)*1.4)}
+.foot .url{font-size:15pt}
+.foot .hint{font-size:10.5pt;margin-top:2mm}
+.foot .qr{width:34mm!important;height:34mm!important}
+</style></head><body>
+
+<section class="sheet dark">
+  {{MARK 26pt|#ffffff}}
+  <div class="u4"></div>
+  {{DEVICE 92mm|#ffffff|#4FD3BE}}
+  <div class="grow"></div>
+  <div class="q">Et si ce que vous cherchez<br>se trouvait juste à côté&nbsp;?</div>
+  <div class="svc">Ménage &nbsp;·&nbsp; Repassage &nbsp;·&nbsp; Nettoyage — autour de vous, maintenant.</div>
+  <div class="u4"></div>
+  <hr class="rule">
+  <div class="u2"></div>
+  <div class="foot">
+    <div class="fl">
+      <div class="url">nexto-eta.vercel.app</div>
+      <div class="hint">Scannez : vous voyez qui est disponible près d'ici.</div>
+    </div>
+    {{QR af|34mm|#123644|#ffffff}}
+  </div>
+</section>
+
+</body></html>

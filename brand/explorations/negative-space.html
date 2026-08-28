@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;font-family:var(--fb);color:var(--ink);padding:56px 56px 72px;width:1480px}
+h1{font-family:var(--fh);font-weight:700;font-size:26px;letter-spacing:-.01em}
+.sub{font-size:13px;color:var(--slate);margin-top:8px;max-width:640px;line-height:1.6}
+.grid{margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
+.tile{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.stage{height:270px;display:flex;align-items:center;justify-content:center;background:var(--paper)}
+.meta{padding:16px 18px 18px;border-top:1px solid var(--line)}
+.meta b{font-family:var(--fh);font-weight:700;font-size:14.5px;display:block}
+.meta span{font-size:12px;color:var(--slate);line-height:1.55;display:block;margin-top:5px}
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:5px;margin-top:10px}
+.t-ref{background:#E7EDEB;color:var(--slate)}
+.t-new{background:rgba(18,179,156,.14);color:var(--tealD)}
+</style></head><body>
+
+<h1>PING — piste negative space, appliquée au nom retenu</h1>
+<p class="sub">La piste avait été explorée sur SONAR et CONNECT, deux noms écartés. Question ouverte du handoff : est-ce qu'elle tient sur PING ? Quatre tentatives, contre le lockup déjà déployé.</p>
+
+<div class="grid">
+
+  <!-- REF : lockup verrouillé -->
+  <div class="tile"><div class="stage">
+    <svg width="300" height="120" viewBox="0 0 300 120">
+      <circle cx="56" cy="60" r="30"  fill="none" stroke="#12B39C" stroke-width="2"   opacity=".26"/>
+      <circle cx="56" cy="60" r="19.8" fill="none" stroke="#12B39C" stroke-width="2.9" opacity=".55"/>
+      <circle cx="56" cy="60" r="7.7"  fill="#2FD06E"/>
+      <text x="104" y="76" font-family="Quicksand" font-weight="700" font-size="52" fill="#123644" letter-spacing="-1">ping</text>
+    </svg>
+  </div><div class="meta"><b>Référence — lockup verrouillé</b><span>Anneaux + point. Déjà appliqué aux vraies icônes de l'app (favicon, PWA, apple-touch).</span><span class="tag t-ref">en production</span></div></div>
+
+  <!-- A : P-onde -->
+  <div class="tile"><div class="stage">
+    <svg width="300" height="180" viewBox="0 0 300 180">
+      <!-- P massif : le contrepoinçon du bol est le point -->
+      <path d="M58 26 h44 a40 40 0 0 1 0 80 h-24 v48 h-20 z" fill="#123644"/>
+      <circle cx="102" cy="66" r="15" fill="#F3F6F5"/>
+      <circle cx="102" cy="66" r="7.4" fill="#2FD06E"/>
+      <!-- l'onde sort du contrepoinçon, dans le blanc à droite -->
+      <path d="M156 40 a44 44 0 0 1 0 52" fill="none" stroke="#12B39C" stroke-width="4" stroke-linecap="round" opacity=".62"/>
+      <path d="M180 26 a68 68 0 0 1 0 80" fill="none" stroke="#12B39C" stroke-width="4" stroke-linecap="round" opacity=".3"/>
+    </svg>
+  </div><div class="meta"><b>A — le P qui émet</b><span>Le contrepoinçon du P n'est plus un trou : c'est la source. L'onde continue dans le blanc, hors de la lettre.</span><span class="tag t-new">essai</span></div></div>
+
+  <!-- B : PIN + G -->
+  <div class="tile"><div class="stage">
+    <svg width="330" height="140" viewBox="0 0 330 140">
+      <text x="18" y="98" font-family="Quicksand" font-weight="700" font-size="76" fill="#123644" letter-spacing="-2">p</text>
+      <!-- le i devient une épingle : goutte pleine, trou = le point -->
+      <path d="M92 30 a19 19 0 0 1 19 19 c0 14 -19 39 -19 39 s-19 -25 -19 -39 a19 19 0 0 1 19 -19z" fill="#123644"/>
+      <circle cx="92" cy="49" r="8.4" fill="#2FD06E"/>
+      <text x="122" y="98" font-family="Quicksand" font-weight="700" font-size="76" fill="#123644" letter-spacing="-2">ng</text>
+    </svg>
+  </div><div class="meta"><b>B — PIN·G</b><span>Le message caché est dans le mot lui-même : PING contient PIN. Le i devient l'épingle sur la carte, son trou est le signal.</span><span class="tag t-new">essai</span></div></div>
+
+  <!-- C : G-radar -->
+  <div class="tile"><div class="stage">
+    <svg width="300" height="180" viewBox="0 0 300 180">
+      <!-- G épais dont l'ouverture est le cône de balayage -->
+      <path d="M150 26 a64 64 0 1 0 64 64 h-58 v22 h34 a40 40 0 1 1 -40 -64 z" fill="#123644" transform="translate(-4,0)"/>
+      <circle cx="146" cy="90" r="9.6" fill="#2FD06E"/>
+      <path d="M196 58 a42 42 0 0 1 0 64" fill="none" stroke="#12B39C" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+    </svg>
+  </div><div class="meta"><b>C — le G ouvert</b><span>L'ouverture du G est orientée comme une trouée de radar. Le point vit dans le contrepoinçon.</span><span class="tag t-new">essai</span></div></div>
+
+  <!-- D : l'onde derrière le mot -->
+  <div class="tile"><div class="stage">
+    <svg width="330" height="200" viewBox="0 0 330 200">
+      <circle cx="132" cy="100" r="88" fill="none" stroke="#12B39C" stroke-width="2.4" opacity=".22"/>
+      <circle cx="132" cy="100" r="60" fill="none" stroke="#12B39C" stroke-width="2.8" opacity=".4"/>
+      <circle cx="132" cy="100" r="33" fill="none" stroke="#12B39C" stroke-width="3.2" opacity=".6"/>
+      <!-- le mot, posé par-dessus avec un halo papier : les anneaux s'interrompent -->
+      <text x="46" y="122" font-family="Quicksand" font-weight="700" font-size="72" letter-spacing="-2"
+            fill="none" stroke="#F3F6F5" stroke-width="16" stroke-linejoin="round">ping</text>
+      <text x="46" y="122" font-family="Quicksand" font-weight="700" font-size="72" letter-spacing="-2" fill="#123644">ping</text>
+      <circle cx="132" cy="60" r="8.6" fill="#2FD06E"/>
+    </svg>
+  </div><div class="meta"><b>D — l'onde derrière le mot</b><span>Les anneaux passent derrière les lettres et s'interrompent. Le point du i est le centre exact de l'onde : rien ne l'explique, la géométrie le dit.</span><span class="tag t-new">essai</span></div></div>
+
+  <!-- E : le point d'interrogation -->
+  <div class="tile"><div class="stage">
+    <svg width="200" height="230" viewBox="0 0 130 230">
+      <path d="M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 104"
+            fill="none" stroke="#123644" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="64" cy="160" r="30"  fill="none" stroke="#12B39C" stroke-width="2"   opacity=".26"/>
+      <circle cx="64" cy="160" r="19.8" fill="none" stroke="#12B39C" stroke-width="2.9" opacity=".55"/>
+      <circle cx="64" cy="160" r="7.7"  fill="#2FD06E"/>
+    </svg>
+  </div><div class="meta"><b>E — le point d'interrogation</b><span>Retenu au handoff comme meilleur essai : le point de la question est le logo. La question, c'est « qui est à côté ? » ; la réponse est le signe lui-même.</span><span class="tag t-ref">direction actée</span></div></div>
+
+</div>
+</body></html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+@page{size:148mm 210mm;margin:0}
+.sheet{width:148mm;height:210mm}
+.q{font-family:var(--fh);font-weight:700;font-size:23pt;line-height:1.2;letter-spacing:-.015em;max-width:104mm}
+.svc{font-size:9.5pt;color:rgba(255,255,255,.55);margin-top:calc(var(--U)*1.2)}
+</style></head><body>
+
+<!-- ============ RECTO ============ -->
+<section class="sheet dark">
+  {{MARK 21pt|#ffffff}}
+  <div class="u6"></div>
+  {{DEVICE 62mm|#ffffff|#4FD3BE}}
+  <div class="grow"></div>
+  <div class="q">Un service à proposer&nbsp;?<br>Soyez vu, juste à côté.</div>
+  <div class="svc">Pro ou particulier — tout le monde peut commencer.</div>
+</section>
+
+<!-- ============ VERSO ============ -->
+<section class="sheet">
+  <div class="kicker">Prestataires</div>
+  <div class="u3"></div>
+  <h2>Devenez visible dès qu'un client<br>a besoin de vous, là où vous êtes.</h2>
+  <div class="u4"></div>
+
+  <div class="steps">
+    <div class="step"><div class="n">01</div><div class="t">
+      <b>Visible à chaque déplacement</b>
+      <span>Activez PING chez un client : vous apparaissez sur la carte, en direct.</span></div></div>
+    <div class="step"><div class="n">02</div><div class="t">
+      <b>Payé d'avance, pas de litige</b>
+      <span>Le client règle avant votre intervention — c'est déjà réglé quand vous arrivez.</span></div></div>
+    <div class="step"><div class="n">03</div><div class="t">
+      <b>Moins de devis, moins de factures</b>
+      <span>Une vraie traçabilité, sans paperasse à gérer vous-même.</span></div></div>
+  </div>
+
+  <div class="grow"></div>
+  <hr class="rule">
+  <div class="u2"></div>
+  <div class="foot">
+    <div class="fl">
+      <div class="url">nexto-eta.vercel.app</div>
+      <div class="hint">Scannez — vous créez votre fiche en quelques minutes.</div>
+    </div>
+    {{QR fpr|22mm}}
+  </div>
+</section>
+
+</body></html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Planche de stickers A4, à taille réelle. Le trait fin est le tracé de découpe :
+   il ne fait pas partie du dessin, il ne doit rien toucher. */
+@page{size:210mm 297mm;margin:0}
+:root{--M:14mm;--U:7mm}
+.sheet{width:210mm;height:297mm;background:#fff}
+.title{font-family:var(--fh);font-weight:700;font-size:11pt}
+.note{font-size:8pt;color:var(--slate);margin-top:1.5mm}
+.board{margin-top:calc(var(--U)*1.6);display:flex;flex-wrap:wrap;gap:10mm}
+.cut{border:.25mm dashed #C9D6D2}
+.rond{width:50mm;height:50mm;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3mm;overflow:hidden}
+.carre{width:60mm;height:60mm;border-radius:6mm;padding:7mm;display:flex;flex-direction:column;overflow:hidden}
+.bande{width:80mm;height:26mm;border-radius:13mm;display:flex;align-items:center;justify-content:center;gap:5mm;overflow:hidden}
+.ink{background:var(--ink);color:#fff}
+.pap{background:var(--paper);color:var(--ink)}
+.tl{font-family:var(--fh);font-weight:700;font-size:11.5pt;line-height:1.22;letter-spacing:-.01em}
+.sm{font-size:7.5pt;line-height:1.4;color:var(--slate);margin-top:auto}
+.ink .sm{color:rgba(255,255,255,.55)}
+.lab{width:100%;font-size:7pt;color:var(--slate);margin-top:-6mm}
+</style></head><body>
+
+<section class="sheet">
+  <div class="title">PING — planche de stickers</div>
+  <div class="note">Taille réelle. Trait pointillé = découpe, à ne pas imprimer. Ronds 50 mm · carrés 60 mm · bandes 80 × 26 mm.</div>
+
+  <div class="board">
+    <!-- ronds -->
+    <div class="rond cut ink">{{SIGN 20mm|#4FD3BE}}</div>
+    <div class="rond cut pap">{{MARK 17pt}}</div>
+    <div class="rond cut pap">{{QR st|32mm}}</div>
+
+    <!-- carrés -->
+    <div class="carre cut ink">
+      {{MARK 13pt|#ffffff}}
+      <div class="u1"></div>
+      <div class="tl">Ce que vous cherchez<br>est juste à côté.</div>
+      <div class="sm">nexto-eta.vercel.app</div>
+    </div>
+    <div class="carre cut pap">
+      {{MARK 13pt}}
+      <div class="u1"></div>
+      <div class="tl">Un service<br>à proposer&nbsp;?</div>
+      <div class="sm">Devenez visible à chaque déplacement.</div>
+    </div>
+    <div class="carre cut pap" style="align-items:flex-start">
+      {{QR stp|34mm}}
+      <div class="sm" style="margin-top:auto">Prestataires — créez votre fiche.</div>
+    </div>
+
+    <!-- bandes -->
+    <div class="bande cut ink">{{MARK 15pt|#ffffff}}{{SIGN 13mm|#4FD3BE}}</div>
+    <div class="bande cut pap">{{MARK 15pt}}{{QR st|18mm}}</div>
+  </div>
+</section>
+
+</body></html>

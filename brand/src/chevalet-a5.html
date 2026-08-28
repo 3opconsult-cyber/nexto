@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Chevalet de comptoir — A5 plié en deux, il tient debout tout seul.
+   Le panneau du haut est retourné : une fois plié, les deux faces se lisent. */
+@page{size:148mm 210mm;margin:0}
+:root{--M:11mm;--U:5.5mm}
+.sheet{width:148mm;height:210mm;padding:0;display:block;background:var(--paper)}
+.face{width:148mm;height:105mm;padding:var(--M);display:flex;flex-direction:column;background:var(--ink);color:#fff}
+.face.flip{transform:rotate(180deg)}
+.fold{position:absolute;top:105mm;left:0;width:148mm;height:.3mm;background:rgba(255,255,255,.28)}
+.q{font-family:var(--fh);font-weight:700;font-size:16pt;line-height:1.2;letter-spacing:-.015em;max-width:88mm}
+.row{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--U)}
+.hint{font-size:8pt;color:rgba(255,255,255,.5);margin-top:1.5mm}
+.url{font-family:var(--fh);font-weight:700;font-size:9.5pt}
+</style></head><body>
+
+<section class="sheet">
+  <div class="face flip">
+    {{MARK 15pt|#ffffff}}
+    <div class="grow"></div>
+    <div class="q">Un coup de main,<br>juste à côté&nbsp;?</div>
+    <div class="u2"></div>
+    <div class="row">
+      <div><div class="url">nexto-eta.vercel.app</div>
+        <div class="hint">Ménage · Repassage · Nettoyage</div></div>
+      {{QR ch|26mm|#123644|#ffffff}}
+    </div>
+  </div>
+
+  <div class="fold"></div>
+
+  <div class="face">
+    {{MARK 15pt|#ffffff}}
+    <div class="grow"></div>
+    <div class="q">Un coup de main,<br>juste à côté&nbsp;?</div>
+    <div class="u2"></div>
+    <div class="row">
+      <div><div class="url">nexto-eta.vercel.app</div>
+        <div class="hint">Ménage · Repassage · Nettoyage</div></div>
+      {{QR ch|26mm|#123644|#ffffff}}
+    </div>
+  </div>
+</section>
+
+</body></html>

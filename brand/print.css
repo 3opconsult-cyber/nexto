@@ -1,0 +1,72 @@
+/* ============================================================
+   PING — système de mise en page print. Direction : minimaliste,
+   suggéré plutôt qu'expliqué, grille stricte.
+   TROIS RÈGLES, non négociables :
+     1. UNE seule marge (--M), identique sur les 4 côtés.
+     2. Tout aligne à gauche sur cette marge. Rien n'est centré.
+     3. Tout espacement vertical est un multiple de --U.
+   Rendu : weasyprint. Pas de wkhtmltopdf (casse sur formats carrés/hauts).
+   Aucun <text> dans les SVG : weasyprint ne le rend pas. Formes seules.
+   ============================================================ */
+@import url('tokens.css');
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--fb);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* ---- La feuille ---- */
+.sheet{
+  position:relative;
+  padding:var(--M);
+  display:flex; flex-direction:column;
+  background:var(--paper);
+  page-break-after:always;
+  overflow:hidden;
+}
+.sheet:last-of-type{page-break-after:auto}
+.sheet.dark{background:var(--ink);color:#fff}
+.sheet.teal{background:var(--teal);color:#fff}
+
+/* ---- Le logotype PIN·G, composé en HTML (pas de texte SVG) ---- */
+.mark{font-family:var(--fh);font-weight:700;letter-spacing:-.02em;white-space:nowrap;display:inline-block;line-height:1}
+
+/* ---- Le signe seul : anneaux + point ---- */
+.sign{display:inline-block}
+
+/* ---- Le dispositif : le point d'interrogation dont le point est le signe ---- */
+.device{display:block}
+
+/* ---- Typographie ---- */
+.kicker{font-family:var(--fb);font-weight:600;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.dark .kicker{color:var(--green)}
+h1{font-family:var(--fh);font-weight:700;font-size:25pt;line-height:1.18;letter-spacing:-.015em}
+h2{font-family:var(--fh);font-weight:700;font-size:15pt;line-height:1.25;letter-spacing:-.01em}
+h3{font-family:var(--fh);font-weight:700;font-size:10.5pt;line-height:1.3}
+p{font-size:9.5pt;line-height:1.62;color:var(--slate)}
+.dark p{color:rgba(255,255,255,.66)}
+.lead{font-size:11pt;line-height:1.55}
+
+/* ---- Rythme vertical : uniquement des multiples de --U ---- */
+.u1{height:var(--U)} .u2{height:calc(var(--U)*2)} .u3{height:calc(var(--U)*3)}
+.u4{height:calc(var(--U)*4)} .u6{height:calc(var(--U)*6)}
+.grow{flex:1}
+
+/* ---- Les étapes numérotées : la seule liste autorisée ---- */
+.steps{display:flex;flex-direction:column;gap:var(--U)}
+.step{display:flex;gap:calc(var(--U)*.9);align-items:baseline}
+.step .n{font-family:var(--fh);font-weight:700;font-size:9pt;color:var(--teal);width:6mm;flex-shrink:0}
+.dark .step .n{color:var(--green)}
+.step .t b{font-family:var(--fh);font-weight:700;font-size:10.5pt;display:block;margin-bottom:1mm}
+.step .t span{font-size:9pt;line-height:1.55;color:var(--slate);display:block}
+.dark .step .t span{color:rgba(255,255,255,.6)}
+
+/* ---- Le pied : QR et texte partagent EXACTEMENT la même ligne de base ---- */
+.foot{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--U)}
+.foot .qr{flex-shrink:0;display:block}
+.foot .fl{display:flex;flex-direction:column;justify-content:flex-end}
+.foot .url{font-family:var(--fh);font-weight:700;font-size:10pt;letter-spacing:-.01em}
+.foot .hint{font-size:8pt;color:var(--slate);margin-top:1.5mm}
+.dark .foot .hint{color:rgba(255,255,255,.5)}
+
+/* ---- Filet : un seul par support, jamais deux ---- */
+.rule{height:.35mm;background:var(--line);border:0}
+.dark .rule{background:rgba(255,255,255,.16)}

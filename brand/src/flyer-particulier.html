@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+@page{size:148mm 210mm;margin:0}
+.sheet{width:148mm;height:210mm}
+.q{font-family:var(--fh);font-weight:700;font-size:23pt;line-height:1.2;letter-spacing:-.015em;max-width:104mm}
+.svc{font-size:9.5pt;color:rgba(255,255,255,.55);margin-top:calc(var(--U)*1.2)}
+</style></head><body>
+
+<!-- ============ RECTO — une seule idée : la question ============ -->
+<section class="sheet dark">
+  {{MARK 21pt|#ffffff}}
+  <div class="u6"></div>
+  {{DEVICE 62mm|#ffffff|#4FD3BE}}
+  <div class="grow"></div>
+  <div class="q">Et si ce que vous cherchez<br>se trouvait juste à côté&nbsp;?</div>
+  <div class="svc">Ménage &nbsp;·&nbsp; Repassage &nbsp;·&nbsp; Nettoyage</div>
+</section>
+
+<!-- ============ VERSO — la réponse, en trois temps ============ -->
+<section class="sheet">
+  <div class="kicker">Comment ça marche</div>
+  <div class="u3"></div>
+  <h2>Des prestataires disponibles<br>autour de vous, maintenant.</h2>
+  <div class="u4"></div>
+
+  <div class="steps">
+    <div class="step"><div class="n">01</div><div class="t">
+      <b>Une carte, en temps réel</b>
+      <span>Les prestataires disponibles près de chez vous s'affichent avec leur tarif.</span></div></div>
+    <div class="step"><div class="n">02</div><div class="t">
+      <b>Vous choisissez, vous réservez</b>
+      <span>Le tarif est net, affiché à l'avance. Aucun devis à négocier.</span></div></div>
+    <div class="step"><div class="n">03</div><div class="t">
+      <b>Arrivée et départ validés</b>
+      <span>Un code scanné en arrivant, un autre en partant — la durée réelle est enregistrée.</span></div></div>
+  </div>
+
+  <div class="grow"></div>
+  <hr class="rule">
+  <div class="u2"></div>
+  <div class="foot">
+    <div class="fl">
+      <div class="url">nexto-eta.vercel.app</div>
+      <div class="hint">Scannez — vous voyez qui est disponible autour de vous.</div>
+    </div>
+    {{QR fp|22mm}}
+  </div>
+</section>
+
+</body></html>
