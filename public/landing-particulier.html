@@ -61,6 +61,22 @@ footer{margin-top:auto;padding:28px 24px;text-align:center;font-size:11px;color:
 <script>
 (function(){
   var qs = window.location.search;
+
+  // Origine de la visite, gardée 30 jours : on peut scanner un flyer lundi et
+  // creer son compte jeudi. Meme cle que src/lib/attribution.ts.
+  try {
+    var p = new URLSearchParams(qs);
+    if (p.get('utm_source')) {
+      localStorage.setItem('ping_attr', JSON.stringify({
+        utm_source: p.get('utm_source') || undefined,
+        utm_medium: p.get('utm_medium') || undefined,
+        utm_campaign: p.get('utm_campaign') || undefined,
+        utm_content: p.get('utm_content') || undefined,
+        landing_path: location.pathname,
+        at: Date.now()
+      }));
+    }
+  } catch (e) { /* navigation privee : la landing doit marcher quand meme */ }
   if (qs) {
     var cta = document.getElementById('ctaMain');
     var sw = document.getElementById('switchLink');

@@ -1,8 +1,9 @@
 "use client"
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { captureAttribution, readAttribution } from '@/lib/attribution'
 import { Wordmark } from '@/components/Brand'
 
 function SignupForm() {
@@ -17,6 +18,8 @@ function SignupForm() {
     email: '', password: '', firstName: '', lastName: '',
     phone: '', birthdate: '', address: '',
   })
+
+  useEffect(() => { captureAttribution() }, [])
 
   function update(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
 
@@ -40,6 +43,13 @@ function SignupForm() {
       }
     })
     if (signupError) { setError(signupError.message); setLoading(false); return }
+
+    // D'où vient cette inscription. Écrit avant le parrainage : si l'une des
+    // deux écritures échoue, on ne veut pas perdre l'attribution au passage.
+    const attr = readAttribution()
+    if (attr && data.user) {
+      await supabase.from('signup_attributions').insert({ user_id: data.user.id, ...attr })
+    }
 
     const refCode = params.get('ref')
     if (refCode && data.user) {

@@ -786,10 +786,24 @@ textarea.minput{min-height:120px;resize:vertical}
         <div class="ptab" id="pt_pipe">
           <div class="seg2"><div class="on" onclick="segProsp(this,'pro')">CRM Pros</div><div onclick="segProsp(this,'part')">CRM Particuliers</div></div>
           <div class="grid k4">
-            <div class="kpi click" onclick="clearProspFilter();document.getElementById('prospPro').scrollIntoView({behavior:'smooth'})"><div class="l">Prospects</div><div class="v">42</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir tous ›</div></div>
-            <div class="kpi click" onclick="filterProsp('contacte')"><div class="l">Contactés</div><div class="v">18</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Filtrer ›</div></div>
-            <div class="kpi click" onclick="filterProsp('inscrite')"><div class="l">Inscrits</div><div class="v">7</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Filtrer ›</div></div>
-            <div class="kpi click" onclick="filterProsp('inscrite')"><div class="l">Conversion</div><div class="v">39 %</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir les inscrits ›</div></div>
+            <div class="kpi click" onclick="clearProspFilter();document.getElementById('prospPro').scrollIntoView({behavior:'smooth'})"><div class="l">Prospects</div><div class="v" id="kProspTotal">—</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir tous ›</div></div>
+            <div class="kpi click" onclick="filterProsp('contacte')"><div class="l">Contactés</div><div class="v" id="kProspContactes">—</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Filtrer ›</div></div>
+            <div class="kpi click" onclick="filterProsp('inscrite')"><div class="l">Inscrits</div><div class="v" id="kProspInscrits">—</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Filtrer ›</div></div>
+            <div class="kpi click" onclick="filterProsp('inscrite')"><div class="l">Conversion</div><div class="v" id="kProspConv">—</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir les inscrits ›</div></div>
+          </div>
+          <p class="note" id="prospLiveStatus" style="display:none;margin-top:14px"></p>
+          <div class="card mt"><h3>Nouveau prospect</h3>
+            <div class="mform">
+              <input class="minput" id="npNom" placeholder="Nom (ex. Syndic Bellevue, ou un prénom)">
+              <select class="minput" id="npSeg"><option value="pro">Prestataire</option><option value="part">Particulier</option></select>
+              <input class="minput" id="npSource" placeholder="Source (ex. groupe de quartier, reco, marché)">
+              <input class="minput" id="npZone" placeholder="Zone (ex. Grasse centre)">
+              <input class="minput" id="npTel" placeholder="Téléphone">
+              <input class="minput" id="npEmail" placeholder="E-mail">
+              <input class="minput" id="npAction" placeholder="Prochaine action (ex. DM variante A)">
+            </div>
+            <button class="btn" onclick="addProspect()">Enregistrer le prospect</button>
+            <p class="note" style="margin-top:12px">Sources publiques ou communautaires, repérées une par une. Pas d'aspiration automatisée de bases tierces.</p>
           </div>
           <div class="card mt" id="prospPro"><h3>Prospects PROS <span class="muted">ménage · sources publiques &amp; communautaires <span id="prospFilterChip" class="tag ink" style="display:none;margin-left:8px;cursor:pointer" onclick="clearProspFilter()">Filtré : <span id="prospFilterLabel"></span> ✕</span></span></h3>
             <table class="tbl" data-noenh="1"><tr><th class="sortable" onclick="sortProspBy('nom')">Prospect</th><th class="sortable" onclick="sortProspBy('source')">Source</th><th class="sortable" onclick="sortProspBy('zone')">Zone</th><th class="sortable" onclick="sortProspBy('statut')">Statut</th><th class="sortable" onclick="sortProspBy('action')">Prochaine action</th><th></th></tr>
@@ -1973,20 +1987,15 @@ function dosTab(k){document.querySelectorAll('#s_dossier .ptab').forEach(x=>x.cl
 function segProsp(el,seg){el.parentElement.querySelectorAll('div').forEach(d=>d.classList.remove('on'));el.classList.add('on');document.getElementById('prospPro').style.display=seg==='pro'?'block':'none';document.getElementById('prospPart').style.display=seg==='part'?'block':'none';}
 function segUsers(el,seg){el.parentElement.querySelectorAll('div').forEach(d=>d.classList.remove('on'));el.classList.add('on');document.getElementById('userPros').style.display=seg==='pros'?'block':'none';document.getElementById('userClients').style.display=seg==='clients'?'block':'none';}
 /* ================= PROSPECTS CRM — données riches, fiche cliquable, lien d'inscription tracé ================= */
-const PROSPECTS=[
- {id:'pr1',nom:'Nadia',seg:'pro',source:'Groupe FB entraide',zone:'Grasse centre',telephone:'06 71 22 33 44',email:null,statut:'a_contacter',action:'DM variante A'},
- {id:'pr2',nom:'Awa',seg:'pro',source:'Parrainage (Sofia)',zone:'Le Cannet',telephone:'06 72 33 44 55',email:null,statut:'contacte',action:'Relancer J+3'},
- {id:'pr3',nom:'Maria',seg:'pro',source:'Marché local',zone:'Mouans-Sartoux',telephone:'06 73 44 55 66',email:null,statut:'a_relancer',action:'2e relance puis stop'},
- {id:'pr4',nom:'Lucia',seg:'pro',source:'Reco conciergerie',zone:'Cannes',telephone:'06 74 55 66 77',email:'lucia@mail.fr',statut:'inscrite',action:"Onboarder · 1re mission"},
- {id:'pr5',nom:'Fatima',seg:'pro',source:'Annuaire CESU public',zone:'Grasse',telephone:'06 75 66 77 88',email:null,statut:'a_contacter',action:'DM variante B'},
- {id:'pr6',nom:'Camille',seg:'part',source:'Groupe quartier FB',zone:'Grasse centre',telephone:'06 76 77 88 99',email:null,statut:'interessee',action:"Inviter à s'inscrire"},
- {id:'pr7',nom:'Thomas',seg:'part',source:'Landing (waitlist)',zone:'Mouans-Sartoux',telephone:'06 77 88 99 00',email:'thomas@mail.fr',statut:'waitlist',action:'Activer au lancement'},
- {id:'pr8',nom:'Conciergerie Les Oliviers',seg:'part',source:'Partenariat B2B2C',zone:'Cannes',telephone:'04 93 00 00 01',email:'contact@lesoliviers-conciergerie.fr',statut:'partenaire',action:'Onboarder turnovers'},
- {id:'pr9',nom:'Syndic Provence',seg:'part',source:'Partenariat',zone:'Grasse',telephone:'04 93 11 11 12',email:'contact@syndic-provence.fr',statut:'a_contacter',action:'RDV présentation'},
-];
+/* Prospects — chargés depuis Supabase (table prospects). Le tableau en dur qui vivait ici a ete retire : il n'etait pas persiste et ses 9 fiches etaient fictives. */
+window.PROSPECTS=[];
+
 function prospectById(id){return PROSPECTS.find(p=>p.id===id);}
 function prospStatutTag(s){return{a_contacter:['wait','À contacter'],contacte:['ink','Contacté'],a_relancer:['wait','À relancer'],inscrite:['ok','Inscrite'],interessee:['ink','Intéressée'],waitlist:['wait','Inscrit waitlist'],partenaire:['ok','Partenaire pilote']}[s]||['ink',s];}
-function prospectUrl(nom,seg){return 'https://ping.app/?utm_source=prospection_directe&utm_medium=dm&utm_campaign=lancement_grasse&utm_content='+encodeURIComponent(nom.toLowerCase().replace(/\s+/g,'_'))+'#'+(seg==='pro'?'pro':'particulier');}
+/* Lien court trace : /l/<code>?c=<prospect>. Remplace l'ancienne URL sur
+   ping.app, domaine jamais achete — tous les liens envoyes etaient morts.
+   La table des codes vit dans src/app/l/[code]/route.ts. */
+function prospectUrl(nom,seg){return location.origin+'/l/'+(seg==='pro'?'dm':'st')+'?c='+encodeURIComponent(String(nom||'').toLowerCase().replace(/\s+/g,'_').slice(0,60));}
 let prospFilter=null;
 let prospSortState={field:null,dir:'asc'};
 function sortProspBy(field){
@@ -2044,7 +2053,7 @@ function renderProspectFiche(id){
  <div class="card mt"><h3>Lien d'inscription tracé</h3>
   <div class="qrow"><div class="m"><b>Lien à inclure dans tout message</b><small class="mono">${url}</small></div><span class="link" onclick="copyLink('${url}')">Copier le lien</span></div>
  </div>
- <div class="lawbox mt">Source publique/communautaire, repérée manuellement — pas d'aspiration automatisée. Fiche prototype : le lien d'inscription porte déjà l'attribution UTM (<span class="mono">prospection_directe</span>), il apparaîtra dans l'onglet Leads entrants une fois cliqué. Persistance réelle prévue au lot L7.</div>`;
+ <div class="lawbox mt">Source publique/communautaire, repérée manuellement — pas d'aspiration automatisée. Le lien d'inscription porte l'attribution UTM (<span class="mono">prospection_directe</span>) : dès qu'il aboutit à une inscription, elle remonte dans l'onglet Leads entrants avec ce prospect en <span class="mono">utm_content</span>. Fiche persistée en base réelle.</div>`;
 }
 function toast(t){const el=$('toast');el.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2.6"><path d="M20 6L9 17l-5-5"/></svg> '+t;el.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove('on'),2600);}
 
@@ -2287,17 +2296,9 @@ function openPartnerMail(name,cat){
  $('mailBody').value='Bonjour,\n\nPING est une plateforme de mise en relation pour le ménage à Grasse : nos prestataires (pièce d\'identité fournie, assurance renseignée) sont disponibles à proximité immédiate de vos '+cible+', sans que vous ayez à gérer les remplacements.\n\nSeriez-vous disponible pour un court rendez-vous de présentation ? Plus d\'informations ici :\n'+url+'\n';
  $('mail').classList.add('on');
 }
-const PARTENAIRES=[
- {id:'pt1',nom:'Conciergerie Les Oliviers',cat:'Conciergerie Airbnb',zone:'Cannes',telephone:'04 93 00 11 22',email:'contact@lesoliviers-conciergerie.fr',statut:'actif',action:'Onboarder les turnovers'},
- {id:'pt2',nom:'Syndic Mistral',cat:'Syndic de copropriété',zone:'Grasse',telephone:'04 93 11 11 11',email:'contact@syndic-mistral.fr',statut:'actif',action:'Affichage hall — 2e résidence'},
- {id:'pt3',nom:'Syndic Provence',cat:'Syndic de copropriété',zone:'Grasse',telephone:'04 93 22 33 44',email:'contact@syndic-provence.fr',statut:'rdv',action:'Présentation jeudi 14h'},
- {id:'pt4',nom:'Conciergerie Les Pins',cat:'Conciergerie Airbnb',zone:'Grasse',telephone:'04 93 00 00 00',email:'contact@lespins-conciergerie.fr',statut:'rdv',action:'Présentation mardi 10h'},
- {id:'pt5',nom:'Association Réagir 06',cat:"Association d'insertion",zone:'Grasse',telephone:'04 93 33 44 55',email:'contact@reagir06.fr',statut:'contacte',action:'Relance après appel du 30 juil.'},
- {id:'pt6',nom:'Mission locale Grasse',cat:'Mission locale',zone:'Grasse',telephone:'04 93 44 55 66',email:'contact@mlgrasse.fr',statut:'identifie',action:'Premier contact à prendre'},
- {id:'pt7',nom:'France Travail Grasse',cat:'France Travail',zone:'Grasse',telephone:'39 95',email:null,statut:'identifie',action:'Demander un rendez-vous partenaire'},
- {id:'pt8',nom:'BTS SP3S · Lycée Amiral de Grasse',cat:'Campus',zone:'Grasse',telephone:'04 93 55 66 77',email:'secretariat@amiral-grasse.fr',statut:'identifie',action:'Contacter la vie scolaire'},
- {id:'pt9',nom:'Syndic Bellevue',cat:'Syndic de copropriété',zone:'Mouans-Sartoux',telephone:'04 93 66 77 88',email:'contact@syndic-bellevue.fr',statut:'decline',action:'Sans suite — recontacter en 2027'},
-];
+/* Partenaires — table partners. Idem : plus de donnees en dur. */
+window.PARTENAIRES=[];
+
 function statutPartner(s){return{identifie:['ink','Identifié'],contacte:['wait','Contacté'],rdv:['wait','RDV pris'],actif:['ok','Partenaire actif'],decline:['dn','Sans suite']}[s]||['ink',s];}
 function partnerById(id){return PARTENAIRES.find(p=>p.id===id);}
 function openPartnerFiche(id){push({type:'partner',key:id});}
@@ -2377,13 +2378,9 @@ function addPartner(){
 }
 
 /* ================= CAHIER DES ACTIONS COMMERCIALES ================= */
-const ACTIONS=[
- {date:'6 août 2026',type:'terrain',cible:'Boulangerie + laverie · Grasse centre',desc:"Dépôt de 15 affiches PARTICULIER et 10 flyers PRO, QR générés depuis l'onglet Campagnes.",resultat:'a_suivre',next:'Repasser dans 15 jours pour réassort'},
- {date:'5 août 2026',type:'rdv',cible:'Syndic Provence',desc:'Appel de qualification — 12 résidences, intéressé par une présentation.',resultat:'positif',next:'RDV présentation jeudi 14h'},
- {date:'4 août 2026',type:'email',cible:'Base SIRENE (aperçu manuel, 12 contacts)',desc:"Envoi test de la séquence J0 à 12 micro-entrepreneurs ménage identifiés manuellement en attendant le connecteur.",resultat:'a_suivre',next:'Relance J+3'},
- {date:'2 août 2026',type:'social',cible:'Groupe Facebook entraide Grasse',desc:'Publication du post pro (variante DM A) + réponse aux 3 premiers commentaires.',resultat:'positif',next:'—'},
- {date:'31 juil. 2026',type:'appel',cible:'Maria (marché local)',desc:'Rappel après 1re relance, pas de réponse.',resultat:'sans_reponse',next:'2e relance puis stop (cf. cadence J+7)'},
-];
+/* Cahier des actions — table commercial_actions. */
+window.ACTIONS=[];
+
 function typeIcon(t){return{terrain:'doc',appel:'user',email:'mail',rdv:'check',social:'chat',autre:'doc'}[t]||'doc';}
 function typeLabel(t){return{terrain:'Terrain',appel:'Appel',email:'E-mail',rdv:'RDV',social:'Réseaux sociaux',autre:'Autre'}[t]||t;}
 function resultTag(r){return{a_suivre:['wait','À suivre'],positif:['ok','Positif'],sans_reponse:['ink','Sans réponse'],negatif:['dn','Négatif']}[r]||['ink',r];}
@@ -2514,22 +2511,9 @@ function renderCanalStats(){
 }
 
 /* ================= LEADS — données riches, fiche cliquable, filtre par canal ================= */
-const LEADS=[
- {id:'lead14',prenom:'Lucas',nom:'Fontaine',type:'pro',telephone:'06 12 34 56 78',email:'lucas.fontaine@mail.fr',zone:'Grasse gare',adresse:null,canal:'flash_contact',campagne:'lancement_grasse',contenu:'tabac_gare',recu:'6 août · 16h40',statut:'a_valider'},
- {id:'lead13',prenom:'Sarah',nom:'Idrissi',type:'particulier',telephone:'06 23 45 67 89',email:null,zone:'Grasse centre',adresse:null,canal:'flash_contact',campagne:'lancement_grasse',contenu:'affiche_boulangerie',recu:'6 août · 15h58',statut:'a_valider'},
- {id:'lead12',prenom:'Amina',nom:'Ben Ali',type:'particulier',telephone:'06 34 56 78 90',email:'amina.benali@mail.fr',zone:'Grasse',adresse:null,canal:'carrousel',campagne:'lancement_grasse',contenu:'cta_particulier',recu:'6 août · 09h02',statut:'nouveau'},
- {id:'lead11',prenom:'Nasrine',nom:'Kaddour',type:'pro',telephone:'06 45 67 89 01',email:'nasrine.kaddour@mail.fr',zone:'Grasse centre',adresse:null,canal:'flyer_qr',campagne:'lancement_grasse',contenu:'laverie_centre',recu:'2 août · 14h12',statut:'nouveau'},
- {id:'lead10',prenom:'Camille',nom:'Roux',type:'particulier',telephone:'06 56 78 90 12',email:'camille.roux@mail.fr',zone:'Grasse',adresse:null,canal:'instagram',campagne:'lancement_grasse',contenu:'story_confiance',recu:'2 août · 11h04',statut:'contacte'},
- {id:'lead9',prenom:'Malik',nom:'Aziz',type:'pro',telephone:'06 67 89 01 23',email:'malik.aziz@mail.fr',zone:'Grasse',adresse:null,canal:'google_ads',campagne:'proximite_pro',contenu:'search_menage_grasse',recu:'1 août · 09h40',statut:'contacte'},
- {id:'lead8',org:'Conciergerie Les Pins',type:'particulier',telephone:'04 93 00 00 00',email:'contact@lespins-conciergerie.fr',zone:'Grasse',adresse:null,canal:'parrainage',campagne:'partenariat_b2b2c',contenu:'rdv_direct',recu:'1 août',statut:'inscrit'},
- {id:'lead7',prenom:'Sophie',nom:'Journet',type:'pro',telephone:'06 78 90 12 34',email:'sophie.journet@mail.fr',zone:'Grasse',adresse:null,canal:'parrainage',campagne:'parrainage_pro',contenu:'fiche_sofia',recu:'31 juil. · 18h20',statut:'inscrit'},
- {id:'lead6',prenom:'Thomas',nom:'Rinaldi',type:'particulier',telephone:'06 89 01 23 45',email:'thomas.rinaldi@mail.fr',zone:'Grasse',adresse:null,canal:'seo',campagne:'organique',contenu:'fiche_google_business',recu:'31 juil.',statut:'nouveau'},
- {id:'lead5',prenom:'Élise',nom:'Coste',type:'pro',telephone:'06 90 12 34 56',email:'elise.coste@mail.fr',zone:'Grasse',adresse:'14 avenue Thiers, 06130 Grasse',canal:'instagram',campagne:'lancement_grasse',contenu:'reel_heures_creuses',recu:'30 juil. · 10h05',statut:'kyc_ok'},
- {id:'lead4',org:'Syndic Mistral',type:'particulier',telephone:'04 93 11 11 11',email:'contact@syndic-mistral.fr',zone:'Grasse',adresse:'8 place aux Aires, 06130 Grasse',canal:'direct',campagne:null,contenu:null,recu:'30 juil.',statut:'actif'},
- {id:'lead3',org:"Groupe Net'Éclat",type:'pro',telephone:'04 93 22 22 22',email:'contact@neteclat.fr',zone:'Grasse',adresse:'22 route de Nice, 06130 Grasse',canal:'seo',campagne:'organique',contenu:'annuaire_cesu',recu:'29 juil.',statut:'actif'},
- {id:'lead2',prenom:'Fanny',nom:'Delcourt',type:'particulier',telephone:'06 01 23 45 67',email:'fanny.delcourt@mail.fr',zone:'Grasse + 10 km',adresse:null,canal:'google_ads',campagne:'proximite_particulier',contenu:'display_grasse_10km',recu:'29 juil.',statut:'nouveau'},
- {id:'lead1',prenom:'Rachid',nom:'Haddad',type:'pro',telephone:'06 12 90 78 56',email:'rachid.haddad@mail.fr',zone:'Grasse gare',adresse:null,canal:'flyer_qr',campagne:'lancement_grasse',contenu:'tabac_gare',recu:'28 juil.',statut:'perdu'},
-];
+/* Leads entrants — de vraies inscriptions, via la fonction admin_leads(). Le statut y est deduit de l'etat reel du compte, pas saisi a la main. */
+window.LEADS=[];
+
 let leadFilter=null;
 function leadById(id){return LEADS.find(l=>l.id===id);}
 function leadName(l){return l?(l.org?l.org:l.prenom+' '+l.nom):'';}
@@ -3352,4 +3336,190 @@ window.filterLiveUsers = function () {
   const matchClient = c => [c.full_name, c.city].filter(Boolean).some(v => v.toLowerCase().includes(q))
   window.renderLiveUsers(__allPros.filter(matchPro), __allClients.filter(matchClient))
 }
+
+/* =====================================================================
+   PROSPECTION — branchement réel (session 28/08).
+
+   L'onglet existait déjà, complet côté interface, mais tournait sur quatre
+   tableaux JavaScript en dur : rien n'était persisté, et les fiches étaient
+   fictives. Ces fonctions les remplacent par les tables Supabase créées le
+   même jour (prospects, partners, commercial_actions, signup_attributions).
+
+   Les tables sont VIDES au départ, volontairement : on n'injecte pas des
+   prospects inventés dans une base réelle. L'écran le dit franchement.
+   ===================================================================== */
+
+function prospNotice(msg, kind) {
+  const el = document.getElementById('prospLiveStatus')
+  if (!el) return
+  el.style.display = msg ? 'block' : 'none'
+  el.textContent = msg || ''
+  el.className = 'note' + (kind === 'err' ? ' warn' : '')
+}
+
+/** Les lignes de commercial_actions telles que renderActions() les attend. */
+function actionToRow(a) {
+  return {
+    id: a.id,
+    date: new Date(a.action_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
+    type: a.type, cible: a.cible, desc: a.description || '',
+    resultat: a.resultat, next: a.next_step || '—',
+  }
+}
+
+/** Les lignes de partners telles que renderPartenaires() les attend. */
+function partnerToRow(p) {
+  return { id: p.id, nom: p.nom, cat: p.categorie || '—', zone: p.zone || '—',
+           telephone: p.telephone, email: p.email, statut: p.statut, action: p.action || '—' }
+}
+
+/** Les lignes d'admin_leads() telles que renderLeadsTable() les attend. */
+function leadToRow(l) {
+  return {
+    id: l.id,
+    prenom: l.prenom || '', nom: l.nom || '',
+    org: (!l.prenom && !l.nom) ? (l.email || 'Compte sans nom') : null,
+    type: l.type, telephone: l.telephone, email: l.email,
+    zone: l.zone || '—', adresse: null,
+    canal: l.canal || 'direct', campagne: l.campagne, contenu: l.contenu,
+    recu: new Date(l.inscrit_le).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+    statut: l.statut,
+  }
+}
+
+window.loadProspection = async function () {
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) {
+    prospNotice("Connectez-vous avec le compte administrateur pour charger la prospection — la clé partagée seule ne donne pas de session.", 'err')
+    return
+  }
+  prospNotice('Chargement…')
+
+  const [prospects, partners, actions, leads] = await Promise.all([
+    supabaseLive.from('prospects').select('*').order('created_at', { ascending: false }),
+    supabaseLive.from('partners').select('*').order('created_at', { ascending: false }),
+    supabaseLive.from('commercial_actions').select('*').order('action_date', { ascending: false }).limit(60),
+    supabaseLive.rpc('admin_leads'),
+  ])
+
+  const failed = [prospects, partners, actions, leads].find(r => r.error)
+  if (failed) {
+    prospNotice('Erreur de chargement : ' + failed.error.message + " — vérifiez que ce compte a bien is_admin = true.", 'err')
+    return
+  }
+
+  const fill = (arr, rows) => { arr.length = 0; rows.forEach(r => arr.push(r)) }
+  fill(window.PROSPECTS, prospects.data || [])
+  fill(window.PARTENAIRES, (partners.data || []).map(partnerToRow))
+  fill(window.ACTIONS, (actions.data || []).map(actionToRow))
+  fill(window.LEADS, (leads.data || []).map(leadToRow))
+
+  if (window.renderProspects) window.renderProspects()
+  if (window.renderPartenaires) window.renderPartenaires()
+  if (window.renderActions) window.renderActions()
+  if (window.renderLeadsTable) window.renderLeadsTable()
+  if (window.renderCanalStats) window.renderCanalStats()
+
+  // Les compteurs affichaient 42 / 18 / 7 / 39 % en dur. Comptés pour de vrai.
+  const P = window.PROSPECTS
+  const n = st => P.filter(p => p.statut === st).length
+  const inscrits = n('inscrite') + n('partenaire')
+  const setK = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v }
+  setK('kProspTotal', P.length)
+  setK('kProspContactes', n('contacte') + n('a_relancer'))
+  setK('kProspInscrits', inscrits)
+  setK('kProspConv', P.length ? Math.round(inscrits / P.length * 100) + ' %' : '—')
+
+  const total = window.PROSPECTS.length + window.PARTENAIRES.length
+  prospNotice(total === 0
+    ? "Aucun prospect ni partenaire enregistré. Les fiches de démonstration ont été retirées : ce CRM est branché sur la base réelle, il n'affiche que ce que vous y saisissez."
+    : '')
+}
+
+/* ---------- écritures réelles ---------- */
+
+window.addProspect = async function () {
+  const g = id => document.getElementById(id)
+  const nom = (g('npNom')?.value || '').trim()
+  if (!nom) { toast('Il faut au moins un nom'); return }
+  const row = {
+    nom,
+    seg: g('npSeg')?.value || 'pro',
+    source: (g('npSource')?.value || '').trim() || null,
+    zone: (g('npZone')?.value || '').trim() || null,
+    telephone: (g('npTel')?.value || '').trim() || null,
+    email: (g('npEmail')?.value || '').trim() || null,
+    action: (g('npAction')?.value || '').trim() || 'Premier contact à prendre',
+  }
+  const { error } = await supabaseLive.from('prospects').insert(row)
+  if (error) { toast('Enregistrement refusé : ' + error.message); return }
+  ;['npNom', 'npSource', 'npZone', 'npTel', 'npEmail', 'npAction'].forEach(id => { if (g(id)) g(id).value = '' })
+  await window.loadProspection()
+  toast('Prospect enregistré')
+}
+
+window.setProspectStatut = async function (id, statut) {
+  const { error } = await supabaseLive.from('prospects').update({ statut }).eq('id', id)
+  if (error) { toast('Mise à jour refusée : ' + error.message); return }
+  await window.loadProspection()
+  toast('Statut mis à jour')
+}
+
+window.addPartner = async function () {
+  const g = id => document.getElementById(id)
+  const nom = (g('pfNom')?.value || '').trim()
+  if (!nom) { toast('Il faut au moins un nom'); return }
+  const { error } = await supabaseLive.from('partners').insert({
+    nom,
+    categorie: (g('pfCat')?.value || '').trim() || null,
+    zone: (g('pfZone')?.value || '').trim() || null,
+    action: (g('pfAction')?.value || '').trim() || 'Premier contact à prendre',
+  })
+  if (error) { toast('Enregistrement refusé : ' + error.message); return }
+  ;['pfNom', 'pfCat', 'pfZone', 'pfAction'].forEach(id => { if (g(id)) g(id).value = '' })
+  await window.loadProspection()
+  toast('Partenaire enregistré')
+}
+
+window.addAction = async function () {
+  const g = id => document.getElementById(id)
+  const cible = (g('afCible')?.value || '').trim()
+  const desc = (g('afDesc')?.value || '').trim()
+  if (!cible || !desc) { toast('Renseigne au moins la cible et la description'); return }
+  const { error } = await supabaseLive.from('commercial_actions').insert({
+    type: g('afType')?.value || 'autre',
+    cible, description: desc,
+    next_step: (g('afNext')?.value || '').trim() || null,
+  })
+  if (error) { toast('Enregistrement refusé : ' + error.message); return }
+  ;['afCible', 'afDesc', 'afNext'].forEach(id => { if (g(id)) g(id).value = '' })
+  await window.loadProspection()
+  toast('Action consignée')
+}
+
+/* Un lead est une vraie inscription : son statut se déduit de l'état du compte
+   et ne se force pas à la main. On consigne le contact dans le cahier — ce qui
+   est l'information vraie : « je l'ai appelé », pas « son compte a changé ». */
+window.validerLead = async function (id) {
+  const l = window.LEADS.find(x => x.id === id)
+  if (!l) return
+  const nom = l.org || ((l.prenom || '') + ' ' + (l.nom || '')).trim()
+  const { error } = await supabaseLive.from('commercial_actions').insert({
+    type: 'appel', cible: nom || 'Lead',
+    description: "Prise de contact après inscription (" + (l.canal || 'direct') + ").",
+    resultat: 'a_suivre', next_step: 'Suivre la première mission',
+  })
+  if (error) { toast('Enregistrement refusé : ' + error.message); return }
+  await window.loadProspection()
+  toast('Contact consigné dans le cahier des actions')
+}
+
+/* Charger la prospection en entrant dans l'onglet Prospects, pas au chargement du fichier :
+   inutile de solliciter la base pour quelqu'un qui ouvre l'admin sur autre chose. */
+const _navOrig = window.nav
+window.nav = function (s) {
+  _navOrig(s)
+  if (s === 'prospects' && window.loadProspection) window.loadProspection()
+}
+
 </script>
