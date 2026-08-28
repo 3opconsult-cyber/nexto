@@ -1,5 +1,6 @@
 "use client"
 import { useRouter, usePathname } from 'next/navigation'
+import { Sign } from '@/components/Brand'
 import { useState } from 'react'
 
 export default function BottomTabBar({ onPing }: { onPing?: () => void }) {
@@ -29,11 +30,11 @@ export default function BottomTabBar({ onPing }: { onPing?: () => void }) {
       </button>
       <button onClick={handlePing}
         style={{ flex: 1, border: 'none', background: 'none', padding: '10px 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: '#123644', cursor: 'pointer' }}>
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={pulsing ? { animation: 'pingPulse .6s ease-in-out 2' } : undefined}>
-          <circle cx="12" cy="12" r="2.5" />
-          <path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 16.5a6.4 6.4 0 0 0 0-9" strokeLinecap="round" />
-          <path d="M4.6 4.6a10.4 10.4 0 0 0 0 14.8M19.4 19.4a10.4 10.4 0 0 0 0-14.8" strokeLinecap="round" opacity=".55" />
-        </svg>
+        {/* Le bouton central EST le signe : mêmes anneaux, même point que l'icône
+            de l'app. Il portait jusqu'ici un dessin différent (cible + arcs). */}
+        <span style={pulsing ? { animation: 'pingPulse .6s ease-in-out 2', display: 'block' } : { display: 'block' }}>
+          <Sign size={21} />
+        </span>
         <span style={{ fontSize: 10.5, fontWeight: 700 }}>PING</span>
       </button>
       </div>

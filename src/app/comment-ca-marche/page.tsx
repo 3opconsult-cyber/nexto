@@ -1,6 +1,7 @@
 "use client"
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { Sign } from '@/components/Brand'
 
 type Mode = 'particulier' | 'pro'
 type Slide = { kicker: string; title: string; body: string; icon?: string; cards?: { icon: string; title: string; body: string }[] }
@@ -17,19 +18,6 @@ const ICONS: Record<string, JSX.Element> = {
 
 function Icon({ name, size = 22 }: { name: string; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#2FD06E" strokeWidth="2">{ICONS[name]}</svg>
-}
-
-function Logomark({ size = 64 }: { size?: number }) {
-  return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <style>{`
-        @keyframes pingPulse { 0% { transform: scale(0.75); opacity: 0.9 } 70%, 100% { transform: scale(1.7); opacity: 0 } }
-      `}</style>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid #12B39C', animation: 'pingPulse 2.6s cubic-bezier(0.2,0.6,0.4,1) infinite' }} />
-      <div style={{ position: 'absolute', inset: size * 0.19, borderRadius: '50%', border: `${size * 0.045}px solid #12B39C`, opacity: 0.55 }} />
-      <div style={{ position: 'absolute', inset: size * 0.38, borderRadius: '50%', background: '#2FD06E' }} />
-    </div>
-  )
 }
 
 const SLIDES: Record<Mode, Slide[]> = {
@@ -125,7 +113,7 @@ export default function CommentCaMarche() {
             {slide.kicker}
           </div>
 
-          {index === 0 && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}><Logomark size={60} /></div>}
+          {index === 0 && <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}><Sign size={60} pulse /></div>}
 
           {slide.icon && (
             <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(47,208,110,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>

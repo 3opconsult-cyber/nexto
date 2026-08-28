@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Sign } from '@/components/Brand'
 
 interface Msg {
   id: string
@@ -71,7 +72,7 @@ export default function SupportPage() {
         <button onClick={() => router.back()} style={{ color: '#123644', background: 'none', border: 'none', padding: 4, display: 'flex' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644' }}>Support PING</span>
+        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', display: 'inline-flex', alignItems: 'center', gap: 8 }}><Sign size={18} />Support</span>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>

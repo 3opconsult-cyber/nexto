@@ -3,6 +3,7 @@ import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Wordmark } from '@/components/Brand'
 
 function SignupForm() {
   const router = useRouter()
@@ -55,7 +56,7 @@ function SignupForm() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--navy)' }}>
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        <Link href="/" className="font-fredoka text-4xl text-white mb-6">PING</Link>
+        <Link href="/" className="mb-6"><Wordmark size={40} color="#fff" /></Link>
 
         {/* Role switcher */}
         <div className="flex gap-2 p-1 rounded-full mb-6" style={{ background: 'rgba(255,255,255,0.1)' }}>

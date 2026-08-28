@@ -8,6 +8,7 @@ import { trackEvent } from '@/lib/tracking'
 import { TRADES } from '@/lib/trades'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
+import { Wordmark } from '@/components/Brand'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), {
   ssr: false,
@@ -125,7 +126,7 @@ export default function MapPage() {
       {/* Barre du haut */}
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <NavDrawer />
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>PING</span>
+        <Wordmark size={18} color="#fff" />
         <button onClick={() => router.push('/client/profil')} style={{ padding: '7px 13px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 12, background: 'rgba(255,255,255,.1)', color: 'rgba(255,255,255,.8)' }}>Mon profil</button>
       </div>
 
