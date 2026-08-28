@@ -19,7 +19,9 @@ const CAMPAIGN = 'lancement_grasse'
 
 type Dest = { path: string; source: string; medium: string; content: string }
 
-const LINKS: Record<string, Dest> = {
+// Object.create(null) : sans prototype, /l/constructor et /l/__proto__ ne
+// peuvent pas résoudre vers une entrée fantôme.
+const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   // --- particuliers ---
   fp:  { path: '/landing-particulier', source: 'flyer',    medium: 'print',  content: 'flyer_a5_part' },
   af:  { path: '/landing-particulier', source: 'affiche',  medium: 'print',  content: 'affiche_a4' },
@@ -38,7 +40,7 @@ const LINKS: Record<string, Dest> = {
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
   // sans avoir à créer un code pour chacun.
   dm:  { path: '/landing-pro', source: 'prospection_directe', medium: 'dm', content: 'vignette' },
-}
+})
 
 export function GET(req: NextRequest, { params }: { params: { code: string } }) {
   const dest = LINKS[params.code?.toLowerCase()]

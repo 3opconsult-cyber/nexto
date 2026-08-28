@@ -60,7 +60,7 @@ export function Wordmark({
       role="img"
       aria-label="PING"
       style={{
-        fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: size,
+        fontFamily: 'var(--font-quicksand), Quicksand, sans-serif', fontWeight: 700, fontSize: size,
         letterSpacing: '-.02em', color, lineHeight: 1, whiteSpace: 'nowrap',
         display: 'inline-flex', alignItems: 'baseline',
       }}

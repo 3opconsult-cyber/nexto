@@ -29,6 +29,7 @@ function SignupForm() {
     setLoading(true)
     setError('')
     const supabase = createClient()
+    const attr = readAttribution()
     const { data, error: signupError } = await supabase.auth.signUp({
       email: form.email, password: form.password,
       options: {
@@ -39,17 +40,14 @@ function SignupForm() {
           birthdate: form.birthdate,
           address: form.address,
           role,
+          // D'où vient cette inscription. Repris par le trigger
+          // handle_new_user_attribution : le client ne peut pas l'écrire
+          // lui-même, il n'a pas encore de session à cet instant.
+          ...(attr || {}),
         }
       }
     })
     if (signupError) { setError(signupError.message); setLoading(false); return }
-
-    // D'où vient cette inscription. Écrit avant le parrainage : si l'une des
-    // deux écritures échoue, on ne veut pas perdre l'attribution au passage.
-    const attr = readAttribution()
-    if (attr && data.user) {
-      await supabase.from('signup_attributions').insert({ user_id: data.user.id, ...attr })
-    }
 
     const refCode = params.get('ref')
     if (refCode && data.user) {
