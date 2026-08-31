@@ -24,8 +24,12 @@ const nextConfig = {
         { source: '/landing-pro', destination: '/landing-pro.html' },
         // Pages reelles pas encore compatibles — neutralisees vers la demo.
         { source: '/hub', destination: '/app.html' },
-        { source: '/mission/:id/facture', destination: '/app.html' },
         { source: '/mission/:id/litige', destination: '/app.html' },
+        // /mission/:id/facture N'EST PLUS neutralisee : la page a ete reecrite sur
+        // le schema reel (elle interrogeait des tables inexistantes), elle affiche
+        // les trois documents et genere le PDF. La laisser ici la renvoyait vers
+        // la demo — donc tout le travail de facturation aurait ete invisible.
+        // /documents : vraie page, elle passe par le routeur, pas par le fallback.
         // /client/profil : reecrit pour le nouveau schema, reel desormais
         // /pro/dashboard, /mission/:id/chat : reecrites pour le nouveau schema, reelles
         // /mission/new, /mission/:id/qrcodes, /mission/:id/scan/:phase : reelles
