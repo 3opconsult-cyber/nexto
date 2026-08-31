@@ -193,3 +193,96 @@ drop trigger if exists transactions_invoice_on_complete on public.transactions;
 create trigger transactions_invoice_on_complete
   after update on public.transactions
   for each row execute function public.on_transaction_completed();
+
+-- ------------------------------------------------------------
+-- Complement du 31/08 : trois modeles de document, un par situation reelle.
+--
+--   recapitulatif  intervenant PARTICULIER non immatricule. Ce n'est pas une
+--                  facture : un non-professionnel ne peut pas en emettre. C'est
+--                  un releve horodate qui lui sert pour sa declaration, et que
+--                  PING tient a disposition de l'administration sur demande.
+--   facture        prestataire IMMATRICULE. Nom de l'enseigne, numero de
+--                  facture PING, detail poste par poste (date, arrivee, depart,
+--                  duree reelle, taux) : on doit pouvoir refaire le calcul.
+--   commission     PING facture ses frais. Sobre : une ligne, un total.
+--
+-- PING n'etant pas encore immatriculee, ses documents portent « societe en
+-- cours de constitution / immatriculation en cours » — pas un SIRET invente,
+-- pas une case vide qui passerait pour un oubli.
+-- ------------------------------------------------------------
+
+alter table public.invoices
+  add column if not exists template text not null default 'facture'
+    check (template in ('recapitulatif','facture','commission'));
+
+create or replace function public.platform_identity()
+returns jsonb language sql stable set search_path to 'public' as $$
+  select coalesce((select value from app_settings where key = 'platform_identity'), '{}'::jsonb)
+$$;
+
+create or replace function public.generate_invoices(p_tx uuid)
+returns void language plpgsql security definer set search_path to 'public' as $$
+declare
+  t record; seller record; buyer record; sp record; plat jsonb;
+  yr text; n bigint; d date; est_pro boolean; enseigne text; detail jsonb;
+begin
+  select * into t from transactions where id = p_tx;
+  if t is null or t.status not in ('completed','released') then return; end if;
+  if exists (select 1 from invoices where transaction_id = p_tx) then return; end if;
+
+  select * into seller from profiles where id = t.seller_id;
+  select * into buyer  from profiles where id = t.buyer_id;
+  select * into sp     from provider_profiles where id = t.seller_id;
+  plat := platform_identity();
+
+  d := coalesce(t.completed_at, now())::date; yr := to_char(d,'YYYY'); n := nextval('invoice_seq');
+  est_pro  := sp.legal_status <> 'particulier';
+  enseigne := coalesce(nullif(sp.company_name,''), seller.full_name);
+
+  detail := jsonb_build_object(
+    'prestation', trade_label(sp.trade),
+    'date',       to_char(d, 'DD/MM/YYYY'),
+    'arrivee',    to_char(t.arrived_at   at time zone 'Europe/Paris', 'HH24:MI'),
+    'depart',     to_char(t.completed_at at time zone 'Europe/Paris', 'HH24:MI'),
+    'duree_min',  t.duration_minutes,
+    'taux_horaire_cents', t.hourly_rate_cents,
+    'montant_cents',      t.subtotal_cents,
+    'adresse',    (select address from requests where id = t.request_id));
+
+  insert into invoices (transaction_id, number, kind, template, issuer_id, client_id,
+                        net_cents, issued_at, issuer_snapshot, client_snapshot, lines, legal)
+  values (
+    p_tx,
+    case when est_pro then 'FACT-'||yr||'-'||lpad(n::text,5,'0')
+                      else 'RECAP-'||yr||'-'||lpad(n::text,5,'0') end,
+    'prestation', case when est_pro then 'facture' else 'recapitulatif' end,
+    t.seller_id, t.buyer_id, t.subtotal_cents, d,
+    jsonb_build_object('enseigne',enseigne,'nom',seller.full_name,'adresse',seller.address,
+                       'ville',seller.city,'siret',sp.siret,'statut',sp.legal_status::text,
+                       'sap',sp.sap_number,'immatricule',est_pro),
+    jsonb_build_object('nom',buyer.full_name,'adresse',buyer.address,'ville',buyer.city),
+    jsonb_build_array(detail),
+    case when est_pro then invoice_legal(sp.legal_status, d)
+    else jsonb_build_object(
+      'avertissement','Ce document n''est pas une facture. Il est émis par PING pour le compte d''un intervenant particulier non immatriculé, qui n''est pas autorisé à facturer.',
+      'declaration','Les sommes perçues sont déclarables par l''intervenant au titre de ses revenus. PING conserve l''enregistrement horodaté de cette intervention et le tient à disposition de l''administration sur demande.',
+      'categorie_operation','Prestation de services entre particuliers') end);
+
+  insert into invoices (transaction_id, number, kind, template, issuer_id, client_id,
+                        net_cents, issued_at, issuer_snapshot, client_snapshot, lines, legal)
+  values
+    (p_tx,'PING-C-'||yr||'-'||lpad(n::text,5,'0'),'commission_client','commission',
+     t.seller_id,t.buyer_id,t.buyer_fee_cents,d,plat,
+     jsonb_build_object('nom',buyer.full_name,'adresse',buyer.address,'ville',buyer.city),
+     jsonb_build_array(jsonb_build_object('libelle','Frais de service PING',
+       'detail','Mise en relation et suivi de l''intervention du '||to_char(d,'DD/MM/YYYY'),
+       'montant_cents',t.buyer_fee_cents)),
+     jsonb_build_object('taux','5 % du montant de la prestation')),
+    (p_tx,'PING-V-'||yr||'-'||lpad(n::text,5,'0'),'commission_pro','commission',
+     t.buyer_id,t.seller_id,t.seller_fee_cents,d,plat,
+     jsonb_build_object('nom',enseigne,'adresse',seller.address,'ville',seller.city,'siret',sp.siret),
+     jsonb_build_array(jsonb_build_object('libelle','Commission PING',
+       'detail','Mise en relation du '||to_char(d,'DD/MM/YYYY'),
+       'montant_cents',t.seller_fee_cents)),
+     jsonb_build_object('taux','11 % du montant de la prestation'));
+end $$;

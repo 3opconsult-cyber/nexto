@@ -171,16 +171,22 @@ export default function ProDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {invoices.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>
-                Aucune facture émise pour l'instant.
-                <div style={{ fontSize: 11.5, marginTop: 6 }}>Les factures apparaissent ici après chaque mission réglée.</div>
+                Aucun document pour l'instant.
+                <div style={{ fontSize: 11.5, marginTop: 6 }}>Ils sont émis à la fin de chaque mission, au scan du code de départ.</div>
               </div>
             ) : invoices.map(i => (
-              <div key={i.id} style={{ padding: 14, borderRadius: 14, border: '1px solid #E7EDEB' }}>
+              // Cliquable : la fiche ouvre la previsualisation et le telechargement PDF.
+              <button key={i.id} onClick={() => router.push(`/mission/${i.transaction_id}/facture`)}
+                style={{ padding: 14, borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff',
+                         textAlign: 'left', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#123644' }}>{i.number}</span>
                   <span style={{ fontWeight: 700, fontSize: 13, color: '#0C8F7E' }}>{(i.net_cents / 100).toFixed(2)} €</span>
                 </div>
-              </div>
+                <div style={{ fontSize: 11, color: '#6E8592', marginTop: 3 }}>
+                  {new Date(i.issued_at).toLocaleDateString('fr-FR')} · ouvrir et télécharger
+                </div>
+              </button>
             ))}
           </div>
         )}

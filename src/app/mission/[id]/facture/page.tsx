@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
-import { EUR, KIND_LABEL, docTitle, durationLabel, downloadInvoicePdf, type Invoice } from '@/lib/invoice-pdf'
+import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
+         PLATFORM_PENDING, type Invoice } from '@/lib/invoice-pdf'
 
 /**
  * Facturation — les trois documents d'une mission.
@@ -120,48 +121,123 @@ export default function FacturePage() {
             </div>
           </div>
 
+          {/* Un lecteur doit comprendre en une ligne que ce n'est pas une facture. */}
+          {inv.template === 'recapitulatif' && inv.legal?.avertissement && (
+            <div style={{
+              marginTop: 16, padding: '11px 13px', borderRadius: 9, background: '#FCF4E4',
+              borderLeft: '3px solid #F2A93B', fontSize: 11.5, lineHeight: 1.55, color: '#6B4A0D',
+            }}>{inv.legal.avertissement}</div>
+          )}
+
           <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            {([['Émetteur', inv.issuer_snapshot], ['Destinataire', inv.client_snapshot]] as const).map(([t, o]) => (
-              <div key={t}>
-                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>{t}</div>
-                <div style={{ fontSize: 12.5, lineHeight: 1.55, marginTop: 6 }}>
-                  <div style={{ fontWeight: 600 }}>{o?.societe || o?.nom || '— à compléter —'}</div>
-                  {o?.societe && o?.nom && <div>{o.nom}</div>}
-                  {o?.adresse && <div style={{ color: '#6E8592' }}>{o.adresse}</div>}
-                  {o?.ville && <div style={{ color: '#6E8592' }}>{o.ville}</div>}
-                  {o?.siret && <div style={{ color: '#6E8592' }}>SIRET {o.siret}</div>}
-                  {t === 'Émetteur' && inv.legal?.forme && <div style={{ color: '#6E8592' }}>{inv.legal.forme}</div>}
-                  {t === 'Émetteur' && o?.sap && <div style={{ color: '#6E8592' }}>Déclaration SAP {o.sap}</div>}
-                </div>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
+                {inv.template === 'commission' ? 'Émis par' : inv.template === 'recapitulatif' ? 'Intervenant' : 'Émetteur'}
               </div>
-            ))}
+              <div style={{ fontSize: 12.5, lineHeight: 1.55, marginTop: 6 }}>
+                {inv.template === 'commission' ? (
+                  <>
+                    <div style={{ fontWeight: 600 }}>{inv.issuer_snapshot?.nom || PLATFORM_PENDING}</div>
+                    {inv.issuer_snapshot?.forme && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.forme}</div>}
+                    {inv.issuer_snapshot?.adresse && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.adresse}</div>}
+                    {inv.issuer_snapshot?.ville && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.ville}</div>}
+                    {inv.issuer_snapshot?.siret
+                      ? <div style={{ color: '#6E8592' }}>SIRET {inv.issuer_snapshot.siret}</div>
+                      : <div style={{ color: '#6E8592' }}>Immatriculation en cours</div>}
+                    {inv.issuer_snapshot?.tva && <div style={{ color: '#6E8592' }}>TVA {inv.issuer_snapshot.tva}</div>}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontWeight: 600 }}>{inv.issuer_snapshot?.enseigne || inv.issuer_snapshot?.nom || '—'}</div>
+                    {inv.issuer_snapshot?.enseigne && inv.issuer_snapshot?.nom
+                      && inv.issuer_snapshot.enseigne !== inv.issuer_snapshot.nom
+                      && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.nom}</div>}
+                    {inv.issuer_snapshot?.adresse && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.adresse}</div>}
+                    {inv.issuer_snapshot?.ville && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.ville}</div>}
+                    {inv.issuer_snapshot?.siret && <div style={{ color: '#6E8592' }}>SIRET {inv.issuer_snapshot.siret}</div>}
+                    {inv.legal?.forme && <div style={{ color: '#6E8592' }}>{inv.legal.forme}</div>}
+                    {inv.issuer_snapshot?.sap && <div style={{ color: '#6E8592' }}>Déclaration SAP {inv.issuer_snapshot.sap}</div>}
+                    {inv.template === 'recapitulatif' && <div style={{ color: '#6E8592' }}>Particulier — non immatriculé</div>}
+                  </>
+                )}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
+                {inv.template === 'commission' ? 'Facturé à' : 'Client'}
+              </div>
+              <div style={{ fontSize: 12.5, lineHeight: 1.55, marginTop: 6 }}>
+                <div style={{ fontWeight: 600 }}>{inv.client_snapshot?.nom || '—'}</div>
+                {inv.client_snapshot?.adresse && <div style={{ color: '#6E8592' }}>{inv.client_snapshot.adresse}</div>}
+                {inv.client_snapshot?.ville && <div style={{ color: '#6E8592' }}>{inv.client_snapshot.ville}</div>}
+              </div>
+            </div>
           </div>
 
           <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
 
-          {(inv.lines || []).map((l, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, marginBottom: 10 }}>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 13.5, textTransform: 'capitalize' }}>{l.libelle}</div>
-                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>
-                  {[durationLabel(l.duree_min) && `Durée réelle relevée : ${durationLabel(l.duree_min)}`,
-                    l.taux_horaire_cents && `${EUR(l.taux_horaire_cents)} de l'heure`]
-                    .filter(Boolean).join(' · ')}
+          {inv.template === 'commission' ? (
+            (inv.lines || []).map((l, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 14 }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13.5 }}>{l.libelle}</div>
+                  {l.detail && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{l.detail}</div>}
+                  {inv.legal?.taux && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>{inv.legal.taux}</div>}
+                </div>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
+                  {EUR(Number(l.montant_cents ?? 0))}
                 </div>
               </div>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
-                {EUR(Number(l.montant_cents ?? 0))}
+            ))
+          ) : (
+            <>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
+                Détail de l'intervention
               </div>
-            </div>
-          ))}
+              {(() => {
+                const l = (inv.lines || [])[0] || {}
+                const rows: Array<[string, string]> = []
+                if (l.prestation) rows.push(['Prestation', String(l.prestation)])
+                if (l.date) rows.push(['Date', String(l.date)])
+                if (l.adresse) rows.push(['Adresse', String(l.adresse)])
+                if (l.arrivee && l.depart) rows.push(['Arrivée / départ scannés', `${l.arrivee} — ${l.depart}`])
+                const d = durationLabel(l.duree_min)
+                if (d) rows.push(['Durée réelle relevée', d])
+                if (l.taux_horaire_cents) rows.push(['Taux horaire', `${EUR(l.taux_horaire_cents)} de l'heure`])
+                return (
+                  <>
+                    <div style={{ marginTop: 9 }}>
+                      {rows.map(([k, v]) => (
+                        <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12.5, padding: '4px 0' }}>
+                          <span style={{ color: '#6E8592' }}>{k}</span>
+                          <span style={{ textAlign: 'right' }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between', gap: 12,
+                      borderTop: '1px solid #DCE5E3', marginTop: 11, paddingTop: 11,
+                    }}>
+                      <span style={{ fontWeight: 600, fontSize: 13.5 }}>{l.prestation || 'Prestation'}</span>
+                      <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+                        {EUR(Number(l.montant_cents ?? inv.net_cents))}
+                      </span>
+                    </div>
+                  </>
+                )
+              })()}
+            </>
+          )}
 
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
             borderTop: '1px solid #DCE5E3', marginTop: 14, paddingTop: 12,
           }}>
-            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>Total</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>
+              {inv.template === 'recapitulatif' ? 'Montant perçu' : 'Total'}
+            </span>
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21 }}>{EUR(inv.net_cents)}</span>
           </div>
           {inv.legal?.franchise_tva && (
@@ -171,24 +247,33 @@ export default function FacturePage() {
           <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
 
           <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
-            Mentions légales
+            {inv.template === 'recapitulatif' ? 'Déclaration' : 'Mentions légales'}
           </div>
           <div style={{ fontSize: 11, color: '#6E8592', lineHeight: 1.6, marginTop: 7 }}>
-            {inv.legal?.categorie_operation && <p style={{ margin: '0 0 5px' }}>Catégorie de l'opération : {inv.legal.categorie_operation}.</p>}
-            {inv.legal?.penalites && <p style={{ margin: '0 0 5px' }}>{inv.legal.penalites}</p>}
-            {inv.legal?.indemnite_recouvrement && <p style={{ margin: '0 0 5px' }}>{inv.legal.indemnite_recouvrement}</p>}
-            {inv.legal?.escompte && <p style={{ margin: '0 0 5px' }}>{inv.legal.escompte}</p>}
-            <p style={{ margin: 0 }}>Règlement à réception.</p>
+            {inv.template === 'recapitulatif' ? (
+              <p style={{ margin: 0 }}>{inv.legal?.declaration}</p>
+            ) : inv.template === 'commission' ? (
+              <p style={{ margin: 0 }}>Règlement à réception. Document émis par PING au titre de la mise en relation.</p>
+            ) : (
+              <>
+                {inv.legal?.categorie_operation && <p style={{ margin: '0 0 5px' }}>Catégorie de l'opération : {inv.legal.categorie_operation}.</p>}
+                {inv.legal?.penalites && <p style={{ margin: '0 0 5px' }}>{inv.legal.penalites}</p>}
+                {inv.legal?.indemnite_recouvrement && <p style={{ margin: '0 0 5px' }}>{inv.legal.indemnite_recouvrement}</p>}
+                {inv.legal?.escompte && <p style={{ margin: '0 0 5px' }}>{inv.legal.escompte}</p>}
+                <p style={{ margin: 0 }}>Règlement à réception.</p>
+              </>
+            )}
           </div>
         </div>
 
-        {!inv.issuer_snapshot?.siret && inv.kind !== 'prestation' && (
+        {inv.template === 'commission' && !inv.issuer_snapshot?.siret && (
           <p className="no-print" style={{
             maxWidth: 620, margin: '12px auto 0', padding: 12, borderRadius: 11,
             background: 'rgba(242,169,59,.13)', color: '#9A6712', fontSize: 11.5, lineHeight: 1.55,
           }}>
-            Les coordonnées légales de PING ne sont pas encore renseignées : elles se remplissent
-            dans l'admin et apparaîtront sur toutes les factures de commission.
+            PING n'est pas encore immatriculée : le document le mentionne tel quel. Dès que le
+            SIRET existe, il se saisit dans l'admin et apparaît sur les documents émis ensuite —
+            ceux déjà émis gardent l'instantané de leur date, c'est voulu.
           </p>
         )}
 

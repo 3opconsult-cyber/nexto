@@ -61,6 +61,7 @@ export default function NavDrawer() {
     { label: 'Comment ça marche', path: '/comment-ca-marche', icon: 'doc' },
     { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
     { label: 'Mes favoris', path: '/client/favoris', icon: 'heart' },
+    { label: 'Mes documents', path: '/documents', icon: 'doc' },
     { label: 'Support PING', path: '/support', icon: 'msg' },
   ]
   const proLinks = [
@@ -77,6 +78,7 @@ export default function NavDrawer() {
     { label: 'Factures & documents', path: '/pro/dashboard', icon: 'doc' },
     { label: 'Mes pièces', path: '/pro/onboarding/documents', icon: 'doc' },
     { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
+    { label: 'Mes documents', path: '/documents', icon: 'doc' },
     { label: 'Support PING', path: '/support', icon: 'msg' },
   ]
   const links = onProSide ? proLinks : clientLinks
