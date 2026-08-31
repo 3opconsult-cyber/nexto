@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import ReviewModal from '@/components/ReviewModal'
+import DepartureBar from '@/components/DepartureBar'
 import { filterMessage } from '@/lib/chatFilter'
 import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
 
@@ -35,6 +37,7 @@ export default function ChatPage() {
   const [reporting, setReporting] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [reportSent, setReportSent] = useState(false)
+  const [askReview, setAskReview] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -53,6 +56,15 @@ export default function ChatPage() {
         const otherId = user.id === t.buyer_id ? t.seller_id : t.buyer_id
         const { data: p } = await supabase.from('profiles').select('first_name, last_name').eq('id', otherId).single()
         if (p) setCounterpart(`${p.first_name || ''} ${p.last_name ? p.last_name.charAt(0) + '.' : ''}`.trim() || 'Conversation')
+
+        // Mission terminee et pas encore notee par ce client : on demande son
+        // avis ici, c'est l'ecran ou il atterrit apres le scan de sortie.
+        if (user.id === t.buyer_id && ['completed', 'released'].includes(t.status)) {
+          const { count } = await supabase.from('reviews')
+            .select('transaction_id', { count: 'exact', head: true })
+            .eq('transaction_id', t.id).eq('rater_id', user.id)
+          if (!count) setAskReview(true)
+        }
       }
     }
     init()
@@ -197,6 +209,22 @@ export default function ChatPage() {
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
         </button>
       </div>
+
+      {/* Le prestataire annonce son depart ; le client suit l'approche. */}
+      {tx && userId && (
+        <DepartureBar tx={tx} userId={userId} onChange={setTx} />
+      )}
+
+      {tx && userId && (
+        <ReviewModal
+          open={askReview}
+          onClose={() => setAskReview(false)}
+          transactionId={tx.id}
+          raterId={userId}
+          rateeId={tx.seller_id}
+          proName={counterpart}
+        />
+      )}
 
       {reporting && (
         <div onClick={() => setReporting(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>

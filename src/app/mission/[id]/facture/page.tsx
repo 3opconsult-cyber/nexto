@@ -2,125 +2,212 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Sign } from '@/components/Brand'
+import { EUR, KIND_LABEL, docTitle, durationLabel, downloadInvoicePdf, type Invoice } from '@/lib/invoice-pdf'
 
+/**
+ * Facturation — les trois documents d'une mission.
+ *
+ * L'ancienne version de cet écran interrogeait des tables qui n'existent pas
+ * (`missions`, `pro_profiles`, `invoices.mission_id`) : elle affichait donc
+ * toujours « Facture non disponible ». Elle est réécrite sur le schéma réel.
+ *
+ * Une mission terminée produit trois documents, générés en base par trigger :
+ *   FACT-…   le prestataire facture le client
+ *   PING-C-… PING facture ses frais de service au client
+ *   PING-V-… PING facture sa commission au prestataire
+ *
+ * Chacun n'est visible que par ses deux parties (RLS). Le client et le
+ * prestataire voient donc les leurs, ici, sans échange d'e-mail.
+ */
 export default function FacturePage() {
   const params = useParams()
   const router = useRouter()
-  const [invoice, setInvoice] = useState<any>(null)
-  const [mission, setMission] = useState<any>(null)
-  const [pro, setPro] = useState<any>(null)
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [active, setActive] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
 
   useEffect(() => {
     const supabase = createClient()
-    async function load() {
-      const { data: inv } = await supabase.from('invoices').select('*').eq('mission_id', params.id).single()
-      const { data: m } = await supabase.from('missions').select('*').eq('id', params.id).single()
-      if (inv) setInvoice(inv)
-      if (m) {
-        setMission(m)
-        const { data: p } = await supabase.from('pro_profiles').select('*').eq('id', m.pro_id).single()
-        setPro(p)
-      }
-      setLoading(false)
-    }
-    load()
+    supabase.from('invoices').select('*').eq('transaction_id', params.id).order('kind')
+      .then(({ data }) => { setInvoices((data ?? []) as Invoice[]); setLoading(false) })
   }, [params.id])
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{background:'var(--cream)'}}><span className="font-fredoka text-navy">Chargement...</span></div>
+  const inv = invoices[active]
 
-  if (!invoice) return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{background:'var(--cream)'}}>
-      <div className="text-4xl mb-3">🧾</div>
-      <div className="font-fredoka text-lg text-navy mb-2">Facture non disponible</div>
-      <div className="text-sm text-gray-400 font-bold text-center mb-4">La facture est générée après paiement et purge de tout litige.</div>
-      <button onClick={()=>router.back()} className="px-6 py-3 rounded-full font-black text-white" style={{background:'var(--accent)'}}>Retour</button>
+  async function download() {
+    if (!inv) return
+    setBusy(true); setErr('')
+    try { await downloadInvoicePdf(inv) }
+    catch { setErr("Le PDF n'a pas pu être généré. Vous pouvez utiliser l'impression de votre navigateur.") }
+    setBusy(false)
+  }
+
+  const shell = (children: React.ReactNode) => (
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
+      <div className="no-print" style={{ padding: '28px 16px 14px', background: '#123644', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button onClick={() => router.back()} aria-label="Retour"
+          style={{ background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer' }}>‹</button>
+        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#fff' }}>Facturation</span>
+      </div>
+      {children}
     </div>
   )
 
-  const ml = invoice.legal_mentions || {}
+  if (loading) return shell(<p style={{ padding: 20, color: '#6E8592', fontSize: 13 }}>Chargement…</p>)
 
-  return (
-    <div className="min-h-screen" style={{background:'var(--cream)'}}>
-      <div className="px-5 pt-5 pb-3 flex items-center gap-3" style={{background:'var(--navy)'}}>
-        <button onClick={()=>router.back()} className="text-white font-black">←</button>
-        <div className="font-fredoka text-xl text-white">Facture {invoice.ref}</div>
+  if (!invoices.length) return shell(
+    <div style={{ padding: 20 }}>
+      <div style={{ background: '#fff', borderRadius: 16, padding: 22, textAlign: 'center' }}>
+        <Sign size={38} />
+        <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, marginTop: 12 }}>
+          Pas encore de facture
+        </h2>
+        <p style={{ fontSize: 13, color: '#6E8592', marginTop: 6, lineHeight: 1.55 }}>
+          Les documents sont émis automatiquement à la fin de la mission, une fois le code de
+          départ scanné — c'est ce scan qui fixe la durée réelle, donc le montant.
+        </p>
       </div>
+    </div>
+  )
 
-      <div className="p-4">
-        <div className="bg-white rounded-3xl p-6 shadow-sm">
-          {/* En-tête */}
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <div className="font-fredoka text-2xl" style={{color:'var(--accent)'}}>Nexto</div>
-              <div className="text-xs font-bold text-gray-400">Plateforme de mise en relation</div>
-            </div>
-            <div className="text-right">
-              <div className="font-black text-sm text-navy">{invoice.ref}</div>
-              <div className="text-xs font-bold text-gray-400">{new Date(invoice.issued_at).toLocaleDateString('fr-FR')}</div>
-            </div>
-          </div>
+  return shell(
+    <>
+      <style>{`
+        @media print {
+          .no-print { display: none !important }
+          body { background: #fff !important }
+          .sheet { box-shadow: none !important; border: 0 !important; border-radius: 0 !important;
+                   margin: 0 !important; padding: 14mm !important }
+        }
+        @page { size: A4; margin: 0 }
+      `}</style>
 
-          {/* Prestataire */}
-          <div className="mb-4 p-3 rounded-xl" style={{background:'var(--cream)'}}>
-            <div className="text-xs font-black uppercase tracking-wider text-gray-400 mb-1">Prestataire</div>
-            <div className="font-black text-sm text-navy">{pro?.company_name}</div>
-            {pro?.siret && <div className="text-xs font-bold text-gray-500">SIRET : {pro.siret}</div>}
-            {ml.tva && <div className="text-xs font-bold text-gray-500">{ml.tva}</div>}
-          </div>
+      {invoices.length > 1 && (
+        <div className="no-print" style={{ display: 'flex', gap: 7, padding: '13px 16px 0', overflowX: 'auto' }}>
+          {invoices.map((v, i) => (
+            <button key={v.number} onClick={() => setActive(i)} style={{
+              flexShrink: 0, border: 'none', cursor: 'pointer', padding: '8px 13px', borderRadius: 999,
+              fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 12.5,
+              background: i === active ? '#123644' : '#fff', color: i === active ? '#fff' : '#123644',
+              boxShadow: i === active ? 'none' : '0 0 0 1px #DCE5E3',
+            }}>{KIND_LABEL[v.kind]}</button>
+          ))}
+        </div>
+      )}
 
-          {/* Détail */}
-          <div className="border-t border-b border-gray-100 py-4 mb-4">
-            <div className="flex justify-between text-sm font-bold mb-2">
-              <span className="text-gray-600">{mission?.description?.slice(0,40) || 'Prestation'}</span>
-              <span className="text-navy">{invoice.total_ht} €</span>
+      <div style={{ padding: 16 }}>
+        {/* La prévisualisation EST la page : ce qu'on voit est ce qui s'imprime. */}
+        <div className="sheet" style={{
+          background: '#fff', borderRadius: 14, padding: 22,
+          boxShadow: '0 1px 2px rgba(18,54,68,.06)', maxWidth: 620, margin: '0 auto',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <Sign size={26} />
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>ping</span>
             </div>
-            {invoice.vat_rate > 0 && (
-              <div className="flex justify-between text-xs font-bold text-gray-400">
-                <span>TVA {invoice.vat_rate}%</span>
-                <span>{(invoice.total_ttc - invoice.total_ht).toFixed(2)} €</span>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.1em', color: '#6E8592', textTransform: 'uppercase' }}>
+                {docTitle(inv)}
               </div>
-            )}
-          </div>
-
-          {/* Total */}
-          <div className="flex justify-between items-center mb-4">
-            <span className="font-fredoka text-lg text-navy">Total TTC</span>
-            <span className="font-fredoka text-2xl" style={{color:'var(--accent)'}}>{invoice.total_ttc} €</span>
-          </div>
-
-          {/* Commission Nexto */}
-          <div className="p-3 rounded-xl mb-4" style={{background:'var(--accent-l)'}}>
-            <div className="flex justify-between text-xs font-black" style={{color:'var(--accent-d)'}}>
-              <span>Commission Nexto</span><span>{invoice.nexto_commission} €</span>
-            </div>
-            <div className="flex justify-between text-xs font-black mt-1" style={{color:'var(--accent-d)'}}>
-              <span>Net prestataire</span><span>{invoice.net_pro} €</span>
-            </div>
-          </div>
-
-          {/* Crédit impôt CESU */}
-          {invoice.cesu_eligible && (
-            <div className="p-3 rounded-xl mb-4" style={{background:'#DCFCE7'}}>
-              <div className="text-xs font-black" style={{color:'#15803D'}}>
-                ✓ Service à la personne — Crédit d'impôt 50% (code 7DB). Vous pouvez déduire {(invoice.total_ttc*0.5).toFixed(2)} €.
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, marginTop: 3 }}>{inv.number}</div>
+              <div style={{ fontSize: 11, color: '#6E8592', marginTop: 2 }}>
+                {new Date(inv.issued_at).toLocaleDateString('fr-FR')}
               </div>
             </div>
+          </div>
+
+          <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            {([['Émetteur', inv.issuer_snapshot], ['Destinataire', inv.client_snapshot]] as const).map(([t, o]) => (
+              <div key={t}>
+                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>{t}</div>
+                <div style={{ fontSize: 12.5, lineHeight: 1.55, marginTop: 6 }}>
+                  <div style={{ fontWeight: 600 }}>{o?.societe || o?.nom || '— à compléter —'}</div>
+                  {o?.societe && o?.nom && <div>{o.nom}</div>}
+                  {o?.adresse && <div style={{ color: '#6E8592' }}>{o.adresse}</div>}
+                  {o?.ville && <div style={{ color: '#6E8592' }}>{o.ville}</div>}
+                  {o?.siret && <div style={{ color: '#6E8592' }}>SIRET {o.siret}</div>}
+                  {t === 'Émetteur' && inv.legal?.forme && <div style={{ color: '#6E8592' }}>{inv.legal.forme}</div>}
+                  {t === 'Émetteur' && o?.sap && <div style={{ color: '#6E8592' }}>Déclaration SAP {o.sap}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
+
+          {(inv.lines || []).map((l, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, marginBottom: 10 }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13.5, textTransform: 'capitalize' }}>{l.libelle}</div>
+                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>
+                  {[durationLabel(l.duree_min) && `Durée réelle relevée : ${durationLabel(l.duree_min)}`,
+                    l.taux_horaire_cents && `${EUR(l.taux_horaire_cents)} de l'heure`]
+                    .filter(Boolean).join(' · ')}
+                </div>
+              </div>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
+                {EUR(Number(l.montant_cents ?? 0))}
+              </div>
+            </div>
+          ))}
+
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+            borderTop: '1px solid #DCE5E3', marginTop: 14, paddingTop: 12,
+          }}>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>Total</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21 }}>{EUR(inv.net_cents)}</span>
+          </div>
+          {inv.legal?.franchise_tva && (
+            <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>{inv.legal.franchise_tva}</div>
           )}
 
-          {/* Mentions légales */}
-          <div className="text-xs font-bold text-gray-400 space-y-1 border-t border-gray-100 pt-4">
-            {ml.penalites && <div>{ml.penalites}</div>}
-            {ml.mediation && <div>{ml.mediation}</div>}
-            {ml.rc_pro && <div>{ml.rc_pro}</div>}
-            <div>Nexto est une plateforme de mise en relation. Elle n'achète ni ne revend aucun service et ne garantit pas l'authenticité des documents fournis par les prestataires.</div>
+          <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
+
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
+            Mentions légales
+          </div>
+          <div style={{ fontSize: 11, color: '#6E8592', lineHeight: 1.6, marginTop: 7 }}>
+            {inv.legal?.categorie_operation && <p style={{ margin: '0 0 5px' }}>Catégorie de l'opération : {inv.legal.categorie_operation}.</p>}
+            {inv.legal?.penalites && <p style={{ margin: '0 0 5px' }}>{inv.legal.penalites}</p>}
+            {inv.legal?.indemnite_recouvrement && <p style={{ margin: '0 0 5px' }}>{inv.legal.indemnite_recouvrement}</p>}
+            {inv.legal?.escompte && <p style={{ margin: '0 0 5px' }}>{inv.legal.escompte}</p>}
+            <p style={{ margin: 0 }}>Règlement à réception.</p>
           </div>
         </div>
 
-        <button className="w-full mt-4 py-4 rounded-full text-white font-fredoka text-lg" style={{background:'var(--accent)'}}>
-          📥 Télécharger PDF
-        </button>
+        {!inv.issuer_snapshot?.siret && inv.kind !== 'prestation' && (
+          <p className="no-print" style={{
+            maxWidth: 620, margin: '12px auto 0', padding: 12, borderRadius: 11,
+            background: 'rgba(242,169,59,.13)', color: '#9A6712', fontSize: 11.5, lineHeight: 1.55,
+          }}>
+            Les coordonnées légales de PING ne sont pas encore renseignées : elles se remplissent
+            dans l'admin et apparaîtront sur toutes les factures de commission.
+          </p>
+        )}
+
+        {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B4402C', fontSize: 12.5 }}>{err}</p>}
+
+        <div className="no-print" style={{ maxWidth: 620, margin: '16px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <button onClick={download} disabled={busy} style={{
+            width: '100%', border: 'none', padding: 14, borderRadius: 999, cursor: 'pointer',
+            background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif',
+            fontWeight: 700, fontSize: 14.5, boxShadow: '0 8px 18px rgba(18,179,156,.28)',
+            opacity: busy ? .6 : 1,
+          }}>{busy ? 'Génération…' : 'Télécharger le PDF'}</button>
+          <button onClick={() => window.print()} style={{
+            width: '100%', border: 'none', padding: 14, borderRadius: 999, cursor: 'pointer',
+            background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif',
+            fontWeight: 700, fontSize: 14.5, boxShadow: '0 0 0 1px #DCE5E3',
+          }}>Imprimer</button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

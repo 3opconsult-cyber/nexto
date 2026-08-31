@@ -397,6 +397,7 @@ textarea.minput{min-height:120px;resize:vertical}
       <div class="sep">Contrôle</div>
       <a data-s="conformite" onclick="nav('conformite')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Conformité (KYC)</a>
       <a data-s="litiges" onclick="nav('litiges')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg> Litiges</a>
+      <a data-s="comm" onclick="nav('comm')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg> Support commercial</a>
       <a data-s="signalements" onclick="nav('signalements')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18"/><path d="M5 4h11l-1.5 4L16 12H5"/></svg> Signalements</a>
     </nav>
     <div class="foot"><div class="av">A</div><div><div class="nm">Admin PING</div><div class="rl">Grasse · super admin</div></div></div>
@@ -534,6 +535,54 @@ textarea.minput{min-height:120px;resize:vertical}
             <tr><td><div class="who"><div class="av">P</div>Sofia Services</div></td><td>14</td><td>3 560 €</td><td>320,40 €</td><td>3 239,60 €</td><td><span class="tag ok">Effectué</span></td></tr>
             <tr><td><div class="who"><div class="av gold">S</div>Léa Nettoyage</div></td><td>11</td><td>2 176 €</td><td>195,84 €</td><td>1 980,16 €</td><td><span class="tag wait">Programmé</span></td></tr>
           </table>
+        </div>
+      </section>
+
+      <!-- SUPPORT COMMERCIAL -->
+      <section class="section" id="s_comm">
+        <div class="card"><h3>Parcours client <span class="muted">démonstration cliquable</span></h3>
+          <p class="note" style="margin-top:0">À dérouler devant un prospect, sans lui faire créer de compte. Les dix prestataires de cette démonstration sont écrits en dur dans la page : elle ne touche ni la base, ni l'application. Pour une vraie prise en main, envoyer plutôt le lien de l'app.</p>
+          <div class="qrow" style="margin-top:14px">
+            <div class="m"><b>Parcours PING · Vence — Nice</b><small class="mono">De la carte au reçu : carte, fiche, réservation, paiement, suivi d'arrivée, codes QR, facture, avis.</small></div>
+            <span class="link" onclick="window.open('https://claude.ai/code/artifact/b342232e-141e-443c-9fa4-6a650e6260d6','_blank','noopener')">Ouvrir</span>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Planche de marque</b><small class="mono">Les dix supports imprimés, la décision sur le logo, la table des liens tracés.</small></div>
+            <span class="link" onclick="window.open('https://claude.ai/code/artifact/55b2ecc9-42f7-404d-b465-bae1826946fb','_blank','noopener')">Ouvrir</span>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Carrousel « Comment ça marche »</b><small class="mono">Dans l'application, accessible aux clients comme aux prestataires.</small></div>
+            <span class="link" onclick="window.open('/comment-ca-marche','_blank','noopener')">Ouvrir</span>
+          </div>
+        </div>
+
+        <div class="card mt"><h3>Supports imprimés <span class="muted">sources dans brand/ · régénérables</span></h3>
+          <p class="note" style="margin-top:0">Chaque support porte un QR vers un lien court traçé : on sait lequel ramène des inscriptions. La cible d'un code se change sans réimprimer.</p>
+          <table class="tbl" data-noenh="1">
+            <tr><th>Support</th><th>Format</th><th>Lien tracé</th></tr>
+            <tr><td>Flyer particulier</td><td>A5 recto/verso</td><td class="mono">/l/fp</td></tr>
+            <tr><td>Flyer prestataire</td><td>A5 recto/verso</td><td class="mono">/l/fpr</td></tr>
+            <tr><td>Affiche</td><td>A4</td><td class="mono">/l/af</td></tr>
+            <tr><td>Chevalet de comptoir</td><td>A5 plié</td><td class="mono">/l/ch</td></tr>
+            <tr><td>Stickers</td><td>planche A4, 8 pièces</td><td class="mono">/l/st · /l/stp</td></tr>
+            <tr><td>Présentations</td><td>A4 paysage, 7 pages</td><td class="mono">/l/pp · /l/ppr</td></tr>
+            <tr><td>Vignettes de campagne</td><td>6 carrés 78 mm</td><td class="mono">/l/dm?c=nom</td></tr>
+            <tr><td>Posts Instagram</td><td>1080 × 1350</td><td class="mono">/l/ig · /l/igp</td></tr>
+          </table>
+        </div>
+
+        <div class="card mt"><h3>Coordonnées légales de PING <span class="muted">apparaissent sur les factures de commission</span></h3>
+          <p class="note" style="margin-top:0">Tant que ces champs sont vides, les factures PING-C et PING-V affichent « à compléter ». Je ne les invente pas : ce sont des mentions légales.</p>
+          <div class="mform" style="margin-top:12px">
+            <input class="minput" id="piNom" placeholder="Raison sociale (ex. PING SAS)">
+            <input class="minput" id="piForme" placeholder="Forme juridique et capital">
+            <input class="minput" id="piSiret" placeholder="SIRET">
+            <input class="minput" id="piTva" placeholder="N° TVA intracommunautaire">
+            <input class="minput" id="piAdresse" placeholder="Adresse">
+            <input class="minput" id="piVille" placeholder="Code postal et ville">
+          </div>
+          <button class="btn" onclick="savePlatformIdentity()">Enregistrer</button>
+          <p class="note" id="piStatus" style="margin-top:12px;display:none"></p>
         </div>
       </section>
 
@@ -3550,6 +3599,48 @@ const _navOrig = window.nav
 window.nav = function (s) {
   _navOrig(s)
   if (s === 'prospects' && window.loadProspection) window.loadProspection()
+}
+
+
+
+/* ============ Coordonnees legales de PING ============
+   Elles alimentent les factures de commission (PING-C / PING-V). Une seule
+   ligne dans app_settings, lisible par tous, modifiable par l'admin seul. */
+const PI_FIELDS = { piNom:'nom', piForme:'forme', piSiret:'siret',
+                    piTva:'tva', piAdresse:'adresse', piVille:'ville' }
+
+window.loadPlatformIdentity = async function () {
+  const { data } = await supabaseLive.from('app_settings')
+    .select('value').eq('key', 'platform_identity').maybeSingle()
+  const v = (data && data.value) || {}
+  for (const [id, key] of Object.entries(PI_FIELDS)) {
+    const el = document.getElementById(id); if (el) el.value = v[key] || ''
+  }
+}
+
+window.savePlatformIdentity = async function () {
+  const v = {}
+  for (const [id, key] of Object.entries(PI_FIELDS)) {
+    const el = document.getElementById(id)
+    const val = el && el.value.trim()
+    if (val) v[key] = val
+  }
+  const { error } = await supabaseLive.from('app_settings')
+    .update({ value: v, updated_at: new Date().toISOString() }).eq('key', 'platform_identity')
+  const st = document.getElementById('piStatus')
+  if (st) {
+    st.style.display = 'block'
+    st.textContent = error
+      ? 'Enregistrement refuse : ' + error.message
+      : "Enregistre. Les factures emises a partir de maintenant porteront ces mentions — celles deja emises gardent l'instantane de leur date, c'est voulu."
+  }
+  if (!error) toast('Coordonnees enregistrees')
+}
+
+const _navComm = window.nav
+window.nav = function (s) {
+  _navComm(s)
+  if (s === 'comm' && window.loadPlatformIdentity) window.loadPlatformIdentity()
 }
 
 </script>
