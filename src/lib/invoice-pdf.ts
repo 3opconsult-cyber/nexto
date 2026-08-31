@@ -15,12 +15,15 @@
  *                   l'administration si elle le demande.
  *
  *   facture       — le prestataire est IMMATRICULÉ. Enseigne en tête, numéro de
- *                   facture PING, et le détail poste par poste (date, arrivée,
- *                   départ, durée réelle, taux) : on doit pouvoir refaire le
- *                   calcul sans rien demander à personne.
+ *                   facture PING, une ligne, et dessous ce qu'il faut pour
+ *                   refaire le calcul : date, arrivée, départ, durée réelle,
+ *                   taux. Sobre — un montant, pas un formulaire.
  *
- *   commission    — PING facture ses frais. Sobre : émetteur, destinataire,
- *                   une ligne, un total. Rien d'autre.
+ *   commission    — les frais de mise en relation. Ils ne sont pas facturés
+ *                   d'avance : ils sont prélevés sur une transaction terminée,
+ *                   comme les frais de service de Vinted ou d'Airbnb. Tant que
+ *                   PING n'est pas immatriculée, le document est un RELEVÉ et
+ *                   non une facture ; il le devient dès que le SIRET est saisi.
  *
  * pdf-lib est chargé à la demande — il ne pèse sur aucune autre page.
  *
@@ -57,10 +60,23 @@ export const KIND_LABEL: Record<Invoice['kind'], string> = {
 export const TITLE: Record<Invoice['template'], string> = {
   recapitulatif: "Récapitulatif d'intervention",
   facture: 'Facture',
-  commission: 'Facture',
+  commission: 'Frais de mise en relation',
 }
 
-export const docTitle = (inv: Invoice) => TITLE[inv.template] ?? 'Document'
+/**
+ * Les frais de mise en relation ne sont pas facturés d'avance : ils sont
+ * prélevés sur une transaction terminée, comme les frais de service de Vinted
+ * ou d'Airbnb. Tant que PING n'est pas immatriculée, le document s'appelle donc
+ * un RELEVÉ — une entité non immatriculée ne peut pas émettre de facture. Dès
+ * que le SIRET est saisi, le même document devient une facture, sans rien
+ * changer d'autre.
+ */
+export const docTitle = (inv: Invoice) => {
+  if (inv.template === 'commission') {
+    return inv.issuer_snapshot?.siret ? 'Facture' : 'Relevé de frais de mise en relation'
+  }
+  return TITLE[inv.template] ?? 'Document'
+}
 
 export function durationLabel(min?: number | null) {
   if (!min) return null
@@ -193,29 +209,22 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
     }
     if (inv.legal?.taux) { txt(inv.legal.taux, M, y, 8.5, reg, SLATE); y -= 15 }
   } else {
-    // Détail poste par poste : on doit pouvoir refaire le calcul.
+    // Sobre aussi : une ligne, et dessous ce qu'il faut pour refaire le calcul.
+    // Pas de tableau à six lignes — le lecteur veut un montant, pas un formulaire.
     const l = (inv.lines || [])[0] || {}
-    txt('DÉTAIL DE L\'INTERVENTION', M, y, 7.5, bold, SLATE); y -= 17
+    const titre = [l.prestation, durationLabel(l.duree_min)].filter(Boolean).join(' — ')
+    txt(titre || 'Prestation', M, y, 10.5, bold)
+    right(EUR(Number(l.montant_cents ?? inv.net_cents)), W - M, y, 10.5, bold)
+    y -= 14
 
-    const rows: Array<[string, string]> = []
-    if (l.prestation) rows.push(['Prestation', String(l.prestation)])
-    if (l.date) rows.push(['Date', String(l.date)])
-    if (l.adresse) rows.push(['Adresse', String(l.adresse)])
-    if (l.arrivee && l.depart) rows.push(['Arrivée / départ scannés', `${l.arrivee} — ${l.depart}`])
-    const dur = durationLabel(l.duree_min)
-    if (dur) rows.push(['Durée réelle relevée', dur])
-    if (l.taux_horaire_cents) rows.push(['Taux horaire', `${EUR(l.taux_horaire_cents)} de l'heure`])
-
-    for (const [k, v] of rows) {
-      txt(k, M, y, 9, reg, SLATE)
-      right(v, W - M, y, 9, reg, INK)
-      y -= 15
-    }
-    y -= 4
-    rule(y); y -= 18
-    txt(String(l.prestation ?? 'Prestation'), M, y, 10, bold)
-    right(EUR(Number(l.montant_cents ?? inv.net_cents)), W - M, y, 10, bold)
-    y -= 18
+    const sous = [
+      l.date && `Le ${l.date}`,
+      l.arrivee && l.depart && `${l.arrivee} — ${l.depart}, scannés sur place`,
+      l.taux_horaire_cents && `${EUR(l.taux_horaire_cents)} de l'heure`,
+    ].filter(Boolean).join('  ·  ')
+    if (sous) { txt(sous, M, y, 8.5, reg, SLATE); y -= 12 }
+    if (l.adresse) { txt(String(l.adresse), M, y, 8.5, reg, SLATE); y -= 12 }
+    y -= 6
   }
 
   rule(y); y -= 22

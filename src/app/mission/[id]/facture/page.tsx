@@ -191,45 +191,28 @@ export default function FacturePage() {
                 </div>
               </div>
             ))
-          ) : (
-            <>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
-                Détail de l'intervention
+          ) : (() => {
+            // Sobre : une ligne, et dessous ce qu'il faut pour refaire le calcul.
+            const l = (inv.lines || [])[0] || {}
+            const titre = [l.prestation, durationLabel(l.duree_min)].filter(Boolean).join(' — ')
+            const sous = [
+              l.date && `Le ${l.date}`,
+              l.arrivee && l.depart && `${l.arrivee} — ${l.depart}, scannés sur place`,
+              l.taux_horaire_cents && `${EUR(l.taux_horaire_cents)} de l'heure`,
+            ].filter(Boolean).join('  ·  ')
+            return (
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14 }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13.5 }}>{titre || 'Prestation'}</div>
+                  {sous && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>{sous}</div>}
+                  {l.adresse && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{l.adresse}</div>}
+                </div>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
+                  {EUR(Number(l.montant_cents ?? inv.net_cents))}
+                </div>
               </div>
-              {(() => {
-                const l = (inv.lines || [])[0] || {}
-                const rows: Array<[string, string]> = []
-                if (l.prestation) rows.push(['Prestation', String(l.prestation)])
-                if (l.date) rows.push(['Date', String(l.date)])
-                if (l.adresse) rows.push(['Adresse', String(l.adresse)])
-                if (l.arrivee && l.depart) rows.push(['Arrivée / départ scannés', `${l.arrivee} — ${l.depart}`])
-                const d = durationLabel(l.duree_min)
-                if (d) rows.push(['Durée réelle relevée', d])
-                if (l.taux_horaire_cents) rows.push(['Taux horaire', `${EUR(l.taux_horaire_cents)} de l'heure`])
-                return (
-                  <>
-                    <div style={{ marginTop: 9 }}>
-                      {rows.map(([k, v]) => (
-                        <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12.5, padding: '4px 0' }}>
-                          <span style={{ color: '#6E8592' }}>{k}</span>
-                          <span style={{ textAlign: 'right' }}>{v}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{
-                      display: 'flex', justifyContent: 'space-between', gap: 12,
-                      borderTop: '1px solid #DCE5E3', marginTop: 11, paddingTop: 11,
-                    }}>
-                      <span style={{ fontWeight: 600, fontSize: 13.5 }}>{l.prestation || 'Prestation'}</span>
-                      <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
-                        {EUR(Number(l.montant_cents ?? inv.net_cents))}
-                      </span>
-                    </div>
-                  </>
-                )
-              })()}
-            </>
-          )}
+            )
+          })()}
 
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
