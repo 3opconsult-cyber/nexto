@@ -3,7 +3,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|presentation|parcours-navigable|landing-particulier|landing-pro).html',
+        source: '/:path(admin|demo|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
       {
@@ -22,6 +22,7 @@ const nextConfig = {
         { source: '/parcours-navigable', destination: '/parcours-navigable.html' },
         { source: '/landing-particulier', destination: '/landing-particulier.html' },
         { source: '/landing-pro', destination: '/landing-pro.html' },
+        { source: '/planche-de-marque', destination: '/planche-de-marque.html' },
         // Pages reelles pas encore compatibles — neutralisees vers la demo.
         { source: '/hub', destination: '/app.html' },
         { source: '/mission/:id/litige', destination: '/app.html' },

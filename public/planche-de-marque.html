@@ -1,0 +1,354 @@
+<title>Planche de marque PING</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* La page obéit aux trois règles qu'elle documente : une seule marge,
+   tout aligné à gauche, tout espacement multiple de --u. */
+:root{
+  --ink:#123644; --ink2:#0e2a34; --paper:#F3F6F5; --teal:#12B39C; --tealD:#0C8F7E;
+  --green:#2FD06E; --slate:#6E8592; --line:#DCE5E3;
+  --bg:var(--paper); --fg:var(--ink); --fg2:var(--slate); --rule:var(--line);
+  --plate:#E8EEEC; --card:#FFFFFF; --accent:var(--tealD); --dot:var(--green);
+  --u:24px; --m:clamp(20px,6vw,72px);
+  --fh:'Quicksand',ui-rounded,'Trebuchet MS',sans-serif;
+  --fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e2a34; --fg:#EAF1EF; --fg2:#93A9B2; --rule:#1E3F4B;
+    --plate:#0a2029; --card:#153542; --accent:#3FD3BC;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e2a34; --fg:#EAF1EF; --fg2:#93A9B2; --rule:#1E3F4B;
+  --plate:#0a2029; --card:#153542; --accent:#3FD3BC;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);
+     font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 var(--m)}
+
+/* ---------- en-tête ---------- */
+header{padding:calc(var(--u)*2.5) 0 calc(var(--u)*1.5)}
+.brandline{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.wm{font-family:var(--fh);font-weight:700;font-size:40px;letter-spacing:-.025em;
+    line-height:1;color:var(--fg);display:inline-flex;align-items:baseline}
+.wm svg{height:.86em;width:.5em;margin:0 .01em;transform:translateY(.03em)}
+.stamp{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)}
+h1{font-family:var(--fh);font-weight:700;font-size:clamp(30px,4.6vw,46px);
+   line-height:1.14;letter-spacing:-.02em;margin:calc(var(--u)*1.4) 0 0;max-width:19ch;
+   text-wrap:balance}
+.dek{margin-top:var(--u);max-width:62ch;color:var(--fg2);font-size:17px}
+.dek b{color:var(--fg);font-weight:600}
+
+/* ---------- sections ---------- */
+section{padding:calc(var(--u)*2) 0}
+section+section{border-top:1px solid var(--rule)}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+         color:var(--accent);margin-bottom:var(--u)}
+h2{font-family:var(--fh);font-weight:700;font-size:clamp(22px,3vw,30px);letter-spacing:-.015em;
+   line-height:1.2;margin:0;max-width:24ch;text-wrap:balance}
+h3{font-family:var(--fh);font-weight:700;font-size:17px;letter-spacing:-.005em;margin:0}
+p{margin:var(--u) 0 0;max-width:64ch}
+p.tight{margin-top:12px}
+.muted{color:var(--fg2)}
+
+/* ---------- l'identité en trois pièces ---------- */
+.pieces{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+        gap:var(--u);margin-top:calc(var(--u)*1.5)}
+.piece{background:var(--card);border:1px solid var(--rule);border-radius:12px;
+       padding:calc(var(--u)*1.1);display:flex;flex-direction:column;gap:14px}
+.piece .stage{height:132px;display:flex;align-items:center;justify-content:center;
+              background:var(--plate);border-radius:8px}
+.piece p{margin:0;font-size:14px;color:var(--fg2)}
+.role{font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+
+/* ---------- règles numérotées : ce sont vraiment trois règles ---------- */
+.rules{margin-top:calc(var(--u)*1.5);display:flex;flex-direction:column;gap:var(--u)}
+.rule-i{display:flex;gap:18px;align-items:baseline}
+.rule-i .n{font-family:var(--fh);font-weight:700;font-size:15px;color:var(--accent);
+           width:26px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.rule-i b{font-family:var(--fh);font-weight:700;font-size:16.5px}
+.rule-i span{display:block;color:var(--fg2);font-size:14.5px;margin-top:3px;max-width:58ch}
+
+/* ---------- planches ---------- */
+.plates{margin-top:calc(var(--u)*1.5);display:flex;flex-direction:column;gap:calc(var(--u)*2)}
+.plate{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:calc(var(--u)*1.5);align-items:start}
+@media (max-width:760px){.plate{grid-template-columns:1fr}}
+.shots{background:var(--plate);border-radius:12px;padding:calc(var(--u)*.9);
+       display:flex;gap:calc(var(--u)*.7);flex-wrap:wrap;align-items:flex-start;overflow-x:auto}
+.shots img{max-width:100%;border-radius:4px;display:block;
+           box-shadow:0 1px 3px rgba(18,54,68,.16),0 8px 22px rgba(18,54,68,.12)}
+.shots.duo img{width:calc(50% - var(--u)*.35)}
+.shots.solo img{width:100%}
+.meta{padding-top:4px}
+.meta dl{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}
+.meta dt{color:var(--fg2)}
+.meta dd{margin:0;font-weight:500}
+.meta code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12.5px;
+           background:var(--plate);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+/* ---------- verdict ---------- */
+.verdict{margin-top:calc(var(--u)*1.5);display:grid;
+         grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.v{border:1px solid var(--rule);border-radius:10px;padding:16px 18px;background:var(--card)}
+.v .tag{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+.v.keep{border-color:var(--accent)}
+.v.keep .tag{color:var(--accent)}
+.v.drop .tag{color:var(--fg2)}
+.v b{display:block;font-family:var(--fh);font-weight:700;font-size:15.5px;margin:8px 0 5px}
+.v span{font-size:13.5px;color:var(--fg2)}
+.wide{width:100%;border-radius:10px;margin-top:calc(var(--u)*1.5);display:block;
+      border:1px solid var(--rule)}
+
+/* ---------- table des liens ---------- */
+.tablewrap{overflow-x:auto;margin-top:calc(var(--u)*1.5)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+th,td{text-align:left;padding:11px 16px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg2)}
+td code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;color:var(--accent);font-weight:600}
+
+/* ---------- notes ---------- */
+.notes{margin-top:calc(var(--u)*1.5);display:flex;flex-direction:column;gap:16px}
+.note{display:flex;gap:16px;align-items:baseline}
+.note .mk{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--dot);
+          transform:translateY(-2px)}
+.note.warn .mk{background:#F2A93B}
+.note p{margin:0;font-size:14.5px;color:var(--fg2)}
+.note p b{color:var(--fg);font-weight:600}
+footer{padding:calc(var(--u)*2) 0 calc(var(--u)*3);color:var(--fg2);font-size:13.5px;
+       border-top:1px solid var(--rule)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="brandline">
+    <span class="wm">p<svg viewBox="71 35 38 65" aria-hidden="true"><path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="currentColor"/><circle cx="90" cy="53" r="8.6" fill="#2FD06E"/></svg>ng</span>
+    <span class="stamp">28 août 2026 · direction arrêtée</span>
+  </div>
+  <h1>La marque, déclinée sur tout ce qui sort de l'écran.</h1>
+  <p class="dek">Dix supports redessinés dans la direction minimaliste : grille stricte, marge unique, le signe pour seule image. Les sources vivent désormais <b>dans le repo</b> — les fichiers d'hier avaient été produits dans un conteneur temporaire et sont perdus.</p>
+</header>
+
+<section>
+  <div class="eyebrow">Décision — piste negative space</div>
+  <h2>Elle tient sur PING, mais une seule fois.</h2>
+  <p>La piste avait été explorée sur SONAR et CONNECT, deux noms écartés. Reprise sur le nom retenu, elle ne donne qu'un résultat : <b>le mot contient déjà son message</b>. PING contient PIN. Le <i>i</i> devient l'épingle plantée sur la carte, et son trou est le point vert du signal — rien n'est ajouté au mot, une lettre est seulement révélée.</p>
+
+  <div class="verdict">
+    <div class="v keep"><div class="tag">Retenu</div><b>B — PIN·G</b><span>Le seul dont le sens est dans le nom, pas dans le dessin. Survit à 16 px, au noir seul et au fond sombre.</span></div>
+    <div class="v drop"><div class="tag">Écarté</div><b>A — le P qui émet</b><span>Les ondes sortant du contrepoinçon retombent dans le cliché wifi.</span></div>
+    <div class="v drop"><div class="tag">Écarté</div><b>C — le G ouvert</b><span>La lettre se déforme trop pour rester lisible.</span></div>
+    <div class="v drop"><div class="tag">Écarté</div><b>D — l'onde derrière le mot</b><span>Joli, mais ce n'est pas du negative space : c'est un badge.</span></div>
+  </div>
+
+  <div class="wide" style="border:1px dashed var(--rule);border-radius:12px;padding:24px;text-align:center;color:var(--fg2);font-size:13px">Comparatif visuel non généré ici (rendu navigateur indisponible dans ce sandbox). Voir <code>brand/explorations/negative-space.html</code> dans le dépôt.</div>
+</section>
+
+<section>
+  <div class="eyebrow">L'identité</div>
+  <h2>Deux pièces, deux emplois. Jamais empilées.</h2>
+  <p>Le signe dit l'<b>action</b> — le geste du bouton qui scanne la carte. Le logotype dit la <b>promesse</b> — une épingle plantée à côté de chez vous. Le dispositif n'est ni l'un ni l'autre : c'est l'image de couverture.</p>
+
+  <div class="pieces">
+    <div class="piece">
+      <div class="stage">
+        <svg width="76" height="76" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" fill="none" stroke="#12B39C" stroke-width="2" opacity=".3"/>
+          <circle cx="32" cy="32" r="19.8" fill="none" stroke="#12B39C" stroke-width="2.9" opacity=".6"/>
+          <circle cx="32" cy="32" r="7.7" fill="#2FD06E"/></svg>
+      </div>
+      <div><div class="role">Le signe</div><h3>Anneaux + point</h3></div>
+      <p>Vit dans le carré : favicon, icône PWA, apple-touch, barre d'onglets. Déjà déployé — ne pas y toucher.</p>
+    </div>
+
+    <div class="piece">
+      <div class="stage">
+        <span class="wm" style="font-size:44px;color:var(--fg)">p<svg viewBox="71 35 38 65" aria-hidden="true"><path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="currentColor"/><circle cx="90" cy="53" r="8.6" fill="#2FD06E"/></svg>ng</span>
+      </div>
+      <div><div class="role">Le logotype</div><h3>PIN·G</h3></div>
+      <p>Partout où le nom s'écrit : print, landings, réseaux sociaux, en-têtes.</p>
+    </div>
+
+    <div class="piece">
+      <div class="stage">
+        <svg width="52" height="116" viewBox="16.5 4.5 77.5 173.5" aria-hidden="true">
+          <path d="M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 98" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="64" cy="148" r="30" fill="none" stroke="#12B39C" stroke-width="2" opacity=".3"/>
+          <circle cx="64" cy="148" r="19.8" fill="none" stroke="#12B39C" stroke-width="2.9" opacity=".6"/>
+          <circle cx="64" cy="148" r="7.7" fill="#2FD06E"/></svg>
+      </div>
+      <div><div class="role">Le dispositif</div><h3>La question</h3></div>
+      <p>Un point d'interrogation dont le point est le signe. La question a pour réponse la marque. Une fois par support, grande, jamais en décoration.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">La grille</div>
+  <h2>Trois règles. Le reste en découle.</h2>
+  <div class="rules">
+    <div class="rule-i"><div class="n">01</div><div><b>Une seule marge</b><span>Identique sur les quatre côtés du support. Elle ne change qu'avec le format, jamais à l'intérieur d'un même support.</span></div></div>
+    <div class="rule-i"><div class="n">02</div><div><b>Tout aligne à gauche</b><span>Sur cette marge, y compris les images : le crochet du point d'interrogation est calé au pixel sur le bord du texte. Rien n'est centré.</span></div></div>
+    <div class="rule-i"><div class="n">03</div><div><b>Tout espacement vertical est un multiple d'une unité</b><span>La marge vaut deux unités. Aucune valeur d'espacement n'existe en dehors de cette suite.</span></div></div>
+  </div>
+  <p class="muted">Corollaires appliqués partout : une seule idée par page, un seul filet par support, un seul accent chromatique. Le vide n'est pas un manque, c'est le sujet.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Les supports</div>
+  <h2>Dix pièces, un seul système.</h2>
+
+  <div class="plates">
+
+    <div class="plate">
+      <div class="shots duo">
+        <img src="/brand-board/img/flyer-part-recto.png" alt="Flyer particulier, recto">
+        <img src="/brand-board/img/flyer-part-verso.png" alt="Flyer particulier, verso">
+      </div>
+      <div class="meta">
+        <h3>Flyer particulier</h3>
+        <p class="tight muted">Le recto ne dit rien d'autre que la question. La réponse est au dos, en trois temps.</p>
+        <dl><dt>Format</dt><dd>A5 recto/verso, 148 × 210 mm</dd>
+            <dt>Lien</dt><dd><code>/l/fp</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots duo">
+        <img src="/brand-board/img/flyer-pro-recto.png" alt="Flyer prestataire, recto">
+        <img src="/brand-board/img/flyer-pro-verso.png" alt="Flyer prestataire, verso">
+      </div>
+      <div class="meta">
+        <h3>Flyer prestataire</h3>
+        <p class="tight muted">Même architecture, autre promesse : la visibilité au lieu de la disponibilité.</p>
+        <dl><dt>Format</dt><dd>A5 recto/verso, 148 × 210 mm</dd>
+            <dt>Lien</dt><dd><code>/l/fpr</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots solo" style="max-width:420px">
+        <img src="/brand-board/img/affiche.png" alt="Affiche A4">
+      </div>
+      <div class="meta">
+        <h3>Affiche</h3>
+        <p class="tight muted">Lue à deux mètres dans un hall d'immeuble ou une vitrine : une phrase, un signe, un QR. Rien d'autre.</p>
+        <dl><dt>Format</dt><dd>A4, 210 × 297 mm</dd>
+            <dt>Lien</dt><dd><code>/l/af</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots solo" style="max-width:340px">
+        <img src="/brand-board/img/chevalet.png" alt="Chevalet de comptoir A5">
+      </div>
+      <div class="meta">
+        <h3>Chevalet de comptoir</h3>
+        <p class="tight muted">Plié en deux, il tient debout seul. Le panneau du haut est retourné pour que les deux faces se lisent une fois posé.</p>
+        <dl><dt>Format</dt><dd>A5 plié, 148 × 105 mm par face</dd>
+            <dt>Lien</dt><dd><code>/l/ch</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots solo" style="max-width:420px">
+        <img src="/brand-board/img/stickers.png" alt="Planche de stickers">
+      </div>
+      <div class="meta">
+        <h3>Planche de stickers</h3>
+        <p class="tight muted">À taille réelle, tracé de découpe compris. Ronds 50 mm, carrés 60 mm, bandes 80 × 26 mm.</p>
+        <dl><dt>Format</dt><dd>A4, 8 stickers</dd>
+            <dt>Liens</dt><dd><code>/l/st</code> · <code>/l/stp</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots">
+        <img src="/brand-board/img/pitch-part-1.png" alt="Présentation particulier, couverture" style="width:calc(33.33% - var(--u)*.47)">
+        <img src="/brand-board/img/pitch-part-3.png" alt="Présentation particulier, une étape" style="width:calc(33.33% - var(--u)*.47)">
+        <img src="/brand-board/img/pitch-part-6.png" alt="Présentation particulier, pourquoi PING" style="width:calc(33.33% - var(--u)*.47)">
+      </div>
+      <div class="meta">
+        <h3>Présentation particulier</h3>
+        <p class="tight muted">Sept pages, une idée par page. La colonne de texte reste sur la marge, la moitié droite respire.</p>
+        <dl><dt>Format</dt><dd>A4 paysage, 7 pages</dd>
+            <dt>Lien</dt><dd><code>/l/pp</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots duo">
+        <img src="/brand-board/img/pitch-pro-1.png" alt="Présentation prestataire, couverture">
+        <img src="/brand-board/img/pitch-pro-4.png" alt="Présentation prestataire, payé d'avance">
+      </div>
+      <div class="meta">
+        <h3>Présentation prestataire</h3>
+        <p class="tight muted">Sept pages, même charpente. Le texte reprend mot pour mot celui déjà validé sur la landing pro.</p>
+        <dl><dt>Format</dt><dd>A4 paysage, 7 pages</dd>
+            <dt>Lien</dt><dd><code>/l/ppr</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots solo" style="max-width:420px">
+        <img src="/brand-board/img/vignettes.png" alt="Vignettes de campagne">
+      </div>
+      <div class="meta">
+        <h3>Vignettes de campagne</h3>
+        <p class="tight muted">Une vignette lève une objection, et une seule. À joindre en message direct, jamais deux d'un coup.</p>
+        <dl><dt>Format</dt><dd>6 vignettes carrées, 78 mm</dd>
+            <dt>Lien</dt><dd><code>/l/dm?c=nom</code></dd></dl>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="shots duo">
+        <img src="/brand-board/img/ig-part.png" alt="Post Instagram particulier">
+        <img src="/brand-board/img/ig-pro.png" alt="Post Instagram prestataire">
+      </div>
+      <div class="meta">
+        <h3>Posts Instagram</h3>
+        <p class="tight muted">Le couple sombre/clair fait la paire dans le fil : la question sur fond encre, la réponse sur fond papier.</p>
+        <dl><dt>Format</dt><dd>1080 × 1350 px (rendus en 2×)</dd>
+            <dt>Liens</dt><dd><code>/l/ig</code> · <code>/l/igp</code></dd></dl>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Acquisition</div>
+  <h2>Chaque support sait ce qu'il a ramené.</h2>
+  <p>Les QR ne portent pas l'URL complète avec ses paramètres : à 120 caractères le code devient trop dense et ne se scanne plus imprimé à 20 mm. <b>Vérifié en décodant les PDF rendus</b> — le QR du sticker prestataire ne passait pas. Ils portent un lien court, résolu côté serveur, qui redirige vers la bonne page avec l'attribution complète.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Code</th><th>Destination</th><th>Porté par</th></tr></thead>
+      <tbody>
+        <tr><td><code>/l/fp</code></td><td>landing particulier</td><td>Flyer A5 particulier</td></tr>
+        <tr><td><code>/l/fpr</code></td><td>landing pro</td><td>Flyer A5 prestataire</td></tr>
+        <tr><td><code>/l/af</code></td><td>landing particulier</td><td>Affiche A4</td></tr>
+        <tr><td><code>/l/ch</code></td><td>landing particulier</td><td>Chevalet de comptoir</td></tr>
+        <tr><td><code>/l/st</code> · <code>/l/stp</code></td><td>landing particulier · pro</td><td>Stickers</td></tr>
+        <tr><td><code>/l/pp</code> · <code>/l/ppr</code></td><td>carrousel « comment ça marche »</td><td>Présentations</td></tr>
+        <tr><td><code>/l/ig</code> · <code>/l/igp</code></td><td>landing particulier · pro</td><td>Posts Instagram</td></tr>
+        <tr><td><code>/l/dm?c=nom</code></td><td>landing pro</td><td>Prospection directe — un lien par prospect</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes">
+    <div class="note"><span class="mk"></span><p><b>La cible d'un code se change sans réimprimer.</b> C'est l'intérêt principal : un support qui circule reste utile même si la destination bouge.</p></div>
+    <div class="note warn"><span class="mk"></span><p><b>Un code ne se supprime jamais</b> tant que des supports imprimés circulent. Un code inconnu redirige vers la carte, pas vers une erreur : quelqu'un qui vient de scanner un flyer dans la rue ne doit pas tomber sur un 404.</p></div>
+    <div class="note warn"><span class="mk"></span><p><b>Le domaine reste <code>nexto-eta.vercel.app</code></b>, imprimé tel quel sur les supports. C'est la seule chose du lot qui mériterait d'être tranchée avant d'engager un vrai tirage.</p></div>
+  </div>
+</section>
+
+<footer>
+  Sources et build : <code>brand/</code> dans le dépôt <code>nexto</code>. <code>python3 build.py</code> régénère le lot complet.
+  Rendu weasyprint pour les PDF, Chromium pour les visuels écran.
+</footer>
+
+</div>
