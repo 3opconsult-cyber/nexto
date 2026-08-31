@@ -2717,23 +2717,21 @@ function sendDac7Recap(key){
 }
 
 /* ================= RESSOURCES COMMERCIALES — copier le lien ou envoyer sans pièce jointe ================= */
+// Anciennement une liste fictive (fichiers ping-*.html jamais commités, domaine
+// ping.app inexistant). Remplacée par les trois supports réels et déployés.
 const RESOURCES=[
- {nom:'ping-creatives-menage.html',desc:'Kit visuel complet — formats carrés et story',cat:'Marketing',slug:'creatives-menage',pitch:"Voici le kit visuel PING (posts et stories prêts à l'emploi).",
-  visual:'<div style="font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.8;font-family:Quicksand,sans-serif">Le service de proximité</div><div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:17px;margin-top:10px;line-height:1.25">Et si ce que vous cherchez se trouvait juste à côté de vous ?</div>'},
- {nom:'ping-carrousel-presentation.html',desc:'Carrousel Pro/Particulier, 5 slides, CTA tracées UTM',cat:'Marketing',slug:'carrousel',pitch:'Voici le carrousel de présentation PING.',
-  visual:'<div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:17px;line-height:1.3">Et si ce que vous cherchez<br>se trouvait juste à côté de vous ?</div><div style="font-size:11.5px;opacity:.85;margin-top:10px;line-height:1.4">Ménage, repassage, nettoyage, remise en état — des personnes disponibles en temps réel, autour de vous.</div>'},
- {nom:'ping-demo-commerciale.html',desc:'Démo guidée 2 parcours — pour présentation en clientèle',cat:'Commercial',slug:'demo-commerciale',pitch:'Voici la démo commerciale PING, à parcourir en 3 minutes.',useFrame:true,
-  visual:'<div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:15px">Étape 4 · Proposer</div><div style="font-size:12px;opacity:.85;margin-top:8px;line-height:1.4">« Votre prix, net affiché. » Commission 11 %, aucune autre retenue — 2 parcours cliquables, pro et particulier.</div>'},
- {nom:'ping-demo-presentation.html',desc:"Animation d'accroche, ~46 s",cat:'Commercial',slug:'demo-accroche',pitch:"Voici l'animation de présentation PING (46 secondes).",useFrame:true,
-  visual:'<div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div><div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:14px;text-align:center">Animation d\'accroche · 46 s</div><div style="font-size:11px;opacity:.75;text-align:center;margin-top:8px">Carte qui se dessine, épingles qui apparaissent, recherche « ménage » qui se tape en direct</div>'},
- {nom:'ping-kit-lancement-menage.md',desc:"Scripts de prospection prêts à l'emploi (posts, DM, relances)",cat:'Commercial',slug:'kit-lancement',pitch:'Voici le kit de lancement PING (scripts de prospection).',
-  visual:'<div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:15px;line-height:1.35">« PING — le ménage de confiance, juste à côté de vous, réservé en un geste. »</div><div style="font-size:11px;opacity:.75;margin-top:10px">Positionnement en une phrase · §1 du kit</div>'},
- {nom:'ping-flash-contact.html',desc:'Formulaire flash déclenché par QR terrain — voir onglet Campagnes & QR',cat:'Nouveau',slug:'flash',pitch:'Laissez vos coordonnées ici, on vous recontacte.',
-  visual:'<div style="font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.8;font-family:Quicksand,sans-serif">Ménage · repassage · nettoyage</div><div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:16px;margin-top:9px;line-height:1.25">Et si ce que vous cherchez se trouvait juste à côté de vous ?</div><div style="display:flex;gap:6px;margin-top:12px"><span style="background:#12B39C;color:#fff;font-size:10px;font-weight:700;padding:6px 10px;border-radius:8px;font-family:Quicksand,sans-serif">Je cherche un ménage</span><span style="background:rgba(255,255,255,.12);color:#fff;font-size:10px;font-weight:700;padding:6px 10px;border-radius:8px;font-family:Quicksand,sans-serif">Je propose mes services</span></div>'},
- {nom:'ping-landing-menage.html',desc:'Landing complète, double entrée pro/particulier',cat:'Marketing',slug:'',pitch:'Découvrez PING, le ménage de confiance juste à côté de vous.',
-  visual:'<div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;opacity:.85">PING · Grasse</div><div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:17px;margin-top:8px;line-height:1.25">Le ménage de confiance, juste à côté de vous.</div><div style="display:flex;gap:6px;margin-top:12px"><span style="background:#12B39C;color:#fff;font-size:10px;font-weight:700;padding:6px 10px;border-radius:8px;font-family:Quicksand,sans-serif">Je cherche un ménage</span><span style="background:rgba(255,255,255,.12);color:#fff;font-size:10px;font-weight:700;padding:6px 10px;border-radius:8px;font-family:Quicksand,sans-serif">Je propose mes services</span></div>'},
+ {nom:'Carrousel « Comment ça marche »',desc:'Parcours réel, accessible aux clients comme aux prestataires',cat:'Marketing',path:'/comment-ca-marche',pitch:'Voici le carrousel de présentation PING.',
+  visual:'<div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:17px;line-height:1.3">Et si ce que vous cherchez<br>se trouvait juste à côté de vous ?</div><div style="font-size:11.5px;opacity:.85;margin-top:10px;line-height:1.4">Ménage, repassage, nettoyage — des personnes disponibles en temps réel, autour de vous.</div>'},
+ {nom:'Landing particulier',desc:'Page d\'acquisition réelle, côté « Je cherche »',cat:'Marketing',path:'/landing-particulier',pitch:'Découvrez PING, le ménage de confiance juste à côté de vous.',
+  visual:'<div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;opacity:.85">PING · Grasse</div><div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:17px;margin-top:8px;line-height:1.25">Le ménage de confiance, juste à côté de vous.</div><div style="margin-top:12px"><span style="background:#12B39C;color:#fff;font-size:10px;font-weight:700;padding:6px 10px;border-radius:8px;font-family:Quicksand,sans-serif">Je cherche un ménage</span></div>'},
+ {nom:'Landing pro',desc:'Page d\'acquisition réelle, côté « Je propose »',cat:'Marketing',path:'/landing-pro',pitch:'Devenez prestataire PING — visible à chaque déplacement, paiement en ligne et facture automatique.',
+  visual:'<div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;opacity:.85">PING · Grasse</div><div style="font-family:Quicksand,sans-serif;font-weight:700;font-size:17px;margin-top:8px;line-height:1.25">Visible à chaque déplacement, moins de devis et de factures.</div><div style="margin-top:12px"><span style="background:rgba(255,255,255,.12);color:#fff;font-size:10px;font-weight:700;padding:6px 10px;border-radius:8px;font-family:Quicksand,sans-serif">Je propose mes services</span></div>'},
 ];
-function resourceUrl(r){return 'https://ping.app/'+r.slug;}
+// URL réelle, relative au domaine sur lequel l'admin tourne (pas de domaine
+// codé en dur — reste correct que ce soit nexto-eta.vercel.app ou un futur
+// domaine propre). Sans UTM pour l'instant : à discuter si ces envois doivent
+// être attribués comme les liens /l/<code>.
+function resourceUrl(r){return window.location.origin+r.path;}
 function resTag(cat){return cat==='Nouveau'?'ok':'ink';}
 function renderResources(){
  const box=document.getElementById('resourceRows'); if(!box)return;
@@ -3100,7 +3098,7 @@ window.loadLiveMap = async function () {
   const avgLat = list.reduce((s, p) => s + p.lat, 0) / list.length
   const avgLng = list.reduce((s, p) => s + p.lng, 0) / list.length
   liveMapInstance = L.map('liveMapDiv', { zoomControl: false, attributionControl: false }).setView([avgLat, avgLng], 13)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(liveMapInstance)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(liveMapInstance)
 
   list.forEach(p => {
     const onJob = onJobIds.has(p.id)
