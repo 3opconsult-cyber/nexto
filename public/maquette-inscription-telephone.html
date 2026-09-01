@@ -1,0 +1,218 @@
+<title>PING · Maquette — inscription par téléphone</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ink:#123644; --teal:#12B39C; --tealD:#0C8F7E; --green:#2FD06E; --gold:#F2A93B;
+  --paper:#F3F6F5; --line:#DCE5E3; --slate:#6E8592; --bg:#E4EBE9; --fg:#123644; --fg2:#6E8592;
+  --fh:'Quicksand',ui-rounded,'Trebuchet MS',sans-serif;
+  --fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);-webkit-font-smoothing:antialiased;line-height:1.55}
+.page{max-width:1100px;margin:0 auto;padding:28px 20px 64px;display:grid;grid-template-columns:minmax(0,1fr) 392px;gap:36px;align-items:start}
+@media (max-width:900px){.page{grid-template-columns:1fr;gap:26px}}
+.lede h1{font-family:var(--fh);font-weight:700;font-size:clamp(24px,3.4vw,34px);line-height:1.18;letter-spacing:-.02em;margin:14px 0 0;max-width:20ch}
+.lede p{color:var(--fg2);max-width:52ch;margin:14px 0 0;font-size:15px}
+.wm{font-family:var(--fh);font-weight:700;font-size:24px;display:inline-flex;align-items:baseline}
+.wm svg{height:.86em;width:.5em;transform:translateY(.03em)}
+.warn{margin-top:20px;border:1px solid var(--line);border-left:3px solid var(--gold);background:#fff;
+      border-radius:10px;padding:13px 15px;font-size:13px;color:var(--fg2);max-width:52ch}
+.warn b{color:var(--fg)}
+.fact{margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff;max-width:52ch}
+.fact b{display:block;font-family:var(--fh);font-size:13.5px;margin-bottom:3px}
+.fact p{margin:0;font-size:13px;color:var(--fg2)}
+.fact.ok{border-left:3px solid var(--teal)}
+.fact.wait{border-left:3px solid var(--gold)}
+.steps{margin-top:22px;display:flex;flex-direction:column;gap:2px;max-width:52ch}
+.stp{display:flex;gap:12px;align-items:flex-start;padding:8px 11px;border-radius:9px;font-size:13.5px;color:var(--fg2);border:1px solid transparent}
+.stp .k{font-family:var(--fh);font-weight:700;font-size:12px;width:18px;color:var(--fg2)}
+.stp.on{background:#fff;border-color:var(--line);color:var(--fg)}
+.stp.on .k{color:var(--teal)}
+.stp.done .k{color:var(--green)}
+.reset{margin-top:18px;background:none;border:1px solid var(--line);color:var(--fg2);font-family:var(--fb);
+       font-size:13px;font-weight:500;padding:9px 15px;border-radius:999px;cursor:pointer}
+
+.phone{position:sticky;top:24px;width:392px;max-width:100%;background:#0b1f27;border-radius:38px;padding:11px;
+       box-shadow:0 30px 70px rgba(11,31,39,.34),0 2px 8px rgba(11,31,39,.2)}
+@media (max-width:900px){.phone{position:relative;margin:0 auto}}
+.screen{background:var(--paper);border-radius:29px;overflow:hidden;height:718px;position:relative;display:flex;flex-direction:column}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#0b1f27;border-radius:0 0 14px 14px;z-index:60}
+.topbar{background:var(--ink);color:#fff;padding:30px 15px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar .ttl{font-family:var(--fh);font-weight:700;font-size:15px}
+.iconbtn{background:rgba(255,255,255,.12);border:none;color:#fff;width:30px;height:30px;border-radius:50%;
+         cursor:pointer;display:grid;place-items:center;flex-shrink:0}
+.body{flex:1;overflow-y:auto;padding:20px}
+.foot{padding:14px 15px calc(14px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid var(--line)}
+.cta{width:100%;border:none;background:var(--teal);color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;
+     padding:15px;border-radius:999px;cursor:pointer;box-shadow:0 8px 18px rgba(18,179,156,.3)}
+.cta[disabled]{opacity:.4;cursor:not-allowed;box-shadow:none}
+.cta.ghost{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+
+/* écran de fond, visible derrière la popup */
+.bgscreen{position:absolute;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:rgba(255,255,255,.35);text-align:center;padding:30px}
+.bgscreen svg{opacity:.5}
+
+/* popup façon Airbnb */
+.popbg{position:absolute;inset:0;background:rgba(11,31,39,.6);backdrop-filter:blur(2px);display:flex;align-items:flex-end;z-index:40}
+.pop{background:#fff;border-radius:24px 24px 0 0;padding:26px 20px calc(20px + env(safe-area-inset-bottom,0px));width:100%}
+.pop h2{font-family:var(--fh);font-weight:700;font-size:19px;margin:0 0 4px;text-align:center}
+.pop p.sub{font-size:12.5px;color:var(--fg2);text-align:center;margin:0 0 18px}
+.opt{display:flex;align-items:center;gap:13px;border:1.5px solid var(--line);border-radius:16px;padding:15px;margin-bottom:10px;cursor:pointer;text-align:left;background:#fff;width:100%}
+.opt:hover{border-color:var(--teal)}
+.opt .ic{width:42px;height:42px;border-radius:12px;background:var(--paper);display:grid;place-items:center;flex-shrink:0}
+.opt b{display:block;font-family:var(--fh);font-weight:700;font-size:14.5px}
+.opt span{display:block;font-size:12px;color:var(--fg2);margin-top:1px}
+
+/* saisie */
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.fld input{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:12px;font-family:var(--fb);font-size:15px;font-weight:600;color:var(--ink);background:#fff}
+.fld input:focus{outline:none;border-color:var(--teal)}
+.hint{font-size:12px;color:var(--fg2);margin-top:10px;line-height:1.5}
+
+/* code OTP */
+.otp{display:flex;gap:8px;justify-content:center;margin:22px 0 10px}
+.otp .d{width:42px;height:52px;border:1.5px solid var(--line);border-radius:12px;display:grid;place-items:center;
+        font-family:var(--fh);font-weight:700;font-size:22px;background:#fff}
+.otp .d.on{border-color:var(--teal);color:var(--teal)}
+.resend{text-align:center;font-size:12.5px;color:var(--fg2)}
+.resend b{color:var(--teal);cursor:pointer;font-weight:700}
+
+/* confirmation + bascule */
+.done{text-align:center;padding:8px 0 4px}
+.ring{width:56px;height:56px;margin:0 auto 12px;border-radius:50%;background:rgba(47,208,110,.14);display:grid;place-items:center}
+.done h2{font-family:var(--fh);font-weight:700;font-size:18px;margin:0 0 3px}
+.done p{font-size:13px;color:var(--fg2);margin:0}
+.switchcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:20px}
+.switchrow{display:flex;align-items:center;gap:12px;cursor:pointer}
+.switchrow b{display:block;font-family:var(--fh);font-weight:700;font-size:13.5px}
+.switchrow span{display:block;font-size:11px;color:var(--fg2);margin-top:1px}
+.swtoggle{width:38px;height:22px;border-radius:999px;background:rgba(18,54,68,.14);position:relative;flex-shrink:0;transition:background .15s}
+.swtoggle.on{background:var(--teal)}
+.swtoggle i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.swtoggle.on i{left:18px}
+.previewbox{margin-top:12px;padding:12px;border-radius:12px;background:var(--paper);font-size:12.5px;color:var(--fg2);text-align:center;transition:background .15s}
+.previewbox b{display:block;color:var(--ink);font-family:var(--fh);font-size:13px;margin-bottom:2px}
+</style>
+
+<div class="page">
+<div class="lede">
+  <span class="wm">p<svg viewBox="71 35 38 65" aria-hidden="true"><path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="currentColor"/><circle cx="90" cy="53" r="8.6" fill="#2FD06E"/></svg>ng</span>
+  <h1>Inscription par téléphone, façon Airbnb</h1>
+  <p>Popup « Je cherche / Je propose » à l'ouverture, numéro vérifié par code SMS, puis démonstration de la bascule client/pro sur le même compte.</p>
+
+  <div class="warn"><b>Pure maquette visuelle.</b> Aucun SMS n'est envoyé, aucun compte n'est créé. Rien n'est branché à Supabase ni à un fournisseur SMS.</div>
+
+  <div class="fact ok"><b>Déjà réel dans l'app</b><p>Le compte à double casquette existe : une fois l'onboarding pro fait, le menu (☰) propose « Passer en mode pro / Revenir en mode particulier » sur le même compte — voir l'écran 4 ci-contre, qui reproduit ce vrai bouton.</p></div>
+  <div class="fact wait"><b>Pas encore réel</b><p>L'auth par téléphone (écrans 2 et 3). Aujourd'hui le téléphone est un champ texte non vérifié. Passer à un vrai code SMS demande un fournisseur (Twilio ou équivalent) configuré dans Supabase, avec un coût par envoi.</p></div>
+
+  <div class="steps" id="steps"></div>
+  <button class="reset" onclick="reset()">Recommencer</button>
+</div>
+
+<div class="phone">
+  <div class="screen" id="screen"><div class="notch"></div></div>
+</div>
+</div>
+
+<script>
+const ETAPES = [
+  ['choix','Je cherche / Je propose'],
+  ['telephone','Numéro de téléphone'],
+  ['code','Code reçu par SMS'],
+  ['fin','Compte créé, bascule possible'],
+];
+let vue = 'choix';
+let role = null; // 'client' | 'pro'
+let proActif = false; // état du toggle sur l'écran 4
+
+function go(v){ vue = v; render(); }
+function choisir(r){ role = r; proActif = (r === 'pro'); go('telephone'); }
+function toggle(){ proActif = !proActif; render(); }
+function reset(){ vue='choix'; role=null; proActif=false; render(); }
+
+function render(){
+  const el = document.getElementById('screen');
+  let h = '<div class="notch"></div>';
+
+  const fond = `<div class="bgscreen">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/></svg>
+    <div style="font-family:'Quicksand',sans-serif;font-weight:700;font-size:13px">PING</div>
+  </div>`;
+
+  if(vue==='choix'){
+    h += fond + `<div class="popbg"><div class="pop">
+      <h2>Bienvenue sur PING</h2>
+      <p class="sub">Et si ce que vous cherchez se trouvait juste à côté de vous ?</p>
+      <button class="opt" onclick="choisir('client')">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+        <span><b>Je cherche</b><span>Ménage, repassage, nettoyage près de chez moi</span></span>
+      </button>
+      <button class="opt" onclick="choisir('pro')">
+        <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg></span>
+        <span><b>Je propose</b><span>Je suis disponible pour des missions</span></span>
+      </button>
+    </div></div>`;
+  }
+
+  else if(vue==='telephone'){
+    h += `<div class="topbar"><button class="iconbtn" onclick="go('choix')" aria-label="Retour">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M15 19l-7-7 7-7"/></svg></button>
+      <span class="ttl">Votre numéro</span></div>
+      <div class="body">
+        <div class="fld"><label>Numéro de téléphone</label>
+          <input type="tel" placeholder="06 12 34 56 78" id="tel" oninput="document.getElementById('btnTel').disabled = this.value.length < 8"></div>
+        <p class="hint">On vous envoie un code à usage unique par SMS. C'est ce numéro qui sert de compte — plus besoin de mot de passe à retenir.</p>
+      </div>
+      <div class="foot"><button class="cta" id="btnTel" disabled onclick="go('code')">Recevoir le code</button></div>`;
+  }
+
+  else if(vue==='code'){
+    h += `<div class="topbar"><button class="iconbtn" onclick="go('telephone')" aria-label="Retour">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M15 19l-7-7 7-7"/></svg></button>
+      <span class="ttl">Vérification</span></div>
+      <div class="body" style="text-align:center">
+        <p class="hint" style="margin-top:6px">Code envoyé au <b>06 12 34 56 78</b></p>
+        <div class="otp">${[4,2,0,9,'',''].map(d=>`<div class="d ${d!==''?'on':''}">${d}</div>`).join('')}</div>
+        <p class="resend">Rien reçu ? <b>Renvoyer le code</b></p>
+      </div>
+      <div class="foot"><button class="cta" onclick="go('fin')">Vérifier</button></div>`;
+  }
+
+  else if(vue==='fin'){
+    h += `<div class="body">
+      <div class="done">
+        <div class="ring"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2FD06E" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h2>Numéro vérifié</h2>
+        <p>Compte créé côté ${role==='pro'?'prestataire':'client'} — 06 12 34 56 78</p>
+      </div>
+      <div class="switchcard">
+        <div class="switchrow" onclick="toggle()">
+          <div style="flex:1">
+            <b>${proActif?'Revenir en mode particulier':'Passer en mode pro'}</b>
+            <span>${proActif?'Chercher un service près de moi':'Proposer mes services'}</span>
+          </div>
+          <div class="swtoggle ${proActif?'on':''}"><i></i></div>
+        </div>
+        <div class="previewbox">
+          <b>${proActif?'Vue « Je propose »':'Vue « Je cherche »'}</b>
+          ${proActif?'Tableau de bord, missions autour de vous, factures':'Carte, réservation, suivi de vos demandes'}
+        </div>
+      </div>
+      <p class="hint" style="margin-top:14px">Même compte, même numéro — ce bouton (menu ☰) existe déjà dans l'app réelle.</p>
+      </div>`;
+  }
+
+  el.innerHTML = h;
+  majEtapes();
+}
+
+function majEtapes(){
+  const idx = ETAPES.findIndex(e=>e[0]===vue);
+  document.getElementById('steps').innerHTML = ETAPES.map((e,i)=>
+    `<div class="stp ${i===idx?'on':''} ${i<idx?'done':''}"><span class="k">${i+1}</span><span>${e[1]}</span></div>`
+  ).join('');
+}
+
+render();
+</script>
