@@ -1,0 +1,604 @@
+<title>Parcours PING · Vence — Nice</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<style>
+:root{
+  --ink:#123644; --ink2:#0e2a34; --teal:#12B39C; --tealD:#0C8F7E; --green:#2FD06E;
+  --coral:#FF7A66; --gold:#F2A93B; --paper:#F3F6F5; --line:#DCE5E3; --slate:#6E8592;
+  --bg:#E4EBE9; --fg:#123644; --fg2:#6E8592; --chrome:#FFFFFF; --hair:#D3DEDB;
+  --fh:'Quicksand',ui-rounded,'Trebuchet MS',sans-serif;
+  --fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b2028; --fg:#E9F1EF; --fg2:#8FA6B0; --chrome:#12303B; --hair:#1D404C;
+}}
+:root[data-theme="dark"]{
+  --bg:#0b2028; --fg:#E9F1EF; --fg2:#8FA6B0; --chrome:#12303B; --hair:#1D404C;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);
+     -webkit-font-smoothing:antialiased;line-height:1.55}
+
+/* ---------- chrome de la page ---------- */
+.page{max-width:1160px;margin:0 auto;padding:28px 20px 64px;
+      display:grid;grid-template-columns:minmax(0,1fr) 392px;gap:36px;align-items:start}
+@media (max-width:900px){.page{grid-template-columns:1fr;gap:26px}}
+.lede h1{font-family:var(--fh);font-weight:700;font-size:clamp(26px,3.6vw,38px);
+         line-height:1.15;letter-spacing:-.02em;margin:14px 0 0;max-width:17ch;text-wrap:balance}
+.lede p{color:var(--fg2);max-width:52ch;margin:14px 0 0;font-size:15.5px}
+.lede p b{color:var(--fg);font-weight:600}
+.wm{font-family:var(--fh);font-weight:700;font-size:26px;letter-spacing:-.025em;line-height:1;
+    display:inline-flex;align-items:baseline;color:var(--fg)}
+.wm svg{height:.86em;width:.5em;transform:translateY(.03em)}
+.warn{margin-top:22px;border:1px solid var(--hair);border-left:3px solid var(--gold);
+      background:var(--chrome);border-radius:10px;padding:14px 16px;font-size:13.5px;color:var(--fg2);max-width:52ch}
+.warn b{color:var(--fg);font-weight:600}
+.steps{margin-top:26px;display:flex;flex-direction:column;gap:2px;max-width:52ch}
+.stp{display:flex;gap:13px;align-items:flex-start;padding:9px 12px;border-radius:9px;
+     font-size:14px;color:var(--fg2);transition:background .2s,color .2s;border:1px solid transparent}
+.stp .k{font-family:var(--fh);font-weight:700;font-size:12px;width:20px;flex-shrink:0;
+        color:var(--fg2);font-variant-numeric:tabular-nums;padding-top:1px}
+.stp.on{background:var(--chrome);border-color:var(--hair);color:var(--fg)}
+.stp.on .k{color:var(--teal)}
+.stp.done .k{color:var(--green)}
+.reset{margin-top:20px;background:none;border:1px solid var(--hair);color:var(--fg2);
+       font-family:var(--fb);font-size:13px;font-weight:500;padding:9px 15px;border-radius:999px;cursor:pointer}
+.reset:hover{color:var(--fg);border-color:var(--fg2)}
+.reset:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* ---------- le téléphone ---------- */
+/* L'app est claire par nature : l'écran garde sa propre identité quel que soit
+   le thème de la page, comme une capture d'écran de produit. */
+.phone{position:sticky;top:24px;width:392px;max-width:100%;background:#0b1f27;border-radius:38px;
+       padding:11px;box-shadow:0 30px 70px rgba(11,31,39,.34),0 2px 8px rgba(11,31,39,.2)}
+@media (max-width:900px){.phone{position:relative;margin:0 auto}}
+.screen{background:var(--paper);border-radius:29px;overflow:hidden;height:718px;
+        position:relative;color:var(--ink);display:flex;flex-direction:column}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;
+       background:#0b1f27;border-radius:0 0 14px 14px;z-index:60}
+
+/* barres */
+.topbar{background:var(--ink);color:#fff;padding:30px 15px 12px;display:flex;align-items:center;
+        justify-content:space-between;gap:10px;flex-shrink:0;z-index:20}
+.topbar .ttl{font-family:var(--fh);font-weight:700;font-size:15.5px}
+.iconbtn{background:rgba(255,255,255,.12);border:none;color:#fff;width:30px;height:30px;
+         border-radius:50%;cursor:pointer;display:grid;place-items:center;flex-shrink:0}
+.iconbtn:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.pad{padding:15px}
+
+/* carte */
+.mapwrap{position:relative;background:#E8EFED;flex-shrink:0}
+.mapwrap svg{display:block;width:100%;height:auto}
+.pin{cursor:pointer}
+.pin .hd{transition:transform .18s}
+.pin:hover .hd,.pin.sel .hd{transform:scale(1.18)}
+.maplbl{font-family:var(--fb);font-size:15px;font-weight:600;fill:#7E9098;letter-spacing:.02em}
+.mapnote{position:absolute;right:7px;bottom:6px;font-size:9.5px;color:rgba(18,54,68,.42);
+         background:rgba(255,255,255,.72);padding:2px 6px;border-radius:4px}
+
+/* listes */
+.chips{display:flex;gap:7px;overflow-x:auto;padding:13px 15px 4px;flex-shrink:0}
+.chip{border:none;flex-shrink:0;padding:7px 13px;border-radius:999px;font-family:var(--fb);
+      font-weight:600;font-size:12.5px;background:#fff;color:var(--ink);
+      box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.card{background:#fff;border-radius:14px;padding:13px;display:flex;gap:12px;align-items:flex-start;
+      box-shadow:0 1px 2px rgba(18,54,68,.05);margin-bottom:9px;cursor:pointer;
+      border:1.5px solid transparent;width:100%;text-align:left;font-family:var(--fb)}
+.card.sel{border-color:var(--teal)}
+.card:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+    font-family:var(--fh);font-weight:700;font-size:15px;color:#fff}
+.nm{font-family:var(--fh);font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:6px}
+.sub{font-size:11.5px;color:var(--slate);margin-top:2px}
+.price{font-family:var(--fh);font-weight:700;font-size:15px;color:var(--tealD);white-space:nowrap}
+.tag{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.03em;
+     text-transform:uppercase}
+.t-pro{background:rgba(18,179,156,.13);color:var(--tealD)}
+.t-part{background:rgba(242,169,59,.16);color:#9A6712}
+.rate{font-size:11.5px;color:var(--slate);display:flex;align-items:center;gap:3px;margin-top:3px}
+
+/* fiche */
+.hero{background:var(--ink);color:#fff;padding:18px 15px 20px}
+.hero h2{font-family:var(--fh);font-weight:700;font-size:20px;margin:10px 0 3px}
+.hero .m{font-size:12.5px;color:rgba(255,255,255,.6)}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:11px 0;
+    border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv b{font-family:var(--fh);font-weight:700}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+.bdg{font-size:11px;font-weight:600;background:#fff;border:1px solid var(--line);
+     padding:4px 9px;border-radius:999px;color:var(--slate);display:flex;align-items:center;gap:5px}
+.h3{font-family:var(--fh);font-weight:700;font-size:13.5px;margin:17px 0 8px}
+
+/* actions */
+.cta{width:100%;border:none;background:var(--teal);color:#fff;font-family:var(--fh);
+     font-weight:700;font-size:15px;padding:15px;border-radius:999px;cursor:pointer;
+     box-shadow:0 8px 18px rgba(18,179,156,.3)}
+.cta[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+.cta.ghost{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.cta.dark{background:var(--ink);box-shadow:0 8px 18px rgba(18,54,68,.24)}
+.cta:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.foot{padding:12px 15px calc(12px + env(safe-area-inset-bottom,0px));background:#fff;
+      border-top:1px solid var(--line);flex-shrink:0}
+
+/* formulaire */
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--slate);
+           text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.fld input,.fld select{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:11px;
+       font-family:var(--fb);font-size:14px;font-weight:500;color:var(--ink);background:#fff}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--teal)}
+.stepper{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line);
+         border-radius:11px;padding:7px 12px}
+.stepper button{width:32px;height:32px;border-radius:50%;border:none;background:var(--paper);
+       font-size:19px;font-family:var(--fh);font-weight:700;color:var(--ink);cursor:pointer;line-height:1}
+.stepper button:focus-visible{outline:2px solid var(--teal)}
+.stepper .v{flex:1;text-align:center;font-family:var(--fh);font-weight:700;font-size:15px}
+.recap{background:#fff;border-radius:13px;padding:13px;margin-top:13px}
+.tot{display:flex;justify-content:space-between;font-family:var(--fh);font-weight:700;font-size:16.5px;
+     border-top:1px solid var(--line);padding-top:11px;margin-top:5px}
+.note{font-size:11.5px;color:var(--slate);line-height:1.5;margin-top:10px}
+
+/* suivi */
+.track{background:var(--ink);color:#fff;padding:15px}
+.eta{font-family:var(--fh);font-weight:700;font-size:30px;letter-spacing:-.02em;
+     font-variant-numeric:tabular-nums}
+.trackmap{background:#0d2c37;border-radius:14px;overflow:hidden;margin-top:12px;position:relative}
+.trackmap svg{display:block;width:100%;height:auto}
+.prog{height:3px;background:rgba(255,255,255,.14);border-radius:2px;margin-top:14px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--green);width:0;transition:width .45s linear}
+.tl{margin-top:15px;display:flex;flex-direction:column;gap:11px}
+.tli{display:flex;gap:11px;align-items:flex-start;font-size:12.5px;color:rgba(255,255,255,.45)}
+.tli .d{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.22);flex-shrink:0;margin-top:4px}
+.tli.on{color:#fff}.tli.on .d{background:var(--green);box-shadow:0 0 0 4px rgba(47,208,110,.2)}
+.tli b{font-family:var(--fh);font-weight:700;display:block}
+
+/* alerte d'arrivée */
+.alert{position:absolute;inset:0;background:rgba(11,31,39,.72);backdrop-filter:blur(3px);
+       display:grid;place-items:center;padding:22px;z-index:50}
+.alertbox{background:#fff;border-radius:20px;padding:22px;text-align:center;width:100%}
+.alertbox h3{font-family:var(--fh);font-weight:700;font-size:19px;margin:14px 0 6px}
+.alertbox p{font-size:13px;color:var(--slate);margin:0 0 18px}
+.ring{width:64px;height:64px;margin:0 auto;border-radius:50%;background:rgba(47,208,110,.14);
+      display:grid;place-items:center;animation:pulse 1.7s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(47,208,110,.42)}50%{box-shadow:0 0 0 14px rgba(47,208,110,0)}}
+@media (prefers-reduced-motion:reduce){.ring{animation:none}*{transition-duration:.01ms!important}}
+
+/* QR */
+.qrcard{background:#fff;border-radius:16px;padding:18px;text-align:center;margin-top:13px}
+.qrbox{width:186px;height:186px;margin:0 auto;display:grid;place-items:center;
+       background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px}
+.qrbox canvas{width:100%;height:100%;image-rendering:pixelated}
+.code{font-family:var(--fh);font-weight:700;font-size:23px;letter-spacing:.22em;margin-top:13px;
+      font-variant-numeric:tabular-nums}
+.chrono{font-family:var(--fh);font-weight:700;font-size:38px;font-variant-numeric:tabular-nums;
+        letter-spacing:-.02em;text-align:center;margin:6px 0 2px}
+
+/* facture */
+.done{text-align:center;padding:26px 15px 15px}
+.stars{display:flex;justify-content:center;gap:7px;margin:13px 0 3px}
+.star{background:none;border:none;font-size:29px;line-height:1;cursor:pointer;color:var(--line);padding:0}
+.star.on{color:var(--gold)}
+.star:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.simbadge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+          text-transform:uppercase;letter-spacing:.07em;color:var(--gold);
+          background:rgba(242,169,59,.14);padding:4px 9px;border-radius:999px}
+</style>
+
+<div class="page">
+
+<div class="lede">
+  <span class="wm">p<svg viewBox="71 35 38 65" aria-hidden="true"><path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="currentColor"/><circle cx="90" cy="53" r="8.6" fill="#2FD06E"/></svg>ng</span>
+  <h1>Le parcours complet, de la carte au reçu.</h1>
+  <p>Dix prestataires entre <b>Vence et Nice</b>. Choisissez, réservez, payez, suivez l'arrivée en direct, validez le code sur place, et récupérez le reçu — chaque écran est manipulable.</p>
+
+  <div class="warn">
+    <b>Tout est simulé.</b> Les dix prestataires sont fictifs et ne correspondent à personne. Le paiement n'appelle aucun système bancaire : aucune somme n'est débitée, aucune donnée n'est envoyée. Les tarifs sont plausibles pour les Alpes-Maritimes, pas relevés sur des prestataires réels.
+  </div>
+
+  <div class="steps" id="steps"></div>
+  <button class="reset" onclick="reset()">Recommencer le parcours</button>
+</div>
+
+<div class="phone">
+  <div class="screen" id="screen"><div class="notch"></div></div>
+</div>
+
+</div>
+
+<script>
+/* ============================================================
+   Données de démonstration — dix prestataires fictifs.
+   Les tarifs sont des ordres de grandeur plausibles dans les
+   Alpes-Maritimes ; ils ne sont relevés chez personne.
+   Un particulier facture moins qu'une société : pas de charges
+   de structure, mais pas non plus d'assurance RC Pro.
+   ============================================================ */
+const BUYER_RATE = 0.05;   // frais côté client   — invariant produit
+const SELLER_RATE = 0.11;  // commission côté pro — invariant produit
+
+const ME = { lat:43.6790, lon:7.1720, adresse:"14 avenue des Oliviers, Saint-Laurent-du-Var" };
+
+const PROS = [
+  {id:1, nom:"Fictif 1",  type:"pro",  metier:"Ménage",              ville:"Vence",                lat:43.7225, lon:7.1130, tarif:26, note:4.8, avis:41, dep:"2018", hue:"#12B39C"},
+  {id:2, nom:"Fictif 2",  type:"part", metier:"Repassage",           ville:"Saint-Paul-de-Vence",  lat:43.6960, lon:7.1220, tarif:17, note:4.6, avis:12, dep:"2024", hue:"#F2A93B"},
+  {id:3, nom:"Fictif 3",  type:"part", metier:"Ménage",              ville:"La Colle-sur-Loup",    lat:43.6860, lon:7.1040, tarif:19, note:4.9, avis:23, dep:"2023", hue:"#FF7A66"},
+  {id:4, nom:"Fictif 4",  type:"pro",  metier:"Nettoyage de vitres", ville:"Cagnes-sur-Mer",       lat:43.6640, lon:7.1490, tarif:34, note:4.7, avis:58, dep:"2016", hue:"#0C8F7E"},
+  {id:5, nom:"Fictif 5",  type:"pro",  metier:"Ménage",              ville:"Villeneuve-Loubet",    lat:43.6580, lon:7.1220, tarif:24, note:4.5, avis:33, dep:"2021", hue:"#12B39C"},
+  {id:6, nom:"Fictif 6",  type:"pro",  metier:"Repassage",           ville:"Saint-Laurent-du-Var", lat:43.6680, lon:7.1880, tarif:22, note:4.9, avis:76, dep:"2019", hue:"#0C8F7E"},
+  {id:7, nom:"Fictif 7",  type:"part", metier:"Ménage",              ville:"Nice — Lingostière",   lat:43.7050, lon:7.2000, tarif:20, note:4.4, avis:9,  dep:"2025", hue:"#F2A93B"},
+  {id:8, nom:"Fictif 8",  type:"pro",  metier:"Nettoyage fin de chantier", ville:"Nice — Cimiez",  lat:43.7190, lon:7.2760, tarif:39, note:4.8, avis:64, dep:"2014", hue:"#123644"},
+  {id:9, nom:"Fictif 9",  type:"part", metier:"Ménage et repassage", ville:"Nice — centre",        lat:43.7009, lon:7.2683, tarif:21, note:4.7, avis:28, dep:"2022", hue:"#FF7A66"},
+  {id:10,nom:"Fictif 10", type:"pro",  metier:"Nettoyage",           ville:"Nice — Riquier",       lat:43.7080, lon:7.2900, tarif:29, note:4.6, avis:47, dep:"2020", hue:"#12B39C"},
+];
+
+/* --- projection : un rectangle lon/lat vers le repère du SVG --- */
+const BOX = { lon0:7.055, lon1:7.325, lat0:43.625, lat1:43.760 };
+const MAPW = 1000;
+const MAPH = Math.round(MAPW * (BOX.lat1-BOX.lat0) / ((BOX.lon1-BOX.lon0) * Math.cos(43.7*Math.PI/180)));
+const proj = (lon,lat) => [
+  (lon-BOX.lon0)/(BOX.lon1-BOX.lon0)*MAPW,
+  (BOX.lat1-lat)/(BOX.lat1-BOX.lat0)*MAPH
+];
+const path = pts => pts.map((p,i)=>(i?'L':'M')+proj(p[0],p[1]).map(n=>n.toFixed(1)).join(' ')).join(' ');
+
+/* Tracés simplifiés : le littoral de Villeneuve-Loubet au cap de Nice, le Var,
+   et l'A8. Assez justes pour se repérer, pas une carte de navigation. */
+const COTE = [[7.120,43.632],[7.155,43.6565],[7.175,43.660],[7.196,43.6575],[7.215,43.6595],
+              [7.245,43.6875],[7.265,43.6935],[7.285,43.695],[7.305,43.690],[7.325,43.686]];
+const VAR  = [[7.196,43.6575],[7.190,43.680],[7.185,43.710],[7.176,43.745],[7.172,43.760]];
+const A8   = [[7.055,43.640],[7.100,43.6525],[7.140,43.665],[7.170,43.6795],[7.200,43.700],
+              [7.240,43.7145],[7.280,43.719],[7.325,43.7175]];
+const VILLES = [
+  {n:"Vence",lat:43.7225,lon:7.1130,dx:14,dy:-12},
+  {n:"Saint-Paul",lat:43.6960,lon:7.1220,dx:-118,dy:-12},
+  {n:"Cagnes-sur-Mer",lat:43.6640,lon:7.1490,dx:12,dy:26},
+  {n:"Saint-Laurent-du-Var",lat:43.6680,lon:7.1880,dx:8,dy:-16},
+  {n:"NICE",lat:43.7009,lon:7.2683,dx:16,dy:30},
+];
+
+/* ---------- distances et prix ---------- */
+function km(a,b){
+  const R=6371, rad=x=>x*Math.PI/180;
+  const dLat=rad(b.lat-a.lat), dLon=rad(b.lon-a.lon);
+  const h=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function trajetMin(p){ return Math.max(6, Math.round(km(ME,p)*2.6 + 5)); } // ~23 km/h porte à porte
+const eur = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+
+/* ---------- état ---------- */
+const S0 = { vue:'carte', filtre:'tous', proId:null, heures:2, adresse:ME.adresse,
+             etaTotal:0, etaRest:0, note:0, debut:null, duree:0 };
+let S = {...S0};
+let timer = null;
+
+function prix(){
+  const p = PROS.find(x=>x.id===S.proId); if(!p) return null;
+  const base = p.tarif * S.heures;
+  const fraisClient = base * BUYER_RATE;
+  const commissionPro = base * SELLER_RATE;
+  return { base, fraisClient, total: base+fraisClient, commissionPro, netPro: base-commissionPro };
+}
+
+/* ---------- la carte ---------- */
+function mapSVG(opts){
+  const o = Object.assign({pins:true, moving:null, compact:false, dest:true}, opts||{});
+  const sea = path(COTE) + ` L ${MAPW} ${MAPH} L ${proj(COTE[0][0],COTE[0][1])[0]} ${MAPH} Z`;
+  let s = `<svg viewBox="0 0 ${MAPW} ${MAPH}" role="img" aria-label="Carte schématique de Vence à Nice">
+    <rect width="${MAPW}" height="${MAPH}" fill="${o.compact?'#0d2c37':'#E8EFED'}"/>
+    <path d="${sea}" fill="${o.compact?'#0a222b':'#CFE0E2'}"/>
+    <path d="${path(COTE)}" fill="none" stroke="${o.compact?'#1d4b59':'#B4CBCE'}" stroke-width="3"/>
+    <path d="${path(VAR)}" fill="none" stroke="${o.compact?'#1d4b59':'#C3D6D8'}" stroke-width="7" stroke-linecap="round"/>
+    <path d="${path(A8)}" fill="none" stroke="${o.compact?'#1a3d4a':'#DCE5E3'}" stroke-width="9" stroke-linecap="round"/>`;
+  if(!o.compact){
+    s += VILLES.map(v=>{const[x,y]=proj(v.lon,v.lat);
+      return `<text class="maplbl" x="${x+v.dx}" y="${y+v.dy}"${v.n==='NICE'?' style="font-size:19px;letter-spacing:.1em;fill:#66808A"':''}>${v.n}</text>`;}).join('');
+  }
+  // le client
+  const [mx,my] = proj(ME.lon, ME.lat);
+  if(o.dest) s += `<g><circle cx="${mx}" cy="${my}" r="26" fill="#12B39C" opacity=".16"/>
+    <circle cx="${mx}" cy="${my}" r="9" fill="#fff" stroke="#12B39C" stroke-width="5"/></g>`;
+  // les prestataires
+  if(o.pins){
+    s += filtres().map(p=>{
+      const [x,y] = proj(p.lon,p.lat);
+      return `<g class="pin ${S.proId===p.id?'sel':''}" tabindex="0" role="button"
+                 aria-label="${p.nom}, ${p.metier}, ${p.tarif} euros de l'heure"
+                 onclick="pick(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pick(${p.id})}">
+        <g class="hd" style="transform-origin:${x}px ${y}px">
+          <path d="M${x} ${y+4} C${x-5} ${y-9}, ${x-16} ${y-20}, ${x-16} ${y-33}
+                   a16 16 0 1 1 32 0 c0 13 -11 24 -16 37z" fill="${p.hue}"/>
+          <circle cx="${x}" cy="${y-33}" r="7" fill="#fff"/>
+        </g></g>`;
+    }).join('');
+  }
+  // le prestataire en route
+  if(o.moving){
+    const [x,y] = proj(o.moving.lon, o.moving.lat);
+    const p = PROS.find(x2=>x2.id===S.proId);
+    s += `<path d="${path([[p.lon,p.lat],[ME.lon,ME.lat]])}" stroke="#2FD06E" stroke-width="4"
+             stroke-dasharray="10 9" fill="none" opacity=".5"/>
+          <circle cx="${x}" cy="${y}" r="21" fill="#2FD06E" opacity=".22"/>
+          <circle cx="${x}" cy="${y}" r="10" fill="#2FD06E" stroke="#0d2c37" stroke-width="3"/>`;
+  }
+  return s + '</svg>';
+}
+
+const filtres = () => S.filtre==='tous' ? PROS : PROS.filter(p=>p.metier.toLowerCase().includes(S.filtre));
+
+/* ---------- fragments ---------- */
+const ICON_BACK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M15 19l-7-7 7-7"/></svg>';
+const initiale = p => p.nom.replace('Fictif ','F');
+const etoiles = n => '★'.repeat(Math.round(n)) + '☆'.repeat(5-Math.round(n));
+
+function carteProsHTML(p){
+  return `<button class="card ${S.proId===p.id?'sel':''}" onclick="voir(${p.id})">
+    <div class="av" style="background:${p.hue}">${initiale(p)}</div>
+    <div style="flex:1;min-width:0">
+      <div class="nm">${p.nom}<span class="tag ${p.type==='pro'?'t-pro':'t-part'}">${p.type==='pro'?'Pro':'Particulier'}</span></div>
+      <div class="sub">${p.metier} · ${p.ville}</div>
+      <div class="rate"><span style="color:#F2A93B">★</span> ${p.note.toFixed(1)} · ${p.avis} avis · à ${km(ME,p).toFixed(1)} km</div>
+    </div>
+    <div style="text-align:right"><div class="price">${p.tarif} €</div><div class="sub">de l'heure</div></div>
+  </button>`;
+}
+
+/* ---------- écrans ---------- */
+function render(){
+  const el = document.getElementById('screen');
+  const p = PROS.find(x=>x.id===S.proId);
+  const P = prix();
+  let h = '<div class="notch"></div>';
+
+  if(S.vue==='carte'){
+    h += `<div class="topbar"><button class="iconbtn" aria-label="Menu">≡</button>
+      <span class="wm" style="font-size:17px;color:#fff">p<svg viewBox="71 35 38 65" aria-hidden="true"><path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="currentColor"/><circle cx="90" cy="53" r="8.6" fill="#2FD06E"/></svg>ng</span>
+      <button class="iconbtn" aria-label="Profil">●</button></div>
+      <div class="body">
+        <div class="mapwrap">${mapSVG()}<span class="mapnote">carte schématique · démo</span></div>
+        <div class="chips">
+          ${['tous','ménage','repassage','nettoyage'].map(f=>`<button class="chip ${S.filtre===f?'on':''}" onclick="setFiltre('${f}')">${f==='tous'?'Tous':f[0].toUpperCase()+f.slice(1)}</button>`).join('')}
+        </div>
+        <div class="pad">
+          <div class="h3" style="margin-top:4px">${filtres().length} disponibles autour de vous</div>
+          ${filtres().sort((a,b)=>km(ME,a)-km(ME,b)).map(carteProsHTML).join('')}
+        </div>
+      </div>`;
+  }
+
+  else if(S.vue==='fiche'){
+    h += `<div class="body" style="padding-bottom:0">
+      <div class="hero" style="padding-top:30px">
+        <button class="iconbtn" onclick="go('carte')" aria-label="Retour">${ICON_BACK}</button>
+        <h2>${p.nom}</h2>
+        <div class="m">${p.metier} · ${p.ville} · à ${km(ME,p).toFixed(1)} km</div>
+        <div class="badges">
+          <span class="bdg">${p.type==='pro'?'Société · SIRET vérifié':'Particulier · identité vérifiée'}</span>
+          ${p.type==='pro'?'<span class="bdg">Assurance RC Pro</span>':''}
+          <span class="bdg">Sur PING depuis ${p.dep}</span>
+        </div>
+      </div>
+      <div class="pad">
+        <div class="recap" style="margin-top:0">
+          <div class="kv"><span>Tarif horaire</span><b>${p.tarif} €</b></div>
+          <div class="kv"><span>Note</span><b><span style="color:#F2A93B">${etoiles(p.note)}</span> ${p.note.toFixed(1)}</b></div>
+          <div class="kv"><span>Avis reçus</span><b>${p.avis}</b></div>
+          <div class="kv"><span>Délai d'arrivée estimé</span><b>${trajetMin(p)} min</b></div>
+        </div>
+        <div class="h3">Ce qui est compris</div>
+        <div class="note" style="margin-top:0">Le tarif affiché est net et connu avant de réserver : aucun devis à négocier. L'arrivée et le départ sont validés par un code scanné sur place, ce qui enregistre la durée réelle de l'intervention.</div>
+      </div></div>
+      <div class="foot"><button class="cta" onclick="go('reservation')">Réserver ${p.nom}</button></div>`;
+  }
+
+  else if(S.vue==='reservation'){
+    h += `<div class="topbar"><button class="iconbtn" onclick="go('fiche')" aria-label="Retour">${ICON_BACK}</button>
+      <span class="ttl">Votre réservation</span><span style="width:30px"></span></div>
+      <div class="body"><div class="pad">
+        <div class="fld"><label for="dur">Durée estimée</label>
+          <div class="stepper">
+            <button onclick="setH(-1)" aria-label="Moins une heure">−</button>
+            <span class="v" id="dur">${S.heures} h${S.heures>1?'':''}</span>
+            <button onclick="setH(1)" aria-label="Plus une heure">+</button>
+          </div></div>
+        <div class="fld"><label for="adr">Adresse d'intervention</label>
+          <input id="adr" value="${S.adresse}" oninput="S.adresse=this.value"></div>
+        <div class="fld"><label for="qd">Quand</label>
+          <select id="qd"><option>Dès que possible — arrivée sous ${trajetMin(p)} min</option><option>Aujourd'hui, en fin de journée</option><option>Demain matin</option></select></div>
+
+        <div class="recap">
+          <div class="kv"><span>${p.tarif} € × ${S.heures} h</span><b>${eur(P.base)}</b></div>
+          <div class="kv"><span>Frais de service PING (5 %)</span><b>${eur(P.fraisClient)}</b></div>
+          <div class="tot"><span>À payer</span><span>${eur(P.total)}</span></div>
+        </div>
+        <p class="note">Le montant est bloqué à la réservation et versé au prestataire 24 h après la fin de l'intervention, sauf litige signalé. ${p.nom} perçoit ${eur(P.netPro)} — PING prélève 11 % côté prestataire.</p>
+      </div></div>
+      <div class="foot"><button class="cta" onclick="go('paiement')">Continuer vers le paiement</button></div>`;
+  }
+
+  else if(S.vue==='paiement'){
+    h += `<div class="topbar"><button class="iconbtn" onclick="go('reservation')" aria-label="Retour">${ICON_BACK}</button>
+      <span class="ttl">Paiement sécurisé</span><span style="width:30px"></span></div>
+      <div class="body"><div class="pad">
+        <div style="text-align:center;margin:4px 0 16px"><span class="simbadge">● Paiement simulé</span></div>
+        <div class="fld"><label>Numéro de carte</label><input value="4242 4242 4242 4242" readonly></div>
+        <div style="display:flex;gap:9px">
+          <div class="fld" style="flex:1"><label>Expiration</label><input value="12 / 29" readonly></div>
+          <div class="fld" style="flex:1"><label>CVC</label><input value="•••" readonly></div>
+        </div>
+        <div class="recap">
+          <div class="kv"><span>Prestation</span><b>${eur(P.base)}</b></div>
+          <div class="kv"><span>Frais de service</span><b>${eur(P.fraisClient)}</b></div>
+          <div class="tot"><span>Total</span><span>${eur(P.total)}</span></div>
+        </div>
+        <p class="note">Carte de test, aucune transaction réelle : rien n'est débité et aucune donnée ne quitte cette page. Dans l'application, cette étape passe par un prestataire de paiement et la somme reste sous séquestre jusqu'à la fin de la mission.</p>
+      </div></div>
+      <div class="foot"><button class="cta dark" id="payBtn" onclick="payer()">Payer ${eur(P.total)}</button></div>`;
+  }
+
+  else if(S.vue==='suivi' || S.vue==='arrive'){
+    const t = S.etaTotal ? 1 - S.etaRest/S.etaTotal : 0;
+    const pos = { lon: p.lon + (ME.lon-p.lon)*t, lat: p.lat + (ME.lat-p.lat)*t };
+    const arr = S.vue==='arrive';
+    h += `<div class="topbar"><span style="width:30px"></span><span class="ttl">Mission en approche</span><span style="width:30px"></span></div>
+      <div class="body" style="background:var(--ink)">
+        <div class="track">
+          <div style="font-size:12.5px;color:rgba(255,255,255,.55)">${arr?p.nom+' est arrivé':'Arrivée estimée dans'}</div>
+          <div class="eta">${arr?'Sur place':Math.ceil(S.etaRest)+' min'}</div>
+          <div class="trackmap">${mapSVG({compact:true,pins:false,moving:pos})}</div>
+          <div class="prog"><i style="width:${(t*100).toFixed(1)}%"></i></div>
+          <div class="tl">
+            <div class="tli on"><span class="d"></span><div><b>Paiement bloqué</b>${eur(P.total)} sous séquestre</div></div>
+            <div class="tli on"><span class="d"></span><div><b>${p.nom} a accepté</b>Départ de ${p.ville}</div></div>
+            <div class="tli ${t>0.35?'on':''}"><span class="d"></span><div><b>En route</b>${(km(ME,p)*(1-t)).toFixed(1)} km restants</div></div>
+            <div class="tli ${arr?'on':''}"><span class="d"></span><div><b>Arrivée sur place</b>Code d'arrivée à valider</div></div>
+          </div>
+        </div>
+      </div>`;
+    if(arr) h += `<div class="alert"><div class="alertbox">
+      <div class="ring"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2FD06E" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h3>${p.nom} est arrivé</h3>
+      <p>Montrez-lui le code d'arrivée pour démarrer la mission. Le temps se compte à partir du scan.</p>
+      <button class="cta" onclick="go('qr-arrivee')">Afficher le code d'arrivée</button>
+    </div></div>`;
+  }
+
+  else if(S.vue==='qr-arrivee' || S.vue==='qr-depart'){
+    const dep = S.vue==='qr-depart';
+    h += `<div class="topbar"><span style="width:30px"></span><span class="ttl">${dep?'Fin de mission':'Arrivée'}</span><span style="width:30px"></span></div>
+      <div class="body"><div class="pad">
+        <div class="qrcard">
+          <div style="font-family:var(--fh);font-weight:700;font-size:16px">${dep?'Code de départ':"Code d'arrivée"}</div>
+          <p class="note" style="margin:5px 0 14px">${dep?'À scanner par '+p.nom+' en partant. La durée réelle sera enregistrée.':'À scanner par '+p.nom+' en arrivant chez vous.'}</p>
+          <div class="qrbox"><canvas id="qr" width="186" height="186"></canvas></div>
+          <div class="code">${dep?'8 4 1 9':'3 7 2 6'}</div>
+          <p class="note">Code de secours si le scan échoue</p>
+        </div>
+      </div></div>
+      <div class="foot"><button class="cta" onclick="${dep?"go('recu')":"demarrer()"}">${dep?'Valider le départ':"Simuler le scan par ".concat(p.nom)}</button></div>`;
+  }
+
+  else if(S.vue==='encours'){
+    const min = Math.floor(S.duree/60), sec = Math.floor(S.duree%60);
+    h += `<div class="topbar"><span style="width:30px"></span><span class="ttl">Mission en cours</span><span style="width:30px"></span></div>
+      <div class="body"><div class="pad">
+        <div class="recap" style="margin-top:6px;text-align:center">
+          <div class="note" style="margin:0">Temps écoulé depuis le scan d'arrivée</div>
+          <div class="chrono">${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}</div>
+          <div class="note" style="margin-top:0">Durée prévue : ${S.heures} h · démo accélérée</div>
+        </div>
+        <div class="recap">
+          <div class="kv"><span>Prestataire</span><b>${p.nom}</b></div>
+          <div class="kv"><span>Prestation</span><b>${p.metier}</b></div>
+          <div class="kv"><span>Adresse</span><b style="font-size:12px;text-align:right">${S.adresse}</b></div>
+          <div class="kv"><span>Montant sous séquestre</span><b>${eur(P.total)}</b></div>
+        </div>
+        <p class="note">Un problème pendant l'intervention ? Le signalement ouvre un litige et bloque le versement jusqu'à décision.</p>
+      </div></div>
+      <div class="foot"><button class="cta" onclick="go('qr-depart')">Le prestataire a terminé</button></div>`;
+  }
+
+  else if(S.vue==='recu'){
+    h += `<div class="body">
+      <div class="done">
+        <div class="ring" style="animation:none"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2FD06E" stroke-width="2.6" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h2 style="font-family:var(--fh);font-weight:700;font-size:20px;margin:14px 0 4px">Mission terminée</h2>
+        <div class="note" style="margin-top:0">${p.metier} · ${p.nom} · ${S.heures} h</div>
+      </div>
+      <div class="pad" style="padding-top:0">
+        <div class="recap">
+          <div class="kv"><span>Prestation (${S.heures} h × ${p.tarif} €)</span><b>${eur(P.base)}</b></div>
+          <div class="kv"><span>Frais de service PING</span><b>${eur(P.fraisClient)}</b></div>
+          <div class="tot"><span>Payé</span><span>${eur(P.total)}</span></div>
+        </div>
+        <div class="recap">
+          <div class="kv"><span>Facture</span><b>PING-C-2026-0148</b></div>
+          <div class="kv"><span>Arrivée validée</span><b>code 3726</b></div>
+          <div class="kv"><span>Départ validé</span><b>code 8419</b></div>
+          <div class="kv"><span>Versement au prestataire</span><b>sous 24 h</b></div>
+        </div>
+        <div class="qrcard" style="margin-top:13px">
+          <div style="font-family:var(--fh);font-weight:700;font-size:15px">Comment ça s'est passé ?</div>
+          <div class="stars">${[1,2,3,4,5].map(i=>`<button class="star ${S.note>=i?'on':''}" onclick="noter(${i})" aria-label="${i} étoile${i>1?'s':''}">★</button>`).join('')}</div>
+          <p class="note" style="margin-top:4px">${S.note?'Merci — avis enregistré (simulation).':'Touchez une étoile pour noter'}</p>
+        </div>
+      </div></div>
+      <div class="foot"><button class="cta ghost" onclick="reset()">Recommencer le parcours</button></div>`;
+  }
+
+  el.innerHTML = h;
+  if(S.vue.startsWith('qr-')) dessinerQR();
+  majEtapes();
+}
+
+/* ---------- QR ---------- */
+function dessinerQR(){
+  const cv = document.getElementById('qr'); if(!cv) return;
+  const url = 'https://nexto-eta.vercel.app/mission/demo/scan/' + (S.vue==='qr-depart'?'depart':'arrivee');
+  if(window.QRious){ new QRious({element:cv, value:url, size:186, background:'#fff', foreground:'#123644', level:'M'}); return; }
+  // Repli si la bibliothèque n'a pas pu être chargée : on le dit, on ne fait pas
+  // passer un damier décoratif pour un code scannable.
+  const c = cv.getContext('2d'); c.fillStyle='#F3F6F5'; c.fillRect(0,0,186,186);
+  c.fillStyle='#6E8592'; c.font='600 12px Inter, sans-serif'; c.textAlign='center';
+  c.fillText('Code indisponible', 93, 88); c.fillText('hors ligne', 93, 106);
+}
+
+/* ---------- transitions ---------- */
+function go(v){ S.vue=v; if(timer){clearInterval(timer);timer=null;} render(); document.getElementById('screen').querySelector('.body')?.scrollTo(0,0); }
+function setFiltre(f){ S.filtre=f; render(); }
+function pick(id){ S.proId=id; render(); }
+function voir(id){ S.proId=id; go('fiche'); }
+function setH(d){ S.heures=Math.min(8,Math.max(1,S.heures+d)); render(); }
+function noter(n){ S.note=n; render(); }
+
+function payer(){
+  const b = document.getElementById('payBtn');
+  b.disabled = true; b.textContent = 'Paiement en cours…';
+  setTimeout(()=>{
+    const p = PROS.find(x=>x.id===S.proId);
+    S.etaTotal = trajetMin(p); S.etaRest = S.etaTotal;
+    S.vue = 'suivi'; render();
+    // Le trajet réel est compressé : ~18 s pour l'ensemble du parcours.
+    const pas = 18000 / S.etaTotal;
+    timer = setInterval(()=>{
+      S.etaRest -= 1;
+      if(S.etaRest <= 0){ S.etaRest = 0; clearInterval(timer); timer=null; S.vue='arrive'; }
+      render();
+    }, pas);
+  }, 1400);
+}
+
+function demarrer(){
+  S.debut = Date.now(); S.duree = 0; S.vue = 'encours'; render();
+  timer = setInterval(()=>{ S.duree = (Date.now()-S.debut)/1000; render(); }, 1000);
+}
+
+function reset(){ if(timer){clearInterval(timer);timer=null;} S = {...S0}; render(); }
+
+/* ---------- fil d'étapes, à gauche ---------- */
+const ETAPES = [
+  ['carte','Choisir sur la carte'],
+  ['fiche','Ouvrir une fiche'],
+  ['reservation','Régler la durée'],
+  ['paiement','Payer (simulé)'],
+  ['suivi','Suivre l’arrivée'],
+  ['qr-arrivee','Valider le code d’arrivée'],
+  ['encours','Mission en cours'],
+  ['qr-depart','Valider le départ'],
+  ['recu','Reçu et note'],
+];
+const RANG = { carte:0, fiche:1, reservation:2, paiement:3, suivi:4, arrive:4,
+               'qr-arrivee':5, encours:6, 'qr-depart':7, recu:8 };
+function majEtapes(){
+  const r = RANG[S.vue] ?? 0;
+  document.getElementById('steps').innerHTML = ETAPES.map((e,i)=>
+    `<div class="stp ${i===r?'on':''} ${i<r?'done':''}"><span class="k">${String(i+1).padStart(2,'0')}</span><span>${e[1]}</span></div>`
+  ).join('');
+}
+
+render();
+</script>

@@ -3,7 +3,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque).html',
+        source: '/:path(admin|demo|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
       {
@@ -20,6 +20,7 @@ const nextConfig = {
         { source: '/admin', destination: '/admin.html' },
         { source: '/presentation', destination: '/presentation.html' },
         { source: '/parcours-navigable', destination: '/parcours-navigable.html' },
+        { source: '/demo-parcours', destination: '/demo-parcours.html' },
         { source: '/landing-particulier', destination: '/landing-particulier.html' },
         { source: '/landing-pro', destination: '/landing-pro.html' },
         { source: '/planche-de-marque', destination: '/planche-de-marque.html' },
