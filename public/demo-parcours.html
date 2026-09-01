@@ -308,7 +308,7 @@ function mapSVG(opts){
       const [x,y] = proj(p.lon,p.lat);
       return `<g class="pin ${S.proId===p.id?'sel':''}" tabindex="0" role="button"
                  aria-label="${p.nom}, ${p.metier}, ${p.tarif} euros de l'heure"
-                 onclick="pick(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pick(${p.id})}">
+                 onclick="voir(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();voir(${p.id})}">
         <g class="hd" style="transform-origin:${x}px ${y}px">
           <path d="M${x} ${y+4} C${x-5} ${y-9}, ${x-16} ${y-20}, ${x-16} ${y-33}
                    a16 16 0 1 1 32 0 c0 13 -11 24 -16 37z" fill="${p.hue}"/>
