@@ -208,7 +208,29 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);
 .tabbtn{flex:1;border:none;background:none;padding:9px 0 7px;display:flex;flex-direction:column;
         align-items:center;gap:3px;cursor:pointer;color:var(--slate)}
 .tabbtn.on{color:var(--teal)}
-.tabbtn span{font-size:10px;font-weight:700}
+/* apercu de document (facture / releve) */
+.docsheet{background:#fff;border-radius:14px;padding:20px;margin:0}
+.doctop{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.docwm{display:flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:700;font-size:17px}
+.docwm svg{height:20px;width:12px}
+.dockind{font-size:8.5px;font-weight:700;letter-spacing:.09em;color:var(--slate);text-transform:uppercase;text-align:right}
+.docnum{font-family:var(--fh);font-weight:700;font-size:14px;margin-top:2px;text-align:right}
+.docdate{font-size:10.5px;color:var(--slate);margin-top:2px;text-align:right}
+.docwarn{margin-top:13px;padding:9px 11px;border-radius:8px;background:#FCF4E4;border-left:3px solid var(--gold);
+         font-size:10.5px;line-height:1.5;color:#6B4A0D}
+.doccols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.doclbl{font-size:8.5px;font-weight:700;letter-spacing:.08em;color:var(--slate);text-transform:uppercase}
+.docval{font-size:11px;line-height:1.55;margin-top:5px;color:var(--fg)}
+.docval .g{color:var(--slate)}
+.docline{display:flex;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.docline .t{font-weight:600;font-size:12.5px}
+.docline .s{font-size:10.5px;color:var(--slate);margin-top:2px}
+.docline .m{font-family:var(--fh);font-weight:700;font-size:13px;white-space:nowrap}
+.doctot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);
+        margin-top:12px;padding-top:11px}
+.doctot .l{font-family:var(--fh);font-weight:700;font-size:13.5px}
+.doctot .v{font-family:var(--fh);font-weight:700;font-size:19px}
+.docfoot{font-size:10px;color:var(--slate);margin-top:8px}
 </style>
 
 <div class="page">
@@ -556,6 +578,48 @@ function render(){
       <div class="foot"><button class="cta" onclick="go('qr-depart')">Le prestataire a terminé</button></div>`;
   }
 
+  else if(S.vue==='doc-fact' || S.vue==='doc-comm'){
+    const comm = S.vue==='doc-comm';
+    h += `<div class="topbar"><button class="iconbtn" onclick="go('recu')" aria-label="Retour">${ICON_BACK}</button>
+      <span class="ttl">${comm?'Relevé de frais':'Facture'}</span><span style="width:30px"></span></div>
+      <div class="body"><div class="pad">
+        <div class="docsheet">
+          <div class="doctop">
+            <div class="docwm">p<svg viewBox="71 35 38 65" aria-hidden="true"><path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="#123644"/><circle cx="90" cy="53" r="8.6" fill="#2FD06E"/></svg>ng</div>
+            <div>
+              <div class="dockind">${comm?'Relevé de frais de mise en relation':'Facture'}</div>
+              <div class="docnum">${comm?'PING-C-2026-0148':'FACT-2026-0148'}</div>
+              <div class="docdate">${new Date().toLocaleDateString('fr-FR')}</div>
+            </div>
+          </div>
+          ${comm?`<div class="docwarn">PING — société en cours de constitution. Tant que le SIRET n'est pas actif, ce document est un relevé et non une facture.</div>`:''}
+          <div class="doccols">
+            <div>
+              <div class="doclbl">${comm?'Émis par':'Émetteur'}</div>
+              <div class="docval">${comm
+                ?`<div style="font-weight:600">PING — société en cours de constitution</div><div class="g">Immatriculation en cours</div>`
+                :`<div style="font-weight:600">${p.nom} Nettoyage EURL</div><div class="g">${p.ville}, Alpes-Maritimes</div><div class="g">SIRET 852 349 210 00027</div>`}</div>
+            </div>
+            <div>
+              <div class="doclbl">${comm?'Facturé à':'Client'}</div>
+              <div class="docval"><div style="font-weight:600">Vous</div><div class="g">${S.adresse}</div></div>
+            </div>
+          </div>
+          <div class="docline">
+            <div>
+              <div class="t">${comm?'Frais de service PING':p.metier+' — '+S.heures+' h'}</div>
+              <div class="s">${comm?'5 % du montant de la prestation':'Le '+new Date().toLocaleDateString('fr-FR')+' · codes 3726 — 8419 scannés sur place'}</div>
+              ${!comm?`<div class="s">${p.tarif} € de l'heure</div>`:''}
+            </div>
+            <div class="m">${comm?eur(P.fraisClient):eur(P.base)}</div>
+          </div>
+          <div class="doctot"><span class="l">Total</span><span class="v">${comm?eur(P.fraisClient):eur(P.base)}</span></div>
+          <div class="docfoot">Franchise en base de TVA — art. 293 B du CGI, TVA non applicable.</div>
+        </div>
+      </div></div>
+      <div class="foot"><button class="cta ghost" onclick="go('recu')">Retour au reçu</button></div>`;
+  }
+
   else if(S.vue==='recu'){
     h += `<div class="body">
       <div class="done">
@@ -570,8 +634,8 @@ function render(){
           <div class="tot"><span>Payé</span><span>${eur(P.total)}</span></div>
         </div>
         <div class="recap">
-          <div class="kv"><span>Facture prestataire</span><b>FACT-2026-0148</b></div>
-          <div class="kv"><span>Relevé de frais de mise en relation</span><b>PING-C-2026-0148</b></div>
+          <div class="kv" style="cursor:pointer" onclick="go('doc-fact')"><span>Facture prestataire</span><b style="color:var(--teal)">FACT-2026-0148 ›</b></div>
+          <div class="kv" style="cursor:pointer" onclick="go('doc-comm')"><span>Relevé de frais de mise en relation</span><b style="color:var(--teal)">PING-C-2026-0148 ›</b></div>
           <div class="kv"><span>Arrivée validée</span><b>code 3726</b></div>
           <div class="kv"><span>Départ validé</span><b>code 8419</b></div>
           <div class="kv"><span>Versement au prestataire</span><b>sous 24 h</b></div>
@@ -647,7 +711,7 @@ const ETAPES = [
   ['recu','Reçu et note'],
 ];
 const RANG = { carte:0, fiche:1, reservation:2, paiement:3, suivi:4, arrive:4,
-               'qr-arrivee':5, encours:6, 'qr-depart':7, recu:8 };
+               'qr-arrivee':5, encours:6, 'qr-depart':7, recu:8, 'doc-fact':8, 'doc-comm':8 };
 function majEtapes(){
   const r = RANG[S.vue] ?? 0;
   document.getElementById('steps').innerHTML = ETAPES.map((e,i)=>
