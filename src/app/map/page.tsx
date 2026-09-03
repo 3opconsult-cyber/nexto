@@ -8,7 +8,7 @@ import { trackEvent } from '@/lib/tracking'
 import { TRADES } from '@/lib/trades'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
-import { Wordmark } from '@/components/Brand'
+import { Sign } from '@/components/Brand'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), {
   ssr: false,
@@ -123,21 +123,28 @@ export default function MapPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644', paddingBottom: 60 }}>
 
-      {/* Barre du haut */}
-      <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <NavDrawer />
-        <Wordmark size={18} color="#fff" />
-        <button onClick={() => router.push('/client/profil')} style={{ padding: '7px 13px', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 12, background: 'rgba(255,255,255,.1)', color: 'rgba(255,255,255,.8)' }}>Mon profil</button>
-      </div>
-
-      {/* Carte réelle */}
-      <div style={{ position: 'relative', width: '100%', height: '58vh', minHeight: 340, background: '#F3F6F5' }}>
+      {/* Carte réelle, plein cadre — la barre du haut flotte par-dessus, comme /demo */}
+      <div style={{ position: 'relative', width: '100%', height: '62vh', minHeight: 360, background: '#F3F6F5' }}>
         <LiveMap userPos={pos} pros={pros} onSelect={setSelected} />
+
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 34, height: 56, display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px', background: 'rgba(255,255,255,.97)', borderBottom: '1px solid #E7EDEB' }}>
+          <NavDrawer dark={false} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <Sign size={22} />
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>ping</span>
+          </div>
+          <div style={{ flex: 1 }} />
+          <button onClick={() => router.push('/messages')} aria-label="Messages"
+            style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
+          </button>
+        </div>
+
         <div style={{ position: 'absolute', bottom: 4, right: 6, zIndex: 900, fontSize: 9, color: 'rgba(18,54,68,.4)', background: 'rgba(255,255,255,.6)', padding: '1px 5px', borderRadius: 4, pointerEvents: 'none' }}>
           © OpenStreetMap © CARTO
         </div>
         {locStatus === 'default' && (
-          <div style={{ position: 'absolute', top: 10, left: 10, right: 10, zIndex: 1000, background: 'rgba(18,54,68,.92)', color: '#fff', fontSize: 11.5, fontWeight: 600, padding: '8px 12px', borderRadius: 10, textAlign: 'center' }}>
+          <div style={{ position: 'absolute', top: 66, left: 10, right: 10, zIndex: 1000, background: 'rgba(18,54,68,.92)', color: '#fff', fontSize: 11.5, fontWeight: 600, padding: '8px 12px', borderRadius: 10, textAlign: 'center' }}>
             Localisation non partagée — carte centrée sur Grasse par défaut
           </div>
         )}
@@ -230,7 +237,7 @@ export default function MapPage() {
           </div>
         </div>
       )}
-      <BottomTabBar />
+      <BottomTabBar onPing={relocate} />
     </div>
   )
 }
