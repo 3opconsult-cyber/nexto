@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
+import nextDynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
@@ -10,7 +10,13 @@ import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
 import { Sign } from '@/components/Brand'
 
-const LiveMap = dynamic(() => import('@/components/LiveMap'), {
+// Sans ca, Next.js traite cette page comme statique (aucun fetch cote
+// serveur, tout se passe en useEffect côté client) et la met en cache de
+// facon persistante - un nouveau déploiement ne suffit alors pas a la
+// rafraichir, elle continue de servir l'ancien HTML pendant un bon moment.
+export const dynamic = 'force-dynamic'
+
+const LiveMap = nextDynamic(() => import('@/components/LiveMap'), {
   ssr: false,
   loading: () => (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F3F6F5' }}>
