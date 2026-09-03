@@ -52,28 +52,31 @@ export default function LiveMap({
   onSelect: (p: ProviderNearby) => void
 }) {
   return (
-    <MapContainer
-      center={[userPos.lat, userPos.lng]}
-      zoom={13}
-      scrollWheelZoom={true}
-      style={{ width: '100%', height: '100%' }}
-      attributionControl={false}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; OpenStreetMap'
-        maxZoom={19}
-      />
-      <Recenter lat={userPos.lat} lng={userPos.lng} />
-      <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()} />
-      {pros.filter(p => p.lat != null && p.lng != null).map(p => (
-        <Marker
-          key={p.id}
-          position={[p.lat, p.lng]}
-          icon={proIcon(p.trade, p.is_active)}
-          eventHandlers={{ click: () => onSelect(p) }}
+    <>
+      <style>{`.leaflet-top.leaflet-left{top:70px}`}</style>
+      <MapContainer
+        center={[userPos.lat, userPos.lng]}
+        zoom={13}
+        scrollWheelZoom={true}
+        style={{ width: '100%', height: '100%' }}
+        attributionControl={false}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; OpenStreetMap'
+          maxZoom={19}
         />
-      ))}
-    </MapContainer>
+        <Recenter lat={userPos.lat} lng={userPos.lng} />
+        <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()} />
+        {pros.filter(p => p.lat != null && p.lng != null).map(p => (
+          <Marker
+            key={p.id}
+            position={[p.lat, p.lng]}
+            icon={proIcon(p.trade, p.is_active)}
+            eventHandlers={{ click: () => onSelect(p) }}
+          />
+        ))}
+      </MapContainer>
+    </>
   )
 }
