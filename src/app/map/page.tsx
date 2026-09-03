@@ -131,7 +131,7 @@ export default function MapPage() {
       </div>
 
       {/* Carte réelle */}
-      <div style={{ position: 'relative', width: '100%', height: '28vh', minHeight: 190, background: '#F3F6F5' }}>
+      <div style={{ position: 'relative', width: '100%', height: '58vh', minHeight: 340, background: '#F3F6F5' }}>
         <LiveMap userPos={pos} pros={pros} onSelect={setSelected} />
         <div style={{ position: 'absolute', bottom: 4, right: 6, zIndex: 900, fontSize: 9, color: 'rgba(18,54,68,.4)', background: 'rgba(255,255,255,.6)', padding: '1px 5px', borderRadius: 4, pointerEvents: 'none' }}>
           © OpenStreetMap © CARTO
