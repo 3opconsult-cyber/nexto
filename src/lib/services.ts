@@ -25,7 +25,7 @@ export async function fetchProvidersNearby(
 ): Promise<ProviderNearby[]> {
   const supabase = createClient()
   const { data, error } = await supabase.rpc('providers_nearby', {
-    lat, lng, radius_m: radiusM, p_trade: trade ?? null,
+    p_lat: lat, p_lng: lng, radius_m: radiusM, p_trade: trade ?? null,
   })
   if (error) { console.error('providers_nearby', error); return [] }
   return (data ?? []) as ProviderNearby[]
