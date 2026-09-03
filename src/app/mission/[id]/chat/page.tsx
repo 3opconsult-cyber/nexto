@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ReviewModal from '@/components/ReviewModal'
 import DepartureBar from '@/components/DepartureBar'
+import NavDrawer from '@/components/NavDrawer'
 import { filterMessage } from '@/lib/chatFilter'
 import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
 
@@ -196,6 +197,7 @@ export default function ChatPage() {
         <button onClick={() => router.back()} style={{ color: '#123644', background: 'none', border: 'none', padding: 4, display: 'flex' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
+        <NavDrawer dark={false} />
         <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644' }}>{counterpart}</span>
           <span style={{ fontSize: 11, color: '#12B39C', fontWeight: 600 }}>● en ligne · identité masquée</span>

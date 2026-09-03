@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { BUYER_RATE } from '@/lib/pricing'
 import PaymentPendingModal from '@/components/PaymentPendingModal'
+import NavDrawer from '@/components/NavDrawer'
 
 function MissionForm() {
   const router = useRouter()
@@ -74,7 +75,10 @@ function MissionForm() {
   return (
     <div style={{ minHeight: '100vh', background: '#123644' }}>
       <div style={{ padding: '28px 20px 16px' }}>
-        <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700, marginBottom: 10 }}>← Retour</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <NavDrawer />
+          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700 }}>← Retour</button>
+        </div>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 22, color: '#fff' }}>Réserver</h1>
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>
           {pro ? `${pro.trade} — ${[hasFlat ? (pro.base_price_cents/100).toFixed(2)+' € forfait' : null, hasHourly ? (pro.hourly_rate_cents/100).toFixed(2)+' €/h' : null].filter(Boolean).join(' · ')}` : 'Chargement…'}

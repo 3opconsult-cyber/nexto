@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
+import NavDrawer from '@/components/NavDrawer'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
          PLATFORM_PENDING, type Invoice } from '@/lib/invoice-pdf'
 
@@ -51,6 +52,7 @@ export default function FacturePage() {
       <div className="no-print" style={{ padding: '28px 16px 14px', background: '#123644', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => router.back()} aria-label="Retour"
           style={{ background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer' }}>‹</button>
+        <NavDrawer />
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#fff' }}>Facturation</span>
       </div>
       {children}

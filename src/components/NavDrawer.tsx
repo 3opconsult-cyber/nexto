@@ -19,7 +19,7 @@ function Icon({ name }: { name: string }) {
   return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2" style={{ flexShrink: 0 }}>{ICONS[name] || ICONS.doc}</svg>
 }
 
-export default function NavDrawer() {
+export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
@@ -86,8 +86,8 @@ export default function NavDrawer() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      <button onClick={() => setOpen(true)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: dark ? 'rgba(255,255,255,.1)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={dark ? '#fff' : '#123644'} strokeWidth="2.2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
       </button>
 
       {open && (

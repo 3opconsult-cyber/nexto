@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import NavDrawer from '@/components/NavDrawer'
 
 export default function LitigePage() {
   const params = useParams()
@@ -44,6 +45,7 @@ export default function LitigePage() {
     <div className="min-h-screen" style={{background:'var(--cream)'}}>
       <div className="px-5 pt-5 pb-3 flex items-center gap-3" style={{background:'var(--navy)'}}>
         <button onClick={()=>router.back()} className="text-white font-black">←</button>
+        <NavDrawer />
         <div className="font-fredoka text-xl text-white">Signaler un litige</div>
       </div>
 
