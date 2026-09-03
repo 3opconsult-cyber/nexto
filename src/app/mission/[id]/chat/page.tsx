@@ -287,11 +287,16 @@ export default function ChatPage() {
           if (m.kind === 'offer') {
             const mine = m.sender_id === userId
             return (
-              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '2px solid #12B39C', borderRadius: 14, padding: '14px 16px' }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700, color: '#12B39C', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Devis</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: m.body ? 6 : 0 }}>
-                  <span style={{ fontSize: 12, color: '#6E8592', maxWidth: '65%' }}>{m.body}</span>
-                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>{((m.offer_cents || 0) / 100).toFixed(2)} €</span>
+              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: '16px 18px', boxShadow: '0 4px 16px rgba(18,179,156,.12)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+                  <span style={{ width: 22, height: 22, borderRadius: 7, background: 'rgba(18,179,156,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                  </span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0C8F7E', textTransform: 'uppercase', letterSpacing: '.05em' }}>Devis</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 10, marginBottom: m.body ? 6 : 0 }}>
+                  <span style={{ fontSize: 12, color: '#6E8592', lineHeight: 1.4 }}>{m.body}</span>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', whiteSpace: 'nowrap' }}>{((m.offer_cents || 0) / 100).toFixed(2)} €</span>
                 </div>
                 {m.photo_path && (
                   photoUrls[m.id]
