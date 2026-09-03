@@ -22,7 +22,7 @@
   .qs{font-family:'Quicksand',sans-serif;font-weight:700;}
 
   /* ---------- top chrome ---------- */
-  .topbar{position:relative;z-index:5;background:var(--navy);padding:12px 14px 0;}
+  .topbar{position:sticky;top:0;z-index:50;background:var(--navy);padding:12px 14px 0;}
   .topbar-inner{max-width:460px;margin:0 auto;}
   .toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
   .wordmark{color:#fff;font-size:16px;}
@@ -992,7 +992,10 @@
     document.querySelectorAll('#jumpstrip button').forEach(function(b){
       b.classList.toggle('on', b.dataset.target === id);
     });
-    if(id === 'c-map'){ setTimeout(initLeaflet, 30); }
+    if(id === 'c-map'){
+      if(!leafletInit){ setTimeout(initLeaflet, 30); }
+      else { setTimeout(function(){ if(window.__pingMap) window.__pingMap.invalidateSize(); }, 30); }
+    }
     document.getElementById('device').scrollIntoView({behavior:'smooth', block:'nearest'});
     try{ history.replaceState(null, '', '#'+id); }catch(e){}
   }
@@ -1098,6 +1101,7 @@
     var mapEl = document.getElementById('leafletMap');
     if(!mapEl || mapEl.offsetParent === null) return;
     var map = L.map('leafletMap', {zoomControl:false, attributionControl:false}).setView([43.6584, 6.9225], 14);
+    window.__pingMap = map;
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:18}).addTo(map);
     function pin(lat,lng,label){
       var icon = L.divIcon({
