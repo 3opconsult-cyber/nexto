@@ -105,7 +105,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
               </button>
             </div>
 
-            <div style={{ padding: '8px 8px', flex: 1 }}>
+            <div style={{ padding: '8px 8px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
               {links.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
