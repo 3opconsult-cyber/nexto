@@ -346,9 +346,9 @@ export default function ChatPage() {
       )}
 
       {tx && !msgs.some(m => m.kind === 'offer' && m.offer_status === 'pending') && (
-        <div style={{ padding: '0 16px 8px', textAlign: 'center' }}>
+        <div style={{ padding: '0 16px 10px' }}>
           <button onClick={() => { setNewAmount(String(tx.subtotal_cents / 100)); setNewAmountReason(''); setNewAmountPhoto(null); setEditingPrice(true) }}
-            style={{ background: 'none', border: 'none', color: '#0C8F7E', fontSize: 12, fontWeight: 700 }}>
+            style={{ width: '100%', padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
             + Proposer un tarif
           </button>
         </div>
