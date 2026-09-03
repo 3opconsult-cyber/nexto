@@ -38,11 +38,13 @@ export async function fetchProDetail(proId: string) {
   // l'embed renvoyait toujours null et la fiche s'affichait sans nom, en repli
   // sur le libelle du metier. provider_public_name ne sort que le nom affiche
   // et la teinte d'avatar d'un prestataire actif — ni telephone, ni adresse.
-  const [{ data: pro }, { data: pub }] = await Promise.all([
+  const [{ data: pro }, { data: pub }, { data: trust }] = await Promise.all([
     supabase.from('provider_profiles').select('*').eq('id', proId).single(),
     supabase.rpc('provider_public_name', { provider_id: proId }),
+    supabase.rpc('provider_trust_stats', { provider_id: proId }),
   ])
   if (pro && pub && pub.length) (pro as any).profiles = pub[0]
+  if (pro && trust && trust.length) Object.assign(pro as any, trust[0])
   const { data: reviews } = await supabase
     .from('reviews')
     .select('*, profiles!reviews_rater_id_fkey(full_name)')

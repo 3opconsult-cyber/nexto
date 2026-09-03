@@ -13,7 +13,6 @@ export default function ProDetailPage() {
   const [pro, setPro] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
   const [extraServices, setExtraServices] = useState<any[]>([])
-  const [hasDocuments, setHasDocuments] = useState(false)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'apropos' | 'avis'>('apropos')
   const [userId, setUserId] = useState<string | null>(null)
@@ -28,8 +27,6 @@ export default function ProDetailPage() {
     const supabase = createClient()
     supabase.from('services').select('name, price_cents').eq('provider_id', proId)
       .then(({ data }) => { if (!cancelled) setExtraServices(data ?? []) })
-    supabase.from('documents').select('id', { count: 'exact', head: true }).eq('owner_id', proId)
-      .then(({ count }) => { if (!cancelled) setHasDocuments((count ?? 0) > 0) })
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user || cancelled) return
       setUserId(user.id)
@@ -131,12 +128,40 @@ export default function ProDetailPage() {
         {tab === 'apropos' && (
           <div>
             <p style={{ fontSize: 13.5, color: '#3d5560', lineHeight: 1.6, marginBottom: 16 }}>{pro.bio || "Ce prestataire n'a pas encore ajouté de description."}</p>
-            {hasDocuments && (
-              <div style={{ padding: 12, borderRadius: 12, background: '#F3F6F5', fontSize: 12, color: '#6E8592', fontWeight: 600 }}>
-                Pièce d'identité et justificatifs fournis lors de l'inscription.
-              </div>
-            )}
-            <div style={{ marginTop: 14, padding: 12, borderRadius: 12, background: '#FFF7ED', fontSize: 11.5, color: '#8a6520', fontWeight: 600 }}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+              {pro.has_identity && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#F3F6F5' }}>
+                  <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.6" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>
+                  </span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Pièce d'identité fournie</span>
+                </div>
+              )}
+              {pro.has_rcpro && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#F3F6F5' }}>
+                  <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6z" /></svg>
+                  </span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Assurance RC pro renseignée</span>
+                </div>
+              )}
+              {typeof pro.completed_count === 'number' && pro.completed_count > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#F3F6F5' }}>
+                  <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" strokeLinecap="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                  </span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{pro.completed_count} mission{pro.completed_count > 1 ? 's' : ''} réalisée{pro.completed_count > 1 ? 's' : ''} sur PING</span>
+                </div>
+              )}
+              {!pro.has_identity && !pro.has_rcpro && (
+                <div style={{ padding: '10px 12px', borderRadius: 12, background: '#F3F6F5', fontSize: 12, color: '#6E8592', fontWeight: 600 }}>
+                  Pièce d'identité et assurance pas encore renseignées.
+                </div>
+              )}
+            </div>
+
+            <div style={{ padding: 12, borderRadius: 12, background: '#FFF7ED', fontSize: 11.5, color: '#8a6520', fontWeight: 600 }}>
               PING met en relation clients et prestataires mais n'emploie ni ne supervise ce prestataire.
             </div>
           </div>
