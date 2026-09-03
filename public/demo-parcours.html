@@ -712,10 +712,16 @@ const ETAPES = [
 ];
 const RANG = { carte:0, fiche:1, reservation:2, paiement:3, suivi:4, arrive:4,
                'qr-arrivee':5, encours:6, 'qr-depart':7, recu:8, 'doc-fact':8, 'doc-comm':8 };
+function sauterA(vue){
+  if(!S.proId && vue!=='carte'){ S.proId = PROS[0].id; }
+  go(vue);
+}
 function majEtapes(){
   const r = RANG[S.vue] ?? 0;
   document.getElementById('steps').innerHTML = ETAPES.map((e,i)=>
-    `<div class="stp ${i===r?'on':''} ${i<r?'done':''}"><span class="k">${String(i+1).padStart(2,'0')}</span><span>${e[1]}</span></div>`
+    `<div class="stp ${i===r?'on':''} ${i<r?'done':''}" style="cursor:pointer" onclick="sauterA('${e[0]}')">
+       <span class="k">${String(i+1).padStart(2,'0')}</span><span>${e[1]}</span>
+     </div>`
   ).join('');
 }
 
