@@ -230,7 +230,7 @@ export default function MapPage() {
           </div>
         </div>
       )}
-      <BottomTabBar onPing={relocate} />
+      <BottomTabBar />
     </div>
   )
 }
