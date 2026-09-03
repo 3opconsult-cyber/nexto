@@ -314,6 +314,15 @@ function km(a,b){
 }
 function trajetMin(p){ return Math.max(6, Math.round(km(ME,p)*2.6 + 5)); } // ~23 km/h porte à porte
 const eur = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+function planning(){
+  // Heure d'arrivee fixe pour la demo (14h02, comme dans le parcours navigable) ;
+  // le depart se calcule a partir de la duree reellement choisie au lieu d'etre
+  // une deuxieme heure fixe qui ne correspondrait plus si S.heures change.
+  const debut = 14*60+2;
+  const fin = debut + S.heures*60;
+  const fmt = m => `${Math.floor(m/60)%24}h${String(m%60).padStart(2,'0')}`;
+  return { arrivee: fmt(debut), depart: fmt(fin) };
+}
 
 /* ---------- état ---------- */
 const S0 = { vue:'carte', filtre:'tous', proId:null, heures:2, adresse:ME.adresse,
@@ -608,7 +617,7 @@ function render(){
           <div class="docline">
             <div>
               <div class="t">${comm?'Frais de service PING':p.metier+' — '+S.heures+' h'}</div>
-              <div class="s">${comm?'5 % du montant de la prestation':'Le '+new Date().toLocaleDateString('fr-FR')+' · codes 3726 — 8419 scannés sur place'}</div>
+              <div class="s">${comm?'5 % du montant de la prestation':'Le '+new Date().toLocaleDateString('fr-FR')+' · '+planning().arrivee+' — '+planning().depart+', scannés sur place'}</div>
               ${!comm?`<div class="s">${p.tarif} € de l'heure</div>`:''}
             </div>
             <div class="m">${comm?eur(P.fraisClient):eur(P.base)}</div>
