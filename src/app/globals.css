@@ -51,10 +51,13 @@ body {
 .dnav-item:hover { background: #F3F6F5; }
 .dnav-item.on { background: rgba(18,179,156,.1); color: #0C8F7E; }
 @media (min-width: 1000px) {
-  .app-shell { display: flex; height: 100dvh; background: #fff; }
-  .desk-nav { display: flex; flex-direction: column; width: 268px; flex: 0 0 268px; background: #fff; border-right: 1px solid #E7EDEB; padding: 18px 12px; overflow-y: auto; }
-  .app-shell .stage { flex: 1; min-width: 0; height: 100dvh; }
-  .app-shell .device, .app-shell .frame, .app-shell .screen { border-radius: 0 !important; }
+  body { background: #fff !important; }
+  .app-shell { display: flex !important; width: 100vw; height: 100dvh; overflow: hidden; }
+  .desk-nav { display: flex; flex-direction: column; width: 236px; flex: 0 0 236px; background: #fff; border-right: 1px solid #E7EDEB; padding: 18px 12px; overflow-y: auto; }
+  .app-shell .stage { flex: 1 1 auto !important; width: auto !important; min-width: 0 !important; height: 100dvh !important; }
+  .app-shell .device { width: 100% !important; height: 100dvh !important; background: none !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; }
+  .app-shell .frame { position: static !important; inset: auto !important; width: 100% !important; height: 100dvh !important; border-radius: 0 !important; padding: 0 !important; background: var(--paper) !important; }
+  .app-shell .screen { width: 100% !important; height: 100dvh !important; border-radius: 0 !important; }
   .app-shell .mobile-only { display: none !important; }
-  .app-shell .chips { top: 78px; }
+  .app-shell .searchbar { max-width: 420px; }
 }
