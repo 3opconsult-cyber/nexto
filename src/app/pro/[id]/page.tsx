@@ -109,12 +109,6 @@ export default function ProDetailPage() {
           )}
         </div>
 
-        {pro.sap_number && (
-          <div style={{ marginBottom: 20, padding: 12, borderRadius: 12, background: 'rgba(18,179,156,.08)', fontSize: 12, fontWeight: 700, color: '#0C8F7E' }}>
-            Crédit d'impôt de 50 % — déclaration SAP {pro.sap_number}
-          </div>
-        )}
-
         {extraServices.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
             {extraServices.map((s, i) => (
@@ -133,41 +127,69 @@ export default function ProDetailPage() {
           <div>
             <p style={{ fontSize: 13.5, color: '#3d5560', lineHeight: 1.6, marginBottom: 16 }}>{pro.bio || "Ce prestataire n'a pas encore ajouté de description."}</p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#6E8592', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="2.4"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
+              Informations déclarées par le pro
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
               {pro.has_identity && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#F3F6F5' }}>
-                  <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.6" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
+                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="12" r="2.4" /></svg>
                   </span>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Pièce d'identité fournie</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Pièce d'identité fournie</div>
+                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Déposée sur PING par le pro</div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', display: 'flex', alignItems: 'center', gap: 3 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>Fournie</span>
                 </div>
               )}
               {pro.has_rcpro && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#F3F6F5' }}>
-                  <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6z" /></svg>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
+                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>
                   </span>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Assurance RC pro renseignée</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Assurance responsabilité civile</div>
+                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Renseignée par le pro (casse / dommage)</div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', display: 'flex', alignItems: 'center', gap: 3 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>Renseignée</span>
+                </div>
+              )}
+              {pro.sap_number && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
+                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M4 6h16v13H4z" /><path d="M8 11h8M8 15h5" /></svg>
+                  </span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Attestation crédit d'impôt</div>
+                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Crédit d'impôt 50 % — déclaration SAP {pro.sap_number}</div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', display: 'flex', alignItems: 'center', gap: 3 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>Possible</span>
                 </div>
               )}
               {typeof pro.completed_count === 'number' && pro.completed_count > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#F3F6F5' }}>
-                  <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" strokeLinecap="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
+                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
                   </span>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{pro.completed_count} mission{pro.completed_count > 1 ? 's' : ''} réalisée{pro.completed_count > 1 ? 's' : ''} sur PING</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{pro.completed_count} mission{pro.completed_count > 1 ? 's' : ''} réalisée{pro.completed_count > 1 ? 's' : ''} sur PING</div>
+                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Prestations terminées et validées</div>
+                  </div>
                 </div>
               )}
-              {!pro.has_identity && !pro.has_rcpro && (
-                <div style={{ padding: '10px 12px', borderRadius: 12, background: '#F3F6F5', fontSize: 12, color: '#6E8592', fontWeight: 600 }}>
-                  Pièce d'identité et assurance pas encore renseignées.
+              {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && (
+                <div style={{ padding: '11px 12px', borderRadius: 12, background: '#F3F6F5', fontSize: 12, color: '#6E8592', fontWeight: 600 }}>
+                  Aucune information encore renseignée par le prestataire.
                 </div>
               )}
             </div>
 
-            <div style={{ padding: 12, borderRadius: 12, background: '#FFF7ED', fontSize: 11.5, color: '#8a6520', fontWeight: 600 }}>
-              PING met en relation clients et prestataires mais n'emploie ni ne supervise ce prestataire.
-            </div>
+            <p style={{ fontSize: 10.5, color: '#9aa6a3', marginBottom: 16, lineHeight: 1.5 }}>
+              Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie. PING met en relation clients et prestataires mais n'emploie ni ne supervise ce prestataire.
+            </p>
           </div>
         )}
 
