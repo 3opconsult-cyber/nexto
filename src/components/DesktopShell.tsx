@@ -7,15 +7,16 @@ const APP_PREFIXES = ['/map', '/messages', '/agenda', '/documents', '/litiges', 
 
 const CLIENT_NAV: [string, string][] = [
   ['Carte', '/map'],
+  ['Mes demandes', '/agenda'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
   ['Mes réclamations', '/litiges'],
-  ['Mes documents', '/documents'],
   ['Profil', '/client/profil'],
 ]
 const CLIENT_NAV2: [string, string][] = [
   ['Mon parrainage', '/client/parrainage'],
   ['Mes favoris', '/client/favoris'],
+  ['Mes documents', '/documents'],
   ['Support PING', '/support'],
 ]
 const PRO_NAV: [string, string][] = [
@@ -29,7 +30,10 @@ const PRO_NAV: [string, string][] = [
 const PRO_NAV2: [string, string][] = [
   ['Tableau de bord', '/pro/dashboard'],
   ['Factures & documents', '/pro/documents'],
-  ['Mes pièces', '/pro/onboarding/documents'],
+  ['Mes pièces', '/pro/documents'],
+  ['Mon parrainage', '/client/parrainage'],
+  ['Mes documents', '/documents'],
+  ['Support PING', '/support'],
 ]
 
 export default function DesktopShell({ children }: { children: React.ReactNode }) {
