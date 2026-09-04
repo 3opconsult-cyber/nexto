@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ReviewModal from '@/components/ReviewModal'
 import DepartureBar from '@/components/DepartureBar'
-import NavDrawer from '@/components/NavDrawer'
 import { filterMessage } from '@/lib/chatFilter'
 import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
 
@@ -192,22 +191,20 @@ export default function ChatPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
-      {/* Header */}
-      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, position: 'sticky', top: 0, zIndex: 10, background: '#fff', borderBottom: '1px solid #E7EDEB' }}>
-        <button onClick={() => router.back()} style={{ color: '#123644', background: 'none', border: 'none', padding: 4, display: 'flex' }}>
+      {/* Header — style /demo v_chat */}
+      <div className="ping-chatbar">
+        <div className="ic" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', cursor: 'pointer' }} onClick={() => router.back()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
-        </button>
-        <NavDrawer dark={false} />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644' }}>{counterpart}</span>
-          <span style={{ fontSize: 11, color: '#12B39C', fontWeight: 600 }}>● en ligne · identité masquée</span>
         </div>
+        <b style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16 }}>{counterpart}</b>
+        <span style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 600 }}>● en ligne · identité masquée</span>
+        <span style={{ flex: 1 }} />
         {tx && (
-          <span style={{ padding: '6px 11px', borderRadius: 999, background: '#F3F6F5', color: '#6E8592', fontSize: 11.5, fontWeight: 700 }}>
+          <span style={{ padding: '6px 11px', borderRadius: 999, background: 'var(--paper)', color: 'var(--slate)', fontSize: 11.5, fontWeight: 700 }}>
             {(tx.subtotal_cents / 100).toFixed(2)} €
           </span>
         )}
-        <button onClick={() => setReporting(true)} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0 }}>
+        <button onClick={() => setReporting(true)} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0, cursor: 'pointer' }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
         </button>
       </div>
