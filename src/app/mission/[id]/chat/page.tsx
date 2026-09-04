@@ -277,8 +277,9 @@ export default function ChatPage() {
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="ping-notice">Coordonnées protégées jusqu'au QR de fin</div>
         {msgs.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
         )}
         {msgs.map(m => {
           if (m.kind === 'offer') {
@@ -327,15 +328,8 @@ export default function ChatPage() {
           }
           const mine = m.sender_id === userId
           return (
-            <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
-              <div style={{
-                maxWidth: '75%', padding: '10px 14px', borderRadius: 16, fontSize: 13.5, fontWeight: 500,
-                ...(mine
-                  ? { background: '#12B39C', color: '#fff', borderBottomRightRadius: 4 }
-                  : { background: '#fff', color: '#123644', borderBottomLeftRadius: 4, border: '1px solid #E7EDEB' }),
-              }}>
-                {m.body}
-              </div>
+            <div key={m.id} className={mine ? 'ping-msg-me' : 'ping-msg-them'}>
+              {m.body}
             </div>
           )
         })}
