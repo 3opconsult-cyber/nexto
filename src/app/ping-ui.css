@@ -155,3 +155,31 @@
 .ping-inputbar { position: sticky; bottom: 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom,0px)); background: #fff; border-top: 1px solid var(--line); display: flex; gap: 9px; align-items: center; }
 .ping-inputbar input { flex: 1; background: var(--paper); border: none; border-radius: 999px; padding: 11px 15px; color: var(--ink); font-size: 13px; font-family: var(--fb); outline: none; }
 .ping-snd { width: 36px; height: 36px; border-radius: 50%; background: var(--teal); display: grid; place-items: center; flex: 0 0 auto; border: none; cursor: pointer; }
+
+/* ============ Parcours mission (booking/pay/track/qr/receipt/review) ============ */
+.ping-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+.ping-lrow { display: flex; justify-content: space-between; font-size: 13px; margin: 5px 0; }
+.ping-lrow .s { color: var(--slate); }
+.ping-lrow .v { font-weight: 600; color: var(--ink); }
+.ping-tot { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); margin-top: 8px; padding-top: 9px; }
+.ping-tot .big { font-family: var(--fh); font-weight: 700; font-size: 20px; color: var(--ink); }
+.ping-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.ping-day { min-width: 60px; border-radius: 13px; padding: 9px 6px; text-align: center; border: 1px solid var(--line); background: #fff; flex: 0 0 auto; cursor: pointer; }
+.ping-day small { color: var(--slate); font-size: 11px; display: block; }
+.ping-day b { font-family: var(--fh); font-weight: 700; font-size: 16px; }
+.ping-day.on { background: var(--ink); }
+.ping-day.on small, .ping-day.on b { color: #fff; }
+.ping-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 14px; }
+.ping-slot { padding: 11px 0; text-align: center; border-radius: 12px; border: 1px solid var(--line); background: #fff; font-family: var(--fh); font-weight: 700; color: var(--ink); font-size: 13.5px; cursor: pointer; }
+.ping-slot.on { background: var(--teal); color: #fff; border-color: var(--teal); }
+.ping-slot.taken { background: var(--paper); color: #B9C4C2; text-decoration: line-through; cursor: not-allowed; }
+.ping-minimap { position: relative; height: 180px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--land); }
+.ping-mk { width: 38px; height: 38px; border-radius: 50% 50% 50% 0; transform: rotate(45deg); display: grid; place-items: center; border: 3px solid #fff; box-shadow: 0 8px 18px rgba(20,50,60,.28); background: var(--teal); }
+.ping-qr { width: 180px; height: 180px; margin: 12px auto; background: #fff; border: 1px solid var(--line); border-radius: 16px; display: grid; place-items: center; padding: 12px; }
+.ping-success { width: 58px; height: 58px; border-radius: 50%; background: rgba(18,179,156,.12); display: grid; place-items: center; margin: 0 auto 10px; }
+.ping-h1 { font-family: var(--fh); font-weight: 700; color: var(--ink); font-size: 19px; }
+.ping-ratewrap { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+.ping-tips { display: flex; gap: 8px; margin-top: 12px; }
+.ping-tipb { flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 11px; padding: 10px; text-align: center; font-family: var(--fh); font-weight: 700; color: var(--slate); font-size: 12.5px; cursor: pointer; }
+.ping-tipb.on { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.ping-btn.dark { background: var(--ink); }
