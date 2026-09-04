@@ -15,9 +15,9 @@ const nextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        // L'APP = le prototype /demo, plein ecran, branche sur Supabase.
+        // /map = la VRAIE app React (DemoShell, branchee Supabase). Plus de facade dessus.
+        // '/' reste sur le fallback client.html tant que la home React n'est pas portee.
         { source: '/', destination: '/client.html' },
-        { source: '/map', destination: '/client.html' },
 
         // Fichiers de reference intacts (presentation, admin, marketing).
         { source: '/demo', destination: '/app.html' },
