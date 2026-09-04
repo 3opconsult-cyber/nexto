@@ -383,3 +383,15 @@ svg{display:block}
   .homebar{display:none}
   .status{display:none}
 }
+
+/* ============================================================
+   Coque React (DemoShell) : plein ecran permanent dans l'app.
+   Le layout enveloppe deja en colonne 480px ; ici on retire le
+   cadre device decoratif pour que la coque remplisse cette colonne.
+   ============================================================ */
+.stage{width:100%;height:100dvh}
+.device{width:100%;height:100dvh;background:none;border-radius:0;padding:0;box-shadow:none;transform:none}
+.btn-side{display:none}
+.device .frame{position:static;inset:auto;border-radius:0;background:var(--paper);padding:0;width:100%;height:100%}
+.screen{border-radius:0;width:100%;height:100%}
+.island,.homebar,.status{display:none}
