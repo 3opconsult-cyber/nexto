@@ -1,0 +1,173 @@
+/* Classes ping-* des pages React pas encore portees vers la coque /demo.
+   Coexistent avec le CSS verbatim (ping-ui.css) le temps de la bascule. */
+
+.ping-screen {
+  position: relative; width: 100%; min-height: 100dvh;
+  background: var(--paper); font-family: var(--fb); color: var(--ink);
+  display: flex; flex-direction: column;
+}
+.ping-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.ping-body.nopad { padding: 0; }
+.ping-body.pad { padding: 16px; }
+
+/* ---------- Barre du haut (flottante sur carte OU pleine) ---------- */
+.ping-topbar {
+  position: absolute; top: 0; left: 0; right: 0; height: 56px; z-index: 800;
+  display: flex; align-items: center; gap: 10px; padding: 0 12px;
+  background: rgba(255,255,255,.97); border-bottom: 1px solid var(--line);
+}
+.ping-topbar.solid { position: relative; }
+.ping-burger, .ping-tbell {
+  width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+  background: var(--paper); border: 1px solid var(--line); cursor: pointer; flex: 0 0 38px;
+  position: relative;
+}
+.ping-logo { display: flex; align-items: center; gap: 7px; }
+.ping-logo .wd { font-family: var(--fh); font-weight: 700; font-size: 19px; color: var(--ink); line-height: 1; }
+.ping-bdg { position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--coral); }
+.ping-sp { flex: 1; }
+
+/* ---------- Barre de recherche flottante ---------- */
+.ping-searchbar {
+  position: absolute; top: 66px; left: 14px; right: 14px; z-index: 800;
+  display: flex; align-items: center; gap: 10px; background: #fff;
+  border-radius: 16px; padding: 13px 15px; box-shadow: 0 12px 28px rgba(20,50,60,.18); cursor: pointer;
+}
+.ping-searchbar .si { width: 32px; height: 32px; border-radius: 9px; background: var(--teal); display: grid; place-items: center; flex: 0 0 32px; }
+.ping-searchbar .st { color: var(--slate); font-size: 13.5px; }
+
+/* ---------- Puces de catégorie ---------- */
+.ping-chiprow {
+  position: absolute; top: 120px; left: 0; right: 0; z-index: 800;
+  display: flex; gap: 8px; padding: 0 14px; overflow-x: auto;
+}
+.ping-chiprow::-webkit-scrollbar { display: none; }
+.ping-chip {
+  background: #fff; border: 1px solid var(--line); border-radius: 999px;
+  padding: 7px 13px; font-size: 12.5px; font-weight: 600; color: var(--ink);
+  white-space: nowrap; cursor: pointer; flex: 0 0 auto;
+}
+.ping-chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+/* ---------- Barre d'onglets basse ---------- */
+.ping-tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 64px; z-index: 60;
+  display: flex; justify-content: center;
+  background: rgba(255,255,255,.98); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.ping-tabbar .inner { width: 100%; max-width: 480px; display: flex; justify-content: space-around; align-items: flex-start; padding: 9px 6px 0; }
+.ping-tab { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--slate); font-size: 9.5px; font-weight: 700; cursor: pointer; flex: 1; border: none; background: none; }
+.ping-tab.on { color: var(--teal); }
+
+/* ---------- Bouton flottant PING (recentrage) + zoom ---------- */
+.ping-fabcol { position: absolute; right: 14px; bottom: 84px; z-index: 800; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.ping-fab { width: 56px; height: 56px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; box-shadow: 0 10px 22px rgba(18,179,156,.4); cursor: pointer; font-family: var(--fh); font-weight: 700; font-size: 13px; border: none; }
+.ping-fab.sm { width: 40px; height: 40px; background: #fff; color: var(--ink); box-shadow: 0 4px 12px rgba(20,50,60,.18); }
+
+/* ---------- Feuille d'aperçu qui glisse du bas ---------- */
+.ping-preview {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; margin: 0 auto; max-width: 480px;
+  background: #fff; border-radius: 22px 22px 0 0; padding: 12px 16px calc(20px + env(safe-area-inset-bottom,0px));
+  box-shadow: 0 -14px 36px rgba(20,50,60,.2);
+  transform: translateY(105%); transition: transform .4s cubic-bezier(.2,.9,.3,1);
+}
+.ping-preview.open { transform: translateY(0); }
+.ping-preview .grab { width: 36px; height: 4px; border-radius: 999px; background: #E2E7E5; margin: 0 auto 12px; }
+.ping-preview-bg { position: fixed; inset: 0; z-index: 69; background: rgba(18,54,68,.25); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.ping-preview-bg.open { opacity: 1; pointer-events: auto; }
+
+/* ---------- Avatar ---------- */
+.ping-av { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; color: #fff; font-family: var(--fh); font-weight: 700; font-size: 17px; flex: 0 0 auto; background: linear-gradient(160deg, #14b39c, #0c8f7e); }
+.ping-av.sm { width: 40px; height: 40px; font-size: 15px; border-radius: 12px; }
+
+/* ---------- Badges de qualification ---------- */
+.ping-attest { display: flex; align-items: center; gap: 6px; background: rgba(18,179,156,.1); color: var(--tealD); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+
+/* ---------- Boutons ---------- */
+.ping-btn { background: var(--teal); color: #fff; font-family: var(--fh); font-weight: 700; font-size: 15px; text-align: center; padding: 14px; border-radius: 14px; cursor: pointer; border: none; width: 100%; }
+.ping-btn.ghost { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+
+/* ---------- Carte prestataire (liste) ---------- */
+.ping-provcard { display: flex; align-items: center; gap: 11px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-bottom: 10px; cursor: pointer; }
+.ping-provcard .nm { font-family: var(--fh); font-weight: 700; font-size: 14px; }
+.ping-provcard .mt { color: var(--slate); font-size: 11.5px; margin-top: 2px; }
+.ping-provcard .pr { font-family: var(--fh); font-weight: 700; font-size: 14px; text-align: right; }
+
+/* ---------- Hero fiche pro ---------- */
+.ping-hero { background: linear-gradient(160deg, #14b39c, #0c8f7e); padding: 16px; color: #fff; }
+
+/* ---------- Chat ---------- */
+.ping-msg { max-width: 82%; padding: 9px 12px; border-radius: 15px; font-size: 13px; line-height: 1.35; }
+.ping-msg.me { background: var(--teal); color: #fff; margin-left: auto; border-bottom-right-radius: 5px; }
+.ping-msg.them { background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+.ping-offer { background: #fff; border: 1.5px solid var(--teal); border-radius: 15px; padding: 13px; box-shadow: 0 10px 24px rgba(18,179,156,.14); }
+
+.ping-h2 { font-family: var(--fh); font-weight: 700; font-size: 16px; margin: 4px 0 10px; }
+
+/* ============ Fiche prestataire (v_provider) ============ */
+.ping-appbar { position: sticky; top: 0; height: 52px; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.ping-appbar .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+.ping-appbar b { font-family: var(--fh); font-weight: 700; font-size: 16px; }
+.ping-hero .big { width: 52px; height: 52px; border-radius: 15px; background: rgba(255,255,255,.18); display: grid; place-items: center; font-family: var(--fh); font-weight: 700; font-size: 21px; border: 2px solid rgba(255,255,255,.5); }
+.ping-hero h2 { font-family: var(--fh); font-weight: 700; font-size: 21px; margin-top: 10px; }
+.ping-hero .meta { opacity: .92; font-size: 12px; margin-top: 2px; }
+.ping-hero .dispo { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: #fff; margin-top: 6px; }
+.ping-vrow { display: flex; align-items: center; gap: 9px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 11px; margin-bottom: 7px; }
+.ping-vrow.ok { border-color: rgba(18,179,156,.4); }
+.ping-vi { width: 28px; height: 28px; border-radius: 9px; background: rgba(18,179,156,.12); display: grid; place-items: center; flex: 0 0 auto; }
+.ping-vt { flex: 1; min-width: 0; }
+.ping-vt b { font-size: 12.5px; color: var(--ink); display: block; }
+.ping-vt small { font-size: 10.5px; color: var(--slate); }
+.ping-vs { font-size: 9.5px; font-weight: 700; color: var(--teal); display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.ping-chipset { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ping-sk { background: rgba(18,179,156,.1); color: var(--tealD); font-weight: 600; font-size: 10.5px; padding: 5px 9px; border-radius: 999px; }
+.ping-rev { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 11px; margin-bottom: 8px; }
+.ping-rev .t { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.ping-rev .t .n { font-size: 12.5px; font-weight: 700; }
+.ping-rev p { font-size: 12px; color: var(--slate); line-height: 1.45; }
+.ping-stars { color: var(--gold); font-size: 12px; }
+.ping-foot { position: sticky; bottom: 64px; padding: 12px 16px 14px; background: linear-gradient(180deg, rgba(243,246,245,0), var(--paper) 34%); }
+.ping-badge-teal { background: rgba(18,179,156,.12); color: var(--tealD); font-size: 9.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.ping-sub { font-size: 10.5px; color: #9aa6a3; margin-top: 2px; line-height: 1.5; }
+
+/* ============ Chat (v_chat) ============ */
+.ping-chatbar { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 6px; padding: 10px 14px; }
+.ping-notice { align-self: center; background: rgba(18,179,156,.1); color: var(--ink); font-size: 11px; padding: 5px 12px; border-radius: 999px; }
+.ping-msg-me { align-self: flex-end; max-width: 82%; padding: 9px 12px; border-radius: 15px 15px 5px 15px; font-size: 13px; line-height: 1.35; background: var(--ink); color: #fff; }
+.ping-msg-them { align-self: flex-start; max-width: 82%; padding: 9px 12px; border-radius: 15px 15px 15px 5px; font-size: 13px; line-height: 1.35; background: #fff; border: 1px solid var(--line); color: var(--ink); }
+.ping-offer2 { align-self: stretch; background: #fff; border: 1.5px solid var(--teal); border-radius: 15px; padding: 13px; box-shadow: 0 10px 24px rgba(18,179,156,.14); }
+.ping-offer2 .k { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--teal); }
+.ping-offer2 .p { display: flex; justify-content: space-between; align-items: baseline; margin-top: 5px; }
+.ping-offer2 .big { font-family: var(--fh); font-weight: 700; font-size: 20px; color: var(--ink); }
+.ping-inputbar { position: sticky; bottom: 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom,0px)); background: #fff; border-top: 1px solid var(--line); display: flex; gap: 9px; align-items: center; }
+.ping-inputbar input { flex: 1; background: var(--paper); border: none; border-radius: 999px; padding: 11px 15px; color: var(--ink); font-size: 13px; font-family: var(--fb); outline: none; }
+.ping-snd { width: 36px; height: 36px; border-radius: 50%; background: var(--teal); display: grid; place-items: center; flex: 0 0 auto; border: none; cursor: pointer; }
+
+/* ============ Parcours mission (booking/pay/track/qr/receipt/review) ============ */
+.ping-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+.ping-lrow { display: flex; justify-content: space-between; font-size: 13px; margin: 5px 0; }
+.ping-lrow .s { color: var(--slate); }
+.ping-lrow .v { font-weight: 600; color: var(--ink); }
+.ping-tot { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); margin-top: 8px; padding-top: 9px; }
+.ping-tot .big { font-family: var(--fh); font-weight: 700; font-size: 20px; color: var(--ink); }
+.ping-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.ping-day { min-width: 60px; border-radius: 13px; padding: 9px 6px; text-align: center; border: 1px solid var(--line); background: #fff; flex: 0 0 auto; cursor: pointer; }
+.ping-day small { color: var(--slate); font-size: 11px; display: block; }
+.ping-day b { font-family: var(--fh); font-weight: 700; font-size: 16px; }
+.ping-day.on { background: var(--ink); }
+.ping-day.on small, .ping-day.on b { color: #fff; }
+.ping-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 14px; }
+.ping-slot { padding: 11px 0; text-align: center; border-radius: 12px; border: 1px solid var(--line); background: #fff; font-family: var(--fh); font-weight: 700; color: var(--ink); font-size: 13.5px; cursor: pointer; }
+.ping-slot.on { background: var(--teal); color: #fff; border-color: var(--teal); }
+.ping-slot.taken { background: var(--paper); color: #B9C4C2; text-decoration: line-through; cursor: not-allowed; }
+.ping-minimap { position: relative; height: 180px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--land); }
+.ping-mk { width: 38px; height: 38px; border-radius: 50% 50% 50% 0; transform: rotate(45deg); display: grid; place-items: center; border: 3px solid #fff; box-shadow: 0 8px 18px rgba(20,50,60,.28); background: var(--teal); }
+.ping-qr { width: 180px; height: 180px; margin: 12px auto; background: #fff; border: 1px solid var(--line); border-radius: 16px; display: grid; place-items: center; padding: 12px; }
+.ping-success { width: 58px; height: 58px; border-radius: 50%; background: rgba(18,179,156,.12); display: grid; place-items: center; margin: 0 auto 10px; }
+.ping-h1 { font-family: var(--fh); font-weight: 700; color: var(--ink); font-size: 19px; }
+.ping-ratewrap { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+.ping-tips { display: flex; gap: 8px; margin-top: 12px; }
+.ping-tipb { flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 11px; padding: 10px; text-align: center; font-family: var(--fh); font-weight: 700; color: var(--slate); font-size: 12.5px; cursor: pointer; }
+.ping-tipb.on { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.ping-btn.dark { background: var(--ink); }

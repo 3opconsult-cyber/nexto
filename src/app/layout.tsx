@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Quicksand, Inter } from 'next/font/google'
 import './globals.css'
 import './ping-ui.css'
+import './ping-legacy.css'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
