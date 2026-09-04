@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import nextDynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { fetchProvidersNearby, ProviderNearby } from '@/lib/services'
+import { fetchProvidersNearby, ProviderNearby, openConversation } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { TRADES } from '@/lib/trades'
@@ -264,7 +264,7 @@ export default function MapPage() {
               {selected.bio && <p style={{ color: '#6E8592', fontSize: 13, marginTop: 12, lineHeight: 1.5 }}>{selected.bio}</p>}
               <div style={{ display: 'flex', gap: 9, marginTop: 16 }}>
                 <button onClick={() => router.push(`/pro/${selected.id}`)} style={{ flex: 1, padding: 13, borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>Voir le profil</button>
-                <button onClick={() => router.push(`/mission/new?pro=${selected.id}`)} style={{ flex: 1.3, padding: 13, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>Demander un devis</button>
+                <button onClick={async () => { const { missionId } = await openConversation(selected.id); router.push(missionId ? `/mission/${missionId}/chat` : '/auth/login') }} style={{ flex: 1.3, padding: 13, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>Contacter</button>
               </div>
             </div>
           </div>

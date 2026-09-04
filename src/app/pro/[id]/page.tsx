@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchProDetail } from '@/lib/services'
+import { fetchProDetail, openConversation } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 
@@ -210,8 +210,8 @@ export default function ProDetailPage() {
       </div>
 
       <div style={{ position: 'sticky', bottom: 0, background: '#fff', padding: '14px 20px', borderTop: '1px solid #E7EDEB' }}>
-        <button onClick={() => router.push(`/mission/new?pro=${proId}`)} style={{ width: '100%', padding: 15, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>
-          Demander un devis
+        <button onClick={async () => { const { missionId } = await openConversation(proId); router.push(missionId ? `/mission/${missionId}/chat` : '/auth/login') }} style={{ width: '100%', padding: 15, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>
+          Contacter
         </button>
       </div>
     </div>
