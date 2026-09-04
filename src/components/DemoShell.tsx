@@ -169,6 +169,43 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                     </>
                   )}
                 </div>
+
+                {/* Panneau de detail desktop : la carte reste visible, on passe d'un pro a l'autre en cliquant les pins */}
+                {pv && pvShow && (
+                  <div className="detail-panel on">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
+                      <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)', flex: 1 }}>Profil du prestataire</b>
+                      <div onClick={closePreview} style={{ cursor: 'pointer', color: 'var(--slate)', fontSize: 20, lineHeight: 1 }}>×</div>
+                    </div>
+                    <div style={{ overflowY: 'auto', flex: 1 }}>
+                      <div style={{ background: 'linear-gradient(160deg,var(--teal),var(--tealD))', padding: '18px 16px', color: '#fff' }}>
+                        <div className="pvav" style={{ background: `linear-gradient(160deg,${pv.g})`, width: 54, height: 54, fontSize: 20, marginBottom: 10 }}>{pv.av}</div>
+                        <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 20 }}>{pv.n}</div>
+                        <div style={{ fontSize: 13, opacity: .9 }}>{pv.m}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 13, fontWeight: 600 }}><span className="livedot on" /> {pv.d}</div>
+                      </div>
+                      <div style={{ padding: 16 }}>
+                        <div className="h2" style={{ marginTop: 0 }}>Informations déclarées par le pro</div>
+                        {pv.c.length ? pv.c.map((x, i) => (
+                          <div key={i} className="vrow ok" style={{ marginBottom: 8 }}>
+                            <div className="vi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M20 6 9 17l-5-5" /></svg></div>
+                            <div className="vt"><b>{x}</b></div>
+                            <div className="vs">✓</div>
+                          </div>
+                        )) : <p className="sub">Aucune information déclarée pour l&apos;instant.</p>}
+                        <p className="sub" style={{ fontSize: 11, color: '#9aa6a3' }}>Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
+                        <div className="h2">Compétences</div>
+                        <span className="chip on" style={{ display: 'inline-block' }}>{TRAD[pv.cat] || pv.cat}</span>
+                        <div className="h2">Avis <span className="chip" style={{ fontSize: 10 }}>après prestation</span></div>
+                        <p className="sub" style={{ color: 'var(--slate)' }}>Pas encore d&apos;avis — ils apparaîtront après les premières prestations.</p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 9, padding: 14, borderTop: '1px solid var(--line)' }}>
+                      <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { const { missionId } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : `/pro/${pv.id}`) }}>Contacter</div>
+                      <div className="btn" style={{ flex: 1.3 }} onClick={() => router.push(`/pro/${pv.id}`)}>Réserver{pv.p ? ` · ${pv.p}` : ''}</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>

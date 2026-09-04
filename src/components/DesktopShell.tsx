@@ -42,7 +42,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
   const isApp = APP_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
   if (!isApp) return <div className="phone-col">{children}</div>
 
-  const onPro = pathname.startsWith('/pro')
+  const onPro = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
   const accent = onPro ? '#F2A93B' : '#12B39C'
   const nav = onPro ? PRO_NAV : CLIENT_NAV
   const nav2 = onPro ? PRO_NAV2 : CLIENT_NAV2
