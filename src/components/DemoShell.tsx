@@ -10,7 +10,8 @@ import { createClient } from '@/lib/supabase/client'
 
 type Pro = {
   id: string; av: string; n: string; m: string; p: string;
-  d: string; c: string[]; g: string; cat: string
+  d: string; c: string[]; g: string; cat: string;
+  dist: number; rate: number; priceN: number
 }
 
 const CHK = (
@@ -33,6 +34,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [pros, setPros] = useState<Pro[]>([])
   const [pvIndex, setPvIndex] = useState(0)
   const [pvShow, setPvShow] = useState(false)
+  const [searchCat, setSearchCat] = useState('tous')
+  const [sortMode, setSortMode] = useState<'near' | 'rated' | 'price'>('near')
+  const [flt, setFlt] = useState<Set<string>>(() => new Set(['Dispo maintenant']))
 
   const go = useCallback((v: string) => { setPrevView(view); setViewState(v); setMenuOpen(false) }, [view])
   const back = useCallback((v: string) => { setViewState(v); setMenuOpen(false) }, [])
@@ -57,6 +61,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
               id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
               m: `${TRAD[x.trade] || x.trade} · ${rate} · à ${distTxt}`, p: price,
               d: 'Disponible maintenant', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
+              dist: x.distance_m ?? 0, rate: x.rating ?? 0,
+              priceN: x.base_price_cents > 0 ? x.base_price_cents : (x.hourly_rate_cents ?? 0),
             }
           }))
         })
@@ -73,6 +79,15 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
 
   const pv = pros[pvIndex]
   const visiblePros = pros.filter(p => mapCat === 'tous' || p.cat === mapCat)
+  const searchList = [...pros]
+    .filter(p => searchCat === 'tous' || p.cat === searchCat)
+    .sort((a, b) =>
+      sortMode === 'rated' ? b.rate - a.rate
+        : sortMode === 'price' ? a.priceN - b.priceN
+          : a.dist - b.dist)
+  function tglFlt(f: string) {
+    setFlt(s => { const n = new Set(s); n.has(f) ? n.delete(f) : n.add(f); return n })
+  }
 
   return (
     <div className="stage" id="stage">
@@ -160,6 +175,47 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   )}
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* ===================== v_search ===================== */}
+          <section className={`view ${view === 'v_search' ? 'on' : ''}`} id="v_search" data-tab="map">
+            <div className="appbar">
+              <div className="burger" onClick={() => back('v_map')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2.2} strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
+              </div>
+              <b>Recherche</b>
+            </div>
+            <div className="body">
+              <div className="h2" style={{ marginTop: 0 }}>Que recherchez-vous&nbsp;?</div>
+              <div className="catgrid">
+                {([['menage', 'Ménage'], ['nettoyage', 'Nettoyage'], ['repassage', 'Blanchisserie'], ['vitres', 'Vitres']] as const).map(([key, label]) => (
+                  <div key={key} className={`cat ${searchCat === key ? 'on' : ''}`} onClick={() => setSearchCat(searchCat === key ? 'tous' : key)}>
+                    <div className="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z" /></svg></div>{label}
+                  </div>
+                ))}
+              </div>
+              <p className="sub" style={{ fontSize: 11, color: '#9aa6a3' }}>D&apos;autres services seront ouverts progressivement sur PING.</p>
+              <div className="h2">Filtres</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {['Dispo maintenant', 'Pièce d’identité fournie', 'Assurance RC renseignée', '≤ 1 km', '4★ et +'].map(f => (
+                  <div key={f} className={`chip ${flt.has(f) ? 'on' : ''}`} onClick={() => tglFlt(f)}>{f}</div>
+                ))}
+              </div>
+              <div className="seg" id="sortSeg">
+                <div className={sortMode === 'near' ? 'on' : ''} onClick={() => setSortMode('near')}>Plus proches</div>
+                <div className={sortMode === 'rated' ? 'on' : ''} onClick={() => setSortMode('rated')}>Mieux notés</div>
+                <div className={sortMode === 'price' ? 'on' : ''} onClick={() => setSortMode('price')}>Prix croissant</div>
+              </div>
+              <div className="h2">{searchList.length} personne{searchList.length > 1 ? 's' : ''} disponible{searchList.length > 1 ? 's' : ''}<span style={{ fontSize: 11, color: 'var(--slate)', fontWeight: 600, marginLeft: 6 }}>triées par {sortMode === 'rated' ? 'note' : sortMode === 'price' ? 'prix' : 'distance'}</span></div>
+              {searchList.map(p => (
+                <div key={p.id} className="row" onClick={() => router.push(`/pro/${p.id}`)}>
+                  <div className="av" style={{ background: `linear-gradient(160deg,${p.g})` }}>{p.av}</div>
+                  <div className="m"><div className="nm">{p.n}</div><div className="ds">{p.m}</div></div>
+                  <div className="rt"><b>{p.rate > 0 ? p.rate.toFixed(1) : 'Nouveau'}</b>{p.p}</div>
+                </div>
+              ))}
+              {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)' }}>Aucun prestataire dans cette catégorie pour le moment.</p>}
             </div>
           </section>
 
