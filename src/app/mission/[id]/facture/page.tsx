@@ -33,8 +33,21 @@ export default function FacturePage() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.from('invoices').select('*').eq('transaction_id', params.id).order('kind')
-      .then(({ data }) => { setInvoices((data ?? []) as Invoice[]); setLoading(false) })
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: tx } = await supabase.from('transactions')
+        .select('buyer_id, seller_id').eq('id', params.id).single()
+      const { data } = await supabase.from('invoices').select('*').eq('transaction_id', params.id)
+      const amBuyer = user && tx ? user.id === (tx as any).buyer_id : true
+      // Prestation d'abord, puis UNIQUEMENT la commission qui concerne le viewer
+      // (client = frais de service 5 % ; prestataire = commission PING 11 %). Jamais les deux — comme Airbnb.
+      const mine = amBuyer ? 'commission_client' : 'commission_pro'
+      const list = ((data ?? []) as Invoice[])
+        .filter(v => v.kind === 'prestation' || v.kind === mine)
+        .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
+      setInvoices(list); setActive(0); setLoading(false)
+    }
+    load()
   }, [params.id])
 
   const inv = invoices[active]
