@@ -43,3 +43,18 @@ body {
 
 /* Tap highlight */
 * { -webkit-tap-highlight-color: transparent; }
+
+/* ===== Layout desktop : navigation laterale ouverte + carte a droite (type Booking/Airbnb).
+   Le format telephone reste sur mobile (<1000px). ===== */
+.desk-nav { display: none; }
+.dnav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 14.5px; color: #123644; cursor: pointer; }
+.dnav-item:hover { background: #F3F6F5; }
+.dnav-item.on { background: rgba(18,179,156,.1); color: #0C8F7E; }
+@media (min-width: 1000px) {
+  .app-shell { display: flex; height: 100dvh; background: #fff; }
+  .desk-nav { display: flex; flex-direction: column; width: 268px; flex: 0 0 268px; background: #fff; border-right: 1px solid #E7EDEB; padding: 18px 12px; overflow-y: auto; }
+  .app-shell .stage { flex: 1; min-width: 0; height: 100dvh; }
+  .app-shell .device, .app-shell .frame, .app-shell .screen { border-radius: 0 !important; }
+  .app-shell .mobile-only { display: none !important; }
+  .app-shell .chips { top: 78px; }
+}

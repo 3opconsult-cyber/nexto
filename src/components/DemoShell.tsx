@@ -103,7 +103,29 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     setFlt(s => { const n = new Set(s); n.has(f) ? n.delete(f) : n.add(f); return n })
   }
 
+  const deskGo = (path: string) => router.push(path)
   return (
+    <div className="app-shell">
+      <aside className="desk-nav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px 16px' }}>
+          <div className="mark"><svg viewBox="0 0 26 26" width="26" height="26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".38" /><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".6" /></svg></div>
+          <span style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)' }}>ping</span>
+        </div>
+        <div className={`dnav-item ${view === 'v_map' ? 'on' : ''}`} onClick={() => go('v_map')}>Carte</div>
+        <div className="dnav-item" onClick={() => go('v_search')}>Recherche</div>
+        <div className="dnav-item" onClick={() => deskGo('/messages')}>Messages</div>
+        <div className="dnav-item" onClick={() => deskGo('/agenda')}>Agenda</div>
+        <div className="dnav-item" onClick={() => deskGo('/litiges')}>Mes réclamations</div>
+        <div className="dnav-item" onClick={() => deskGo('/client/profil')}>Profil</div>
+        <div style={{ height: 1, background: 'var(--line)', margin: '10px 8px' }} />
+        <div className="dnav-item" onClick={() => deskGo('/comment-ca-marche')}>Comment ça marche</div>
+        <div className="dnav-item" onClick={() => deskGo('/client/parrainage')}>Mon parrainage</div>
+        <div className="dnav-item" onClick={() => deskGo('/client/favoris')}>Mes favoris</div>
+        <div className="dnav-item" onClick={() => deskGo('/documents')}>Mes documents</div>
+        <div className="dnav-item" onClick={() => deskGo('/support')}>Support PING</div>
+        <div style={{ flex: 1 }} />
+        <div className="dnav-item" style={{ background: 'var(--ink)', color: '#fff' }} onClick={() => deskGo('/pro/carte')}>Passer en mode pro</div>
+      </aside>
     <div className="stage" id="stage">
       <div className="device">
         <div className="frame"><div className="screen" id="screen">
@@ -113,7 +135,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
             <div className="body full nopad">
               <div className="mapwrap">
                 <div className="topbar">
-                  <NavDrawer dark={false} />
+                  <span className="mobile-only"><NavDrawer dark={false} /></span>
                   <div className="pinglogo">
                     <div className="mark">
                       <svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".38" /><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".6" /></svg>
@@ -215,7 +237,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
           </section>
 
           {/* ===================== TABBAR ===================== */}
-          <nav className="tabbar" id="tabbar_part">
+          <nav className="tabbar mobile-only" id="tabbar_part">
             <div className={`tab ${view === 'v_map' ? 'on' : ''}`} data-t="map" onClick={() => go('v_map')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" /></svg>Carte
             </div>
@@ -226,6 +248,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
 
         </div></div>
       </div>
+    </div>
     </div>
   )
 }
