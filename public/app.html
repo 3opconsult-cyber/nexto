@@ -449,7 +449,7 @@ svg{display:block}
             <div class="pvh"></div>
             <div class="pvrow"><div class="pvav" id="pvAv">S</div><div style="flex:1"><div class="pvname" id="pvName"></div><div class="pvmeta" id="pvMeta"></div><div class="chipset" id="pvChips"></div></div><div class="pvprice" id="pvPrice"></div></div>
             <div class="dispo" style="margin-top:11px"><span class="livedot on"></span> <span id="pvDispo"></span></div>
-            <div style="display:flex;gap:9px;margin-top:10px"><div class="btn ghost" style="flex:1" onclick="closePreview();go('v_chat')">Contacter</div><div class="btn" style="flex:1.3" onclick="closePreview();go('v_provider')">Voir le profil</div></div>
+            <div style="display:flex;gap:9px;margin-top:10px"><div class="btn ghost" style="flex:1" onclick="closePreview();go('v_chat')">Contacter</div><div class="btn" style="flex:1.3" onclick="closePreview();if(window.__pvGoProfile){window.__pvGoProfile()}else{go('v_provider')}">Voir le profil</div></div>
           </div>
         </div>
       </div>
@@ -1528,7 +1528,7 @@ function setAvail2(on){
 
 
 /* ================= PROFILS CARTE ================= */
-const PROS=[
+let PROS=[
  {av:'S',n:'Sofia M.',m:'M\u00e9nage &amp; repassage \u00b7 4,9 (86) \u00b7 \u00e0 350 m',p:'25 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~5 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#12B39C,#0C8F7E',cat:'menage'},
  {av:'A',n:'Amine K.',m:'Remise en \u00e9tat \u00b7 4,8 (52) \u00b7 \u00e0 620 m',p:'180 \u20ac forfait',d:'Disponible maintenant \u00b7 r\u00e9pond en ~12 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#F2A93B,#d98a1f',cat:'remise'},
  {av:'L',n:'L\u00e9a T.',m:'M\u00e9nage \u00b7 4,7 (23) \u00b7 \u00e0 800 m \u00b7 \u00e9tudiante',p:'20 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~8 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie'],g:'#FF7A66,#e05f4b',cat:'menage'},
@@ -1537,6 +1537,7 @@ const PROS=[
 ];
 const CHK='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> ';
 function openPv(i){
+ window.__pvIndex=i;
  const o=PROS[i]||PROS[0];
  $('pvAv').textContent=o.av;
  $('pvAv').style.background='linear-gradient(160deg,'+o.g+')';
@@ -1792,6 +1793,47 @@ const _mw=document.querySelector('#v_map .mapwrap');if(_mw)_mw.addEventListener(
 window.addEventListener('resize',fit);
 window.addEventListener('load',()=>{fit();setActiveTab('v_map');});
 fit();setActiveTab('v_map');renderMenu();openPv(0);closePreview();syncLit();setTimeout(()=>doPing('v_map'),500);
+
+/* ============ BRANCHEMENT REEL : vrais prestataires depuis Supabase ============ */
+(function(){
+  var SB='https://wmiawwaxwlvascyflpba.supabase.co';
+  var KEY='sb_publishable_ehRFsNEJD1hnkOyi7vdfEA_NJey8yfP';
+  var HUES={menage:'#12B39C,#0C8F7E',repassage:'#6E8592,#4c6472',nettoyage:'#F2A93B,#d98a1f',vitres:'#12B39C,#0e7f70',remise:'#FF7A66,#e05f4b'};
+  var TRAD={menage:'M\u00e9nage',repassage:'Repassage',nettoyage:'Nettoyage',vitres:'Vitres',remise:'Remise en \u00e9tat'};
+  function euro(c){return c?(c/100).toFixed(0):'';}
+  // Grasse par defaut ; on tente la vraie geoloc
+  function load(lat,lng){
+    fetch(SB+'/rest/v1/rpc/providers_nearby',{
+      method:'POST',
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({p_lat:lat,p_lng:lng,radius_m:15000,p_trade:null})
+    }).then(function(r){return r.json();}).then(function(rows){
+      if(!Array.isArray(rows)||!rows.length) return;
+      PROS=rows.map(function(x){
+        var nm=(x.full_name||TRAD[x.trade]||x.trade||'').trim();
+        var price=x.base_price_cents>0?euro(x.base_price_cents)+' \u20ac':(x.hourly_rate_cents?euro(x.hourly_rate_cents)+' \u20ac/h':'');
+        var distTxt=x.distance_m<1000?Math.round(x.distance_m)+' m':(x.distance_m/1000).toFixed(1)+' km';
+        var rate=x.rating>0?x.rating.toFixed(1)+' ('+(x.reviews_count||0)+')':'Nouveau';
+        var chips=[];if(x.has_identity)chips.push('Pi\u00e8ce d\u2019identit\u00e9 fournie');if(x.has_rcpro)chips.push('Assurance RC renseign\u00e9e');
+        return {id:x.id,av:(nm.charAt(0)||'?').toUpperCase(),n:nm,
+          m:(TRAD[x.trade]||x.trade)+' \u00b7 '+rate+' \u00b7 \u00e0 '+distTxt,
+          p:price,d:'Disponible maintenant',c:chips,
+          g:HUES[x.trade]||HUES.menage,cat:x.trade};
+      });
+      // Ouvre la vraie fiche prestataire au clic sur "Voir le profil"
+      window.__pvGoProfile=function(){var o=PROS[window.__pvIndex||0];if(o&&o.id)location.href='/pro/'+o.id;};
+      if(typeof openPv==='function'){openPv(0);closePreview();}
+    }).catch(function(){});
+  }
+  function start(){
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        function(p){load(p.coords.latitude,p.coords.longitude);},
+        function(){load(43.6584,6.9225);},{timeout:5000});
+    } else { load(43.6584,6.9225); }
+  }
+  if(document.readyState!=='loading') start(); else window.addEventListener('DOMContentLoaded',start);
+})();
 </script>
 <script>
 /* ================= SUIVI RÉEL — UTM + pages vues + scans QR ================= */
