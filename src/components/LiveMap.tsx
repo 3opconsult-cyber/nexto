@@ -38,7 +38,7 @@ function proIcon(trade: string, active: boolean) {
   })
 }
 
-function FitAll({ userPos, pros }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[] }) {
+function FitAll({ userPos, pros, recenterTick }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[]; recenterTick?: number }) {
   const map = useMap()
   useEffect(() => {
     const pts: [number, number][] = [[userPos.lat, userPos.lng]]
@@ -48,16 +48,18 @@ function FitAll({ userPos, pros }: { userPos: { lat: number; lng: number }; pros
     } else {
       map.fitBounds(pts, { padding: [50, 50], maxZoom: 14 })
     }
-  }, [userPos.lat, userPos.lng, pros, map])
+    setTimeout(() => map.invalidateSize(), 100)
+  }, [userPos.lat, userPos.lng, pros, map, recenterTick])
   return null
 }
 
 export default function LiveMap({
-  userPos, pros, onSelect,
+  userPos, pros, onSelect, recenterTick,
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
   onSelect: (p: ProviderNearby) => void
+  recenterTick?: number
 }) {
   return (
     <>
@@ -74,7 +76,7 @@ export default function LiveMap({
           attribution='&copy; OpenStreetMap'
           maxZoom={19}
         />
-        <FitAll userPos={userPos} pros={pros} />
+        <FitAll userPos={userPos} pros={pros} recenterTick={recenterTick} />
         <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()} />
         {pros.filter(p => p.lat != null && p.lng != null).map(p => (
           <Marker

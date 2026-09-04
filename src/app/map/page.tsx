@@ -76,7 +76,10 @@ export default function MapPage() {
     }
   }
 
+  const [recenterTick, setRecenterTick] = useState(0)
+
   function relocate() {
+    setRecenterTick(t => t + 1)
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         p => { setPos({ lat: p.coords.latitude, lng: p.coords.longitude }); setLocStatus('granted') },
@@ -123,7 +126,7 @@ export default function MapPage() {
     <div className="ping-screen" style={{ paddingBottom: 64 }}>
       <div style={{ position: 'relative', width: '100%', height: 'calc(100dvh - 64px)' }}>
         <div style={{ position: 'absolute', inset: 0 }}>
-          <LiveMap userPos={pos} pros={visible} onSelect={openPreview} />
+          <LiveMap userPos={pos} pros={visible} onSelect={openPreview} recenterTick={recenterTick} />
         </div>
 
         <PingTopBar />
