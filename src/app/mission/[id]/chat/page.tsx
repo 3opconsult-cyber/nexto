@@ -328,7 +328,7 @@ export default function ChatPage() {
           }
           const mine = m.sender_id === userId
           return (
-            <div key={m.id} className={mine ? 'ping-msg-me' : 'ping-msg-them'}>
+            <div key={m.id} className={mine ? 'msg me' : 'msg them'}>
               {m.body}
             </div>
           )
