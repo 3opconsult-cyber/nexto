@@ -38,9 +38,17 @@ function proIcon(trade: string, active: boolean) {
   })
 }
 
-function Recenter({ lat, lng }: { lat: number; lng: number }) {
+function FitAll({ userPos, pros }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[] }) {
   const map = useMap()
-  useEffect(() => { map.setView([lat, lng], map.getZoom()) }, [lat, lng, map])
+  useEffect(() => {
+    const pts: [number, number][] = [[userPos.lat, userPos.lng]]
+    pros.forEach(p => { if (p.lat != null && p.lng != null) pts.push([p.lat, p.lng]) })
+    if (pts.length === 1) {
+      map.setView(pts[0], 13)
+    } else {
+      map.fitBounds(pts, { padding: [50, 50], maxZoom: 14 })
+    }
+  }, [userPos.lat, userPos.lng, pros, map])
   return null
 }
 
@@ -66,7 +74,7 @@ export default function LiveMap({
           attribution='&copy; OpenStreetMap'
           maxZoom={19}
         />
-        <Recenter lat={userPos.lat} lng={userPos.lng} />
+        <FitAll userPos={userPos} pros={pros} />
         <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()} />
         {pros.filter(p => p.lat != null && p.lng != null).map(p => (
           <Marker
