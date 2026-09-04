@@ -392,6 +392,6 @@ svg{display:block}
 .stage{width:100%;height:100dvh}
 .device{width:100%;height:100dvh;background:none;border-radius:0;padding:0;box-shadow:none;transform:none}
 .btn-side{display:none}
-.device .frame{position:static;inset:auto;border-radius:0;background:var(--paper);padding:0;width:100%;height:100%}
-.screen{border-radius:0;width:100%;height:100%}
+.device .frame{position:static;inset:auto;border-radius:0;background:var(--paper);padding:0;width:100%;height:100dvh}
+.screen{border-radius:0;width:100%;height:100dvh}
 .island,.homebar,.status{display:none}
