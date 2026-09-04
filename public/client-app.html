@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>PING — démo</title>
+<meta name="theme-color" content="#12B39C">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PING">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+:root{--ink:#123644;--paper:#F3F6F5;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;
+--teal:#12B39C;--tealD:#0C8F7E;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#6E8592;--line:#E7EDEB;
+--fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(900px 700px at 50% -10%,#173540,#0b1720);min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px;font-family:var(--fb)}
+.noscroll::-webkit-scrollbar{display:none}.noscroll{-ms-overflow-style:none;scrollbar-width:none}
+
+.stage{position:relative}
+.device{position:relative;width:418px;height:872px;transform-origin:top left;background:linear-gradient(145deg,#2a2f36,#0a0d10);border-radius:56px;padding:5px;box-shadow:0 50px 110px rgba(0,0,0,.65)}
+.device .frame{position:absolute;inset:5px;border-radius:52px;background:#000;padding:9px}
+.btn-side{position:absolute;background:#15181c;border-radius:3px}
+.bt1{left:-3px;top:135px;width:3px;height:34px}.bt2{left:-3px;top:185px;width:3px;height:58px}.bt3{left:-3px;top:255px;width:3px;height:58px}.bt4{right:-3px;top:210px;width:3px;height:92px}
+.screen{position:relative;width:100%;height:100%;border-radius:44px;overflow:hidden;background:var(--paper)}
+.island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:94px;height:30px;background:#000;border-radius:20px;z-index:250}
+.island::after{content:"";position:absolute;right:9px;top:9px;width:11px;height:11px;border-radius:50%;background:#0b1418;box-shadow:inset 0 0 4px #1c2a30}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:128px;height:5px;border-radius:99px;background:rgba(18,54,68,.4);z-index:250}
+.status{position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:16px 28px 0;font-weight:600;font-size:14px;color:var(--ink);z-index:150}
+.status .r{display:flex;align-items:center;gap:6px}
+
+/* VIEWS */
+.view{position:absolute;top:52px;left:0;right:0;bottom:0;display:none;flex-direction:column}
+.view.on{display:flex}
+.appbar{position:absolute;top:0;left:0;right:0;height:48px;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 14px}
+.appbar b{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:16px}
+.appbar .ic{width:30px;height:30px;display:grid;place-items:center;color:var(--ink);cursor:pointer}
+.appbar .sp{margin-left:auto;display:flex;gap:6px}
+.body{position:absolute;top:48px;left:0;right:0;bottom:64px;overflow-y:auto;padding:16px 16px 20px}
+.body.nopad{padding:0}
+.body.full{top:0;bottom:64px}
+
+/* BOTTOM NAV */
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:64px;z-index:30;display:flex;justify-content:space-around;align-items:flex-start;padding:9px 6px 0;background:rgba(255,255,255,.98);border-top:1px solid var(--line)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--slate);font-size:9.5px;font-weight:600;cursor:pointer;flex:1}
+.tab svg{width:22px;height:22px}
+.tab.on{color:var(--teal)}
+.tabbar.pro .tab.on{color:var(--gold)}
+
+/* MAP */
+.mapwrap{position:absolute;inset:0;background:var(--land)}
+.mapsvg{position:absolute;inset:0;width:100%;height:100%}
+.searchbar{position:absolute;top:14px;left:14px;right:14px;z-index:30;display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 12px 28px rgba(20,50,60,.18);cursor:pointer}
+.searchbar .lg{width:26px;height:26px;border-radius:8px;background:var(--teal);display:grid;place-items:center;flex:0 0 auto}
+.searchbar .tx{font-size:14px;color:var(--slate);font-weight:500}
+.chips{position:absolute;top:70px;left:14px;right:0;z-index:30;display:flex;gap:8px;overflow-x:auto;padding-right:14px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;cursor:pointer;flex:0 0 auto}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pin{position:absolute;transform:translate(-50%,-100%);z-index:20;cursor:pointer}
+.mk{width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(45deg);display:grid;place-items:center;border:3px solid #fff;box-shadow:0 8px 18px rgba(20,50,60,.28);background:var(--teal)}
+.mk>*{transform:rotate(-45deg)}
+.mk.alt{background:#9fb0b8}
+.you{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);z-index:15}
+.you .d{width:18px;height:18px;border-radius:50%;background:var(--coral);border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+
+/* PREVIEW sheet */
+.preview{position:absolute;left:0;right:0;bottom:0;z-index:45;background:#fff;border-radius:22px 22px 0 0;padding:12px 16px 20px;box-shadow:0 -14px 36px rgba(20,50,60,.2);transform:translateY(105%);transition:transform .45s cubic-bezier(.2,.9,.3,1)}
+.preview.show{transform:none}
+.pvh{width:38px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 12px}
+.pvrow{display:flex;gap:12px;align-items:flex-start}
+.pvav{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:19px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.pvname{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:16px}
+.pvmeta{font-size:11.5px;color:var(--slate);margin-top:1px}
+.chipset{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vchip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:999px}
+.vchip.ok{background:rgba(18,179,156,.12);color:var(--tealD)}
+.pvprice{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:15px;flex:0 0 auto}
+
+/* generic */
+.h1{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:19px}
+.h2{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;margin:16px 0 9px;display:flex;align-items:center;justify-content:space-between}
+.sub{color:var(--slate);font-size:12.5px;margin-top:4px;line-height:1.4}
+.btn{background:var(--teal);color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;text-align:center;padding:14px;border-radius:14px;cursor:pointer}
+.btn.dark{background:var(--ink)}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.gold{background:var(--gold);color:#3a2a06}
+.btn.sm{padding:10px 14px;font-size:13px;border-radius:11px}
+.foot{position:absolute;bottom:64px;left:0;right:0;padding:12px 16px 14px;background:linear-gradient(180deg,rgba(243,246,245,0),var(--paper) 34%);z-index:15}
+.foot.flush{bottom:0}
+
+/* rows / lists */
+.row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:9px;cursor:pointer}
+.row .av{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:17px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.row .av.g{background:#9fb0b8}.row .av.gold{background:linear-gradient(160deg,#f2a93b,#d98a1f)}
+.row .m{flex:1;min-width:0}
+.row .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;display:flex;align-items:center;gap:6px}
+.row .ds{font-size:11.5px;color:var(--slate);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .rt{font-size:11px;color:var(--slate);text-align:right;flex:0 0 auto}
+.row .rt b{display:block;font-family:var(--fh);color:var(--ink);font-size:14px}
+.badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:99px}
+.badge.teal{background:rgba(18,179,156,.12);color:var(--tealD)}.badge.gold{background:rgba(242,169,59,.16);color:var(--amber)}.badge.ink{background:var(--ink);color:#fff}
+.ver{color:var(--teal);display:inline-flex}
+.stars{color:var(--gold);font-size:12px}
+
+/* profile */
+.hero{background:linear-gradient(160deg,#14b39c,#0c8f7e);padding:16px;color:#fff;border-radius:0}
+.hero .big{width:52px;height:52px;border-radius:15px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-family:var(--fh);font-weight:700;font-size:21px;border:2px solid rgba(255,255,255,.5)}
+.hero h2{font-family:var(--fh);font-weight:700;font-size:19px;margin-top:9px}
+.hero .meta{opacity:.92;font-size:12px;margin-top:2px}
+.vrow{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:7px}
+.vrow.ok{border-color:rgba(18,179,156,.4)}
+.vrow .vi{width:28px;height:28px;border-radius:9px;background:rgba(18,179,156,.12);display:grid;place-items:center;flex:0 0 auto}
+.vrow .vt{flex:1;min-width:0}.vrow .vt b{font-size:12px;color:var(--ink);font-weight:700;font-family:var(--fh)}.vrow .vt small{display:block;color:var(--slate);font-size:10px}
+.vrow .vs{font-size:9.5px;font-weight:700;color:var(--teal);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.sk{background:rgba(18,179,156,.1);color:var(--tealD);font-weight:600;font-size:10.5px;padding:5px 9px;border-radius:999px}
+.rev{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px}
+.rev .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.rev .n{font-weight:700;color:var(--ink);font-size:12px;display:flex;align-items:center;gap:5px}
+.rev p{color:var(--slate);font-size:11.5px;line-height:1.4}
+
+/* chat */
+.msgs{position:absolute;inset:0;bottom:120px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.notice{align-self:center;background:rgba(18,179,156,.1);color:var(--ink);font-size:11px;padding:5px 12px;border-radius:999px}
+.msg{max-width:82%;padding:9px 12px;border-radius:15px;font-size:13px;line-height:1.35}
+.msg.them{align-self:flex-start;background:#fff;border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:5px}
+.offer{background:#fff;border:1.5px solid var(--teal);border-radius:15px;padding:13px;box-shadow:0 10px 24px rgba(18,179,156,.14);margin-top:4px}
+.offer .k{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.offer .p{display:flex;justify-content:space-between;align-items:baseline;margin-top:5px}
+.offer .p .big{font-family:var(--fh);font-weight:700;font-size:18px;color:var(--ink)}
+.inputbar{position:absolute;bottom:64px;left:0;right:0;padding:10px 12px;background:#fff;border-top:1px solid var(--line);display:flex;gap:9px;align-items:center;z-index:12}
+.inputbar .f{flex:1;background:var(--paper);border-radius:999px;padding:11px 15px;color:var(--slate);font-size:13px}
+.inputbar .snd{width:36px;height:36px;border-radius:50%;background:var(--teal);display:grid;place-items:center;flex:0 0 auto}
+
+/* agenda */
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.day{min-width:60px;border-radius:13px;padding:9px 6px;text-align:center;border:1px solid var(--line);background:#fff;flex:0 0 auto;cursor:pointer}
+.day small{display:block;color:var(--slate);font-size:10px}.day b{font-family:var(--fh);font-size:15px;color:var(--ink)}
+.day.on{background:var(--ink)}.day.on small{color:rgba(255,255,255,.7)}.day.on b{color:#fff}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.slot{padding:11px 0;text-align:center;border-radius:12px;border:1px solid var(--line);background:#fff;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px;cursor:pointer}
+.slot.taken{background:var(--paper);color:#B9C4C2;text-decoration:line-through}
+.slot.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* payment / receipt / qr */
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
+.lrow{display:flex;justify-content:space-between;font-size:13px;margin:5px 0}.lrow .s{color:var(--slate)}.lrow .v{color:var(--ink);font-weight:600}
+.tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:8px;padding-top:9px}
+.tot .big{font-family:var(--fh);font-weight:700;font-size:19px;color:var(--ink)}
+.qr{width:150px;height:150px;margin:12px auto;background:#fff;border:1px solid var(--line);border-radius:16px;display:grid;place-items:center}
+.qr .g{display:grid;grid-template-columns:repeat(7,1fr);gap:2.5px;width:108px;height:108px}
+.success{width:58px;height:58px;border-radius:50%;background:rgba(18,179,156,.12);display:grid;place-items:center;margin:0 auto 10px}
+.minimap{position:relative;height:180px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--land)}
+.center{text-align:center}
+.ratewrap{display:flex;justify-content:center;gap:8px;margin:12px 0}
+.rstar{cursor:pointer}
+.commentbox{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px;min-height:56px;color:var(--slate);font-size:12.5px}
+.tips{display:flex;gap:8px;margin-top:12px}.tipb{flex:1;background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px;text-align:center;font-family:var(--fh);font-weight:700;color:var(--slate);font-size:12.5px;cursor:pointer}.tipb.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+
+/* pro */
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px}
+.stat .v{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:20px}
+.stat .l{font-size:10.5px;color:var(--slate);margin-top:2px}
+.meter{height:11px;border-radius:99px;background:var(--line);overflow:hidden;margin:10px 0}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold))}
+.notif{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:9px}
+.notif .top{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--teal);font-weight:700}
+.notif h4{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;margin:6px 0 2px}
+.notif p{color:var(--slate);font-size:11.5px;line-height:1.4}
+.notif .acts{display:flex;gap:8px;margin-top:10px}.notif .acts>div{flex:1;text-align:center;padding:9px;border-radius:10px;font-family:var(--fh);font-weight:700;font-size:12.5px;cursor:pointer}
+.acc{background:var(--teal);color:#fff}.ref{background:#fff;border:1px solid var(--line);color:var(--slate)}
+.seg{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:3px;margin-top:8px}
+.seg>div{flex:1;text-align:center;padding:9px;border-radius:9px;font-weight:700;font-size:12.5px;color:var(--slate);cursor:pointer}
+.seg>div.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+
+.tip{color:#5f7178;font-size:12px;text-align:center;max-width:410px;line-height:1.5}
+.modeToggle{display:flex;gap:8px}
+.mbtn{background:#16262f;color:#DCE7EB;border:1px solid #244049;font-weight:600;font-size:12.5px;padding:9px 16px;border-radius:11px;cursor:pointer}
+.mbtn.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.mapscene{position:absolute;inset:0;transform-origin:50% 50%;transition:transform .25s ease}
+.zoomctl{position:absolute;right:14px;bottom:126px;z-index:32;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 8px 20px rgba(20,50,60,.2)}
+.zoomctl .zb{width:40px;height:40px;background:#fff;display:grid;place-items:center;font-size:22px;font-weight:600;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line);font-family:var(--fh);user-select:none}
+.zoomctl .zb:last-child{border-bottom:none}
+.loc{position:absolute;right:14px;bottom:80px;z-index:32;width:40px;height:40px;background:#fff;border-radius:12px;display:grid;place-items:center;box-shadow:0 8px 20px rgba(20,50,60,.2);cursor:pointer}
+.catgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.cat{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px;cursor:pointer;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:12.5px}
+.cat .ci{width:30px;height:30px;border-radius:9px;background:var(--paper);display:grid;place-items:center;flex:0 0 auto;color:var(--tealD)}
+.cat.on{border-color:var(--teal);background:rgba(18,179,156,.06)}.cat.on .ci{background:rgba(18,179,156,.14)}
+.statut{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:8px;cursor:pointer}
+.statut.on{border-color:var(--teal);background:rgba(18,179,156,.06);box-shadow:0 0 0 3px rgba(18,179,156,.12)}
+.statut b{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px;display:block}
+.statut small{color:var(--slate);font-size:11px;line-height:1.35;display:block;margin-top:2px}
+.field2{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.field2 .l{font-size:10px;color:var(--slate);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.field2 .v{font-size:13px;color:var(--ink);font-weight:600;font-family:var(--fh);margin-top:2px;display:flex;justify-content:space-between;align-items:center}
+.field2 .edit{color:var(--teal);font-size:11px;font-weight:700}
+.lawlist{font-size:11.5px;color:var(--slate);line-height:1.7;margin-top:4px}
+.lawlist b{color:var(--ink)}
+.lawlist .li{display:flex;gap:7px;margin-bottom:4px}.lawlist .li svg{flex:0 0 auto;margin-top:2px}
+.note2{font-size:10.5px;color:#9aa6a3;margin-top:12px;line-height:1.4;font-style:italic}
+.qa{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.qab{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 8px;text-align:center;cursor:pointer;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:11px}
+.qab .qi{width:34px;height:34px;border-radius:10px;background:rgba(242,169,59,.14);display:grid;place-items:center;margin:0 auto 7px;color:var(--amber)}
+.tar{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px}
+.tar .m{flex:1;min-width:0}.tar .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13px}.tar .ds{font-size:11px;color:var(--slate)}
+.tar .pr{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;white-space:nowrap}
+.tar .edit{color:var(--teal);font-size:11px;font-weight:700;margin-left:8px}
+.pickchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 11px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;margin:0 7px 7px 0}
+.pickchip.on{border-color:var(--teal);background:rgba(18,179,156,.08);color:var(--tealD)}
+.pickchip b{font-family:var(--fh)}
+.doc{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px}
+.doc .dt{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;background:var(--paper);color:var(--ink)}
+.doc .dt.fac{background:rgba(18,179,156,.12);color:var(--tealD)}.doc .dt.rec{background:rgba(242,169,59,.14);color:var(--amber)}.doc .dt.dev{background:rgba(18,54,68,.08);color:var(--ink)}
+.doc .m{flex:1;min-width:0}.doc .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:12.5px}
+.doc .ds{font-size:10.5px;color:var(--slate);margin-top:1px}
+.doc .rt{text-align:right;flex:0 0 auto}.doc .rt b{display:block;font-family:var(--fh);color:var(--ink);font-size:13px}
+.doc .dl{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);display:grid;place-items:center;color:var(--tealD);flex:0 0 auto;cursor:pointer}
+.availcard{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.availcard.on{border-color:var(--teal);background:linear-gradient(135deg,rgba(18,179,156,.08),#fff)}
+.availcard .al{display:flex;align-items:center;gap:11px;flex:1}
+.availcard .at{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:15px}
+.availcard .as{font-size:11.5px;color:var(--slate);margin-top:1px}
+.livedot{width:11px;height:11px;border-radius:50%;background:#c4cfcc;flex:0 0 auto;position:relative}
+.livedot.on{background:var(--teal)}.availcard.on .livedot{background:var(--teal)}
+.livedot.on::after,.availcard.on .livedot::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--teal);animation:lp 1.6s infinite}
+@keyframes lp{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+.sw{width:52px;height:30px;border-radius:99px;background:#d5ddda;position:relative;flex:0 0 auto;transition:.2s;cursor:pointer}
+.availcard.on .sw{background:var(--teal)}
+.sw .knob{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+.availcard.on .sw .knob{left:25px}
+.dispo{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--tealD)}
+.mkwrap{position:relative}
+.pinring{position:absolute;left:50%;top:13px;width:46px;height:46px;transform:translate(-50%,-50%);border-radius:50%;border:3px solid var(--teal);opacity:.5;animation:lp 1.8s infinite;pointer-events:none}
+.geosheet{position:absolute;inset:0;background:rgba(18,54,68,.45);display:none;align-items:flex-end;z-index:300}
+.geosheet.on{display:flex}
+.geobox{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:22px 20px 26px;text-align:center}
+.geobox .gi{width:62px;height:62px;border-radius:20px;background:rgba(18,179,156,.12);display:grid;place-items:center;margin:0 auto 14px;color:var(--tealD)}
+.geobox h4{font-family:var(--fh);font-weight:700;font-size:17px;color:var(--ink)}
+.geobox p{color:var(--slate);font-size:12.5px;margin-top:6px;line-height:1.45}
+.geobox .g2{display:flex;gap:9px;margin-top:16px}
+.kyc{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.kyc .ki{width:34px;height:34px;border-radius:9px;background:var(--paper);display:grid;place-items:center;color:var(--slate);flex:0 0 auto}
+.kyc.ok .ki{background:rgba(18,179,156,.12);color:var(--tealD)}
+.kyc .kt{flex:1;min-width:0}.kyc .kt b{font-family:var(--fh);font-weight:700;font-size:12.5px;color:var(--ink)}.kyc .kt small{display:block;color:var(--slate);font-size:10.5px}
+.kyc .ka{font-size:11px;font-weight:700;color:var(--teal);white-space:nowrap;cursor:pointer}
+.kyc .ka.wait{color:var(--amber)}
+svg{display:block}
+
+/* ---- Logo PING ---- */
+.pinglogo{display:flex;align-items:center;gap:7px}
+.pinglogo .mark{position:relative;width:26px;height:26px;flex:0 0 26px}
+.pinglogo .mark svg{position:absolute;inset:0}
+.pinglogo .mark .d{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:var(--green);animation:lgpulse 2.2s ease-out infinite}
+@keyframes lgpulse{0%{box-shadow:0 0 0 0 rgba(47,208,110,.5)}70%{box-shadow:0 0 0 11px rgba(47,208,110,0)}100%{box-shadow:0 0 0 0 rgba(47,208,110,0)}}
+.pinglogo .wd{font-family:var(--fh);font-weight:700;font-size:19px;color:var(--ink);letter-spacing:.2px;line-height:1}
+.pinglogo .tg{font-size:8.5px;color:var(--slate);font-weight:600;margin-top:1px;letter-spacing:.02em}
+
+/* ---- Topbar carte ---- */
+.topbar{position:absolute;top:0;left:0;right:0;height:56px;z-index:34;display:flex;align-items:center;gap:10px;padding:0 12px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line)}
+.burger{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--paper);border:1px solid var(--line);cursor:pointer;flex:0 0 38px}
+.topbar .sp{flex:1}
+.tbell{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--paper);border:1px solid var(--line);cursor:pointer;position:relative}
+.tbell .bdg{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--coral)}
+
+/* ---- Drawer ---- */
+.scrim{position:absolute;inset:0;background:rgba(10,32,40,.45);z-index:39;opacity:0;pointer-events:none;transition:.25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:absolute;top:0;bottom:0;left:0;width:80%;max-width:300px;z-index:40;background:#fff;transform:translateX(-102%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:6px 0 26px rgba(10,32,40,.18)}
+.drawer.on{transform:translateX(0)}
+.drawer .dh{padding:18px 16px 14px;border-bottom:1px solid var(--line)}
+.drawer .du{display:flex;align-items:center;gap:10px;margin-top:14px}
+.drawer .du .av2{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0C8F7E);color:#fff;font-family:var(--fh);font-weight:700;font-size:16px}
+.drawer .du .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px}
+.drawer .du .ds{font-size:11px;color:var(--slate)}
+.dnav{flex:1;overflow-y:auto;padding:10px 10px}
+.dlink{display:flex;align-items:center;gap:12px;padding:12px 12px;border-radius:12px;cursor:pointer;color:var(--ink);font-weight:600;font-size:14px}
+.dlink:hover{background:var(--paper)}
+.dlink.on{background:rgba(18,179,156,.1);color:var(--tealD)}
+.dlink svg{width:19px;height:19px;flex:0 0 19px}
+.dlink .cnt{margin-left:auto;background:var(--coral);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:9px}
+.dsep{height:1px;background:var(--line);margin:8px 12px}
+.dfoot{padding:12px 14px 16px;border-top:1px solid var(--line)}
+.modeswitch{display:flex;align-items:center;gap:10px;padding:12px;border-radius:13px;background:linear-gradient(135deg,#123644,#0e2a34);color:#fff;cursor:pointer}
+.modeswitch .t{flex:1}
+.modeswitch .t b{display:block;font-family:var(--fh);font-size:13px}
+.modeswitch .t small{font-size:10.5px;opacity:.72}
+.modeswitch .sw{width:38px;height:22px;border-radius:12px;background:rgba(255,255,255,.22);position:relative;flex:0 0 38px}
+.modeswitch .sw span{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.22s}
+.modeswitch.pro .sw{background:var(--gold)}
+.modeswitch.pro .sw span{left:19px}
+
+/* ---- Navbar reduite ---- */
+.tabbar.solo{justify-content:center}
+.tabbar.solo .tab{flex:0 0 auto;padding:0 34px}
+
+/* ---- Viewer document ---- */
+.docview{width:100%;aspect-ratio:1/1.32;border-radius:14px;border:1px solid var(--line);background:#fff;overflow:hidden;position:relative;box-shadow:0 6px 18px rgba(10,32,40,.08)}
+.docview .mask{position:absolute;inset:0;display:grid;place-items:center;background:repeating-linear-gradient(45deg,#F3F6F5,#F3F6F5 9px,#EBF0EF 9px,#EBF0EF 18px)}
+.docview .mask .lock{text-align:center;color:var(--slate);font-size:11.5px;padding:0 26px;line-height:1.5}
+
+
+/* ---- Bouton PING (rafraichir autour de moi) ---- */
+.pingbtn{position:absolute;right:14px;bottom:172px;z-index:33;width:56px;height:56px;border-radius:50%;
+ background:linear-gradient(160deg,#12B39C,#0C8F7E);display:grid;place-items:center;cursor:pointer;
+ box-shadow:0 10px 26px rgba(18,179,156,.42);border:2.5px solid #fff;transition:transform .16s}
+.pingbtn:active{transform:scale(.92)}
+.pingbtn .lbl{font-family:var(--fh);font-weight:700;font-size:11.5px;color:#fff;letter-spacing:.4px;line-height:1}
+.pingbtn .halo{position:absolute;inset:-2.5px;border-radius:50%;border:2.5px solid var(--teal);opacity:0}
+.pingbtn.busy .halo{animation:pbhalo 1s ease-out infinite}
+@keyframes pbhalo{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.85);opacity:0}}
+
+/* onde radar depuis la position */
+.radar{position:absolute;left:50%;top:55%;width:24px;height:24px;transform:translate(-50%,-50%);
+ border-radius:50%;border:2.5px solid var(--teal);z-index:14;opacity:0;pointer-events:none}
+.radar.go{animation:radarwave 1.7s cubic-bezier(.2,.6,.3,1) forwards}
+@keyframes radarwave{0%{transform:translate(-50%,-50%) scale(.4);opacity:.85;border-width:3px}
+ 100%{transform:translate(-50%,-50%) scale(15);opacity:0;border-width:.5px}}
+
+/* pins qui reapparaissent en cascade */
+.pin.hid{opacity:0;transform:translate(-50%,-100%) scale(.3)}
+.pin.pop{animation:pinpop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pinpop{0%{opacity:0;transform:translate(-50%,-100%) scale(.3)}
+ 60%{opacity:1;transform:translate(-50%,-100%) scale(1.12)}
+ 100%{opacity:1;transform:translate(-50%,-100%) scale(1)}}
+
+/* toast resultat */
+.pingtoast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(14px);z-index:35;
+ background:rgba(18,54,68,.96);color:#fff;padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:600;
+ white-space:nowrap;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 8px 22px rgba(10,32,40,.3)}
+.pingtoast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.pingtoast .dt{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;vertical-align:middle}
+
+
+.tabbar .tab.tping{color:var(--tealD)}
+.tabbar .tab.tping svg{transition:transform .3s}
+.tabbar .tab.tping.busy svg{animation:tpspin 1s linear infinite}
+@keyframes tpspin{to{transform:rotate(360deg)}}
+.tabbar.pro .tab.tping{color:var(--gold)}
+
+
+/* ---- Fil de litige (app) ---- */
+.lfil{position:relative;padding-left:22px;margin-top:12px}
+.lfil::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.lev{position:relative;margin-bottom:11px}
+.lev::before{content:'';position:absolute;left:-19px;top:12px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid var(--line)}
+.lev.me::before{border-color:var(--teal)}
+.lev.you::before{border-color:var(--gold)}
+.lev.ping::before{border-color:var(--ink);background:var(--ink)}
+.lev .bx{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff}
+.lev.me .bx{border-left:3px solid var(--teal)}
+.lev.you .bx{border-left:3px solid var(--gold)}
+.lev.ping .bx{border-left:3px solid var(--ink);background:var(--paper)}
+.lev .h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.lev .h b{font-family:var(--fh);font-size:12.5px;color:var(--ink)}
+.lev .h .d{font-size:10px;color:var(--slate);margin-left:auto}
+.lev .amt{font-family:var(--fh);font-weight:700;font-size:17px;color:var(--ink);margin-top:3px}
+.lev .t{font-size:11.5px;color:var(--slate);line-height:1.5;margin-top:4px}
+.lev .mt2{font-size:9.5px;color:var(--slate);margin-top:7px;padding-top:6px;border-top:1px solid var(--line)}
+.ltag{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:99px}
+.ltag.a{background:#E9F7F4;color:#0C8F7E}
+.ltag.b{background:#FDF3E2;color:#8a6520}
+.ltag.k{background:rgba(18,54,68,.09);color:var(--ink)}
+.lgel{display:flex;align-items:center;gap:9px;background:#FFFBF2;border:1px solid #F5D9A6;border-radius:12px;padding:11px 12px;margin-top:10px}
+.lgel .n{font-family:var(--fh);font-weight:700;font-size:15px;color:var(--ink)}
+.lgel .s{font-size:10.5px;color:#8a6520;line-height:1.4}
+.offin{display:flex;gap:8px;align-items:center;margin-top:9px}
+.offin input{flex:1;border:1.5px solid var(--line);border-radius:11px;padding:11px;font-family:var(--f);font-size:15px;font-weight:700;color:var(--ink);text-align:center}
+.lstat{display:flex;gap:8px;margin-top:10px}
+.lstat>div{flex:1;background:var(--paper);border-radius:11px;padding:10px;text-align:center}
+.lstat b{display:block;font-family:var(--fh);font-size:15px;color:var(--ink)}
+.lstat span{font-size:9.5px;color:var(--slate)}
+
+/* Vrai plein ecran (sans le mockup decoratif de telephone) quand la page
+   tourne sur un vrai petit ecran, ou en PWA installee sur l'ecran d'accueil.
+   Le mockup desktop reste intact pour la presentation/marketing en navigateur. */
+@media (min-width: 481px) {
+  body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
+  .stage{width:100%;height:100dvh;max-width:480px;margin:0 auto}
+  .device{width:100%!important;height:100dvh!important;background:none!important;border-radius:0!important;padding:0!important;box-shadow:none!important;transform:none!important}
+  .btn-side{display:none}
+  .device .frame{position:static!important;inset:auto!important;border-radius:0!important;background:var(--paper)!important;padding:0!important;width:100%!important;height:100%!important}
+  .screen{border-radius:0!important;width:100%!important;height:100%!important}
+  .island{display:none}
+  .homebar{display:none}
+  .status{display:none}
+}
+@media (max-width: 480px), (display-mode: standalone) {
+  body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
+  .modeToggle{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.18);border-radius:999px;background:#fff;padding:4px}
+  .stage{width:100vw!important;height:100dvh!important}
+  .device{width:100vw!important;height:100dvh!important;background:none!important;border-radius:0!important;padding:0!important;box-shadow:none!important;transform:none!important}
+  .btn-side{display:none}
+  .device .frame{position:static!important;inset:auto!important;border-radius:0!important;background:var(--paper)!important;padding:0!important;width:100%!important;height:100%!important}
+  .screen{border-radius:0!important;width:100%!important;height:100%!important;padding-top:env(safe-area-inset-top)}
+  .island{display:none}
+  .homebar{display:none}
+  .status{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="modeToggle">
+  <button class="mbtn on" id="mb_part" onclick="setMode('part')">Côté particulier</button>
+  <button class="mbtn" id="mb_pro" onclick="setMode('pro')">Côté professionnel</button>
+</div>
+
+<div class="stage" id="stage"><div class="device">
+  <div class="btn-side bt1"></div><div class="btn-side bt2"></div><div class="btn-side bt3"></div><div class="btn-side bt4"></div>
+  <div class="frame"><div class="screen" id="screen">
+    <div class="island"></div><div class="homebar"></div>
+    <div class="status"><span>9:41</span><span class="r">
+      <svg width="17" height="12" viewBox="0 0 18 12" fill="var(--ink)"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="var(--ink)"><path d="M8 2.5c2.2 0 4.2.9 5.6 2.3l1.2-1.2C13.1 1.9 10.7 1 8 1S2.9 1.9 1.2 3.6l1.2 1.2C3.8 3.4 5.8 2.5 8 2.5z"/></svg>
+      <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x="1" y="1.5" width="21" height="10" rx="3" stroke="var(--ink)" stroke-opacity=".5"/><rect x="3" y="3.5" width="16" height="6" rx="1.5" fill="var(--ink)"/><rect x="23.5" y="4.5" width="2" height="4" rx="1" fill="var(--ink)" fill-opacity=".5"/></svg>
+    </span></div>
+
+    <!-- ============ PARTICULIER ============ -->
+    <!-- CARTE -->
+    <section class="view on" id="v_map" data-tab="map">
+      <div class="body full nopad">
+        <div class="mapwrap">
+          <div class="topbar"><div class="burger" onclick="openMenu()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></div><div class="pinglogo"><div class="mark"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" stroke-width="1.3" opacity=".38"/><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" stroke-width="1.3" opacity=".6"/></svg><span class="d"></span></div><div><div class="wd">ping</div></div></div><div class="sp"></div><div class="tbell" onclick="go('v_messages')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg><span class="bdg"></span></div></div>
+
+          <div class="mapscene" id="mapscene">
+          <svg class="mapsvg" viewBox="0 0 90 160" preserveAspectRatio="xMidYMid slice">
+            <rect width="90" height="160" fill="var(--land)"/>
+            <path d="M90 0 L64 0 C58 22 74 40 66 60 C60 76 70 96 62 116 C56 132 66 148 60 160 L90 160 Z" fill="var(--water)"/>
+            <path d="M8 104 C4 92 22 88 28 98 C34 108 30 128 16 128 C6 128 8 116 8 104 Z" fill="var(--park)"/>
+            <circle cx="12" cy="106" r="1.8" fill="#B4CE97"/><circle cx="20" cy="116" r="2.2" fill="#B4CE97"/>
+            <g fill="#E2DED3"><rect x="5" y="26" width="7" height="6" rx="1"/><rect x="13" y="27" width="5" height="5" rx="1"/><rect x="22" y="54" width="7" height="7" rx="1"/><rect x="30" y="55" width="6" height="6" rx="1"/><rect x="46" y="54" width="7" height="6" rx="1"/><rect x="44" y="98" width="7" height="7" rx="1"/><rect x="30" y="132" width="7" height="6" rx="1"/></g>
+            <g stroke="var(--roadcase)" stroke-width="6" fill="none" stroke-linecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166"/><path d="M-6 46 C22 42 52 52 96 44"/><path d="M-6 128 C26 118 52 100 96 78"/></g>
+            <g stroke="var(--roadcase)" stroke-width="3.6" fill="none" stroke-linecap="round"><path d="M16 -6 C14 40 18 92 14 166"/><path d="M66 -6 C64 30 70 60 66 92"/></g>
+            <g stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166"/><path d="M-6 46 C22 42 52 52 96 44"/><path d="M-6 128 C26 118 52 100 96 78"/></g>
+            <g stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"><path d="M16 -6 C14 40 18 92 14 166"/><path d="M66 -6 C64 30 70 60 66 92"/></g>
+            <circle cx="39" cy="49" r="3.4" fill="var(--land)" stroke="#fff" stroke-width="2.2"/>
+            <text x="19" y="40" font-family="Inter" font-size="2.7" fill="#A8A498" transform="rotate(-4 19 40)">Avenue de Provence</text>
+            <text x="10" y="100" font-family="Inter" font-size="2.6" fill="#8FA87E">Parc de la Ville</text>
+          </svg>
+          <div class="you"><span class="d"></span></div>
+          <div class="pin" data-cat="menage" style="left:34%;top:44%" onclick="openPv(0)"><div class="mkwrap"><span class="pinring"></span><div class="mk"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z"/></svg></div></div></div>
+          <div class="pin" data-cat="remise" style="left:64%;top:28%" onclick="openPv(1)"><div class="mkwrap"><span class="pinring"></span><div class="mk"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 20h16M6 20V9l6-5 6 5v11"/><path d="M10 20v-5h4v5"/></svg></div></div></div>
+          <div class="pin" data-cat="menage" style="left:26%;top:66%" onclick="openPv(2)"><div class="mkwrap"><span class="pinring"></span><div class="mk"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg></div></div></div>
+          <div class="pin" data-cat="menage" style="left:53%;top:57%" onclick="openPv(3)"><div class="mkwrap"><span class="pinring"></span><div class="mk"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 7h18v13H3z"/><path d="M8 7V4h8v3"/></svg></div></div></div>
+          <div class="pin" data-cat="vitres" style="left:43%;top:79%" onclick="openPv(4)"><div class="mkwrap"><span class="pinring"></span><div class="mk"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div></div></div>
+          </div>
+          <div class="searchbar" style="top:66px" onclick="go('v_search')"><div class="lg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M4 6h16M7 12h10M10 18h4"/></svg></div><div class="tx">Filtrer par service, près de vous</div></div>
+          <div class="chips" style="top:118px">
+            <div class="chip on" data-cat="tous" onclick="mapChip(this)">Tous</div><div class="chip" data-cat="menage" onclick="mapChip(this)">Ménage</div><div class="chip" data-cat="vitres" onclick="mapChip(this)">Vitres</div><div class="chip" data-cat="remise" onclick="mapChip(this)">Remise en état</div><div class="chip" style="background:linear-gradient(135deg,#12B39C,#0C8F7E);color:#fff;border-color:transparent" onclick="go('v_offre_new')">+ Publier une demande</div>
+          </div>
+          <div class="radar"></div>
+          <div class="pingbtn" onclick="doPing('v_map')"><span class="halo"></span><span class="lbl">PING</span></div>
+          <div class="pingtoast"></div>
+          <div class="zoomctl"><div class="zb" onclick="zoom(0.35)">+</div><div class="zb" onclick="zoom(-0.35)">−</div></div>
+          <div class="loc" onclick="recenter()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+          <div class="preview" id="preview">
+            <div class="pvh"></div>
+            <div class="pvrow"><div class="pvav" id="pvAv">S</div><div style="flex:1"><div class="pvname" id="pvName"></div><div class="pvmeta" id="pvMeta"></div><div class="chipset" id="pvChips"></div></div><div class="pvprice" id="pvPrice"></div></div>
+            <div class="dispo" style="margin-top:11px"><span class="livedot on"></span> <span id="pvDispo"></span></div>
+            <div style="display:flex;gap:9px;margin-top:10px"><div class="btn ghost" style="flex:1" onclick="closePreview();go('v_chat')">Contacter</div><div class="btn" style="flex:1.3" onclick="closePreview();go('v_provider')">Voir le profil</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECHERCHE -->
+    <section class="view" id="v_search" data-tab="map">
+      <div class="appbar"><b>Recherche</b></div>
+      <div class="body">
+        <div class="h2" style="margin-top:0">Que recherchez-vous&nbsp;?</div>
+        <div class="catgrid"><div class="cat on" onclick="pickCat(this)"><div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z"/></svg></div>Ménage</div><div class="cat" onclick="pickCat(this)"><div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M6 20V9l6-5 6 5v11"/><path d="M10 20v-5h4v5"/></svg></div>Nettoyage</div><div class="cat" onclick="pickCat(this)"><div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v13H3z"/><path d="M8 7V4h8v3"/><circle cx="12" cy="13" r="3.5"/></svg></div>Blanchisserie</div><div class="cat" onclick="pickCat(this)"><div class="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M12 4v16M4 12h16"/></svg></div>Vitres</div></div>
+        <p class="sub" style="font-size:11px;color:#9aa6a3">D'autres services seront ouverts progressivement sur PING.</p>
+        <div class="h2">Filtres</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="chip on" onclick="tgl(this)">Dispo maintenant</div><div class="chip" onclick="tgl(this)">Pièce d'identité fournie</div><div class="chip" onclick="tgl(this)">Assurance RC renseignée</div><div class="chip" onclick="tgl(this)">&le; 1 km</div><div class="chip" onclick="tgl(this)">4&#9733; et +</div>
+        </div>
+        <div class="seg" id="sortSeg"><div class="on" onclick="segPick(this)">Plus proches</div><div onclick="segPick(this)">Mieux notés</div><div onclick="segPick(this)">Prix croissant</div></div>
+        <div class="h2">5 personnes disponibles<span style="font-size:11px;color:var(--slate);font-weight:600">triées par distance</span></div>
+        <div class="row" onclick="go('v_provider')"><div class="av">S</div><div class="m"><div class="nm">Sofia M.</div><div class="ds">Ménage &amp; repassage · identité et assurance RC renseignées · à 350 m</div></div><div class="rt"><b>4,9</b>25 &euro;/h</div></div>
+        <div class="row" onclick="go('v_provider')"><div class="av g" style="background:linear-gradient(160deg,#F2A93B,#d98a1f)">A</div><div class="m"><div class="nm">Amine K.</div><div class="ds">Remise en état · identité et assurance RC renseignées · à 620 m</div></div><div class="rt"><b>4,8</b>180 &euro;</div></div>
+        <div class="row" onclick="go('v_provider')"><div class="av g" style="background:linear-gradient(160deg,#FF7A66,#e05f4b)">L</div><div class="m"><div class="nm">Léa T.</div><div class="ds">Ménage · identité fournie · assurance RC non renseignée · à 800 m</div></div><div class="rt"><b>4,7</b>20 &euro;/h</div></div>
+        <div class="row" onclick="go('v_provider')"><div class="av g" style="background:linear-gradient(160deg,#6E8592,#4c6472)">N</div><div class="m"><div class="nm">Nadia B.</div><div class="ds">Blanchisserie &amp; repassage · identité et assurance RC renseignées · à 1,1 km</div></div><div class="rt"><b>5,0</b>22 &euro;/h</div></div>
+        <div class="row" onclick="go('v_provider')"><div class="av g">T</div><div class="m"><div class="nm">Thomas R.</div><div class="ds">Vitres · identité fournie · nouveau sur PING · à 1,3 km</div></div><div class="rt"><b>4,6</b>35 &euro;/h</div></div>
+      </div>
+    </section>
+
+    <!-- PROVIDER PROFILE -->
+    <section class="view" id="v_provider" data-tab="map">
+      <div class="appbar"><div class="ic" onclick="back('v_map')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Profil du pro</b></div>
+      <div class="body nopad" style="bottom:132px">
+        <div class="hero"><div class="big">S</div><h2>Sofia M.</h2><div class="meta">Sofia Services · 4,9 (214 avis) · à 350 m</div><div class="dispo" style="color:#fff;margin-top:6px"><span style="width:9px;height:9px;border-radius:50%;background:#fff;display:inline-block"></span> Disponible maintenant</div></div>
+        <div style="padding:14px 16px">
+          <div class="h2" style="margin-top:0"><span style="display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.4"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Informations déclarées par le pro</span></div>
+          <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.4"/></svg></div><div class="vt"><b>Pièce d'identité fournie</b><small>Déposée sur PING par le pro</small></div><div class="vs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Fournie</div></div>
+          <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/></svg></div><div class="vt"><b>Assurance resp. civile</b><small>Renseignée par le pro (casse/dommage)</small></div><div class="vs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Renseignée</div></div>
+          <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><path d="M4 6h16v13H4z"/><path d="M8 11h8M8 15h5"/></svg></div><div class="vt"><b>Attestation crédit d'impôt</b><small>Peut établir la déclaration fiscale</small></div><div class="vs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Possible</div></div>
+          <p class="sub" style="font-size:10.5px;color:#9aa6a3;margin-top:2px">Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p><div class="h2">Compétences</div><div class="chipset"><span class="sk">Ménage complet</span><span class="sk">Repassage</span><span class="sk">Vitres</span><span class="sk">Sols</span><span class="sk">Cuisine &amp; salle de bain</span></div>
+          <div class="h2">Avis <span class="badge teal">après prestation</span></div>
+          <div class="rev"><div class="t"><span class="n">Julie <span class="ver"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></span></span><span class="stars">★★★★★</span></div><p>Impeccable, tout était nickel en repartant. Très soigneuse.</p></div>
+          <div class="rev"><div class="t"><span class="n">Karim <span class="ver"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></span></span><span class="stars">★★★★★</span></div><p>Ponctuel, clair sur le prix, aucune surprise.</p></div>
+        </div>
+      </div>
+      <div class="foot"><div style="display:flex;gap:10px"><div class="btn ghost" style="flex:1" onclick="go('v_chat')">Contacter</div><div class="btn" style="flex:1.4" onclick="go('v_booking')">Réserver · 90 €</div></div></div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="view" id="v_chat" data-tab="messages">
+      <div class="appbar"><div class="ic" onclick="back('v_provider')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Sofia M.</b><span style="font-size:11px;color:var(--teal);margin-left:6px">● en ligne · identité masquée</span><span class="sp"><span class="ic" onclick="go('v_signaler_conv')" title="Signaler cet échange"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M5 3v18"/><path d="M5 4h11l-1.5 4L16 12H5"/></svg></span></span></div>
+      <div class="msgs noscroll" style="top:48px">
+        <div class="notice">Coordonnées protégées jusqu'au QR de fin</div>
+        <div class="msg me">Bonjour, j'aurais besoin d'un ménage complet pour un T3. Vous seriez dispo cette semaine ?</div>
+        <div class="msg them">Oui, bien sûr. Vous auriez une photo du logement ?</div>
+        <div class="msg them">Parfait. Votre logement est accessible facilement ?</div>
+        <div class="msg me">Oui, c'est de 3 pièces.</div>
+        <div class="msg them">Très bien, voici mon devis.</div>
+        <div class="offer"><div class="k">Devis</div><div class="p"><span style="color:var(--slate);font-size:12px">Ménage complet · 90 € + 15 € déplacement</span><span class="big">105 €</span></div><div class="btn" style="margin-top:10px" onclick="go('v_booking')">Choisir un créneau</div></div>
+      </div>
+      <div class="inputbar"><div class="f">Écrire un message…</div><div class="snd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></div></div>
+    </section>
+
+    <!-- SIGNALER UNE CONVERSATION -->
+    <section class="view" id="v_signaler_conv" data-tab="messages">
+      <div class="appbar"><div class="ic" onclick="back('v_chat')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Signaler cet échange</b></div>
+      <div class="body">
+        <div class="h1">Que se passe-t-il&nbsp;?</div>
+        <p class="sub">PING n'assure pas de surveillance continue des échanges. Ce signalement transmet l'historique de <b>cette conversation</b> à PING pour examen.</p>
+
+        <div class="h2">Motif</div>
+        <div class="statut on" onclick="pickStatut(this)"><b>Propos déplacés ou insultants</b><small>Langage irrespectueux, menaçant ou grossier</small></div>
+        <div class="statut" onclick="pickStatut(this)"><b>Sollicitation suspecte</b><small>Demande de paiement ou de contact en dehors de PING</small></div>
+        <div class="statut" onclick="pickStatut(this)"><b>Comportement inapproprié</b><small>Propos ou attitude à caractère déplacé</small></div>
+        <div class="statut" onclick="pickStatut(this)"><b>Autre</b><small>Un autre motif, à préciser ci-dessous</small></div>
+
+        <div class="h2">Votre description <span style="color:var(--slate);font-weight:500">· facultatif</span></div>
+        <div class="field2"><div class="l">Précisions</div><div class="v" style="color:var(--slate);line-height:1.5">Ajoutez tout élément utile à l'examen du signalement…</div></div>
+
+        <div class="card" style="border-color:#F5D9A6;background:#FFFBF2">
+          <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13px;margin-bottom:6px">Ce qui se passe ensuite</div>
+          <div class="lrow"><span class="s">1. L'historique de cet échange est transmis à PING</span><span class="v">immédiat</span></div>
+          <div class="lrow"><span class="s">2. Examen du fil par PING</span><span class="v">sous quelques jours</span></div>
+          <div class="lrow"><span class="s">3. Mesure proportionnée si nécessaire</span><span class="v">avertissement, suspension</span></div>
+          <div class="note2" style="margin-top:8px">PING n'exerce pas de modération éditoriale préalable des échanges et n'intervient que sur signalement. Pour un problème lié à une prestation déjà payée, utilisez plutôt « Signaler un problème » depuis la réservation concernée — le paiement y reste sous séquestre.</div>
+        </div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_signaler_conv_ok')">Envoyer le signalement</div></div>
+    </section>
+
+    <!-- SIGNALEMENT ENVOYÉ -->
+    <section class="view" id="v_signaler_conv_ok" data-tab="messages">
+      <div class="appbar"><div class="ic" onclick="back('v_chat')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Signalement envoyé</b></div>
+      <div class="body" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:44px">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(18,179,156,.12);display:grid;place-items:center;margin-bottom:16px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2.6"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="h1" style="margin-top:0">C'est transmis</div>
+        <p class="sub">L'historique de cette conversation a été transmis à PING pour examen. Vous pouvez continuer à échanger normalement en attendant.</p>
+        <div class="btn ghost" style="margin-top:20px;width:100%" onclick="go('v_chat')">Retour à la conversation</div>
+      </div>
+    </section>
+
+    <!-- BOOKING -->
+    <section class="view" id="v_booking" data-tab="map">
+      <div class="appbar"><div class="ic" onclick="back('v_provider')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Choisir un créneau</b></div>
+      <div class="body">
+        <div class="days"><div class="day on"><small>Auj.</small><b>14</b></div><div class="day"><small>Mer</small><b>15</b></div><div class="day"><small>Jeu</small><b>16</b></div><div class="day"><small>Ven</small><b>17</b></div><div class="day"><small>Sam</small><b>18</b></div></div>
+        <div class="sub" style="margin-top:12px">Disponibilités synchronisées avec l'agenda du pro</div>
+        <div class="slots">
+          <div class="slot taken">9h00</div><div class="slot" onclick="pickSlot(this)">10h30</div><div class="slot taken">11h30</div>
+          <div class="slot" onclick="pickSlot(this)">14h00</div><div class="slot on" onclick="pickSlot(this)">15h00</div><div class="slot taken">16h30</div>
+        </div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_pay')">Confirmer · 15h00</div></div>
+    </section>
+
+    <!-- PAYMENT -->
+    <section class="view" id="v_pay" data-tab="map">
+      <div class="appbar"><div class="ic" onclick="back('v_booking')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Paiement sécurisé</b></div>
+      <div class="body">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:15px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Séquestre PING</div>
+          <p class="sub">Fonds bloqués, libérés après le QR de fin. Remboursé si litige sous 48 h.</p>
+          <div style="margin-top:12px"><div class="lrow"><span class="s">Intervention · ménage 85 m²</span><span class="v">90,00 €</span></div><div class="lrow"><span class="s">Déplacement (proximité)</span><span class="v">15,00 €</span></div><div class="lrow"><span class="s">Frais de service (5 %)</span><span class="v">5,25 €</span></div></div>
+          <div class="tot"><span style="font-weight:700;color:var(--ink)">Total</span><span class="big">110,25 €</span></div>
+        </div>
+      </div>
+      <div class="foot"><div class="btn dark" onclick="go('v_track')">Payer 110,25 € en séquestre</div></div>
+    </section>
+
+    <!-- TRACK -->
+    <section class="view" id="v_track" data-tab="agenda">
+      <div class="appbar"><b>Rendez-vous confirmé</b></div>
+      <div class="body">
+        <div class="minimap"><svg viewBox="0 0 100 60" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><rect width="100" height="60" fill="var(--land)"/><g stroke="var(--roadcase)" stroke-width="5"><line x1="0" y1="20" x2="100" y2="20"/><line x1="20" y1="0" x2="20" y2="60"/><line x1="62" y1="0" x2="62" y2="60"/></g><g stroke="#fff" stroke-width="3"><line x1="0" y1="20" x2="100" y2="20"/><line x1="20" y1="0" x2="20" y2="60"/><line x1="62" y1="0" x2="62" y2="60"/></g></svg>
+          <div style="position:absolute;left:20%;top:70%;transform:translate(-50%,-50%)"><div class="mk" style="width:28px;height:28px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="9" r="3"/><path d="M6 20a6 6 0 0 1 12 0"/></svg></div></div>
+          <div style="position:absolute;left:62%;top:40%;transform:translate(-50%,-100%)"><div class="mk" style="background:var(--coral);width:28px;height:28px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M3 11l9-8 9 8"/><path d="M5 10v9h14v-9"/></svg></div></div>
+        </div>
+        <div class="card" style="margin-top:14px"><div style="display:flex;align-items:center;gap:9px;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Marc arrive à 15h00</div><p class="sub">Vous serez notifié à son arrivée. Pièce d'identité fournie, assurance renseignée.</p></div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_qr')">Il est arrivé · valider</div></div>
+    </section>
+
+    <!-- QR -->
+    <section class="view" id="v_qr" data-tab="agenda">
+      <div class="appbar"><div class="ic" onclick="back('v_track')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Valider l'arrivée</b></div>
+      <div class="body center">
+        <div class="h1" style="text-align:center">Scannez le QR de Marc</div><p class="sub" style="text-align:center">Étape 1 sur 2 &mdash; enregistre l'heure d'arrivée. Le paiement reste sous séquestre.</p>
+        <div class="qr"><div class="g" id="qrg"></div></div>
+        <div class="card" style="margin-top:14px;width:100%">
+          <div class="lrow"><span class="s">Arrivée</span><span class="v" style="color:var(--slate)">en attente de scan</span></div>
+          <div class="lrow"><span class="s">Départ</span><span class="v" style="color:var(--slate)">—</span></div>
+        </div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_qr_depart')">Confirmer l'arrivée</div></div>
+    </section>
+
+    <!-- QR DE DÉPART -->
+    <section class="view" id="v_qr_depart" data-tab="agenda">
+      <div class="appbar"><div class="ic" onclick="back('v_qr')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Valider le départ</b></div>
+      <div class="body center">
+        <div class="h1" style="text-align:center">Prestation terminée&nbsp;?</div>
+        <p class="sub" style="text-align:center">Étape 2 sur 2 &mdash; scannez à nouveau le QR au moment du départ. C'est cette validation qui libère le paiement.</p>
+        <div class="qr"><div class="g" id="qrg4"></div></div>
+        <div class="card" style="margin-top:14px;width:100%">
+          <div class="lrow"><span class="s">Arrivée</span><span class="v" style="color:var(--tealD);font-weight:700">validée · 9h02</span></div>
+          <div class="lrow"><span class="s">Départ</span><span class="v" style="color:var(--slate)">en attente de scan</span></div>
+          <div class="lrow"><span class="s">Durée sur place</span><span class="v">3 h 04</span></div>
+        </div>
+        <div class="note2" style="margin-top:10px">Un problème&nbsp;? <span class="edit" onclick="go('v_litige')">Signaler avant de valider</span> &mdash; le paiement reste alors bloqué.</div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_receipt')">Valider et libérer le paiement</div></div>
+    </section>
+
+    <!-- RECEIPT -->
+    <section class="view" id="v_receipt" data-tab="agenda">
+      <div class="appbar"><b>Prestation terminée</b></div>
+      <div class="body center">
+        <div class="success"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></div>
+        <div class="h1" style="text-align:center">Fuite réglée. Tout est ok.</div>
+        <div class="card" style="text-align:left;margin-top:14px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:var(--fh);font-weight:700;color:var(--ink)">Reçu · PING</span><span class="badge teal">PAYÉ</span></div><div style="margin-top:10px"><div class="lrow"><span class="s">Intervention + déplacement</span><span class="v">105,00 €</span></div><div class="lrow"><span class="s">Frais de service</span><span class="v">5,25 €</span></div></div><div class="tot"><span style="font-weight:700;color:var(--ink)">Total réglé</span><span class="big">110,25 €</span></div></div>
+        <p class="sub">Reçu envoyé par e-mail · facture émise automatiquement pour Marc.</p>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_review')">Laisser un avis</div></div>
+    </section>
+
+    <!-- REVIEW -->
+    <section class="view" id="v_review" data-tab="agenda">
+      <div class="appbar"><div class="ic" onclick="back('v_receipt')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Laisser un avis</b></div>
+      <div class="body">
+        <div class="h1 center">Votre expérience avec Marc ?</div>
+        <div class="ratewrap" id="rate"></div>
+        <div class="commentbox">Rapide et efficace, appartement impeccable en moins d'une heure. Je recommande.</div>
+        <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13px;margin:14px 0 4px;display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg> Ajouter un pourboire</div>
+        <div class="tips"><div class="tipb" onclick="pickTip(this)">Aucun</div><div class="tipb" onclick="pickTip(this)">2 €</div><div class="tipb on" onclick="pickTip(this)">5 €</div><div class="tipb" onclick="pickTip(this)">10 €</div></div>
+      </div>
+      <div class="foot"><div class="btn dark" onclick="go('v_map')">Publier l'avis</div></div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="view" id="v_messages" data-tab="messages">
+      <div class="appbar"><b>Messages</b></div>
+      <div class="body">
+        <div class="row" onclick="go('v_chat')"><div class="av">M</div><div class="m"><div class="nm">Sofia M.</div><div class="ds">Très bien, voici mon devis.</div></div><div class="rt">14:02</div></div>
+        <div class="row" onclick="go('v_chat')"><div class="av g">S</div><div class="m"><div class="nm">Sofia L. · Ménage</div><div class="ds">Parfait, à jeudi 9h alors !</div></div><div class="rt">hier</div></div>
+        <div class="row" onclick="go('v_chat')"><div class="av gold">E</div><div class="m"><div class="nm">Nadia B. · Blanchisserie</div><div class="ds">Je vous envoie le devis ce soir.</div></div><div class="rt">lun.</div></div>
+      </div>
+    </section>
+
+    <!-- AGENDA (particulier) -->
+    <section class="view" id="v_agenda" data-tab="agenda">
+      <div class="appbar"><b>Mes réservations</b></div>
+      <div class="body">
+        <div class="card" onclick="go('v_litige_suivi')" style="cursor:pointer;border-color:#F5D9A6;background:#FFFBF2">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="av g" style="width:38px;height:38px;background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></div>
+            <div style="flex:1"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px">Litige en cours &middot; LT-114</div><div class="ds" style="font-size:11px;color:var(--slate)">Yanis Services &middot; 36,75 &euro; bloqu&eacute;s &middot; une proposition vous attend</div></div>
+            <span style="color:var(--slate)">&rsaquo;</span>
+          </div>
+        </div>
+
+        <div class="h2" style="margin-top:0">À venir</div>
+        <div class="row" onclick="go('v_track')"><div class="av">M</div><div class="m"><div class="nm">Sofia M. · Ménage</div><div class="ds">Aujourd'hui · 15h00 · ménage 85 m²</div></div><span class="badge teal">Confirmé</span></div>
+        <div class="row" onclick="go('v_track')"><div class="av g">S</div><div class="m"><div class="nm">Sofia L. · Ménage</div><div class="ds">Jeudi · 9h00 · T3</div></div><span class="badge gold">À venir</span></div>
+        <div class="h2">Terminées</div>
+        <div class="row" onclick="go('v_receipt')"><div class="av gold">E</div><div class="m"><div class="nm">Nadia B. · Blanchisserie</div><div class="ds">12 juil. · salon · 294 €</div></div><span class="badge ink">Reçu</span></div>
+      </div>
+    </section>
+
+    <!-- PROFIL (particulier) -->
+    <section class="view" id="v_profile" data-tab="profile">
+      <div class="appbar"><b>Mon profil</b></div>
+      <div class="body">
+        <div class="card" style="padding:14px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:48px;height:48px;border-radius:14px;background:var(--coral);display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:19px;flex:0 0 auto">J</div>
+            <div style="flex:1"><div class="nm" style="font-size:15px;display:flex;align-items:center;gap:6px">Julie Robert <span class="ver"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></span></div><div class="ds">Particulier · Grasse</div></div>
+            <span class="edit" style="color:var(--teal);font-size:12px;font-weight:700">Modifier</span>
+          </div>
+          <div style="margin-top:12px;border-top:1px solid var(--line);padding-top:8px">
+            <div class="lrow"><span class="s">Adresse</span><span class="v" style="font-weight:600;text-align:right;max-width:62%">14 rue des Oliviers, 06130 Grasse</span></div>
+            <div class="lrow"><span class="s">Téléphone</span><span class="v">06 12 •• •• 45 ✓</span></div>
+            <div class="lrow"><span class="s">E-mail</span><span class="v">julie.r@mail.fr ✓</span></div>
+          </div>
+        </div>
+        <div class="h2">Identité &amp; sécurité</div>
+        <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.4"/></svg></div><div class="vt"><b>Pièce d'identité fournie</b><small>Déposée sur PING · authenticité non garantie</small></div><div class="vs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#12B39C" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg> Fournie</div></div>
+        <div class="row" onclick="go('v_kyc')"><div class="av g" style="width:40px;height:40px;font-size:15px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.4"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Mes documents &amp; identité</div><div class="ds">Pièce d'identité · chiffré &amp; masqué</div></div><span style="color:var(--slate)">›</span></div>
+        <div class="row" onclick="go('v_privacy')"><div class="m"><div class="nm" style="font-size:13px">Coordonnées &amp; confidentialité</div><div class="ds">Masquées jusqu'au QR · protégées</div></div><span style="color:var(--slate)">›</span></div>
+        <div class="row" onclick="go('v_paymethods')"><div class="m"><div class="nm" style="font-size:13px">Moyens de paiement</div></div><span style="color:var(--slate)">›</span></div>
+        <div class="h2">Mon activité</div>
+        <div class="row" onclick="go('v_revenus')"><div class="av gold" style="background:linear-gradient(160deg,#f2a93b,#d98a1f);width:40px;height:40px;font-size:15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></div><div class="m"><div class="nm">Mes revenus &amp; déclaration</div><div class="ds">Récapitulatif annuel · obligations fiscales</div></div><span style="color:var(--slate)">›</span></div>
+        <div class="row" onclick="go('v_myreviews')"><div class="m"><div class="nm" style="font-size:13px">Avis publiés</div></div><span style="color:var(--slate)">›</span></div>
+        <div class="h2">Vous proposez vos services ?</div>
+        <div class="card"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px">Devenez professionnel sur PING</div><p class="sub">Choisissez votre statut juridique — inscription gratuite, immédiate et non bloquante.</p><div class="btn gold sm" style="margin-top:10px" onclick="go('v_join_pro')">Saisir mon statut &amp; devenir pro</div></div>
+      </div>
+    </section>
+
+    <!-- ============ PRO ============ -->
+    <!-- DASHBOARD -->
+    <section class="view" id="p_dash" data-tab="proprofile">
+      <div class="appbar"><b>Tableau de bord</b><span class="sp"><span class="badge teal">Entreprise qualifiée</span></span></div>
+      <div class="body">
+        <div class="card" onclick="go('p_litige')" style="cursor:pointer;border-color:#F5D9A6;background:#FFFBF2">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="av g" style="width:38px;height:38px;background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></div>
+            <div style="flex:1"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px">Litige &agrave; traiter &middot; LT-114</div><div class="ds" style="font-size:11px;color:var(--slate)">Paul D. &middot; r&eacute;pondez sous 48 h ou sa demande s'applique</div></div>
+            <span class="badge" style="background:#FDF3E2;color:#8a6520">48 h</span>
+          </div>
+        </div>
+
+        <div class="availcard" id="availCard"><div class="al"><span class="livedot" id="liveDot"></span><div><div class="at" id="availTitle">Indisponible</div><div class="as" id="availSub">Vous n'apparaissez pas sur la carte</div></div></div><div class="sw" id="availSw" onclick="toggleAvail()"><span class="knob"></span></div></div>
+        <div class="statgrid"><div class="stat"><div class="v">3 240 €</div><div class="l">CA du mois</div></div><div class="stat"><div class="v">14</div><div class="l">Interventions</div></div><div class="stat"><div class="v">4,9</div><div class="l">Note moyenne</div></div><div class="stat"><div class="v">0 h</div><div class="l">Paperasse</div></div></div>
+        <div class="h2">Piloter mes finances</div>
+        <div class="qa">
+          <div class="qab" onclick="go('p_tarifs')"><div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>Mes tarifs</div>
+          <div class="qab" onclick="go('p_devis')"><div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-2 4 2 4-2V8z"/><path d="M14 2v6h6"/></svg></div>Devis instantané</div>
+          <div class="qab" onclick="go('p_documents')"><div class="qi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/></svg></div>Documents</div>
+        </div>
+        <div class="h2">Votre visibilité</div>
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--fh);font-weight:700;color:var(--ink)">Profil complété</span><span style="font-family:var(--fh);font-weight:700;color:var(--teal);font-size:18px">92 %</span></div><div class="meter"><i style="width:92%"></i></div><p class="sub">Les entreprises qualifiées remontent en tête des résultats.</p></div>
+        <div class="h2">Prochains rendez-vous</div>
+        <div class="row" onclick="go('p_agenda')"><div class="av gold">J</div><div class="m"><div class="nm">Julie R. · ménage 85 m²</div><div class="ds">Aujourd'hui · 15h00 · 3 pièces</div></div><span class="badge teal">Confirmé</span></div>
+        <div class="row" onclick="go('p_demandes')"><div class="av gold" style="background:linear-gradient(160deg,#f2a93b,#d98a1f)">2</div><div class="m"><div class="nm">Nouvelles demandes</div><div class="ds">2 clients près de vous attendent</div></div><span style="color:var(--slate)">›</span></div>
+      </div>
+    </section>
+
+    <!-- DEMANDES -->
+    <section class="view" id="p_demandes" data-tab="proprofile">
+      <div class="appbar"><b>Demandes</b></div>
+      <div class="body">
+        <div class="sub" style="margin-top:0">Les demandes arrivent seules — plus de standard téléphonique.</div>
+        <div class="notif" style="margin-top:12px"><div class="top"><span style="width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block"></span> À 400 m · aujourd'hui</div><h4>Fuite sous évier — Ménage</h4><p>« Bonjour, fuite sous l'évier, intervention possible aujourd'hui ? » · Julie · 3 pièces</p><div class="acts"><div class="ref">Refuser</div><div class="acc" onclick="go('p_agenda')">Accepter</div></div></div>
+        <div class="notif"><div class="top"><span style="width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block"></span> À 1,2 km · demain</div><h4>Remise en état après travaux</h4><p>« Chauffe-eau en panne, devis pour remplacement ? » · Karim</p><div class="acts"><div class="ref">Refuser</div><div class="acc" onclick="go('p_agenda')">Accepter</div></div></div>
+      </div>
+    </section>
+
+    <!-- AGENDA PRO -->
+    <section class="view" id="p_agenda" data-tab="proagenda">
+      <div class="appbar"><b>Mon agenda</b></div>
+      <div class="body">
+        <div class="days"><div class="day on"><small>Auj.</small><b>14</b></div><div class="day"><small>Mer</small><b>15</b></div><div class="day"><small>Jeu</small><b>16</b></div><div class="day"><small>Ven</small><b>17</b></div><div class="day"><small>Sam</small><b>18</b></div></div>
+        <div class="h2">Aujourd'hui</div>
+        <div class="row" onclick="go('p_qr')"><div class="av gold">J</div><div class="m"><div class="nm">15h00 · Julie R.</div><div class="ds">Fuite évier · 3 pièces · 105 €</div></div><span class="badge teal">Confirmé</span></div>
+        <div class="row" style="cursor:default"><div class="av g">—</div><div class="m"><div class="nm">17h30 · Créneau libre</div><div class="ds">Disponible à la réservation</div></div></div>
+      </div>
+    </section>
+
+    <!-- PRO QR -->
+    <section class="view" id="p_qr" data-tab="proagenda">
+      <div class="appbar"><div class="ic" onclick="back('p_agenda')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Sur place</b></div>
+      <div class="body center">
+        <div class="h1" style="text-align:center">Votre QR de présence</div><p class="sub" style="text-align:center">Le client le scanne — le paiement en séquestre se débloque.</p>
+        <div class="qr"><div class="g" id="qrg3"></div></div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('p_facture')">Prestation terminée</div></div>
+    </section>
+
+    <!-- FACTURES -->
+    <section class="view" id="p_factures" data-tab="proprofile">
+      <div class="appbar"><b>Factures</b><span class="sp"><span class="badge teal">TVA gérée</span></span></div>
+      <div class="body">
+        <div class="statgrid" style="margin-bottom:6px"><div class="stat"><div class="v">3 240 €</div><div class="l">Encaissé ce mois</div></div><div class="stat"><div class="v">14</div><div class="l">Factures émises</div></div></div>
+        <div class="h2">Récentes</div>
+        <div class="row" onclick="go('p_facture')"><div class="av gold">J</div><div class="m"><div class="nm">N° 2026-0142 · Julie R.</div><div class="ds">Fuite évier · aujourd'hui</div></div><div class="rt"><b>95,55 €</b>net</div></div>
+        <div class="row" onclick="go('p_facture')"><div class="av g">K</div><div class="m"><div class="nm">N° 2026-0141 · Karim B.</div><div class="ds">Repassage · hier</div></div><div class="rt"><b>68,25 €</b>net</div></div>
+        <div class="row" onclick="go('p_facture')"><div class="av g">S</div><div class="m"><div class="nm">N° 2026-0140 · Sophie M.</div><div class="ds">Vitres · 11 juil.</div></div><div class="rt"><b>127,40 €</b>net</div></div>
+      </div>
+    </section>
+
+    <!-- FACTURE DETAIL -->
+    <section class="view" id="p_facture" data-tab="proprofile">
+      <div class="appbar"><div class="ic" onclick="back('p_factures')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Facture 2026-0142</b><span class="sp"><span class="badge teal">Émise auto.</span></span></div>
+      <div class="body">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:15px">Sofia Services</div><div class="sub" style="margin-top:2px">Marc Dubois · Auto-entrepreneur (micro-entreprise)<br>SIREN 000 000 000 · RM Grasse<br>14 rue des Oliviers, 06130 Grasse</div></div></div>
+          <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><div class="lrow"><span class="s">Facture N°</span><span class="v">2026-0142</span></div><div class="lrow"><span class="s">Émise le / prestation le</span><span class="v">14 juil. 2026</span></div><div class="lrow"><span class="s">Client</span><span class="v" style="max-width:60%;text-align:right">Julie Robert · Grasse</span></div><div class="lrow"><span class="s">Opération</span><span class="v">Prestation de services</span></div></div>
+          <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><div class="lrow"><span class="s">Réparation ménage 85 m²</span><span class="v">90,00 €</span></div><div class="lrow"><span class="s">Déplacement (proximité)</span><span class="v">15,00 €</span></div></div>
+          <div class="tot"><span style="font-weight:700;color:var(--ink)">Total</span><span class="big">105,00 €</span></div>
+          <div class="note2" style="font-style:normal;color:var(--ink);font-weight:600;margin-top:8px">TVA non applicable, art. 293 B du CGI</div>
+          <div style="border-top:1px solid var(--line);margin-top:8px;padding-top:8px"><div class="lrow"><span class="s">Commission PING (11 %)</span><span class="v">−9,45 €</span></div><div class="lrow"><span class="s" style="font-weight:700;color:var(--ink)">Net encaissé (séquestre libéré)</span><span class="v" style="color:var(--tealD);font-family:var(--fh);font-size:15px">95,55 €</span></div></div>
+        </div>
+        <div class="card" style="margin-top:10px"><div class="lawlist">
+          <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2.4"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/></svg><span><b>Assurance complémentaire</b> : MMA — couverture France métropolitaine.</span></div>
+          <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="2.4"><rect x="4" y="5" width="16" height="14" rx="2"/></svg><span>Règlement à réception via PING (séquestre). Pas d'escompte.</span></div>
+          <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span>Entre professionnels (B2B) : ajout du SIREN client, pénalités de retard et indemnité forfaitaire de 40 €.</span></div>
+        </div></div>
+        <div class="chipset" style="margin-top:10px"><span class="sk">Reçu client envoyé</span><span class="sk">Export comptable</span><span class="sk">Conservation 10 ans</span></div>
+        <p class="note2">Facturation électronique : réception obligatoire dès sept. 2026 ; émission pour les micro-entreprises à partir de sept. 2027.</p>
+      </div>
+      <div class="foot"><div class="btn ghost" onclick="go('p_factures')">Télécharger le PDF conforme</div></div>
+    </section>
+
+    <!-- PROFIL PRO -->
+    <section class="view" id="p_profile" data-tab="proprofile">
+      <div class="appbar"><b>Mon entreprise</b></div>
+      <div class="body">
+        <div class="hero" style="border-radius:14px"><div class="big">S</div><h2>Sofia Services</h2><div class="meta">Sofia M. · Auto-entrepreneuse · Grasse</div></div>
+        <div class="h2">Mon activité</div>
+        <div class="row" onclick="go('p_dash')"><div class="av g" style="width:40px;height:40px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Tableau de bord</div><div class="ds">Revenus &middot; statistiques &middot; tarifs</div></div><span style="color:var(--slate)">&rsaquo;</span></div>
+        <div class="row" onclick="go('p_demandes')"><div class="av g" style="width:40px;height:40px;background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Demandes directes</div><div class="ds">Réservations reçues &middot; devis</div></div><span style="color:var(--slate)">&rsaquo;</span></div>
+        <div class="row" onclick="go('p_factures')"><div class="av g" style="width:40px;height:40px;background:linear-gradient(160deg,#6E8592,#4c6472)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Factures &amp; documents</div><div class="ds">Horodatés &middot; exportables</div></div><span style="color:var(--slate)">&rsaquo;</span></div>
+        <div class="h2">Conformité <span class="badge teal">à jour</span></div>
+        <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/></svg></div><div class="vt"><b>Identité &amp; statut</b><small>Fichier masqué · vérifié</small></div><div class="vs">Vérifié</div></div>
+        <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/></svg></div><div class="vt"><b>Responsabilité civile pro</b><small>Assurances à jour</small></div><div class="vs">À jour</div></div>
+        <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><path d="M4 6h16v13H4z"/></svg></div><div class="vt"><b>Formation hygiène · CAP</b><small>Certification &amp; diplôme</small></div><div class="vs">Certifié</div></div>
+        <div class="h2">Mes pièces &amp; documents</div>
+        <div class="row" onclick="go('p_kyc')"><div class="av g" style="width:40px;height:40px;font-size:15px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Pièces justificatives</div><div class="ds">Identité · assurance · versement</div></div><span style="color:var(--slate)">›</span></div>
+        <div class="h2">Réalisations <span class="badge gold">v2 à venir</span></div>
+        <div class="card"><p class="sub" style="margin-top:0">Bientôt : ajoutez une galerie de photos de vos chantiers pour montrer la qualité de vos finitions.</p></div>
+        <div class="btn ghost sm" style="margin-top:12px" onclick="setMode('part')">Revenir en mode particulier</div>
+      </div>
+    </section>
+
+    <!-- TAB BARS -->
+    <!-- DEVENIR PRO : STATUT -->
+    <section class="view" id="v_join_pro" data-tab="profile">
+      <div class="appbar"><div class="ic" onclick="back('v_profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Devenir professionnel</b></div>
+      <div class="body">
+        <div class="h1">Choisissez votre statut juridique</div>
+        <p class="sub">Gratuit et immédiat. Vous compléterez vos justificatifs plus tard — sans blocage.</p>
+        <div class="h2">Statuts</div>
+        <div class="statut on" onclick="pickStatut(this)"><b>Particulier</b><small>Sans structure &middot; petits services ponctuels &middot; vous déclarez vos revenus vous-même</small></div><div class="statut" onclick="pickStatut(this)"><b>Auto-entrepreneur (micro-entreprise)</b><small>Le plus simple &middot; abattement forfaitaire &middot; franchise TVA possible</small></div><div class="statut" onclick="pickStatut(this)"><b>Entreprise individuelle (EI)</b><small>Patrimoine pro séparé · régime réel possible</small></div><div class="statut" onclick="pickStatut(this)"><b>EURL</b><small>SARL à associé unique · responsabilité limitée</small></div><div class="statut" onclick="pickStatut(this)"><b>SARL</b><small>Société à plusieurs associés</small></div><div class="statut" onclick="pickStatut(this)"><b>SASU</b><small>Société par actions unipersonnelle · président assimilé salarié</small></div><div class="statut" onclick="pickStatut(this)"><b>SAS</b><small>Société par actions à plusieurs associés</small></div><div class="statut" onclick="pickStatut(this)"><b>Profession libérale</b><small>Activité libérale réglementée ou non</small></div><div class="statut" onclick="pickStatut(this)"><b>Association</b><small>Structure à but non lucratif</small></div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_pro_form')">Continuer</div></div>
+    </section>
+
+    <!-- SAISIE INFOS PRO -->
+    <section class="view" id="v_pro_form" data-tab="profile">
+      <div class="appbar"><div class="ic" onclick="back('v_join_pro')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Informations entreprise</b></div>
+      <div class="body">
+        <div class="field2"><div class="l">Statut sélectionné</div><div class="v">Auto-entrepreneur (micro-entreprise) <span class="edit">changer</span></div></div>
+        <div class="field2"><div class="l">Dénomination / nom commercial</div><div class="v">Sofia Services <span class="edit">modifier</span></div></div>
+        <div class="field2"><div class="l">Métier</div><div class="v">Ménage · repassage · vitres</div></div>
+        <div class="field2" style="align-items:flex-start;flex-direction:column;gap:7px">
+          <div class="l">SIREN / SIRET <span style="font-weight:400;color:var(--slate)">— facultatif, ou plus tard</span></div>
+          <input id="siretInput" placeholder="14 chiffres" inputmode="numeric" maxlength="14" oninput="checkSiret(this.value)" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:var(--fb);font-size:13px;color:var(--ink);background:var(--paper)">
+          <div id="siretResult" style="width:100%"></div>
+        </div>
+        <div class="field2"><div class="l">Adresse du siège</div><div class="v">14 rue des Oliviers, 06130 Grasse</div></div>
+        <div class="field2"><div class="l">Régime de TVA</div><div class="v">Franchise en base — art. 293 B du CGI</div></div>
+        <div class="field2"><div class="l">Assurances (artisan)</div><div class="v" style="color:var(--slate)">RC Pro · complémentaire <span class="edit">ajouter</span></div></div>
+        <div class="card" style="margin-top:4px"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13px">Bon à savoir · 2026</div>
+          <div class="lawlist">
+            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Plafond micro <b>services : 83 600 €/an</b> (période 2026-2028).</span></div>
+            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Franchise TVA <b>travaux immobiliers (plomberie) : 25 000 € / 27 500 €</b>. Au-delà, TVA à facturer.</span></div>
+            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Autres prestations de services : franchise TVA <b>37 500 € / 41 250 €</b>.</span></div>
+          </div>
+        </div>
+        <p class="note2">Informations indicatives (droit français en vigueur, 2026). Elles ne remplacent pas l'avis d'un expert-comptable. PING transmet vos revenus à l'administration fiscale (dispositif DAC7).</p>
+      </div>
+      <div class="foot"><div class="btn dark" onclick="setMode('pro')">Enregistrer &amp; passer en mode pro</div></div>
+    </section>
+
+    <!-- REVENUS & DECLARATION (particulier) -->
+    <section class="view" id="v_revenus" data-tab="profile">
+      <div class="appbar"><div class="ic" onclick="back('v_profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Mes revenus &amp; déclaration</b></div>
+      <div class="body">
+        <div class="h1">Vos revenus perçus via PING</div>
+        <div class="statgrid" style="margin-top:12px"><div class="stat"><div class="v">240 €</div><div class="l">Ce mois</div></div><div class="stat"><div class="v">1 180 €</div><div class="l">Depuis janvier</div></div><div class="stat"><div class="v">9</div><div class="l">Opérations (an)</div></div><div class="stat"><div class="v">Vente + services</div><div class="l">Type d'activité</div></div></div>
+        <div class="card" style="margin-top:12px"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px">Récapitulatif annuel (DAC7)</div><p class="sub">Conformément à la loi (art. 1649 ter D du CGI), PING vous transmet chaque année le total net perçu et le nombre d'opérations, et le déclare à l'administration fiscale avant le 31 janvier.</p><div class="btn ghost sm" style="margin-top:10px">Télécharger mon récapitulatif</div></div>
+        <div class="h2">Dois-je déclarer ?</div>
+        <div class="card"><div class="lawlist">
+          <div class="li"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg><span><b>Vente occasionnelle</b> de vos biens personnels → en général <b>non imposable</b>.</span></div>
+          <div class="li"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span><b>Prestations de services</b> ou activité régulière → revenus <b>imposables</b>, à déclarer (formulaire 2042 C PRO).</span></div>
+          <div class="li"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span>Seuil de signalement (vente de biens) : au-delà de <b>30 opérations ou 2 000 €/an</b>, vos ventes sont signalées à l'administration.</span></div>
+        </div></div>
+        <div class="card" style="background:linear-gradient(135deg,rgba(242,169,59,.12),rgba(18,179,156,.08));border-color:rgba(242,169,59,.3)"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px">Votre activité devient régulière ?</div><p class="sub">Créez un statut pour être en règle et facturer proprement.</p><div class="btn gold sm" style="margin-top:10px" onclick="go('v_join_pro')">Devenir professionnel</div></div>
+        <p class="note2">Informations indicatives (droit français en vigueur, 2026). Elles ne constituent pas un conseil fiscal personnalisé.</p>
+      </div>
+    </section>
+
+    <!-- KYC PARTICULIER -->
+    <section class="view" id="v_kyc" data-tab="profile">
+      <div class="appbar"><div class="ic" onclick="back('v_profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Mes documents &amp; identité</b></div>
+      <div class="body">
+        <div class="h1">Vos pièces</div>
+        <p class="sub">Nécessaires à la confiance entre membres. Fichiers chiffrés, masqués, jamais publics.</p>
+        <div class="kyc ok" style="margin-top:12px;cursor:pointer" onclick="openDoc('id')"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.4"/></svg></div><div class="kt"><b>Pièce d'identité (CNI ou passeport)</b><small>Fournie · chiffrée &amp; masquée</small></div><div class="ka done">Remplacer</div></div>
+        <div class="kyc" id="kyc_domicile"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/></svg></div><div class="kt"><b>Justificatif de domicile</b><small>Optionnel</small></div><div class="ka" onclick="openUpload('kyc_domicile','Justificatif de domicile')">+ Ajouter</div></div>
+        <div class="card" style="margin-top:6px"><div style="display:flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:12.5px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Stockage sécurisé</div><p class="sub" style="margin-top:5px">Documents chiffrés au repos, accès restreint, supprimables sur demande (RGPD). Aucune donnée bancaire n'est stockée par PING.</p></div>
+      </div>
+    </section>
+
+    <!-- MOYENS DE PAIEMENT -->
+    <section class="view" id="v_paymethods" data-tab="profile">
+      <div class="appbar"><div class="ic" onclick="back('v_profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Moyens de paiement</b></div>
+      <div class="body">
+        <div class="h1">Vos cartes</div>
+        <p class="sub">Gérées par notre prestataire de paiement (Stripe) — PING n'a jamais accès au numéro complet ni ne stocke vos coordonnées bancaires (PCI-DSS).</p>
+        <div id="cardsList" style="margin-top:12px">
+          <div class="kyc ok"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div><div class="kt"><b>Visa •••• 4242</b><small>Expire 08/28 · par défaut</small></div><div class="ka done">Par défaut</div></div>
+        </div>
+        <div class="btn ghost" style="margin-top:6px" onclick="openCardSheet()">+ Ajouter une carte</div>
+        <div class="card" style="margin-top:14px"><div style="display:flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:12.5px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Paiement sécurisé sous séquestre</div><p class="sub" style="margin-top:5px">Vos fonds sont bloqués à la réservation et libérés au prestataire après le QR de fin d'intervention.</p></div>
+      </div>
+    </section>
+
+    <!-- CONFIDENTIALITE -->
+    <section class="view" id="v_privacy" data-tab="profile">
+      <div class="appbar"><div class="ic" onclick="back('v_profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Coordonnées &amp; confidentialité</b></div>
+      <div class="body">
+        <div class="h1">Ce que voient les prestataires</div>
+        <p class="sub">Votre nom, votre quartier approximatif et vos avis sont visibles. Le reste ne l'est pas.</p>
+        <div class="vrow ok" style="margin-top:10px"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="vt"><b>Prénom &amp; quartier</b><small>Visibles dès le premier contact</small></div></div>
+        <div class="vrow" style="margin-top:7px"><div class="vi" style="background:var(--paper);color:var(--slate)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><path d="M4 4l16 16"/></svg></div><div class="vt"><b>Adresse exacte</b><small>Masquée jusqu'à la réservation confirmée</small></div></div>
+        <div class="vrow" style="margin-top:7px"><div class="vi" style="background:var(--paper);color:var(--slate)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><path d="M4 4l16 16"/></svg></div><div class="vt"><b>Téléphone &amp; e-mail</b><small>Jamais partagés — la messagerie PING suffit</small></div></div>
+        <div class="card" style="margin-top:14px"><p class="sub" style="margin-top:0">Vous pouvez demander la suppression de vos données à tout moment (RGPD) depuis « Mes documents &amp; identité ».</p></div>
+      </div>
+    </section>
+
+    <!-- AVIS PUBLIES -->
+    <section class="view" id="v_myreviews" data-tab="profile">
+      <div class="appbar"><div class="ic" onclick="back('v_profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Avis publiés</b></div>
+      <div class="body">
+        <div class="h1">Vos 2 avis</div>
+        <div class="card" style="margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px">Sofia Services</div><small style="color:var(--slate)">14 juil. 2026</small></div><div style="margin-top:6px">★★★★★</div><p class="sub" style="margin-top:6px">Ponctuelle, très soigneuse. Je recommande.</p></div>
+        <div class="card" style="margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px">Nadia Repassage</div><small style="color:var(--slate)">13 juil. 2026</small></div><div style="margin-top:6px">★★★★☆</div><p class="sub" style="margin-top:6px">Bon travail, léger retard à l'arrivée.</p></div>
+      </div>
+    </section>
+
+    <!-- KYC PRO -->
+    <section class="view" id="p_kyc" data-tab="proprofile">
+      <div class="appbar"><div class="ic" onclick="back('p_profile')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Mes pièces &amp; documents</b></div>
+      <div class="body">
+        <div class="h1">Pièces justificatives</div>
+        <p class="sub">Renseignées par vous, contrôlées lors de la qualification. Fichiers chiffrés &amp; masqués.</p>
+        <div class="kyc ok" style="margin-top:12px"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.4"/></svg></div><div class="kt"><b>Pièce d'identité du gérant</b><small>Fournie · masquée</small></div><div class="ka done">Remplacer</div></div>
+        <div class="kyc ok" style="cursor:pointer" onclick="openDoc('siret')"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v13H4z"/><path d="M8 11h8"/></svg></div><div class="kt"><b>Statut / SIRET</b><small>Renseigné · auto-entrepreneur</small></div><div class="ka done">Modifier</div></div>
+        <div class="kyc" id="kyc_rc"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/></svg></div><div class="kt" onclick="openDoc('rc')" style="cursor:pointer"><b>Assurance responsabilité civile</b><small>À fournir (attestation)</small></div><div class="ka wait" onclick="openUpload('kyc_rc','Assurance responsabilité civile')">+ Ajouter</div></div>
+        <div class="kyc" id="kyc_dec"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/></svg></div><div class="kt" onclick="openDoc('dec')" style="cursor:pointer"><b>Assurance complémentaire</b><small>Optionnel · si remise en état</small></div><div class="ka" onclick="openUpload('kyc_dec','Assurance complémentaire')">+ Ajouter</div></div>
+        <div class="kyc" id="kyc_rib"><div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div><div class="kt" onclick="openDoc('rib')" style="cursor:pointer"><b>Coordonnées de versement (RIB)</b><small>Pour être payé · via le prestataire de paiement</small></div><div class="ka" onclick="openUpload('kyc_rib','RIB · coordonnées de versement')">Configurer</div></div>
+        <div class="card" style="margin-top:6px"><div style="display:flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:12.5px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Stockage sécurisé</div><p class="sub" style="margin-top:5px">Pièces chiffrées au repos, accès restreint, conservation limitée (RGPD). Vos coordonnées bancaires sont gérées par le prestataire de paiement (Stripe) et ne sont jamais stockées par PING (PCI-DSS).</p></div>
+      </div>
+    </section>
+
+
+    <!-- ============ OFFRES / ANNONCES — PARTICULIER ============ -->
+    <section class="view" id="v_offres" data-tab="offres">
+      <div class="appbar"><b>Mes demandes</b></div>
+      <div class="body">
+        <div class="h1">Publiez votre demande</div>
+        <p class="sub">Personne de disponible autour de vous&nbsp;? Décrivez ce dont vous avez besoin&nbsp;: les personnes à proximité vous font une proposition chiffrée.</p>
+        <div class="btn" style="margin-top:12px" onclick="go('v_offre_new')">+ Publier une demande</div>
+
+        <div class="h2">En cours</div>
+        <div class="card" onclick="go('v_offre_detail')" style="cursor:pointer">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="flex:1">
+              <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px">Ménage complet · 85 m²</div>
+              <div class="ds" style="font-size:11.5px;color:var(--slate);margin-top:2px">Quartier Saint-Jacques · samedi matin · ponctuel</div>
+            </div>
+            <span class="vchip ok" style="white-space:nowrap">3 propositions</span>
+          </div>
+          <div class="lrow" style="margin-top:9px"><span class="s">Budget indicatif</span><span class="v">80 – 120 &euro;</span></div>
+          <div class="lrow"><span class="s">Publiée</span><span class="v">il y a 2 h · expire dans 14 j</span></div>
+        </div>
+
+        <div class="card" style="opacity:.72">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="flex:1">
+              <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px">Repassage · 2 h par semaine</div>
+              <div class="ds" style="font-size:11.5px;color:var(--slate);margin-top:2px">Quartier Centre · mardi après-midi · hebdomadaire</div>
+            </div>
+            <span class="vchip" style="white-space:nowrap">En attente</span>
+          </div>
+          <div class="lrow" style="margin-top:9px"><span class="s">Budget indicatif</span><span class="v">25 &euro;/h</span></div>
+        </div>
+
+        <div class="note2" style="margin-top:14px">Votre adresse exacte reste masquée tant que vous n'avez pas accepté une proposition et que le paiement n'est pas placé sous séquestre.</div>
+      </div>
+    </section>
+
+    <!-- DÉPÔT D'UNE DEMANDE -->
+    <section class="view" id="v_offre_new" data-tab="offres">
+      <div class="appbar"><div class="ic" onclick="back('v_offres')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Nouvelle demande</b></div>
+      <div class="body">
+        <div class="h2" style="margin-top:0">Quel service&nbsp;?</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <div class="chip on" onclick="mapChip(this)">Ménage</div><div class="chip" onclick="mapChip(this)">Repassage</div><div class="chip" onclick="mapChip(this)">Nettoyage</div><div class="chip" onclick="mapChip(this)">Remise en état</div><div class="chip" onclick="mapChip(this)">Vitres</div>
+        </div>
+
+        <div class="h2">Décrivez le besoin</div>
+        <div class="field2"><div class="l">Titre</div><div class="v">Ménage complet · 85 m²</div></div>
+        <div class="field2"><div class="l">Détail</div><div class="v" style="color:var(--slate);line-height:1.5">Appartement 3 pièces, cuisine + 2 salles d'eau. Produits fournis.</div></div>
+        <div class="g2" style="display:flex;gap:8px">
+          <div class="field2" style="flex:1"><div class="l">Surface</div><div class="v">85 m²</div></div>
+          <div class="field2" style="flex:1"><div class="l">Durée estimée</div><div class="v">3 h</div></div>
+        </div>
+
+        <div class="h2">Quand&nbsp;?</div>
+        <div class="g2" style="display:flex;gap:8px">
+          <div class="field2" style="flex:1"><div class="l">Date souhaitée</div><div class="v">Samedi 8 août</div></div>
+          <div class="field2" style="flex:1"><div class="l">Créneau</div><div class="v">Matin</div></div>
+        </div>
+        <div class="seg" style="margin-top:8px"><div class="on" onclick="segPick(this)">Ponctuel</div><div onclick="segPick(this)">Hebdomadaire</div><div onclick="segPick(this)">Mensuel</div></div>
+
+        <div class="h2">Budget indicatif</div>
+        <div class="g2" style="display:flex;gap:8px">
+          <div class="field2" style="flex:1"><div class="l">Minimum</div><div class="v">80 &euro;</div></div>
+          <div class="field2" style="flex:1"><div class="l">Maximum</div><div class="v">120 &euro;</div></div>
+        </div>
+        <p class="sub">Indicatif seulement. Les propositions reçues peuvent être différentes&nbsp;; vous restez libre de refuser.</p>
+
+        <div class="h2">Localisation</div>
+        <div class="field2"><div class="l">Quartier affiché publiquement</div><div class="v">Saint-Jacques, Grasse</div></div>
+        <div class="note2">Votre adresse exacte n'est transmise qu'à la personne dont vous acceptez la proposition, après mise sous séquestre du paiement.</div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_offre_detail')">Publier ma demande</div></div>
+    </section>
+
+    <!-- DÉTAIL D'UNE DEMANDE + PROPOSITIONS -->
+    <section class="view" id="v_offre_detail" data-tab="offres">
+      <div class="appbar"><div class="ic" onclick="back('v_offres')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Ménage complet · 85 m²</b></div>
+      <div class="body">
+        <div class="card" style="padding:12px">
+          <div class="lrow"><span class="s">Quartier</span><span class="v">Saint-Jacques, Grasse</span></div>
+          <div class="lrow"><span class="s">Date</span><span class="v">Samedi 8 août · matin</span></div>
+          <div class="lrow"><span class="s">Budget indicatif</span><span class="v">80 – 120 &euro;</span></div>
+          <div class="lrow"><span class="s">Statut</span><span class="v" style="color:var(--tealD);font-weight:700">Publiée · 3 propositions</span></div>
+        </div>
+
+        <div class="h2">Propositions reçues</div>
+
+        <div class="card" style="padding:12px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div class="pvav" style="width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0C8F7E);color:#fff;font-family:var(--fh);font-weight:700">S</div>
+            <div style="flex:1">
+              <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px">Sofia M.</div>
+              <div class="ds" style="font-size:11px;color:var(--slate)">4,9 (86 avis) · à 600 m · répond en ~10 min</div>
+            </div>
+            <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:17px">95 &euro;</div>
+          </div>
+          <div class="chipset" style="margin-top:8px"><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Pièce d'identité fournie</span><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Assurance RC renseignée</span></div>
+          <p class="sub" style="margin-top:8px;font-size:12px">&laquo;&nbsp;Bonjour, je peux intervenir samedi à 9 h. 3 h de ménage complet, produits à votre charge comme indiqué.&nbsp;&raquo;</p>
+          <div style="display:flex;gap:8px;margin-top:9px"><div class="btn ghost" style="flex:1" onclick="go('v_chat')">Échanger</div><div class="btn" style="flex:1.3" onclick="go('v_booking')">Accepter · 95 &euro;</div></div>
+        </div>
+
+        <div class="card" style="padding:12px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div class="pvav" style="width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(160deg,#F2A93B,#d98a1f);color:#fff;font-family:var(--fh);font-weight:700">L</div>
+            <div style="flex:1">
+              <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px">Léa T.</div>
+              <div class="ds" style="font-size:11px;color:var(--slate)">4,7 (23 avis) · à 1,2 km · étudiante</div>
+            </div>
+            <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:17px">78 &euro;</div>
+          </div>
+          <div class="chipset" style="margin-top:8px"><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Pièce d'identité fournie</span></div>
+          <p class="sub" style="margin-top:8px;font-size:12px">&laquo;&nbsp;Disponible samedi matin, j'habite le quartier. J'ai déjà fait plusieurs ménages sur PING.&nbsp;&raquo;</p>
+          <div style="display:flex;gap:8px;margin-top:9px"><div class="btn ghost" style="flex:1" onclick="go('v_chat')">Échanger</div><div class="btn" style="flex:1.3" onclick="go('v_booking')">Accepter · 78 &euro;</div></div>
+        </div>
+
+        <div class="note2">En acceptant une proposition, le paiement est placé sous séquestre. Il n'est libéré qu'après votre validation de fin de prestation.</div>
+      </div>
+    </section>
+
+    <!-- SIGNALER UN PROBLÈME / LITIGE -->
+    <section class="view" id="v_litige" data-tab="agenda">
+      <div class="appbar"><div class="ic" onclick="back('v_agenda')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Signaler un problème</b></div>
+      <div class="body">
+        <div class="h1">Que s'est-il passé&nbsp;?</div>
+        <p class="sub">Tant qu'un signalement est ouvert, le paiement reste sous séquestre&nbsp;: il n'est pas libéré automatiquement.</p>
+
+        <div class="h2">Motif</div>
+        <div class="statut on" onclick="pickStatut(this)"><b>Prestation non réalisée</b><small>La personne n'est pas venue, ou est repartie sans faire le travail</small></div>
+        <div class="statut" onclick="pickStatut(this)"><b>Travail incomplet ou non conforme</b><small>La prestation ne correspond pas à ce qui était convenu</small></div>
+        <div class="statut" onclick="pickStatut(this)"><b>Casse ou dégradation</b><small>Un bien a été endommagé pendant l'intervention</small></div>
+        <div class="statut" onclick="pickStatut(this)"><b>Vol suspecté</b><small>Un objet a disparu à la suite de l'intervention</small></div>
+        <div class="statut" onclick="pickStatut(this)"><b>Comportement inapproprié</b><small>Propos ou attitude problématiques</small></div>
+
+        <div class="h2">Photos <span style="color:var(--coral)">· obligatoire</span></div>
+        <p class="sub" style="margin-top:0">Au moins une photo est requise pour ouvrir le dossier. Elle est horodatée et transmise à l'arbitrage.</p>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <div style="flex:1;aspect-ratio:1;border:1.5px dashed var(--line);border-radius:12px;display:grid;place-items:center;color:var(--slate)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg></div>
+          <div style="flex:1;aspect-ratio:1;border:1.5px dashed var(--line);border-radius:12px;display:grid;place-items:center;color:var(--slate)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div style="flex:1;aspect-ratio:1;border:1.5px dashed var(--line);border-radius:12px;display:grid;place-items:center;color:var(--slate)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+
+        <div class="h2">Votre description</div>
+        <div class="field2"><div class="l">Ce que vous constatez</div><div class="v" style="color:var(--slate);line-height:1.5">Décrivez précisément&nbsp;: pièces concernées, heure, ce qui était convenu&hellip;</div></div>
+
+        <div class="card" style="border-color:#F5D9A6;background:#FFFBF2">
+          <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13px;margin-bottom:6px">Ce qui se passe ensuite</div>
+          <div class="lrow"><span class="s">1. Le paiement reste bloqué</span><span class="v">immédiat</span></div>
+          <div class="lrow"><span class="s">2. La personne est invitée à répondre</span><span class="v">sous 48 h</span></div>
+          <div class="lrow"><span class="s">3. Arbitrage sur pièces</span><span class="v">sous 5 j</span></div>
+          <div class="note2" style="margin-top:8px">En cas de casse, vol ou dégradation, PING vous transmet les coordonnées de l'assurance responsabilité civile renseignée par la personne. PING n'indemnise pas et n'est pas partie au contrat de prestation.</div>
+        </div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('v_litige_suivi')">Envoyer le signalement</div></div>
+    </section>
+
+    <!-- ============ CARTE — PRO ============ -->
+    <section class="view" id="p_map" data-tab="promap">
+      <div class="body full nopad">
+        <div class="mapwrap">
+          <div class="topbar"><div class="burger" onclick="openMenu()"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></div><div class="pinglogo"><div class="mark"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" stroke-width="1.3" opacity=".38"/><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" stroke-width="1.3" opacity=".6"/></svg><span class="d"></span></div><div><div class="wd">ping</div></div></div><div class="sp"></div><div class="tbell" onclick="go('p_messages')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg><span class="bdg"></span></div></div>
+
+          <div class="mapscene" id="mapscene2">
+          <svg class="mapsvg" viewBox="0 0 90 160" preserveAspectRatio="xMidYMid slice">
+            <rect width="90" height="160" fill="var(--land)"/>
+            <path d="M90 0 L64 0 C58 22 74 40 66 60 C60 76 70 96 62 116 C56 132 66 148 60 160 L90 160 Z" fill="var(--water)"/>
+            <path d="M8 104 C4 92 22 88 28 98 C34 108 30 128 16 128 C6 128 8 116 8 104 Z" fill="var(--park)"/>
+            <g stroke="var(--roadcase)" stroke-width="6" fill="none" stroke-linecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166"/><path d="M-6 46 C22 42 52 52 96 44"/><path d="M-6 128 C26 118 52 100 96 78"/></g>
+            <g stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166"/><path d="M-6 46 C22 42 52 52 96 44"/><path d="M-6 128 C26 118 52 100 96 78"/></g>
+            <text x="19" y="40" font-family="Inter" font-size="2.7" fill="#A8A498" transform="rotate(-4 19 40)">Avenue de Provence</text>
+          </svg>
+          <div class="you"><span class="d"></span></div>
+          <div class="pin" style="left:62%;top:34%" onclick="go('p_offre_detail')"><div class="mk alt" style="background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div></div>
+          <div class="pin" style="left:29%;top:62%" onclick="go('p_offre_detail')"><div class="mk alt" style="background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div></div>
+          </div>
+          <div class="searchbar" style="cursor:default;top:66px"><div class="lg" style="background:linear-gradient(160deg,#12B39C,#0C8F7E)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><div class="tx" id="proMapStatus">Vous êtes visible · rayon 5 km</div></div>
+          <div class="chips" style="top:118px">
+            <div class="chip on" onclick="mapChip(this)">Demandes ouvertes</div><div class="chip" onclick="mapChip(this)">Mes interventions</div><div class="chip" onclick="mapChip(this)">Autres pros</div>
+          </div>
+          <div class="radar"></div>
+          <div class="pingbtn" onclick="doPing('p_map')"><span class="halo"></span><span class="lbl">PING</span></div>
+          <div class="pingtoast"></div>
+          <div class="zoomctl"><div class="zb" onclick="zoom2(0.35)">+</div><div class="zb" onclick="zoom2(-0.35)">&minus;</div></div>
+          <div class="loc" onclick="recenter2()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+
+          <div class="preview show" id="proMapSheet" style="bottom:0">
+            <div class="pvh"></div>
+            <div class="card on" id="availCard2" onclick="toggleAvail2()" style="margin:0;padding:12px;cursor:pointer">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="livedot on" id="availDot2"></span>
+                <div style="flex:1">
+                  <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px" id="availTitle2">Disponible maintenant</div>
+                  <div class="ds" style="font-size:11px;color:var(--slate)" id="availSub2">Vous apparaissez sur la carte des clients autour de vous</div>
+                </div>
+                <div class="switch on" id="availSw2"><span></span></div>
+              </div>
+            </div>
+            <div class="lrow" style="margin-top:10px"><span class="s">Demandes ouvertes autour de vous</span><span class="v" style="color:var(--tealD);font-weight:700">2</span></div>
+            <div class="lrow"><span class="s">Distance de la plus proche</span><span class="v">600 m</span></div>
+            <div class="btn" style="margin-top:10px" onclick="go('p_offres')">Voir les demandes</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OFFRES — PRO ============ -->
+    <section class="view" id="p_offres" data-tab="prooffres">
+      <div class="appbar"><b>Demandes autour de vous</b></div>
+      <div class="body">
+        <div style="display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap"><div class="chip on" onclick="tgl(this)">Toutes</div><div class="chip" onclick="tgl(this)">&lt; 1 km</div><div class="chip" onclick="tgl(this)">Ponctuel</div><div class="chip" onclick="tgl(this)">Récurrent</div></div>
+
+        <div class="card" onclick="go('p_offre_detail')" style="cursor:pointer">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="flex:1">
+              <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px">Ménage complet · 85 m²</div>
+              <div class="ds" style="font-size:11.5px;color:var(--slate);margin-top:2px">Saint-Jacques · à 600 m · samedi matin</div>
+            </div>
+            <span class="vchip ok" style="white-space:nowrap">80 – 120 &euro;</span>
+          </div>
+          <div class="lrow" style="margin-top:9px"><span class="s">Publiée</span><span class="v">il y a 2 h</span></div>
+          <div class="lrow"><span class="s">Propositions déjà envoyées</span><span class="v">3</span></div>
+        </div>
+
+        <div class="card" onclick="go('p_offre_detail')" style="cursor:pointer">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="flex:1">
+              <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px">Repassage · 2 h par semaine</div>
+              <div class="ds" style="font-size:11.5px;color:var(--slate);margin-top:2px">Centre · à 1,4 km · mardi après-midi · hebdo</div>
+            </div>
+            <span class="vchip" style="white-space:nowrap">25 &euro;/h</span>
+          </div>
+          <div class="lrow" style="margin-top:9px"><span class="s">Publiée</span><span class="v">hier</span></div>
+          <div class="lrow"><span class="s">Propositions déjà envoyées</span><span class="v">0</span></div>
+        </div>
+
+        <div class="note2" style="margin-top:14px">L'adresse exacte et les coordonnées du client vous sont communiquées uniquement si votre proposition est acceptée et que le paiement est placé sous séquestre.</div>
+      </div>
+    </section>
+
+    <!-- DÉTAIL DEMANDE + PROPOSITION — PRO -->
+    <section class="view" id="p_offre_detail" data-tab="prooffres">
+      <div class="appbar"><div class="ic" onclick="back('p_offres')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Ménage complet · 85 m²</b></div>
+      <div class="body">
+        <div class="card" style="padding:12px">
+          <div class="lrow"><span class="s">Quartier</span><span class="v">Saint-Jacques · à 600 m</span></div>
+          <div class="lrow"><span class="s">Date souhaitée</span><span class="v">Samedi 8 août · matin</span></div>
+          <div class="lrow"><span class="s">Surface</span><span class="v">85 m² · 3 pièces</span></div>
+          <div class="lrow"><span class="s">Fréquence</span><span class="v">Ponctuel</span></div>
+          <div class="lrow"><span class="s">Budget indicatif</span><span class="v">80 – 120 &euro;</span></div>
+        </div>
+
+        <div class="h2">Description du client</div>
+        <p class="sub" style="margin-top:0">Appartement 3 pièces, cuisine + 2 salles d'eau. Produits fournis.</p>
+
+        <div class="h2">Votre proposition</div>
+        <div class="g2" style="display:flex;gap:8px">
+          <div class="field2" style="flex:1"><div class="l">Prix proposé</div><div class="v">95 &euro;</div></div>
+          <div class="field2" style="flex:1"><div class="l">Durée estimée</div><div class="v">3 h</div></div>
+        </div>
+        <div class="field2"><div class="l">Message</div><div class="v" style="color:var(--slate);line-height:1.5">Bonjour, je peux intervenir samedi à 9 h&hellip;</div></div>
+
+        <div class="card" style="padding:12px;margin-top:10px">
+          <div class="lrow"><span class="s">Prix proposé</span><span class="v">95,00 &euro;</span></div>
+          <div class="lrow"><span class="s">Commission PING (9&nbsp;%)</span><span class="v">&minus; 8,55 &euro;</span></div>
+          <div class="tot"><span style="font-weight:700;color:var(--ink)">Vous percevez</span><span class="big">86,45 &euro;</span></div>
+        </div>
+
+        <div class="note2">Les coordonnées du client restent masquées tant que votre proposition n'est pas acceptée. Les échanges passent par la messagerie PING.</div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('p_offres')">Envoyer ma proposition · 95 &euro;</div></div>
+    </section>
+
+    <!-- MESSAGES — PRO -->
+    <section class="view" id="p_messages" data-tab="promessages">
+      <div class="appbar"><b>Messages</b></div>
+      <div class="body">
+        <div class="doc" onclick="go('v_chat')" style="cursor:pointer">
+          <div class="dt fac" style="background:linear-gradient(160deg,#12B39C,#0C8F7E);color:#fff">J</div>
+          <div class="m"><div class="nm">Julie R.</div><div class="ds">Parfait, à samedi 9 h alors&nbsp;!</div></div>
+          <div class="rt"><b style="font-size:11px;color:var(--slate)">10:42</b></div>
+        </div>
+        <div class="doc" onclick="go('v_chat')" style="cursor:pointer">
+          <div class="dt rec" style="background:linear-gradient(160deg,#F2A93B,#d98a1f);color:#fff">K</div>
+          <div class="m"><div class="nm">Karim B.</div><div class="ds">Vous seriez dispo mardi prochain&nbsp;?</div></div>
+          <div class="rt"><b style="font-size:11px;color:var(--slate)">hier</b></div>
+        </div>
+        <div class="doc" onclick="go('v_chat')" style="cursor:pointer">
+          <div class="dt dev" style="background:linear-gradient(160deg,#6E8592,#4c6472);color:#fff">A</div>
+          <div class="m"><div class="nm">Amélie D.</div><div class="ds">Merci beaucoup pour hier</div></div>
+          <div class="rt"><b style="font-size:11px;color:var(--slate)">2 j</b></div>
+        </div>
+        <div class="note2" style="margin-top:14px">Pour votre protection et celle du client, les numéros de téléphone et adresses e-mail échangés dans la messagerie sont automatiquement masqués avant l'acceptation d'une prestation.</div>
+      </div>
+    </section>
+
+
+
+    <!-- VIEWER DOCUMENT -->
+    <section class="view" id="v_docview" data-tab="proprofile">
+      <div class="appbar"><div class="ic" onclick="back('p_kyc')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b id="dvTitle">Document</b></div>
+      <div class="body">
+        <p class="sub" style="margin-top:0" id="dvSub"></p>
+        <div class="docview" style="margin-top:12px" id="dvBody"></div>
+        <div class="card" style="margin-top:12px">
+          <div class="lrow"><span class="s">Fichier</span><span class="v" id="dvFile"></span></div>
+          <div class="lrow"><span class="s">Horodatage</span><span class="v" id="dvDate"></span></div>
+          <div class="lrow"><span class="s">Conservation</span><span class="v">RGPD &middot; durée limitée</span></div>
+        </div>
+        <div class="note2">Vous seul et l'équipe de qualification PING pouvez consulter ce document. Il n'est jamais visible par les clients.</div>
+      </div>
+      <div class="foot"><div class="btn" id="dvDl" onclick="alert('Téléchargement du document (simulation prototype)')">Télécharger le document</div></div>
+    </section>
+
+
+    <!-- ============ SUIVI DU LITIGE — CLIENT ============ -->
+    <section class="view" id="v_litige_suivi" data-tab="agenda">
+      <div class="appbar"><div class="ic" onclick="back('v_agenda')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Litige LT-114</b></div>
+      <div class="body">
+        <div class="lgel">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2A93B" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <div style="flex:1"><div class="n">36,75 &euro; bloqu&eacute;s</div><div class="s">Le paiement ne sera pas lib&eacute;r&eacute; tant que le litige est ouvert</div></div>
+        </div>
+
+        <div class="lstat">
+          <div><b id="cl_moi">20,00 &euro;</b><span>Ma demande</span></div>
+          <div><b id="cl_lui">7,00 &euro;</b><span>Sa proposition</span></div>
+          <div><b id="cl_ecart">13,00 &euro;</b><span>&Eacute;cart</span></div>
+        </div>
+
+        <div class="h2">O&ugrave; en est le dossier</div>
+        <div class="lfil" id="cl_fil"></div>
+
+        <div class="h2">R&eacute;pondre</div>
+        <div class="card" style="padding:12px">
+          <div style="font-size:12px;color:var(--slate);line-height:1.5">Vous pouvez accepter la proposition de Yanis, ou faire une contre-proposition.</div>
+          <div class="btn" style="margin-top:10px" onclick="clAccept()">Accepter 7,00 &euro; et cl&ocirc;turer</div>
+          <div class="offin"><input type="number" id="cl_off" placeholder="Montant" step="0.5" value="14"><div class="btn ghost" style="flex:0 0 auto;padding:11px 16px" onclick="clOffre()">Proposer</div></div>
+          <div class="note2" style="margin-top:10px">Sans accord sous 48 h, PING rendra une d&eacute;cision motiv&eacute;e. Accepter ne vous prive d'aucun recours (m&eacute;diateur, assurance, juridictions).</div>
+        </div>
+
+        <div class="h2">En cas de dommage</div>
+        <div class="doc" onclick="go('v_assur')" style="cursor:pointer">
+          <div class="dt fac" style="background:linear-gradient(160deg,#6E8592,#4c6472);color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z"/></svg></div>
+          <div class="m"><div class="nm">Assurance du prestataire</div><div class="ds">Casse ou vol &middot; PING transmet les coordonn&eacute;es</div></div>
+          <span style="color:var(--slate)">&rsaquo;</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ASSURANCE TRANSMISE -->
+    <section class="view" id="v_assur" data-tab="agenda">
+      <div class="appbar"><div class="ic" onclick="back('v_litige_suivi')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Assurance du prestataire</b></div>
+      <div class="body">
+        <div class="h1">Pour un dommage mat&eacute;riel</div>
+        <p class="sub">PING ne prend pas en charge les dommages. Voici les informations d&eacute;clar&eacute;es par le prestataire pour votre d&eacute;marche.</p>
+        <div class="card">
+          <div class="lrow"><span class="s">Assur&eacute;</span><span class="v">Yanis Services</span></div>
+          <div class="lrow"><span class="s">Compagnie</span><span class="v">AXA</span></div>
+          <div class="lrow"><span class="s">N&deg; de police</span><span class="v">10442213</span></div>
+          <div class="lrow"><span class="s">Validit&eacute; d&eacute;clar&eacute;e</span><span class="v">31/12/2026</span></div>
+          <div class="lrow"><span class="s">SIRET</span><span class="v">511 902 334 00027</span></div>
+        </div>
+        <div class="note2">Informations renseign&eacute;es par le prestataire. PING n'en v&eacute;rifie pas l'authenticit&eacute; et n'est pas assureur. En cas de vol, un d&eacute;p&ocirc;t de plainte est n&eacute;cessaire.</div>
+        <div class="btn ghost" style="margin-top:12px" onclick="alert('Fiche envoy\u00e9e par e-mail (simulation)')">Recevoir par e-mail</div>
+      </div>
+    </section>
+
+    <!-- ============ LITIGE — PRO ============ -->
+    <section class="view" id="p_litige" data-tab="proagenda">
+      <div class="appbar"><div class="ic" onclick="back('p_agenda')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Litige LT-114</b></div>
+      <div class="body">
+        <div class="lgel">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2A93B" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <div style="flex:1"><div class="n">Paiement suspendu</div><div class="s">Paul a signal&eacute; un probl&egrave;me &middot; r&eacute;pondez sous 48 h</div></div>
+        </div>
+
+        <div class="lstat">
+          <div><b id="pr_lui">20,00 &euro;</b><span>Sa demande</span></div>
+          <div><b id="pr_moi">7,00 &euro;</b><span>Mon offre</span></div>
+          <div><b id="pr_net">28,00 &euro;</b><span>Je perçois</span></div>
+        </div>
+
+        <div class="h2">Le signalement</div>
+        <div class="card" style="padding:12px">
+          <div style="font-size:12.5px;color:var(--ink);line-height:1.55;font-style:italic">&laquo;&nbsp;La salle de bain n'a pas &eacute;t&eacute; faite du tout, et il reste de la poussi&egrave;re sur les plinthes du salon.&nbsp;&raquo;</div>
+          <div style="display:flex;gap:7px;margin-top:9px">
+            <div style="flex:1;aspect-ratio:1;border-radius:9px;background:repeating-linear-gradient(45deg,#EDF1F0,#EDF1F0 7px,#E3EAE8 7px,#E3EAE8 14px);display:grid;place-items:center;color:var(--slate)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+            <div style="flex:1;aspect-ratio:1;border-radius:9px;background:repeating-linear-gradient(45deg,#EDF1F0,#EDF1F0 7px,#E3EAE8 7px,#E3EAE8 14px);display:grid;place-items:center;color:var(--slate)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+            <div style="flex:1;aspect-ratio:1;border-radius:9px;background:repeating-linear-gradient(45deg,#EDF1F0,#EDF1F0 7px,#E3EAE8 7px,#E3EAE8 14px);display:grid;place-items:center;color:var(--slate)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+          </div>
+        </div>
+
+        <div class="h2">Vos faits enregistr&eacute;s</div>
+        <div class="card" style="padding:12px">
+          <div class="lrow"><span class="s">Arriv&eacute;e</span><span class="v">13 juil. 09h15</span></div>
+          <div class="lrow"><span class="s">D&eacute;part</span><span class="v">13 juil. 12h00</span></div>
+          <div class="lrow"><span class="s">Dur&eacute;e</span><span class="v">2 h 45 (pr&eacute;vu 3 h)</span></div>
+        </div>
+
+        <div class="h2">O&ugrave; en est le dossier</div>
+        <div class="lfil" id="pr_fil"></div>
+
+        <div class="h2">R&eacute;pondre</div>
+        <div class="card" style="padding:12px">
+          <div class="btn" onclick="prAccept()">Accepter 20,00 &euro; et cl&ocirc;turer</div>
+          <div class="offin"><input type="number" id="pr_off" placeholder="Montant" step="0.5" value="12"><div class="btn ghost" style="flex:0 0 auto;padding:11px 16px" onclick="prOffre()">Proposer</div></div>
+          <div class="btn ghost" style="margin-top:8px" onclick="prConteste()">Contester avec mes photos</div>
+          <div class="note2" style="margin-top:10px">Sans r&eacute;ponse sous 48 h, la demande du client est appliqu&eacute;e automatiquement. Votre facture sera ajust&eacute;e par avoir.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="scrim" id="scrim" onclick="closeMenu()"></div>
+    <aside class="drawer" id="drawer">
+      <div class="dh">
+        <div class="pinglogo"><div class="mark"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" stroke-width="1.3" opacity=".38"/><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" stroke-width="1.3" opacity=".6"/></svg><span class="d"></span></div><div><div class="wd">ping</div><div class="tg">Services de proximité</div></div></div>
+        <div class="du" id="drawerUser">
+          <div class="av2" id="duAv">J</div>
+          <div><div class="nm" id="duName">Julie R.</div><div class="ds" id="duSub">Grasse &middot; membre depuis 2026</div></div>
+        </div>
+      </div>
+      <nav class="dnav" id="dnav"></nav>
+      <div class="dfoot">
+        <div class="modeswitch" id="modeSwitch" onclick="switchModeFromMenu()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg>
+          <div class="t"><b id="msTitle">Passer en mode pro</b><small id="msSub">Proposer mes services</small></div>
+          <div class="sw"><span></span></div>
+        </div>
+      </div>
+    </aside>
+
+    <nav class="tabbar" id="tabbar_part">
+      <div class="tab on" data-t="map" onclick="go('v_map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Carte</div>
+      <div class="tab tping" data-t="ping" onclick="pingTab('v_map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2.5"/><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 16.5a6.4 6.4 0 0 0 0-9" stroke-linecap="round"/><path d="M4.6 4.6a10.4 10.4 0 0 0 0 14.8M19.4 19.4a10.4 10.4 0 0 0 0-14.8" stroke-linecap="round" opacity=".55"/></svg>PING</div>
+    </nav>
+    <!-- TARIFS / CATALOGUE -->
+    <section class="view" id="p_tarifs" data-tab="proprofile">
+      <div class="appbar"><div class="ic" onclick="back('p_dash')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Mes tarifs</b></div>
+      <div class="body">
+        <div class="h1">Catalogue de prix</div>
+        <p class="sub">Fixez vos tarifs à l'avance, ou ajustez au cas par cas dans un devis.</p>
+        <div class="seg" style="margin-top:10px"><div class="on" onclick="segPick(this)">Catalogue</div><div onclick="segPick(this)">Au cas par cas</div></div>
+        <div class="h2">Prestations</div>
+        <div class="tar"><div class="m"><div class="nm">Ménage complet (jusqu’à 90 m²)</div><div class="ds">+ déplacement 15 €</div></div><div class="pr">90 €</div><span class="edit">modifier</span></div>
+        <div class="tar"><div class="m"><div class="nm">Repassage à domicile</div><div class="ds">Forfait</div></div><div class="pr">80 €</div><span class="edit">modifier</span></div>
+        <div class="tar"><div class="m"><div class="nm">Remise en état après travaux</div><div class="ds">Sur devis selon surface</div></div><div class="pr">sur devis</div><span class="edit">modifier</span></div>
+        <div class="tar"><div class="m"><div class="nm">Nettoyage de vitres</div><div class="ds">Par fenêtre</div></div><div class="pr">60 €</div><span class="edit">modifier</span></div>
+        <div class="tar"><div class="m"><div class="nm">Taux horaire</div><div class="ds">Main-d'œuvre</div></div><div class="pr">45 €/h</div><span class="edit">modifier</span></div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('p_dash')">+ Ajouter un tarif</div></div>
+    </section>
+
+    <!-- DEVIS INSTANTANE -->
+    <section class="view" id="p_devis" data-tab="proprofile">
+      <div class="appbar"><div class="ic" onclick="back('p_demandes')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Devis instantané</b></div>
+      <div class="body">
+        <div class="card" style="padding:12px"><div style="display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(160deg,#f2a93b,#d98a1f);display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700">J</div><div><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13px">Julie · ménage complet 85 m²</div><div class="ds" style="font-size:11px;color:var(--slate)">à 400 m · aujourd'hui · 3 pièces</div></div></div></div>
+        <div class="h2">Composez le devis</div>
+        <p class="sub" style="margin-top:0">Ajoutez depuis votre catalogue, ou saisissez un prix manuel.</p>
+        <div style="margin-top:10px">
+          <span class="pickchip on" onclick="tglPick(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Ménage complet <b>90 €</b></span>
+          <span class="pickchip on" onclick="tglPick(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Déplacement <b>15 €</b></span>
+          <span class="pickchip" onclick="tglPick(this)">Repassage <b>80 €</b></span>
+          <span class="pickchip" onclick="tglPick(this)">Vitres <b>60 €</b></span>
+        </div>
+        <div class="field2" style="margin-top:8px"><div class="l">Ligne personnalisée · prix manuel</div><div class="v" style="color:var(--slate)">Saisir un intitulé et un montant <span class="edit">+ ajouter</span></div></div>
+        <div class="card" style="margin-top:6px"><div class="lrow"><span class="s">Ménage complet</span><span class="v">90,00 €</span></div><div class="lrow"><span class="s">Déplacement</span><span class="v">15,00 €</span></div><div class="tot"><span style="font-weight:700;color:var(--ink)">Total devis</span><span class="big">105,00 €</span></div><div class="note2" style="font-style:normal;color:var(--ink);font-weight:600;margin-top:6px">TVA non applicable, art. 293 B du CGI</div></div>
+      </div>
+      <div class="foot"><div class="btn" onclick="go('p_agenda')">Envoyer le devis · 105 €</div></div>
+    </section>
+
+    <!-- DOCUMENTS / RESTITUTION -->
+    <section class="view" id="p_documents" data-tab="proprofile">
+      <div class="appbar"><div class="ic" onclick="back('p_factures')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></div><b>Documents</b></div>
+      <div class="body">
+        <div class="h1">Vos documents</div>
+        <p class="sub">Factures, reçus et devis — récupérables à tout moment, horodatés (jour, heure, date) avec référence de transaction.</p>
+        <div style="display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap"><div class="chip on" onclick="tgl(this)">Tous</div><div class="chip" onclick="tgl(this)">Factures</div><div class="chip" onclick="tgl(this)">Reçus</div><div class="chip" onclick="tgl(this)">Devis</div></div>
+        <div class="doc"><div class="dt fac"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg></div><div class="m"><div class="nm">Facture N° 2026-0142</div><div class="ds">Julie R. · lun. 14 juil. 2026 · 15h42 · TX-8842</div></div><div class="rt"><b>95,55 €</b></div><div class="dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></div></div>
+        <div class="doc"><div class="dt rec"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18l3-2 2 2 2-2 2 2 2-2 3 2V3z"/></svg></div><div class="m"><div class="nm">Reçu R-0142</div><div class="ds">Julie R. · lun. 14 juil. 2026 · 15h42 · TX-8842</div></div><div class="rt"><b>110,25 €</b></div><div class="dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></div></div>
+        <div class="doc"><div class="dt dev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-2 4 2 4-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="m"><div class="nm">Devis D-0142</div><div class="ds">Julie R. · lun. 14 juil. 2026 · 14h05 · —</div></div><div class="rt"><b>105,00 €</b></div><div class="dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></div></div>
+        <div class="doc"><div class="dt fac"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg></div><div class="m"><div class="nm">Facture N° 2026-0141</div><div class="ds">Karim B. · dim. 13 juil. 2026 · 11h20 · TX-8821</div></div><div class="rt"><b>68,25 €</b></div><div class="dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg></div></div>
+      </div>
+      <div class="foot"><div class="btn ghost" onclick="go('p_factures')">Exporter la période (comptable)</div></div>
+    </section>
+
+    <nav class="tabbar pro" id="tabbar_pro" style="display:none">
+      <div class="tab on" data-t="promap" onclick="go('p_map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Carte</div>
+      <div class="tab tping" data-t="ping" onclick="pingTab('p_map')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2.5"/><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 16.5a6.4 6.4 0 0 0 0-9" stroke-linecap="round"/><path d="M4.6 4.6a10.4 10.4 0 0 0 0 14.8M19.4 19.4a10.4 10.4 0 0 0 0-14.8" stroke-linecap="round" opacity=".55"/></svg>PING</div>
+    </nav>
+
+    <div class="geosheet" id="uploadSheet"><div class="geobox">
+      <div class="gi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+      <h4 id="uploadTitle">Ajouter un document</h4>
+      <p id="uploadSub">Prenez une photo ou importez un fichier — chiffré dès l'envoi, jamais public.</p>
+      <div class="g2"><div class="btn ghost" style="flex:1" onclick="closeUpload()">Annuler</div><div class="btn" style="flex:1.3" onclick="doUpload()">Prendre une photo</div></div>
+      <div class="btn ghost" style="width:100%;margin-top:9px" onclick="doUpload()">Choisir depuis mes fichiers</div>
+    </div></div>
+    <div class="geosheet" id="cardSheet"><div class="geobox">
+      <div class="gi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div>
+      <h4>Ajouter une carte</h4>
+      <p>Le formulaire sécurisé s'ouvre chez notre prestataire de paiement (Stripe) — PING n'a jamais accès au numéro complet.</p>
+      <div class="g2"><div class="btn ghost" style="flex:1" onclick="closeCardSheet()">Annuler</div><div class="btn" style="flex:1.3" onclick="addCard()">Continuer avec Stripe</div></div>
+    </div></div>
+    <div class="geosheet" id="geoSheet"><div class="geobox">
+      <div class="gi"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+      <h4>Activer la localisation</h4>
+      <p>PING utilise votre position pour vous rendre visible auprès des clients autour de vous — uniquement quand vous êtes en « Disponible ». Vous pouvez la couper à tout moment.</p>
+      <div class="g2"><div class="btn ghost" style="flex:1" onclick="denyGeo()">Pas maintenant</div><div class="btn" style="flex:1.3" onclick="grantGeo()">Activer</div></div>
+    </div></div>
+    <div class="bar" id="bar" style="display:none"></div>
+  </div></div>
+</div></div>
+
+<div class="tip">Prototype cliquable — barre de navigation basse (type Booking / Google Maps). Basculez « particulier / professionnel » en haut. Tout est navigable : carte, recherche, fiche, chat, réservation, paiement, suivi, QR, reçu, avis · côté pro : tableau de bord, demandes, agenda, factures, conformité.</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let mode='part';
+const PART=['v_map','v_search','v_provider','v_chat','v_booking','v_pay','v_track','v_qr','v_receipt','v_review','v_messages','v_agenda','v_profile'];
+const PRO=['p_dash','p_demandes','p_agenda','p_qr','p_factures','p_facture','p_profile'];
+
+function fillQR(el){if(!el)return;const on=[0,1,5,6,7,13,14,20,28,34,35,41,42,43,47,48,10,16,24,32,38,4,3,25,17,31];el.innerHTML='';for(let i=0;i<49;i++){const d=document.createElement('div');d.style.background=on.includes(i)?'#123644':'transparent';d.style.borderRadius='2px';el.appendChild(d);}}
+['qrg','qrg3','qrg4'].forEach(id=>fillQR($(id)));
+
+function setActiveTab(view){
+ document.querySelectorAll('.tab').forEach(x=>x.classList.add('on'));
+}
+function go(id){
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+ const el=$(id);el.classList.add('on');const b=el.querySelector('.body');if(b)b.scrollTop=0;
+ setActiveTab(id);closePreview();
+}
+function back(id){go(id);}
+function setMode(m){
+ mode=m;
+ $('mb_part').classList.toggle('on',m==='part');$('mb_pro').classList.toggle('on',m==='pro');
+ $('tabbar_part').style.display=m==='part'?'flex':'none';
+ $('tabbar_pro').style.display=m==='pro'?'flex':'none';
+ go(m==='part'?'v_map':'p_map');renderMenu();
+}
+function openPreview(){$('preview').classList.add('show');}
+function closePreview(){const p=$('preview');if(p)p.classList.remove('show');}
+function pickSlot(el){document.querySelectorAll('#v_booking .slot').forEach(s=>s.classList.remove('on'));el.classList.add('on');}
+function pickTip(el){el.parentElement.querySelectorAll('.tipb').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
+// stars
+(function(){const w=$('rate');if(w){w.innerHTML='';for(let i=0;i<5;i++){const s=document.createElement('span');s.className='rstar';s.innerHTML='<svg width="34" height="34" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .8-5.2 4.9 1.4 7L12 17.8 5.8 21.2l1.4-7L2 9.3l7-.8z" fill="#F2A93B" stroke="#F2A93B" stroke-width="1"/></svg>';w.appendChild(s);}}})();
+
+let mz=1;
+function zoom(d){mz=Math.max(1,Math.min(3,Math.round((mz+d)*100)/100));const m=$('mapscene');if(m)m.style.transform='scale('+mz+')';}
+function recenter(){mz=1;const m=$('mapscene');if(m)m.style.transform='scale(1)';}
+function mapChip(el){
+ el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+ el.classList.add('on');
+ const cat=el.dataset.cat;
+ const scene=el.closest('.mapwrap').querySelector('.mapscene');
+ if(scene)scene.querySelectorAll('.pin').forEach(p=>{p.style.display=(cat==='tous'||p.dataset.cat===cat)?'':'none';});
+}
+function pickCat(el){el.classList.toggle('on');}
+function tgl(el){el.classList.toggle('on');}
+function tglPick(el){el.classList.toggle('on');}
+function pickStatut(el){el.parentElement.querySelectorAll('.statut').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+function segPick(el){el.parentElement.querySelectorAll('div').forEach(d=>d.classList.remove('on'));el.classList.add('on');}
+let geoOn=false;
+function toggleAvail(){const c=$('availCard');if(!c.classList.contains('on')){if(!geoOn){openGeo();return;}setAvail(true);}else{setAvail(false);}}
+function setAvail(on){const c=$('availCard');c.classList.toggle('on',on);$('availTitle').textContent=on?'Disponible maintenant':'Indisponible';$('availSub').textContent=on?'Actif · géolocalisé · visible par les clients autour de vous':"Vous n'apparaissez pas sur la carte";}
+function openGeo(){$('geoSheet').classList.add('on');}
+function grantGeo(){geoOn=true;$('geoSheet').classList.remove('on');setAvail(true);setAvail2(true);setTimeout(()=>doPing(mode==='pro'?'p_map':'v_map'),260);if(navigator.geolocation){try{navigator.geolocation.getCurrentPosition(()=>{},()=>{});}catch(e){}}}
+function denyGeo(){$('geoSheet').classList.remove('on');}
+
+let mz2=1;
+function zoom2(d){mz2=Math.max(1,Math.min(3,Math.round((mz2+d)*100)/100));const m=$('mapscene2');if(m)m.style.transform='scale('+mz2+')';}
+function recenter2(){mz2=1;const m=$('mapscene2');if(m)m.style.transform='scale(1)';}
+function toggleAvail2(){const c=$('availCard2');const on=!c.classList.contains('on');if(on&&!geoOn){openGeo();return;}setAvail2(on);}
+function setAvail2(on){
+ const c=$('availCard2');if(!c)return;
+ c.classList.toggle('on',on);
+ $('availDot2').classList.toggle('on',on);
+ $('availSw2').classList.toggle('on',on);
+ $('availTitle2').textContent=on?'Disponible maintenant':'Indisponible';
+ $('availSub2').textContent=on?'Vous apparaissez sur la carte des clients autour de vous':"Vous n'apparaissez pas sur la carte";
+ const st=$('proMapStatus');if(st)st.textContent=on?'Vous \u00eates visible \u00b7 rayon 5 km':'Vous n\u2019\u00eates pas visible';
+}
+
+
+/* ================= PROFILS CARTE ================= */
+const PROS=[
+ {av:'S',n:'Sofia M.',m:'M\u00e9nage &amp; repassage \u00b7 4,9 (86) \u00b7 \u00e0 350 m',p:'25 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~5 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#12B39C,#0C8F7E',cat:'menage'},
+ {av:'A',n:'Amine K.',m:'Remise en \u00e9tat \u00b7 4,8 (52) \u00b7 \u00e0 620 m',p:'180 \u20ac forfait',d:'Disponible maintenant \u00b7 r\u00e9pond en ~12 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#F2A93B,#d98a1f',cat:'remise'},
+ {av:'L',n:'L\u00e9a T.',m:'M\u00e9nage \u00b7 4,7 (23) \u00b7 \u00e0 800 m \u00b7 \u00e9tudiante',p:'20 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~8 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie'],g:'#FF7A66,#e05f4b',cat:'menage'},
+ {av:'N',n:'Nadia B.',m:'Repassage \u00b7 5,0 (41) \u00b7 \u00e0 1,1 km',p:'22 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~15 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#6E8592,#4c6472',cat:'menage'},
+ {av:'T',n:'Thomas R.',m:'Nettoyage vitres \u00b7 4,6 (18) \u00b7 \u00e0 1,3 km',p:'35 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~20 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie'],g:'#12B39C,#0e7f70',cat:'vitres'}
+];
+const CHK='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> ';
+function openPv(i){
+ const o=PROS[i]||PROS[0];
+ $('pvAv').textContent=o.av;
+ $('pvAv').style.background='linear-gradient(160deg,'+o.g+')';
+ $('pvName').innerHTML=o.n;
+ $('pvMeta').innerHTML=o.m;
+ $('pvPrice').textContent=o.p;
+ $('pvDispo').innerHTML=o.d;
+ $('pvChips').innerHTML=o.c.map(x=>'<span class="vchip ok">'+CHK+x+'</span>').join('');
+ openPreview();
+}
+
+/* ================= MENU LATERAL ================= */
+const MENU_PART=[
+ {id:'v_map',t:'Carte',i:'map'},
+ {id:'v_offres',t:'Mes demandes',i:'off'},
+ {id:'v_messages',t:'Messages',i:'msg',n:2},
+ {id:'v_agenda',t:'Agenda',i:'ag'},
+ {id:'v_litige_suivi',t:'Mes réclamations',i:'doc',n:1},
+ {id:'v_profile',t:'Profil',i:'prof'},
+ {sep:1},
+ {id:'v_search',t:'Rechercher un service',i:'doc'}
+];
+const MENU_PRO=[
+ {id:'p_map',t:'Carte',i:'map'},
+ {id:'p_offres',t:'Demandes autour de moi',i:'off',n:2},
+ {id:'p_messages',t:'Messages',i:'msg',n:3},
+ {id:'p_agenda',t:'Agenda',i:'ag'},
+ {id:'p_litige',t:'Litiges',i:'doc',n:1},
+ {id:'p_profile',t:'Mon entreprise',i:'ent'},
+ {sep:1},
+ {id:'p_dash',t:'Tableau de bord',i:'doc'},
+ {id:'p_factures',t:'Factures & documents',i:'doc'},
+ {id:'p_kyc',t:'Mes pi\u00e8ces',i:'doc'}
+];
+const MIC={
+ map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>',
+ off:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M8 14h8"/></svg>',
+ msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>',
+ ag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+ prof:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+ ent:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg>',
+ doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>'
+};
+function renderMenu(){
+ const items=(mode==='pro')?MENU_PRO:MENU_PART;
+ $('dnav').innerHTML=items.map(x=>x.sep?'<div class="dsep"></div>':
+   '<div class="dlink" onclick="menuGo(\''+x.id+'\')">'+MIC[x.i]+'<span>'+x.t+'</span>'+(x.n?'<span class="cnt">'+x.n+'</span>':'')+'</div>').join('');
+ const pro=(mode==='pro');
+ $('modeSwitch').classList.toggle('pro',pro);
+ $('msTitle').textContent=pro?'Revenir en mode particulier':'Passer en mode pro';
+ $('msSub').textContent=pro?'Chercher un service pr\u00e8s de moi':'Proposer mes services';
+ $('duAv').textContent=pro?'S':'J';
+ $('duName').textContent=pro?'Sofia M.':'Julie R.';
+ $('duSub').textContent=pro?'Sofia Services \u00b7 Grasse':'Grasse \u00b7 membre depuis 2026';
+}
+function openMenu(){renderMenu();$('drawer').classList.add('on');$('scrim').classList.add('on');}
+function closeMenu(){$('drawer').classList.remove('on');$('scrim').classList.remove('on');}
+function menuGo(id){closeMenu();go(id);}
+function switchModeFromMenu(){closeMenu();setMode(mode==='pro'?'part':'pro');}
+
+/* ================= VIEWER DOCUMENT ================= */
+const DOCS={
+ id:{t:'Pi\u00e8ce d\u2019identit\u00e9 du g\u00e9rant',s:'Carte nationale d\u2019identit\u00e9 \u00b7 recto-verso',f:'CNI_MarcD_masquee.pdf',dt:'D\u00e9pos\u00e9e le 12 juin 2026 \u00b7 14h08',mask:1},
+ siret:{t:'Statut / SIRET',s:'Auto-entrepreneur \u00b7 SIRET 892 431 007 00018',f:'Avis_situation_SIRENE.pdf',dt:'D\u00e9pos\u00e9 le 12 juin 2026 \u00b7 14h11',mask:0},
+ rc:{t:'Assurance responsabilit\u00e9 civile',s:'Attestation \u00e0 fournir',f:'\u2014',dt:'Aucun document d\u00e9pos\u00e9',mask:0,empty:1},
+ dec:{t:'Assurance d\u00e9cennale',s:'Optionnel \u00b7 si travaux',f:'\u2014',dt:'Aucun document d\u00e9pos\u00e9',mask:0,empty:1},
+ rib:{t:'Coordonn\u00e9es de versement',s:'G\u00e9r\u00e9es par le prestataire de paiement',f:'\u2014',dt:'Configur\u00e9 via Stripe',mask:0,psp:1}
+};
+function openCardSheet(){$('cardSheet').classList.add('on');}
+function closeCardSheet(){$('cardSheet').classList.remove('on');}
+function addCard(){
+ closeCardSheet();
+ const list=$('cardsList'); if(!list)return;
+ list.querySelectorAll('.ka.done').forEach(k=>{k.textContent='Définir par défaut';k.classList.remove('done');});
+ const row=document.createElement('div');
+ row.className='kyc ok';
+ row.innerHTML='<div class="ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div><div class="kt"><b>Mastercard •••• 8821</b><small>Expire 03/29 · ajoutée à l\'instant · par défaut</small></div><div class="ka done">Par défaut</div>';
+ list.insertBefore(row,list.firstChild);
+}
+let uploadTarget=null,uploadLabel='';
+let siretTimer=null;
+function checkSiret(val){
+ clearTimeout(siretTimer);
+ const box=document.getElementById('siretResult');
+ const digits=val.replace(/\D/g,'');
+ if(digits.length<9){box.innerHTML='';return;}
+ box.innerHTML='<p style="font-size:10.5px;color:var(--slate);margin-top:2px">Vérification en cours…</p>';
+ siretTimer=setTimeout(()=>lookupSiret(digits),500);
+}
+function lookupSiret(digits){
+ const box=document.getElementById('siretResult'); if(!box)return;
+ fetch('https://recherche-entreprises.api.gouv.fr/search?q='+digits+'&per_page=1')
+  .then(r=>r.json())
+  .then(d=>{
+   const r=d&&d.results&&d.results[0];
+   if(!r){box.innerHTML='<p style="font-size:10.5px;color:#c0503a;margin-top:2px">Aucune entreprise trouvée pour ce numéro — vérifiez la saisie.</p>';return;}
+   const siege=r.siege||{};
+   const actif=r.etat_administratif==='A';
+   box.innerHTML='<div style="background:'+(actif?'rgba(18,179,156,.08)':'rgba(255,122,102,.08)')+';border:1px solid '+(actif?'var(--teal)':'var(--coral)')+';border-radius:9px;padding:10px 11px;margin-top:2px">'
+    +'<p style="font-size:12px;font-weight:700;color:var(--ink)">'+(r.nom_complet||r.nom_raison_sociale||'—')+'</p>'
+    +'<p style="font-size:10.5px;color:var(--slate);margin-top:2px">Créée le '+(r.date_creation||'—')+' · '+(actif?'Active':'Radiée ou fermée')+'</p>'
+    +(siege.adresse?'<p style="font-size:10.5px;color:var(--slate)">'+siege.adresse+'</p>':'')
+    +'</div>'
+    +'<p style="font-size:9px;color:var(--slate);margin-top:5px">Source : API Recherche d\u2019entreprises (data.gouv.fr / INSEE) \u2014 gratuite, consultée en direct, sans clé.</p>';
+  })
+  .catch(()=>{box.innerHTML='<p style="font-size:10.5px;color:var(--slate);margin-top:2px">Vérification indisponible pour l\u2019instant \u2014 réessayez, ou continuez : ce champ n\u2019est pas bloquant.</p>';});
+}
+function openUpload(rowId,label){
+ uploadTarget=rowId; uploadLabel=label;
+ $('uploadTitle').textContent='Ajouter : '+label;
+ $('uploadSheet').classList.add('on');
+}
+function closeUpload(){$('uploadSheet').classList.remove('on');}
+function doUpload(){
+ const rowId=uploadTarget,label=uploadLabel;
+ closeUpload();
+ const row=document.getElementById(rowId); if(!row)return;
+ const ka=row.querySelector('.ka'), sm=row.querySelector('.kt small');
+ if(ka){ka.textContent='Analyse en cours…';ka.classList.remove('wait');ka.onclick=null;}
+ setTimeout(()=>{
+  row.classList.add('ok');
+  if(ka){ka.textContent=(rowId==='kyc_rib'?'Modifier':'Remplacer');ka.classList.add('done');ka.onclick=()=>openUpload(rowId,label);}
+  if(sm)sm.textContent=(rowId==='kyc_rib'?'Configuré · versements actifs':'Fournie · chiffrée & masquée');
+  const dk={kyc_rc:'rc',kyc_dec:'dec'}[rowId];
+  if(dk&&DOCS[dk]){DOCS[dk].empty=0;DOCS[dk].mask=1;DOCS[dk].f=label.replace(/\s+/g,'_')+'_masque.pdf';DOCS[dk].dt='Déposé à l\'instant';}
+ },900);
+}
+function openDoc(k){
+ const d=DOCS[k];if(!d)return;
+ $('dvTitle').textContent=d.t;
+ $('dvSub').textContent=d.s;
+ $('dvFile').textContent=d.f;
+ $('dvDate').textContent=d.dt;
+ let body='';
+ if(d.psp){
+  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E8592" stroke-width="1.8" style="margin-bottom:8px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><br>Vos coordonn\u00e9es bancaires sont d\u00e9tenues par le prestataire de paiement.<br>PING ne les stocke jamais (PCI-DSS).</div></div>';
+ }else if(d.empty){
+  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E8592" stroke-width="1.8" style="margin-bottom:8px"><path d="M12 5v14M5 12h14"/></svg><br>Aucun document d\u00e9pos\u00e9.<br>Ajoutez votre attestation pour compl\u00e9ter votre profil.</div></div>';
+ }else if(d.mask){
+  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E8592" stroke-width="1.8" style="margin-bottom:8px"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><path d="M4 4l16 16"/></svg><br>Document masqu\u00e9 pour votre s\u00e9curit\u00e9.<br>Chiffr\u00e9 au repos \u00b7 acc\u00e8s restreint (RGPD).</div></div>';
+ }else{
+  body='<div style="padding:18px;font-size:9.5px;line-height:1.7;color:var(--ink)"><div style="font-family:var(--fh);font-weight:700;font-size:12px;margin-bottom:10px">AVIS DE SITUATION AU R\u00c9PERTOIRE SIRENE</div><div style="color:var(--slate)">INSEE \u00b7 \u00c9tabli le 12/06/2026</div><div style="height:1px;background:var(--line);margin:10px 0"></div><div><b>SIREN</b> 892 431 007</div><div><b>SIRET</b> 892 431 007 00018</div><div><b>D\u00e9nomination</b> SOFIA SERVICES</div><div><b>Forme</b> Entrepreneur individuel</div><div><b>Activit\u00e9 (NAF)</b> 81.21Z \u2014 Nettoyage courant des b\u00e2timents</div><div><b>Adresse</b> 06130 GRASSE</div><div><b>Date de cr\u00e9ation</b> 03/02/2026</div><div><b>\u00c9tat</b> Actif</div></div>';
+ }
+ $('dvBody').innerHTML=body;
+ $('dvDl').style.display=(d.empty||d.psp)?'none':'block';
+ go('v_docview');
+}
+
+
+/* ================= FONCTION PING ================= */
+let pinging=false;
+function doPing(scope){
+ if(pinging)return; pinging=true;
+ const wrap=document.querySelector('#'+scope+' .mapwrap');
+ if(!wrap){pinging=false;return;}
+ const btn=wrap.querySelector('.pingbtn');
+ const radar=wrap.querySelector('.radar');
+ const toast=wrap.querySelector('.pingtoast');
+ const pins=[...wrap.querySelectorAll('.pin')];
+
+ if(btn)btn.classList.add('busy');
+ if(toast)toast.classList.remove('on');
+ closePreview();
+
+ /* onde radar */
+ if(radar){radar.classList.remove('go');void radar.offsetWidth;radar.classList.add('go');}
+
+ /* pins masques puis reveles un a un */
+ pins.forEach(p=>{p.classList.remove('pop');p.classList.add('hid');});
+ pins.forEach((p,i)=>setTimeout(()=>{
+   p.classList.remove('hid');p.classList.add('pop');
+ }, 260+i*130));
+
+ setTimeout(()=>{
+   if(btn)btn.classList.remove('busy');
+   if(toast){
+     const n=pins.length;
+     toast.innerHTML='<span class="dt"></span>'+(scope==='p_map'
+       ? n+' demande'+(n>1?'s':'')+' autour de vous \u00b7 mis \u00e0 jour'
+       : n+' personne'+(n>1?'s':'')+' disponible'+(n>1?'s':'')+' autour de vous');
+     toast.classList.add('on');
+     setTimeout(()=>toast.classList.remove('on'),2600);
+   }
+   pinging=false;
+ }, 300+pins.length*130+420);
+}
+
+
+function pingTab(scope){
+ const t=document.querySelector('.tab.tping'+(scope==='p_map'?'[data-t="ping"]':'[data-t="ping"]'));
+ const tabs=[...document.querySelectorAll('.tab.tping')];
+ tabs.forEach(x=>x.classList.add('busy'));
+ if(!geoOn){openGeo();tabs.forEach(x=>x.classList.remove('busy'));return;}
+ go(scope);
+ setTimeout(()=>{doPing(scope);},120);
+ setTimeout(()=>tabs.forEach(x=>x.classList.remove('busy')),1800);
+}
+
+
+/* ================= LITIGE PARTAGE CLIENT <-> PRO ================= */
+const BASE_LIT=35.00;
+let FIL=[
+ {who:'cli',nom:'Paul D.',type:'sig',date:'13 juil. 12h04',txt:'La salle de bain n\u2019a pas \u00e9t\u00e9 faite, poussi\u00e8re sur les plinthes.',meta:'3 photos horodat\u00e9es \u00b7 paiement gel\u00e9'},
+ {who:'cli',nom:'Paul D.',type:'off',montant:20.00,date:'13 juil. 14h10',txt:'Je demande le remboursement de cette part.',meta:'Session authentifi\u00e9e \u00b7 horodat\u00e9'},
+ {who:'pro',nom:'Yanis Services',type:'off',montant:7.00,date:'14 juil. 09h30',txt:'Geste commercial, le logement \u00e9tait plus sale qu\u2019annonc\u00e9.',meta:'2 photos jointes \u00b7 horodat\u00e9'}
+];
+function eur(x){return x.toFixed(2).replace('.',',')+' \u20ac';}
+function hNow(){const d=new Date();return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function lastOf(w){return [...FIL].reverse().find(x=>x.who===w&&x.type==='off');}
+
+function drawFil(elId,moi){
+ const el=$(elId); if(!el)return;
+ el.innerHTML=FIL.map(f=>{
+  if(f.type==='accord') return '<div class="lev ping"><div class="bx"><div class="h"><b>'+f.nom+'</b><span class="ltag k">Accord</span><span class="d">'+f.date+'</span></div><div class="amt" style="color:var(--tealD)">'+eur(f.montant)+'</div><div class="t">'+f.txt+'</div><div class="mt2">Accord amiable scell\u00e9 \u00b7 opposable \u00b7 archiv\u00e9</div></div></div>';
+  const cls=(f.who===moi)?'me':'you';
+  const tg=(f.who===moi)?'a':'b';
+  const lbl=f.type==='sig'?'Signalement':(f.type==='con'?'Contestation':'Offre');
+  return '<div class="lev '+cls+'"><div class="bx"><div class="h"><b>'+(f.who===moi?'Vous':f.nom)+'</b><span class="ltag '+tg+'">'+lbl+'</span><span class="d">'+f.date+'</span></div>'
+   +(f.montant!==undefined?'<div class="amt">'+eur(f.montant)+'</div>':'')
+   +'<div class="t">\u00ab\u00a0'+f.txt+'\u00a0\u00bb</div><div class="mt2">'+f.meta+'</div></div></div>';
+ }).join('');
+ const done=FIL.some(f=>f.type==='accord');
+ if(!done) el.innerHTML+='<div class="lev"><div class="bx" style="border-style:dashed;background:transparent"><div class="h"><b style="color:var(--slate)">En attente</b><span class="d">\u00e9ch\u00e9ance 48 h</span></div><div class="t">Sans accord, PING rend une d\u00e9cision motiv\u00e9e.</div></div></div>';
+}
+function syncLit(){
+ const c=lastOf('cli'), p=lastOf('pro');
+ const set=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+ set('cl_moi',c?eur(c.montant):'\u2014'); set('cl_lui',p?eur(p.montant):'\u2014');
+ set('cl_ecart',(c&&p)?eur(Math.abs(c.montant-p.montant)):'\u2014');
+ set('pr_lui',c?eur(c.montant):'\u2014'); set('pr_moi',p?eur(p.montant):'\u2014');
+ set('pr_net',p?eur(BASE_LIT-p.montant-((BASE_LIT-p.montant)*0.11)):'\u2014');
+ drawFil('cl_fil','cli'); drawFil('pr_fil','pro');
+}
+function addOff(who,val,txt){
+ const nom=who==='cli'?'Paul D.':'Yanis Services';
+ FIL.push({who:who,nom:nom,type:'off',montant:val,date:hNow(),txt:txt,
+  meta:'Session authentifi\u00e9e \u00b7 IP enregistr\u00e9e \u00b7 horodat\u00e9'});
+ syncLit();
+}
+function seal(val,par){
+ FIL.push({who:'x',nom:par,type:'accord',montant:val,date:hNow(),
+  txt:'Accord des deux parties \u00b7 paiement r\u00e9parti et lib\u00e9r\u00e9.'});
+ syncLit();
+}
+function clOffre(){const v=parseFloat($('cl_off').value);if(isNaN(v)||v<0||v>BASE_LIT){alert('Montant entre 0 et '+eur(BASE_LIT));return;}addOff('cli',v,'Contre-proposition.');}
+function prOffre(){const v=parseFloat($('pr_off').value);if(isNaN(v)||v<0||v>BASE_LIT){alert('Montant entre 0 et '+eur(BASE_LIT));return;}addOff('pro',v,'Contre-proposition.');}
+function clAccept(){const p=lastOf('pro');if(!p){alert('Aucune offre \u00e0 accepter');return;}seal(p.montant,'Paul D.');alert('Accord conclu \u00b7 '+eur(p.montant)+' vous seront rembours\u00e9s.');}
+function prAccept(){const c=lastOf('cli');if(!c){alert('Aucune demande');return;}seal(c.montant,'Yanis Services');alert('Accord conclu \u00b7 '+eur(c.montant)+' rembours\u00e9s au client. Avoir g\u00e9n\u00e9r\u00e9.');}
+function prConteste(){FIL.push({who:'pro',nom:'Yanis Services',type:'con',date:hNow(),txt:'Je conteste : la salle de bain n\u2019\u00e9tait pas dans la demande initiale.',meta:'2 photos jointes \u00b7 arbitrage PING sous 5 j'});syncLit();alert('Contestation enregistr\u00e9e \u00b7 PING arbitrera sur pi\u00e8ces.');}
+
+function fit(){const d=document.querySelector('.device'),st=$('stage');const k=Math.min((window.innerHeight-150)/872,(window.innerWidth-18)/418,1.1);d.style.transform='scale('+k+')';st.style.width=(418*k)+'px';st.style.height=(872*k)+'px';}
+const _mw=document.querySelector('#v_map .mapwrap');if(_mw)_mw.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?0.3:-0.3);},{passive:false});
+window.addEventListener('resize',fit);
+window.addEventListener('load',()=>{fit();setActiveTab('v_map');});
+fit();setActiveTab('v_map');renderMenu();openPv(0);closePreview();syncLit();setTimeout(()=>doPing('v_map'),500);
+</script>
+<script>
+/* ================= SUIVI RÉEL — UTM + pages vues + scans QR ================= */
+(function(){
+  var SB_URL='https://wmiawwaxwlvascyflpba.supabase.co';
+  var SB_KEY='sb_publishable_ehRFsNEJD1hnkOyi7vdfEA_NJey8yfP';
+
+  function getSessionId(){
+    var id=localStorage.getItem('ping_sid');
+    if(!id){ id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()); localStorage.setItem('ping_sid',id); }
+    return id;
+  }
+  function captureUTM(){
+    var p=new URLSearchParams(window.location.search);
+    var keys=['utm_source','utm_medium','utm_campaign','utm_content','qr'];
+    var has=false, data={};
+    keys.forEach(function(k){ var v=p.get(k); if(v){ data[k]=v; has=true; } });
+    if(has) localStorage.setItem('ping_utm', JSON.stringify(data));
+    return JSON.parse(localStorage.getItem('ping_utm')||'{}');
+  }
+  window.pingTrack=function(eventType, extra){
+    try{
+      var utm=captureUTM();
+      var body={
+        session_id:getSessionId(),
+        event_type:eventType,
+        path:window.location.pathname+window.location.search,
+        qr_code:utm.qr||null,
+        metadata:Object.assign({},utm,extra||{}),
+        user_agent:navigator.userAgent
+      };
+      fetch(SB_URL+'/rest/v1/events',{
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(body)
+      }).catch(function(){});
+    }catch(e){}
+  };
+  captureUTM();
+  window.pingTrack('page_view');
+})();
+</script>
+
+
+</body>
+</html>

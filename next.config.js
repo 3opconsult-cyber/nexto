@@ -3,7 +3,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone).html',
+        source: '/:path(admin|demo|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|client-app).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
       {
@@ -17,6 +17,7 @@ const nextConfig = {
       beforeFiles: [
         { source: '/', destination: '/map' },
         { source: '/demo', destination: '/app.html' },
+        { source: '/nouvelle-app', destination: '/client-app.html' },
         { source: '/admin', destination: '/admin.html' },
         { source: '/presentation', destination: '/presentation.html' },
         { source: '/parcours-navigable', destination: '/parcours-navigable.html' },
