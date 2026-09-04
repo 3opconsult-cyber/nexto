@@ -27,10 +27,13 @@ export default function OnboardingStep({
           disabled={!onBack}
           style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: onBack ? 'rgba(255,255,255,.1)' : 'transparent', color: '#fff', fontSize: 15, fontWeight: 700, flexShrink: 0, visibility: onBack ? 'visible' : 'hidden' }}
         >←</button>
-        <div style={{ flex: 1, display: 'flex', gap: 5 }}>
-          {Array.from({ length: total }).map((_, i) => (
-            <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= step ? '#12B39C' : 'rgba(255,255,255,.15)', transition: 'background .2s' }} />
-          ))}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', gap: 5 }}>
+            {Array.from({ length: total }).map((_, i) => (
+              <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= step ? '#12B39C' : 'rgba(255,255,255,.15)', transition: 'background .2s' }} />
+            ))}
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.6)' }}>Étape {step + 1} sur {total}</div>
         </div>
       </div>
 

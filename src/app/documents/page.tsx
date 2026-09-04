@@ -38,7 +38,7 @@ export default function DocumentsPage() {
       const { data } = await supabase.from('invoices').select('*').order('issued_at', { ascending: false })
       const list = (data ?? []) as Row[]
       setRows(list)
-      const txIds = [...new Set(list.map(r => r.transaction_id).filter(Boolean))]
+      const txIds = Array.from(new Set(list.map(r => r.transaction_id).filter(Boolean)))
       if (txIds.length) {
         const { data: txs } = await supabase.from('transactions').select('id, requests(category)').in('id', txIds)
         const m: Record<string, string> = {}
