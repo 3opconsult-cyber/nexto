@@ -206,7 +206,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
             <div className="body">
               <div className="h2" style={{ marginTop: 0 }}>Que recherchez-vous&nbsp;?</div>
               <div className="catgrid">
-                {([['menage', 'Ménage'], ['nettoyage', 'Nettoyage'], ['repassage', 'Blanchisserie'], ['vitres', 'Vitres']] as const).map(([key, label]) => (
+                {([['menage', 'Ménage'], ['repassage', 'Repassage'], ['nettoyage', 'Nettoyage']] as const).map(([key, label]) => (
                   <div key={key} className={`cat ${searchCat === key ? 'on' : ''}`} onClick={() => setSearchCat(searchCat === key ? 'tous' : key)}>
                     <div className="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z" /></svg></div>{label}
                   </div>
