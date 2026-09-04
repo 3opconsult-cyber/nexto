@@ -343,7 +343,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      {tx && !msgs.some(m => m.kind === 'offer' && m.offer_status === 'pending') && (
+      {tx && userId === tx.seller_id && !msgs.some(m => m.kind === 'offer' && m.offer_status === 'pending') && (
         <div style={{ padding: '0 16px 10px' }}>
           <button onClick={() => { setNewAmount(String(tx.subtotal_cents / 100)); setNewAmountReason(''); setNewAmountPhoto(null); setEditingPrice(true) }}
             style={{ width: '100%', padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
