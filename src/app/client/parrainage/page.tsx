@@ -78,6 +78,9 @@ export default function ParrainagePage() {
   function shareSms() {
     window.location.href = `sms:&body=${encodeURIComponent(shareMsg)}`
   }
+  function shareEmail() {
+    window.location.href = `mailto:?subject=${encodeURIComponent('Je t\u2019invite sur PING')}&body=${encodeURIComponent(shareMsg)}`
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
@@ -102,6 +105,10 @@ export default function ParrainagePage() {
                 <button onClick={shareSms} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.14)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                   SMS
+                </button>
+                <button onClick={shareEmail} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.14)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 6-10 7L2 6" /></svg>
+                  Email
                 </button>
                 <button onClick={copyLink} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderRadius: 999, border: 'none', background: 'rgba(255,255,255,.14)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
