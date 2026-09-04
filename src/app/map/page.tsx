@@ -131,9 +131,7 @@ export default function MapPage() {
 
       {/* Carte réelle, plein cadre — la barre du haut flotte par-dessus, comme /demo */}
       <div style={{ position: 'relative', width: '100%', height: '62vh', minHeight: 360, background: '#F3F6F5' }}>
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-          <LiveMap userPos={pos} pros={pros} onSelect={setSelected} />
-        </div>
+        <LiveMap userPos={pos} pros={pros} onSelect={setSelected} />
 
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 34, height: 56, display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px', background: 'rgba(255,255,255,.97)', borderBottom: '1px solid #E7EDEB' }}>
           <NavDrawer dark={false} />
