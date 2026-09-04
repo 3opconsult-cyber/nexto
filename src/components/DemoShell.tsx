@@ -1,9 +1,8 @@
 "use client"
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { fetchProvidersNearby, type ProviderNearby } from '@/lib/services'
-import ProtoClientViews from './ProtoClientViews'
 
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
@@ -47,27 +46,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [flt, setFlt] = useState<Set<string>>(() => new Set(['Dispo maintenant']))
 
   const go = useCallback((v: string) => { setPrevView(view); setViewState(v); setMenuOpen(false) }, [view])
-  const back = useCallback((v?: string) => { setViewState(v ?? prevView); setMenuOpen(false) }, [prevView])
-
-  // Dispatcher des handlers du prototype (bascules .on, menu). Reste = no-op ce passage.
-  const H = useCallback((expr: string, e: React.SyntheticEvent) => {
-    const el = e.currentTarget as HTMLElement
-    const fn = (expr.match(/^([a-zA-Z_]+)\(/) || [])[1] || ''
-    const RADIO = ['pickCat', 'segPick', 'pickStatut', 'mapChip', 'pickTip', 'pickSlot']
-    if (fn === 'tgl' || fn === 'tglPick') { el.classList.toggle('on'); return }
-    if (RADIO.includes(fn)) {
-      const p = el.parentElement
-      if (p) Array.from(p.children).forEach(c => c.classList.remove('on'))
-      el.classList.add('on'); return
-    }
-    if (fn === 'openMenu') { setMenuOpen(true); return }
-    if (fn === 'closeMenu') { setMenuOpen(false); return }
-    if (fn === 'setMode' || fn === 'switchModeFromMenu') {
-      if (/pro/.test(expr)) router.push('/pro/dashboard')
-      return
-    }
-    // autres handlers du proto : no-op pour ce premier passage
-  }, [])
+  const back = useCallback((v: string) => { setViewState(v); setMenuOpen(false) }, [])
 
   // Position de l'utilisateur : géoloc réelle, repli Grasse.
   useEffect(() => {
@@ -236,9 +215,6 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
               {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)' }}>Aucun prestataire dans cette catégorie pour le moment.</p>}
             </div>
           </section>
-
-          {/* Vues du prototype portées (markup verbatim), toggled par view */}
-          <ProtoClientViews view={view} go={go} back={back} H={H} />
 
           {/* ===================== TABBAR ===================== */}
           <nav className="tabbar" id="tabbar_part">
