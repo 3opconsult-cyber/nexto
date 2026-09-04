@@ -1,7 +1,12 @@
 "use client"
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import dynamic from 'next/dynamic'
+import { fetchProvidersNearby, type ProviderNearby } from '@/lib/services'
+
+// LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
+// Chargé côté client uniquement : Leaflet touche window au chargement.
+const LiveMap = dynamic(() => import('./LiveMap'), { ssr: false })
 
 // ============================================================
 // COQUE /demo — reproduit le mecanisme .view/.view.on d'app.html.
@@ -31,7 +36,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [prevView, setPrevView] = useState('v_map')
   const [menuOpen, setMenuOpen] = useState(false)
   const [mapCat, setMapCat] = useState('tous')
-  const [pros, setPros] = useState<Pro[]>([])
+  const [rawPros, setRawPros] = useState<ProviderNearby[]>([])
+  const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
+  const [recenterTick, setRecenterTick] = useState(0)
   const [pvIndex, setPvIndex] = useState(0)
   const [pvShow, setPvShow] = useState(false)
   const [searchCat, setSearchCat] = useState('tous')
@@ -41,44 +48,51 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const go = useCallback((v: string) => { setPrevView(view); setViewState(v); setMenuOpen(false) }, [view])
   const back = useCallback((v: string) => { setViewState(v); setMenuOpen(false) }, [])
 
-  // Chargement reel des prestataires (providers_nearby)
+  // Position de l'utilisateur : géoloc réelle, repli Grasse.
   useEffect(() => {
-    function load(lat: number, lng: number) {
-      const supabase = createClient()
-      supabase.rpc('providers_nearby', { p_lat: lat, p_lng: lng, radius_m: 15000, p_trade: null })
-        .then(({ data }: any) => {
-          if (!Array.isArray(data) || !data.length) return
-          setPros(data.map((x: any) => {
-            const nm = (x.full_name || TRAD[x.trade] || x.trade || '').trim()
-            const price = x.base_price_cents > 0 ? `${(x.base_price_cents / 100).toFixed(0)} €`
-              : (x.hourly_rate_cents ? `${(x.hourly_rate_cents / 100).toFixed(0)} €/h` : '')
-            const distTxt = x.distance_m < 1000 ? `${Math.round(x.distance_m)} m` : `${(x.distance_m / 1000).toFixed(1)} km`
-            const rate = x.rating > 0 ? `${x.rating.toFixed(1)} (${x.reviews_count || 0})` : 'Nouveau'
-            const chips: string[] = []
-            if (x.has_identity) chips.push('Pièce d’identité fournie')
-            if (x.has_rcpro) chips.push('Assurance RC renseignée')
-            return {
-              id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
-              m: `${TRAD[x.trade] || x.trade} · ${rate} · à ${distTxt}`, p: price,
-              d: 'Disponible maintenant', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
-              dist: x.distance_m ?? 0, rate: x.rating ?? 0,
-              priceN: x.base_price_cents > 0 ? x.base_price_cents : (x.hourly_rate_cents ?? 0),
-            }
-          }))
-        })
-    }
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        p => load(p.coords.latitude, p.coords.longitude),
-        () => load(43.6584, 6.9225), { timeout: 5000 })
-    } else { load(43.6584, 6.9225) }
+        p => setUserPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        () => { }, { timeout: 5000 })
+    }
   }, [])
 
-  function openPv(i: number) { setPvIndex(i); setPvShow(true) }
+  // Chargement réel des prestataires (providers_nearby renvoie lat/lng réels).
+  const loadPros = useCallback(() => {
+    fetchProvidersNearby(userPos.lat, userPos.lng, 15000).then(setRawPros)
+  }, [userPos.lat, userPos.lng])
+  useEffect(() => { loadPros() }, [loadPros])
+
+  // Forme d'affichage (fiche + liste) dérivée des vraies lignes.
+  const pros: Pro[] = useMemo(() => rawPros.map(x => {
+    const nm = (x.full_name || TRAD[x.trade] || x.trade || '').trim()
+    const price = x.base_price_cents > 0 ? `${(x.base_price_cents / 100).toFixed(0)} €`
+      : (x.hourly_rate_cents ? `${(x.hourly_rate_cents / 100).toFixed(0)} €/h` : '')
+    const distTxt = x.distance_m < 1000 ? `${Math.round(x.distance_m)} m` : `${(x.distance_m / 1000).toFixed(1)} km`
+    const rateTxt = x.rating > 0 ? `${x.rating.toFixed(1)} (${x.reviews_count || 0})` : 'Nouveau'
+    const chips: string[] = []
+    if (x.has_identity) chips.push('Pièce d’identité fournie')
+    if (x.has_rcpro) chips.push('Assurance RC renseignée')
+    return {
+      id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
+      m: `${TRAD[x.trade] || x.trade} · ${rateTxt} · à ${distTxt}`, p: price,
+      d: 'Disponible maintenant', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
+      dist: x.distance_m ?? 0, rate: x.rating ?? 0,
+      priceN: x.base_price_cents > 0 ? x.base_price_cents : (x.hourly_rate_cents ?? 0),
+    }
+  }), [rawPros])
+
   function closePreview() { setPvShow(false) }
 
   const pv = pros[pvIndex]
-  const visiblePros = pros.filter(p => mapCat === 'tous' || p.cat === mapCat)
+  // Prestataires réels filtrés par catégorie, passés à la carte Leaflet.
+  const rawVisible = useMemo(
+    () => rawPros.filter(p => mapCat === 'tous' || p.trade === mapCat),
+    [rawPros, mapCat])
+  function onSelectPro(p: ProviderNearby) {
+    const i = pros.findIndex(q => q.id === p.id)
+    if (i >= 0) { setPvIndex(i); setPvShow(true) }
+  }
   const searchList = [...pros]
     .filter(p => searchCat === 'tous' || p.cat === searchCat)
     .sort((a, b) =>
@@ -116,25 +130,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   </div>
                 </div>
 
-                <div className="mapscene" id="mapscene">
-                  <svg className="mapsvg" viewBox="0 0 90 160" preserveAspectRatio="xMidYMid slice">
-                    <rect width="90" height="160" fill="var(--land)" />
-                    <path d="M90 0 L64 0 C58 22 74 40 66 60 C60 76 70 96 62 116 C56 132 66 148 60 160 L90 160 Z" fill="var(--water)" />
-                    <path d="M8 104 C4 92 22 88 28 98 C34 108 30 128 16 128 C6 128 8 116 8 104 Z" fill="var(--park)" />
-                    <g stroke="var(--roadcase)" strokeWidth={6} fill="none" strokeLinecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166" /><path d="M-6 46 C22 42 52 52 96 44" /><path d="M-6 128 C26 118 52 100 96 78" /></g>
-                    <g stroke="#fff" strokeWidth={4} fill="none" strokeLinecap="round"><path d="M40 -6 C36 28 48 52 38 82 C30 108 42 136 40 166" /><path d="M-6 46 C22 42 52 52 96 44" /><path d="M-6 128 C26 118 52 100 96 78" /></g>
-                  </svg>
-                  <div className="you"><span className="d" /></div>
-                  {visiblePros.slice(0, 5).map((p, i) => {
-                    const positions = [{ left: '34%', top: '44%' }, { left: '64%', top: '28%' }, { left: '26%', top: '66%' }, { left: '53%', top: '57%' }, { left: '43%', top: '79%' }]
-                    return (
-                      <div key={p.id} className="pin" data-cat={p.cat} style={positions[i]} onClick={() => openPv(pros.indexOf(p))}>
-                        <div className="mkwrap"><span className="pinring" /><div className="mk" style={{ background: `linear-gradient(160deg,${p.g})` }}>
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z" /></svg>
-                        </div></div>
-                      </div>
-                    )
-                  })}
+                <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
+                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} />
                 </div>
 
                 <div className="searchbar" style={{ top: 66 }} onClick={() => go('v_search')}>
@@ -149,9 +146,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   <div className={`chip ${mapCat === 'nettoyage' ? 'on' : ''}`} onClick={() => setMapCat('nettoyage')}>Nettoyage</div>
                 </div>
 
-                <div className="pingbtn" onClick={() => { setPros(p => [...p]) }}><span className="halo" /><span className="lbl">PING</span></div>
+                <div className="pingbtn" onClick={() => loadPros()}><span className="halo" /><span className="lbl">PING</span></div>
                 <div className="zoomctl"><div className="zb">+</div><div className="zb">−</div></div>
-                <div className="loc"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
+                <div className="loc" onClick={() => setRecenterTick(t => t + 1)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
 
                 <div className={`preview ${pvShow ? 'show' : ''}`} id="preview">
                   <div className="pvh" />
@@ -224,7 +221,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
             <div className={`tab ${view === 'v_map' ? 'on' : ''}`} data-t="map" onClick={() => go('v_map')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" /></svg>Carte
             </div>
-            <div className="tab tping" data-t="ping" onClick={() => setPros(p => [...p])}>
+            <div className="tab tping" data-t="ping" onClick={() => loadPros()}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="2.5" /><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 16.5a6.4 6.4 0 0 0 0-9" strokeLinecap="round" /><path d="M4.6 4.6a10.4 10.4 0 0 0 0 14.8M19.4 19.4a10.4 10.4 0 0 0 0-14.8" strokeLinecap="round" opacity=".55" /></svg>PING
             </div>
           </nav>
