@@ -51,10 +51,10 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
 
   const clientLinks = [
     { label: 'Carte', path: '/map', icon: 'map' },
-    { label: 'Mes demandes', path: '/client/profil', icon: 'off' },
+    { label: 'Mes demandes', path: '/agenda', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
-    { label: 'Litiges', path: '/litiges', icon: 'doc' },
+    { label: 'Mes réclamations', path: '/litiges', icon: 'doc' },
     { label: 'Profil', path: '/client/profil', icon: 'prof' },
   ]
   const clientLinksBottom = [
@@ -66,7 +66,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   ]
   const proLinks = [
     { label: 'Carte', path: '/map', icon: 'map' },
-    { label: 'Missions autour de moi', path: '/pro/dashboard', icon: 'off' },
+    { label: 'Demandes autour de moi', path: '/pro/dashboard', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
     { label: 'Litiges', path: '/litiges', icon: 'doc' },
