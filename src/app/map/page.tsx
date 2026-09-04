@@ -214,7 +214,7 @@ export default function MapPage() {
             const badges = [p.has_identity && 'identité fournie', p.has_rcpro && 'assurance RC renseignée'].filter(Boolean).join(' · ')
             const fav = favIds.has(p.id)
             return (
-              <div key={p.id} onClick={() => router.push(`/pro/${p.id}`)}
+              <div key={p.id} onClick={() => { setSelected(p); trackEvent('map_card_click', { provider_id: p.id }) }}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 12, marginBottom: 10, cursor: 'pointer' }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: bg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>{initial}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -236,15 +236,42 @@ export default function MapPage() {
         </div>
       </div>
 
-      {selected && (
-        <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
-            <h3 style={{ fontFamily: 'Quicksand, sans-serif' }}>{selected.full_name?.trim() || TRADES[selected.trade] || selected.trade}</h3>
-            <p style={{ color: '#6E8592', fontSize: 13, marginTop: 6 }}>{selected.bio}</p>
-            <button onClick={() => router.push(`/pro/${selected.id}`)} style={{ width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>Voir la fiche complète</button>
+      {selected && (() => {
+        const name = selected.full_name?.trim() || TRADES[selected.trade] || selected.trade
+        const initial = name.charAt(0).toUpperCase()
+        const bg = selected.avatar_hue != null ? `hsl(${selected.avatar_hue}, 55%, 45%)` : '#12B39C'
+        const badges = [selected.has_identity && 'Identité fournie', selected.has_rcpro && 'Assurance RC'].filter(Boolean) as string[]
+        return (
+          <div onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 999, background: '#E7EDEB', margin: '0 auto 16px' }} />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0, background: bg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17 }}>{initial}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16 }}>{name}</h3>
+                  <div style={{ color: '#6E8592', fontSize: 12, marginTop: 2 }}>{TRADES[selected.trade] || selected.trade} · à {selected.distance_m < 1000 ? `${Math.round(selected.distance_m)} m` : `${(selected.distance_m / 1000).toFixed(1)} km`}</div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>{priceLabel(selected)}</div>
+                  <div style={{ fontSize: 11, color: '#6E8592' }}>{selected.rating > 0 ? `${selected.rating.toFixed(1)} ★` : 'Nouveau'}</div>
+                </div>
+              </div>
+              {badges.length > 0 && (
+                <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+                  {badges.map(b => (
+                    <span key={b} style={{ fontSize: 10.5, fontWeight: 700, color: '#0C8F7E', background: 'rgba(18,179,156,.1)', padding: '3px 9px', borderRadius: 999 }}>{b}</span>
+                  ))}
+                </div>
+              )}
+              {selected.bio && <p style={{ color: '#6E8592', fontSize: 13, marginTop: 12, lineHeight: 1.5 }}>{selected.bio}</p>}
+              <div style={{ display: 'flex', gap: 9, marginTop: 16 }}>
+                <button onClick={() => router.push(`/pro/${selected.id}`)} style={{ flex: 1, padding: 13, borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>Voir le profil</button>
+                <button onClick={() => router.push(`/mission/new?pro=${selected.id}`)} style={{ flex: 1.3, padding: 13, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>Demander un devis</button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
       <BottomTabBar onPing={relocate} />
     </div>
   )
