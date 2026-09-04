@@ -3,6 +3,7 @@ import { Quicksand, Inter } from 'next/font/google'
 import './globals.css'
 import './ping-ui.css'
 import './ping-legacy.css'
+import DesktopShell from '@/components/DesktopShell'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -48,9 +49,9 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`} style={{ background: '#DCE5E3' }}>
-        <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100vh', background: '#F3F6F5', boxShadow: '0 0 40px rgba(18,54,68,.08)' }}>
+        <DesktopShell>
           {children}
-        </div>
+        </DesktopShell>
       </body>
     </html>
   )

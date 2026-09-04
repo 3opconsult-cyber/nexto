@@ -44,8 +44,10 @@ body {
 /* Tap highlight */
 * { -webkit-tap-highlight-color: transparent; }
 
-/* ===== Layout desktop : navigation laterale ouverte + carte a droite (type Booking/Airbnb).
-   Le format telephone reste sur mobile (<1000px). ===== */
+/* ===== Layout desktop : navigation laterale ouverte sur toutes les pages (type Booking/Airbnb).
+   Le format telephone centre reste sur mobile (<1000px) et sur les pages hors-app. ===== */
+.phone-col { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F3F6F5; box-shadow: 0 0 40px rgba(18,54,68,.08); }
+.shell-main { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F3F6F5; box-shadow: 0 0 40px rgba(18,54,68,.08); }
 .desk-nav { display: none; }
 .dnav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 14.5px; color: #123644; cursor: pointer; }
 .dnav-item:hover { background: #F3F6F5; }
@@ -54,6 +56,7 @@ body {
   body { background: #fff !important; }
   .app-shell { display: flex !important; width: 100vw; height: 100dvh; overflow: hidden; }
   .desk-nav { display: flex; flex-direction: column; width: 236px; flex: 0 0 236px; background: #fff; border-right: 1px solid #E7EDEB; padding: 18px 12px; overflow-y: auto; }
+  .shell-main { max-width: none !important; margin: 0 !important; box-shadow: none !important; flex: 1 1 auto; min-width: 0; height: 100dvh; overflow: auto; }
   .app-shell .stage { flex: 1 1 auto !important; width: auto !important; min-width: 0 !important; height: 100dvh !important; }
   .app-shell .device { width: 100% !important; height: 100dvh !important; background: none !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; }
   .app-shell .frame { position: static !important; inset: auto !important; width: 100% !important; height: 100dvh !important; border-radius: 0 !important; padding: 0 !important; background: var(--paper) !important; }
