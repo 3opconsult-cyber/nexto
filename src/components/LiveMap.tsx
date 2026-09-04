@@ -61,7 +61,7 @@ export default function LiveMap({
 }) {
   return (
     <>
-      <style>{`.leaflet-top.leaflet-left{top:70px}`}</style>
+      <style>{`.leaflet-top.leaflet-left{top:158px}.leaflet-control-zoom{z-index:400 !important}`}</style>
       <MapContainer
         center={[userPos.lat, userPos.lng]}
         zoom={13}

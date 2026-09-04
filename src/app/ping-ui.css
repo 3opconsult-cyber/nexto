@@ -24,7 +24,7 @@
 
 /* ---------- Barre du haut (flottante sur carte OU pleine) ---------- */
 .ping-topbar {
-  position: absolute; top: 0; left: 0; right: 0; height: 56px; z-index: 34;
+  position: absolute; top: 0; left: 0; right: 0; height: 56px; z-index: 800;
   display: flex; align-items: center; gap: 10px; padding: 0 12px;
   background: rgba(255,255,255,.97); border-bottom: 1px solid var(--line);
 }
@@ -41,7 +41,7 @@
 
 /* ---------- Barre de recherche flottante ---------- */
 .ping-searchbar {
-  position: absolute; top: 66px; left: 14px; right: 14px; z-index: 30;
+  position: absolute; top: 66px; left: 14px; right: 14px; z-index: 800;
   display: flex; align-items: center; gap: 10px; background: #fff;
   border-radius: 16px; padding: 13px 15px; box-shadow: 0 12px 28px rgba(20,50,60,.18); cursor: pointer;
 }
@@ -50,7 +50,7 @@
 
 /* ---------- Puces de catégorie ---------- */
 .ping-chiprow {
-  position: absolute; top: 120px; left: 0; right: 0; z-index: 30;
+  position: absolute; top: 120px; left: 0; right: 0; z-index: 800;
   display: flex; gap: 8px; padding: 0 14px; overflow-x: auto;
 }
 .ping-chiprow::-webkit-scrollbar { display: none; }
@@ -73,7 +73,7 @@
 .ping-tab.on { color: var(--teal); }
 
 /* ---------- Bouton flottant PING (recentrage) + zoom ---------- */
-.ping-fabcol { position: absolute; right: 14px; bottom: 84px; z-index: 32; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.ping-fabcol { position: absolute; right: 14px; bottom: 84px; z-index: 800; display: flex; flex-direction: column; gap: 8px; align-items: center; }
 .ping-fab { width: 56px; height: 56px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; box-shadow: 0 10px 22px rgba(18,179,156,.4); cursor: pointer; font-family: var(--fh); font-weight: 700; font-size: 13px; border: none; }
 .ping-fab.sm { width: 40px; height: 40px; background: #fff; color: var(--ink); box-shadow: 0 4px 12px rgba(20,50,60,.18); }
 
