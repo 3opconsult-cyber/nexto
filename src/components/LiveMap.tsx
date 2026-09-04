@@ -37,29 +37,46 @@ function proIcon(trade: string, active: boolean, i = 0) {
     iconAnchor: [17, 34],
   })
 }
+function reqIcon(i = 0) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;background:#F2A93B;transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center;animation:pinDrop .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(i * 0.12).toFixed(2)}s">
+      <div style="transform:rotate(45deg);display:flex;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </div>
+    </div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 34],
+  })
+}
 
-function FitAll({ userPos, pros, recenterTick }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[]; recenterTick?: number }) {
+function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[]; pts?: { lat: number; lng: number }[]; recenterTick?: number }) {
   const map = useMap()
   useEffect(() => {
     const pts: [number, number][] = [[userPos.lat, userPos.lng]]
     pros.forEach(p => { if (p.lat != null && p.lng != null) pts.push([p.lat, p.lng]) })
+    ;(extra || []).forEach(p => { if (p.lat != null && p.lng != null) pts.push([p.lat, p.lng]) })
     if (pts.length === 1) {
       map.setView(pts[0], 13)
     } else {
       map.fitBounds(pts, { padding: [50, 50], maxZoom: 14 })
     }
     setTimeout(() => map.invalidateSize(), 100)
-  }, [userPos.lat, userPos.lng, pros, map, recenterTick])
+  }, [userPos.lat, userPos.lng, pros, extra, map, recenterTick])
   return null
 }
 
+type ReqPin = { id: string; lat: number; lng: number }
 export default function LiveMap({
-  userPos, pros, onSelect, recenterTick,
+  userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici',
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
   onSelect: (p: ProviderNearby) => void
   recenterTick?: number
+  requests?: ReqPin[]
+  onSelectRequest?: (id: string) => void
+  youLabel?: string
 }) {
   return (
     <>
@@ -79,9 +96,9 @@ export default function LiveMap({
           attribution='&copy; OpenStreetMap'
           maxZoom={19}
         />
-        <FitAll userPos={userPos} pros={pros} recenterTick={recenterTick} />
+        <FitAll userPos={userPos} pros={pros} pts={requests} recenterTick={recenterTick} />
         <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()}>
-          <Tooltip permanent direction="bottom" offset={[0, 8]} className="you-tip">Vous êtes ici</Tooltip>
+          <Tooltip permanent direction="bottom" offset={[0, 8]} className="you-tip">{youLabel}</Tooltip>
         </Marker>
         {pros.filter(p => p.lat != null && p.lng != null).map((p, i) => (
           <Marker
@@ -89,6 +106,14 @@ export default function LiveMap({
             position={[p.lat, p.lng]}
             icon={proIcon(p.trade, p.is_active, i)}
             eventHandlers={{ click: () => onSelect(p) }}
+          />
+        ))}
+        {requests.filter(r => r.lat != null && r.lng != null).map((r, i) => (
+          <Marker
+            key={r.id}
+            position={[r.lat, r.lng]}
+            icon={reqIcon(i)}
+            eventHandlers={{ click: () => onSelectRequest?.(r.id) }}
           />
         ))}
       </MapContainer>

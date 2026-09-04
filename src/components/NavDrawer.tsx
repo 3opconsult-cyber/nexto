@@ -46,7 +46,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   }
 
   function switchMode() {
-    router.push(onProSide ? '/map' : (isPro ? '/pro/dashboard' : '/pro/onboarding'))
+    router.push(onProSide ? '/map' : (isPro ? '/pro/carte' : '/pro/onboarding'))
   }
 
   const clientLinks = [
@@ -66,7 +66,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   ]
   const proLinks = [
     { label: 'Carte', path: '/map', icon: 'map' },
-    { label: 'Demandes autour de moi', path: '/pro/dashboard', icon: 'off' },
+    { label: 'Demandes autour de moi', path: '/pro/carte', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
     { label: 'Litiges', path: '/litiges', icon: 'doc' },

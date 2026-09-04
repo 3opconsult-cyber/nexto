@@ -20,6 +20,29 @@ export interface ProviderNearby {
   has_rcpro: boolean
 }
 
+export interface RequestNearby {
+  id: string
+  category: string
+  description: string
+  budget_cents: number | null
+  address: string | null
+  lat: number
+  lng: number
+  distance_m: number
+  created_at: string
+}
+
+export async function fetchRequestsNearby(
+  lat: number, lng: number, radiusM = 15000
+): Promise<RequestNearby[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase.rpc('requests_nearby', {
+    p_lat: lat, p_lng: lng, radius_m: radiusM,
+  })
+  if (error) { console.error('requests_nearby', error); return [] }
+  return (data ?? []) as RequestNearby[]
+}
+
 export async function fetchProvidersNearby(
   lat: number, lng: number, radiusM = 15000, trade?: string
 ): Promise<ProviderNearby[]> {
