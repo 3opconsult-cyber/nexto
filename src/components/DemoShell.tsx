@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { fetchProvidersNearby, type ProviderNearby } from '@/lib/services'
+import { fetchProvidersNearby, openConversation, type ProviderNearby } from '@/lib/services'
+import NavDrawer from './NavDrawer'
 
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
@@ -34,7 +35,6 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const router = useRouter()
   const [view, setViewState] = useState(initialView)
   const [prevView, setPrevView] = useState('v_map')
-  const [menuOpen, setMenuOpen] = useState(false)
   const [mapCat, setMapCat] = useState('tous')
   const [rawPros, setRawPros] = useState<ProviderNearby[]>([])
   const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
@@ -45,8 +45,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [sortMode, setSortMode] = useState<'near' | 'rated' | 'price'>('near')
   const [flt, setFlt] = useState<Set<string>>(() => new Set(['Dispo maintenant']))
 
-  const go = useCallback((v: string) => { setPrevView(view); setViewState(v); setMenuOpen(false) }, [view])
-  const back = useCallback((v: string) => { setViewState(v); setMenuOpen(false) }, [])
+  const go = useCallback((v: string) => { setPrevView(view); setViewState(v) }, [view])
+  const back = useCallback((v: string) => { setViewState(v) }, [])
 
   // Position de l'utilisateur : géoloc réelle, repli Grasse.
   useEffect(() => {
@@ -113,9 +113,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
             <div className="body full nopad">
               <div className="mapwrap">
                 <div className="topbar">
-                  <div className="burger" onClick={() => setMenuOpen(true)}>
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2.2} strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-                  </div>
+                  <NavDrawer dark={false} />
                   <div className="pinglogo">
                     <div className="mark">
                       <svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".38" /><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".6" /></svg>
@@ -165,7 +163,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                       </div>
                       <div className="dispo" style={{ marginTop: 11 }}><span className="livedot on" /> <span>{pv.d}</span></div>
                       <div style={{ display: 'flex', gap: 9, marginTop: 10 }}>
-                        <div className="btn ghost" style={{ flex: 1 }} onClick={() => { closePreview(); router.push(`/pro/${pv.id}`) }}>Contacter</div>
+                        <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { closePreview(); const { missionId } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : `/pro/${pv.id}`) }}>Contacter</div>
                         <div className="btn" style={{ flex: 1.3 }} onClick={() => { closePreview(); router.push(`/pro/${pv.id}`) }}>Voir le profil</div>
                       </div>
                     </>
@@ -225,35 +223,6 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="2.5" /><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 16.5a6.4 6.4 0 0 0 0-9" strokeLinecap="round" /><path d="M4.6 4.6a10.4 10.4 0 0 0 0 14.8M19.4 19.4a10.4 10.4 0 0 0 0-14.8" strokeLinecap="round" opacity=".55" /></svg>PING
             </div>
           </nav>
-
-          {/* ===================== DRAWER ===================== */}
-          <div className={`scrim ${menuOpen ? 'on' : ''}`} id="scrim" onClick={() => setMenuOpen(false)} />
-          <aside className={`drawer ${menuOpen ? 'on' : ''}`} id="drawer">
-            <div className="dh">
-              <div className="pinglogo"><div className="mark"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".38" /><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".6" /></svg><span className="d" /></div><div><div className="wd">ping</div><div className="tg">Services de proximité</div></div></div>
-              <div className="du">
-                <div className="av2">J</div>
-                <div><div className="nm">Vous</div><div className="ds">Grasse · membre</div></div>
-              </div>
-            </div>
-            <nav className="dnav">
-              <div className="dlink on" onClick={() => go('v_map')}>Carte</div>
-              <div className="dlink" onClick={() => router.push('/messages')}>Messages</div>
-              <div className="dlink" onClick={() => router.push('/agenda')}>Agenda</div>
-              <div className="dlink" onClick={() => router.push('/documents')}>Mes documents</div>
-              <div className="dlink" onClick={() => router.push('/client/profil')}>Profil</div>
-              <div className="dsep" />
-              <div className="dlink" onClick={() => router.push('/comment-ca-marche')}>Comment ça marche</div>
-              <div className="dlink" onClick={() => router.push('/client/parrainage')}>Mon parrainage</div>
-            </nav>
-            <div className="dfoot">
-              <div className="modeswitch" onClick={() => router.push('/pro/dashboard')}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M3 21V9l9-6 9 6v12" /><path d="M9 21v-6h6v6" /></svg>
-                <div className="t"><b>Passer en mode pro</b><small>Proposer mes services</small></div>
-                <div className="sw"><span /></div>
-              </div>
-            </div>
-          </aside>
 
         </div></div>
       </div>
