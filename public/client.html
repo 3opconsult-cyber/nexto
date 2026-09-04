@@ -376,36 +376,17 @@ svg{display:block}
 /* Vrai plein ecran (sans le mockup decoratif de telephone) quand la page
    tourne sur un vrai petit ecran, ou en PWA installee sur l'ecran d'accueil.
    Le mockup desktop reste intact pour la presentation/marketing en navigateur. */
-@media (min-width: 481px) {
-  body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
-  .stage{width:100%;max-width:440px;height:100dvh;margin:0 auto}
-  .device{width:100%!important;height:100dvh!important;background:none!important;border-radius:0!important;padding:0!important;box-shadow:none!important;transform:none!important}
-  .btn-side{display:none}
-  .device .frame{position:static!important;inset:auto!important;border-radius:0!important;background:var(--paper)!important;padding:0!important;width:100%!important;height:100%!important}
-  .screen{border-radius:0!important;width:100%!important;height:100%!important}
-  .island,.homebar,.status{display:none}
-  .tip{display:none}
-}
-@media (max-width: 480px), (display-mode: standalone) {
-  body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
-  .modeToggle{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.18);border-radius:999px;background:#fff;padding:4px}
-  .stage{width:100vw!important;height:100dvh!important}
-  .device{width:100vw!important;height:100dvh!important;background:none!important;border-radius:0!important;padding:0!important;box-shadow:none!important;transform:none!important}
-  .btn-side{display:none}
-  .device .frame{position:static!important;inset:auto!important;border-radius:0!important;background:var(--paper)!important;padding:0!important;width:100%!important;height:100%!important}
-  .screen{border-radius:0!important;width:100%!important;height:100%!important;padding-top:env(safe-area-inset-top)}
-  .island{display:none}
-  .homebar{display:none}
-  .status{display:none}
-}
+/* Plein ecran permanent — l'app EST le prototype, sans cadre device. */
+body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
+.stage{width:100%;max-width:440px;height:100dvh;margin:0 auto;position:relative}
+.device{width:100%!important;height:100dvh!important;background:none!important;border-radius:0!important;padding:0!important;box-shadow:none!important;transform:none!important}
+.btn-side{display:none}
+.device .frame{position:static!important;inset:auto!important;border-radius:0!important;background:var(--paper)!important;padding:0!important;width:100%!important;height:100%!important}
+.screen{border-radius:0!important;width:100%!important;height:100%!important}
+.island,.homebar,.status,.tip,.modeToggle{display:none}
 </style>
 </head>
 <body>
-
-<div class="modeToggle">
-  <button class="mbtn on" id="mb_part" onclick="setMode('part')">Côté particulier</button>
-  <button class="mbtn" id="mb_pro" onclick="setMode('pro')">Côté professionnel</button>
-</div>
 
 <div class="stage" id="stage"><div class="device">
   <div class="btn-side bt1"></div><div class="btn-side bt2"></div><div class="btn-side bt3"></div><div class="btn-side bt4"></div>
