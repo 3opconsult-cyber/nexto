@@ -116,3 +116,29 @@
 .ping-offer { background: #fff; border: 1.5px solid var(--teal); border-radius: 15px; padding: 13px; box-shadow: 0 10px 24px rgba(18,179,156,.14); }
 
 .ping-h2 { font-family: var(--fh); font-weight: 700; font-size: 16px; margin: 4px 0 10px; }
+
+/* ============ Fiche prestataire (v_provider) ============ */
+.ping-appbar { position: sticky; top: 0; height: 52px; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.ping-appbar .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+.ping-appbar b { font-family: var(--fh); font-weight: 700; font-size: 16px; }
+.ping-hero .big { width: 52px; height: 52px; border-radius: 15px; background: rgba(255,255,255,.18); display: grid; place-items: center; font-family: var(--fh); font-weight: 700; font-size: 21px; border: 2px solid rgba(255,255,255,.5); }
+.ping-hero h2 { font-family: var(--fh); font-weight: 700; font-size: 21px; margin-top: 10px; }
+.ping-hero .meta { opacity: .92; font-size: 12px; margin-top: 2px; }
+.ping-hero .dispo { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: #fff; margin-top: 6px; }
+.ping-vrow { display: flex; align-items: center; gap: 9px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 11px; margin-bottom: 7px; }
+.ping-vrow.ok { border-color: rgba(18,179,156,.4); }
+.ping-vi { width: 28px; height: 28px; border-radius: 9px; background: rgba(18,179,156,.12); display: grid; place-items: center; flex: 0 0 auto; }
+.ping-vt { flex: 1; min-width: 0; }
+.ping-vt b { font-size: 12.5px; color: var(--ink); display: block; }
+.ping-vt small { font-size: 10.5px; color: var(--slate); }
+.ping-vs { font-size: 9.5px; font-weight: 700; color: var(--teal); display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.ping-chipset { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ping-sk { background: rgba(18,179,156,.1); color: var(--tealD); font-weight: 600; font-size: 10.5px; padding: 5px 9px; border-radius: 999px; }
+.ping-rev { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 11px; margin-bottom: 8px; }
+.ping-rev .t { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.ping-rev .t .n { font-size: 12.5px; font-weight: 700; }
+.ping-rev p { font-size: 12px; color: var(--slate); line-height: 1.45; }
+.ping-stars { color: var(--gold); font-size: 12px; }
+.ping-foot { position: sticky; bottom: 64px; padding: 12px 16px 14px; background: linear-gradient(180deg, rgba(243,246,245,0), var(--paper) 34%); }
+.ping-badge-teal { background: rgba(18,179,156,.12); color: var(--tealD); font-size: 9.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.ping-sub { font-size: 10.5px; color: #9aa6a3; margin-top: 2px; line-height: 1.5; }

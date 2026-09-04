@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { fetchProDetail, openConversation } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
-import NavDrawer from '@/components/NavDrawer'
-
 import { TRADES } from '@/lib/trades'
 
 export default function ProDetailPage() {
@@ -15,9 +13,6 @@ export default function ProDetailPage() {
   const [reviews, setReviews] = useState<any[]>([])
   const [extraServices, setExtraServices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'apropos' | 'avis'>('apropos')
-  const [userId, setUserId] = useState<string | null>(null)
-  const [isFav, setIsFav] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -28,191 +23,110 @@ export default function ProDetailPage() {
     const supabase = createClient()
     supabase.from('services').select('name, price_cents').eq('provider_id', proId)
       .then(({ data }) => { if (!cancelled) setExtraServices(data ?? []) })
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user || cancelled) return
-      setUserId(user.id)
-      supabase.from('favorites').select('provider_id').eq('user_id', user.id).eq('provider_id', proId).maybeSingle()
-        .then(({ data }) => { if (!cancelled) setIsFav(!!data) })
-    })
     return () => { cancelled = true }
   }, [proId])
 
-  async function toggleFav() {
-    if (!userId) { router.push('/auth/login'); return }
-    const supabase = createClient()
-    if (isFav) {
-      await supabase.from('favorites').delete().eq('user_id', userId).eq('provider_id', proId)
-      setIsFav(false)
-    } else {
-      await supabase.from('favorites').insert({ user_id: userId, provider_id: proId })
-      setIsFav(true)
-    }
+  async function contact() {
+    const { missionId } = await openConversation(proId)
+    router.push(missionId ? `/mission/${missionId}/chat` : '/auth/login')
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#123644' }}>
-      <div style={{ color: '#fff', fontFamily: 'Quicksand, sans-serif', fontSize: 18 }}>Chargement…</div>
+    <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ color: '#6E8592', fontFamily: 'var(--fh)', fontSize: 15 }}>Chargement…</div>
     </div>
   )
-
   if (!pro) return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#123644' }}>
-      <div style={{ color: '#fff', fontFamily: 'Quicksand, sans-serif', fontSize: 18, marginBottom: 16 }}>Prestataire introuvable</div>
-      <button onClick={() => router.push('/map')} style={{ padding: '12px 24px', borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }}>Retour à la carte</button>
+    <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24 }}>
+      <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16 }}>Prestataire introuvable</div>
+      <button className="ping-btn" style={{ width: 'auto', padding: '12px 24px' }} onClick={() => router.push('/map')}>Retour à la carte</button>
     </div>
   )
 
-  const displayName = pro.profiles?.full_name?.trim() || TRADES[pro.trade] || pro.trade
-  const initials = displayName.split(' ').map((w: string) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '•'
-  const hasFlat = pro.base_price_cents > 0
-  const hasHourly = pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0
+  const name = pro.profiles?.full_name?.trim() || TRADES[pro.trade] || pro.trade
+  const initial = name.charAt(0).toUpperCase()
+  const dist = pro.distance_m != null ? (pro.distance_m < 1000 ? `${Math.round(pro.distance_m)} m` : `${(pro.distance_m / 1000).toFixed(1)} km`) : null
+  const ratingTxt = pro.rating > 0 ? `${pro.rating.toFixed(1)} (${pro.reviews_count} avis)` : 'Nouveau'
+  const priceLabel = pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(0)} €`
+    : (pro.hourly_rate_cents ? `${(pro.hourly_rate_cents / 100).toFixed(0)} €/h` : null)
+  const skills = extraServices.length ? extraServices.map((s: any) => s.name) : [TRADES[pro.trade] || pro.trade]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
-      <div style={{ padding: '20px 20px 32px', background: '#123644' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <NavDrawer />
-            <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700 }}>← Retour</button>
-          </div>
-          <button onClick={toggleFav} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? '#FF7A66' : 'none'} stroke={isFav ? '#FF7A66' : '#fff'} strokeWidth="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>
-          </button>
+    <div className="ping-screen" style={{ paddingBottom: 0 }}>
+      <div className="ping-appbar">
+        <div className="ic" onClick={() => router.push('/map')}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff', background: '#12B39C', flexShrink: 0 }}>{initials}</div>
-          <div>
-            <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>{displayName}</h1>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>
-              {Number(pro.rating) > 0 ? `${Number(pro.rating).toFixed(1)} ★` : 'Nouveau'} · {pro.reviews_count} avis
-            </div>
-            {pro.is_active && (
-              <span style={{ display: 'inline-block', marginTop: 8, padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(18,179,156,.18)', color: '#5EEAD4' }}>Actif</span>
-            )}
-          </div>
-        </div>
+        <b>Profil du pro</b>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', marginTop: -14, padding: '22px 20px', minHeight: '60vh' }}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {hasFlat && (
-            <div style={{ flex: 1, padding: 14, borderRadius: 14, textAlign: 'center', background: '#F3F6F5' }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#12B39C' }}>{(pro.base_price_cents / 100).toFixed(2)} €</div>
-              <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>Forfait · {TRADES[pro.trade] || pro.trade}</div>
-            </div>
-          )}
-          {hasHourly && (
-            <div style={{ flex: 1, padding: 14, borderRadius: 14, textAlign: 'center', background: '#F3F6F5' }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#12B39C' }}>{(pro.hourly_rate_cents / 100).toFixed(2)} €/h</div>
-              <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>Taux horaire</div>
-            </div>
-          )}
+      <div className="ping-body nopad" style={{ paddingBottom: 150 }}>
+        <div className="ping-hero">
+          <div className="big">{initial}</div>
+          <h2>{name}</h2>
+          <div className="meta">{ratingTxt}{dist ? ` · à ${dist}` : ''}</div>
+          <div className="dispo"><span style={{ width: 9, height: 9, borderRadius: '50%', background: '#fff', display: 'inline-block' }} /> Disponible maintenant</div>
         </div>
 
-        {extraServices.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-            {extraServices.map((s, i) => (
-              <span key={i} style={{ padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: 'rgba(18,179,156,.1)', color: '#0C8F7E' }}>{s.name}</span>
-            ))}
+        <div style={{ padding: '14px 16px' }}>
+          <div className="ping-h2" style={{ marginTop: 0 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="2.4"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
+              Informations déclarées par le pro
+            </span>
           </div>
-        )}
 
-        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 14, background: '#F3F6F5', marginBottom: 18 }}>
-          {([['apropos', 'À propos'], ['avis', 'Avis']] as const).map(([k, label]) => (
-            <button key={k} onClick={() => setTab(k)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', fontSize: 13, fontWeight: 700, background: tab === k ? '#fff' : 'transparent', color: tab === k ? '#123644' : '#6E8592' }}>{label}</button>
+          {pro.has_identity && (
+            <div className="ping-vrow ok">
+              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="12" r="2.2" /></svg></div>
+              <div className="ping-vt"><b>Pièce d'identité fournie</b><small>Déposée sur PING par le pro</small></div>
+              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Fournie</div>
+            </div>
+          )}
+          {pro.has_rcpro && (
+            <div className="ping-vrow ok">
+              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg></div>
+              <div className="ping-vt"><b>Assurance resp. civile</b><small>Renseignée par le pro (casse/dommage)</small></div>
+              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Renseignée</div>
+            </div>
+          )}
+          {pro.sap_number && (
+            <div className="ping-vrow ok">
+              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M4 6h16v13H4z" /><path d="M8 11h8M8 15h5" /></svg></div>
+              <div className="ping-vt"><b>Attestation crédit d'impôt</b><small>Peut établir la déclaration fiscale</small></div>
+              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Possible</div>
+            </div>
+          )}
+          {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && (
+            <div className="ping-vrow"><div className="ping-vt"><small>Aucune information encore renseignée par le prestataire.</small></div></div>
+          )}
+
+          <p className="ping-sub">Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
+
+          <div className="ping-h2">Compétences</div>
+          <div className="ping-chipset">
+            {skills.map((s: string, i: number) => <span key={i} className="ping-sk">{s}</span>)}
+          </div>
+
+          <div className="ping-h2">Avis <span className="ping-badge-teal">après prestation</span></div>
+          {reviews.length === 0 && <p className="ping-sub">Pas encore d'avis — ils apparaîtront après les premières prestations.</p>}
+          {reviews.map((r: any, i: number) => (
+            <div key={i} className="ping-rev">
+              <div className="t">
+                <span className="n">{r.profiles?.full_name?.trim() || 'Client'}</span>
+                <span className="ping-stars">{'★'.repeat(Math.round(r.rating || 5))}</span>
+              </div>
+              {r.comment && <p>{r.comment}</p>}
+            </div>
           ))}
         </div>
-
-        {tab === 'apropos' && (
-          <div>
-            <p style={{ fontSize: 13.5, color: '#3d5560', lineHeight: 1.6, marginBottom: 16 }}>{pro.bio || "Ce prestataire n'a pas encore ajouté de description."}</p>
-
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#6E8592', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="2.4"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
-              Informations déclarées par le pro
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
-              {pro.has_identity && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="12" r="2.4" /></svg>
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Pièce d'identité fournie</div>
-                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Déposée sur PING par le pro</div>
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', display: 'flex', alignItems: 'center', gap: 3 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>Fournie</span>
-                </div>
-              )}
-              {pro.has_rcpro && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Assurance responsabilité civile</div>
-                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Renseignée par le pro (casse / dommage)</div>
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', display: 'flex', alignItems: 'center', gap: 3 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>Renseignée</span>
-                </div>
-              )}
-              {pro.sap_number && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M4 6h16v13H4z" /><path d="M8 11h8M8 15h5" /></svg>
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Attestation crédit d'impôt</div>
-                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Crédit d'impôt 50 % — déclaration SAP {pro.sap_number}</div>
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', display: 'flex', alignItems: 'center', gap: 3 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>Possible</span>
-                </div>
-              )}
-              {typeof pro.completed_count === 'number' && pro.completed_count > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px', borderRadius: 12, background: '#F3F6F5' }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(18,179,156,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{pro.completed_count} mission{pro.completed_count > 1 ? 's' : ''} réalisée{pro.completed_count > 1 ? 's' : ''} sur PING</div>
-                    <div style={{ fontSize: 10.5, color: '#6E8592' }}>Prestations terminées et validées</div>
-                  </div>
-                </div>
-              )}
-              {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && (
-                <div style={{ padding: '11px 12px', borderRadius: 12, background: '#F3F6F5', fontSize: 12, color: '#6E8592', fontWeight: 600 }}>
-                  Aucune information encore renseignée par le prestataire.
-                </div>
-              )}
-            </div>
-
-            <p style={{ fontSize: 10.5, color: '#9aa6a3', marginBottom: 16, lineHeight: 1.5 }}>
-              Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie. PING met en relation clients et prestataires mais n'emploie ni ne supervise ce prestataire.
-            </p>
-          </div>
-        )}
-
-        {tab === 'avis' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {reviews.length === 0 && <div style={{ textAlign: 'center', padding: '32px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Aucun avis pour l'instant</div>}
-            {reviews.map((r: any) => (
-              <div key={r.id} style={{ padding: 14, borderRadius: 14, background: '#F3F6F5' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontWeight: 700, fontSize: 13 }}>{r.profiles?.full_name?.split(' ')[0] || 'Client'}</span>
-                  <span style={{ fontSize: 12, color: '#F59E0B' }}>{'★'.repeat(r.stars)}</span>
-                </div>
-                {r.comment && <p style={{ fontSize: 13, color: '#3d5560' }}>{r.comment}</p>}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      <div style={{ position: 'sticky', bottom: 0, background: '#fff', padding: '14px 20px', borderTop: '1px solid #E7EDEB' }}>
-        <button onClick={async () => { const { missionId } = await openConversation(proId); router.push(missionId ? `/mission/${missionId}/chat` : '/auth/login') }} style={{ width: '100%', padding: 15, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>
-          Contacter
-        </button>
+      <div className="ping-foot" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="ping-btn ghost" style={{ flex: 1 }} onClick={contact}>Contacter</button>
+          <button className="ping-btn" style={{ flex: 1.4 }} onClick={contact}>Réserver{priceLabel ? ` · ${priceLabel}` : ''}</button>
+        </div>
       </div>
     </div>
   )
