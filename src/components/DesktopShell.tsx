@@ -14,7 +14,6 @@ const CLIENT_NAV: [string, string][] = [
   ['Profil', '/client/profil'],
 ]
 const CLIENT_NAV2: [string, string][] = [
-  ['Comment ça marche', '/comment-ca-marche'],
   ['Mon parrainage', '/client/parrainage'],
   ['Mes favoris', '/client/favoris'],
   ['Support PING', '/support'],
