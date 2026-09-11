@@ -12,7 +12,7 @@ export interface ProviderNearby {
   bio: string
   lat: number
   lng: number
-  pricing_type: 'forfait' | 'horaire'
+  pricing_type: 'forfait' | 'horaire' | 'devis'
   hourly_rate_cents: number | null
   full_name: string | null
   avatar_hue: number | null
