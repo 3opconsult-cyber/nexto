@@ -23,7 +23,7 @@ export default function BottomTabBar({ onPing }: { onPing?: () => void }) {
   const accent = isPro ? '#F2A93B' : '#12B39C'
 
   return (
-    <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', justifyContent: 'center' }}>
+    <div className="app-bottom-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: 480, display: 'flex', background: '#fff', borderTop: '1px solid #E7EDEB', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <button onClick={() => router.push('/map')}
           style={{ flex: 1, border: 'none', background: 'none', padding: '10px 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: onMap ? accent : '#9CA3AF', cursor: 'pointer' }}>

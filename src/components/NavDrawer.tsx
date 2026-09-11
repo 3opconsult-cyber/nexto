@@ -84,7 +84,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: dark ? 'rgba(255,255,255,.1)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+      <button className="app-burger" onClick={() => setOpen(true)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: dark ? 'rgba(255,255,255,.1)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={dark ? '#fff' : '#123644'} strokeWidth="2.2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
       </button>
 
