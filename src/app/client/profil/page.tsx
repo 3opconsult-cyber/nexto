@@ -69,18 +69,15 @@ export default function ClientProfil() {
               <div className="vt"><b>Pièce d&apos;identité {hasId ? 'fournie' : 'à fournir'}</b><small>Déposée sur PING · authenticité non garantie</small></div>
               <div className="vs">{hasId ? '✓ Fournie' : 'À fournir'}</div>
             </div>
-            <div className="row" onClick={() => router.push('/documents')}>
+            <div className="row" style={{ cursor: 'default' }}>
               <div className="av g" style={{ width: 40, height: 40, fontSize: 15 }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="5" width="18" height="14" rx="2" /></svg></div>
               <div className="m"><div className="nm" style={{ fontSize: 13 }}>Mes documents &amp; identité</div><div className="ds">Pièce d&apos;identité · chiffré &amp; masqué</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
             </div>
-            <div className="row" onClick={() => router.push('/documents')}>
+            <div className="row" style={{ cursor: 'default' }}>
               <div className="m"><div className="nm" style={{ fontSize: 13 }}>Coordonnées &amp; confidentialité</div><div className="ds">Masquées jusqu&apos;au QR · protégées</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
             </div>
-            <div className="row" onClick={() => router.push('/documents')}>
+            <div className="row" style={{ cursor: 'default' }}>
               <div className="m"><div className="nm" style={{ fontSize: 13 }}>Moyens de paiement</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
             </div>
 
             <div className="h2">Mon activité</div>
@@ -89,9 +86,8 @@ export default function ClientProfil() {
               <div className="m"><div className="nm">Mes revenus &amp; déclaration</div><div className="ds">Récapitulatif annuel · obligations fiscales</div></div>
               <span style={{ color: 'var(--slate)' }}>›</span>
             </div>
-            <div className="row" onClick={() => router.push('/documents')}>
+            <div className="row" style={{ cursor: 'default' }}>
               <div className="m"><div className="nm" style={{ fontSize: 13 }}>Avis publiés</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
             </div>
 
             <div className="h2">Vous proposez vos services&nbsp;?</div>

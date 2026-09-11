@@ -8,6 +8,7 @@ import NavDrawer from '@/components/NavDrawer'
 const STATUS_LABELS: Record<string, string> = {
   open: 'En cours', investigating: 'En cours d\u2019examen', resolved: 'Résolu', closed: 'Clôturé',
 }
+const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
 export default function LitigesPage() {
   const router = useRouter()
@@ -22,7 +23,7 @@ export default function LitigesPage() {
       if (!user) { router.push('/auth/login'); return }
       setUserId(user.id)
       const { data } = await supabase.from('disputes')
-        .select('*, transactions(id, requests(address))')
+        .select('*, transactions(id, requests(address, category))')
         .order('created_at', { ascending: false })
       setRows(data ?? [])
       setLoading(false)
@@ -45,20 +46,39 @@ export default function LitigesPage() {
             <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
           </div>
         )}
-        {rows.map(d => (
-          <div key={d.id} style={{ background: '#FFFBF2', border: '1px solid #F5D9A6', borderRadius: 14, padding: 14, marginBottom: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
-                {d.transactions?.requests?.address || 'Mission'}
-              </span>
-              <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#FFF7ED', color: '#8a6520', flexShrink: 0 }}>
-                {STATUS_LABELS[d.status] || d.status}
-              </span>
+        {(() => {
+          const groups = rows.reduce((acc, d) => {
+            const key = new Date(d.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+            ;(acc[key] ||= []).push(d); return acc
+          }, {} as Record<string, any[]>)
+          return Object.entries(groups).map(([mois, list]: [string, any[]]) => (
+            <div key={mois} style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
+              {list.map(d => {
+                const cat = d.transactions?.requests?.category
+                return (
+                  <div key={d.id} onClick={() => d.transactions?.id && router.push(`/mission/${d.transactions.id}/litige`)}
+                    style={{ background: '#FFFBF2', border: '1px solid #F5D9A6', borderRadius: 14, padding: 14, marginBottom: 10, cursor: d.transactions?.id ? 'pointer' : 'default' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                      <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
+                        {d.transactions?.requests?.address || 'Mission'}
+                      </span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#FFF7ED', color: '#8a6520', flexShrink: 0 }}>
+                        {STATUS_LABELS[d.status] || d.status}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>
+                      {cat ? <b style={{ color: '#0C8F7E' }}>{TRAD[cat] || cat} · </b> : null}
+                      {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#6E8592', marginTop: 4 }}>{d.reason}</div>
+                    {d.resolution && <div style={{ fontSize: 11.5, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Résolution : {d.resolution}</div>}
+                  </div>
+                )
+              })}
             </div>
-            <div style={{ fontSize: 12, color: '#6E8592', marginTop: 4 }}>{d.reason}</div>
-            {d.resolution && <div style={{ fontSize: 11.5, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Résolution : {d.resolution}</div>}
-          </div>
-        ))}
+          ))
+        })()}
       </div>
       <BottomTabBar />
     </div>

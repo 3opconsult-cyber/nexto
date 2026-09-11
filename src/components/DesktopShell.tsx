@@ -7,7 +7,7 @@ const APP_PREFIXES = ['/map', '/messages', '/agenda', '/documents', '/litiges', 
 
 const CLIENT_NAV: [string, string][] = [
   ['Carte', '/map'],
-  ['Mes demandes', '/agenda'],
+  ['Mes demandes', '/client/demandes'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
   ['Mes réclamations', '/litiges'],

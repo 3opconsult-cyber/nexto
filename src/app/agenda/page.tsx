@@ -8,6 +8,7 @@ import NavDrawer from '@/components/NavDrawer'
 const UPCOMING = ['pending', 'matched', 'en_route', 'arrived']
 const DONE = ['completed', 'released']
 const WD = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
 function txDate(t: any): Date {
   return new Date(DONE.includes(t.status) ? (t.completed_at || t.created_at) : t.created_at)
@@ -26,7 +27,7 @@ export default function AgendaPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       const { data } = await supabase.from('transactions')
-        .select('*, requests(address, description)')
+        .select('*, requests(address, description, category)')
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
       setTxs(data ?? [])
@@ -55,7 +56,7 @@ export default function AgendaPage() {
       style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{t.requests?.address || 'Mission'}</div>
-        <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
+        <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.category ? <b style={{ color: '#0C8F7E' }}>{TRAD[t.requests.category] || t.requests.category} · </b> : null}{t.requests?.description || '—'}</div>
         <div style={{ fontSize: 11, color: '#9aa6a3', marginTop: 3 }}>{txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}</div>
       </div>
       <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, flexShrink: 0, background: DONE.includes(t.status) ? 'rgba(18,179,156,.12)' : '#FFF7ED', color: DONE.includes(t.status) ? '#0C8F7E' : '#8a6520' }}>

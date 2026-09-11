@@ -51,7 +51,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
 
   const clientLinks = [
     { label: 'Carte', path: '/map', icon: 'map' },
-    { label: 'Mes demandes', path: '/agenda', icon: 'off' },
+    { label: 'Mes demandes', path: '/client/demandes', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
     { label: 'Mes réclamations', path: '/litiges', icon: 'doc' },
