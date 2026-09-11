@@ -15,6 +15,7 @@ export default function ProOnboarding() {
   const [services, setServices] = useState<string[]>([])
   const [flatRate, setFlatRate] = useState('')
   const [hourlyRate, setHourlyRate] = useState('')
+  const [quoteMode, setQuoteMode] = useState(false)
   const [status, setStatus] = useState<Status>(null)
   const [companyQuery, setCompanyQuery] = useState('')
   const [companyResults, setCompanyResults] = useState<CompanyMatch[]>([])
@@ -65,6 +66,7 @@ export default function ProOnboarding() {
         if (pp.trade) setServices([pp.trade, ...extraNames])
         setFlatRate(pp.base_price_cents > 0 ? String(pp.base_price_cents / 100) : '')
         setHourlyRate(pp.hourly_rate_cents != null ? String(pp.hourly_rate_cents / 100) : '')
+        if (pp.pricing_type === 'devis') setQuoteMode(true)
         setStatus(pp.legal_status === 'particulier' ? 'particulier' : 'professionnel')
         setSiret(pp.siret || '')
         setSapNumber(pp.sap_number || '')
@@ -124,9 +126,9 @@ export default function ProOnboarding() {
     const { error: dbError } = await supabase.from('provider_profiles').upsert({
       id: user.id,
       trade: services[0],
-      pricing_type: flatCents > 0 ? 'forfait' : 'horaire',
-      base_price_cents: flatCents,
-      hourly_rate_cents: hourlyCents,
+      pricing_type: quoteMode ? 'devis' : (flatCents > 0 ? 'forfait' : 'horaire'),
+      base_price_cents: quoteMode ? 0 : flatCents,
+      hourly_rate_cents: quoteMode ? null : hourlyCents,
       bio,
       is_active: true,
       legal_status: legalStatus,
@@ -180,16 +182,28 @@ export default function ProOnboarding() {
     return (
       <OnboardingStep step={stepIndex} total={visibleSteps.length}
         title="Votre tarif"
-        subtitle="Un forfait, un taux horaire, ou les deux — à vous de fixer le prix."
-        onBack={back} onCta={next} ctaDisabled={!flatRate && !hourlyRate}>
-        <label>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Forfait (€)</span>
-          <input type="number" min="0" step="0.5" value={flatRate} onChange={e => setFlatRate(e.target.value)} placeholder="25" style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
-        </label>
-        <label>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Taux horaire (€/h)</span>
-          <input type="number" min="0" step="0.5" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} placeholder="18" style={{ ...inputStyle, marginTop: 6 }} />
-        </label>
+        subtitle="Forfait, taux horaire, ou sur devis — trois façons de fixer votre prix."
+        onBack={back} onCta={next} ctaDisabled={!quoteMode && !flatRate && !hourlyRate}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <div onClick={() => setQuoteMode(false)} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 12, cursor: 'pointer', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 12.5, border: !quoteMode ? '1.5px solid #12B39C' : '1px solid #E7EDEB', background: !quoteMode ? 'rgba(18,179,156,.08)' : '#fff', color: !quoteMode ? '#0C8F7E' : '#6E8592' }}>Forfait / horaire</div>
+          <div onClick={() => { setQuoteMode(true); setFlatRate(''); setHourlyRate('') }} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 12, cursor: 'pointer', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 12.5, border: quoteMode ? '1.5px solid #12B39C' : '1px solid #E7EDEB', background: quoteMode ? 'rgba(18,179,156,.08)' : '#fff', color: quoteMode ? '#0C8F7E' : '#6E8592' }}>Sur devis</div>
+        </div>
+        {quoteMode ? (
+          <p style={{ fontSize: 12.5, color: '#6E8592', lineHeight: 1.5 }}>
+            Vous ne fixez pas de prix à l&apos;avance. Sur votre fiche, le client verra « Sur devis » et vous enverra une demande — vous chiffrez au cas par cas dans la conversation.
+          </p>
+        ) : (
+          <>
+            <label>
+              <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Forfait (€)</span>
+              <input type="number" min="0" step="0.5" value={flatRate} onChange={e => setFlatRate(e.target.value)} placeholder="25" style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
+            </label>
+            <label>
+              <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Taux horaire (€/h)</span>
+              <input type="number" min="0" step="0.5" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} placeholder="18" style={{ ...inputStyle, marginTop: 6 }} />
+            </label>
+          </>
+        )}
       </OnboardingStep>
     )
   }

@@ -47,8 +47,10 @@ export default function ProDetailPage() {
   const initial = name.charAt(0).toUpperCase()
   const dist = pro.distance_m != null ? (pro.distance_m < 1000 ? `${Math.round(pro.distance_m)} m` : `${(pro.distance_m / 1000).toFixed(1)} km`) : null
   const ratingTxt = pro.rating > 0 ? `${pro.rating.toFixed(1)} (${pro.reviews_count} avis)` : 'Nouveau'
-  const priceLabel = pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(0)} €`
-    : (pro.hourly_rate_cents ? `${(pro.hourly_rate_cents / 100).toFixed(0)} €/h` : null)
+  const isDevis = (pro as any).pricing_type === 'devis'
+  const priceLabel = isDevis ? 'Sur devis'
+    : pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(0)} €`
+      : (pro.hourly_rate_cents ? `${(pro.hourly_rate_cents / 100).toFixed(0)} €/h` : null)
   const skills = extraServices.length ? extraServices.map((s: any) => s.name) : [TRADES[pro.trade] || pro.trade]
 
   return (
@@ -125,7 +127,7 @@ export default function ProDetailPage() {
       <div className="ping-foot" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="ping-btn ghost" style={{ flex: 1 }} onClick={contact}>Contacter</button>
-          <button className="ping-btn" style={{ flex: 1.4 }} onClick={contact}>Réserver{priceLabel ? ` · ${priceLabel}` : ''}</button>
+          <button className="ping-btn" style={{ flex: 1.4 }} onClick={contact}>{isDevis ? 'Demander un devis' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}</button>
         </div>
       </div>
     </div>
