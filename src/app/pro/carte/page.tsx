@@ -71,7 +71,7 @@ export default function ProCartePage() {
                 pros={[]}
                 onSelect={() => { }}
                 requests={reqs.map(r => ({ id: r.id, lat: r.lat, lng: r.lng }))}
-                onSelectRequest={() => router.push('/pro/dashboard')}
+                onSelectRequest={() => { }}
                 recenterTick={recenterTick}
                 youLabel="Vous êtes ici"
               />
@@ -96,7 +96,7 @@ export default function ProCartePage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: 'var(--ink)', padding: '4px 0 12px' }}>
                 <span style={{ color: 'var(--slate)' }}>Distance de la plus proche</span><b>{nearestTxt}</b>
               </div>
-              <div className="btn" style={{ background: 'var(--teal)' }} onClick={() => router.push('/pro/dashboard')}>Voir les demandes</div>
+              <div className="btn" style={{ background: 'var(--teal)' }} onClick={() => setRecenterTick(t => t + 1)}>Voir les demandes</div>
             </div>
           </div>
         </div>
