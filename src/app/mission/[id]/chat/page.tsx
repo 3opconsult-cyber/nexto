@@ -310,7 +310,10 @@ export default function ChatPage() {
                   </div>
                 )}
                 {m.offer_status === 'pending' && mine && (
-                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#8a6520' }}>En attente de validation</div>
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginBottom: 8 }}>En attente de validation</div>
+                    <button onClick={() => counterOffer(m)} style={{ width: '100%', padding: 9, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
+                  </div>
                 )}
                 {m.offer_status === 'accepted' && (
                   <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#0C8F7E' }}>✓ Accepté — appliqué à la mission</div>

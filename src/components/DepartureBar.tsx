@@ -29,7 +29,8 @@ export default function DepartureBar({
 
   const isSeller = userId === tx.seller_id
   const enRoute = !!tx.en_route_at && !tx.arrived_at
-  const bookable = ['pending', 'held'].includes(tx.status) && !tx.arrived_at
+  const confirmed = ['held', 'arrived', 'completed', 'released'].includes(tx.status)
+  const bookable = tx.status === 'held' && !tx.arrived_at
 
   // Le compte à rebours n'a besoin de battre que pendant l'approche.
   useEffect(() => {
@@ -53,6 +54,10 @@ export default function DepartureBar({
     }
     setBusy(false); setAsk(false)
   }
+
+  // Rien avant la validation du prix : tant que la mission n'est pas confirmee
+  // (devis en attente / paiement non place sous sequestre), pas d'adresse ni de depart.
+  if (!confirmed) return null
 
   const maps = address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}` : null
   const AddressBlock = () => address ? (
