@@ -71,11 +71,10 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   const clientLinksBottom = [
     { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
     { label: 'Mes favoris', path: '/client/favoris', icon: 'heart' },
-    { label: 'Mes documents', path: '/documents', icon: 'doc' },
+    { label: 'Mes opérations', path: '/documents', icon: 'doc' },
     { label: 'Support PING', path: '/support', icon: 'msg' },
   ]
   const proLinks = [
-    { label: 'Carte', path: '/map', icon: 'map' },
     { label: 'Demandes autour de moi', path: '/pro/carte', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
@@ -83,11 +82,9 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     { label: 'Mon entreprise', path: '/pro/dashboard', icon: 'ent' },
   ]
   const proLinksBottom = [
-    { label: 'Tableau de bord', path: '/pro/dashboard', icon: 'doc' },
-    { label: 'Factures & documents', path: '/documents', icon: 'doc' },
+    { label: 'Mes opérations', path: '/documents', icon: 'doc' },
     { label: 'Mes pièces', path: '/pro/documents', icon: 'doc' },
     { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
-    { label: 'Mes documents', path: '/documents', icon: 'doc' },
     { label: 'Support PING', path: '/support', icon: 'msg' },
   ]
   const links = onProSide ? proLinks : clientLinks

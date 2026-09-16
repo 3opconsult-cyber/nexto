@@ -107,7 +107,7 @@ export default function ProDashboard() {
 
       {/* Tabs */}
       <div style={{ padding: '0 16px', display: 'flex', gap: 4 }}>
-        {([['overview', 'Résumé'], ['missions', 'Missions'], ['factures', 'Factures'], ['profil', 'Profil']] as const).map(([k, label]) => (
+        {([['overview', 'Résumé'], ['missions', 'Missions'], ['factures', 'Factures'], ['profil', 'Réglages']] as const).map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
             style={{ flex: 1, padding: '10px 0', borderRadius: '12px 12px 0 0', border: 'none', fontSize: 12, fontWeight: 700, background: tab === k ? '#fff' : 'transparent', color: tab === k ? '#123644' : 'rgba(255,255,255,.5)' }}>
             {label}

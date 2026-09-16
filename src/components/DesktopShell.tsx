@@ -17,11 +17,10 @@ const CLIENT_NAV: [string, string][] = [
 const CLIENT_NAV2: [string, string][] = [
   ['Mon parrainage', '/client/parrainage'],
   ['Mes favoris', '/client/favoris'],
-  ['Mes documents', '/documents'],
+  ['Mes opérations', '/documents'],
   ['Support PING', '/support'],
 ]
 const PRO_NAV: [string, string][] = [
-  ['Carte', '/pro/carte'],
   ['Demandes autour de moi', '/pro/carte'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
@@ -29,11 +28,9 @@ const PRO_NAV: [string, string][] = [
   ['Mon entreprise', '/pro/dashboard'],
 ]
 const PRO_NAV2: [string, string][] = [
-  ['Tableau de bord', '/pro/dashboard'],
-  ['Factures & documents', '/documents'],
+  ['Mes opérations', '/documents'],
   ['Mes pièces', '/pro/documents'],
   ['Mon parrainage', '/client/parrainage'],
-  ['Mes documents', '/documents'],
   ['Support PING', '/support'],
 ]
 

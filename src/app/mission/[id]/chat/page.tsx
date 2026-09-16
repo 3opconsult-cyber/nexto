@@ -213,7 +213,7 @@ export default function ChatPage() {
 
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
-        <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} />
+        <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} confirmed={!!tx && !msgs.some(m => m.kind === 'offer' && m.offer_status === 'pending')} />
       )}
 
       {tx && userId && (

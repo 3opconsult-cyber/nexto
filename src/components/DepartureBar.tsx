@@ -20,8 +20,8 @@ import { createClient } from '@/lib/supabase/client'
 const ETAS = [5, 10, 15, 20, 30, 45]
 
 export default function DepartureBar({
-  tx, userId, onChange, address,
-}: { tx: any; userId: string; onChange: (t: any) => void; address?: string | null }) {
+  tx, userId, onChange, address, confirmed,
+}: { tx: any; userId: string; onChange: (t: any) => void; address?: string | null; confirmed?: boolean }) {
   const [ask, setAsk] = useState(false)
   const [eta, setEta] = useState(15)
   const [busy, setBusy] = useState(false)
@@ -29,8 +29,7 @@ export default function DepartureBar({
 
   const isSeller = userId === tx.seller_id
   const enRoute = !!tx.en_route_at && !tx.arrived_at
-  const confirmed = ['held', 'arrived', 'completed', 'released'].includes(tx.status)
-  const bookable = tx.status === 'held' && !tx.arrived_at
+  const bookable = !!confirmed && !tx.en_route_at && !tx.arrived_at
 
   // Le compte à rebours n'a besoin de battre que pendant l'approche.
   useEffect(() => {
