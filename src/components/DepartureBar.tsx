@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import Modal, { Cta } from './Modal'
+import ArrivalProof from './ArrivalProof'
 import { createClient } from '@/lib/supabase/client'
 
 /**
@@ -79,6 +80,7 @@ export default function DepartureBar({
             Le client verra votre heure d'arrivée estimée.
           </div>
           <AddressBlock />
+          <ArrivalProof txId={tx.id} onDone={onChange} />
         </div>
 
         <Modal open={ask} onClose={() => setAsk(false)} title="Dans combien de temps arrivez-vous ?">
@@ -120,6 +122,7 @@ export default function DepartureBar({
         </div>
         <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>Le client suit votre arrivée. La mission démarrera au scan du code d'arrivée.</div>
         <AddressBlock />
+          <ArrivalProof txId={tx.id} onDone={onChange} />
       </div>
     )
   }
