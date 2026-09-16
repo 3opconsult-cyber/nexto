@@ -1,4 +1,5 @@
 "use client"
+import React from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
 // Routes "app" qui reçoivent la navigation laterale desktop (sidebar).
@@ -57,13 +58,30 @@ function navIcon(label: string) {
 export default function DesktopShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || ''
   const router = useRouter()
-  const isApp = APP_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
-  if (!isApp) return <div className="phone-col">{children}</div>
+  const [mode, setModeState] = React.useState<'particulier' | 'pro'>('particulier')
 
-  const onPro = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
+  const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
+  const isClientRoute = pathname.startsWith('/client/')
+
+  React.useEffect(() => {
+    if (isProRoute) { try { localStorage.setItem('ping_mode', 'pro') } catch { }; setModeState('pro') }
+    else if (isClientRoute) { try { localStorage.setItem('ping_mode', 'particulier') } catch { }; setModeState('particulier') }
+    else { try { const m = localStorage.getItem('ping_mode'); if (m === 'pro' || m === 'particulier') setModeState(m) } catch { } }
+  }, [pathname, isProRoute, isClientRoute])
+
+  const onPro = isProRoute || (!isClientRoute && mode === 'pro')
   const accent = onPro ? '#F2A93B' : '#12B39C'
   const nav = onPro ? PRO_NAV : CLIENT_NAV
   const nav2 = onPro ? PRO_NAV2 : CLIENT_NAV2
+  function switchMode() {
+    const target = onPro ? 'particulier' : 'pro'
+    try { localStorage.setItem('ping_mode', target) } catch { }
+    setModeState(target)
+    router.push(onPro ? '/map' : '/pro/carte')
+  }
+  const isApp = APP_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
+  if (!isApp) return <div className="phone-col">{children}</div>
+
   const go = (p: string) => router.push(p)
   const item = ([label, path]: [string, string]) => {
     const on = pathname === path || (path !== '/map' && path !== '/pro/carte' && pathname.startsWith(path))
@@ -83,7 +101,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
         <div style={{ height: 1, background: 'var(--line)', margin: '10px 8px' }} />
         {nav2.map(item)}
         <div style={{ flex: 1 }} />
-        <div className="dnav-item" style={{ background: 'var(--ink)', color: '#fff' }} onClick={() => go(onPro ? '/map' : '/pro/carte')}>
+        <div className="dnav-item" style={{ background: 'var(--ink)', color: '#fff' }} onClick={switchMode}>
           {onPro ? 'Revenir en mode particulier' : 'Passer en mode pro'}
         </div>
       </aside>

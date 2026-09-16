@@ -36,7 +36,15 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     })
   }, [])
 
-  const onProSide = pathname.startsWith('/pro')
+  const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
+  const isClientRoute = pathname.startsWith('/client/')
+  const [mode, setMode] = useState<'particulier' | 'pro'>('particulier')
+  useEffect(() => {
+    if (isProRoute) { try { localStorage.setItem('ping_mode', 'pro') } catch { }; setMode('pro') }
+    else if (isClientRoute) { try { localStorage.setItem('ping_mode', 'particulier') } catch { }; setMode('particulier') }
+    else { try { const m = localStorage.getItem('ping_mode'); if (m === 'pro' || m === 'particulier') setMode(m) } catch { } }
+  }, [pathname, isProRoute, isClientRoute])
+  const onProSide = isProRoute || (!isClientRoute && mode === 'pro')
   const memberYear = profile?.created_at ? new Date(profile.created_at).getFullYear() : null
   const initial = (profile?.first_name || '?').charAt(0).toUpperCase()
   const avatarBg = profile?.avatar_hue != null ? `hsl(${profile.avatar_hue}, 55%, 45%)` : '#12B39C'
@@ -46,6 +54,9 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   }
 
   function switchMode() {
+    const target = onProSide ? 'particulier' : 'pro'
+    try { localStorage.setItem('ping_mode', target) } catch { }
+    setMode(target)
     router.push(onProSide ? '/map' : (isPro ? '/pro/carte' : '/pro/onboarding'))
   }
 

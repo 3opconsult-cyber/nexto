@@ -24,7 +24,7 @@ export default function ProCartePage() {
   }, [])
 
   const load = useCallback(() => {
-    fetchRequestsNearby(userPos.lat, userPos.lng, 15000).then(setReqs)
+    fetchRequestsNearby(userPos.lat, userPos.lng, 25000).then(setReqs)
   }, [userPos.lat, userPos.lng])
   useEffect(() => { load() }, [load])
 
