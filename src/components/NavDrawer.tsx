@@ -37,7 +37,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   }, [])
 
   const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
-  const isClientRoute = pathname.startsWith('/client/')
+  const isClientRoute = pathname.startsWith('/client/profil')
   const [mode, setMode] = useState<'particulier' | 'pro'>('particulier')
   useEffect(() => {
     if (isProRoute) { try { localStorage.setItem('ping_mode', 'pro') } catch { }; setMode('pro') }

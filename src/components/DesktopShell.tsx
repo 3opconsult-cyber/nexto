@@ -61,7 +61,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
   const [mode, setModeState] = React.useState<'particulier' | 'pro'>('particulier')
 
   const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
-  const isClientRoute = pathname.startsWith('/client/')
+  const isClientRoute = pathname.startsWith('/client/profil')
 
   React.useEffect(() => {
     if (isProRoute) { try { localStorage.setItem('ping_mode', 'pro') } catch { }; setModeState('pro') }

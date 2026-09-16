@@ -215,6 +215,10 @@ export default function ProDashboard() {
               <div style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5 }}>{pro.bio || 'Aucune description ajoutée.'}</div>
             </div>
             <button onClick={() => router.push('/pro/onboarding')}
+              style={{ width: '100%', padding: 13, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
+              Paramétrer mes services &amp; tarifs
+            </button>
+            <button onClick={() => router.push('/pro/onboarding')}
               style={{ width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
               Modifier mes informations
             </button>
