@@ -8,7 +8,17 @@ export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const [tx, setTx] = useState<any>(null)
+  const [shared, setShared] = useState(false)
   const timer = useRef<any>(null)
+
+  async function shareArrival(url: string) {
+    const supabase = createClient()
+    await supabase.from('messages').insert({
+      transaction_id: params.id, sender_id: null,
+      body: `📍 Le client ne sera peut-être pas sur place. Code d'arrivée à scanner en arrivant : ${url}`,
+    })
+    setShared(true)
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -75,6 +85,20 @@ export default function MissionQrCodes() {
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', animation: 'pingPulse 1.4s ease-in-out infinite' }} />
               En attente du scan…
             </div>
+
+            {step === 1 && (
+              <div style={{ marginTop: 18, width: '100%', background: '#F3F6F5', borderRadius: 14, padding: 14, textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Vous ne serez pas sur place ?</div>
+                <p style={{ fontSize: 11.5, color: '#6E8592', margin: '5px 0 11px', lineHeight: 1.5 }}>
+                  Envoyez le code d'arrivée au prestataire : il validera son arrivée en scannant à votre domicile. Le paiement reste sous séquestre — en cas de souci, ouvrez un litige.
+                </p>
+                <button onClick={() => shareArrival(arrivalUrl)} disabled={shared} style={{
+                  width: '100%', border: 'none', borderRadius: 999, padding: '10px 0', cursor: shared ? 'default' : 'pointer',
+                  background: shared ? '#E7EDEB' : '#123644', color: shared ? '#0C8F7E' : '#fff',
+                  fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13,
+                }}>{shared ? 'Code envoyé au prestataire ✓' : "Envoyer le code d'arrivée"}</button>
+              </div>
+            )}
           </>
         )}
 
