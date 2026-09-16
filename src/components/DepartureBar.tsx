@@ -19,8 +19,8 @@ import { createClient } from '@/lib/supabase/client'
 const ETAS = [5, 10, 15, 20, 30, 45]
 
 export default function DepartureBar({
-  tx, userId, onChange,
-}: { tx: any; userId: string; onChange: (t: any) => void }) {
+  tx, userId, onChange, address,
+}: { tx: any; userId: string; onChange: (t: any) => void; address?: string | null }) {
   const [ask, setAsk] = useState(false)
   const [eta, setEta] = useState(15)
   const [busy, setBusy] = useState(false)
@@ -53,19 +53,32 @@ export default function DepartureBar({
     setBusy(false); setAsk(false)
   }
 
+  const maps = address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}` : null
+  const AddressBlock = () => address ? (
+    <div style={{ marginTop: 10, background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '10px 12px' }}>
+      <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Adresse du rendez-vous</div>
+      <div style={{ fontSize: 13.5, fontWeight: 600, marginTop: 3, color: '#fff' }}>{address}</div>
+      {maps && <a href={maps} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 9, background: '#12B39C', color: '#fff', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5 }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+        Itinéraire Google Maps
+      </a>}
+    </div>
+  ) : null
+
   // ---------- côté prestataire : annoncer le départ ----------
   if (isSeller && bookable && !tx.en_route_at) {
     return (
       <>
-        <div style={{ padding: '10px 16px', background: '#F3F6F5', borderBottom: '1px solid #E7EDEB' }}>
+        <div style={{ padding: '12px 16px', background: '#123644', color: '#fff' }}>
           <button onClick={() => setAsk(true)} style={{
             width: '100%', border: 'none', borderRadius: 999, padding: '11px 0', cursor: 'pointer',
-            background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif',
+            background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif',
             fontWeight: 700, fontSize: 13.5,
           }}>Je pars maintenant</button>
-          <div style={{ fontSize: 10.5, color: '#6E8592', textAlign: 'center', marginTop: 6 }}>
+          <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.55)', textAlign: 'center', marginTop: 6 }}>
             Le client verra votre heure d'arrivée estimée.
           </div>
+          <AddressBlock />
         </div>
 
         <Modal open={ask} onClose={() => setAsk(false)} title="Dans combien de temps arrivez-vous ?">
@@ -97,6 +110,19 @@ export default function DepartureBar({
 
   // ---------- côté client : l'approche ----------
   if (!enRoute) return null
+
+  if (isSeller) {
+    return (
+      <div style={{ padding: '13px 16px', background: '#123644', color: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2FD06E', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Vous êtes en route</span>
+        </div>
+        <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>Le client suit votre arrivée. La mission démarrera au scan du code d'arrivée.</div>
+        <AddressBlock />
+      </div>
+    )
+  }
 
   const total = (tx.eta_minutes || 15) * 60_000
   const elapsed = Math.max(0, now - new Date(tx.en_route_at).getTime())

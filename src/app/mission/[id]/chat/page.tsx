@@ -27,6 +27,7 @@ export default function ChatPage() {
   const [userId, setUserId] = useState('')
   const [warning, setWarning] = useState('')
   const [tx, setTx] = useState<any>(null)
+  const [reqAddr, setReqAddr] = useState<string | null>(null)
   const [counterpart, setCounterpart] = useState<string>('Conversation')
   const [editingPrice, setEditingPrice] = useState(false)
   const [newAmount, setNewAmount] = useState('')
@@ -50,8 +51,9 @@ export default function ChatPage() {
       const loaded = (data ?? []) as Msg[]
       setMsgs(loaded)
       resolvePhotoUrls(loaded)
-      const { data: t } = await supabase.from('transactions').select('*').eq('id', transactionId).single()
+      const { data: t } = await supabase.from('transactions').select('*, requests(address, lat, lng)').eq('id', transactionId).single()
       setTx(t)
+      if (t?.requests?.address) setReqAddr(t.requests.address)
       if (t && user) {
         const otherId = user.id === t.buyer_id ? t.seller_id : t.buyer_id
         const { data: p } = await supabase.from('profiles').select('first_name, last_name').eq('id', otherId).single()
@@ -211,7 +213,7 @@ export default function ChatPage() {
 
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
-        <DepartureBar tx={tx} userId={userId} onChange={setTx} />
+        <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} />
       )}
 
       {tx && userId && (
