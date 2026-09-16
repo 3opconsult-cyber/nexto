@@ -84,7 +84,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   ]
   const proLinksBottom = [
     { label: 'Tableau de bord', path: '/pro/dashboard', icon: 'doc' },
-    { label: 'Factures & documents', path: '/pro/dashboard', icon: 'doc' },
+    { label: 'Factures & documents', path: '/documents', icon: 'doc' },
     { label: 'Mes pièces', path: '/pro/documents', icon: 'doc' },
     { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
     { label: 'Mes documents', path: '/documents', icon: 'doc' },

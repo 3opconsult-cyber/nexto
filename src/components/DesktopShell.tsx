@@ -30,7 +30,7 @@ const PRO_NAV: [string, string][] = [
 ]
 const PRO_NAV2: [string, string][] = [
   ['Tableau de bord', '/pro/dashboard'],
-  ['Factures & documents', '/pro/documents'],
+  ['Factures & documents', '/documents'],
   ['Mes pièces', '/pro/documents'],
   ['Mon parrainage', '/client/parrainage'],
   ['Mes documents', '/documents'],

@@ -36,7 +36,7 @@ export default function DocumentsPage() {
       if (!user) { router.push('/auth/login'); return }
       setMe(user.id)
       const { data } = await supabase.from('invoices').select('*').order('issued_at', { ascending: false })
-      const list = (data ?? []) as Row[]
+      const list = ((data ?? []) as Row[]).sort((a, b) => new Date(b.issued_at).getTime() - new Date(a.issued_at).getTime())
       setRows(list)
       const txIds = Array.from(new Set(list.map(r => r.transaction_id).filter(Boolean)))
       if (txIds.length) {
