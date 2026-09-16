@@ -28,6 +28,7 @@ export default function ChatPage() {
   const [warning, setWarning] = useState('')
   const [tx, setTx] = useState<any>(null)
   const [reqAddr, setReqAddr] = useState<string | null>(null)
+  const [myReview, setMyReview] = useState<{ stars: number; comment: string | null } | null>(null)
   const [counterpart, setCounterpart] = useState<string>('Conversation')
   const [editingPrice, setEditingPrice] = useState(false)
   const [newAmount, setNewAmount] = useState('')
@@ -62,10 +63,11 @@ export default function ChatPage() {
         // Mission terminee et pas encore notee par ce client : on demande son
         // avis ici, c'est l'ecran ou il atterrit apres le scan de sortie.
         if (user.id === t.buyer_id && ['completed', 'released'].includes(t.status)) {
-          const { count } = await supabase.from('reviews')
-            .select('transaction_id', { count: 'exact', head: true })
-            .eq('transaction_id', t.id).eq('rater_id', user.id)
-          if (!count) setAskReview(true)
+          const { data: rev } = await supabase.from('reviews')
+            .select('stars, comment')
+            .eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle()
+          if (rev) setMyReview(rev as any)
+          else setAskReview(true)
         }
       }
     }
@@ -224,6 +226,7 @@ export default function ChatPage() {
           raterId={userId}
           rateeId={tx.seller_id}
           proName={counterpart}
+          onSubmitted={(r) => setMyReview(r)}
         />
       )}
 
@@ -338,6 +341,16 @@ export default function ChatPage() {
             </div>
           )
         })}
+        {myReview && (
+          <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 16, padding: '14px 18px' }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: '#8a6520', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>Votre avis</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18, color: '#F2A93B', letterSpacing: 1 }}>{'★'.repeat(myReview.stars)}<span style={{ color: '#DCE5E3' }}>{'★'.repeat(5 - myReview.stars)}</span></span>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{myReview.stars}/5</span>
+            </div>
+            {myReview.comment && <p style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5, margin: '8px 0 0' }}>{myReview.comment}</p>}
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 

@@ -22,10 +22,11 @@ import { createClient } from '@/lib/supabase/client'
 const TIPS = [0, 200, 500, 1000]
 
 export default function ReviewModal({
-  open, onClose, transactionId, raterId, rateeId, proName,
+  open, onClose, transactionId, raterId, rateeId, proName, onSubmitted,
 }: {
   open: boolean; onClose: () => void
   transactionId: string; raterId: string; rateeId: string; proName: string
+  onSubmitted?: (r: { stars: number; comment: string | null }) => void
 }) {
   const [quality, setQuality] = useState(0)
   const [service, setService] = useState(0)
@@ -51,6 +52,7 @@ export default function ReviewModal({
     })
     setBusy(false)
     if (err) { setError("Votre avis n'a pas pu être enregistré. " + err.message); return }
+    onSubmitted?.({ stars: Math.round((quality + service) / 2), comment: comment.trim() || null })
     onClose()
   }
 
