@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-import { TRADES } from '@/lib/trades'
 import NavDrawer from '@/components/NavDrawer'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
@@ -36,9 +35,8 @@ export default function ProDashboard() {
   const [invoices, setInvoices] = useState<any[]>([])
   const [available, setAvailable] = useState(true)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'overview' | 'missions' | 'factures' | 'profil'>('overview')
+  const [tab, setTab] = useState<'hub' | 'overview' | 'missions' | 'factures'>('hub')
   const [docs, setDocs] = useState<Record<string, { status: string }>>({})
-  const [servicesCount, setServicesCount] = useState(0)
   const [city, setCity] = useState('')
 
   useEffect(() => {
@@ -64,9 +62,6 @@ export default function ProDashboard() {
       const docMap: Record<string, { status: string }> = {}
       ;(docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
       setDocs(docMap)
-
-      const { count } = await supabase.from('services').select('id', { count: 'exact', head: true }).eq('provider_id', pp.id)
-      setServicesCount(count ?? 0)
 
       setLoading(false)
     }
@@ -101,34 +96,117 @@ export default function ProDashboard() {
     )
   }
 
+  const idOk = docs.identite?.status === 'valid' || docs.identite?.status === 'pending'
+  const rcOk = docs.rcpro?.status === 'valid' || docs.rcpro?.status === 'pending'
+  const diplomeOk = docs.diplome?.status === 'valid' || docs.diplome?.status === 'pending'
+  const TAB_TITLES: Record<string, string> = { overview: 'Tableau de bord', missions: 'Missions', factures: 'Factures & documents' }
+
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
       <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
-      {/* Header */}
-      <div style={{ padding: '28px 20px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.45)', marginBottom: 4 }}>Espace prestataire</div>
-          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>{firstName || 'Bonjour'}</div>
-        </div>
-        <button onClick={toggleAvailable}
-          style={{ padding: '9px 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
-          {available ? '● Visible sur la carte' : '○ Masqué'}
-        </button>
-      </div>
 
-      {/* Tabs */}
-      <div style={{ padding: '0 16px', display: 'flex', gap: 4 }}>
-        {([['overview', 'Résumé'], ['missions', 'Missions'], ['factures', 'Factures'], ['profil', 'Réglages']] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setTab(k)}
-            style={{ flex: 1, padding: '10px 0', borderRadius: '12px 12px 0 0', border: 'none', fontSize: 12, fontWeight: 700, background: tab === k ? '#fff' : 'transparent', color: tab === k ? '#123644' : 'rgba(255,255,255,.5)' }}>
-            {label}
+      {tab === 'hub' ? (
+        <div style={{ padding: '20px 20px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>Mon entreprise</div>
+          <button onClick={toggleAvailable}
+            style={{ padding: '9px 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
+            {available ? '● Visible sur la carte' : '○ Masqué'}
           </button>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div style={{ padding: '20px 20px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div onClick={() => setTab('hub')} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
+          </div>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff' }}>{TAB_TITLES[tab]}</div>
+        </div>
+      )}
 
       <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '22px 18px', minHeight: '70vh' }}>
+        {tab === 'hub' && pro && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ padding: 18, borderRadius: 16, background: 'linear-gradient(160deg,#12B39C,#0C8F7E)', color: '#fff' }}>
+              <div style={{ width: 46, height: 46, borderRadius: 14, background: 'rgba(255,255,255,.18)', display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19, marginBottom: 10 }}>
+                {(pro.company_name || firstName || '?').charAt(0).toUpperCase()}
+              </div>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19 }}>{pro.company_name || `Entreprise de ${firstName || ''}`.trim()}</div>
+              <div style={{ fontSize: 12.5, opacity: .9, marginTop: 3 }}>
+                {firstName ? `${firstName} · ` : ''}{LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status}{city ? ` · ${city}` : ''}
+              </div>
+              <span onClick={() => router.push('/pro/onboarding')} style={{ display: 'inline-block', marginTop: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Modifier</span>
+            </div>
+
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 6 }}>Mon activité</div>
+            {[
+              { k: 'overview', label: 'Tableau de bord', sub: 'Revenus · statistiques · tarifs', color: '#12B39C,#0C8F7E', icon: <path d="M4 4h7v7H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 13h7v7H4z" /> },
+              { k: 'missions', label: 'Demandes directes', sub: 'Réservations reçues · devis', color: '#F2A93B,#d98a1f', icon: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M10 21a2 2 0 0 0 4 0" /></> },
+              { k: 'factures', label: 'Factures & documents', sub: 'Horodatés · exportables', color: '#6E8592,#4c6472', icon: <path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z" /> },
+            ].map(row => (
+              <div key={row.k} onClick={() => setTab(row.k as any)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(160deg,${row.color})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}>{row.icon}</svg>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{row.label}</div>
+                  <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{row.sub}</div>
+                </div>
+                <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
+              </div>
+            ))}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em' }}>Conformité</span>
+              <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10, fontWeight: 700, background: idOk && rcOk ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: idOk && rcOk ? '#0C8F7E' : '#9A6712' }}>
+                {idOk && rcOk ? 'à jour' : 'à compléter'}
+              </span>
+            </div>
+            {[
+              { ok: idOk, label: 'Identité & statut', sub: 'Fichier masqué · déclaré', icon: <rect x="3" y="5" width="18" height="14" rx="2" /> },
+              { ok: rcOk, label: 'Responsabilité civile pro', sub: 'Assurance déclarée', icon: <path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /> },
+              { ok: diplomeOk, label: 'Diplôme ou qualification', sub: 'Certification (facultatif)', icon: <path d="M12 2l9 5-9 5-9-5 9-5z" /> },
+            ].map(r => (
+              <div key={r.label} onClick={() => router.push('/pro/documents')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: `1px solid ${r.ok ? 'rgba(18,179,156,.3)' : '#E7EDEB'}`, cursor: 'pointer' }}>
+                <div style={{ width: 30, height: 30, borderRadius: 9, background: r.ok ? 'rgba(18,179,156,.12)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={r.ok ? '#0C8F7E' : '#9CA3AF'} strokeWidth={2}>{r.icon}</svg>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12.5, color: '#123644' }}>{r.label}</div>
+                  <div style={{ fontSize: 10.5, color: '#9CA3AF' }}>{r.sub}</div>
+                </div>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: r.ok ? '#0C8F7E' : '#9A6712' }}>{r.ok ? 'Fourni' : 'À fournir'}</span>
+              </div>
+            ))}
+
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 6 }}>Mes pièces & documents</div>
+            <div onClick={() => router.push('/pro/documents')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#12B39C,#0e7f70)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M6 2h9l3 3v17H6z" /></svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Pièces justificatives</div>
+                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>Identité · assurance · diplôme</div>
+              </div>
+              <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
+            </div>
+
+            <div onClick={() => { localStorage.setItem('ping_mode', 'particulier'); router.push('/map') }}
+              style={{ textAlign: 'center', marginTop: 10, padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+              Revenir en mode particulier
+            </div>
+            <div onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
+              style={{ textAlign: 'center', marginTop: 2, color: '#9CA3AF', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+              Se déconnecter
+            </div>
+          </div>
+        )}
+
         {tab === 'overview' && (
           <>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <button onClick={() => router.push('/pro/tarifs')} style={{ flex: 1, padding: '12px 6px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', fontSize: 11.5, fontWeight: 700, color: '#123644' }}>Mes tarifs</button>
+              <button onClick={() => router.push('/pro/revenus')} style={{ flex: 1, padding: '12px 6px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', fontSize: 11.5, fontWeight: 700, color: '#123644' }}>Mes revenus</button>
+              <button onClick={() => router.push('/pro/documents')} style={{ flex: 1, padding: '12px 6px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', fontSize: 11.5, fontWeight: 700, color: '#123644' }}>Documents</button>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
               <div style={{ padding: 16, borderRadius: 16, background: 'rgba(18,179,156,.08)' }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#0C8F7E' }}>{(caMoisCents / 100).toFixed(0)} €</div>
@@ -202,84 +280,12 @@ export default function ProDashboard() {
           </div>
         )}
 
-        {tab === 'profil' && pro && (() => {
-          const idOk = docs.identite?.status === 'valid' || docs.identite?.status === 'pending'
-          const rcOk = docs.rcpro?.status === 'valid' || docs.rcpro?.status === 'pending'
-          const tarif = [
-            pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(2)} € forfait` : null,
-            (pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0) ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h` : null,
-            pro.pricing_type === 'devis' ? 'Sur devis' : null,
-          ].filter(Boolean).join(' · ') || 'Non renseigné'
-          const Row = ({ icon, title, subtitle, onClick, badge }: { icon: JSX.Element; title: string; subtitle: string; onClick?: () => void; badge?: { label: string; ok: boolean } }) => (
-            <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: onClick ? 'pointer' : 'default' }}>
-              <div style={{ width: 38, height: 38, borderRadius: 11, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{title}</div>
-                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{subtitle}</div>
-              </div>
-              {badge && (
-                <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0, background: badge.ok ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: badge.ok ? '#0C8F7E' : '#9A6712' }}>{badge.label}</span>
-              )}
-              {onClick && <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>}
-            </div>
-          )
-          return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5', display: 'flex', gap: 12, alignItems: 'center' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#123644', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19, flex: '0 0 auto' }}>
-                  {(pro.company_name || firstName || '?').charAt(0).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{pro.company_name || firstName || 'Mon entreprise'}</div>
-                  <div style={{ fontSize: 12, color: '#6E8592', marginTop: 2 }}>Prestataire · {TRADES[pro.trade] || pro.trade}{city ? ` · ${city}` : ''}</div>
-                </div>
-                <span onClick={() => router.push('/pro/onboarding')} style={{ color: '#0C8F7E', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>Modifier</span>
-              </div>
-
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em' }}>Identité &amp; sécurité</div>
-              <Row onClick={() => router.push('/pro/documents')}
-                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="8" cy="12" r="2.2" /></svg>}
-                title="Pièce d'identité" subtitle="Déposée sur PING · authenticité non garantie"
-                badge={{ label: idOk ? 'Fournie' : 'À fournir', ok: idOk }} />
-              <Row onClick={() => router.push('/pro/documents')}
-                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>}
-                title="Assurance RC Pro" subtitle="Renseignée par vous · casse et dommage"
-                badge={{ label: rcOk ? 'Renseignée' : 'À renseigner', ok: rcOk }} />
-
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 4 }}>Mon activité professionnelle</div>
-              <Row onClick={() => router.push('/pro/onboarding')}
-                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M20 6L9 17l-5-5" /></svg>}
-                title={TRADES[pro.trade] || pro.trade} subtitle={pro.bio || 'Aucune description ajoutée'} />
-              <Row onClick={() => router.push('/pro/tarifs')}
-                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
-                title="Tarifs & prestations" subtitle={`${tarif}${servicesCount ? ` · ${servicesCount} prestation${servicesCount > 1 ? 's' : ''} au catalogue` : ''}`} />
-              <Row icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M4 6h16v13H4z" /></svg>}
-                title="Statut juridique" subtitle={LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status} />
-
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 4 }}>Mon entreprise</div>
-              <Row onClick={() => router.push('/pro/revenus')}
-                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M3 3v18h18M7 14l3-3 3 3 5-5" /></svg>}
-                title="Mes revenus & déclaration" subtitle="Récapitulatif mensuel et annuel, DAC7" />
-              <Row onClick={() => router.push('/pro/documents')}
-                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M14 4v6h6" /><path d="M4 4h10l6 6v10H4z" /></svg>}
-                title="Mes pièces" subtitle="Identité, assurance, justificatifs" />
-              <Row onClick={() => router.push('/pro/onboarding')}
-                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>}
-                title="Modifier mes informations" subtitle="Statut, coordonnées, description" />
-
-              <div onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
-                style={{ textAlign: 'center', marginTop: 6, color: '#9CA3AF', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
-                Se déconnecter
-              </div>
-            </div>
-          )
-        })()}
       </div>
 
       {/* Nav bas */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #E7EDEB', padding: '10px 24px', display: 'flex', justifyContent: 'space-around' }}>
-        <button onClick={() => router.push('/pro/dashboard')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#12B39C' }}>Tableau</span>
+        <button onClick={() => setTab('hub')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: tab === 'hub' ? '#12B39C' : '#9CA3AF' }}>Entreprise</span>
         </button>
         <button onClick={() => router.push('/map')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none' }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF' }}>Carte</span>
