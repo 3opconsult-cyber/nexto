@@ -6,6 +6,7 @@ import NavDrawer from '@/components/NavDrawer'
 import BottomTabBar from '@/components/BottomTabBar'
 import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib/services'
 import { TRADES } from '@/lib/trades'
+import { createClient } from '@/lib/supabase/client'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), { ssr: false })
 
@@ -30,6 +31,7 @@ export default function ProCartePage() {
   const [reqs, setReqs] = useState<RequestNearby[]>([])
   const [recenterTick, setRecenterTick] = useState(0)
   const [available, setAvailable] = useState(true)
+  const [proId, setProId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
 
@@ -40,6 +42,27 @@ export default function ProCartePage() {
         () => { }, { timeout: 5000 })
     }
   }, [])
+
+  // Le bandeau visible/masque doit refleter (et modifier) le vrai flag qui
+  // conditionne l'apparition sur providers_nearby (provider_profiles.is_active),
+  // pas juste un etat visuel local — sinon un pro se croit masque alors qu'il
+  // reste visible des clients (ou l'inverse).
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      setProId(user.id)
+      supabase.from('provider_profiles').select('is_active').eq('id', user.id).single()
+        .then(({ data }) => { if (data) setAvailable(!!data.is_active) })
+    })
+  }, [])
+
+  async function toggleAvailable() {
+    if (!proId) return
+    const next = !available
+    setAvailable(next)
+    await createClient().from('provider_profiles').update({ is_active: next }).eq('id', proId)
+  }
 
   const load = useCallback(() => {
     fetchRequestsNearby(userPos.lat, userPos.lng, 25000).then(setReqs)
@@ -107,7 +130,7 @@ export default function ProCartePage() {
           <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, color: 'var(--ink)' }}>{available ? 'Disponible maintenant' : 'Hors ligne'}</div>
           <div style={{ fontSize: 12, color: 'var(--slate)' }}>Vous apparaissez sur la carte des clients autour de vous</div>
         </div>
-        <div onClick={() => setAvailable(a => !a)} style={{ width: 44, height: 26, borderRadius: 999, background: available ? 'var(--gold)' : '#cdd6d3', position: 'relative', cursor: 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
+        <div onClick={toggleAvailable} style={{ width: 44, height: 26, borderRadius: 999, background: available ? 'var(--gold)' : '#cdd6d3', position: 'relative', cursor: 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
           <span style={{ position: 'absolute', top: 3, left: available ? 21 : 3, width: 20, height: 20, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
         </div>
       </div>

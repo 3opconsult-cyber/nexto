@@ -57,7 +57,7 @@ export default function LitigesPage() {
               {list.map(d => {
                 const cat = d.transactions?.requests?.category
                 return (
-                  <div key={d.id} onClick={() => d.transactions?.id && router.push(`/mission/${d.transactions.id}/litige`)}
+                  <div key={d.id} onClick={() => d.transactions?.id && router.push(`/mission/${d.transactions.id}/chat`)}
                     style={{ background: '#FFFBF2', border: '1px solid #F5D9A6', borderRadius: 14, padding: 14, marginBottom: 10, cursor: d.transactions?.id ? 'pointer' : 'default' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                       <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>

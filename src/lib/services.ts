@@ -72,10 +72,19 @@ export async function fetchProDetail(proId: string) {
   if (pro && trust && trust.length) Object.assign(pro as any, trust[0])
   const { data: reviews } = await supabase
     .from('reviews')
-    .select('*, profiles!reviews_rater_id_fkey(full_name)')
+    .select('*')
     .eq('ratee_id', proId)
     .order('created_at', { ascending: false })
     .limit(20)
+  // Les avis sont publics mais profiles ne l'est pas (RLS self-read) : l'ancien
+  // embed profiles!reviews_rater_id_fkey ne renvoyait jamais de nom pour un
+  // vrai avis d'un autre utilisateur — repli silencieux sur "Client".
+  if (reviews?.length) {
+    const { data: names } = await supabase.rpc('review_rater_names', { p_review_ids: reviews.map(r => r.id) })
+    const byId: Record<string, string> = {}
+    ;(names ?? []).forEach((n: any) => { if (n.first_name) byId[n.review_id] = n.first_name })
+    reviews.forEach((r: any) => { r.profiles = { full_name: byId[r.id] || null } })
+  }
   return { pro, reviews: reviews ?? [] }
 }
 

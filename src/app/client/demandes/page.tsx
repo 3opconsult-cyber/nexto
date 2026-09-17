@@ -74,7 +74,7 @@ export default function MesDemandesPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
-        <button onClick={() => router.push('/mission/new')}
+        <button onClick={() => router.push('/client/demandes/new')}
           style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
           + Publier une demande
         </button>

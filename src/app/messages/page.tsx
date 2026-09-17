@@ -17,15 +17,24 @@ export default function MessagesPage() {
       if (!user) { router.push('/auth/login'); return }
 
       const { data: txs } = await supabase.from('transactions')
-        .select('*, requests(address)')
+        .select('*')
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
+
+      // profiles n'est lisible qu'en libre-service (RLS auth.uid() = id) : le nom
+      // de l'interlocuteur passe par une fonction dediee, pas par un embed.
+      const { data: names } = txs?.length
+        ? await supabase.rpc('transaction_counterparts', { p_transaction_ids: txs.map((t: any) => t.id) })
+        : { data: [] }
+      const nameById: Record<string, string> = {}
+      ;(names ?? []).forEach((n: any) => { if (n.full_name) nameById[n.transaction_id] = n.full_name })
 
       const withLast = await Promise.all((txs ?? []).map(async (t: any) => {
         const { data: last } = await supabase.from('messages')
           .select('body, created_at, sender_id')
           .eq('transaction_id', t.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
-        return { ...t, lastMessage: last, isSeller: t.seller_id === user.id, kind: 'mission' as const }
+        const isSeller = t.seller_id === user.id
+        return { ...t, lastMessage: last, isSeller, kind: 'mission' as const, counterpart: nameById[t.id] || (isSeller ? 'Client' : 'Prestataire') }
       }))
 
       const { data: conv } = await supabase.from('admin_conversations').select('id, last_message_at').eq('user_id', user.id).maybeSingle()
@@ -66,7 +75,7 @@ export default function MessagesPage() {
             style={{ display: 'block', width: '100%', textAlign: 'left', background: '#fff', border: t.kind === 'support' ? '1px solid #12B39C' : '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
               <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
-                {t.kind === 'support' ? 'Support PING' : (t.requests?.address || (t.isSeller ? 'Client' : 'Prestataire'))}
+                {t.kind === 'support' ? 'Support PING' : t.counterpart}
               </span>
               <span style={{ fontSize: 10.5, color: '#9CA3AF', fontWeight: 600, flexShrink: 0 }}>
                 {new Date(t.lastMessage?.created_at || t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}

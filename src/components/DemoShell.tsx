@@ -164,7 +164,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                       </div>
                       <div className="dispo" style={{ marginTop: 11 }}><span className="livedot on" /> <span>{pv.d}</span></div>
                       <div style={{ display: 'flex', gap: 9, marginTop: 10 }}>
-                        <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { closePreview(); const { missionId } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : `/pro/${pv.id}`) }}>Contacter</div>
+                        <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { closePreview(); const { missionId, error } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : error === 'not_authenticated' ? '/auth/login' : `/pro/${pv.id}`) }}>Contacter</div>
                         <div className="btn" style={{ flex: 1.3 }} onClick={() => { closePreview(); router.push(`/pro/${pv.id}`) }}>Voir le profil</div>
                       </div>
                     </>
@@ -202,7 +202,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 9, padding: 14, borderTop: '1px solid var(--line)' }}>
-                      <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { const { missionId } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : `/pro/${pv.id}`) }}>Contacter</div>
+                      <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { const { missionId, error } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : error === 'not_authenticated' ? '/auth/login' : `/pro/${pv.id}`) }}>Contacter</div>
                       <div className="btn" style={{ flex: 1.3 }} onClick={() => router.push(`/pro/${pv.id}`)}>Réserver{pv.p ? ` · ${pv.p}` : ''}</div>
                     </div>
                   </div>

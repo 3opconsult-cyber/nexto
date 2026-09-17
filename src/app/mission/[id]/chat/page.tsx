@@ -56,9 +56,11 @@ export default function ChatPage() {
       setTx(t)
       if (t?.requests?.address) setReqAddr(t.requests.address)
       if (t && user) {
-        const otherId = user.id === t.buyer_id ? t.seller_id : t.buyer_id
-        const { data: p } = await supabase.from('profiles').select('first_name, last_name').eq('id', otherId).single()
-        if (p) setCounterpart(`${p.first_name || ''} ${p.last_name ? p.last_name.charAt(0) + '.' : ''}`.trim() || 'Conversation')
+        // profiles n'est lisible qu'en libre-service (RLS auth.uid() = id) : un
+        // select direct sur l'id de l'autre partie ne renvoie rien — le nom passe
+        // par une fonction dediee qui ne revele que le vrai interlocuteur.
+        const { data: names } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: [t.id] })
+        if (names?.[0]?.full_name) setCounterpart(names[0].full_name)
 
         // Mission terminee et pas encore notee par ce client : on demande son
         // avis ici, c'est l'ecran ou il atterrit apres le scan de sortie.
