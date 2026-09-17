@@ -12,13 +12,19 @@ const nextConfig = {
       },
     ]
   },
+  async redirects() {
+    return [
+      // '/' pointait vers le fallback statique client.html "tant que la home React
+      // n'etait pas portee" (commentaire historique) : /map EST la vraie app depuis
+      // longtemps, mais la racine du site continuait a servir la maquette figee,
+      // avec sa propre navigation limitee (elle ne bouge jamais l'URL, ce qui la
+      // fait passer pour un bug de la vraie app). Direction sans ambiguite vers /map.
+      { source: '/', destination: '/map', permanent: false },
+    ]
+  },
   async rewrites() {
     return {
       beforeFiles: [
-        // /map = la VRAIE app React (DemoShell, branchee Supabase). Plus de facade dessus.
-        // '/' reste sur le fallback client.html tant que la home React n'est pas portee.
-        { source: '/', destination: '/client.html' },
-
         // Fichiers de reference intacts (presentation, admin, marketing).
         { source: '/demo', destination: '/app.html' },
         { source: '/admin', destination: '/admin.html' },
