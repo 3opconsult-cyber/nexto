@@ -16,6 +16,16 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '.04em', marginBottom: 5,
 }
 
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      {off
+        ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><path d="M1 1l22 22" /></>
+        : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>}
+    </svg>
+  )
+}
+
 function SignupForm() {
   const router = useRouter()
   const params = useSearchParams()
@@ -24,6 +34,7 @@ function SignupForm() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     email: '', password: '', firstName: '', lastName: '',
     phone: '', birthdate: '', address: '',
@@ -38,37 +49,42 @@ function SignupForm() {
     if (step === 1) { setStep(2); return }
     setLoading(true)
     setError('')
-    const supabase = createClient()
-    const attr = readAttribution()
-    const { data, error: signupError } = await supabase.auth.signUp({
-      email: form.email, password: form.password,
-      options: {
-        data: {
-          first_name: form.firstName,
-          last_name: form.lastName,
-          phone: form.phone,
-          birthdate: form.birthdate,
-          address: form.address,
-          role,
-          // D'où vient cette inscription. Repris par le trigger
-          // handle_new_user_attribution : le client ne peut pas l'écrire
-          // lui-même, il n'a pas encore de session à cet instant.
-          ...(attr || {}),
+    try {
+      const supabase = createClient()
+      const attr = readAttribution()
+      const { data, error: signupError } = await supabase.auth.signUp({
+        email: form.email, password: form.password,
+        options: {
+          data: {
+            first_name: form.firstName,
+            last_name: form.lastName,
+            phone: form.phone,
+            birthdate: form.birthdate,
+            address: form.address,
+            role,
+            // D'où vient cette inscription. Repris par le trigger
+            // handle_new_user_attribution : le client ne peut pas l'écrire
+            // lui-même, il n'a pas encore de session à cet instant.
+            ...(attr || {}),
+          }
+        }
+      })
+      if (signupError) { setError(signupError.message); setLoading(false); return }
+
+      const refCode = params.get('ref')
+      if (refCode && data.user) {
+        const { data: referrer } = await supabase.from('profiles').select('id').eq('referral_code', refCode.toUpperCase()).maybeSingle()
+        if (referrer && referrer.id !== data.user.id) {
+          await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: data.user.id })
         }
       }
-    })
-    if (signupError) { setError(signupError.message); setLoading(false); return }
 
-    const refCode = params.get('ref')
-    if (refCode && data.user) {
-      const { data: referrer } = await supabase.from('profiles').select('id').eq('referral_code', refCode.toUpperCase()).maybeSingle()
-      if (referrer && referrer.id !== data.user.id) {
-        await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: data.user.id })
-      }
+      if (role === 'pro') router.push('/pro/onboarding')
+      else router.push('/map')
+    } catch {
+      setError("Une erreur est survenue, réessaie dans un instant.")
+      setLoading(false)
     }
-
-    if (role === 'pro') router.push('/pro/onboarding')
-    else router.push('/map')
   }
 
   return (
@@ -141,8 +157,14 @@ function SignupForm() {
                 </div>
                 <div>
                   <label style={labelStyle}>Mot de passe</label>
-                  <input type="password" value={form.password} onChange={e => update('password', e.target.value)}
-                    style={inputStyle} placeholder="8 caractères minimum" minLength={8} required />
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => update('password', e.target.value)}
+                      style={{ ...inputStyle, paddingRight: 42 }} placeholder="8 caractères minimum" minLength={8} required />
+                    <button type="button" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, border: 'none', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <EyeIcon off={showPassword} />
+                    </button>
+                  </div>
                 </div>
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 13, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
                   <input type="checkbox" required style={{ marginTop: 2, width: 16, height: 16, accentColor: '#12B39C', flexShrink: 0 }} />
