@@ -157,6 +157,7 @@ export default function ChatPage() {
       seller_fee_cents: sellerFee,
       total_charged_cents: cents + buyerFee,
       payout_cents: cents - sellerFee,
+      price_confirmed: true,
     }).eq('id', transactionId).select().single()
     if (!error && updated) {
       setTx(updated)
@@ -215,7 +216,7 @@ export default function ChatPage() {
 
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
-        <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} confirmed={!!tx && !msgs.some(m => m.kind === 'offer' && m.offer_status === 'pending')} />
+        <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} confirmed={!!tx && !!tx.price_confirmed} />
       )}
 
       {tx && userId && (

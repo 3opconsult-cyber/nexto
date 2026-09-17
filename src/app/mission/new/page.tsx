@@ -65,6 +65,7 @@ function MissionForm() {
       subtotal_cents: subtotalCents, buyer_fee_cents: buyerFee, seller_fee_cents: sellerFee,
       total_charged_cents: totalTtc, payout_cents: subtotalCents - sellerFee,
       hourly_rate_cents: mode === 'horaire' ? pro.hourly_rate_cents : null, status: 'pending',
+      price_confirmed: true,
     }).select().single()
     if (txErr || !tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
 

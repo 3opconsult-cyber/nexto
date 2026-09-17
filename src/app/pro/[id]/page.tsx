@@ -31,6 +31,15 @@ export default function ProDetailPage() {
     router.push(missionId ? `/mission/${missionId}/chat` : '/auth/login')
   }
 
+  // "Réserver" doit passer par l'écran de choix forfait/horaire + récap de prix
+  // (mission/new) qui fixe le prix au paramétrage initial (règle suprême du
+  // tarif) et permet une vraie confirmation — pas juste ouvrir une conversation.
+  // Pour un pro "sur devis", il n'y a pas de prix à fixer : ça reste le chat.
+  function reserve() {
+    if (isDevis) { contact(); return }
+    router.push(`/mission/new?pro=${proId}`)
+  }
+
   if (loading) return (
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ color: '#6E8592', fontFamily: 'var(--fh)', fontSize: 15 }}>Chargement…</div>
@@ -127,7 +136,7 @@ export default function ProDetailPage() {
       <div className="ping-foot" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="ping-btn ghost" style={{ flex: 1 }} onClick={contact}>Contacter</button>
-          <button className="ping-btn" style={{ flex: 1.4 }} onClick={contact}>{isDevis ? 'Demander un devis' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}</button>
+          <button className="ping-btn" style={{ flex: 1.4 }} onClick={reserve}>{isDevis ? 'Demander un devis' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}</button>
         </div>
       </div>
     </div>
