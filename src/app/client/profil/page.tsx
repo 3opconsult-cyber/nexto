@@ -69,9 +69,10 @@ export default function ClientProfil() {
               <div className="vt"><b>Pièce d&apos;identité {hasId ? 'fournie' : 'à fournir'}</b><small>Déposée sur PING · authenticité non garantie</small></div>
               <div className="vs">{hasId ? '✓ Fournie' : 'À fournir'}</div>
             </div>
-            <div className="row" style={{ cursor: 'default' }}>
+            <div className="row" onClick={() => router.push('/client/documents')}>
               <div className="av g" style={{ width: 40, height: 40, fontSize: 15 }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="5" width="18" height="14" rx="2" /></svg></div>
               <div className="m"><div className="nm" style={{ fontSize: 13 }}>Mes documents &amp; identité</div><div className="ds">Pièce d&apos;identité · chiffré &amp; masqué</div></div>
+              <span style={{ color: 'var(--slate)' }}>›</span>
             </div>
             <div className="row" onClick={() => router.push('/client/confidentialite')}>
               <div className="m"><div className="nm" style={{ fontSize: 13 }}>Coordonnées &amp; confidentialité</div><div className="ds">Masquées jusqu&apos;à la mission confirmée · protégées</div></div>
