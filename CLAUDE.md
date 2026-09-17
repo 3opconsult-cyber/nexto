@@ -88,7 +88,11 @@ renvoient plus vers /pro/dashboard.
    Supprimée plutôt que restylée pour rien.
 4. **Stripe non branché** = pas de séquestre réel, pas de `held`/`released`. Gros chantier, EN ATTENTE
    (décision Romain : on prépare mais pas maintenant).
-5. **« Mon entreprise » à enrichir** : prix conseillés dans la zone, calendrier, moyens de paiement.
+5. ~~**« Mon entreprise » à enrichir**~~ CORRIGÉ pour la partie faisable sans Stripe :
+   `/pro/tarifs` (catalogue de prestations à prix fixe, table `services`) et `/pro/revenus`
+   (récapitulatif + rappel DAC7, langage adapté aux prestations de service) ajoutés et liés depuis
+   l'onglet Réglages du dashboard. « Calendrier » et « moyens de paiement » restent hors scope
+   (voir décision produit plus bas / bug #4 Stripe).
 
 ## Comparatif démo (/demo = public/app.html, 44 écrans) vs app réelle — 17/09/2026
 Demande de Romain : la démo (`/demo`) a une meilleure UX/flow que l'app réelle actuelle ; objectif
@@ -108,14 +112,26 @@ immatriculée) est DÉJÀ implémentée et plus aboutie que la démo (`src/lib/i
 de bout en bout (le trigger DB pose-t-il bien les 3 lignes `invoices` en fin de mission ?) et à
 rendre plus visible dans le parcours.
 
-**Manquant, à construire** (au-delà des bugs déjà listés ci-dessus) :
-- Client — « Avis publiés » (liste dédiée) et « Coordonnées & confidentialité » : pages dédiées
-  absentes (démo : `v_myreviews`, `v_privacy`).
-- Visionneuse de document (démo : `v_docview`) : pas d'équivalent trouvé.
-- Pro — « Devis instantané » structuré + liste « Demandes autour de vous » avec détail (démo :
-  `p_devis`, `p_offres`, `p_offre_detail`) : le vrai flux passe entièrement par le chat
-  (+ Proposer un tarif) ; question UX à trancher (voir plus bas), pas qu'un manque de page.
-- « Mes tarifs » et « Moyens de paiement » : déjà couverts par le bug #5 ci-dessus, ne pas dupliquer.
+**CORRIGÉ le 17/09 (session d'audit)** :
+- Client — `/client/avis` (avis publiés par le client, table `reviews` où `rater_id` = soi),
+  `/client/confidentialite` (ce qui est visible/masqué, langage déclaratif), `/client/documents`
+  (upload + visionneuse de la pièce d'identité) : les 3 étaient des rangées mortes sans `onClick`
+  sur `/client/profil`.
+- `/client/profil` mélangeait particulier et pro : une rangée « Mes revenus & déclaration » (DAC7,
+  concept de vente de biens) n'a aucun sens pour un client qui ne perçoit jamais d'argent via PING —
+  remplacée par « Mes opérations » (le vrai contenu de `/documents` pour un client).
+- Pro — `/pro/tarifs` (catalogue de prestations, table `services`) et `/pro/revenus` (récapitulatif +
+  DAC7 reformulé pour des prestations de service) + visionneuse de document dans `/pro/documents`
+  (démo : `v_docview`) — voir bug #5 ci-dessus.
+- BUG RÉEL corrigé au passage : la fiche pro (`/pro/[id]`) affichait toujours 5 étoiles par avis
+  quel que soit le vrai score (lisait `r.rating`, colonne inexistante, au lieu de `r.stars`).
+
+**Pas construit, volontairement** :
+- Pro — « Devis instantané » structuré + liste « Demandes autour de vous » avec détail existent
+  maintenant (`/pro/carte`, bug #2), mais le prix se négocie via le chat (+ Proposer un tarif) et
+  non un widget de devis séparé — cohérent avec la « règle suprême du tarif ».
+- « Moyens de paiement » (client et pro) : rangée/page volontairement inerte, Stripe non branché
+  (bug #4, EN ATTENTE) — pas de fausse UI de paiement.
 
 **Volontairement différent de la démo — NE PAS copier tel quel** (décisions déjà prises) :
 - Litige (`v_litige`, `v_litige_suivi`, `p_litige`) : passe par le chat → table `disputes`, pages
