@@ -69,11 +69,56 @@ renvoient plus vers /pro/dashboard.
    carte riquiqui. À refondre pour remplir la zone desktop (comme les autres pages app).
 2. **Flux « pro répond à une demande » inexistant** : sur `/pro/carte`, cliquer une demande ne fait
    plus rien (placeholder retiré). Construire : détail de la demande → proposer / contacter le client.
-3. **Pages au vieux style** (Fredoka/Tailwind, hors design system) : `auth/login`, `auth/signup`
-   (porte d'entrée !), `presentation`. À restyler en teal SANS toucher à la logique.
+3. ~~**Pages au vieux style** (Fredoka/Tailwind, hors design system) : `auth/login`, `auth/signup`
+   (porte d'entrée !), `presentation`.~~ CORRIGÉ : `auth/login` et `auth/signup` restylés (Quicksand/
+   Inter, teal/navy, logique intacte). `src/app/presentation/page.tsx` (le vieux Fredoka/« Nexto »)
+   était en fait **du code mort** : `next.config.js` réécrit `/presentation` vers le fichier statique
+   `public/presentation.html` (une animation d'accroche, déjà au design system, correcte) — cette
+   règle de rewrite passe AVANT le routeur App Router, donc la page React n'était jamais atteignable.
+   Supprimée plutôt que restylée pour rien.
 4. **Stripe non branché** = pas de séquestre réel, pas de `held`/`released`. Gros chantier, EN ATTENTE
    (décision Romain : on prépare mais pas maintenant).
 5. **« Mon entreprise » à enrichir** : prix conseillés dans la zone, calendrier, moyens de paiement.
+
+## Comparatif démo (/demo = public/app.html, 44 écrans) vs app réelle — 17/09/2026
+Demande de Romain : la démo (`/demo`) a une meilleure UX/flow que l'app réelle actuelle ; objectif
+« faire pareil que la démo (sauf la carte, qui a besoin d'une vraie API) + combler les manques
+(QR, facture entreprise/particulier, etc.) ». Après lecture écran par écran de `public/app.html`
+(44 `<section class="view">`) et comparaison avec `src/app` :
+
+**Déjà porté et conforme** : carte + recherche (`/map`), chat (`/mission/[id]/chat`, devis + avis
+ré-affichés), QR arrivée/départ (`/mission/[id]/qrcodes`, `/scan/[phase]`), messages, agenda, profil
+client, onboarding pro + KYC, dashboard pro, mes pièces, mes demandes (client), « signaler cet
+échange » (dans le chat), devenir pro.
+
+**Bonne surprise** : la facturation (3 documents — facture pour un prestataire immatriculé /
+récapitulatif pour un particulier non-immatriculé / relevé de commission PING tant qu'elle n'est pas
+immatriculée) est DÉJÀ implémentée et plus aboutie que la démo (`src/lib/invoice-pdf.ts` +
+`/mission/[id]/facture`, doc juridique détaillé dans le fichier). Pas à construire — à vérifier
+de bout en bout (le trigger DB pose-t-il bien les 3 lignes `invoices` en fin de mission ?) et à
+rendre plus visible dans le parcours.
+
+**Manquant, à construire** (au-delà des bugs déjà listés ci-dessus) :
+- Client — « Avis publiés » (liste dédiée) et « Coordonnées & confidentialité » : pages dédiées
+  absentes (démo : `v_myreviews`, `v_privacy`).
+- Visionneuse de document (démo : `v_docview`) : pas d'équivalent trouvé.
+- Pro — « Devis instantané » structuré + liste « Demandes autour de vous » avec détail (démo :
+  `p_devis`, `p_offres`, `p_offre_detail`) : le vrai flux passe entièrement par le chat
+  (+ Proposer un tarif) ; question UX à trancher (voir plus bas), pas qu'un manque de page.
+- « Mes tarifs » et « Moyens de paiement » : déjà couverts par le bug #5 ci-dessus, ne pas dupliquer.
+
+**Volontairement différent de la démo — NE PAS copier tel quel** (décisions déjà prises) :
+- Litige (`v_litige`, `v_litige_suivi`, `p_litige`) : passe par le chat → table `disputes`, pages
+  dédiées supprimées exprès (cf. Audit 17/09).
+- Suivi en direct (`v_track`) : pas de GPS live, seulement la validation d'arrivée (invariant métier).
+- Paiement (`v_pay`) : Stripe non branché, `held`/`released` jamais posés (bug #4, EN ATTENTE).
+
+**Décision produit à prendre avant de construire** : réservation par créneau synchronisé à
+l'agenda du pro (démo : `v_booking`, « Choisir un créneau ») n'existe pas du tout côté réel
+(`mission/new` n'a pas de calendrier). C'est une vraie fonctionnalité nouvelle (agenda du pro
+exposé en créneaux réservables), pas un simple restylage — à confirmer avec Romain avant de la
+construire : garde-t-on le flux actuel (demande → devis négocié dans le chat), ou le remplace-t-on
+par un vrai calendrier de créneaux ?
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.

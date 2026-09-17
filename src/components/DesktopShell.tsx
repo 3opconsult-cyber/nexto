@@ -1,6 +1,8 @@
 "use client"
 import React from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { enforceForgottenSession } from '@/lib/auth-session'
 
 // Routes "app" qui reçoivent la navigation laterale desktop (sidebar).
 // Auth, presentation, hub, demo, admin : pas de sidebar.
@@ -59,6 +61,12 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
 
   const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
   const isClientRoute = pathname.startsWith('/client/profil')
+
+  // Une seule fois par onglet : ferme une session dont l'utilisateur avait
+  // décoché "Rester connecté" ailleurs (cf. lib/auth-session.ts).
+  React.useEffect(() => {
+    enforceForgottenSession(() => { createClient().auth.signOut() })
+  }, [])
 
   React.useEffect(() => {
     if (isProRoute) { try { localStorage.setItem('ping_mode', 'pro') } catch { }; setModeState('pro') }
