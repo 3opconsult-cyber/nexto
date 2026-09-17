@@ -4,9 +4,25 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import NavDrawer from '@/components/NavDrawer'
 import BottomTabBar from '@/components/BottomTabBar'
-import { fetchRequestsNearby, type RequestNearby } from '@/lib/services'
+import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib/services'
+import { TRADES } from '@/lib/trades'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), { ssr: false })
+
+function distanceTxt(m: number) {
+  return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`
+}
+function agoTxt(iso: string) {
+  const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
+  if (min < 1) return "à l'instant"
+  if (min < 60) return `il y a ${min} min`
+  const h = Math.round(min / 60)
+  if (h < 24) return `il y a ${h} h`
+  return `il y a ${Math.round(h / 24)} j`
+}
+function budgetTxt(cents: number | null) {
+  return cents ? `${Math.round(cents / 100)} €` : 'Sur devis'
+}
 
 export default function ProCartePage() {
   const router = useRouter()
@@ -14,6 +30,8 @@ export default function ProCartePage() {
   const [reqs, setReqs] = useState<RequestNearby[]>([])
   const [recenterTick, setRecenterTick] = useState(0)
   const [available, setAvailable] = useState(true)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -28,8 +46,55 @@ export default function ProCartePage() {
   }, [userPos.lat, userPos.lng])
   useEffect(() => { load() }, [load])
 
+  const selected = selectedId ? reqs.find(r => r.id === selectedId) || null : null
   const nearest = reqs.length ? Math.round(reqs[0].distance_m) : null
-  const nearestTxt = nearest == null ? '—' : nearest < 1000 ? `${nearest} m` : `${(nearest / 1000).toFixed(1)} km`
+  const nearestTxt = nearest == null ? '—' : distanceTxt(nearest)
+
+  async function respond(r: RequestNearby) {
+    setSending(true)
+    const { missionId, error } = await respondToRequest(r.id)
+    setSending(false)
+    if (missionId) router.push(`/mission/${missionId}/chat`)
+    else if (error === 'not_authenticated') router.push('/auth/login')
+    // sinon (demande deja prise, erreur reseau...) : on reste sur la fiche, rien de casse.
+  }
+
+  // Détail d'une demande sélectionnée (pin carte ou carte de la liste) : les
+  // coordonnées exactes du client ne sont jamais montrées ici (masquées côté
+  // API tant que la mission n'est pas confirmée) — seule la distance l'est.
+  const requestDetail = selected && (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <div onClick={() => setSelectedId(null)} style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'var(--paper)', flex: '0 0 auto' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
+        </div>
+        <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>{TRADES[selected.category] || selected.category}</b>
+      </div>
+
+      <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: 12, marginBottom: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
+          <span style={{ color: 'var(--slate)' }}>Distance</span><b style={{ color: 'var(--ink)' }}>à {distanceTxt(selected.distance_m)}</b>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
+          <span style={{ color: 'var(--slate)' }}>Publiée</span><b style={{ color: 'var(--ink)' }}>{agoTxt(selected.created_at)}</b>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
+          <span style={{ color: 'var(--slate)' }}>Budget indicatif</span><b style={{ color: 'var(--ink)' }}>{budgetTxt(selected.budget_cents)}</b>
+        </div>
+      </div>
+
+      <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 13, color: 'var(--ink)', marginBottom: 6 }}>Description du client</div>
+      <p style={{ fontSize: 12.5, color: 'var(--slate)', lineHeight: 1.5, marginBottom: 16 }}>{selected.description || '—'}</p>
+
+      <p style={{ fontSize: 10.5, color: '#9aa6a3', lineHeight: 1.5, marginBottom: 14 }}>
+        L&apos;adresse exacte et les coordonnées du client vous seront communiquées si votre proposition est acceptée.
+      </p>
+
+      <div className="btn" style={{ background: 'var(--teal)', opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected)}>
+        {sending ? 'Envoi…' : 'Contacter le client'}
+      </div>
+    </>
+  )
 
   // Contenu partagé entre la fiche mobile (bottom sheet ".preview") et le
   // panneau desktop (".detail-panel", toujours visible a cote de la carte) :
@@ -52,7 +117,21 @@ export default function ProCartePage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: 'var(--ink)', padding: '4px 0 12px' }}>
         <span style={{ color: 'var(--slate)' }}>Distance de la plus proche</span><b>{nearestTxt}</b>
       </div>
-      <div className="btn" style={{ background: 'var(--teal)' }} onClick={() => setRecenterTick(t => t + 1)}>Voir les demandes</div>
+
+      {reqs.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+          {reqs.map(r => (
+            <div key={r.id} onClick={() => setSelectedId(r.id)}
+              style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{TRADES[r.category] || r.category}</b>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', whiteSpace: 'nowrap' }}>{budgetTxt(r.budget_cents)}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   )
 
@@ -95,7 +174,7 @@ export default function ProCartePage() {
               pros={[]}
               onSelect={() => { }}
               requests={reqs.map(r => ({ id: r.id, lat: r.lat, lng: r.lng }))}
-              onSelectRequest={() => { }}
+              onSelectRequest={(id: string) => setSelectedId(id)}
               recenterTick={recenterTick}
               youLabel="Vous êtes ici"
             />
@@ -105,18 +184,20 @@ export default function ProCartePage() {
 
           {/* Mobile : fiche remontant du bas. Desktop : cachee (.app-shell .preview),
               remplacee par le panneau permanent ci-dessous. */}
-          <div className="preview on" style={{ padding: 14 }}>
-            {activityPanel}
+          <div className="preview on" style={{ padding: 14, maxHeight: '70vh', overflowY: 'auto' }}>
+            {selected ? requestDetail : activityPanel}
           </div>
 
           {/* Desktop (>=1000px) : panneau permanent a cote de la carte, cachee sur
               mobile (.detail-panel { display:none } par defaut). */}
           <div className="detail-panel">
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
-              <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>Votre activité</b>
-            </div>
+            {!selected && (
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
+                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>Votre activité</b>
+              </div>
+            )}
             <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
-              {activityPanel}
+              {selected ? requestDetail : activityPanel}
             </div>
           </div>
         </div>

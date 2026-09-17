@@ -25,7 +25,9 @@ export interface RequestNearby {
   category: string
   description: string
   budget_cents: number | null
-  address: string | null
+  // Pas d'adresse ici par design : elle n'est communiquée qu'une fois la
+  // mission confirmée (invariant CLAUDE.md), jamais pendant le parcours
+  // "demandes ouvertes autour de moi" avant toute proposition.
   lat: number
   lng: number
   distance_m: number
@@ -124,4 +126,19 @@ export async function openConversation(proId: string): Promise<{ missionId: stri
   if (!tx) return { missionId: null, error: 'tx_failed' }
 
   return { missionId: tx.id }
+}
+
+// Symetrique cote pro : repondre a une demande deja postee par un client
+// (carte pro /pro/carte). La RLS de `transactions` n'autorise que le buyer a
+// inserer une ligne, donc ca passe par une fonction serveur dediee
+// (provider_respond_to_request) plutot que par un insert direct comme
+// openConversation ci-dessus.
+export async function respondToRequest(requestId: string): Promise<{ missionId: string | null; error?: string }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { missionId: null, error: 'not_authenticated' }
+
+  const { data, error } = await supabase.rpc('provider_respond_to_request', { p_request_id: requestId })
+  if (error) return { missionId: null, error: error.message }
+  return { missionId: data as string }
 }
