@@ -30,11 +30,23 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   ig:  { path: '/landing-particulier', source: 'instagram', medium: 'social', content: 'post_part' },
   pp:  { path: '/comment-ca-marche',   source: 'pitch',    medium: 'presentation', content: 'pitch_part' },
 
+  // --- stickers traçables par emplacement (planche stickers-contraste) ---
+  // Sans ça, impossible de savoir quel point de collage ramène vraiment —
+  // un seul code générique noyait tout. Renommer le "content" quand
+  // l'emplacement réel est connu (ex: 'commerce' -> 'boulangerie_jean_jaures'),
+  // le code lui-même (l'URL imprimée) ne doit jamais changer une fois collé.
+  s1:  { path: '/landing-particulier', source: 'sticker',  medium: 'print',  content: 'commerce' },
+  s2:  { path: '/landing-particulier', source: 'sticker',  medium: 'print',  content: 'immeuble' },
+  s3:  { path: '/landing-particulier', source: 'sticker',  medium: 'print',  content: 'laverie' },
+  s4:  { path: '/landing-particulier', source: 'sticker',  medium: 'print',  content: 'marche' },
+
   // --- prestataires ---
   fpr: { path: '/landing-pro', source: 'flyer',     medium: 'print',  content: 'flyer_a5_pro' },
   stp: { path: '/landing-pro', source: 'sticker',   medium: 'print',  content: 'sticker_pro' },
   igp: { path: '/landing-pro', source: 'instagram', medium: 'social', content: 'post_pro' },
   ppr: { path: '/comment-ca-marche', source: 'pitch', medium: 'presentation', content: 'pitch_pro' },
+  sp1: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'chantier' },
+  sp2: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'salon_pro' },
 
   // --- prospection directe (DM, vignettes de campagne) ---
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect

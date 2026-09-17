@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Planche de stickers — variante fort contraste + codes tracables par
+   emplacement. La planche d'origine (stickers.html) place la moitie des
+   tuiles sur fond clair/pastel : bon en boutique fermee, trop discret sur
+   une porte, un lampadaire ou une vitre en exterieur. Ici : fond plein sur
+   TOUTES les tuiles, et un benefice concret sous le QR au lieu de la
+   question de marque seule (la question fonctionne a 2m sur une affiche
+   qu'on a le temps de lire, pas au premier coup d'oeil dans la rue).
+   Un code /l/ different par tuile = on saura enfin quel point de collage
+   ramene vraiment (voir src/app/l/[code]/route.ts : s1-s4, sp1-sp2). */
+@page{size:210mm 297mm;margin:0}
+:root{--M:14mm;--U:7mm}
+.sheet{width:210mm;height:297mm;background:#fff}
+.title{font-family:var(--fh);font-weight:700;font-size:11pt}
+.note{font-size:8pt;color:var(--slate);margin-top:1.5mm}
+.board{margin-top:calc(var(--U)*1.6);display:flex;flex-wrap:wrap;gap:10mm}
+.cut{border:.25mm dashed #C9D6D2}
+.carre{width:60mm;height:60mm;border-radius:6mm;padding:7mm;display:flex;flex-direction:column;overflow:hidden}
+.ink{background:var(--ink);color:#fff}
+.teal{background:var(--teal);color:#fff}
+.tl{font-family:var(--fh);font-weight:700;font-size:12.5pt;line-height:1.2;letter-spacing:-.01em}
+.sm{font-size:7.5pt;line-height:1.4;color:rgba(255,255,255,.68);margin-top:auto}
+.lab{width:100%;font-size:7pt;color:var(--slate);margin-top:-6mm}
+.qrow{display:flex;align-items:flex-start;gap:4mm}
+</style></head><body>
+
+<section class="sheet">
+  <div class="title">PING — planche de stickers, variante fort contraste + codes traçables</div>
+  <div class="note">Taille réelle. Trait pointillé = découpe, à ne pas imprimer. Carrés 60 mm. Renommer le lieu réel dans <code>route.ts</code> une fois le point de collage choisi — l'URL imprimée ne change pas après coup.</div>
+
+  <div class="board">
+    <div class="carre cut ink">
+      {{MARK 12pt|#ffffff}}
+      <div class="u1"></div>
+      <div class="tl">Ménage disponible<br>près d'ici.</div>
+      <div class="qrow" style="margin-top:auto">
+        {{QR s1|20mm|#ffffff|#123644}}
+        <div class="sm" style="margin-top:0">Commerce / vitrine</div>
+      </div>
+    </div>
+
+    <div class="carre cut teal">
+      {{MARK 12pt|#ffffff}}
+      <div class="u1"></div>
+      <div class="tl">Ménage disponible<br>dans votre immeuble.</div>
+      <div class="qrow" style="margin-top:auto">
+        {{QR s2|20mm|#ffffff|#12B39C}}
+        <div class="sm" style="margin-top:0">Hall / boîtes aux lettres</div>
+      </div>
+    </div>
+
+    <div class="carre cut ink">
+      {{MARK 12pt|#ffffff}}
+      <div class="u1"></div>
+      <div class="tl">En attendant la<br>machine, réservez.</div>
+      <div class="qrow" style="margin-top:auto">
+        {{QR s3|20mm|#ffffff|#123644}}
+        <div class="sm" style="margin-top:0">Laverie</div>
+      </div>
+    </div>
+
+    <div class="carre cut teal">
+      {{MARK 12pt|#ffffff}}
+      <div class="u1"></div>
+      <div class="tl">Ménage disponible<br>près du marché.</div>
+      <div class="qrow" style="margin-top:auto">
+        {{QR s4|20mm|#ffffff|#12B39C}}
+        <div class="sm" style="margin-top:0">Marché / place</div>
+      </div>
+    </div>
+
+    <div class="carre cut ink">
+      {{MARK 12pt|#ffffff}}
+      <div class="u1"></div>
+      <div class="tl">Un chantier fini ?<br>Soyez visible dès demain.</div>
+      <div class="qrow" style="margin-top:auto">
+        {{QR sp1|20mm|#ffffff|#123644}}
+        <div class="sm" style="margin-top:0">Chantier / dépôt pro</div>
+      </div>
+    </div>
+
+    <div class="carre cut teal">
+      {{MARK 12pt|#ffffff}}
+      <div class="u1"></div>
+      <div class="tl">Créez votre fiche<br>prestataire, 5 min.</div>
+      <div class="qrow" style="margin-top:auto">
+        {{QR sp2|20mm|#ffffff|#12B39C}}
+        <div class="sm" style="margin-top:0">Salon pro / réseau</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body></html>

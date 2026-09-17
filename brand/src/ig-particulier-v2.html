@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Post Instagram 4:5 (1080 x 1350), variante "dense" — la v1 (ig-particulier.html)
+   laissait plus de 60% du cadre vide, ce qui ne retient pas le pouce dans un
+   feed qui scrolle vite. Meme grille, meme accent chromatique unique, mais
+   l'espace du milieu porte trois etapes concretes au lieu de rien, et le CTA
+   est explicite (le lien en bio est la seule action possible sur Instagram —
+   pas de QR ici, ca ne se scanne pas depuis un ecran). */
+:root{--M:86px;--U:43px}
+html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
+.sheet{width:1080px;height:1350px}
+.q{font-family:var(--fh);font-weight:700;font-size:58px;line-height:1.16;letter-spacing:-.02em;max-width:900px}
+.svc{font-size:24px;color:rgba(255,255,255,.5);margin-top:26px;letter-spacing:.01em}
+.steps{margin-top:70px;gap:46px}
+.step .n{font-size:15px;width:34px}
+.step .t b{font-family:var(--fh);font-weight:700;font-size:25px;color:#fff;margin-bottom:5px}
+.step .t span{font-size:18px;color:rgba(255,255,255,.55)}
+.signwrap{margin-top:90px}
+.cta{margin-top:auto;padding-top:40px;border-top:1px solid rgba(255,255,255,.16)}
+.cta .go{font-family:var(--fh);font-weight:700;font-size:30px;color:#fff}
+.cta .go b{color:#4FD3BE}
+.cta .hint{font-size:18px;color:rgba(255,255,255,.45);margin-top:8px}
+</style></head><body>
+
+<section class="sheet dark">
+  {{MARK 40px|#ffffff}}
+  <div class="u2"></div>
+  <div class="q">Et si ce que vous cherchez<br>se trouvait juste à côté&nbsp;?</div>
+  <div class="svc">Ménage &nbsp;·&nbsp; Repassage &nbsp;·&nbsp; Nettoyage</div>
+
+  <div class="steps">
+    <div class="step"><div class="n">01</div><div class="t"><b>Ouvrez la carte</b><span>Les prestataires disponibles s'affichent autour de vous.</span></div></div>
+    <div class="step"><div class="n">02</div><div class="t"><b>Choisissez, tarif affiché</b><span>Vous savez ce que vous payez avant de réserver.</span></div></div>
+    <div class="step"><div class="n">03</div><div class="t"><b>Arrivée validée par code</b><span>Un scan à l'arrivée, un autre au départ — tout est tracé.</span></div></div>
+  </div>
+
+  <div class="signwrap">{{SIGN 120px|#4FD3BE}}</div>
+
+  <div class="cta">
+    <div class="go">Lien en <b>bio</b> → trouvez un pro près de chez vous</div>
+    <div class="hint">nexto-eta.vercel.app</div>
+  </div>
+</section>
+
+</body></html>

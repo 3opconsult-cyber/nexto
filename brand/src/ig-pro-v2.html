@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Variante dense du post Instagram prestataire — meme logique que
+   ig-particulier-v2 : trois etapes concretes remplacent le vide, CTA
+   explicite (lien en bio), fond clair pour trancher avec le post particulier
+   dans le fil (le couple sombre/clair reste la paire visuelle voulue). */
+:root{--M:86px;--U:43px}
+html,body{width:1080px;height:1350px;overflow:hidden;background:var(--paper)}
+.sheet{width:1080px;height:1350px;background:var(--paper);color:var(--ink)}
+.q{font-family:var(--fh);font-weight:700;font-size:58px;line-height:1.16;letter-spacing:-.02em;max-width:900px}
+.svc{font-size:24px;color:var(--slate);margin-top:26px;letter-spacing:.01em}
+.steps{margin-top:70px;gap:46px}
+.step .n{font-size:15px;width:34px;color:var(--tealD)}
+.step .t b{font-family:var(--fh);font-weight:700;font-size:25px;color:var(--ink);margin-bottom:5px}
+.step .t span{font-size:18px;color:var(--slate)}
+.signwrap{margin-top:90px}
+.cta{margin-top:auto;padding-top:40px;border-top:1px solid var(--line)}
+.cta .go{font-family:var(--fh);font-weight:700;font-size:30px;color:var(--ink)}
+.cta .go b{color:var(--tealD)}
+.cta .hint{font-size:18px;color:var(--slate);margin-top:8px}
+</style></head><body>
+
+<section class="sheet">
+  {{MARK 40px}}
+  <div class="u2"></div>
+  <div class="q">Un service à proposer&nbsp;?<br>Soyez vu, juste à côté.</div>
+  <div class="svc">Pro ou particulier — tout le monde peut commencer.</div>
+
+  <div class="steps">
+    <div class="step"><div class="n">01</div><div class="t"><b>Créez votre fiche</b><span>Métier, tarif, zone d'intervention — 5 minutes.</span></div></div>
+    <div class="step"><div class="n">02</div><div class="t"><b>Visible à chaque déplacement</b><span>Les clients autour de vous vous voient sur la carte.</span></div></div>
+    <div class="step"><div class="n">03</div><div class="t"><b>Payé, facturé, tracé</b><span>Arrivée et départ validés par code, facture automatique.</span></div></div>
+  </div>
+
+  <div class="signwrap">{{SIGN 120px}}</div>
+
+  <div class="cta">
+    <div class="go">Lien en <b>bio</b> → créez votre fiche</div>
+    <div class="hint">nexto-eta.vercel.app</div>
+  </div>
+</section>
+
+</body></html>
