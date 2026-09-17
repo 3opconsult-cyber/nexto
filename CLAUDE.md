@@ -9,10 +9,17 @@ Prod : **nexto-eta.vercel.app** — déploiement auto Vercel sur `main`.
 Dépôt : `3opconsult-cyber/nexto`. Supabase projet `wmiawwaxwlvascyflpba` (eu-west-3).
 
 ## Règle de travail #1
-Travailler sur **branche + PR**, jamais pousser direct sur `main` sans que Romain valide.
-« Build OK » (tsc + `npm run build`) = ça compile, **PAS** « rendu conforme » : c'est
-**Romain** qui juge le visuel sur l'URL déployée. Le build local échoue uniquement sur le
-fetch des polices Google (bloqué hors-ligne) ; ça passe sur Vercel.
+**Décision Romain du 17/09/2026** : l'accès aux previews Vercel de PR posait trop de friction
+(protection SSO Vercel bloquant l'accès aux previews, cf. historique de session) — on ne passe
+plus par une PR + preview validée avant merge. Nouveau flux : Claude pousse/merge direct sur
+`main` (branche+PR ou push direct, à sa discrétion) dès que `npx tsc --noEmit` et
+`npm run build` passent ; ça part en prod automatiquement (Vercel déploie `main`).
+**Romain valide après coup sur nexto-eta.vercel.app** et signale ce qui ne va pas ; on corrige
+en avançant (« on corrige ensuite »), pas de blocage préalable sur un rendu visuel non vérifiable
+avant merge. « Build OK » reste « ça compile », pas « rendu conforme » — mais la validation du
+rendu se fait maintenant sur la prod, plus sur une preview.
+(Ancienne règle, pour mémoire : brancher+PR avec validation preview avant merge — abandonnée
+à cause de la friction d'accès Vercel, cf. session du 17/09.)
 
 ## Stack
 Next.js 14 (App Router, `src/app`) · React + TS · Supabase (Postgres+Auth+Storage+RLS,
