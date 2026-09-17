@@ -71,11 +71,14 @@ onglet dashboard « Profil » → « Réglages » · carte pro : clic demande / 
 renvoient plus vers /pro/dashboard.
 
 ## BUGS / TROUS OUVERTS (à traiter, dans l'ordre conseillé)
-1. **Carte pro (`/pro/carte`) en layout cassé sur desktop** : la page utilise l'ancien cadre
-   « téléphone » (`.stage .device .frame .screen`) dans le DesktopShell → double logo « ping »,
-   carte riquiqui. À refondre pour remplir la zone desktop (comme les autres pages app).
-2. **Flux « pro répond à une demande » inexistant** : sur `/pro/carte`, cliquer une demande ne fait
-   plus rien (placeholder retiré). Construire : détail de la demande → proposer / contacter le client.
+1. ~~**Carte pro (`/pro/carte`) en layout cassé sur desktop**~~ CORRIGÉ : cadre téléphone retiré,
+   panneau desktop permanent (`.detail-panel`), plus de double logo.
+2. ~~**Flux « pro répond à une demande » inexistant**~~ CORRIGÉ : clic sur une demande (pin carte
+   ou carte de la liste) → détail (métier/distance/budget/description) → « Contacter le client »
+   → RPC `provider_respond_to_request` (nouvelle, SECURITY DEFINER — la RLS `transactions`
+   n'autorisait que le buyer à insérer) → chat existant (négociation via le mécanisme de devis déjà
+   en place). Au passage : `requests_nearby` ne renvoie plus l'adresse exacte du client (elle fuitait
+   à tout pro avant toute proposition, contraire à l'invariant) — juste la distance.
 3. ~~**Pages au vieux style** (Fredoka/Tailwind, hors design system) : `auth/login`, `auth/signup`
    (porte d'entrée !), `presentation`.~~ CORRIGÉ : `auth/login` et `auth/signup` restylés (Quicksand/
    Inter, teal/navy, logique intacte). `src/app/presentation/page.tsx` (le vieux Fredoka/« Nexto »)
