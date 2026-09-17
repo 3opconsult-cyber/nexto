@@ -53,6 +53,12 @@ body {
 .dnav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 14.5px; color: #123644; cursor: pointer; }
 .dnav-item:hover { background: #F3F6F5; }
 .dnav-item.on { background: rgba(18,179,156,.1); color: #0C8F7E; }
+
+/* /pro/carte : ecran plein sans le mockup "telephone" (.stage/.device/.frame/
+   .screen), pour eviter le double logo "ping" et la carte riquiqui en
+   DesktopShell. Remplit .shell-main sur mobile comme sur desktop. */
+.procarte-screen { position: relative; width: 100%; height: 100dvh; overflow: hidden; background: #fff; }
+
 @media (min-width: 1000px) {
   body { background: #fff !important; }
   .app-shell { display: flex !important; width: 100vw; height: 100dvh; overflow: hidden; }
@@ -67,4 +73,10 @@ body {
   .app-shell .app-burger, .app-shell .app-bottom-bar, .app-burger, .app-bottom-bar { display: none !important; }
   .app-shell .preview { display: none !important; }
   .detail-panel { position: absolute; top: 12px; right: 12px; bottom: 12px; width: 384px; background: #fff; border-radius: 18px; box-shadow: 0 12px 40px rgba(18,54,68,.18); display: flex; flex-direction: column; overflow: hidden; z-index: 45; }
+
+  /* /pro/carte : plus de barre d'onglets mobile -> la carte reprend les 64px
+     reserves, et le logo "ping" du topbar disparait (deja affiche dans le
+     .desk-nav) pour ne pas le dupliquer. cf. .procarte-screen dans la page. */
+  .app-shell .procarte-body { bottom: 0 !important; }
+  .app-shell .procarte-topbar .pinglogo { display: none !important; }
 }
