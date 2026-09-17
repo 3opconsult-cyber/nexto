@@ -18,6 +18,7 @@ function eur(c?: number | null) { return c != null ? `${(c / 100).toFixed(2).rep
 export default function AgendaPage() {
   const router = useRouter()
   const [txs, setTxs] = useState<any[]>([])
+  const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
@@ -27,10 +28,20 @@ export default function AgendaPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       const { data } = await supabase.from('transactions')
-        .select('*, requests(address, description, category)')
+        .select('*, requests(description, category)')
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
       setTxs(data ?? [])
+
+      // Le nom de l'interlocuteur remplace l'adresse comme titre (comme la
+      // demo, "Sofia M. · Menage") : l'adresse ne s'affiche jamais ici, meme
+      // une fois confirmee — inutile de l'exposer dans une liste d'apercu.
+      if (data?.length) {
+        const { data: rows } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: data.map((t: any) => t.id) })
+        const map: Record<string, string> = {}
+        ;(rows ?? []).forEach((r: any) => { if (r.full_name) map[r.transaction_id] = r.full_name })
+        setNames(map)
+      }
       setLoading(false)
     }
     load()
@@ -55,8 +66,10 @@ export default function AgendaPage() {
     <div key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
       style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{t.requests?.address || 'Mission'}</div>
-        <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.category ? <b style={{ color: '#0C8F7E' }}>{TRAD[t.requests.category] || t.requests.category} · </b> : null}{t.requests?.description || '—'}</div>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
+          {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
+        </div>
+        <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
         <div style={{ fontSize: 11, color: '#9aa6a3', marginTop: 3 }}>{txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}</div>
       </div>
       <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, flexShrink: 0, background: DONE.includes(t.status) ? 'rgba(18,179,156,.12)' : '#FFF7ED', color: DONE.includes(t.status) ? '#0C8F7E' : '#8a6520' }}>

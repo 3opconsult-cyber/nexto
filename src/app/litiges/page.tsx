@@ -13,6 +13,7 @@ const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage'
 export default function LitigesPage() {
   const router = useRouter()
   const [rows, setRows] = useState<any[]>([])
+  const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState('')
 
@@ -23,9 +24,20 @@ export default function LitigesPage() {
       if (!user) { router.push('/auth/login'); return }
       setUserId(user.id)
       const { data } = await supabase.from('disputes')
-        .select('*, transactions(id, requests(address, category))')
+        .select('*, transactions(id, requests(category))')
         .order('created_at', { ascending: false })
       setRows(data ?? [])
+
+      // Comme partout ailleurs, le nom de l'interlocuteur remplace l'adresse
+      // (jamais affichee ici) — cohérent avec la demo (nom du prestataire/
+      // client sur la carte de litige, pas l'adresse de la mission).
+      const txIds = (data ?? []).map((d: any) => d.transactions?.id).filter(Boolean)
+      if (txIds.length) {
+        const { data: nrows } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: txIds })
+        const map: Record<string, string> = {}
+        ;(nrows ?? []).forEach((r: any) => { if (r.full_name) map[r.transaction_id] = r.full_name })
+        setNames(map)
+      }
       setLoading(false)
     }
     load()
@@ -61,7 +73,7 @@ export default function LitigesPage() {
                     style={{ background: '#FFFBF2', border: '1px solid #F5D9A6', borderRadius: 14, padding: 14, marginBottom: 10, cursor: d.transactions?.id ? 'pointer' : 'default' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                       <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
-                        {d.transactions?.requests?.address || 'Mission'}
+                        {names[d.transactions?.id] || 'Mission'}
                       </span>
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#FFF7ED', color: '#8a6520', flexShrink: 0 }}>
                         {STATUS_LABELS[d.status] || d.status}

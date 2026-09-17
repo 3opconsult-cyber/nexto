@@ -70,22 +70,30 @@ export default function MessagesPage() {
             <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Elles apparaissent ici dès qu'une mission est réservée.</div>
           </div>
         )}
-        {rows.map(t => (
-          <button key={t.id} onClick={() => router.push(t.kind === 'support' ? '/support' : `/mission/${t.id}/chat`)}
-            style={{ display: 'block', width: '100%', textAlign: 'left', background: '#fff', border: t.kind === 'support' ? '1px solid #12B39C' : '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
-                {t.kind === 'support' ? 'Support PING' : t.counterpart}
-              </span>
-              <span style={{ fontSize: 10.5, color: '#9CA3AF', fontWeight: 600, flexShrink: 0 }}>
-                {new Date(t.lastMessage?.created_at || t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-              </span>
-            </div>
-            <div style={{ fontSize: 12, color: '#6E8592', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {t.lastMessage?.body || 'Aucun message — ouvrir la conversation'}
-            </div>
-          </button>
-        ))}
+        {rows.map(t => {
+          const name = t.kind === 'support' ? 'Support PING' : t.counterpart
+          return (
+            <button key={t.id} onClick={() => router.push(t.kind === 'support' ? '/support' : `/mission/${t.id}/chat`)}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', background: '#fff', border: t.kind === 'support' ? '1px solid #12B39C' : '1px solid #E7EDEB', borderRadius: 14, padding: 12, marginBottom: 10, cursor: 'pointer' }}>
+              <div style={{
+                width: 42, height: 42, borderRadius: 13, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff',
+                background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0C8F7E)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#d98a1f)' : 'linear-gradient(160deg,#6E8592,#4c6472)'),
+              }}>{(name || '?').charAt(0).toUpperCase()}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}</span>
+                  <span style={{ fontSize: 10.5, color: '#9CA3AF', fontWeight: 600, flexShrink: 0 }}>
+                    {new Date(t.lastMessage?.created_at || t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                  </span>
+                </div>
+                <div style={{ fontSize: 12, color: '#6E8592', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {t.lastMessage?.body || 'Aucun message — ouvrir la conversation'}
+                </div>
+              </div>
+            </button>
+          )
+        })}
       </div>
       <BottomTabBar />
     </div>
