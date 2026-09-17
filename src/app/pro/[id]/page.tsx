@@ -116,7 +116,7 @@ export default function ProDetailPage() {
             <div key={i} className="ping-rev">
               <div className="t">
                 <span className="n">{r.profiles?.full_name?.trim() || 'Client'}</span>
-                <span className="ping-stars">{'★'.repeat(Math.round(r.rating || 5))}</span>
+                <span className="ping-stars">{'★'.repeat(Math.round(r.stars || 5))}</span>
               </div>
               {r.comment && <p>{r.comment}</p>}
             </div>

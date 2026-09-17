@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import NavDrawer from '@/components/NavDrawer'
+import Modal from '@/components/Modal'
 import { DOC_TYPES } from '@/lib/documents'
 
 const ICONS: Record<string, JSX.Element> = {
@@ -21,7 +22,7 @@ const ICONS: Record<string, JSX.Element> = {
   ),
 }
 
-type DocRow = { kind: string; status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null }
+type DocRow = { kind: string; status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string }
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
   valid: { label: 'Validé', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
@@ -35,6 +36,8 @@ export default function ProDocumentsPage() {
   const [rows, setRows] = useState<Record<string, DocRow>>({})
   const [ready, setReady] = useState(false)
   const [uploadingKey, setUploadingKey] = useState<string | null>(null)
+  const [viewing, setViewing] = useState<{ key: string; url: string; isImage: boolean } | null>(null)
+  const [viewLoading, setViewLoading] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const pendingKey = useRef<string | null>(null)
 
@@ -42,7 +45,7 @@ export default function ProDocumentsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
-    const { data } = await supabase.from('documents').select('kind, status, storage_path').eq('owner_id', user.id)
+    const { data } = await supabase.from('documents').select('kind, status, storage_path, created_at').eq('owner_id', user.id)
     const map: Record<string, DocRow> = {}
     ;(data ?? []).forEach((d: any) => { map[d.kind] = d })
     setRows(map)
@@ -78,6 +81,15 @@ export default function ProDocumentsPage() {
     setUploadingKey(null)
   }
 
+  async function view(key: string, path: string) {
+    setViewLoading(key)
+    const supabase = createClient()
+    const { data, error } = await supabase.storage.from('documents').createSignedUrl(path, 120)
+    setViewLoading(null)
+    if (error || !data) return
+    setViewing({ key, url: data.signedUrl, isImage: /\.(jpe?g|png|gif|webp)$/i.test(path) })
+  }
+
   if (!ready) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#123644' }}>
@@ -105,12 +117,15 @@ export default function ProDocumentsPage() {
           const row = rows[doc.key]
           const st = row ? STATUS_LABEL[row.status] : null
           const busy = uploadingKey === doc.key
+          const viewingThis = viewLoading === doc.key
           return (
             <div key={doc.key} style={{ background: '#fff', borderRadius: 16, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 46, height: 46, borderRadius: 13, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div onClick={() => row?.storage_path && view(doc.key, row.storage_path)}
+                style={{ width: 46, height: 46, borderRadius: 13, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: row ? 'pointer' : 'default' }}>
                 {ICONS[doc.key]}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div onClick={() => row?.storage_path && view(doc.key, row.storage_path)}
+                style={{ flex: 1, minWidth: 0, cursor: row ? 'pointer' : 'default' }}>
                 <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{doc.label}</div>
                 {st ? (
                   <span style={{ display: 'inline-block', marginTop: 4, padding: '2px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: st.bg, color: st.fg }}>{st.label}</span>
@@ -120,6 +135,11 @@ export default function ProDocumentsPage() {
                   </div>
                 )}
               </div>
+              {row && (
+                <span onClick={() => view(doc.key, row.storage_path!)} style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', flexShrink: 0 }}>
+                  {viewingThis ? '…' : 'Voir'}
+                </span>
+              )}
               <button onClick={() => pickFile(doc.key)} disabled={busy}
                 style={{ padding: '8px 13px', borderRadius: 999, border: 'none', background: row ? '#F3F6F5' : '#123644', color: row ? '#123644' : '#fff', fontSize: 11.5, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap' }}>
                 {busy ? 'Envoi…' : row ? 'Remplacer' : 'Ajouter'}
@@ -128,6 +148,30 @@ export default function ProDocumentsPage() {
           )
         })}
       </div>
+
+      <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing ? DOC_TYPES.find(d => d.key === viewing.key)?.label : undefined}>
+        {viewing && (
+          <div>
+            <p style={{ fontSize: 12, color: '#6E8592', margin: '0 0 12px' }}>
+              Visible uniquement par vous et l&apos;équipe de qualification PING — jamais par les clients.
+            </p>
+            {viewing.isImage ? (
+              <img src={viewing.url} alt="Document" style={{ width: '100%', borderRadius: 12, border: '1px solid #E7EDEB', display: 'block' }} />
+            ) : (
+              <iframe src={viewing.url} style={{ width: '100%', height: 420, border: '1px solid #E7EDEB', borderRadius: 12 }} />
+            )}
+            {rows[viewing.key] && (
+              <div style={{ marginTop: 12, fontSize: 12, color: '#6E8592' }}>
+                Déposé le {new Date(rows[viewing.key].created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </div>
+            )}
+            <a href={viewing.url} download target="_blank" rel="noreferrer"
+              style={{ display: 'block', textAlign: 'center', marginTop: 14, padding: 13, borderRadius: 999, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'none' }}>
+              Télécharger le document
+            </a>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
