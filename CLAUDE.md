@@ -50,8 +50,14 @@ design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand
 - **3 modes de prix pro** : forfait, horaire, **sur devis** (enum `pricing_type` inclut `devis`).
 - **Langage déclaratif** : « pièce fournie », « assurance renseignée » — jamais « vérifiée/certifié/garanti ».
 - **Pas de GPS** pour le suivi, SAUF la validation d'arrivée « client absent » (photo horodatée + GPS).
-- **Adresse du RDV** visible seulement quand la mission est **confirmée = aucun devis en attente**
-  (voir DepartureBar : prop `confirmed`).
+- **Adresse du RDV** visible seulement quand la mission est **confirmée** — colonne
+  `transactions.price_confirmed` (posée par `mission/new` à la création, ou par l'acceptation
+  d'un devis dans le chat), jamais par une simple absence d'offre en attente (voir DepartureBar :
+  prop `confirmed`). `requests` n'est lisible en direct (RLS) que par son auteur ou les parties
+  à une transaction liée — jamais par un pro qui n'a pas encore répondu (ça, c'est `requests_nearby`,
+  colonnes limitées). Le nom de l'interlocuteur (messages/chat/agenda/litiges/avis) passe par les
+  RPC `transaction_counterparts` / `review_rater_names`, jamais par un embed direct sur `profiles`
+  (RLS strictement self-read : l'embed renvoie toujours null pour quelqu'un d'autre).
 
 ## Pièges techniques (ont coûté du temps)
 - RPC `providers_nearby` / `requests_nearby` : paramètres **`p_lat` / `p_lng`** (jamais `lat`/`lng`).
@@ -108,9 +114,9 @@ client, onboarding pro + KYC, dashboard pro, mes pièces, mes demandes (client),
 **Bonne surprise** : la facturation (3 documents — facture pour un prestataire immatriculé /
 récapitulatif pour un particulier non-immatriculé / relevé de commission PING tant qu'elle n'est pas
 immatriculée) est DÉJÀ implémentée et plus aboutie que la démo (`src/lib/invoice-pdf.ts` +
-`/mission/[id]/facture`, doc juridique détaillé dans le fichier). Pas à construire — à vérifier
-de bout en bout (le trigger DB pose-t-il bien les 3 lignes `invoices` en fin de mission ?) et à
-rendre plus visible dans le parcours.
+`/mission/[id]/facture`, doc juridique détaillé dans le fichier). VÉRIFIÉ de bout en bout (audit
+du 17/09, suite) : trigger `transactions_invoice_on_complete` → `generate_invoices()` pose bien les
+3 lignes `invoices` au passage à `completed`/`released`, jamais deux fois (garde `exists(...)`).
 
 **CORRIGÉ le 17/09 (session d'audit)** :
 - Client — `/client/avis` (avis publiés par le client, table `reviews` où `rater_id` = soi),
@@ -145,6 +151,43 @@ l'agenda du pro (démo : `v_booking`, « Choisir un créneau ») n'existe pas du
 exposé en créneaux réservables), pas un simple restylage — à confirmer avec Romain avant de la
 construire : garde-t-on le flux actuel (demande → devis négocié dans le chat), ou le remplace-t-on
 par un vrai calendrier de créneaux ?
+
+## Audit croisé + parcours complet bout en bout — 17/09/2026 (suite de session)
+Après la première passe d'audit (ci-dessus), 3 vérifications indépendantes (comportement réel des
+boutons/RLS, pas juste le visuel) puis un scénario complet particulier et pro tracés dans le code
+ont trouvé et corrigé :
+- **Fuite de sécurité** : `requests` avait une policy RLS `public read: true` + grant `SELECT` à
+  `anon` → toute la table (adresse exacte incluse) était lisible par n'importe qui via un appel API
+  direct, `requests_nearby` ne protégeait rien au niveau base. Policy remplacée (auteur ou parties
+  à une transaction liée uniquement), `anon` retiré.
+- `/pro/carte` : le toggle disponible/hors ligne ne touchait jamais `provider_profiles.is_active`
+  (useState local) — un pro pouvait se croire masqué en restant visible. Corrigé.
+- `/pro/[id]` : « Réserver » appelait la même fonction que « Contacter » (ouvrait juste un chat,
+  sans jamais passer par l'écran de prix `mission/new`). Corrigé.
+- Demande ouverte (client) : « + Publier une demande » menait à une impasse (`/mission/new` sans
+  `?pro=`) — aucun code ne créait jamais de `requests.status='open'`, le flux #2 ci-dessus n'avait
+  aucune alimentation réelle. Vraie page de création ajoutée (`/client/demandes/new` : titre,
+  date/créneau/fréquence, budget min-max, géoloc pour lat/lng), + bug corrigé : une demande avec
+  plusieurs pros répondants ne montrait que la DERNIÈRE transaction, les autres propositions
+  disparaissaient silencieusement.
+- Nom de l'interlocuteur toujours cassé (repli sur adresse/« Client »/« Prestataire ») dans
+  Messages, Agenda, Litiges, et les avis de la fiche pro — même cause partout (embed direct sur
+  `profiles`, RLS self-read). RPC dédiées `transaction_counterparts` / `review_rater_names`.
+- `/pro/dashboard` reconstruit en « Mon entreprise » identique à la démo (`p_profile` : carte
+  d'en-tête, Mon activité, Conformité, Mes pièces) au lieu d'une page à onglets/tuiles de stats ;
+  Tableau de bord enrichi (raccourcis tarifs/revenus/documents, prochains rendez-vous).
+- Litiges : lien mort vers `/mission/[id]/litige` (route supprimée) → renvoie vers le chat.
+- Carte `/map` (DemoShell) : « Contacter » sans être connecté renvoyait vers la fiche pro en boucle
+  au lieu de `/auth/login`.
+
+**Scénario bout en bout tracé dans le code (pas de vrai clic navigateur, sandbox sans accès fiable
+à la vraie Supabase) — confirmé sain** : inscription (trigger `on_auth_user_created` crée `profiles`)
+→ connexion → carte/recherche → réservation (`mission/new`, prix figé) ou demande ouverte/chat →
+négociation devis → QR arrivée (`scan/arrival`, RLS `tx participants update`) → QR fin
+(`scan/complete`, calcule la durée si horaire) → trigger facturation (3 documents) → avis
+(`ReviewModal`, recalcule la note du pro). Côté pro : onboarding (`provider_profiles.is_active=true`
+dès la fin du wizard) → KYC → visible carte → répond à une demande ou reçoit une réservation directe
+→ même chat/QR/facture → dashboard mis à jour.
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
