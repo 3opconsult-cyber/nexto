@@ -23,8 +23,14 @@ export interface ProviderNearby {
 export interface RequestNearby {
   id: string
   category: string
+  title: string | null
   description: string
   budget_cents: number | null
+  budget_min_cents: number | null
+  budget_max_cents: number | null
+  desired_date: string | null
+  desired_slot: string | null
+  frequency: string | null
   // Pas d'adresse ici par design : elle n'est communiquée qu'une fois la
   // mission confirmée (invariant CLAUDE.md), jamais pendant le parcours
   // "demandes ouvertes autour de moi" avant toute proposition.

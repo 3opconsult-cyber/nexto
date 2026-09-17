@@ -24,6 +24,16 @@ function agoTxt(iso: string) {
 function budgetTxt(cents: number | null) {
   return cents ? `${Math.round(cents / 100)} €` : 'Sur devis'
 }
+function budgetRangeTxt(r: RequestNearby) {
+  if (r.budget_min_cents || r.budget_max_cents) {
+    const min = r.budget_min_cents ? `${Math.round(r.budget_min_cents / 100)} €` : null
+    const max = r.budget_max_cents ? `${Math.round(r.budget_max_cents / 100)} €` : null
+    return min && max ? `${min} – ${max}` : (min || max || 'Sur devis')
+  }
+  return budgetTxt(r.budget_cents)
+}
+const SLOT_LABELS: Record<string, string> = { matin: 'Matin', 'apres-midi': 'Après-midi', soir: 'Soir' }
+const FREQ_LABELS: Record<string, string> = { ponctuel: 'Ponctuel', hebdomadaire: 'Hebdomadaire', mensuel: 'Mensuel' }
 
 export default function ProCartePage() {
   const router = useRouter()
@@ -91,18 +101,29 @@ export default function ProCartePage() {
         <div onClick={() => setSelectedId(null)} style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'var(--paper)', flex: '0 0 auto' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
         </div>
-        <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>{TRADES[selected.category] || selected.category}</b>
+        <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>{selected.title || TRADES[selected.category] || selected.category}</b>
       </div>
 
       <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: 12, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
           <span style={{ color: 'var(--slate)' }}>Distance</span><b style={{ color: 'var(--ink)' }}>à {distanceTxt(selected.distance_m)}</b>
         </div>
+        {selected.desired_date && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
+            <span style={{ color: 'var(--slate)' }}>Date souhaitée</span>
+            <b style={{ color: 'var(--ink)' }}>{new Date(selected.desired_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}{selected.desired_slot ? ` · ${SLOT_LABELS[selected.desired_slot] || selected.desired_slot}` : ''}</b>
+          </div>
+        )}
+        {selected.frequency && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
+            <span style={{ color: 'var(--slate)' }}>Fréquence</span><b style={{ color: 'var(--ink)' }}>{FREQ_LABELS[selected.frequency] || selected.frequency}</b>
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
           <span style={{ color: 'var(--slate)' }}>Publiée</span><b style={{ color: 'var(--ink)' }}>{agoTxt(selected.created_at)}</b>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
-          <span style={{ color: 'var(--slate)' }}>Budget indicatif</span><b style={{ color: 'var(--ink)' }}>{budgetTxt(selected.budget_cents)}</b>
+          <span style={{ color: 'var(--slate)' }}>Budget indicatif</span><b style={{ color: 'var(--ink)' }}>{budgetRangeTxt(selected)}</b>
         </div>
       </div>
 
@@ -147,8 +168,8 @@ export default function ProCartePage() {
             <div key={r.id} onClick={() => setSelectedId(r.id)}
               style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{TRADES[r.category] || r.category}</b>
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', whiteSpace: 'nowrap' }}>{budgetTxt(r.budget_cents)}</span>
+                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{r.title || TRADES[r.category] || r.category}</b>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', whiteSpace: 'nowrap' }}>{budgetRangeTxt(r)}</span>
               </div>
               <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}</div>
             </div>
