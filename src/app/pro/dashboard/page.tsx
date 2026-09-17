@@ -37,6 +37,9 @@ export default function ProDashboard() {
   const [available, setAvailable] = useState(true)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'overview' | 'missions' | 'factures' | 'profil'>('overview')
+  const [docs, setDocs] = useState<Record<string, { status: string }>>({})
+  const [servicesCount, setServicesCount] = useState(0)
+  const [city, setCity] = useState('')
 
   useEffect(() => {
     const supabase = createClient()
@@ -44,8 +47,8 @@ export default function ProDashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
 
-      const { data: profile } = await supabase.from('profiles').select('first_name').eq('id', user.id).single()
-      if (profile) setFirstName(profile.first_name || '')
+      const { data: profile } = await supabase.from('profiles').select('first_name, city').eq('id', user.id).single()
+      if (profile) { setFirstName(profile.first_name || ''); setCity(profile.city || '') }
 
       const { data: pp } = await supabase.from('provider_profiles').select('*').eq('id', user.id).single()
       if (!pp) { router.push('/pro/onboarding'); return }
@@ -56,6 +59,14 @@ export default function ProDashboard() {
 
       const { data: inv } = await supabase.from('invoices').select('*').eq('issuer_id', pp.id).order('created_at', { ascending: false })
       setInvoices(inv ?? [])
+
+      const { data: docRows } = await supabase.from('documents').select('kind, status').eq('owner_id', user.id)
+      const docMap: Record<string, { status: string }> = {}
+      ;(docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
+      setDocs(docMap)
+
+      const { count } = await supabase.from('services').select('id', { count: 'exact', head: true }).eq('provider_id', pp.id)
+      setServicesCount(count ?? 0)
 
       setLoading(false)
     }
@@ -191,51 +202,78 @@ export default function ProDashboard() {
           </div>
         )}
 
-        {tab === 'profil' && pro && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Service principal</div>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{TRADES[pro.trade] || pro.trade}</div>
+        {tab === 'profil' && pro && (() => {
+          const idOk = docs.identite?.status === 'valid' || docs.identite?.status === 'pending'
+          const rcOk = docs.rcpro?.status === 'valid' || docs.rcpro?.status === 'pending'
+          const tarif = [
+            pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(2)} € forfait` : null,
+            (pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0) ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h` : null,
+            pro.pricing_type === 'devis' ? 'Sur devis' : null,
+          ].filter(Boolean).join(' · ') || 'Non renseigné'
+          const Row = ({ icon, title, subtitle, onClick, badge }: { icon: JSX.Element; title: string; subtitle: string; onClick?: () => void; badge?: { label: string; ok: boolean } }) => (
+            <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: onClick ? 'pointer' : 'default' }}>
+              <div style={{ width: 38, height: 38, borderRadius: 11, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{title}</div>
+                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{subtitle}</div>
+              </div>
+              {badge && (
+                <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0, background: badge.ok ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: badge.ok ? '#0C8F7E' : '#9A6712' }}>{badge.label}</span>
+              )}
+              {onClick && <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>}
             </div>
-            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Tarif</div>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>
-                {[
-                  pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(2)} € forfait` : null,
-                  (pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0) ? `${(pro.hourly_rate_cents / 100).toFixed(2)} €/h` : null,
-                ].filter(Boolean).join(' · ')}
+          )
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5', display: 'flex', gap: 12, alignItems: 'center' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: '#123644', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19, flex: '0 0 auto' }}>
+                  {(pro.company_name || firstName || '?').charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{pro.company_name || firstName || 'Mon entreprise'}</div>
+                  <div style={{ fontSize: 12, color: '#6E8592', marginTop: 2 }}>Prestataire · {TRADES[pro.trade] || pro.trade}{city ? ` · ${city}` : ''}</div>
+                </div>
+                <span onClick={() => router.push('/pro/onboarding')} style={{ color: '#0C8F7E', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>Modifier</span>
+              </div>
+
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em' }}>Identité &amp; sécurité</div>
+              <Row onClick={() => router.push('/pro/documents')}
+                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="8" cy="12" r="2.2" /></svg>}
+                title="Pièce d'identité" subtitle="Déposée sur PING · authenticité non garantie"
+                badge={{ label: idOk ? 'Fournie' : 'À fournir', ok: idOk }} />
+              <Row onClick={() => router.push('/pro/documents')}
+                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>}
+                title="Assurance RC Pro" subtitle="Renseignée par vous · casse et dommage"
+                badge={{ label: rcOk ? 'Renseignée' : 'À renseigner', ok: rcOk }} />
+
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 4 }}>Mon activité professionnelle</div>
+              <Row onClick={() => router.push('/pro/onboarding')}
+                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M20 6L9 17l-5-5" /></svg>}
+                title={TRADES[pro.trade] || pro.trade} subtitle={pro.bio || 'Aucune description ajoutée'} />
+              <Row onClick={() => router.push('/pro/tarifs')}
+                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
+                title="Tarifs & prestations" subtitle={`${tarif}${servicesCount ? ` · ${servicesCount} prestation${servicesCount > 1 ? 's' : ''} au catalogue` : ''}`} />
+              <Row icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M4 6h16v13H4z" /></svg>}
+                title="Statut juridique" subtitle={LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status} />
+
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 4 }}>Mon entreprise</div>
+              <Row onClick={() => router.push('/pro/revenus')}
+                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M3 3v18h18M7 14l3-3 3 3 5-5" /></svg>}
+                title="Mes revenus & déclaration" subtitle="Récapitulatif mensuel et annuel, DAC7" />
+              <Row onClick={() => router.push('/pro/documents')}
+                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><path d="M14 4v6h6" /><path d="M4 4h10l6 6v10H4z" /></svg>}
+                title="Mes pièces" subtitle="Identité, assurance, justificatifs" />
+              <Row onClick={() => router.push('/pro/onboarding')}
+                icon={<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>}
+                title="Modifier mes informations" subtitle="Statut, coordonnées, description" />
+
+              <div onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
+                style={{ textAlign: 'center', marginTop: 6, color: '#9CA3AF', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+                Se déconnecter
               </div>
             </div>
-            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Statut</div>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status}</div>
-            </div>
-            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Description</div>
-              <div style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5 }}>{pro.bio || 'Aucune description ajoutée.'}</div>
-            </div>
-            <button onClick={() => router.push('/pro/onboarding')}
-              style={{ width: '100%', padding: 13, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
-              Paramétrer mes services &amp; tarifs
-            </button>
-            <button onClick={() => router.push('/pro/tarifs')}
-              style={{ width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
-              Mes tarifs (catalogue de prestations)
-            </button>
-            <button onClick={() => router.push('/pro/revenus')}
-              style={{ width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
-              Mes revenus &amp; déclaration
-            </button>
-            <button onClick={() => router.push('/pro/onboarding')}
-              style={{ width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
-              Modifier mes informations
-            </button>
-            <button onClick={() => router.push('/pro/onboarding/documents')}
-              style={{ width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
-              Gérer mes documents
-            </button>
-          </div>
-        )}
+          )
+        })()}
       </div>
 
       {/* Nav bas */}
