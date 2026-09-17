@@ -38,6 +38,7 @@ export default function ProDashboard() {
   const [tab, setTab] = useState<'hub' | 'overview' | 'missions' | 'factures'>('hub')
   const [docs, setDocs] = useState<Record<string, { status: string }>>({})
   const [city, setCity] = useState('')
+  const [names, setNames] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const supabase = createClient()
@@ -54,6 +55,12 @@ export default function ProDashboard() {
 
       const { data: tx } = await supabase.from('transactions').select('*').eq('seller_id', pp.id).order('created_at', { ascending: false })
       setTransactions(tx ?? [])
+      if (tx?.length) {
+        const { data: nrows } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: tx.map((t: any) => t.id) })
+        const nmap: Record<string, string> = {}
+        ;(nrows ?? []).forEach((n: any) => { if (n.full_name) nmap[n.transaction_id] = n.full_name })
+        setNames(nmap)
+      }
 
       const { data: inv } = await supabase.from('invoices').select('*').eq('issuer_id', pp.id).order('created_at', { ascending: false })
       setInvoices(inv ?? [])
@@ -230,6 +237,27 @@ export default function ProDashboard() {
               <div style={{ padding: 18, borderRadius: 14, background: '#F3F6F5', fontSize: 12.5, color: '#6E8592', fontWeight: 600, textAlign: 'center' }}>
                 Aucune mission pour l'instant. Votre profil est {available ? 'visible sur la carte' : 'actuellement masqué'} — les demandes apparaîtront ici dès qu'un client vous contacte.
               </div>
+            )}
+
+            {transactions.some(t => ['pending', 'arrived'].includes(t.status)) && (
+              <>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 8 }}>Prochains rendez-vous</div>
+                {transactions.filter(t => ['pending', 'arrived'].includes(t.status)).slice(0, 3).map(t => (
+                  <button key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: 12, borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', marginBottom: 8 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: 'linear-gradient(160deg,#F2A93B,#d98a1f)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                      {(names[t.id] || '?').charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: '#123644' }}>{names[t.id] || 'Client'}</div>
+                      <div style={{ fontSize: 11, color: '#6E8592', marginTop: 1 }}>{new Date(t.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</div>
+                    </div>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: t.status === 'arrived' ? 'rgba(18,179,156,.12)' : '#FFF7ED', color: t.status === 'arrived' ? '#0C8F7E' : '#8a6520' }}>
+                      {t.status === 'arrived' ? 'En cours' : 'À confirmer'}
+                    </span>
+                  </button>
+                ))}
+              </>
             )}
           </>
         )}
