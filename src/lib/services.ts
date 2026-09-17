@@ -118,24 +118,30 @@ export async function openConversation(proId: string): Promise<{ missionId: stri
 
   const { data: pro } = await supabase
     .from('provider_profiles')
-    .select('trade, base_price_cents, hourly_rate_cents, pricing_type')
+    .select('trade, base_price_cents, hourly_rate_cents, pricing_type, included_hours')
     .eq('id', proId).single()
   if (!pro) return { missionId: null, error: 'pro_not_found' }
 
   const subtotal = pro.base_price_cents ?? pro.hourly_rate_cents ?? 0
   const buyerFee = Math.round(subtotal * (5 / 100))
   const sellerFee = Math.round(subtotal * (11 / 100))
+  const hasOvertime = pro.pricing_type === 'forfait' && pro.included_hours != null && pro.hourly_rate_cents != null
 
-  const { data: req } = await supabase.from('requests').insert({
-    requester_id: user.id, category: pro.trade, status: 'matched',
+  // description est NOT NULL en base (aucun defaut) : sans elle cet insert
+  // echouait silencieusement a chaque "Contacter" depuis la carte/fiche pro —
+  // trouve en executant reellement le scenario, pas juste en relisant le code.
+  const { data: req, error: reqErr } = await supabase.from('requests').insert({
+    requester_id: user.id, category: pro.trade, description: '', status: 'matched',
   }).select().single()
-  if (!req) return { missionId: null, error: 'request_failed' }
+  if (!req) return { missionId: null, error: reqErr?.message || 'request_failed' }
 
   const { data: tx } = await supabase.from('transactions').insert({
     kind: 'service', buyer_id: user.id, seller_id: proId, request_id: req.id,
     subtotal_cents: subtotal, buyer_fee_cents: buyerFee, seller_fee_cents: sellerFee,
     total_charged_cents: subtotal + buyerFee, payout_cents: subtotal - sellerFee,
-    hourly_rate_cents: pro.pricing_type === 'horaire' ? pro.hourly_rate_cents : null,
+    hourly_rate_cents: (pro.pricing_type === 'horaire' || hasOvertime) ? pro.hourly_rate_cents : null,
+    included_hours: hasOvertime ? pro.included_hours : null,
+    base_forfait_cents: hasOvertime ? pro.base_price_cents : null,
     status: 'pending',
   }).select().single()
   if (!tx) return { missionId: null, error: 'tx_failed' }

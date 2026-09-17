@@ -34,9 +34,13 @@ function MissionForm() {
 
   const hasFlat = !!pro && pro.base_price_cents > 0
   const hasHourly = !!pro && pro.hourly_rate_cents != null && pro.hourly_rate_cents > 0
+  // Forfait + depassement : le taux horaire n'est pas un mode alternatif, il ne
+  // s'applique qu'au-dela des heures incluses — le client ne choisit pas entre
+  // les deux, il n'y a qu'un seul prix de depart (le forfait).
+  const hasOvertime = hasFlat && hasHourly && pro?.included_hours != null
   const subtotalCents = pro
-    ? (mode === 'horaire'
-        ? Math.round((pro.hourly_rate_cents || 0) * Number(estimatedHours || 0))
+    ? (hasOvertime ? pro.base_price_cents
+        : mode === 'horaire' ? Math.round((pro.hourly_rate_cents || 0) * Number(estimatedHours || 0))
         : pro.base_price_cents)
     : 0
   const buyerFee = Math.round(subtotalCents * BUYER_RATE)
@@ -54,7 +58,11 @@ function MissionForm() {
     if (!user) { router.push('/auth/login'); return }
 
     const { data: req, error: reqErr } = await supabase.from('requests').insert({
-      requester_id: user.id, category: pro.trade, description: description || null,
+      // description est NOT NULL en base : le champ est facultatif a l'ecran,
+      // "|| null" faisait donc echouer la reservation des que le client ne
+      // remplissait pas la description (jamais declenche par les tests, ou
+      // elle etait toujours remplie a la main).
+      requester_id: user.id, category: pro.trade, description: description.trim(),
       address: address.trim(), budget_cents: totalTtc, status: 'matched',
     }).select().single()
     if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
@@ -64,7 +72,10 @@ function MissionForm() {
       kind: 'service', buyer_id: user.id, seller_id: pro.id, request_id: req.id,
       subtotal_cents: subtotalCents, buyer_fee_cents: buyerFee, seller_fee_cents: sellerFee,
       total_charged_cents: totalTtc, payout_cents: subtotalCents - sellerFee,
-      hourly_rate_cents: mode === 'horaire' ? pro.hourly_rate_cents : null, status: 'pending',
+      hourly_rate_cents: hasOvertime ? pro.hourly_rate_cents : (mode === 'horaire' ? pro.hourly_rate_cents : null),
+      included_hours: hasOvertime ? pro.included_hours : null,
+      base_forfait_cents: hasOvertime ? pro.base_price_cents : null,
+      status: 'pending',
       price_confirmed: true,
     }).select().single()
     if (txErr || !tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
@@ -82,7 +93,11 @@ function MissionForm() {
         </div>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 22, color: '#fff' }}>Réserver</h1>
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>
-          {pro ? `${pro.trade} — ${[hasFlat ? (pro.base_price_cents/100).toFixed(2)+' € forfait' : null, hasHourly ? (pro.hourly_rate_cents/100).toFixed(2)+' €/h' : null].filter(Boolean).join(' · ')}` : 'Chargement…'}
+          {pro
+            ? hasOvertime
+              ? `${pro.trade} — ${(pro.base_price_cents/100).toFixed(2)} € (${pro.included_hours} h incluse${pro.included_hours > 1 ? 's' : ''}), puis ${(pro.hourly_rate_cents/100).toFixed(2)} €/h au-delà`
+              : `${pro.trade} — ${[hasFlat ? (pro.base_price_cents/100).toFixed(2)+' € forfait' : null, hasHourly ? (pro.hourly_rate_cents/100).toFixed(2)+' €/h' : null].filter(Boolean).join(' · ')}`
+            : 'Chargement…'}
         </p>
       </div>
 
@@ -99,7 +114,7 @@ function MissionForm() {
             style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 13.5, fontFamily: 'inherit' }} />
         </label>
 
-        {hasFlat && hasHourly && (
+        {hasFlat && hasHourly && !hasOvertime && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             {(['forfait', 'horaire'] as const).map(t => (
               <button key={t} onClick={() => setMode(t)}
@@ -110,7 +125,14 @@ function MissionForm() {
           </div>
         )}
 
-        {mode === 'horaire' && (
+        {hasOvertime && (
+          <div style={{ padding: 13, borderRadius: 12, background: 'rgba(242,169,59,.1)', fontSize: 12.5, color: '#8a6520', marginBottom: 16, lineHeight: 1.5 }}>
+            Forfait de {(pro.base_price_cents/100).toFixed(2)} € incluant {pro.included_hours} h. Au-delà,
+            {' '}{(pro.hourly_rate_cents/100).toFixed(2)} €/h supplémentaire — ajusté automatiquement au scan de sortie selon la durée réelle.
+          </div>
+        )}
+
+        {mode === 'horaire' && !hasOvertime && (
           <label style={{ display: 'block', marginBottom: 16 }}>
             <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
             <input type="number" value={estimatedHours} onChange={e => setEstimatedHours(e.target.value)} min="0.5" step="0.5"

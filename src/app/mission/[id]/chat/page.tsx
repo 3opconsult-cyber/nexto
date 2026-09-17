@@ -16,6 +16,8 @@ interface Msg {
   offer_cents: number | null
   offer_status: 'pending' | 'accepted' | 'declined' | null
   photo_path: string | null
+  offer_hourly_cents: number | null
+  offer_included_hours: number | null
 }
 
 export default function ChatPage() {
@@ -32,6 +34,8 @@ export default function ChatPage() {
   const [counterpart, setCounterpart] = useState<string>('Conversation')
   const [editingPrice, setEditingPrice] = useState(false)
   const [newAmount, setNewAmount] = useState('')
+  const [newHourly, setNewHourly] = useState('')
+  const [newIncludedHours, setNewIncludedHours] = useState('')
   const [newAmountReason, setNewAmountReason] = useState('')
   const [newAmountPhoto, setNewAmountPhoto] = useState<File | null>(null)
   const [sendingOffer, setSendingOffer] = useState(false)
@@ -130,11 +134,16 @@ export default function ChatPage() {
       if (!upErr) photoPath = path
     }
 
+    const hourlyCents = newHourly ? Math.round(Number(newHourly) * 100) : null
+    const includedHoursNum = (hourlyCents && newIncludedHours) ? Number(newIncludedHours) : null
+
     await supabase.from('messages').insert({
       transaction_id: transactionId,
       sender_id: userId,
       kind: 'offer',
       offer_cents: cents,
+      offer_hourly_cents: hourlyCents,
+      offer_included_hours: includedHoursNum,
       offer_status: 'pending',
       photo_path: photoPath,
       body: newAmountReason.trim() || `Nouveau tarif proposé (au lieu de ${(tx.subtotal_cents / 100).toFixed(2)} €)`,
@@ -142,6 +151,8 @@ export default function ChatPage() {
 
     setEditingPrice(false)
     setNewAmount('')
+    setNewHourly('')
+    setNewIncludedHours('')
     setNewAmountReason('')
     setNewAmountPhoto(null)
     setSendingOffer(false)
@@ -152,6 +163,10 @@ export default function ChatPage() {
     const cents = m.offer_cents
     const buyerFee = Math.round(cents * BUYER_RATE)
     const sellerFee = Math.round(cents * SELLER_RATE)
+    // Forfait + depassement si la proposition porte un tarif de depassement ;
+    // sinon prix sec, comme avant (efface toute structure de depassement
+    // heritee d'une proposition precedente).
+    const hasOvertime = m.offer_hourly_cents != null && m.offer_included_hours != null
     const supabase = createClient()
     const { data: updated, error } = await supabase.from('transactions').update({
       subtotal_cents: cents,
@@ -160,6 +175,9 @@ export default function ChatPage() {
       total_charged_cents: cents + buyerFee,
       payout_cents: cents - sellerFee,
       price_confirmed: true,
+      hourly_rate_cents: hasOvertime ? m.offer_hourly_cents : null,
+      included_hours: hasOvertime ? m.offer_included_hours : null,
+      base_forfait_cents: hasOvertime ? cents : null,
     }).eq('id', transactionId).select().single()
     if (!error && updated) {
       setTx(updated)
@@ -177,6 +195,8 @@ export default function ChatPage() {
   async function counterOffer(m: Msg) {
     await declineOffer(m)
     setNewAmount(m.offer_cents ? String(m.offer_cents / 100) : '')
+    setNewHourly(m.offer_hourly_cents ? String(m.offer_hourly_cents / 100) : '')
+    setNewIncludedHours(m.offer_included_hours != null ? String(m.offer_included_hours) : '')
     setNewAmountReason('')
     setNewAmountPhoto(null)
     setEditingPrice(true)
@@ -264,6 +284,13 @@ export default function ChatPage() {
             <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
             <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5" placeholder="Nouveau montant en €"
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 10 }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+              <input type="number" value={newIncludedHours} onChange={e => setNewIncludedHours(e.target.value)} min="0" step="0.5" placeholder="Heures incluses (facultatif)"
+                style={{ flex: 1, padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
+              <input type="number" value={newHourly} onChange={e => setNewHourly(e.target.value)} min="0" step="0.5" placeholder="€/h au-delà"
+                style={{ flex: 1, padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
+            </div>
+            <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 10 }}>Laisser vide pour un montant fixe simple — sinon le montant ci-dessus devient un forfait avec dépassement horaire.</p>
             <textarea value={newAmountReason} onChange={e => setNewAmountReason(e.target.value)} rows={2} placeholder="Motif (facultatif)"
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, fontFamily: 'inherit' }} />
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 12, border: '1px dashed #DCE5E3', marginBottom: 14, cursor: 'pointer' }}>
@@ -304,6 +331,11 @@ export default function ChatPage() {
                   <span style={{ fontSize: 12, color: '#6E8592', lineHeight: 1.4 }}>{m.body}</span>
                   <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', whiteSpace: 'nowrap' }}>{((m.offer_cents || 0) / 100).toFixed(2)} €</span>
                 </div>
+                {m.offer_hourly_cents != null && m.offer_included_hours != null && (
+                  <div style={{ fontSize: 11, color: '#8a6520', marginBottom: 6 }}>
+                    {m.offer_included_hours} h incluse{m.offer_included_hours > 1 ? 's' : ''}, puis {(m.offer_hourly_cents / 100).toFixed(2)} €/h au-delà
+                  </div>
+                )}
                 {m.photo_path && (
                   photoUrls[m.id]
                     ? <img src={photoUrls[m.id]} alt="Photo à l'appui" style={{ width: '100%', borderRadius: 10, marginTop: 8, display: 'block' }} />

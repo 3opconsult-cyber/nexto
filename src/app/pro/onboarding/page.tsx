@@ -15,6 +15,7 @@ export default function ProOnboarding() {
   const [services, setServices] = useState<string[]>([])
   const [flatRate, setFlatRate] = useState('')
   const [hourlyRate, setHourlyRate] = useState('')
+  const [includedHours, setIncludedHours] = useState('')
   const [quoteMode, setQuoteMode] = useState(false)
   const [status, setStatus] = useState<Status>(null)
   const [companyQuery, setCompanyQuery] = useState('')
@@ -66,6 +67,7 @@ export default function ProOnboarding() {
         if (pp.trade) setServices([pp.trade, ...extraNames])
         setFlatRate(pp.base_price_cents > 0 ? String(pp.base_price_cents / 100) : '')
         setHourlyRate(pp.hourly_rate_cents != null ? String(pp.hourly_rate_cents / 100) : '')
+        setIncludedHours(pp.included_hours != null ? String(pp.included_hours) : '')
         if (pp.pricing_type === 'devis') setQuoteMode(true)
         setStatus(pp.legal_status === 'particulier' ? 'particulier' : 'professionnel')
         setSiret(pp.siret || '')
@@ -112,6 +114,7 @@ export default function ProOnboarding() {
 
     const flatCents = Math.round(Number(flatRate || 0) * 100)
     const hourlyCents = hourlyRate ? Math.round(Number(hourlyRate) * 100) : null
+    const includedHoursNum = (flatCents > 0 && includedHours) ? Number(includedHours) : null
     const legalStatus = status === 'particulier'
       ? 'particulier'
       : (selectedCompany ? guessLegalStatus(selectedCompany.natureJuridique) : 'auto_entrepreneur')
@@ -129,6 +132,7 @@ export default function ProOnboarding() {
       pricing_type: quoteMode ? 'devis' : (flatCents > 0 ? 'forfait' : 'horaire'),
       base_price_cents: quoteMode ? 0 : flatCents,
       hourly_rate_cents: quoteMode ? null : hourlyCents,
+      included_hours: quoteMode ? null : includedHoursNum,
       bio,
       is_active: true,
       legal_status: legalStatus,
@@ -198,8 +202,17 @@ export default function ProOnboarding() {
               <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Forfait (€)</span>
               <input type="number" min="0" step="0.5" value={flatRate} onChange={e => setFlatRate(e.target.value)} placeholder="25" style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
             </label>
+            {flatRate && (
+              <label>
+                <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Durée incluse dans ce forfait (heures, facultatif)</span>
+                <input type="number" min="0" step="0.5" value={includedHours} onChange={e => setIncludedHours(e.target.value)} placeholder="Ex. 3" style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
+                <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: -10, marginBottom: 16 }}>
+                  Si renseigné, le taux horaire ci-dessous s&apos;applique uniquement au-delà de cette durée — pas en remplacement du forfait.
+                </p>
+              </label>
+            )}
             <label>
-              <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Taux horaire (€/h)</span>
+              <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>{flatRate && includedHours ? 'Taux horaire au-delà (€/h)' : 'Taux horaire (€/h)'}</span>
               <input type="number" min="0" step="0.5" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} placeholder="18" style={{ ...inputStyle, marginTop: 6 }} />
             </label>
           </>

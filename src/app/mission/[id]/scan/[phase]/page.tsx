@@ -48,7 +48,21 @@ export default function ScanQR() {
         const updates: Record<string, unknown> = {
           completed_at: now.toISOString(), status: 'completed', duration_minutes: mins,
         }
-        if (tx.hourly_rate_cents) {
+        if (tx.base_forfait_cents != null && tx.included_hours != null && tx.hourly_rate_cents) {
+          // Forfait + depassement : le forfait est du integralement, seules les
+          // heures au-dela de celles incluses sont facturees au tarif de
+          // depassement — jamais l'inverse (le forfait ne se substitue pas).
+          const includedMinutes = tx.included_hours * 60
+          const overtimeHours = Math.max(0, (mins - includedMinutes) / 60)
+          const subtotal = tx.base_forfait_cents + Math.round(tx.hourly_rate_cents * overtimeHours)
+          const buyerFee = Math.round(subtotal * BUYER_RATE)
+          const sellerFee = Math.round(subtotal * SELLER_RATE)
+          updates.subtotal_cents = subtotal
+          updates.buyer_fee_cents = buyerFee
+          updates.seller_fee_cents = sellerFee
+          updates.total_charged_cents = subtotal + buyerFee
+          updates.payout_cents = subtotal - sellerFee
+        } else if (tx.hourly_rate_cents) {
           const subtotal = Math.round(tx.hourly_rate_cents * (mins / 60))
           const buyerFee = Math.round(subtotal * BUYER_RATE)
           const sellerFee = Math.round(subtotal * SELLER_RATE)
