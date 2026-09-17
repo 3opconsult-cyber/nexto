@@ -189,5 +189,68 @@ négociation devis → QR arrivée (`scan/arrival`, RLS `tx participants update`
 dès la fin du wizard) → KYC → visible carte → répond à une demande ou reçoit une réservation directe
 → même chat/QR/facture → dashboard mis à jour.
 
+## Scénario complet exécuté en conditions réelles — 17/09/2026 (demande explicite de Romain)
+Contrairement aux passes précédentes (relecture de code + RLS), celle-ci a exécuté un vrai scénario
+avec de vraies données en base (comptes créés via un vrai signup, pas une simulation) : inscription →
+onboarding pro (forfait 100 € / 3 h incluses / 25 €/h au-delà, SIRET, KYC identité+RC pro) →
+inscription client (KYC identité) → client contacte le pro → devis initial du pro (100 €/3 h/25 €/h)
+→ contre-proposition du client (80 €/3 h/15 €/h) → acceptation par le pro → QR arrivée → intervention
+de 5 h → QR fin → facturation automatique (80 € + 2 h de dépassement × 15 € = **110,00 €**) → avis
+5 étoiles + pourboire 15 € + commentaire → note du pro recalculée. Comptes utilisés :
+`audit.pro.claude@ping-demo.invalid` / `audit.client.claude@ping-demo.invalid` (mdp `AuditPing2026!`),
+laissés en base pour inspection dans les dashboards.
+
+**Trouvé et corrigé pendant ce scénario (une exécution réelle attrape ce qu'une relecture de code rate)** :
+- **BUG CRITIQUE déjà en prod** : `openConversation()` (bouton « Contacter » depuis la carte ou une
+  fiche pro) n'envoyait jamais de `description` à l'insertion dans `requests` — colonne `NOT NULL`
+  sans défaut. **Toute ouverture de conversation depuis la carte échouait silencieusement.** Corrigé
+  (`description: ''`). Même risque latent dans `mission/new` si le champ description (facultatif à
+  l'écran) restait vide (`description || null` au lieu d'une chaîne vide) — corrigé aussi, jamais
+  déclenché par les tests précédents car la description était toujours remplie à la main.
+- **Modèle de prix manquant** : forfait et horaire étaient mutuellement exclusifs ; un forfait avec
+  heures incluses puis dépassement horaire (le cas demandé) n'existait pas — le calcul de fin de
+  mission écrasait le forfait dès qu'un tarif horaire était présent. Construit : `included_hours`
+  (provider_profiles + transactions) + `base_forfait_cents` (transactions), calcul au scan de sortie,
+  formulaire onboarding, écran de réservation, et négociation dans le chat (l'offre/contre-offre peut
+  désormais porter un forfait + heures incluses + tarif de dépassement).
+- **Cron oublié et trompeur** : `auto_release_completed_transactions` (toutes les 15 min) faisait
+  passer une mission terminée à `released` (affiché « Réglée », vert) 24 h après la fin sans litige
+  ouvert — alors que Stripe n'est pas branché et qu'aucun paiement réel n'a jamais lieu. Contredisait
+  frontalement l'invariant documenté plus haut (« held/released ne sont jamais posés »). Désactivé
+  (`cron.unschedule`), et les 3 transactions déjà mal étiquetées remises à `completed`.
+
+**Confirmé sain par l'exécution réelle** : trigger de création de profil au signup · upload KYC +
+statuts · visibilité carte (position statique du pro, `provider_profiles.lat/lng`) · négociation
+devis avec accept/decline/contre-offre · RLS scan QR (`tx participants update`) · calcul de durée et
+facturation automatique, y compris le nouveau cas forfait+dépassement · les 3 documents de facturation
+avec les bons montants (`FACT` 110,00 €, `PING-C` 5,50 €, `PING-V` 12,10 €) · avis avec pourboire et
+recalcul automatique de la note du pro.
+
+**Limites structurelles constatées, aucune n'est un bug — décisions déjà connues ou nouvelles** :
+- **RIB / carte bancaire** : ne sont collectés nulle part (ni onboarding pro, ni profil client) —
+  cohérent avec Stripe non branché (bug #4) ; les construire sans Stripe derrière serait une fausse
+  UI de paiement, contraire au principe déjà appliqué à « Moyens de paiement ». Vrai jeton bancaire
+  = vrai chantier Stripe, pas un ajout ponctuel.
+- **Aucun débit réel n'a jamais lieu** : tous les montants (total_charged_cents, payout_cents) sont
+  déclaratifs, jamais prélevés — cohérent avec bug #4, mais à garder en tête à chaque lecture de
+  dashboard : « Réglée » n'a jamais voulu dire « payé » (voir cron ci-dessus).
+- **Pas de suivi GPS en direct** : seule la position statique déclarée du pro apparaît sur la carte
+  (recherche), aucun point mobile pendant le trajet/l'intervention — invariant métier déjà documenté,
+  pas un manque.
+- **RLS `invoices` un peu plus permissive que l'invariant documenté** : les deux lignes de commission
+  (`commission_client`/`commission_pro`) référencent les DEUX parties de la transaction dans leurs
+  colonnes `issuer_id`/`client_id`, donc la policy RLS (`issuer_id OR client_id`) laisse chaque partie
+  lire techniquement aussi la commission de l'autre via un appel API direct. L'écran `/mission/[id]/
+  facture` filtre correctement côté application (chacun ne voit que sa propre commission + la
+  prestation) — donc rien de visible dans l'app — mais l'invariant « RLS invoices correcte » est
+  approximatif : c'est un filtrage applicatif, pas une garantie base de données. Pas corrigé cette
+  session (risque de casser l'affichage existant pour un gain de confidentialité marginal, les taux
+  5 %/11 % étant publics et donc les montants déductibles de toute façon) — à visiter si un jour ça
+  compte davantage (ex. API publique, export comptable tiers).
+- **Réservation par créneau/calendrier** : toujours pas construite (décision produit en attente,
+  déjà notée plus haut).
+
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
+Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /
+audit.client.claude@ping-demo.invalid, mdp AuditPing2026!.
