@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Deuxième volet de la série pro (après ig-pro-v2 "à quelques mètres") —
+   même gabarit exact, sur l'angle temps administratif / temps de métier.
+   Romain a donné deux "Et si" liés par une relation de cause à effet
+   (moins d'administratif -> plus de temps de production) : plutôt que
+   deux posts quasi identiques, on les assemble en question + réponse
+   courte, comme le permettait déjà le gabarit (ligne .q2). Contrairement à
+   la v4 retoquée, la réponse ici est vérifiable (facturation auto déjà en
+   prod) donc pas de risque de survente. */
+:root{--M:86px;--U:43px}
+html,body{width:1080px;height:1350px;overflow:hidden;background:var(--paper)}
+.sheet{width:1080px;height:1350px;background:var(--paper);color:var(--ink);position:relative}
+.stage{position:relative;height:420px;margin-top:calc(var(--U)*3.4)}
+.pulse{position:absolute;border-radius:50%;border:2px solid rgba(18,179,156,.32)}
+.pulse.p1{width:260px;height:260px;left:10px;bottom:-72px;opacity:.55}
+.pulse.p2{width:390px;height:390px;left:-55px;bottom:-137px;opacity:.32}
+.pulse.p3{width:520px;height:520px;left:-120px;bottom:-202px;opacity:.16}
+.stage .device{position:absolute;left:0;bottom:0}
+.q1{font-family:var(--fh);font-weight:700;font-size:64px;line-height:1.18;letter-spacing:-.02em;margin-top:58px;max-width:900px}
+.q2{font-family:var(--fh);font-weight:600;font-size:32px;line-height:1.3;letter-spacing:-.01em;color:var(--tealD);margin-top:14px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
+.foot .fl{max-width:660px}
+.foot .cta{font-family:var(--fh);font-weight:700;font-size:26px;color:var(--ink)}
+.foot .hint{font-size:15px;color:var(--slate);margin-top:9px;line-height:1.5;letter-spacing:.01em}
+.qrcard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;flex-shrink:0}
+</style></head><body>
+
+<section class="sheet">
+  {{MARK 40px}}
+
+  <div class="stage">
+    <div class="pulse p3"></div>
+    <div class="pulse p2"></div>
+    <div class="pulse p1"></div>
+    <div class="device">{{DEVICE 320px|#123644|#12B39C}}</div>
+  </div>
+
+  <div class="q1">Et si vous aviez moins<br>d’administratif&nbsp;?</div>
+  <div class="q2">Plus de temps pour votre métier.</div>
+
+  <div class="grow"></div>
+  <hr class="rule">
+  <div class="u1"></div>
+  <div class="foot">
+    <div class="fl">
+      <div class="cta">→ Lien en bio</div>
+      <div class="hint">Facture et relevé de commission générés automatiquement.</div>
+    </div>
+    <div class="qrcard">{{QR igp2|118px}}</div>
+  </div>
+</section>
+
+</body></html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Deuxième volet de la série particulier (après ig-particulier-v2 "juste à
+   côté") — même gabarit, sur l'angle simplicité façon carte/moteur de
+   recherche que Romain a évoqué ("aussi simple que Google Maps"). */
+:root{--M:86px;--U:43px}
+html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
+.sheet{width:1080px;height:1350px;position:relative}
+.stage{position:relative;height:420px;margin-top:calc(var(--U)*3.4)}
+.pulse{position:absolute;border-radius:50%;border:2px solid rgba(79,211,190,.4)}
+.pulse.p1{width:260px;height:260px;left:10px;bottom:-72px;opacity:.55}
+.pulse.p2{width:390px;height:390px;left:-55px;bottom:-137px;opacity:.32}
+.pulse.p3{width:520px;height:520px;left:-120px;bottom:-202px;opacity:.16}
+.stage .device{position:absolute;left:0;bottom:0}
+.q{font-family:var(--fh);font-weight:700;font-size:60px;line-height:1.2;letter-spacing:-.02em;margin-top:58px;max-width:920px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
+.foot .fl{max-width:660px}
+.foot .cta{font-family:var(--fh);font-weight:700;font-size:26px;color:#fff}
+.foot .hint{font-size:15px;color:rgba(255,255,255,.4);margin-top:9px;line-height:1.5;letter-spacing:.01em}
+.qrcard{background:#fff;border-radius:22px;padding:20px;flex-shrink:0}
+</style></head><body>
+
+<section class="sheet dark">
+  {{MARK 40px|#ffffff}}
+
+  <div class="stage">
+    <div class="pulse p3"></div>
+    <div class="pulse p2"></div>
+    <div class="pulse p1"></div>
+    <div class="device">{{DEVICE 320px|#ffffff|#4FD3BE}}</div>
+  </div>
+
+  <div class="q">Et si trouver un pro<br>était aussi simple<br>qu’un lieu sur la carte&nbsp;?</div>
+
+  <div class="grow"></div>
+  <hr class="rule">
+  <div class="u1"></div>
+  <div class="foot">
+    <div class="fl">
+      <div class="cta">→ Lien en bio</div>
+      <div class="hint">Cherchez, réservez, faites-vous noter.</div>
+    </div>
+    <div class="qrcard">{{QR ig2|118px}}</div>
+  </div>
+</section>
+
+</body></html>

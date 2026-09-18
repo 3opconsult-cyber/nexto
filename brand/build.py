@@ -18,7 +18,7 @@ OUT = HERE / "out"
 # Liens tracés — un utm_content par support, pour savoir ce qui ramène vraiment.
 LINKS = {c: kit.short(c) for c in [
     "fp", "fpr", "af", "ch", "st", "stp", "pp", "ppr", "ig", "igp", "dm",
-    "s1", "s2", "s3", "s4", "sp1", "sp2",
+    "s1", "s2", "s3", "s4", "sp1", "sp2", "ig2", "igp2",
 ]}
 
 # fichier source -> (sortie, format)
@@ -36,6 +36,8 @@ TARGETS = [
     ("ig-pro.html",             "ig_post_pro.png",             "png1080"),
     ("ig-particulier-v2.html",  "ig_post_particulier_v2.png",  "png1080"),
     ("ig-pro-v2.html",          "ig_post_pro_v2.png",          "png1080"),
+    ("ig-particulier-simple.html", "ig_post_particulier_simple.png", "png1080"),
+    ("ig-pro-admin.html",       "ig_post_pro_admin.png",       "png1080"),
 ]
 
 

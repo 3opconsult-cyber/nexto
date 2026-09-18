@@ -28,6 +28,7 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   ch:  { path: '/landing-particulier', source: 'chevalet', medium: 'print',  content: 'chevalet_a5' },
   st:  { path: '/landing-particulier', source: 'sticker',  medium: 'print',  content: 'sticker_part' },
   ig:  { path: '/landing-particulier', source: 'instagram', medium: 'social', content: 'post_part' },
+  ig2: { path: '/landing-particulier', source: 'instagram', medium: 'social', content: 'post_part_simple' },
   pp:  { path: '/comment-ca-marche',   source: 'pitch',    medium: 'presentation', content: 'pitch_part' },
 
   // --- stickers traçables par emplacement (planche stickers-contraste) ---
@@ -44,6 +45,7 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   fpr: { path: '/landing-pro', source: 'flyer',     medium: 'print',  content: 'flyer_a5_pro' },
   stp: { path: '/landing-pro', source: 'sticker',   medium: 'print',  content: 'sticker_pro' },
   igp: { path: '/landing-pro', source: 'instagram', medium: 'social', content: 'post_pro' },
+  igp2: { path: '/landing-pro', source: 'instagram', medium: 'social', content: 'post_pro_admin' },
   ppr: { path: '/comment-ca-marche', source: 'pitch', medium: 'presentation', content: 'pitch_pro' },
   sp1: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'chantier' },
   sp2: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'salon_pro' },
