@@ -2,43 +2,54 @@
 <html lang="fr"><head><meta charset="utf-8">
 <link rel="stylesheet" href="../print.css">
 <style>
-/* Variante dense du post Instagram prestataire — meme logique que
-   ig-particulier-v2 : trois etapes concretes remplacent le vide, CTA
-   explicite (lien en bio), fond clair pour trancher avec le post particulier
-   dans le fil (le couple sombre/clair reste la paire visuelle voulue). */
+/* Variante claire, meme logique que ig-particulier-v2 : device + echo radar
+   + QR reel. Le couple sombre/clair reste la paire visuelle voulue dans le
+   fil Instagram. */
 :root{--M:86px;--U:43px}
 html,body{width:1080px;height:1350px;overflow:hidden;background:var(--paper)}
-.sheet{width:1080px;height:1350px;background:var(--paper);color:var(--ink)}
-.q{font-family:var(--fh);font-weight:700;font-size:58px;line-height:1.16;letter-spacing:-.02em;max-width:900px}
-.svc{font-size:24px;color:var(--slate);margin-top:26px;letter-spacing:.01em}
-.steps{margin-top:70px;gap:46px}
-.step .n{font-size:15px;width:34px;color:var(--tealD)}
-.step .t b{font-family:var(--fh);font-weight:700;font-size:25px;color:var(--ink);margin-bottom:5px}
-.step .t span{font-size:18px;color:var(--slate)}
-.signwrap{margin-top:90px}
-.cta{margin-top:auto;padding-top:40px;border-top:1px solid var(--line)}
-.cta .go{font-family:var(--fh);font-weight:700;font-size:30px;color:var(--ink)}
-.cta .go b{color:var(--tealD)}
-.cta .hint{font-size:18px;color:var(--slate);margin-top:8px}
+.sheet{width:1080px;height:1350px;background:var(--paper);color:var(--ink);position:relative}
+.badge{display:inline-flex;align-items:center;gap:12px;background:rgba(18,179,156,.10);border:1px solid rgba(18,179,156,.3);color:var(--tealD);font-family:var(--fb);font-weight:600;font-size:20px;letter-spacing:.02em;padding:11px 24px;border-radius:999px}
+.badge .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px rgba(47,208,110,.2)}
+.stage{position:relative;height:430px;margin-top:8px}
+.pulse{position:absolute;border-radius:50%;border:2px solid rgba(18,179,156,.32)}
+.pulse.p1{width:260px;height:260px;left:6px;bottom:-70px;opacity:.55}
+.pulse.p2{width:390px;height:390px;left:-59px;bottom:-135px;opacity:.32}
+.pulse.p3{width:520px;height:520px;left:-124px;bottom:-200px;opacity:.16}
+.stage .device{position:absolute;left:0;bottom:0}
+.q{font-family:var(--fh);font-weight:700;font-size:64px;line-height:1.15;letter-spacing:-.02em;max-width:920px;margin-top:56px}
+.tags{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap}
+.tags span{font-size:19px;color:var(--slate);background:#fff;border:1px solid var(--line);padding:9px 20px;border-radius:999px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
+.foot .fl{max-width:640px}
+.foot .url{font-family:var(--fh);font-weight:700;font-size:29px;color:var(--ink)}
+.foot .hint{font-size:18px;color:var(--slate);margin-top:8px;line-height:1.4}
+.qrcard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;flex-shrink:0}
 </style></head><body>
 
 <section class="sheet">
   {{MARK 40px}}
-  <div class="u2"></div>
-  <div class="q">Un service à proposer&nbsp;?<br>Soyez vu, juste à côté.</div>
-  <div class="svc">Pro ou particulier — tout le monde peut commencer.</div>
+  <div class="u1"></div>
+  <div class="badge"><span class="dot"></span>Devenez visible en 5 minutes</div>
 
-  <div class="steps">
-    <div class="step"><div class="n">01</div><div class="t"><b>Créez votre fiche</b><span>Métier, tarif, zone d'intervention — 5 minutes.</span></div></div>
-    <div class="step"><div class="n">02</div><div class="t"><b>Visible à chaque déplacement</b><span>Les clients autour de vous vous voient sur la carte.</span></div></div>
-    <div class="step"><div class="n">03</div><div class="t"><b>Payé, facturé, tracé</b><span>Arrivée et départ validés par code, facture automatique.</span></div></div>
+  <div class="stage">
+    <div class="pulse p3"></div>
+    <div class="pulse p2"></div>
+    <div class="pulse p1"></div>
+    <div class="device">{{DEVICE 340px|#123644|#12B39C}}</div>
   </div>
 
-  <div class="signwrap">{{SIGN 120px}}</div>
+  <div class="q">Un service à proposer&nbsp;?<br>Soyez vu, juste à côté.</div>
+  <div class="tags"><span>Ménage</span><span>Repassage</span><span>Nettoyage</span></div>
 
-  <div class="cta">
-    <div class="go">Lien en <b>bio</b> → créez votre fiche</div>
-    <div class="hint">nexto-eta.vercel.app</div>
+  <div class="grow"></div>
+  <hr class="rule">
+  <div class="u1"></div>
+  <div class="foot">
+    <div class="fl">
+      <div class="url">nexto-eta.vercel.app</div>
+      <div class="hint">Scannez — créez votre fiche prestataire.</div>
+    </div>
+    <div class="qrcard">{{QR igp|118px}}</div>
   </div>
 </section>
 
