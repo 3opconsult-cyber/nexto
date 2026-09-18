@@ -2,48 +2,44 @@
 <html lang="fr"><head><meta charset="utf-8">
 <link rel="stylesheet" href="../print.css">
 <style>
-/* v3 (nom de fichier inchangé pour ne pas casser build.py) — la v2 avait
-   perdu le device (point d'interrogation + anneaux radar) au profit d'un
-   simple rond plat, et n'avait aucun QR : deux régressions par rapport à la
-   v1. On reprend le device, on l'agrandit, on ajoute un "écho" (pulses
-   radar concentriques derrière, en clin d'oeil au nom PING) et un vrai QR
-   scannable en pied de page — le post doit pouvoir capter un clic direct
-   depuis un screenshot/repost, pas seulement depuis le lien en bio. */
+/* v4 — la v3 gardait le device (bien), mais entassait un badge-pill,
+   3 étiquettes de service et un sous-titre explicatif : trop dit, pas assez
+   suggéré (retour direct : "beaucoup trop obvious... plus de mystère").
+   On retire tout ce qui explique, on garde ce qui intrigue : le device+écho
+   seul, un jeu de mots à deux temps sur le nom de la marque (PING = un
+   signal qu'on envoie), et le QR — rien d'autre ne reste dans le cadre.
+   La liste de services et l'accroche fonctionnelle redescendent en
+   footnote, sous l'URL, où elles ne cassent plus la respiration du haut. */
 :root{--M:86px;--U:43px}
 html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
 .sheet{width:1080px;height:1350px;position:relative}
-.badge{display:inline-flex;align-items:center;gap:12px;background:rgba(79,211,190,.14);border:1px solid rgba(79,211,190,.4);color:#4FD3BE;font-family:var(--fb);font-weight:600;font-size:20px;letter-spacing:.02em;padding:11px 24px;border-radius:999px}
-.badge .dot{width:9px;height:9px;border-radius:50%;background:#2FD06E;box-shadow:0 0 0 5px rgba(47,208,110,.25)}
-.stage{position:relative;height:430px;margin-top:8px}
+.stage{position:relative;height:470px;margin-top:calc(var(--U)*2.2)}
 .pulse{position:absolute;border-radius:50%;border:2px solid rgba(79,211,190,.4)}
-.pulse.p1{width:260px;height:260px;left:6px;bottom:-70px;opacity:.55}
-.pulse.p2{width:390px;height:390px;left:-59px;bottom:-135px;opacity:.32}
-.pulse.p3{width:520px;height:520px;left:-124px;bottom:-200px;opacity:.16}
+.pulse.p1{width:280px;height:280px;left:12px;bottom:-78px;opacity:.55}
+.pulse.p2{width:420px;height:420px;left:-58px;bottom:-148px;opacity:.32}
+.pulse.p3{width:560px;height:560px;left:-128px;bottom:-218px;opacity:.16}
 .stage .device{position:absolute;left:0;bottom:0}
-.q{font-family:var(--fh);font-weight:700;font-size:64px;line-height:1.15;letter-spacing:-.02em;max-width:920px;margin-top:56px}
-.tags{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap}
-.tags span{font-size:19px;color:rgba(255,255,255,.62);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:9px 20px;border-radius:999px}
+.q1{font-family:var(--fh);font-weight:700;font-size:66px;line-height:1.14;letter-spacing:-.02em;margin-top:60px}
+.q2{font-family:var(--fh);font-weight:600;font-size:34px;line-height:1.3;letter-spacing:-.01em;color:#4FD3BE;margin-top:10px}
 .foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
-.foot .fl{max-width:640px}
+.foot .fl{max-width:660px}
 .foot .url{font-family:var(--fh);font-weight:700;font-size:29px;color:#fff}
-.foot .hint{font-size:18px;color:rgba(255,255,255,.5);margin-top:8px;line-height:1.4}
+.foot .hint{font-size:15.5px;color:rgba(255,255,255,.4);margin-top:9px;line-height:1.5;letter-spacing:.01em}
 .qrcard{background:#fff;border-radius:22px;padding:20px;flex-shrink:0}
 </style></head><body>
 
 <section class="sheet dark">
   {{MARK 40px|#ffffff}}
-  <div class="u1"></div>
-  <div class="badge"><span class="dot"></span>Disponible autour de vous</div>
 
   <div class="stage">
     <div class="pulse p3"></div>
     <div class="pulse p2"></div>
     <div class="pulse p1"></div>
-    <div class="device">{{DEVICE 340px|#ffffff|#4FD3BE}}</div>
+    <div class="device">{{DEVICE 380px|#ffffff|#4FD3BE}}</div>
   </div>
 
-  <div class="q">Et si ce que vous cherchez<br>se trouvait juste à côté&nbsp;?</div>
-  <div class="tags"><span>Ménage</span><span>Repassage</span><span>Nettoyage</span></div>
+  <div class="q1">Envoyez un ping.</div>
+  <div class="q2">Quelqu’un est déjà là.</div>
 
   <div class="grow"></div>
   <hr class="rule">
@@ -51,7 +47,7 @@ html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
   <div class="foot">
     <div class="fl">
       <div class="url">nexto-eta.vercel.app</div>
-      <div class="hint">Scannez — trouvez un pro disponible près de chez vous.</div>
+      <div class="hint">Ménage · Repassage · Nettoyage — Grasse &amp; alentours</div>
     </div>
     <div class="qrcard">{{QR ig|118px}}</div>
   </div>

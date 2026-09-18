@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -44,6 +44,17 @@ function SignupForm() {
 
   function update(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
 
+  const touchX = useRef<number | null>(null)
+  function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchX.current == null) return
+    const dx = e.changedTouches[0].clientX - touchX.current
+    touchX.current = null
+    if (Math.abs(dx) < 60) return
+    if (dx < 0 && step === 1) setStep(2)
+    else if (dx > 0 && step === 2) setStep(1)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (step === 1) { setStep(2); return }
@@ -80,7 +91,7 @@ function SignupForm() {
       }
 
       if (role === 'pro') router.push('/pro/onboarding')
-      else router.push('/map')
+      else router.push('/welcome')
     } catch {
       setError("Une erreur est survenue, réessaie dans un instant.")
       setLoading(false)
@@ -106,12 +117,18 @@ function SignupForm() {
           ))}
         </div>
 
-        <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '26px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)' }}>
-          <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
-            {[1, 2].map(s => (
-              <div key={s} style={{ flex: 1, height: 4, borderRadius: 999, background: s <= step ? '#12B39C' : '#E7EDEB', transition: 'background .2s' }} />
-            ))}
+        <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '26px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)', overflowX: 'hidden' }}
+          onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+            <button type="button" onClick={() => setStep(1)} disabled={step === 1} aria-label="Étape précédente"
+              style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: step === 2 ? '#F3F6F5' : 'transparent', color: '#123644', fontSize: 14, fontWeight: 700, flexShrink: 0, visibility: step === 2 ? 'visible' : 'hidden' }}>←</button>
+            <div style={{ display: 'flex', gap: 6, flex: 1 }}>
+              {[1, 2].map(s => (
+                <div key={s} style={{ flex: 1, height: 4, borderRadius: 999, background: s <= step ? '#12B39C' : '#E7EDEB', transition: 'background .2s' }} />
+              ))}
+            </div>
           </div>
+          <div key={step} className={step === 2 ? 'ob-slide-r' : 'ob-slide-l'}>
           <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', marginBottom: 2 }}>
             {step === 1 ? 'Vos informations' : 'Finaliser'}
           </h1>
@@ -181,6 +198,7 @@ function SignupForm() {
               {loading ? 'Création…' : step === 1 ? 'Continuer →' : 'Créer mon compte'}
             </button>
           </form>
+          </div>
           <p style={{ textAlign: 'center', fontSize: 13, color: '#6E8592', fontWeight: 600, marginTop: 16 }}>
             Déjà un compte ?{' '}
             <Link href="/auth/login" style={{ color: '#0C8F7E', fontWeight: 700 }}>Se connecter</Link>

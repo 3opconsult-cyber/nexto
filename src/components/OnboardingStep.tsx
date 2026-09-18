@@ -1,5 +1,5 @@
 "use client"
-import { ReactNode } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 
 export default function OnboardingStep({
   step, total, title, subtitle, children,
@@ -19,6 +19,27 @@ export default function OnboardingStep({
   ctaDisabled?: boolean
   ctaLoading?: boolean
 }) {
+  // Sens de la glisse "carrousel" : déduit de la comparaison avec l'étape
+  // précédente, pas d'un choix explicite de l'appelant (les pages n'ont pas
+  // à le savoir — elles se contentent de faire varier `step`).
+  const prevStep = useRef(step)
+  const [dir, setDir] = useState<'r' | 'l'>('r')
+  useEffect(() => {
+    setDir(step >= prevStep.current ? 'r' : 'l')
+    prevStep.current = step
+  }, [step])
+
+  const touchX = useRef<number | null>(null)
+  function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchX.current == null) return
+    const dx = e.changedTouches[0].clientX - touchX.current
+    touchX.current = null
+    if (Math.abs(dx) < 60) return
+    if (dx < 0) { if (!ctaDisabled && !ctaLoading) onCta() }
+    else if (onBack) onBack()
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ padding: '20px 20px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -37,10 +58,16 @@ export default function OnboardingStep({
         </div>
       </div>
 
-      <div style={{ flex: 1, background: '#fff', borderRadius: '24px 24px 0 0', padding: '30px 22px 22px', display: 'flex', flexDirection: 'column' }}>
-        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', lineHeight: 1.3 }}>{title}</h1>
-        {subtitle && <p style={{ fontSize: 13, color: '#6E8592', marginTop: 8, lineHeight: 1.5 }}>{subtitle}</p>}
-        <div style={{ flex: 1, marginTop: 22 }}>{children}</div>
+      <div
+        style={{ flex: 1, background: '#fff', borderRadius: '24px 24px 0 0', padding: '30px 22px 22px', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div key={step} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', lineHeight: 1.3 }}>{title}</h1>
+          {subtitle && <p style={{ fontSize: 13, color: '#6E8592', marginTop: 8, lineHeight: 1.5 }}>{subtitle}</p>}
+          <div style={{ flex: 1, marginTop: 22 }}>{children}</div>
+        </div>
         <div style={{ marginTop: 20 }}>
           <button
             onClick={onCta}
