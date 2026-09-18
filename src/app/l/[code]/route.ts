@@ -56,7 +56,7 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   dm:  { path: '/landing-pro', source: 'prospection_directe', medium: 'dm', content: 'vignette' },
 
   // --- appel à testeurs (carrousel Instagram 3 slides) ---
-  beta: { path: '/map', source: 'instagram', medium: 'social', content: 'carousel_beta_test' },
+  beta: { path: '/essai', source: 'whatsapp', medium: 'social', content: 'appel_testeurs' },
 })
 
 export function GET(req: NextRequest, { params }: { params: { code: string } }) {
