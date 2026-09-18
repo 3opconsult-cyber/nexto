@@ -2,24 +2,22 @@
 <html lang="fr"><head><meta charset="utf-8">
 <link rel="stylesheet" href="../print.css">
 <style>
-/* v4 — meme logique que ig-particulier-v2 : plus de badge ni de liste de
-   services dans le cadre, un jeu de mots en deux temps sur le nom PING,
-   tout ce qui est fonctionnel redescend en footnote sous l'URL. */
+/* v5 — meme logique que ig-particulier-v2 : question plutot qu'un jeu de
+   mots invente, marge haute genereuse, plus d'URL brute dans le cadre. */
 :root{--M:86px;--U:43px}
 html,body{width:1080px;height:1350px;overflow:hidden;background:var(--paper)}
 .sheet{width:1080px;height:1350px;background:var(--paper);color:var(--ink);position:relative}
-.stage{position:relative;height:470px;margin-top:calc(var(--U)*2.2)}
+.stage{position:relative;height:420px;margin-top:calc(var(--U)*3.4)}
 .pulse{position:absolute;border-radius:50%;border:2px solid rgba(18,179,156,.32)}
-.pulse.p1{width:280px;height:280px;left:12px;bottom:-78px;opacity:.55}
-.pulse.p2{width:420px;height:420px;left:-58px;bottom:-148px;opacity:.32}
-.pulse.p3{width:560px;height:560px;left:-128px;bottom:-218px;opacity:.16}
+.pulse.p1{width:260px;height:260px;left:10px;bottom:-72px;opacity:.55}
+.pulse.p2{width:390px;height:390px;left:-55px;bottom:-137px;opacity:.32}
+.pulse.p3{width:520px;height:520px;left:-120px;bottom:-202px;opacity:.16}
 .stage .device{position:absolute;left:0;bottom:0}
-.q1{font-family:var(--fh);font-weight:700;font-size:66px;line-height:1.14;letter-spacing:-.02em;margin-top:60px}
-.q2{font-family:var(--fh);font-weight:600;font-size:34px;line-height:1.3;letter-spacing:-.01em;color:var(--tealD);margin-top:10px}
+.q{font-family:var(--fh);font-weight:700;font-size:64px;line-height:1.18;letter-spacing:-.02em;margin-top:58px;max-width:900px}
 .foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
 .foot .fl{max-width:660px}
-.foot .url{font-family:var(--fh);font-weight:700;font-size:29px;color:var(--ink)}
-.foot .hint{font-size:15.5px;color:var(--slate);margin-top:9px;line-height:1.5;letter-spacing:.01em}
+.foot .cta{font-family:var(--fh);font-weight:700;font-size:26px;color:var(--ink)}
+.foot .hint{font-size:15px;color:var(--slate);margin-top:9px;line-height:1.5;letter-spacing:.01em}
 .qrcard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;flex-shrink:0}
 </style></head><body>
 
@@ -30,19 +28,18 @@ html,body{width:1080px;height:1350px;overflow:hidden;background:var(--paper)}
     <div class="pulse p3"></div>
     <div class="pulse p2"></div>
     <div class="pulse p1"></div>
-    <div class="device">{{DEVICE 380px|#123644|#12B39C}}</div>
+    <div class="device">{{DEVICE 320px|#123644|#12B39C}}</div>
   </div>
 
-  <div class="q1">Recevez un ping.</div>
-  <div class="q2">Le reste, c’est nous.</div>
+  <div class="q">Et si votre client était<br>seulement à quelques mètres&nbsp;?</div>
 
   <div class="grow"></div>
   <hr class="rule">
   <div class="u1"></div>
   <div class="foot">
     <div class="fl">
-      <div class="url">nexto-eta.vercel.app</div>
-      <div class="hint">Un tarif fixé une fois — devis, facture, suivi : automatiques.</div>
+      <div class="cta">→ Lien en bio</div>
+      <div class="hint">Devenez visible en 5 minutes — Grasse &amp; alentours</div>
     </div>
     <div class="qrcard">{{QR igp|118px}}</div>
   </div>

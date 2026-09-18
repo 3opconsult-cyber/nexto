@@ -2,29 +2,31 @@
 <html lang="fr"><head><meta charset="utf-8">
 <link rel="stylesheet" href="../print.css">
 <style>
-/* v4 — la v3 gardait le device (bien), mais entassait un badge-pill,
-   3 étiquettes de service et un sous-titre explicatif : trop dit, pas assez
-   suggéré (retour direct : "beaucoup trop obvious... plus de mystère").
-   On retire tout ce qui explique, on garde ce qui intrigue : le device+écho
-   seul, un jeu de mots à deux temps sur le nom de la marque (PING = un
-   signal qu'on envoie), et le QR — rien d'autre ne reste dans le cadre.
-   La liste de services et l'accroche fonctionnelle redescendent en
-   footnote, sous l'URL, où elles ne cassent plus la respiration du haut. */
+/* v5 — retour de Romain sur la v4 : le jeu de mots "Envoyez un ping" était
+   un message inventé, pas une promesse réelle de PING ("c'est faux"). On
+   revient à la question déjà établie partout ailleurs dans le kit (flyer,
+   affiche, pitch, landing) plutôt que d'inventer une nouvelle accroche —
+   la question fonctionne, elle est juste restée trop entourée de bruit
+   avant (badge, tags). Ici : uniquement le device+écho et la question,
+   rien d'autre. Fond nettement repoussé vers le bas (marge haute
+   généreuse) pour rester lisible même si l'outil qui affiche l'image la
+   recadre en aperçu carré. L'URL brute vercel.app est retirée du cadre
+   ("ça fait cheap") : le réflexe Instagram est "lien en bio", le QR fait
+   le travail sans l'afficher en toutes lettres. */
 :root{--M:86px;--U:43px}
 html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
 .sheet{width:1080px;height:1350px;position:relative}
-.stage{position:relative;height:470px;margin-top:calc(var(--U)*2.2)}
+.stage{position:relative;height:420px;margin-top:calc(var(--U)*3.4)}
 .pulse{position:absolute;border-radius:50%;border:2px solid rgba(79,211,190,.4)}
-.pulse.p1{width:280px;height:280px;left:12px;bottom:-78px;opacity:.55}
-.pulse.p2{width:420px;height:420px;left:-58px;bottom:-148px;opacity:.32}
-.pulse.p3{width:560px;height:560px;left:-128px;bottom:-218px;opacity:.16}
+.pulse.p1{width:260px;height:260px;left:10px;bottom:-72px;opacity:.55}
+.pulse.p2{width:390px;height:390px;left:-55px;bottom:-137px;opacity:.32}
+.pulse.p3{width:520px;height:520px;left:-120px;bottom:-202px;opacity:.16}
 .stage .device{position:absolute;left:0;bottom:0}
-.q1{font-family:var(--fh);font-weight:700;font-size:66px;line-height:1.14;letter-spacing:-.02em;margin-top:60px}
-.q2{font-family:var(--fh);font-weight:600;font-size:34px;line-height:1.3;letter-spacing:-.01em;color:#4FD3BE;margin-top:10px}
+.q{font-family:var(--fh);font-weight:700;font-size:64px;line-height:1.18;letter-spacing:-.02em;margin-top:58px;max-width:900px}
 .foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
 .foot .fl{max-width:660px}
-.foot .url{font-family:var(--fh);font-weight:700;font-size:29px;color:#fff}
-.foot .hint{font-size:15.5px;color:rgba(255,255,255,.4);margin-top:9px;line-height:1.5;letter-spacing:.01em}
+.foot .cta{font-family:var(--fh);font-weight:700;font-size:26px;color:#fff}
+.foot .hint{font-size:15px;color:rgba(255,255,255,.4);margin-top:9px;line-height:1.5;letter-spacing:.01em}
 .qrcard{background:#fff;border-radius:22px;padding:20px;flex-shrink:0}
 </style></head><body>
 
@@ -35,18 +37,17 @@ html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
     <div class="pulse p3"></div>
     <div class="pulse p2"></div>
     <div class="pulse p1"></div>
-    <div class="device">{{DEVICE 380px|#ffffff|#4FD3BE}}</div>
+    <div class="device">{{DEVICE 320px|#ffffff|#4FD3BE}}</div>
   </div>
 
-  <div class="q1">Envoyez un ping.</div>
-  <div class="q2">Quelqu’un est déjà là.</div>
+  <div class="q">Et si ce que vous cherchez<br>se trouvait juste à côté&nbsp;?</div>
 
   <div class="grow"></div>
   <hr class="rule">
   <div class="u1"></div>
   <div class="foot">
     <div class="fl">
-      <div class="url">nexto-eta.vercel.app</div>
+      <div class="cta">→ Lien en bio</div>
       <div class="hint">Ménage · Repassage · Nettoyage — Grasse &amp; alentours</div>
     </div>
     <div class="qrcard">{{QR ig|118px}}</div>
