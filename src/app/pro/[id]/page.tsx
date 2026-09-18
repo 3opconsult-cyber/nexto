@@ -60,7 +60,10 @@ export default function ProDetailPage() {
   const priceLabel = isDevis ? 'Sur devis'
     : pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(0)} €`
       : (pro.hourly_rate_cents ? `${(pro.hourly_rate_cents / 100).toFixed(0)} €/h` : null)
-  const skills = extraServices.length ? extraServices.map((s: any) => s.name) : [TRADES[pro.trade] || pro.trade]
+  // Le métier principal (pro.trade) n'est jamais dans `services` (services.slice(1)
+  // à l'onboarding) — l'oublier ici faisait disparaître la première prestation de la
+  // fiche dès qu'un pro en avait déclaré d'autres.
+  const skills = [TRADES[pro.trade] || pro.trade, ...extraServices.map((s: any) => s.name)]
 
   return (
     <div className="ping-screen" style={{ paddingBottom: 0 }}>
@@ -80,7 +83,14 @@ export default function ProDetailPage() {
         </div>
 
         <div style={{ padding: '14px 16px' }}>
-          <div className="ping-h2" style={{ marginTop: 0 }}>
+          {pro.bio && (
+            <>
+              <div className="ping-h2" style={{ marginTop: 0 }}>À propos</div>
+              <p className="ping-sub" style={{ marginBottom: 4 }}>{pro.bio}</p>
+            </>
+          )}
+
+          <div className="ping-h2" style={pro.bio ? undefined : { marginTop: 0 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="2.4"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
               Informations déclarées par le pro

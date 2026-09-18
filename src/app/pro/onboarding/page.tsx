@@ -321,6 +321,10 @@ export default function ProOnboarding() {
       onCta={finish} ctaLabel="Terminer" ctaLoading={loading}>
       <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} placeholder="Ex. Ménage soigné, ponctuel, 5 ans d'expérience."
         style={{ ...inputStyle, resize: 'vertical' }} />
+      <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8, lineHeight: 1.4 }}>
+        Ce texte est public. Pour votre sécurité, n'y indiquez ni numéro de téléphone ni nom d'enseigne —
+        les échanges et paiements passent par PING.
+      </p>
       {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginTop: 10 }}>{error}</p>}
     </OnboardingStep>
   )

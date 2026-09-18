@@ -298,7 +298,7 @@ export default function ChatPage() {
               <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>{newAmountPhoto ? newAmountPhoto.name : 'Ajouter une photo à l\u2019appui (facultatif)'}</span>
               <input type="file" accept="image/*" onChange={e => setNewAmountPhoto(e.target.files?.[0] || null)} style={{ display: 'none' }} />
             </label>
-            <button onClick={proposeOffer} disabled={sendingOffer} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+            <button onClick={proposeOffer} disabled={sendingOffer || !(Number(newAmount) > 0)} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: (sendingOffer || !(Number(newAmount) > 0)) ? '#DCE5E3' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
               {sendingOffer ? 'Envoi…' : 'Envoyer la proposition'}
             </button>
           </div>
