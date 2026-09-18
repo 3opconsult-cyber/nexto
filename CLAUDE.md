@@ -250,6 +250,46 @@ recalcul automatique de la note du pro.
 - **Réservation par créneau/calendrier** : toujours pas construite (décision produit en attente,
   déjà notée plus haut).
 
+## Marketing — kit de marque (`brand/`) et parcours de première connexion (18/09/2026)
+Audit demandé par Romain sur le matériel commercial existant (`brand/`, généré par
+`brand/build.py`+`kit.py`, PDF via weasyprint / PNG via Chromium `shoot.py`) : jugé insuffisant côté
+design (posts Instagram trop vides, stickers pastel illisibles en extérieur, zéro QR sur les posts,
+zéro attribution jamais remontée). Itéré en plusieurs passes jusqu'à validation :
+- **Codes `/l/<code>` par emplacement** ajoutés (`s1`-`s4` particulier, `sp1`-`sp2` pro) pour tracer
+  quel sticker ramène vraiment du trafic — table dans `src/app/l/[code]/route.ts`, doit rester
+  synchronisée avec `brand/kit.py` (fonction `short()`).
+- **Planche stickers fort contraste** (`brand/src/stickers-contraste.html`) : fond plein sur les
+  6 tuiles (l'ancienne planche `stickers.html` avait la moitié en pastel, illisible dehors), un
+  bénéfice concret par lieu de collage plutôt que la marque seule.
+- **Posts Instagram** (`brand/src/ig-particulier-v2.html` / `ig-pro-v2.html`, malgré le nom de
+  fichier toujours "v2" — 4 itérations de contenu dessus, ne pas se fier au nom) : la V2 initiale
+  avait perdu le `{{DEVICE}}` (point d'interrogation dont le point est l'anneau radar PING — la
+  vraie signature visuelle, cf. `brand/kit.py: device()`) au profit d'un rond plat, et n'avait aucun
+  QR. Version finale validée : device agrandi + 3 anneaux d'écho radar concentriques autour, **rien
+  d'autre dans le cadre** (pas de badge, pas de liste de tags/services — jugés "trop obvious" par
+  Romain face à des concurrents type Google Maps/Pages Jaunes où PING doit jouer la réactivité, pas
+  l'exhaustivité), un jeu de mots en deux temps sur le nom de la marque (« Envoyez un ping. /
+  Quelqu'un est déjà là. » côté particulier, « Recevez un ping. / Le reste, c'est nous. » côté pro),
+  tout élément fonctionnel (catégories de service, accroche) redescendu en footnote sous l'URL, QR
+  réel (codes `ig`/`igp`) en pied de page. Rendu Chromium nécessite `PW_CHROMIUM_PATH=/opt/pw-browsers/
+  chromium-1194/chrome-linux/chrome` dans ce sandbox (playwright pip fraîchement installé cherche une
+  révision Chromium absente du binaire préinstallé) — `brand/shoot.py` lit cette variable d'env si
+  présente, sans changer le comportement par défaut ailleurs.
+
+Romain a aussi demandé un audit du parcours de première connexion (« carrousel, très instinctif, clic
+en clic », pas un formulaire à comprendre). Constat : le pro a déjà un wizard pas-à-pas complet
+(`OnboardingStep`, un champ/décision par écran, barre de progression) mais sans transition entre
+étapes ; le **particulier n'avait strictement aucun accompagnement** — `auth/signup` routait
+directement vers `/map` sans un mot d'explication. Corrigé :
+- `OnboardingStep` (donc tout le wizard pro `/pro/onboarding` + `/pro/onboarding/documents`) : glisse
+  animée entre étapes + swipe tactile gauche/droite, en plus des boutons existants.
+- `auth/signup` : bug corrigé au passage — impossible de revenir de l'étape 2 à l'étape 1 (bouton
+  retour absent) ; même glisse/swipe ajoutée.
+- Nouvelle page `/welcome` : mini-carrousel (3 écrans swipeables, points de pagination) montré une
+  fois à un particulier juste après son inscription, avant d'arriver sur `/map` — comble l'asymétrie
+  avec le tunnel pro. Le pro, lui, a déjà un écran de clôture équivalent (`/pro/attente`), pas touché.
+- Keyframes CSS partagées `ob-slide-r`/`ob-slide-l` ajoutées dans `ping-ui.css` pour ces trois écrans.
+
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
 Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /
