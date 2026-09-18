@@ -2,27 +2,25 @@
 <html lang="fr"><head><meta charset="utf-8">
 <link rel="stylesheet" href="../print.css">
 <style>
-/* v5 — retour de Romain sur la v4 : le jeu de mots "Envoyez un ping" était
-   un message inventé, pas une promesse réelle de PING ("c'est faux"). On
-   revient à la question déjà établie partout ailleurs dans le kit (flyer,
-   affiche, pitch, landing) plutôt que d'inventer une nouvelle accroche —
-   la question fonctionne, elle est juste restée trop entourée de bruit
-   avant (badge, tags). Ici : uniquement le device+écho et la question,
-   rien d'autre. Fond nettement repoussé vers le bas (marge haute
-   généreuse) pour rester lisible même si l'outil qui affiche l'image la
-   recadre en aperçu carré. L'URL brute vercel.app est retirée du cadre
-   ("ça fait cheap") : le réflexe Instagram est "lien en bio", le QR fait
-   le travail sans l'afficher en toutes lettres. */
+/* v6 — passage au format carré (1080x1080) : Romain a signalé à plusieurs
+   reprises un "rognage" en bas de l'image (le footer/QR disparaissait) —
+   vérifié pixel par pixel côté fichier à chaque fois, jamais de coupe
+   réelle dans le PNG généré. Cause probable : l'aperçu de son outil de
+   chat recadre les images portrait hautes (4:5, 1080x1350) en carré,
+   coupant systématiquement le bas. Plutôt que de continuer à démontrer
+   que le fichier est intact, on supprime le problème à la racine : plus
+   de zone hors-cadre puisqu'il n'y a plus de format haut. Le carré est un
+   format Instagram natif, pas un compromis. */
 :root{--M:86px;--U:43px}
-html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
-.sheet{width:1080px;height:1350px;position:relative}
-.stage{position:relative;height:420px;margin-top:calc(var(--U)*3.4)}
+html,body{width:1080px;height:1080px;overflow:hidden;background:var(--ink)}
+.sheet{width:1080px;height:1080px;position:relative}
+.stage{position:relative;height:360px;margin-top:calc(var(--U)*.9)}
 .pulse{position:absolute;border-radius:50%;border:2px solid rgba(79,211,190,.4)}
-.pulse.p1{width:260px;height:260px;left:10px;bottom:-72px;opacity:.55}
-.pulse.p2{width:390px;height:390px;left:-55px;bottom:-137px;opacity:.32}
-.pulse.p3{width:520px;height:520px;left:-120px;bottom:-202px;opacity:.16}
+.pulse.p1{width:220px;height:220px;left:10px;bottom:-62px;opacity:.55}
+.pulse.p2{width:330px;height:330px;left:-46px;bottom:-117px;opacity:.32}
+.pulse.p3{width:440px;height:440px;left:-101px;bottom:-172px;opacity:.16}
 .stage .device{position:absolute;left:0;bottom:0}
-.q{font-family:var(--fh);font-weight:700;font-size:64px;line-height:1.18;letter-spacing:-.02em;margin-top:58px;max-width:900px}
+.q{font-family:var(--fh);font-weight:700;font-size:60px;line-height:1.16;letter-spacing:-.02em;margin-top:36px;max-width:900px}
 .foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
 .foot .fl{max-width:660px}
 .foot .cta{font-family:var(--fh);font-weight:700;font-size:26px;color:#fff}
@@ -37,7 +35,7 @@ html,body{width:1080px;height:1350px;overflow:hidden;background:var(--ink)}
     <div class="pulse p3"></div>
     <div class="pulse p2"></div>
     <div class="pulse p1"></div>
-    <div class="device">{{DEVICE 320px|#ffffff|#4FD3BE}}</div>
+    <div class="device">{{DEVICE 300px|#ffffff|#4FD3BE}}</div>
   </div>
 
   <div class="q">Et si ce que vous cherchez<br>se trouvait juste à côté&nbsp;?</div>

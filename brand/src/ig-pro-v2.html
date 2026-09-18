@@ -2,18 +2,18 @@
 <html lang="fr"><head><meta charset="utf-8">
 <link rel="stylesheet" href="../print.css">
 <style>
-/* v5 — meme logique que ig-particulier-v2 : question plutot qu'un jeu de
-   mots invente, marge haute genereuse, plus d'URL brute dans le cadre. */
+/* v6 — passage au format carré (1080x1080), même raison que
+   ig-particulier-v2 : éviter le recadrage bas observé côté aperçu chat. */
 :root{--M:86px;--U:43px}
-html,body{width:1080px;height:1350px;overflow:hidden;background:var(--paper)}
-.sheet{width:1080px;height:1350px;background:var(--paper);color:var(--ink);position:relative}
-.stage{position:relative;height:420px;margin-top:calc(var(--U)*3.4)}
+html,body{width:1080px;height:1080px;overflow:hidden;background:var(--paper)}
+.sheet{width:1080px;height:1080px;background:var(--paper);color:var(--ink);position:relative}
+.stage{position:relative;height:360px;margin-top:calc(var(--U)*.9)}
 .pulse{position:absolute;border-radius:50%;border:2px solid rgba(18,179,156,.32)}
-.pulse.p1{width:260px;height:260px;left:10px;bottom:-72px;opacity:.55}
-.pulse.p2{width:390px;height:390px;left:-55px;bottom:-137px;opacity:.32}
-.pulse.p3{width:520px;height:520px;left:-120px;bottom:-202px;opacity:.16}
+.pulse.p1{width:220px;height:220px;left:10px;bottom:-62px;opacity:.55}
+.pulse.p2{width:330px;height:330px;left:-46px;bottom:-117px;opacity:.32}
+.pulse.p3{width:440px;height:440px;left:-101px;bottom:-172px;opacity:.16}
 .stage .device{position:absolute;left:0;bottom:0}
-.q{font-family:var(--fh);font-weight:700;font-size:64px;line-height:1.18;letter-spacing:-.02em;margin-top:58px;max-width:900px}
+.q{font-family:var(--fh);font-weight:700;font-size:56px;line-height:1.18;letter-spacing:-.02em;margin-top:34px;max-width:900px}
 .foot{display:flex;align-items:center;justify-content:space-between;gap:36px}
 .foot .fl{max-width:660px}
 .foot .cta{font-family:var(--fh);font-weight:700;font-size:26px;color:var(--ink)}
@@ -28,10 +28,10 @@ html,body{width:1080px;height:1350px;overflow:hidden;background:var(--paper)}
     <div class="pulse p3"></div>
     <div class="pulse p2"></div>
     <div class="pulse p1"></div>
-    <div class="device">{{DEVICE 320px|#123644|#12B39C}}</div>
+    <div class="device">{{DEVICE 300px|#123644|#12B39C}}</div>
   </div>
 
-  <div class="q">Et si votre client était<br>seulement à quelques mètres&nbsp;?</div>
+  <div class="q">Et si votre client<br>était à quelques mètres&nbsp;?</div>
 
   <div class="grow"></div>
   <hr class="rule">
