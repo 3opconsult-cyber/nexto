@@ -1,37 +1,40 @@
 "use client"
 import { useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Sign } from '@/components/Brand'
+import { Wordmark } from '@/components/Brand'
 import QrCode from '@/components/QrCode'
 
 /**
- * Page unique, partageable par lien (WhatsApp, SMS...) — pas une capture
- * d'écran, une vraie page qui se balaye au doigt. Demande de Romain : un
- * support simple à envoyer, qui montre les 3 écrans puis invite à tester
- * l'app et à faire suivre à 3-4 proches (parrainage) et à donner un avis.
+ * Page de briefing pour les testeurs, partageable par lien (WhatsApp...).
+ * v2 : la v1 réutilisait l'habillage de la campagne publicitaire "Et si...?"
+ * (device, échos radar, accroches courtes) — Romain voulait un vrai
+ * message d'explication à lui, pas une pub, et un lien vers la vraie
+ * application qui tourne, pas une expérience recréée à côté. Le texte des
+ * 3 écrans reprend le sien, quasi mot pour mot.
  */
+const APP_URL = 'https://nexto-eta.vercel.app/map'
 const SHARE_URL = 'https://nexto-eta.vercel.app/l/beta'
-const SHARE_TEXT = `Salut ! Je teste PING, une appli de mise en relation pour des services de ménage/nettoyage près de chez soi — 2 minutes, en tant que particulier ou pro : ${SHARE_URL}`
+const SHARE_TEXT = `Salut ! Merci de tester cette nouvelle application, bientôt en ligne — 2 minutes, particulier ou pro : ${SHARE_URL}`
 
 const SLIDES = [
   {
-    kicker: 'Vous êtes un particulier ?',
-    q: 'Et si ce que vous cherchez se trouvait juste à côté ?',
-    dark: true,
+    title: 'Salut !',
+    body: 'Merci de bien vouloir tester cette nouvelle application, bientôt en ligne.\n\nFaites-moi vos retours et vos critiques à la fin — vos remarques sont les bienvenues, n’hésitez pas.',
   },
   {
-    kicker: 'Vous êtes un pro ?',
-    q: 'Et si votre client était à quelques mètres ?',
-    dark: false,
+    title: 'Testez les deux côtés',
+    body: '🧹 En tant que professionnel — vous êtes une entreprise de ménage, nettoyage, service de propreté. Vous proposez des services : choisissez le statut qui vous convient et vous parle le mieux.\n\n🔍 En tant que particulier — vous cherchez un prestataire de service dans ce même domaine.\n\nNaviguez dans l’application et allez jusqu’au bout, jusqu’à la simulation de la validation du service.',
+  },
+  {
+    title: 'Aucun paiement réel',
+    body: 'Aucun paiement ne vous sera demandé, aucune transaction ne sera validée — ceci est simplement une démonstration de fluidité.',
   },
 ]
 
 export default function Essai() {
-  const router = useRouter()
   const [i, setI] = useState(0)
   const [dir, setDir] = useState<'r' | 'l'>('r')
-  const total = SLIDES.length + 1
-  const isReveal = i === SLIDES.length
+  const total = SLIDES.length
+  const isAction = i === SLIDES.length - 1
 
   function go(next: number) {
     if (next < 0 || next >= total) return
@@ -53,82 +56,70 @@ export default function Essai() {
     window.open(`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT)}`, '_blank')
   }
 
-  const dark = !isReveal && SLIDES[i].dark
-  const bg = dark ? '#123644' : isReveal ? '#123644' : '#F3F6F5'
-
   return (
-    <div style={{ minHeight: '100vh', background: bg, display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 20px 0' }}>
+    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px 0' }}>
+        <Wordmark size={18} />
         <div style={{ display: 'flex', gap: 8 }}>
           {Array.from({ length: total }).map((_, s) => (
-            <div key={s} style={{ width: s === i ? 22 : 8, height: 8, borderRadius: 999, background: s === i ? '#12B39C' : (dark || isReveal) ? 'rgba(255,255,255,.25)' : '#DCE5E3', transition: 'width .2s, background .2s' }} />
+            <div key={s} style={{ width: s === i ? 22 : 8, height: 8, borderRadius: 999, background: s === i ? '#12B39C' : '#E7EDEB', transition: 'width .2s, background .2s' }} />
           ))}
         </div>
-        {!isReveal && (
-          <button onClick={() => router.push('/map')} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 700, color: dark ? 'rgba(255,255,255,.5)' : '#6E8592', cursor: 'pointer' }}>
-            Passer
-          </button>
-        )}
       </div>
 
       <div
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 32px', textAlign: 'center', overflowX: 'hidden' }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '24px 28px', overflowX: 'hidden' }}
         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
       >
-        <div key={i} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-          {isReveal ? (
-            <>
-              <Sign size={84} pulse />
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 44, color: '#fff', marginTop: 22 }}>ping</div>
+        <div key={i} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'}>
+          {isAction ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644' }}>{SLIDES[i].title}</h1>
+              <p style={{ fontSize: 14.5, color: '#6E8592', lineHeight: 1.6, marginTop: 12, maxWidth: 340, whiteSpace: 'pre-line' }}>{SLIDES[i].body}</p>
 
-              <button onClick={() => router.push('/map')}
-                style={{ width: '100%', maxWidth: 320, marginTop: 34, padding: 16, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
-                Tester l'application →
-              </button>
+              <a href={APP_URL}
+                style={{ display: 'block', width: '100%', maxWidth: 320, marginTop: 28, padding: 16, borderRadius: 999, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+                Ouvrir l’application →
+              </a>
 
-              <div style={{ marginTop: 26, padding: 16, background: '#fff', borderRadius: 20 }}>
-                <QrCode data={SHARE_URL} size={120} />
+              <div style={{ marginTop: 24, padding: 14, background: '#F3F6F5', borderRadius: 18 }}>
+                <QrCode data={SHARE_URL} size={110} />
               </div>
-              <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.45)', marginTop: 10 }}>Ou montrez ce code à quelqu'un à côté de vous</p>
+              <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Ou montrez ce code à quelqu’un à côté de vous</p>
 
-              <div style={{ width: '100%', maxWidth: 320, height: 1, background: 'rgba(255,255,255,.14)', margin: '30px 0 24px' }} />
+              <div style={{ width: '100%', maxWidth: 300, height: 1, background: '#E7EDEB', margin: '26px 0 20px' }} />
 
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,.7)', lineHeight: 1.5, maxWidth: 300 }}>
-                Invitez 3 ou 4 proches à tester avec vous — même lien, même message.
+              <p style={{ fontSize: 13.5, color: '#6E8592', lineHeight: 1.5, maxWidth: 300 }}>
+                Faites suivre à 3-4 proches — même lien, même message.
               </p>
               <button onClick={shareWhatsapp}
-                style={{ width: '100%', maxWidth: 320, marginTop: 14, padding: 15, borderRadius: 999, border: '1.5px solid rgba(255,255,255,.25)', background: 'rgba(255,255,255,.06)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.6-1.2-1.4-1.4-1.6-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.4.1-.2 0-.3 0-.5 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 1.9 3 4.7 4.1.7.3 1.2.4 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3Z"/></svg>
+                style={{ width: '100%', maxWidth: 300, marginTop: 12, padding: 14, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="#12B39C"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.6-1.2-1.4-1.4-1.6-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.4.1-.2 0-.3 0-.5 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 1.9 3 4.7 4.1.7.3 1.2.4 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3Z"/></svg>
                 Partager sur WhatsApp
               </button>
 
-              <a href="/essai/avis" style={{ marginTop: 22, fontSize: 13, color: 'rgba(255,255,255,.5)', fontWeight: 600, textDecoration: 'underline' }}>
+              <a href="/essai/avis" style={{ marginTop: 20, fontSize: 13, color: '#6E8592', fontWeight: 600, textDecoration: 'underline' }}>
                 Donner mon avis après le test →
               </a>
-            </>
+            </div>
           ) : (
-            <>
-              <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 15, letterSpacing: '.08em', textTransform: 'uppercase', color: '#4FD3BE' }}>
-                {SLIDES[i].kicker}
-              </div>
-              <div style={{ marginTop: 30 }}><Sign size={72} ring={SLIDES[i].dark ? '#4FD3BE' : '#12B39C'} pulse /></div>
-              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 27, lineHeight: 1.25, marginTop: 26, maxWidth: 320, color: SLIDES[i].dark ? '#fff' : '#123644' }}>
-                {SLIDES[i].q}
-              </h1>
-            </>
+            <div>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 25, color: '#123644' }}>{SLIDES[i].title}</h1>
+              <p style={{ fontSize: 15, color: '#123644', lineHeight: 1.65, marginTop: 16, whiteSpace: 'pre-line' }}>{SLIDES[i].body}</p>
+            </div>
           )}
         </div>
       </div>
 
-      {!isReveal && (
-        <div style={{ padding: '0 28px 40px', display: 'flex', justifyContent: 'center' }}>
+      {!isAction && (
+        <div style={{ padding: '0 28px 40px' }}>
           <button onClick={() => go(i + 1)}
-            style={{ width: '100%', maxWidth: 340, padding: 16, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+            style={{ width: '100%', padding: 16, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
             Suivant
           </button>
         </div>
       )}
-      {isReveal && <div style={{ height: 40 }} />}
+      {isAction && <div style={{ height: 40 }} />}
     </div>
   )
 }
