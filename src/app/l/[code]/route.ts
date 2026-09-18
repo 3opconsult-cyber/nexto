@@ -54,6 +54,9 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
   // sans avoir à créer un code pour chacun.
   dm:  { path: '/landing-pro', source: 'prospection_directe', medium: 'dm', content: 'vignette' },
+
+  // --- appel à testeurs (carrousel Instagram 3 slides) ---
+  beta: { path: '/map', source: 'instagram', medium: 'social', content: 'carousel_beta_test' },
 })
 
 export function GET(req: NextRequest, { params }: { params: { code: string } }) {

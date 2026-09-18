@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Slide 3/3 : la révélation. Contrairement aux deux premières (alignées
+   à gauche, comme tout le reste du kit), Romain a explicitement demandé
+   ici le point centré avec son écho, et le nom — c'est le seul écran de
+   toute la marque où ce n'est pas une exception involontaire. */
+:root{--M:86px;--U:43px}
+html,body{width:1080px;height:1080px;overflow:hidden;background:var(--ink)}
+.sheet{width:1080px;height:1080px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.dots{position:absolute;top:var(--M);left:var(--M);display:flex;gap:8px}
+.dots span{width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,.22)}
+.dots span.on{width:22px;background:#4FD3BE}
+.center{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
+.pulse{position:absolute;border-radius:50%;border:2px solid rgba(79,211,190,.4)}
+.pulse.p1{width:260px;height:260px;opacity:.55}
+.pulse.p2{width:380px;height:380px;opacity:.32}
+.pulse.p3{width:500px;height:500px;opacity:.16}
+.name{font-family:var(--fh);font-weight:700;font-size:64px;letter-spacing:-.02em;color:#fff;margin-top:38px}
+.foot{position:absolute;bottom:var(--M);left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:16px}
+.foot .txt{font-size:18px;color:rgba(255,255,255,.55);line-height:1.5;max-width:520px}
+.foot .url{font-family:var(--fh);font-weight:700;font-size:22px;color:#fff;margin-top:4px}
+.qrcard{background:#fff;border-radius:20px;padding:16px}
+</style></head><body>
+
+<section class="sheet dark">
+  <div class="dots"><span></span><span></span><span class="on"></span></div>
+
+  <div class="center">
+    <div class="pulse p3"></div>
+    <div class="pulse p2"></div>
+    <div class="pulse p1"></div>
+    {{SIGN 74px|#4FD3BE|#2FD06E}}
+  </div>
+  <div class="name">ping</div>
+
+  <div class="foot">
+    <div class="txt">On teste ça ensemble&nbsp;?</div>
+    <div class="qrcard">{{QR beta|92px}}</div>
+    <div class="url">nexto-eta.vercel.app</div>
+  </div>
+</section>
+
+</body></html>

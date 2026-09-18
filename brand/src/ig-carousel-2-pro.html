@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../print.css">
+<style>
+/* Slide 2/3 : côté pro, miroir clair de la slide 1. */
+:root{--M:86px;--U:43px}
+html,body{width:1080px;height:1080px;overflow:hidden;background:var(--paper)}
+.sheet{width:1080px;height:1080px;background:var(--paper);color:var(--ink);position:relative}
+.dots{display:flex;gap:8px;margin-bottom:calc(var(--U)*1.1)}
+.dots span{width:8px;height:8px;border-radius:999px;background:var(--line)}
+.dots span.on{width:22px;background:var(--teal)}
+.kicker{font-family:var(--fb);font-weight:700;font-size:16px;letter-spacing:.1em;text-transform:uppercase;color:var(--tealD)}
+.stage{position:relative;height:300px;margin-top:calc(var(--U)*.8)}
+.pulse{position:absolute;border-radius:50%;border:2px solid rgba(18,179,156,.32)}
+.pulse.p1{width:190px;height:190px;left:8px;bottom:-52px;opacity:.55}
+.pulse.p2{width:285px;height:285px;left:-40px;bottom:-99px;opacity:.32}
+.pulse.p3{width:380px;height:380px;left:-88px;bottom:-146px;opacity:.16}
+.stage .device{position:absolute;left:0;bottom:0}
+.q{font-family:var(--fh);font-weight:700;font-size:54px;line-height:1.2;letter-spacing:-.02em;margin-top:32px;max-width:920px}
+.swipe{position:absolute;right:var(--M);bottom:var(--M);font-family:var(--fb);font-weight:600;font-size:15px;color:var(--slate)}
+</style></head><body>
+
+<section class="sheet">
+  <div class="dots"><span></span><span class="on"></span><span></span></div>
+  {{MARK 36px}}
+  <div class="u2"></div>
+  <div class="kicker">Vous êtes un pro&nbsp;?</div>
+
+  <div class="stage">
+    <div class="pulse p3"></div>
+    <div class="pulse p2"></div>
+    <div class="pulse p1"></div>
+    <div class="device">{{DEVICE 260px|#123644|#12B39C}}</div>
+  </div>
+
+  <div class="q">Et si votre client<br>était à quelques mètres&nbsp;?</div>
+
+  <div class="swipe">Suite →</div>
+</section>
+
+</body></html>
