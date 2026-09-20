@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 
 type Profile = { id: string; full_name: string | null; first_name: string | null; last_name: string | null; is_pro: boolean; created_at: string }
 type Attribution = { user_id: string; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; utm_content: string | null; landing_path: string | null; created_at: string }
-type Ev = { id: string; user_id: string | null; session_id: string; event_type: string; path: string | null; created_at: string }
+type Ev = { id: string; user_id: string | null; session_id: string; event_type: string; path: string | null; created_at: string; metadata: any }
 
 function fmt(d: string) {
   return new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
@@ -34,7 +34,7 @@ export default function AdminParcours() {
       const [{ data: pros }, { data: attrs }, { data: evs }] = await Promise.all([
         supabase.from('profiles').select('id, full_name, first_name, last_name, is_pro, created_at').order('created_at', { ascending: false }).limit(150),
         supabase.from('signup_attributions').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('events').select('id, user_id, session_id, event_type, path, created_at').order('created_at', { ascending: false }).limit(500),
+        supabase.from('events').select('id, user_id, session_id, event_type, path, created_at, metadata').order('created_at', { ascending: false }).limit(500),
       ])
       const byId: Record<string, Profile> = {}
       ;(pros ?? []).forEach((p: any) => { byId[p.id] = p })
@@ -125,13 +125,19 @@ export default function AdminParcours() {
                   <span style={{ fontSize: 11.5, color: '#9CA3AF' }}>{evs.length} action{evs.length > 1 ? 's' : ''} · {fmt(evs[0].created_at)} → {fmt(evs[evs.length - 1].created_at)}</span>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {evs.map(e => (
+                  {evs.filter(e => e.event_type !== 'feedback_note').map(e => (
                     <span key={e.id} title={fmt(e.created_at)}
                       style={{ fontSize: 11.5, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: e.event_type === 'page_view' ? '#F3F6F5' : 'rgba(18,179,156,.1)', color: e.event_type === 'page_view' ? '#6E8592' : '#0C8F7E' }}>
                       {e.event_type === 'page_view' ? (e.path || '/') : e.event_type}
                     </span>
                   ))}
                 </div>
+                {evs.filter(e => e.event_type === 'feedback_note').map(e => (
+                  <div key={e.id} style={{ marginTop: 8, padding: '10px 12px', borderRadius: 10, background: 'rgba(242,169,59,.1)', borderLeft: '3px solid #F2A93B' }}>
+                    <div style={{ fontSize: 13, color: '#123644', fontStyle: 'italic' }}>« {e.metadata?.text || '(vide)'} »</div>
+                    <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 3 }}>sur {e.path || '/'} · {fmt(e.created_at)}</div>
+                  </div>
+                ))}
               </div>
             )
           })}

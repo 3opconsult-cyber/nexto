@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { searchCompany, guessLegalStatus, CompanyMatch } from '@/lib/legalLookup'
+import { geocodeAddress } from '@/lib/geocode'
 import OnboardingStep from '@/components/OnboardingStep'
 import { TRADE_LIST as SERVICES } from '@/lib/trades'
 
@@ -27,6 +28,8 @@ export default function ProOnboarding() {
   const [address, setAddress] = useState('')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [locating, setLocating] = useState(false)
+  const [geocoding, setGeocoding] = useState(false)
+  const [geocodeError, setGeocodeError] = useState('')
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
   const [loading, setLoading] = useState(false)
@@ -94,13 +97,27 @@ export default function ProOnboarding() {
   }
 
   function useMyLocation() {
-    if (!navigator.geolocation) return
+    if (!navigator.geolocation) { setGeocodeError('Géolocalisation indisponible sur cet appareil — saisissez votre adresse ci-dessous.'); return }
     setLocating(true)
+    setGeocodeError('')
     navigator.geolocation.getCurrentPosition(
       p => { setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }); setLocating(false) },
-      () => setLocating(false),
+      () => { setLocating(false); setGeocodeError('Position refusée ou indisponible — saisissez votre adresse ci-dessous, on la retrouve pour vous.') },
       { timeout: 8000 }
     )
+  }
+
+  // Repli quand la geolocalisation echoue/est refusee (poste fixe, permission
+  // bloquee) : sans ca, cette etape n'avait aucune issue de secours et
+  // bloquait la simulation pour un testeur qui refuse l'autorisation navigateur.
+  async function searchAddress() {
+    if (!address.trim()) return
+    setGeocoding(true)
+    setGeocodeError('')
+    const result = await geocodeAddress(address)
+    setGeocoding(false)
+    if (result) setCoords(result)
+    else setGeocodeError("Adresse introuvable — précisez-la (numéro, rue, ville) ou réessayez.")
   }
 
   function next() { setError(''); setStepIndex(i => Math.min(i + 1, visibleSteps.length - 1)) }
@@ -294,9 +311,16 @@ export default function ProOnboarding() {
           {locating ? 'Localisation…' : coords ? '✓ Position enregistrée' : 'Utiliser ma position actuelle'}
         </button>
         <label>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Adresse (facultatif, affichée sur votre profil)</span>
+          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Adresse {coords ? '(affichée sur votre profil)' : '— sert aussi à vous localiser si la géolocalisation ne fonctionne pas'}</span>
           <input value={address} onChange={e => setAddress(e.target.value)} placeholder="12 avenue de Provence, Grasse" style={{ ...inputStyle, marginTop: 6 }} />
         </label>
+        {!coords && (
+          <button onClick={searchAddress} disabled={!address.trim() || geocoding}
+            style={{ width: '100%', marginTop: 10, padding: 12, borderRadius: 12, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 13.5, opacity: (!address.trim() || geocoding) ? .5 : 1 }}>
+            {geocoding ? 'Recherche…' : 'Retrouver cette adresse sur la carte'}
+          </button>
+        )}
+        {geocodeError && <p style={{ fontSize: 12, color: '#c0503a', marginTop: 10, lineHeight: 1.5 }}>{geocodeError}</p>}
       </OnboardingStep>
     )
   }

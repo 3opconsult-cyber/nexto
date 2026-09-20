@@ -5,6 +5,7 @@ import './ping-ui.css'
 import './ping-legacy.css'
 import DesktopShell from '@/components/DesktopShell'
 import PageViewTracker from '@/components/PageViewTracker'
+import FeedbackBubble from '@/components/FeedbackBubble'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -54,6 +55,7 @@ export default function RootLayout({
         <DesktopShell>
           {children}
         </DesktopShell>
+        <FeedbackBubble />
       </body>
     </html>
   )

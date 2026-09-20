@@ -11,22 +11,22 @@ import QrCode from '@/components/QrCode'
  * application qui tourne, pas une expérience recréée à côté. Le texte des
  * 3 écrans reprend le sien, quasi mot pour mot.
  */
-const APP_URL = 'https://nexto-eta.vercel.app/map'
+const APP_URL = 'https://nexto-eta.vercel.app/auth/signup'
 const SHARE_URL = 'https://nexto-eta.vercel.app/l/beta'
 const SHARE_TEXT = `Salut ! Merci de tester cette nouvelle application, bientôt en ligne — 2 minutes, particulier ou pro : ${SHARE_URL}`
 
 const SLIDES = [
   {
     title: 'Salut !',
-    body: 'Merci de bien vouloir tester cette nouvelle application, bientôt en ligne.\n\nFaites-moi vos retours et vos critiques à la fin — vos remarques sont les bienvenues, n’hésitez pas.',
+    body: 'Merci de tester cette appli avant son lancement.\n\nVos retours et critiques à la fin — tout est bon à dire.',
   },
   {
     title: 'Testez les deux côtés',
-    body: '🧹 En tant que professionnel — vous êtes une entreprise de ménage, nettoyage, service de propreté. Vous proposez des services : choisissez le statut qui vous convient et vous parle le mieux.\n\n🔍 En tant que particulier — vous cherchez un prestataire de service dans ce même domaine.\n\nNaviguez dans l’application et allez jusqu’au bout, jusqu’à la simulation de la validation du service.',
+    body: '🧹 Pro — ménage, nettoyage, propreté. Choisissez le statut qui vous parle.\n\n🔍 Particulier — vous cherchez ce type de service.\n\nDans les deux cas : allez jusqu’à la simulation de validation.',
   },
   {
     title: 'Aucun paiement réel',
-    body: 'Aucun paiement ne vous sera demandé, aucune transaction ne sera validée — ceci est simplement une démonstration de fluidité.',
+    body: 'Aucun paiement, aucune transaction validée — juste un test de fluidité.',
   },
 ]
 
@@ -57,7 +57,7 @@ export default function Essai() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px 0' }}>
         <Wordmark size={18} />
         <div style={{ display: 'flex', gap: 8 }}>
@@ -79,10 +79,10 @@ export default function Essai() {
 
               <a href={APP_URL}
                 style={{ display: 'block', width: '100%', maxWidth: 320, marginTop: 28, padding: 16, borderRadius: 999, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
-                Ouvrir l’application →
+                Je m’inscris et je teste →
               </a>
 
-              <div style={{ marginTop: 24, padding: 14, background: '#F3F6F5', borderRadius: 18 }}>
+              <div style={{ marginTop: 24, padding: 14, background: '#fff', borderRadius: 18, boxShadow: '0 2px 10px rgba(18,54,68,.06)' }}>
                 <QrCode data={SHARE_URL} size={110} />
               </div>
               <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Ou montrez ce code à quelqu’un à côté de vous</p>
