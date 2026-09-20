@@ -4,6 +4,7 @@ import './globals.css'
 import './ping-ui.css'
 import './ping-legacy.css'
 import DesktopShell from '@/components/DesktopShell'
+import PageViewTracker from '@/components/PageViewTracker'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -49,6 +50,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`} style={{ background: '#DCE5E3' }}>
+        <PageViewTracker />
         <DesktopShell>
           {children}
         </DesktopShell>

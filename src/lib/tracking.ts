@@ -25,14 +25,21 @@ export function trackEvent(eventType: string, extra: Record<string, unknown> = {
   try {
     const utm = captureUTM()
     const supabase = createClient()
-    supabase.from('events').insert({
-      session_id: getSessionId(),
-      event_type: eventType,
-      path: typeof window !== 'undefined' ? window.location.pathname + window.location.search : null,
-      qr_code: utm.qr || null,
-      metadata: { ...utm, ...extra },
-      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-    }).then(() => {})
+    // user_id n'etait jamais rempli (toujours null) alors que la policy RLS
+    // "events admin read" s'appuie dessus pour la lecture self — sans ça,
+    // impossible de relier le parcours anonyme (avant inscription) au compte
+    // une fois connecte, au-dela du seul session_id local.
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      supabase.from('events').insert({
+        session_id: getSessionId(),
+        user_id: user?.id ?? null,
+        event_type: eventType,
+        path: typeof window !== 'undefined' ? window.location.pathname + window.location.search : null,
+        qr_code: utm.qr || null,
+        metadata: { ...utm, ...extra },
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+      }).then(() => {})
+    })
   } catch {
     // le suivi ne doit jamais bloquer l'usage réel
   }
