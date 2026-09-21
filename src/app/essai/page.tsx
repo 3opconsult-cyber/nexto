@@ -21,13 +21,13 @@ type Role = 'particulier' | 'prestataire'
 const ET_SI: Record<Role, { title: string; body: string }[]> = {
   particulier: [
     { title: 'Et si ce que vous cherchiez se trouvait juste à côté ?', body: 'Ménage, nettoyage, mise en blanc, repassage : des prestataires disponibles près de chez vous.' },
-    { title: 'Et si le prix ne bougeait plus une fois fixé ?', body: 'Le tarif se valide avant l’intervention — jamais de mauvaise surprise à la fin.' },
-    { title: 'Et si les points de contrôle étaient simples ?', body: 'Un code scanné à l’arrivée, un autre au départ : la durée réelle est actée pour tout le monde.' },
+    { title: 'Et si vous pouviez réserver en quelques clics ?', body: 'Choisissez un prestataire disponible et réservez directement, sans appel ni allers-retours.' },
+    { title: 'Et si vous aviez un moyen de contrôle automatique ?', body: 'Un QR code à l’arrivée, un autre au départ : la durée réelle est actée, sans mauvaise surprise.' },
   ],
   prestataire: [
     { title: 'Et si vos clients se trouvaient juste à côté ?', body: 'Les demandes autour de vous, visibles en temps réel sur la carte.' },
-    { title: 'Et si diffuser votre offre était aussi simple que trois clics ?', body: 'Tarifs, zone d’intervention, disponibilité : tout se configure en quelques écrans.' },
-    { title: 'Et si vous n’aviez plus de facture à éditer ?', body: 'Elle est générée automatiquement à chaque intervention. Plus de temps pour votre métier, moins pour l’administratif.' },
+    { title: 'Et si vous n’aviez plus de facture à éditer ?', body: 'Elle est générée automatiquement à la fin de chaque intervention.' },
+    { title: 'Et si vous aviez plus de temps pour votre métier ?', body: 'Moins de temps sur l’administratif, plus de temps sur vos prestations.' },
   ],
 }
 
