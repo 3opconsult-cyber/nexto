@@ -36,7 +36,7 @@ export default function FeedbackBubble() {
   }
 
   function validatePage() {
-    trackEvent('feedback_note', { ok: true, text: '👍 Page validée' })
+    trackEvent('feedback_note', { ok: true, text: 'Page validée' })
     celebrate()
   }
 
@@ -80,8 +80,9 @@ export default function FeedbackBubble() {
             <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>Ni l'un ni l'autre n'est obligatoire.</p>
 
             <button onClick={validatePage} disabled={sending}
-              style={{ width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}>
-              👍 Cette page fonctionne bien
+              style={{ width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+              Cette page fonctionne bien
             </button>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0' }}>

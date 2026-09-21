@@ -117,7 +117,7 @@ export default function ProOnboarding() {
     const result = await geocodeAddress(address)
     setGeocoding(false)
     if (result) setCoords(result)
-    else setGeocodeError("Adresse introuvable — précisez-la (numéro, rue, ville) ou réessayez.")
+    else setGeocodeError("Adresse introuvable — précisez-la (numéro, rue, ville) ou réessayez. Vous pouvez aussi continuer sans position exacte : vous pourrez la corriger plus tard.")
   }
 
   function next() { setError(''); setStepIndex(i => Math.min(i + 1, visibleSteps.length - 1)) }
@@ -305,7 +305,7 @@ export default function ProOnboarding() {
       <OnboardingStep step={stepIndex} total={visibleSteps.length}
         title="Où intervenez-vous ?"
         subtitle="Pour apparaître au bon endroit sur la carte."
-        onBack={back} onCta={next} ctaDisabled={!coords}>
+        onBack={back} onCta={next} ctaDisabled={!coords && !address.trim()}>
         <button onClick={useMyLocation} disabled={locating}
           style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: coords ? 'rgba(18,179,156,.1)' : '#123644', color: coords ? '#0C8F7E' : '#fff', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>
           {locating ? 'Localisation…' : coords ? '✓ Position enregistrée' : 'Utiliser ma position actuelle'}
