@@ -50,9 +50,9 @@ export default function FeedbackBubble() {
     return (
       <button onClick={() => setOpen(true)} aria-label="Laisser un avis"
         style={{
-          position: 'fixed', right: 16, bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))', zIndex: 3000,
+          position: 'fixed', right: 16, bottom: 'calc(132px + env(safe-area-inset-bottom, 0px))', zIndex: 3000,
           height: 52, minWidth: 52, borderRadius: 999, border: 'none',
-          background: '#123644', color: '#fff', boxShadow: '0 8px 20px rgba(18,54,68,.35)',
+          background: '#12B39C', color: '#fff', boxShadow: '0 8px 20px rgba(18,54,68,.35)',
           display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer',
           padding: labelVisible ? '0 18px 0 15px' : 0, justifyContent: 'center',
           overflow: 'hidden', whiteSpace: 'nowrap', transition: 'padding .35s ease',
