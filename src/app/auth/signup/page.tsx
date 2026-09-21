@@ -92,7 +92,7 @@ function SignupForm() {
       }
 
       if (role === 'pro') router.push('/pro/onboarding')
-      else router.push('/welcome')
+      else router.push('/map')
     } catch {
       setError("Une erreur est survenue, réessaie dans un instant.")
       setLoading(false)

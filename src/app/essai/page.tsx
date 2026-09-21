@@ -1,45 +1,52 @@
 "use client"
 import { useRef, useState } from 'react'
-import { Wordmark } from '@/components/Brand'
+import { Wordmark, Sign } from '@/components/Brand'
 import QrCode from '@/components/QrCode'
 
 /**
- * Page de briefing pour les testeurs, partageable par lien (WhatsApp...).
- * v2 : la v1 réutilisait l'habillage de la campagne publicitaire "Et si...?"
- * (device, échos radar, accroches courtes) — Romain voulait un vrai
- * message d'explication à lui, pas une pub, et un lien vers la vraie
- * application qui tourne, pas une expérience recréée à côté. Le texte des
- * 3 écrans reprend le sien, quasi mot pour mot.
+ * Page de recrutement testeurs, partageable par lien (WhatsApp, QR...).
+ * v3 — parcours dicté par Romain : explication + renvoi vers la bulle de
+ * commentaire → choix du rôle → 3 écrans "Et si...?" adaptés au rôle choisi
+ * → inscription réelle (le rôle est transmis à /auth/signup?role=...).
+ * "Et si vos paiements étaient sécurisés ?" reformulé en "prix fixé avant de
+ * commencer" : le séquestre Stripe n'est pas branché (CLAUDE.md, invariant
+ * #4), on ne peut pas promettre une sécurité qui n'existe pas encore — la
+ * règle du tarif figé, elle, est réellement implémentée.
  */
-const APP_URL = 'https://nexto-eta.vercel.app/auth/signup'
 const SHARE_URL = 'https://nexto-eta.vercel.app/l/beta'
 const SHARE_TEXT = `Salut ! Merci de tester cette nouvelle application, bientôt en ligne — 2 minutes, particulier ou pro : ${SHARE_URL}`
 
-const SLIDES = [
-  {
-    title: 'Salut !',
-    body: 'Merci de tester cette appli avant son lancement.\n\nVos retours et critiques à la fin — tout est bon à dire.',
-  },
-  {
-    title: 'Testez les deux côtés',
-    body: '🧹 Pro — ménage, nettoyage, propreté. Choisissez le statut qui vous parle.\n\n🔍 Particulier — vous cherchez ce type de service.\n\nDans les deux cas : allez jusqu’à la simulation de validation.',
-  },
-  {
-    title: 'Aucun paiement réel',
-    body: 'Aucun paiement, aucune transaction validée — juste un test de fluidité.',
-  },
-]
+type Role = 'particulier' | 'prestataire'
+
+const ET_SI: Record<Role, { title: string; body: string }[]> = {
+  particulier: [
+    { title: 'Et si ce que vous cherchiez se trouvait juste à côté ?', body: 'Ménage, nettoyage, mise en blanc, repassage : des prestataires disponibles près de chez vous.' },
+    { title: 'Et si le prix ne bougeait plus une fois fixé ?', body: 'Le tarif se valide avant l’intervention — jamais de mauvaise surprise à la fin.' },
+    { title: 'Et si les points de contrôle étaient simples ?', body: 'Un code scanné à l’arrivée, un autre au départ : la durée réelle est actée pour tout le monde.' },
+  ],
+  prestataire: [
+    { title: 'Et si vos clients se trouvaient juste à côté ?', body: 'Les demandes autour de vous, visibles en temps réel sur la carte.' },
+    { title: 'Et si diffuser votre offre était aussi simple que trois clics ?', body: 'Tarifs, zone d’intervention, disponibilité : tout se configure en quelques écrans.' },
+    { title: 'Et si vous n’aviez plus de facture à éditer ?', body: 'Elle est générée automatiquement à chaque intervention. Plus de temps pour votre métier, moins pour l’administratif.' },
+  ],
+}
 
 export default function Essai() {
-  const [i, setI] = useState(0)
+  const [step, setStep] = useState(0)
+  const [role, setRole] = useState<Role | null>(null)
   const [dir, setDir] = useState<'r' | 'l'>('r')
-  const total = SLIDES.length
-  const isAction = i === SLIDES.length - 1
+  const TOTAL = 6 // intro, choix, 3x "et si", cta
 
   function go(next: number) {
-    if (next < 0 || next >= total) return
-    setDir(next > i ? 'r' : 'l')
-    setI(next)
+    if (next < 0 || next >= TOTAL) return
+    if (next === 2 && !role) return // le choix du rôle est obligatoire pour avancer
+    setDir(next > step ? 'r' : 'l')
+    setStep(next)
+  }
+  function pick(r: Role) {
+    setRole(r)
+    setDir('r')
+    setStep(2)
   }
 
   const touchX = useRef<number | null>(null)
@@ -49,20 +56,23 @@ export default function Essai() {
     const dx = e.changedTouches[0].clientX - touchX.current
     touchX.current = null
     if (Math.abs(dx) < 60) return
-    if (dx < 0) go(i + 1); else go(i - 1)
+    if (dx < 0) go(step + 1); else go(step - 1)
   }
 
   function shareWhatsapp() {
     window.open(`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT)}`, '_blank')
   }
 
+  const appUrl = `https://nexto-eta.vercel.app/auth/signup?role=${role === 'prestataire' ? 'pro' : 'client'}`
+  const etSi = role ? ET_SI[role][step - 2] : null
+
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px 0' }}>
         <Wordmark size={18} />
         <div style={{ display: 'flex', gap: 8 }}>
-          {Array.from({ length: total }).map((_, s) => (
-            <div key={s} style={{ width: s === i ? 22 : 8, height: 8, borderRadius: 999, background: s === i ? '#12B39C' : '#E7EDEB', transition: 'width .2s, background .2s' }} />
+          {Array.from({ length: TOTAL }).map((_, s) => (
+            <div key={s} style={{ width: s === step ? 22 : 8, height: 8, borderRadius: 999, background: s === step ? '#12B39C' : '#E7EDEB', transition: 'width .2s, background .2s' }} />
           ))}
         </div>
       </div>
@@ -71,14 +81,59 @@ export default function Essai() {
         style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '24px 28px', overflowX: 'hidden' }}
         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
       >
-        <div key={i} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'}>
-          {isAction ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644' }}>{SLIDES[i].title}</h1>
-              <p style={{ fontSize: 14.5, color: '#6E8592', lineHeight: 1.6, marginTop: 12, maxWidth: 340, whiteSpace: 'pre-line' }}>{SLIDES[i].body}</p>
+        <div key={step} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'}>
+          {step === 0 && (
+            <div>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 25, color: '#123644' }}>Salut !</h1>
+              <p style={{ fontSize: 15, color: '#123644', lineHeight: 1.65, marginTop: 16 }}>
+                PING s’adresse pour l’instant aux personnes qui cherchent un prestataire pour du ménage, du nettoyage, de la mise en blanc ou du repassage.
+              </p>
+              <p style={{ fontSize: 15, color: '#123644', lineHeight: 1.65, marginTop: 14 }}>
+                En tant que particulier, vous pourrez aussi devenir prestataire quand vous le souhaitez.
+              </p>
+              <p style={{ fontSize: 15, color: '#123644', lineHeight: 1.65, marginTop: 14 }}>
+                Merci de tester cette application avant son lancement — vos avis et critiques sont les bienvenus, à tout moment, via le petit bouton en bas à droite.
+              </p>
+            </div>
+          )}
 
-              <a href={APP_URL}
-                style={{ display: 'block', width: '100%', maxWidth: 320, marginTop: 28, padding: 16, borderRadius: 999, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+          {step === 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 23, color: '#123644' }}>Vous êtes…</h1>
+              <button onClick={() => pick('particulier')}
+                style={{ width: '100%', maxWidth: 320, marginTop: 24, padding: '18px 20px', borderRadius: 18, border: '1.5px solid #E7EDEB', background: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 26 }}>🔍</span>
+                <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Je cherche un prestataire</span>
+              </button>
+              <button onClick={() => pick('prestataire')}
+                style={{ width: '100%', maxWidth: 320, marginTop: 12, padding: '18px 20px', borderRadius: 18, border: '1.5px solid #E7EDEB', background: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 26 }}>🧹</span>
+                <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Je propose mes services</span>
+              </button>
+            </div>
+          )}
+
+          {step >= 2 && step <= 4 && etSi && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <div style={{ marginBottom: 22 }}><Sign size={64} pulse /></div>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644', lineHeight: 1.3, maxWidth: 320 }}>
+                {etSi.title}
+              </h1>
+              <p style={{ fontSize: 14.5, color: '#6E8592', lineHeight: 1.6, marginTop: 14, maxWidth: 300 }}>
+                {etSi.body}
+              </p>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>C’est parti</h1>
+              <p style={{ fontSize: 13.5, color: '#6E8592', lineHeight: 1.5, marginTop: 8, maxWidth: 300 }}>
+                Test uniquement : aucun paiement n’est jamais réellement débité. Allez jusqu’au bout sans crainte.
+              </p>
+
+              <a href={appUrl}
+                style={{ display: 'block', width: '100%', maxWidth: 320, marginTop: 22, padding: 16, borderRadius: 999, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
                 Je m’inscris et je teste →
               </a>
 
@@ -102,24 +157,19 @@ export default function Essai() {
                 Donner mon avis après le test →
               </a>
             </div>
-          ) : (
-            <div>
-              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 25, color: '#123644' }}>{SLIDES[i].title}</h1>
-              <p style={{ fontSize: 15, color: '#123644', lineHeight: 1.65, marginTop: 16, whiteSpace: 'pre-line' }}>{SLIDES[i].body}</p>
-            </div>
           )}
         </div>
       </div>
 
-      {!isAction && (
+      {step !== 1 && step !== 5 && (
         <div style={{ padding: '0 28px 40px' }}>
-          <button onClick={() => go(i + 1)}
+          <button onClick={() => go(step + 1)}
             style={{ width: '100%', padding: 16, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
             Suivant
           </button>
         </div>
       )}
-      {isAction && <div style={{ height: 40 }} />}
+      {(step === 1 || step === 5) && <div style={{ height: 40 }} />}
     </div>
   )
 }
