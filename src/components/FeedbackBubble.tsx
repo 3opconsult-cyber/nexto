@@ -1,6 +1,12 @@
 "use client"
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { trackEvent } from '@/lib/tracking'
+
+// Pas de sens sur les pages avant l'appli elle-même (recrutement testeurs,
+// connexion/inscription) : Romain l'a précisé, ce sont des pages de
+// présentation, pas des écrans à noter. La bulle vit dans l'application réelle.
+const HIDDEN_PREFIXES = ['/essai', '/auth']
 
 /**
  * Bulle de feedback permanente, demandée par Romain : un encart en bas à
@@ -14,6 +20,7 @@ import { trackEvent } from '@/lib/tracking'
  * (iOS/Android) a un micro de dictée intégré à n'importe quel champ de texte.
  */
 export default function FeedbackBubble() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [labelVisible, setLabelVisible] = useState(true)
   const [text, setText] = useState('')
@@ -24,6 +31,8 @@ export default function FeedbackBubble() {
     const t = setTimeout(() => setLabelVisible(false), 4000)
     return () => clearTimeout(t)
   }, [])
+
+  if (HIDDEN_PREFIXES.some(p => pathname?.startsWith(p))) return null
 
   function celebrate() {
     setSending(true)

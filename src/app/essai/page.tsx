@@ -5,24 +5,27 @@ import { Wordmark, Device, PING_INK, PING_TEAL, PING_GREEN } from '@/components/
 
 /**
  * Page de recrutement testeurs, partageable par lien.
- * v6 — reprend le vrai système de la campagne Instagram, pas une
- * approximation : duo clair/sombre PAR PROFIL (particulier = fond marine,
- * texte blanc, accent vert ; pro = fond clair, texte marine, accent teal),
- * mise en page alignée à gauche, gros titre en bas de cadre, glyphe "device"
- * (point d'interrogation + Signe) repris de brand/kit.py à l'identique.
+ * v7 — Romain : trop de texte partout, "et si" pas assez percutant côté pro,
+ * couleurs pas franches. Intro réduite à l'essentiel ; côté particulier
+ * ramené à UN seul "et si" (sa consigne) ; côté pro, 2-3 arguments forts
+ * maximum (latence résolue par la géoloc, facturation automatique, plus de
+ * litige possible sur la durée grâce au double QR) — le séquestre/paiement
+ * sécurisé n'est PAS repris tel quel : Stripe n'est pas branché, aucun
+ * séquestre réel n'existe aujourd'hui (invariant produit déjà documenté),
+ * l'argument gardé est le seul vrai déjà en place (prix fixé + QR
+ * horodaté = zéro contestation sur le temps). Texte secondaire en blanc
+ * plein sur fond sombre (plus d'opacité réduite qui "n'a pas l'air blanc").
  */
 type Role = 'particulier' | 'prestataire'
 
 const ET_SI: Record<Role, { title: string; body: string }[]> = {
   particulier: [
-    { title: 'Et si ce que vous cherchiez se trouvait juste à côté ?', body: 'Ménage, nettoyage, mise en blanc, repassage : des prestataires disponibles près de chez vous.' },
-    { title: 'Et si vous pouviez réserver en quelques clics ?', body: 'Choisissez un prestataire disponible et réservez directement, sans appel ni allers-retours.' },
-    { title: 'Et si vous aviez un moyen de contrôle automatique ?', body: 'Un QR code à l’arrivée, un autre au départ : la durée réelle est actée, sans mauvaise surprise.' },
+    { title: 'Et si votre prestataire se trouvait juste à côté ?', body: 'Faites une recherche sur PING et regardez qui est disponible autour de vous.' },
   ],
   prestataire: [
-    { title: 'Et si vos clients se trouvaient juste à côté ?', body: 'Les demandes autour de vous, visibles en temps réel sur la carte.' },
-    { title: 'Et si vous n’aviez plus de facture à éditer ?', body: 'Elle est générée automatiquement à la fin de chaque intervention.' },
-    { title: 'Et si vous aviez plus de temps pour votre métier ?', body: 'Moins de temps sur l’administratif, plus de temps sur vos prestations.' },
+    { title: 'Et si votre prochain client était juste à côté ?', body: 'PING réduit l’attente entre la demande d’un particulier et votre intervention — visible tout de suite sur la carte.' },
+    { title: 'Et si vos factures s’éditaient seules ?', body: 'Générée automatiquement dès la fin de l’intervention, au prix que vous avez fixé. Plus de secrétariat.' },
+    { title: 'Et si plus aucun litige n’était possible sur le temps passé ?', body: 'QR code à l’arrivée, QR code au départ : la durée est actée pour tout le monde, sans contestation.' },
   ],
 }
 
@@ -34,7 +37,7 @@ function theme(role: Role | null) {
   return {
     bg: light ? '#F3F6F5' : '#123644',
     text: light ? PING_INK : '#fff',
-    subtle: light ? '#6E8592' : 'rgba(255,255,255,.62)',
+    subtle: light ? '#475A64' : '#fff',
     kicker: light ? PING_TEAL : PING_GREEN,
     hairline: light ? '#E7EDEB' : 'rgba(255,255,255,.15)',
     dotOff: light ? '#DCE5E3' : 'rgba(255,255,255,.22)',
@@ -47,7 +50,11 @@ export default function Essai() {
   const [step, setStep] = useState(0)
   const [role, setRole] = useState<Role | null>(null)
   const [dir, setDir] = useState<'r' | 'l'>('r')
-  const TOTAL = 6
+
+  const etsiList = role ? ET_SI[role] : null
+  const etsiCount = etsiList?.length ?? 1
+  const ctaStep = 2 + etsiCount
+  const TOTAL = ctaStep + 1
 
   function go(next: number) {
     if (next < 0 || next >= TOTAL) return
@@ -56,7 +63,7 @@ export default function Essai() {
     setStep(next)
   }
   function pick(r: Role) { setRole(r); setDir('r'); setStep(2) }
-  function cta() { if (step === TOTAL - 1) router.push(appUrl); else go(step + 1) }
+  function cta() { if (step === ctaStep) router.push(appUrl); else go(step + 1) }
 
   const touchX = useRef<number | null>(null)
   function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX }
@@ -69,7 +76,7 @@ export default function Essai() {
   }
 
   const appUrl = `/auth/signup?role=${role === 'prestataire' ? 'pro' : 'client'}`
-  const etSi = role && step >= 2 && step <= 4 ? ET_SI[role][step - 2] : null
+  const etSi = role && step >= 2 && step < ctaStep ? ET_SI[role][step - 2] : null
   const T = theme(step >= 2 ? role : null)
 
   return (
@@ -88,20 +95,14 @@ export default function Essai() {
         style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px 28px 8px', overflowX: 'hidden' }}
         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
       >
-        <div key={step} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'} style={{ paddingBottom: 68 }}>
+        <div key={step} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'}>
 
           {step === 0 && (
             <>
               <div style={{ marginBottom: 20 }}><Device size={92} hook={T.text} ring={PING_TEAL} dot={PING_GREEN} /></div>
               <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 27, color: T.text, lineHeight: 1.2 }}>Salut !</h1>
-              <p style={{ fontSize: 15, color: T.subtle, lineHeight: 1.6, marginTop: 16, maxWidth: 320 }}>
-                PING s’adresse pour l’instant aux personnes qui cherchent un prestataire pour du ménage, du nettoyage, de la mise en blanc ou du repassage.
-              </p>
-              <p style={{ fontSize: 15, color: T.subtle, lineHeight: 1.6, marginTop: 12, maxWidth: 320 }}>
-                En tant que particulier, vous pourrez aussi devenir prestataire quand vous le souhaitez.
-              </p>
-              <p style={{ fontSize: 15, color: T.subtle, lineHeight: 1.6, marginTop: 12, maxWidth: 320 }}>
-                Merci de tester cette application avant son lancement — vos avis et critiques sont les bienvenus, à tout moment, via le petit bouton en bas à droite.
+              <p style={{ fontSize: 15.5, color: T.subtle, lineHeight: 1.6, marginTop: 14, maxWidth: 300 }}>
+                Merci de tester PING avant son lancement — quelques minutes, votre avis compte vraiment.
               </p>
             </>
           )}
@@ -116,7 +117,7 @@ export default function Essai() {
                 fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff', cursor: 'pointer',
               }}>
                 Je cherche un prestataire
-                <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 3 }}>Ménage, nettoyage, mise en blanc, repassage</div>
+                <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,.7)', marginTop: 3 }}>Ménage, nettoyage, mise en blanc, repassage</div>
               </button>
               <button onClick={() => pick('prestataire')} style={{
                 display: 'block', width: '100%', textAlign: 'left', padding: '18px 18px', borderRadius: 16,
@@ -125,7 +126,7 @@ export default function Essai() {
                 fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff', cursor: 'pointer',
               }}>
                 Je propose mes services
-                <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 3 }}>Auto-entrepreneur, société, ou simple particulier</div>
+                <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,.7)', marginTop: 3 }}>Auto-entrepreneur, société, ou simple particulier</div>
               </button>
             </>
           )}
@@ -143,7 +144,7 @@ export default function Essai() {
             </>
           )}
 
-          {step === 5 && (
+          {step === ctaStep && (
             <>
               <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 26, color: T.text }}>C’est parti</h1>
               <p style={{ fontSize: 14, color: T.subtle, lineHeight: 1.55, marginTop: 10, maxWidth: 300 }}>
@@ -169,7 +170,7 @@ export default function Essai() {
         </div>
         <button onClick={cta} disabled={step === 1 && !role}
           style={{ width: '100%', maxWidth: 320, padding: 16, borderRadius: 999, border: 'none', background: (step === 1 && !role) ? T.dotOff : PING_TEAL, color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', boxShadow: (step === 1 && !role) ? 'none' : '0 8px 20px rgba(18,179,156,.3)' }}>
-          {step === TOTAL - 1 ? 'Je m’inscris et je teste →' : 'Continuer'}
+          {step === ctaStep ? 'Je m’inscris et je teste →' : 'Continuer'}
         </button>
       </div>
     </div>
