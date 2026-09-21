@@ -47,6 +47,30 @@ export function Sign({
 }
 
 /**
+ * Le dispositif de la campagne : un point d'interrogation dont le point est
+ * le Signe. Repris tel quel de brand/kit.py (fonction `device`) pour que les
+ * écrans in-app "Et si...?" (ex. /essai) reprennent le même glyphe que les
+ * visuels Instagram, pas une approximation.
+ */
+export function Device({
+  size = 96,
+  hook = PING_INK,
+  ring = PING_TEAL,
+  dot = PING_GREEN,
+}: { size?: number; hook?: string; ring?: string; dot?: string }) {
+  const width = size * 0.447
+  return (
+    <svg viewBox="16.5 4.5 77.5 173.5" width={width} height={size} aria-hidden="true" style={{ display: 'block' }}>
+      <path d="M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 98"
+        fill="none" stroke={hook} strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="64" cy="148" r="30" fill="none" stroke={ring} strokeWidth="2" opacity=".3" />
+      <circle cx="64" cy="148" r="19.8" fill="none" stroke={ring} strokeWidth="2.9" opacity=".6" />
+      <circle cx="64" cy="148" r="7.7" fill={dot} />
+    </svg>
+  )
+}
+
+/**
  * Le logotype PIN·G. `size` est la taille de la police en px ; l'épingle se cale
  * dessus. Rendu accessible : le mot lu par un lecteur d'écran reste « PING ».
  */
