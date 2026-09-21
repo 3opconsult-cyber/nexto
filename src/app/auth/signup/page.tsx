@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { captureAttribution, readAttribution } from '@/lib/attribution'
 import { Sign } from '@/components/Brand'
+import DateWheelPicker from '@/components/DateWheelPicker'
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '12px 13px', border: '1.5px solid #E7EDEB', borderRadius: 13,
@@ -37,7 +38,7 @@ function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     email: '', password: '', firstName: '', lastName: '',
-    phone: '', birthdate: '', address: '',
+    phone: '', birthdate: `${new Date().getFullYear() - 30}-01-01`, address: '',
   })
 
   useEffect(() => { captureAttribution() }, [])
@@ -140,28 +141,27 @@ function SignupForm() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div>
                     <label style={labelStyle}>Prénom</label>
-                    <input type="text" value={form.firstName} onChange={e => update('firstName', e.target.value)}
+                    <input type="text" autoComplete="given-name" value={form.firstName} onChange={e => update('firstName', e.target.value)}
                       style={inputStyle} placeholder="Sophie" required />
                   </div>
                   <div>
                     <label style={labelStyle}>Nom</label>
-                    <input type="text" value={form.lastName} onChange={e => update('lastName', e.target.value)}
+                    <input type="text" autoComplete="family-name" value={form.lastName} onChange={e => update('lastName', e.target.value)}
                       style={inputStyle} placeholder="Laurent" required />
                   </div>
                 </div>
                 <div>
                   <label style={labelStyle}>Date de naissance</label>
-                  <input type="date" value={form.birthdate} onChange={e => update('birthdate', e.target.value)}
-                    style={inputStyle} required />
+                  <DateWheelPicker value={form.birthdate} onChange={v => update('birthdate', v)} />
                 </div>
                 <div>
                   <label style={labelStyle}>Téléphone</label>
-                  <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
+                  <input type="tel" autoComplete="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
                     style={inputStyle} placeholder="+33 6 00 00 00 00" required />
                 </div>
                 <div>
                   <label style={labelStyle}>Adresse</label>
-                  <input type="text" value={form.address} onChange={e => update('address', e.target.value)}
+                  <input type="text" autoComplete="street-address" value={form.address} onChange={e => update('address', e.target.value)}
                     style={inputStyle} placeholder="12 rue des Lilas, Grasse" />
                 </div>
               </>
@@ -169,13 +169,13 @@ function SignupForm() {
               <>
                 <div>
                   <label style={labelStyle}>Email</label>
-                  <input type="email" value={form.email} onChange={e => update('email', e.target.value)}
+                  <input type="email" autoComplete="email" value={form.email} onChange={e => update('email', e.target.value)}
                     style={inputStyle} placeholder="vous@email.com" required />
                 </div>
                 <div>
                   <label style={labelStyle}>Mot de passe</label>
                   <div style={{ position: 'relative' }}>
-                    <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={e => update('password', e.target.value)}
+                    <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={form.password} onChange={e => update('password', e.target.value)}
                       style={{ ...inputStyle, paddingRight: 42 }} placeholder="8 caractères minimum" minLength={8} required />
                     <button type="button" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                       style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, border: 'none', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
