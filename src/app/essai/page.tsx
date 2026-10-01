@@ -82,7 +82,7 @@ export default function Essai() {
   return (
     <div style={{ minHeight: '100vh', background: T.bg, display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif', transition: 'background .25s' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 24px 0' }}>
-        <Wordmark size={19} color={T.text} />
+        <Wordmark size={34} color={T.text} />
         {step > 0 && (
           <button onClick={() => go(step - 1)} aria-label="Étape précédente"
             style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: T.chipBg, color: T.text, fontSize: 15, fontWeight: 700 }}>
@@ -92,7 +92,7 @@ export default function Essai() {
       </div>
 
       <div
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px 28px 8px', overflowX: 'hidden' }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '24px 28px 8px', overflowX: 'hidden' }}
         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
       >
         <div key={step} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'}>
@@ -100,8 +100,8 @@ export default function Essai() {
           {step === 0 && (
             <>
               <div style={{ marginBottom: 20 }}><Device size={92} hook={T.text} ring={PING_TEAL} dot={PING_GREEN} /></div>
-              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 27, color: T.text, lineHeight: 1.2 }}>Salut !</h1>
-              <p style={{ fontSize: 15.5, color: T.subtle, lineHeight: 1.6, marginTop: 14, maxWidth: 300 }}>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 31, color: T.text, lineHeight: 1.2 }}>Salut !</h1>
+              <p style={{ fontSize: 17, color: T.subtle, lineHeight: 1.6, marginTop: 14, maxWidth: 300 }}>
                 Merci de tester PING avant son lancement — quelques minutes, votre avis compte vraiment.
               </p>
             </>
@@ -109,36 +109,36 @@ export default function Essai() {
 
           {step === 1 && (
             <>
-              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 26, color: T.text, marginBottom: 20 }}>Vous êtes…</h1>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 29, color: T.text, marginBottom: 20 }}>Vous êtes…</h1>
               <button onClick={() => pick('particulier')} style={{
                 display: 'block', width: '100%', textAlign: 'left', padding: '18px 18px', borderRadius: 16, marginBottom: 12,
                 border: role === 'particulier' ? `2px solid ${PING_GREEN}` : '1.5px solid rgba(255,255,255,.18)',
                 background: role === 'particulier' ? 'rgba(47,208,110,.16)' : 'rgba(255,255,255,.06)',
-                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff', cursor: 'pointer',
+                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16.5, color: '#fff', cursor: 'pointer',
               }}>
                 Je cherche un prestataire
-                <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,.7)', marginTop: 3 }}>Ménage, nettoyage, mise en blanc, repassage</div>
+                <div style={{ fontSize: 13.5, fontWeight: 500, color: 'rgba(255,255,255,.7)', marginTop: 3 }}>Ménage, nettoyage, mise en blanc, repassage</div>
               </button>
               <button onClick={() => pick('prestataire')} style={{
                 display: 'block', width: '100%', textAlign: 'left', padding: '18px 18px', borderRadius: 16,
                 border: role === 'prestataire' ? `2px solid ${PING_TEAL}` : '1.5px solid rgba(255,255,255,.18)',
                 background: role === 'prestataire' ? 'rgba(18,179,156,.2)' : 'rgba(255,255,255,.06)',
-                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff', cursor: 'pointer',
+                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16.5, color: '#fff', cursor: 'pointer',
               }}>
                 Je propose mes services
-                <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,.7)', marginTop: 3 }}>Auto-entrepreneur, société, ou simple particulier</div>
+                <div style={{ fontSize: 13.5, fontWeight: 500, color: 'rgba(255,255,255,.7)', marginTop: 3 }}>Auto-entrepreneur, société, ou simple particulier</div>
               </button>
             </>
           )}
 
           {etSi && role && (
             <>
-              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.04em', color: T.kicker, marginBottom: 14 }}>{KICKER[role]}</div>
-              <div style={{ marginBottom: 20 }}><Device size={78} hook={T.text} ring={PING_TEAL} dot={PING_GREEN} /></div>
-              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 25, color: T.text, lineHeight: 1.22, maxWidth: 320 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.04em', color: T.kicker, marginBottom: 14 }}>{KICKER[role]}</div>
+              <div style={{ marginBottom: 20 }}><Device size={86} hook={T.text} ring={PING_TEAL} dot={PING_GREEN} /></div>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 28, color: T.text, lineHeight: 1.2, maxWidth: 320 }}>
                 {etSi.title}
               </h1>
-              <p style={{ fontSize: 14.5, color: T.subtle, lineHeight: 1.6, marginTop: 14, maxWidth: 300 }}>
+              <p style={{ fontSize: 16, color: T.subtle, lineHeight: 1.6, marginTop: 14, maxWidth: 300 }}>
                 {etSi.body}
               </p>
             </>
@@ -146,15 +146,15 @@ export default function Essai() {
 
           {step === ctaStep && (
             <>
-              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 26, color: T.text }}>C’est parti</h1>
-              <p style={{ fontSize: 14, color: T.subtle, lineHeight: 1.55, marginTop: 10, maxWidth: 300 }}>
+              <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 29, color: T.text }}>C’est parti</h1>
+              <p style={{ fontSize: 15.5, color: T.subtle, lineHeight: 1.55, marginTop: 10, maxWidth: 300 }}>
                 Test uniquement : aucun paiement n’est jamais réellement débité. Allez jusqu’au bout sans crainte.
               </p>
               <div style={{ width: '100%', maxWidth: 280, height: 1, background: T.hairline, margin: '20px 0 16px' }} />
-              <p style={{ fontSize: 13, color: T.subtle, lineHeight: 1.5, maxWidth: 280 }}>
+              <p style={{ fontSize: 14, color: T.subtle, lineHeight: 1.5, maxWidth: 280 }}>
                 Vous testez avec un proche ? Faites-lui suivre ce message pour qu’il teste de son côté aussi.
               </p>
-              <a href="/essai/avis" style={{ display: 'inline-block', marginTop: 16, fontSize: 13, color: T.text, fontWeight: 700, textDecoration: 'underline' }}>
+              <a href="/essai/avis" style={{ display: 'inline-block', marginTop: 16, fontSize: 14, color: T.text, fontWeight: 700, textDecoration: 'underline' }}>
                 Donner mon avis après le test →
               </a>
             </>
