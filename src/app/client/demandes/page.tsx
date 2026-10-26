@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
+import SponsorBanner from '@/components/SponsorBanner'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 const DONE = ['completed', 'released']
@@ -96,6 +97,17 @@ export default function MesDemandesPage() {
           style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
           + Publier une demande
         </button>
+
+        <SponsorBanner
+          label="Partenaire"
+          style={{ margin: '0 0 18px' }}
+          sponsor={{
+            id: 'demo-sponsor',
+            name: 'Nettoyeur Pro Équipement',
+            tagline: "Matériel professionnel — remise PING",
+            linkUrl: 'https://nexto-eta.vercel.app',
+          }}
+        />
 
         {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 

@@ -1,4 +1,5 @@
 "use client"
+import type { CSSProperties } from 'react'
 
 // Régie publicitaire — socle visuel (demande de Romain, 26/10).
 // Un seul composant réutilisable, pensé pour deux cibles distinctes : du
@@ -16,7 +17,7 @@ export interface Sponsor {
   linkUrl: string
 }
 
-export default function SponsorBanner({ sponsor, label = 'Partenaire' }: { sponsor: Sponsor; label?: string }) {
+export default function SponsorBanner({ sponsor, label = 'Partenaire', style }: { sponsor: Sponsor; label?: string; style?: CSSProperties }) {
   return (
     <a
       href={sponsor.linkUrl}
@@ -26,6 +27,7 @@ export default function SponsorBanner({ sponsor, label = 'Partenaire' }: { spons
         display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none',
         background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14,
         padding: 12, margin: '0 16px 12px',
+        ...style,
       }}
     >
       <div style={{
