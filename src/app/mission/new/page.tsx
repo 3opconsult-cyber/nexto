@@ -169,16 +169,17 @@ function MissionForm() {
           </label>
         )}
 
+        {/* Prix tout compris, façon Airbnb/Booking : un seul montant à l'écran,
+            pas une addition qui s'allonge sous les yeux du client — le détail
+            reste disponible (facture, mission/[id]/facture) sans être imposé
+            ici. Les montants envoyés en base ne changent pas (subtotal_cents,
+            buyer_fee_cents...) : c'est la présentation qui change, pas le prix. */}
         <div style={{ background: '#F3F6F5', borderRadius: 14, padding: 16, marginBottom: 22 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 6 }}>
-            <span style={{ color: '#6E8592' }}>Sous-total</span><span>{(subtotalCents/100).toFixed(2)} €</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Total</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{(totalTtc / 100).toFixed(2)} €</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 10 }}>
-            <span style={{ color: '#6E8592' }}>Frais de service (5 %)</span><span>{(buyerFee/100).toFixed(2)} €</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, borderTop: '1px solid #DCE5E3', paddingTop: 10 }}>
-            <span>Total</span><span>{(totalTtc/100).toFixed(2)} €</span>
-          </div>
+          <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Frais de service PING inclus</div>
         </div>
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
