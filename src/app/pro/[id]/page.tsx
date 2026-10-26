@@ -21,7 +21,9 @@ export default function ProDetailPage() {
       setPro(pro); setReviews(reviews); setLoading(false)
     })
     const supabase = createClient()
-    supabase.from('services').select('name, price_cents').eq('provider_id', proId)
+    supabase.from('services')
+      .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
+      .eq('provider_id', proId)
       .then(({ data }) => { if (!cancelled) setExtraServices(data ?? []) })
     return () => { cancelled = true }
   }, [proId])
@@ -34,10 +36,25 @@ export default function ProDetailPage() {
   // "Réserver" doit passer par l'écran de choix forfait/horaire + récap de prix
   // (mission/new) qui fixe le prix au paramétrage initial (règle suprême du
   // tarif) et permet une vraie confirmation — pas juste ouvrir une conversation.
-  // Pour un pro "sur devis", il n'y a pas de prix à fixer : ça reste le chat.
-  function reserve() {
-    if (isDevis) { contact(); return }
-    router.push(`/mission/new?pro=${proId}`)
+  // Pour un pro (ou un article) "sur devis", il n'y a pas de prix à fixer :
+  // ça reste le chat. `serviceId` : réserver un article précis du catalogue
+  // (services) plutôt que le métier principal (provider_profiles) — chaque
+  // article a sa propre fiche de prix depuis la migration 008.
+  function reserve(serviceId?: string, articleIsDevis?: boolean) {
+    if (articleIsDevis ?? isDevis) { contact(); return }
+    router.push(`/mission/new?pro=${proId}${serviceId ? `&service=${serviceId}` : ''}`)
+  }
+
+  function articlePriceLabel(a: { pricing_type?: string; base_price_cents: number; included_hours?: number | null; hourly_rate_cents?: number | null }) {
+    if (a.pricing_type === 'devis') return 'Sur devis'
+    const hasFlat = a.base_price_cents > 0
+    const hasHourly = a.hourly_rate_cents != null && a.hourly_rate_cents > 0
+    if (hasFlat && hasHourly && a.included_hours != null) {
+      return `${(a.base_price_cents / 100).toFixed(0)} € (${a.included_hours} h incluse${a.included_hours > 1 ? 's' : ''}), puis ${(a.hourly_rate_cents! / 100).toFixed(0)} €/h`
+    }
+    if (hasFlat) return `${(a.base_price_cents / 100).toFixed(0)} €`
+    if (hasHourly) return `${(a.hourly_rate_cents! / 100).toFixed(0)} €/h`
+    return null
   }
 
   if (loading) return (
@@ -62,8 +79,21 @@ export default function ProDetailPage() {
       : (pro.hourly_rate_cents ? `${(pro.hourly_rate_cents / 100).toFixed(0)} €/h` : null)
   // Le métier principal (pro.trade) n'est jamais dans `services` (services.slice(1)
   // à l'onboarding) — l'oublier ici faisait disparaître la première prestation de la
-  // fiche dès qu'un pro en avait déclaré d'autres.
-  const skills = [TRADES[pro.trade] || pro.trade, ...extraServices.map((s: any) => s.name)]
+  // fiche dès qu'un pro en avait déclaré d'autres. Chaque article de `services` a
+  // maintenant sa propre fiche de prix (migration 008) : réservable individuellement,
+  // pas juste une étiquette décorative.
+  const articles = [
+    {
+      id: null as string | null,
+      name: TRADES[pro.trade] || pro.trade,
+      description: pro.bio || null,
+      pricing_type: (pro as any).pricing_type,
+      base_price_cents: pro.base_price_cents,
+      included_hours: (pro as any).included_hours,
+      hourly_rate_cents: pro.hourly_rate_cents,
+    },
+    ...extraServices,
+  ]
 
   return (
     <div className="ping-screen" style={{ paddingBottom: 0 }}>
@@ -124,10 +154,24 @@ export default function ProDetailPage() {
 
           <p className="ping-sub">Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
 
-          <div className="ping-h2">Compétences</div>
-          <div className="ping-chipset">
-            {skills.map((s: string, i: number) => <span key={i} className="ping-sk">{s}</span>)}
-          </div>
+          <div className="ping-h2">Prestations proposées</div>
+          {articles.map((a, i) => {
+            const label = articlePriceLabel(a)
+            const devis = a.pricing_type === 'devis'
+            return (
+              <div key={a.id ?? 'primary'} className="ping-rev" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div className="t"><span className="n">{a.name}</span></div>
+                  {a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
+                  {label && <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 4 }}>{label}</div>}
+                </div>
+                <button className="ping-btn ghost" style={{ padding: '8px 14px', fontSize: 12.5, flexShrink: 0 }}
+                  onClick={() => reserve(a.id ?? undefined, devis)}>
+                  {devis ? 'Devis' : 'Réserver'}
+                </button>
+              </div>
+            )
+          })}
 
           <div className="ping-h2">Avis <span className="ping-badge-teal">après prestation</span></div>
           {reviews.length === 0 && <p className="ping-sub">Pas encore d'avis — ils apparaîtront après les premières prestations.</p>}
@@ -146,7 +190,7 @@ export default function ProDetailPage() {
       <div className="ping-foot" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="ping-btn ghost" style={{ flex: 1 }} onClick={contact}>Contacter</button>
-          <button className="ping-btn" style={{ flex: 1.4 }} onClick={reserve}>{isDevis ? 'Demander un devis' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}</button>
+          <button className="ping-btn" style={{ flex: 1.4 }} onClick={() => reserve()}>{isDevis ? 'Demander un devis' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}</button>
         </div>
       </div>
     </div>
