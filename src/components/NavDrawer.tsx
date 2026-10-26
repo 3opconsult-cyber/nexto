@@ -78,6 +78,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     { label: 'Demandes autour de moi', path: '/pro/carte', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
+    { label: 'Mes tarifs', path: '/pro/tarifs', icon: 'doc' },
+    { label: 'Mes revenus', path: '/pro/revenus', icon: 'doc' },
     { label: 'Litiges', path: '/litiges', icon: 'doc' },
     { label: 'Mon entreprise', path: '/pro/dashboard', icon: 'ent' },
   ]

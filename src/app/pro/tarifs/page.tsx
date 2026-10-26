@@ -3,10 +3,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
+import { TRADES } from '@/lib/trades'
 
 type ServiceRow = {
   id: string; name: string; description: string | null
   pricing_type: 'forfait' | 'horaire' | 'devis'
+  base_price_cents: number; included_hours: number | null; hourly_rate_cents: number | null
+}
+type PrimaryTrade = {
+  trade: string; pricing_type: 'forfait' | 'horaire' | 'devis'
   base_price_cents: number; included_hours: number | null; hourly_rate_cents: number | null
 }
 
@@ -15,7 +20,7 @@ const inputStyle: React.CSSProperties = {
   padding: '10px 12px', fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none',
 }
 
-function priceLabel(r: ServiceRow) {
+function priceLabel(r: { base_price_cents: number; included_hours: number | null; hourly_rate_cents: number | null }) {
   const hasFlat = r.base_price_cents > 0
   const hasHourly = r.hourly_rate_cents != null && r.hourly_rate_cents > 0
   if (hasFlat && hasHourly && r.included_hours != null) {
@@ -36,6 +41,7 @@ function priceLabel(r: ServiceRow) {
 export default function ProTarifsPage() {
   const router = useRouter()
   const [rows, setRows] = useState<ServiceRow[]>([])
+  const [primary, setPrimary] = useState<PrimaryTrade | null>(null)
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -51,10 +57,16 @@ export default function ProTarifsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
-    const { data } = await supabase.from('services')
-      .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
-      .eq('provider_id', user.id).order('created_at')
+    const [{ data }, { data: pp }] = await Promise.all([
+      supabase.from('services')
+        .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
+        .eq('provider_id', user.id).order('created_at'),
+      supabase.from('provider_profiles')
+        .select('trade, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
+        .eq('id', user.id).single(),
+    ])
     setRows((data as ServiceRow[]) ?? [])
+    setPrimary((pp as PrimaryTrade) ?? null)
     setLoading(false)
   }
   useEffect(() => { load() }, [])
@@ -106,10 +118,25 @@ export default function ProTarifsPage() {
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh' }}>
         {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
+        {!loading && primary && (
+          <div style={{ background: '#fff', border: '1.5px solid #12B39C', borderRadius: 14, padding: 14, marginBottom: 9 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: '#0C8F7E', textTransform: 'uppercase', letterSpacing: '.04em' }}>Métier principal</div>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginTop: 2 }}>{TRADES[primary.trade] || primary.trade}</div>
+                <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 6 }}>
+                  {primary.pricing_type === 'devis' ? 'Sur devis' : priceLabel(primary)}
+                </div>
+              </div>
+              <span onClick={() => router.push('/pro/onboarding')} style={{ color: '#6E8592', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', flexShrink: 0, textDecoration: 'underline' }}>Modifier</span>
+            </div>
+          </div>
+        )}
+
         {!loading && rows.length === 0 && !adding && (
-          <div style={{ textAlign: 'center', padding: 30, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB', marginBottom: 14 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucun article ajouté pour l&apos;instant</div>
-            <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Votre tarif de base reste celui défini dans « Paramétrer mes services ».</div>
+          <div style={{ textAlign: 'center', padding: 20, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB', marginBottom: 14 }}>
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucun article complémentaire pour l&apos;instant</div>
+            <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Ajoutez-en un ci-dessous si vous proposez d&apos;autres prestations (mise en blanc, repassage...).</div>
           </div>
         )}
 
