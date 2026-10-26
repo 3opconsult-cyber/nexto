@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import ReviewModal from '@/components/ReviewModal'
 import DepartureBar from '@/components/DepartureBar'
 import { filterMessage } from '@/lib/chatFilter'
-import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
+import { getRates } from '@/lib/pricing'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -175,8 +175,9 @@ export default function ChatPage() {
   async function acceptOffer(m: Msg) {
     if (!m.offer_cents) return
     const cents = m.offer_cents
-    const buyerFee = Math.round(cents * BUYER_RATE)
-    const sellerFee = Math.round(cents * SELLER_RATE)
+    const rates = await getRates()
+    const buyerFee = Math.round(cents * rates.buyer)
+    const sellerFee = Math.round(cents * rates.seller)
     // Forfait + depassement si la proposition porte un tarif de depassement ;
     // sinon prix sec, comme avant (efface toute structure de depassement
     // heritee d'une proposition precedente).

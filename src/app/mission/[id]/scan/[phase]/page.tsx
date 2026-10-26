@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
-import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
+import { getRates } from '@/lib/pricing'
 
 export default function ScanQR() {
   const params = useParams<{ id: string; phase: string }>()
@@ -63,20 +63,22 @@ export default function ScanQR() {
           // Forfait + depassement : le forfait est du integralement, seules les
           // heures au-dela de celles incluses sont facturees au tarif de
           // depassement — jamais l'inverse (le forfait ne se substitue pas).
+          const rates = await getRates()
           const includedMinutes = tx.included_hours * 60
           const overtimeHours = Math.max(0, (mins - includedMinutes) / 60)
           const subtotal = tx.base_forfait_cents + Math.round(tx.hourly_rate_cents * overtimeHours)
-          const buyerFee = Math.round(subtotal * BUYER_RATE)
-          const sellerFee = Math.round(subtotal * SELLER_RATE)
+          const buyerFee = Math.round(subtotal * rates.buyer)
+          const sellerFee = Math.round(subtotal * rates.seller)
           updates.subtotal_cents = subtotal
           updates.buyer_fee_cents = buyerFee
           updates.seller_fee_cents = sellerFee
           updates.total_charged_cents = subtotal + buyerFee
           updates.payout_cents = subtotal - sellerFee
         } else if (tx.hourly_rate_cents) {
+          const rates = await getRates()
           const subtotal = Math.round(tx.hourly_rate_cents * (mins / 60))
-          const buyerFee = Math.round(subtotal * BUYER_RATE)
-          const sellerFee = Math.round(subtotal * SELLER_RATE)
+          const buyerFee = Math.round(subtotal * rates.buyer)
+          const sellerFee = Math.round(subtotal * rates.seller)
           updates.subtotal_cents = subtotal
           updates.buyer_fee_cents = buyerFee
           updates.seller_fee_cents = sellerFee

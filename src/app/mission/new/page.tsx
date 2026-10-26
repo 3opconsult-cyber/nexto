@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
-import { BUYER_RATE } from '@/lib/pricing'
+import { getRates, DEFAULT_BUYER_RATE, DEFAULT_SELLER_RATE } from '@/lib/pricing'
 import PaymentPendingModal from '@/components/PaymentPendingModal'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
@@ -21,6 +21,11 @@ function MissionForm() {
   const [mode, setMode] = useState<'forfait' | 'horaire' | null>(null)
   const [error, setError] = useState('')
   const [confirming, setConfirming] = useState(false)
+  // Taux pilotés depuis l'admin (app_settings) — valeurs par défaut le temps
+  // du chargement, jamais utilisées pour le calcul final (submit() relit
+  // getRates(), qui a déjà mis le cache à jour à ce moment-là).
+  const [rates, setRates] = useState({ buyer: DEFAULT_BUYER_RATE, seller: DEFAULT_SELLER_RATE })
+  useEffect(() => { getRates().then(setRates) }, [])
 
   // `article` : prix de l'article précis choisi sur la fiche du pro (migration
   // 008, table services) ; sans ?service=, on retombe sur le métier principal
@@ -59,7 +64,7 @@ function MissionForm() {
         : mode === 'horaire' ? Math.round((pricing.hourly_rate_cents || 0) * Number(estimatedHours || 0))
         : pricing.base_price_cents)
     : 0
-  const buyerFee = Math.round(subtotalCents * BUYER_RATE)
+  const buyerFee = Math.round(subtotalCents * rates.buyer)
   const totalTtc = subtotalCents + buyerFee
 
   const [creating, setCreating] = useState(false)
@@ -84,11 +89,16 @@ function MissionForm() {
     }).select().single()
     if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
 
-    const sellerFee = Math.round(subtotalCents * (11 / 100))
+    // Relit les taux à l'instant T (pas le state React, qui peut dater de
+    // l'affichage initial) : la source de vérité au moment de l'écriture.
+    const liveRates = await getRates()
+    const liveBuyerFee = Math.round(subtotalCents * liveRates.buyer)
+    const sellerFee = Math.round(subtotalCents * liveRates.seller)
+    const liveTotalTtc = subtotalCents + liveBuyerFee
     const { data: tx, error: txErr } = await supabase.from('transactions').insert({
       kind: 'service', buyer_id: user.id, seller_id: pro.id, request_id: req.id,
-      subtotal_cents: subtotalCents, buyer_fee_cents: buyerFee, seller_fee_cents: sellerFee,
-      total_charged_cents: totalTtc, payout_cents: subtotalCents - sellerFee,
+      subtotal_cents: subtotalCents, buyer_fee_cents: liveBuyerFee, seller_fee_cents: sellerFee,
+      total_charged_cents: liveTotalTtc, payout_cents: subtotalCents - sellerFee,
       hourly_rate_cents: hasOvertime ? pricing.hourly_rate_cents : (mode === 'horaire' ? pricing.hourly_rate_cents : null),
       included_hours: hasOvertime ? pricing.included_hours : null,
       base_forfait_cents: hasOvertime ? pricing.base_price_cents : null,

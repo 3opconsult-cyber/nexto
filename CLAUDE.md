@@ -41,9 +41,21 @@ design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand
 
 ## Invariants métier — NE PAS enfreindre
 - **Mono-produit** : ménage, repassage, nettoyage (+ vitres en base). Rien d'autre.
-- **Commission : 5 % client + 11 % prestataire.** Modèle **3 factures** : le prestataire facture
-  sous son en-tête (PING n'y apparaît pas) ; PING émet ses 2 commissions séparément. Chaque partie
-  ne voit **que sa propre commission** + la prestation (RLS `invoices` correcte).
+- **Commission : réglable, plus figée dans le code** (décision Romain du 26/10/2026, après
+  comparatif Wecasa/Airbnb/TaskRabbit). Taux stockés dans `app_settings` (clés
+  `commission_buyer_rate`/`commission_seller_rate`, JSON numérique, ex. `0.08`), réglables sans
+  déploiement sur `/admin/commission` (RLS `is_admin()` en écriture, lecture publique). Code
+  client : `getRates()` dans `src/lib/pricing.ts` (ne plus importer `BUYER_RATE`/`SELLER_RATE`,
+  supprimés). Valeur courante au 26/10/2026 : **8 % client + 17 % prestataire = 25 % total**
+  (aligné sur le modèle « commission partagée » de Wecasa/historique Airbnb, choix explicite de
+  Romain plutôt que le modèle 100 %-côté-pro vers lequel Airbnb migre aujourd'hui). Une mission déjà
+  réservée garde le taux en vigueur à ce moment (`buyer_fee_cents`/`seller_fee_cents` figés sur la
+  transaction) — changer le réglage n'affecte que les réservations futures. Modèle **3 factures**
+  inchangé : le prestataire facture sous son en-tête (PING n'y apparaît pas) ; PING émet ses
+  2 commissions séparément, au taux réellement appliqué sur cette transaction (pas un taux global
+  recalculé a posteriori — voir `generate_invoices`, champ `legal.taux` calculé depuis
+  `buyer_fee_cents`/`subtotal_cents`). Chaque partie ne voit **que sa propre commission** +
+  la prestation (RLS `invoices` correcte).
 - **Règle suprême du tarif** : le prix se valide au **paramétrage initial** ; la facturation suit ;
   **seul un litige** peut le rouvrir. Pas de re-négociation une fois accepté. Dans le chat,
   « + Proposer un tarif » n'apparaît que tant qu'aucun devis n'est accepté.
