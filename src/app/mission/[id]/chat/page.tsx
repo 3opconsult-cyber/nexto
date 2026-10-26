@@ -1,11 +1,25 @@
 "use client"
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ReviewModal from '@/components/ReviewModal'
 import DepartureBar from '@/components/DepartureBar'
 import { filterMessage } from '@/lib/chatFilter'
 import { BUYER_RATE, SELLER_RATE } from '@/lib/pricing'
+
+// Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
+// conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
+function sameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+}
+function dayLabel(d: Date) {
+  const now = new Date()
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1)
+  if (sameDay(d, now)) return "Aujourd'hui"
+  if (sameDay(d, yesterday)) return 'Hier'
+  const label = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
 
 interface Msg {
   id: string
@@ -316,11 +330,21 @@ export default function ChatPage() {
         {msgs.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
         )}
-        {msgs.map(m => {
+        {msgs.map((m, i) => {
+          const msgDate = new Date(m.created_at)
+          const showDatePill = i === 0 || !sameDay(msgDate, new Date(msgs[i - 1].created_at))
+          const datePill = showDatePill ? (
+            <div key={`date-${m.id}`} style={{ alignSelf: 'center', margin: '4px 0', padding: '5px 14px', borderRadius: 999, background: 'rgba(18,54,68,.06)', color: '#6E8592', fontSize: 11, fontWeight: 700 }}>
+              {dayLabel(msgDate)}
+            </div>
+          ) : null
+
           if (m.kind === 'offer') {
             const mine = m.sender_id === userId
             return (
-              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: '16px 18px', boxShadow: '0 4px 16px rgba(18,179,156,.12)' }}>
+              <Fragment key={m.id}>
+                {datePill}
+                <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: '16px 18px', boxShadow: '0 4px 16px rgba(18,179,156,.12)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
                   <span style={{ width: 22, height: 22, borderRadius: 7, background: 'rgba(18,179,156,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
@@ -359,21 +383,28 @@ export default function ChatPage() {
                 {m.offer_status === 'declined' && (
                   <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#9CA3AF' }}>Refusé</div>
                 )}
-              </div>
+                </div>
+              </Fragment>
             )
           }
           if (m.sender_id === null) {
             return (
-              <div key={m.id} style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>
-                {m.body}
-              </div>
+              <Fragment key={m.id}>
+                {datePill}
+                <div style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>
+                  {m.body}
+                </div>
+              </Fragment>
             )
           }
           const mine = m.sender_id === userId
           return (
-            <div key={m.id} className={mine ? 'msg me' : 'msg them'}>
-              {m.body}
-            </div>
+            <Fragment key={m.id}>
+              {datePill}
+              <div className={mine ? 'msg me' : 'msg them'}>
+                {m.body}
+              </div>
+            </Fragment>
           )
         })}
         {myReview && (
