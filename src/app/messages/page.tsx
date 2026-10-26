@@ -34,6 +34,7 @@ export default function MessagesPage() {
   const [rows, setRows] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
+  const [sortMode, setSortMode] = useState<'date' | 'client'>('date')
 
   useEffect(() => {
     const supabase = createClient()
@@ -96,6 +97,16 @@ export default function MessagesPage() {
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une conversation…"
               style={{ width: '100%', boxSizing: 'border-box', padding: '11px 14px 11px 36px', borderRadius: 12, border: '1px solid #E7EDEB', background: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
           </div>
+          <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+            {(['date', 'client'] as const).map(m => (
+              <button key={m} onClick={() => setSortMode(m)} style={{
+                padding: '6px 13px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 11.5,
+                background: sortMode === m ? '#123644' : '#fff', color: sortMode === m ? '#fff' : '#6E8592',
+                boxShadow: sortMode === m ? 'none' : '0 0 0 1px #E7EDEB',
+              }}>{m === 'date' ? 'Trier par date' : 'Trier par client'}</button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -122,16 +133,32 @@ export default function MessagesPage() {
             )
           }
 
-          // Sections type messagerie (Aujourd'hui / Hier / Cette semaine / …) :
-          // regroupe les lignes déjà triées par activité, sans casser l'ordre.
-          const sections: { label: string; items: any[] }[] = []
-          filtered.forEach(t => {
-            const d = new Date(t.lastMessage?.created_at || t.created_at)
-            const label = sectionLabel(d)
-            const current = sections[sections.length - 1]
-            if (current && current.label === label) current.items.push(t)
-            else sections.push({ label, items: [t] })
-          })
+          let sections: { label: string; items: any[] }[]
+          if (sortMode === 'client') {
+            // Regroupe par interlocuteur (toutes missions confondues, classées
+            // alphabétiquement) — utile dès qu'un même client/pro revient
+            // plusieurs fois et que la vue par date éparpille son historique.
+            const byName = new Map<string, any[]>()
+            filtered.forEach(t => {
+              const name = t.kind === 'support' ? 'Support PING' : (t.counterpart || '?')
+              if (!byName.has(name)) byName.set(name, [])
+              byName.get(name)!.push(t)
+            })
+            sections = Array.from(byName.entries())
+              .sort((a, b) => a[0].localeCompare(b[0], 'fr'))
+              .map(([label, items]) => ({ label: items.length > 1 ? `${label} · ${items.length} missions` : label, items }))
+          } else {
+            // Sections type messagerie (Aujourd'hui / Hier / Cette semaine / …) :
+            // regroupe les lignes déjà triées par activité, sans casser l'ordre.
+            sections = []
+            filtered.forEach(t => {
+              const d = new Date(t.lastMessage?.created_at || t.created_at)
+              const label = sectionLabel(d)
+              const current = sections[sections.length - 1]
+              if (current && current.label === label) current.items.push(t)
+              else sections.push({ label, items: [t] })
+            })
+          }
 
           return sections.map(section => (
             <div key={section.label} style={{ marginBottom: 6 }}>

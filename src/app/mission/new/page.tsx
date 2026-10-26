@@ -6,6 +6,7 @@ import { trackEvent } from '@/lib/tracking'
 import { BUYER_RATE } from '@/lib/pricing'
 import PaymentPendingModal from '@/components/PaymentPendingModal'
 import NavDrawer from '@/components/NavDrawer'
+import { TRADES } from '@/lib/trades'
 
 function MissionForm() {
   const router = useRouter()
@@ -95,6 +96,18 @@ function MissionForm() {
       price_confirmed: true,
     }).select().single()
     if (txErr || !tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
+
+    // Sans ça, le chat s'ouvrait totalement vide malgré un prix déjà validé
+    // (règle suprême du tarif) — rien ne rappelait ce qui avait été réservé.
+    const label = article ? article.name : (TRADES[pro.trade] || pro.trade)
+    const priceLabel = hasOvertime
+      ? `${(pricing.base_price_cents / 100).toFixed(0)} € (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}, puis ${(pricing.hourly_rate_cents / 100).toFixed(0)} €/h au-delà)`
+      : mode === 'horaire' ? `${(pricing.hourly_rate_cents / 100).toFixed(0)} €/h`
+        : `${(pricing.base_price_cents / 100).toFixed(0)} €`
+    await supabase.from('messages').insert({
+      transaction_id: tx.id, sender_id: null,
+      body: `✓ Réservation confirmée — ${label} · ${priceLabel} · ${address.trim()}`,
+    })
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
     router.push(`/mission/${tx.id}/qrcodes`)
