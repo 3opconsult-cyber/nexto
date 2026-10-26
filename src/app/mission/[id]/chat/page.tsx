@@ -282,16 +282,16 @@ export default function ChatPage() {
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
             <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Proposer un nouveau tarif</h3>
             <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
-            <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5" placeholder="Nouveau montant en €"
+            <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5"
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 10 }} />
             <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-              <input type="number" value={newIncludedHours} onChange={e => setNewIncludedHours(e.target.value)} min="0" step="0.5" placeholder="Heures incluses (facultatif)"
+              <input type="number" value={newIncludedHours} onChange={e => setNewIncludedHours(e.target.value)} min="0" step="0.5"
                 style={{ flex: 1, padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
-              <input type="number" value={newHourly} onChange={e => setNewHourly(e.target.value)} min="0" step="0.5" placeholder="€/h au-delà"
+              <input type="number" value={newHourly} onChange={e => setNewHourly(e.target.value)} min="0" step="0.5"
                 style={{ flex: 1, padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
             </div>
             <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 10 }}>Laisser vide pour un montant fixe simple — sinon le montant ci-dessus devient un forfait avec dépassement horaire.</p>
-            <textarea value={newAmountReason} onChange={e => setNewAmountReason(e.target.value)} rows={2} placeholder="Motif (facultatif)"
+            <textarea value={newAmountReason} onChange={e => setNewAmountReason(e.target.value)} rows={2}
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, fontFamily: 'inherit' }} />
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 12, border: '1px dashed #DCE5E3', marginBottom: 14, cursor: 'pointer' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="12" cy="12" r="3" /></svg>
@@ -410,7 +410,7 @@ export default function ChatPage() {
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
           style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
-          placeholder="Écrire un message…" />
+ />
         <button onClick={send}
           style={{ width: 42, height: 42, borderRadius: '50%', border: 'none', background: '#12B39C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" /></svg>

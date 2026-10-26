@@ -217,12 +217,12 @@ export default function ProOnboarding() {
           <>
             <label>
               <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Forfait (€)</span>
-              <input type="number" min="0" step="0.5" value={flatRate} onChange={e => setFlatRate(e.target.value)} placeholder="25" style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
+              <input type="number" min="0" step="0.5" value={flatRate} onChange={e => setFlatRate(e.target.value)} style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
             </label>
             {flatRate && (
               <label>
                 <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Durée incluse dans ce forfait (heures, facultatif)</span>
-                <input type="number" min="0" step="0.5" value={includedHours} onChange={e => setIncludedHours(e.target.value)} placeholder="Ex. 3" style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
+                <input type="number" min="0" step="0.5" value={includedHours} onChange={e => setIncludedHours(e.target.value)} style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
                 <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: -10, marginBottom: 16 }}>
                   Si renseigné, le taux horaire ci-dessous s&apos;applique uniquement au-delà de cette durée — pas en remplacement du forfait.
                 </p>
@@ -230,7 +230,7 @@ export default function ProOnboarding() {
             )}
             <label>
               <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>{flatRate && includedHours ? 'Taux horaire au-delà (€/h)' : 'Taux horaire (€/h)'}</span>
-              <input type="number" min="0" step="0.5" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} placeholder="18" style={{ ...inputStyle, marginTop: 6 }} />
+              <input type="number" min="0" step="0.5" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
             </label>
           </>
         )}
@@ -264,7 +264,6 @@ export default function ProOnboarding() {
         <input
           value={companyQuery}
           onChange={e => { setCompanyQuery(e.target.value); setSelectedCompany(null) }}
-          placeholder="Ex. Sofia Services"
           style={inputStyle}
         />
         {companyResults.length > 0 && (
@@ -287,12 +286,12 @@ export default function ProOnboarding() {
           {manualEntry ? 'Revenir à la recherche' : "Je ne trouve pas mon entreprise, saisir le SIRET à la main"}
         </button>
         {manualEntry && (
-          <input value={siret} onChange={e => setSiret(e.target.value)} placeholder="Numéro SIRET (14 chiffres)"
+          <input value={siret} onChange={e => setSiret(e.target.value)}
             style={{ ...inputStyle, marginTop: 10 }} />
         )}
         <label style={{ display: 'block', marginTop: 16 }}>
           <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Numéro de déclaration SAP (facultatif)</span>
-          <input value={sapNumber} onChange={e => setSapNumber(e.target.value)} placeholder="Ex. SAP812345678"
+          <input value={sapNumber} onChange={e => setSapNumber(e.target.value)}
             style={{ ...inputStyle, marginTop: 6 }} />
           <span style={{ display: 'block', fontSize: 11.5, color: '#9CA3AF', marginTop: 5 }}>Si vous l'avez, vos clients peuvent bénéficier du crédit d'impôt de 50 %. Pas de déclaration ? Vous pouvez continuer sans, et la renseigner plus tard.</span>
         </label>
@@ -312,7 +311,7 @@ export default function ProOnboarding() {
         </button>
         <label>
           <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Adresse {coords ? '(affichée sur votre profil)' : '— sert aussi à vous localiser si la géolocalisation ne fonctionne pas'}</span>
-          <input value={address} onChange={e => setAddress(e.target.value)} placeholder="12 avenue de Provence, Grasse" style={{ ...inputStyle, marginTop: 6 }} />
+          <input value={address} onChange={e => setAddress(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
         </label>
         {!coords && (
           <button onClick={searchAddress} disabled={!address.trim() || geocoding}
@@ -331,7 +330,7 @@ export default function ProOnboarding() {
         title="Votre numéro de téléphone"
         subtitle="Visible uniquement par PING, jamais publié."
         onBack={back} onCta={next} ctaDisabled={phone.trim().length < 6}>
-        <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="06 12 34 56 78" type="tel" style={inputStyle} />
+        <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" style={inputStyle} />
       </OnboardingStep>
     )
   }
@@ -343,7 +342,7 @@ export default function ProOnboarding() {
       subtitle="Une phrase suffit. Vous pourrez la modifier plus tard."
       onBack={back} onSkip={finish} skipLabel="Passer et terminer"
       onCta={finish} ctaLabel="Terminer" ctaLoading={loading}>
-      <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} placeholder="Ex. Ménage soigné, ponctuel, 5 ans d'expérience."
+      <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4}
         style={{ ...inputStyle, resize: 'vertical' }} />
       <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8, lineHeight: 1.4 }}>
         Ce texte est public. Pour votre sécurité, n'y indiquez ni numéro de téléphone ni nom d'enseigne —

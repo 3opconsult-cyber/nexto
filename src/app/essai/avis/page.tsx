@@ -119,7 +119,6 @@ export default function EssaiAvis() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 7 }}>Un commentaire ? (facultatif)</div>
             <textarea value={commentaire} onChange={e => setCommentaire(e.target.value)} rows={3}
-              placeholder="Ce qui vous a plu, ce qui vous a bloqué…"
               style={{ width: '100%', border: '1px solid #DCE5E3', borderRadius: 12, padding: '11px 13px', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} />
           </div>
 

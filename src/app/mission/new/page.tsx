@@ -104,13 +104,13 @@ function MissionForm() {
       <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '24px 20px', minHeight: 'calc(100vh - 110px)' }}>
         <label style={{ display: 'block', marginBottom: 16 }}>
           <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Adresse</span>
-          <input value={address} onChange={e => setAddress(e.target.value)} placeholder="12 avenue de Provence, Grasse"
+          <input value={address} onChange={e => setAddress(e.target.value)}
             style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14 }} />
         </label>
 
         <label style={{ display: 'block', marginBottom: 16 }}>
           <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Description</span>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Ex. 110 m², remise en état"
+          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
             style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 13.5, fontFamily: 'inherit' }} />
         </label>
 

@@ -142,12 +142,12 @@ function SignupForm() {
                   <div>
                     <label style={labelStyle}>Prénom</label>
                     <input type="text" autoComplete="given-name" value={form.firstName} onChange={e => update('firstName', e.target.value)}
-                      style={inputStyle} placeholder="Sophie" required />
+                      style={inputStyle} required />
                   </div>
                   <div>
                     <label style={labelStyle}>Nom</label>
                     <input type="text" autoComplete="family-name" value={form.lastName} onChange={e => update('lastName', e.target.value)}
-                      style={inputStyle} placeholder="Laurent" required />
+                      style={inputStyle} required />
                   </div>
                 </div>
                 <div>
@@ -157,12 +157,12 @@ function SignupForm() {
                 <div>
                   <label style={labelStyle}>Téléphone</label>
                   <input type="tel" autoComplete="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
-                    style={inputStyle} placeholder="+33 6 00 00 00 00" required />
+                    style={inputStyle} required />
                 </div>
                 <div>
                   <label style={labelStyle}>Adresse</label>
                   <input type="text" autoComplete="street-address" value={form.address} onChange={e => update('address', e.target.value)}
-                    style={inputStyle} placeholder="12 rue des Lilas, Grasse" />
+                    style={inputStyle} />
                 </div>
               </>
             ) : (
@@ -170,13 +170,13 @@ function SignupForm() {
                 <div>
                   <label style={labelStyle}>Email</label>
                   <input type="email" autoComplete="email" value={form.email} onChange={e => update('email', e.target.value)}
-                    style={inputStyle} placeholder="vous@email.com" required />
+                    style={inputStyle} required />
                 </div>
                 <div>
                   <label style={labelStyle}>Mot de passe</label>
                   <div style={{ position: 'relative' }}>
                     <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={form.password} onChange={e => update('password', e.target.value)}
-                      style={{ ...inputStyle, paddingRight: 42 }} placeholder="8 caractères minimum" minLength={8} required />
+                      style={{ ...inputStyle, paddingRight: 42 }} minLength={8} required />
                     <button type="button" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                       style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, border: 'none', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                       <EyeIcon off={showPassword} />

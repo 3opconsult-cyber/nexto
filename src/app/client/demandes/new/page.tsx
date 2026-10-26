@@ -108,11 +108,11 @@ export default function NewOpenRequestPage() {
         <div style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 700, marginBottom: 8 }}>Décrivez le besoin</div>
         <label style={{ display: 'block', marginBottom: 14 }}>
           <span style={labelStyle}>Titre</span>
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex. Ménage complet · 85 m²" style={fieldStyle} />
+          <input value={title} onChange={e => setTitle(e.target.value)} style={fieldStyle} />
         </label>
         <label style={{ display: 'block', marginBottom: 18 }}>
           <span style={labelStyle}>Détail</span>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Appartement 3 pièces, cuisine + 2 salles d'eau. Produits fournis."
+          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
             style={{ ...fieldStyle, fontFamily: 'inherit' }} />
         </label>
 
@@ -142,11 +142,11 @@ export default function NewOpenRequestPage() {
         <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
           <label style={{ flex: 1 }}>
             <span style={labelStyle}>Minimum</span>
-            <input type="number" value={budgetMin} onChange={e => setBudgetMin(e.target.value)} min="0" step="1" placeholder="80" style={fieldStyle} />
+            <input type="number" value={budgetMin} onChange={e => setBudgetMin(e.target.value)} min="0" step="1" style={fieldStyle} />
           </label>
           <label style={{ flex: 1 }}>
             <span style={labelStyle}>Maximum</span>
-            <input type="number" value={budgetMax} onChange={e => setBudgetMax(e.target.value)} min="0" step="1" placeholder="120" style={fieldStyle} />
+            <input type="number" value={budgetMax} onChange={e => setBudgetMax(e.target.value)} min="0" step="1" style={fieldStyle} />
           </label>
         </div>
         <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 18 }}>Indicatif seulement — les propositions reçues peuvent différer, vous restez libre de refuser.</p>
@@ -154,7 +154,7 @@ export default function NewOpenRequestPage() {
         <div style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 700, marginBottom: 8 }}>Localisation</div>
         <label style={{ display: 'block', marginBottom: 8 }}>
           <span style={labelStyle}>Adresse de la prestation</span>
-          <input value={address} onChange={e => setAddress(e.target.value)} placeholder="12 avenue de Provence, Grasse" style={fieldStyle} />
+          <input value={address} onChange={e => setAddress(e.target.value)} style={fieldStyle} />
         </label>
         <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 18 }}>Communiquée au prestataire seulement une fois la mission confirmée.</p>
 

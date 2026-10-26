@@ -76,9 +76,9 @@ export default function ProTarifsPage() {
 
         {adding ? (
           <div style={{ background: '#fff', border: '1.5px solid #12B39C', borderRadius: 14, padding: 13, marginTop: 4 }}>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Ex. Ménage complet jusqu'à 90 m²"
+            <input value={name} onChange={e => setName(e.target.value)}
               style={{ width: '100%', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13, fontFamily: 'Inter, sans-serif', marginBottom: 8, outline: 'none' }} />
-            <input value={price} onChange={e => setPrice(e.target.value)} placeholder="Prix en € (ex. 90)" inputMode="decimal"
+            <input value={price} onChange={e => setPrice(e.target.value)} inputMode="decimal"
               style={{ width: '100%', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13, fontFamily: 'Inter, sans-serif', marginBottom: 10, outline: 'none' }} />
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setAdding(false); setName(''); setPrice('') }}
