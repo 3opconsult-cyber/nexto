@@ -4,6 +4,25 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
+import QrCode from '@/components/QrCode'
+
+// Paliers dégressifs (demande de Romain, 26/10) : plus on parraine, plus la
+// part de commission offerte sur la prochaine mission grimpe — affichage
+// seul pour l'instant (la vraie déduction attend le séquestre réel, comme
+// le reste du modèle de paiement). Toujours plafonné à 50 €, 1x/mois
+// (règle produit existante, inchangée).
+const TIERS = [
+  { min: 1, pct: 10 },
+  { min: 3, pct: 20 },
+  { min: 5, pct: 30 },
+  { min: 10, pct: 50 },
+]
+function currentTier(n: number) {
+  return [...TIERS].reverse().find(t => n >= t.min) || null
+}
+function nextTier(n: number) {
+  return TIERS.find(t => n < t.min) || null
+}
 
 function makeCode(firstName: string) {
   const base = (firstName || 'PING').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6) || 'PING'
@@ -81,6 +100,9 @@ export default function ParrainagePage() {
   function shareEmail() {
     window.location.href = `mailto:?subject=${encodeURIComponent('Je t\u2019invite sur PING')}&body=${encodeURIComponent(shareMsg)}`
   }
+  const [showQr, setShowQr] = useState(false)
+  const tier = currentTier(successfulCount)
+  const next = nextTier(successfulCount)
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
@@ -114,13 +136,50 @@ export default function ParrainagePage() {
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
                   Copier
                 </button>
+                <button onClick={() => setShowQr(s => !s)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderRadius: 999, border: 'none', background: showQr ? '#fff' : 'rgba(255,255,255,.14)', color: showQr ? '#123644' : '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z" /></svg>
+                  QR code
+                </button>
               </div>
+              {showQr && shareUrl && (
+                <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <div style={{ background: '#fff', borderRadius: 14, padding: 12 }}>
+                    <QrCode data={shareUrl} size={140} />
+                  </div>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', margin: 0, textAlign: 'center' }}>
+                    À afficher sur votre stand, votre boutique ou votre camion — flashé, ça inscrit directement avec votre code.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 16 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644', marginBottom: 4 }}>La règle</div>
-              <p style={{ fontSize: 12.5, color: '#6E8592', lineHeight: 1.6, margin: 0 }}>
-                Chaque filleul qui termine sa première mission sur PING vous offre une commission gratuite sur votre prochaine transaction — plafonnée à 50 €, une fois par mois maximum.
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Plus vous parrainez, plus ça paie</div>
+                {tier && <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#0C8F7E' }}>Niveau actuel : {tier.pct} %</div>}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {TIERS.map(t => {
+                  const reached = successfulCount >= t.min
+                  return (
+                    <div key={t.min} style={{ flex: 1, textAlign: 'center' }}>
+                      <div style={{
+                        height: 8, borderRadius: 999, marginBottom: 6,
+                        background: reached ? '#12B39C' : '#E7EDEB',
+                        boxShadow: reached ? '0 0 0 3px rgba(18,179,156,.18)' : 'none',
+                        transition: 'background .3s',
+                      }} />
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: reached ? '#0C8F7E' : '#9CA3AF' }}>{t.pct} %</div>
+                      <div style={{ fontSize: 9.5, color: '#9CA3AF' }}>{t.min} parr.</div>
+                    </div>
+                  )
+                })}
+              </div>
+              <p style={{ fontSize: 11.5, color: '#6E8592', lineHeight: 1.6, margin: '12px 0 0' }}>
+                {next
+                  ? <>Encore <b>{next.min - successfulCount}</b> parrainage{next.min - successfulCount > 1 ? 's' : ''} abouti{next.min - successfulCount > 1 ? 's' : ''} pour débloquer <b>{next.pct} %</b> de commission offerte sur votre prochaine mission.</>
+                  : <>Niveau maximum atteint — <b>50 %</b> de commission offerte sur votre prochaine mission.</>}
+                {' '}Toujours plafonné à 50 €, une fois par mois.
               </p>
             </div>
 
