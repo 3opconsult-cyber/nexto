@@ -30,7 +30,18 @@ export default function ScanQR() {
 
       if (isArrival) {
         if (tx.arrived_at) { setStatus('ok'); setMessage('Arrivée déjà enregistrée.'); return }
-        await supabase.from('transactions').update({ arrived_at: new Date().toISOString(), status: 'arrived' }).eq('id', tx.id)
+        // La base refuse ce write si le compte connecté n'est pas le prestataire
+        // assigné (trigger `enforce_arrival_departure_by_seller`, migration 011) —
+        // donc il faut vérifier qu'une ligne est vraiment revenue, pas juste
+        // l'absence d'exception : un refus RLS silencieux ne renvoie pas d'erreur,
+        // juste 0 ligne modifiée.
+        const { data: updated, error } = await supabase.from('transactions')
+          .update({ arrived_at: new Date().toISOString(), status: 'arrived' }).eq('id', tx.id).select().maybeSingle()
+        if (error || !updated) {
+          setStatus('error')
+          setMessage("Ce code doit être scanné depuis le compte du prestataire assigné à cette mission.")
+          return
+        }
         setStatus('ok'); setMessage('Arrivée validée.')
         if (tx.hourly_rate_cents) setMessage(m => m + ' Le temps commence à courir.')
         const now = new Date()
@@ -72,7 +83,12 @@ export default function ScanQR() {
           updates.total_charged_cents = subtotal + buyerFee
           updates.payout_cents = subtotal - sellerFee
         }
-        await supabase.from('transactions').update(updates).eq('id', tx.id)
+        const { data: updated, error } = await supabase.from('transactions').update(updates).eq('id', tx.id).select().maybeSingle()
+        if (error || !updated) {
+          setStatus('error')
+          setMessage("Ce code doit être scanné depuis le compte du prestataire assigné à cette mission.")
+          return
+        }
 
         const h = Math.floor(mins / 60), m = mins % 60
         setDuration(`${h > 0 ? h + ' h ' : ''}${m} min`)
