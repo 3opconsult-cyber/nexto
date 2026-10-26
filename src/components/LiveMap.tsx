@@ -23,17 +23,30 @@ const TRADE_ICON_PATHS: Record<string, string> = {
   nettoyage: '<rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M12 4v16M4 12h16"/>',
 }
 
-function proIcon(trade: string, active: boolean, i = 0) {
-  const iconPath = TRADE_ICON_PATHS[trade] || TRADE_ICON_PATHS.menage
-  const bg = active ? '#12B39C' : '#9CA3AF'
+// Prix sous le pin (façon Booking/Airbnb) : la décision se prend sur la
+// carte, sans avoir à ouvrir chaque fiche pour comparer un tarif.
+function pinPriceLabel(p: { pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }) {
+  if (p.pricing_type === 'devis') return 'Devis'
+  if (p.base_price_cents > 0) return `${Math.round(p.base_price_cents / 100)} €`
+  if (p.hourly_rate_cents) return `${Math.round(p.hourly_rate_cents / 100)} €/h`
+  return null
+}
+
+function proIcon(p: { trade: string; is_active: boolean; pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }, i = 0) {
+  const iconPath = TRADE_ICON_PATHS[p.trade] || TRADE_ICON_PATHS.menage
+  const bg = p.is_active ? '#12B39C' : '#9CA3AF'
+  const price = pinPriceLabel(p)
+  const priceTag = price
+    ? `<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#123644;color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:10.5px;padding:2px 7px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3)">${price}</div>`
+    : ''
   return L.divIcon({
     className: '',
-    html: `<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;background:${bg};transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center;animation:pinDrop .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(i * 0.12).toFixed(2)}s">
+    html: `<div style="position:relative;width:34px;height:34px;">${priceTag}<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;background:${bg};transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center;animation:pinDrop .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(i * 0.12).toFixed(2)}s">
       <div style="transform:rotate(45deg);display:flex;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">${iconPath}</svg>
       </div>
-    </div>`,
-    iconSize: [34, 34],
+    </div></div>`,
+    iconSize: [34, 44],
     iconAnchor: [17, 34],
   })
 }
@@ -104,7 +117,7 @@ export default function LiveMap({
           <Marker
             key={p.id}
             position={[p.lat, p.lng]}
-            icon={proIcon(p.trade, p.is_active, i)}
+            icon={proIcon(p, i)}
             eventHandlers={{ click: () => onSelect(p) }}
           />
         ))}
