@@ -101,7 +101,6 @@ export default function FeedbackBubble() {
             </div>
 
             <textarea autoFocus value={text} onChange={e => setText(e.target.value)} rows={3}
-              placeholder="Écrivez ou dictez (micro du clavier) — ce qui marche, ce qui ne marche pas…"
               style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button onClick={() => setOpen(false)} style={{ flex: 1, padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#6E8592', fontWeight: 700, fontSize: 14 }}>Fermer</button>

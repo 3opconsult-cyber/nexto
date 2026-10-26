@@ -107,7 +107,7 @@ export default function ReviewModal({
           Un mot à ajouter ? <span style={{ color: '#6E8592', fontWeight: 400 }}>facultatif</span>
         </label>
         <textarea id="avis-com" value={comment} onChange={e => setComment(e.target.value)}
-          rows={3} maxLength={600} placeholder="Ce qui vous a plu, ce qui pourrait être mieux…"
+          rows={3} maxLength={600}
           style={{
             width: '100%', marginTop: 7, padding: 11, borderRadius: 12, resize: 'vertical',
             border: '1.5px solid #DCE5E3', fontFamily: 'Inter, sans-serif', fontSize: 13.5,
