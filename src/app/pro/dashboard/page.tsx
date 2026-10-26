@@ -31,6 +31,7 @@ export default function ProDashboard() {
   const router = useRouter()
   const [firstName, setFirstName] = useState('')
   const [pro, setPro] = useState<any>(null)
+  const [uploading, setUploading] = useState<'cover' | 'logo' | null>(null)
   const [transactions, setTransactions] = useState<any[]>([])
   const [invoices, setInvoices] = useState<any[]>([])
   const [available, setAvailable] = useState(true)
@@ -83,6 +84,27 @@ export default function ProDashboard() {
     await supabase.from('provider_profiles').update({ is_active: newVal }).eq('id', pro.id)
   }
 
+  // Couverture + logo de la fiche établissement (façon fiche Google) : le
+  // bucket `avatars` existait déjà, configuré (public en lecture, upload
+  // restreint à son propre dossier) mais jamais branché. Un seul fichier par
+  // type (upsert) pour ne pas accumuler d'anciennes images orphelines.
+  async function uploadImage(kind: 'cover' | 'logo', file: File) {
+    if (!pro) return
+    setUploading(kind)
+    const supabase = createClient()
+    const ext = file.name.split('.').pop() || 'jpg'
+    const path = `${pro.id}/${kind}.${ext}`
+    const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true, cacheControl: '3600' })
+    if (!upErr) {
+      const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path)
+      const col = kind === 'cover' ? 'photo_url' : 'logo_url'
+      const url = `${pub.publicUrl}?v=${Date.now()}` // cache-bust après upsert
+      await supabase.from('provider_profiles').update({ [col]: url }).eq('id', pro.id)
+      setPro((p: any) => ({ ...p, [col]: url }))
+    }
+    setUploading(null)
+  }
+
   const now = new Date()
   const completedStatuses = ['completed', 'released']
   const txThisMonth = transactions.filter(t => {
@@ -132,15 +154,52 @@ export default function ProDashboard() {
       <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '22px 18px', minHeight: '70vh' }}>
         {tab === 'hub' && pro && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ padding: 18, borderRadius: 16, background: 'linear-gradient(160deg,#12B39C,#0C8F7E)', color: '#fff' }}>
-              <div style={{ width: 46, height: 46, borderRadius: 14, background: 'rgba(255,255,255,.18)', display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19, marginBottom: 10 }}>
-                {(pro.company_name || firstName || '?').charAt(0).toUpperCase()}
+            <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
+              <div style={{
+                height: 110, position: 'relative',
+                background: pro.photo_url ? `url(${pro.photo_url}) center/cover` : 'linear-gradient(160deg,#12B39C,#0C8F7E)',
+              }}>
+                <input id="cover-input" type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('cover', f) }} />
+                <label htmlFor="cover-input" style={{
+                  position: 'absolute', right: 10, top: 10, width: 32, height: 32, borderRadius: '50%',
+                  background: 'rgba(18,54,68,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }}>
+                  {uploading === 'cover'
+                    ? <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>…</span>
+                    : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>}
+                </label>
               </div>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19 }}>{pro.company_name || `Entreprise de ${firstName || ''}`.trim()}</div>
-              <div style={{ fontSize: 12.5, opacity: .9, marginTop: 3 }}>
-                {firstName ? `${firstName} · ` : ''}{LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status}{city ? ` · ${city}` : ''}
+
+              <div style={{ padding: '0 16px 16px', marginTop: -32 }}>
+                <div style={{ position: 'relative', width: 64, height: 64 }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: 16, border: '3px solid #fff', overflow: 'hidden',
+                    background: pro.logo_url ? `url(${pro.logo_url}) center/cover` : '#12B39C',
+                    display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff',
+                  }}>
+                    {!pro.logo_url && (pro.company_name || firstName || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <input id="logo-input" type="file" accept="image/*" style={{ display: 'none' }}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('logo', f) }} />
+                  <label htmlFor="logo-input" style={{
+                    position: 'absolute', right: -4, bottom: -4, width: 24, height: 24, borderRadius: '50%',
+                    background: '#12B39C', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  }}>
+                    {uploading === 'logo'
+                      ? <span style={{ color: '#fff', fontSize: 9, fontWeight: 700 }}>…</span>
+                      : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M12 5v14M5 12h14" /></svg>}
+                  </label>
+                </div>
+
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644', marginTop: 10 }}>
+                  {pro.company_name || `Entreprise de ${firstName || ''}`.trim()}
+                </div>
+                <div style={{ fontSize: 12.5, color: '#6E8592', marginTop: 3 }}>
+                  {firstName ? `${firstName} · ` : ''}{LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status}{city ? ` · ${city}` : ''}
+                </div>
+                <span onClick={() => router.push('/pro/onboarding')} style={{ display: 'inline-block', marginTop: 8, fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', textDecoration: 'underline' }}>Modifier</span>
               </div>
-              <span onClick={() => router.push('/pro/onboarding')} style={{ display: 'inline-block', marginTop: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Modifier</span>
             </div>
 
             <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 6 }}>Mon activité</div>

@@ -105,8 +105,10 @@ export default function ProDetailPage() {
       </div>
 
       <div className="ping-body nopad" style={{ paddingBottom: 150 }}>
-        <div className="ping-hero">
-          <div className="big">{initial}</div>
+        <div className="ping-hero" style={pro.photo_url ? { backgroundImage: `linear-gradient(160deg, rgba(18,54,68,.35), rgba(18,54,68,.55)), url(${pro.photo_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+          <div className="big" style={pro.logo_url ? { backgroundImage: `url(${pro.logo_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+            {!pro.logo_url && initial}
+          </div>
           <h2>{name}</h2>
           <div className="meta">{ratingTxt}{dist ? ` · à ${dist}` : ''}</div>
           <div className="dispo"><span style={{ width: 9, height: 9, borderRadius: '50%', background: '#fff', display: 'inline-block' }} /> Disponible maintenant</div>
