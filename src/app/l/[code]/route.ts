@@ -53,6 +53,10 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   sp1: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'chantier' },
   sp2: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'salon_pro' },
   mp:  { path: '/landing-pro', source: 'email', medium: 'mailing', content: 'mailing_pro' },
+  ent: { path: '/landing-pro', source: 'plaquette', medium: 'b2b', content: 'plaquette_entreprises' },
+
+  // --- animation explicative (toutes cibles) : la page qui présente les deux côtés ---
+  vid: { path: '/comment-ca-marche', source: 'video', medium: 'social', content: 'anim_explicative_30s' },
 
   // --- prospection directe (DM, vignettes de campagne) ---
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
