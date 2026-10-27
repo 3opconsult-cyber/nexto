@@ -30,6 +30,9 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   ig:  { path: '/landing-particulier', source: 'instagram', medium: 'social', content: 'post_part' },
   ig2: { path: '/landing-particulier', source: 'instagram', medium: 'social', content: 'post_part_simple' },
   pp:  { path: '/comment-ca-marche',   source: 'pitch',    medium: 'presentation', content: 'pitch_part' },
+  tk:  { path: '/landing-particulier', source: 'tiktok',   medium: 'social', content: 'ad_part' },
+  fb:  { path: '/landing-particulier', source: 'facebook', medium: 'social', content: 'ad_feed_part' },
+  fbm: { path: '/landing-particulier', source: 'facebook', medium: 'marketplace', content: 'ad_marketplace' },
 
   // --- stickers traçables par emplacement (planche stickers-contraste) ---
   // Sans ça, impossible de savoir quel point de collage ramène vraiment —
@@ -49,6 +52,7 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   ppr: { path: '/comment-ca-marche', source: 'pitch', medium: 'presentation', content: 'pitch_pro' },
   sp1: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'chantier' },
   sp2: { path: '/landing-pro', source: 'sticker', medium: 'print', content: 'salon_pro' },
+  mp:  { path: '/landing-pro', source: 'email', medium: 'mailing', content: 'mailing_pro' },
 
   // --- prospection directe (DM, vignettes de campagne) ---
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
