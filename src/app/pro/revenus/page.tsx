@@ -14,6 +14,8 @@ export default function ProRevenusPage() {
   const [monthCents, setMonthCents] = useState(0)
   const [yearCents, setYearCents] = useState(0)
   const [countYear, setCountYear] = useState(0)
+  const [rating, setRating] = useState(0)
+  const [reviewsCount, setReviewsCount] = useState(0)
 
   useEffect(() => {
     const supabase = createClient()
@@ -35,6 +37,10 @@ export default function ProRevenusPage() {
         }
       })
       setMonthCents(m); setYearCents(y); setCountYear(cy)
+
+      const { data: pp } = await supabase.from('provider_profiles').select('rating, reviews_count').eq('id', user.id).single()
+      if (pp) { setRating(Number(pp.rating) || 0); setReviewsCount(pp.reviews_count || 0) }
+
       setLoading(false)
     }
     load()
@@ -62,9 +68,13 @@ export default function ProRevenusPage() {
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{eur(yearCents)}</div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Depuis janvier</div>
               </div>
-              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff', gridColumn: '1 / -1' }}>
+              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{countYear}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Prestations réalisées cette année</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Prestations cette année</div>
+              </div>
+              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#F59E0B' }}>{rating > 0 ? rating.toFixed(1) : '—'}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>{reviewsCount} avis</div>
               </div>
             </div>
 

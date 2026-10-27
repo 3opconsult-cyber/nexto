@@ -33,13 +33,11 @@ export default function ProDashboard() {
   const [pro, setPro] = useState<any>(null)
   const [uploading, setUploading] = useState<'cover' | 'logo' | null>(null)
   const [transactions, setTransactions] = useState<any[]>([])
-  const [invoices, setInvoices] = useState<any[]>([])
   const [available, setAvailable] = useState(true)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'hub' | 'overview' | 'missions' | 'factures'>('hub')
+  const [tab, setTab] = useState<'hub' | 'missions'>('hub')
   const [docs, setDocs] = useState<Record<string, { status: string }>>({})
   const [city, setCity] = useState('')
-  const [names, setNames] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const supabase = createClient()
@@ -56,15 +54,6 @@ export default function ProDashboard() {
 
       const { data: tx } = await supabase.from('transactions').select('*').eq('seller_id', pp.id).order('created_at', { ascending: false })
       setTransactions(tx ?? [])
-      if (tx?.length) {
-        const { data: nrows } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: tx.map((t: any) => t.id) })
-        const nmap: Record<string, string> = {}
-        ;(nrows ?? []).forEach((n: any) => { if (n.full_name) nmap[n.transaction_id] = n.full_name })
-        setNames(nmap)
-      }
-
-      const { data: inv } = await supabase.from('invoices').select('*').eq('issuer_id', pp.id).order('created_at', { ascending: false })
-      setInvoices(inv ?? [])
 
       const { data: docRows } = await supabase.from('documents').select('kind, status').eq('owner_id', user.id)
       const docMap: Record<string, { status: string }> = {}
@@ -105,18 +94,6 @@ export default function ProDashboard() {
     setUploading(null)
   }
 
-  const now = new Date()
-  const completedStatuses = ['completed', 'released']
-  const txThisMonth = transactions.filter(t => {
-    const d = new Date(t.created_at)
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && completedStatuses.includes(t.status)
-  })
-  const caMoisCents = txThisMonth.reduce((s, t) => s + (t.payout_cents || 0), 0)
-  const completedCount = transactions.filter(t => completedStatuses.includes(t.status)).length
-  const totalCommissionCents = transactions
-    .filter(t => completedStatuses.includes(t.status))
-    .reduce((s, t) => s + (t.seller_fee_cents || 0), 0)
-
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#123644' }}>
@@ -128,7 +105,7 @@ export default function ProDashboard() {
   const idOk = docs.identite?.status === 'valid' || docs.identite?.status === 'pending'
   const rcOk = docs.rcpro?.status === 'valid' || docs.rcpro?.status === 'pending'
   const diplomeOk = docs.diplome?.status === 'valid' || docs.diplome?.status === 'pending'
-  const TAB_TITLES: Record<string, string> = { overview: 'Tableau de bord', missions: 'Missions', factures: 'Factures & documents' }
+  const TAB_TITLES: Record<string, string> = { missions: 'Historique des missions' }
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
@@ -202,24 +179,6 @@ export default function ProDashboard() {
               </div>
             </div>
 
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 6 }}>Mon activité</div>
-            {[
-              { k: 'overview', label: 'Tableau de bord', sub: 'Revenus · statistiques · tarifs', color: '#12B39C,#0C8F7E', icon: <path d="M4 4h7v7H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 13h7v7H4z" /> },
-              { k: 'missions', label: 'Demandes directes', sub: 'Réservations reçues · devis', color: '#F2A93B,#d98a1f', icon: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M10 21a2 2 0 0 0 4 0" /></> },
-              { k: 'factures', label: 'Factures & documents', sub: 'Horodatés · exportables', color: '#6E8592,#4c6472', icon: <path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z" /> },
-            ].map(row => (
-              <div key={row.k} onClick={() => setTab(row.k as any)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(160deg,${row.color})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}>{row.icon}</svg>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{row.label}</div>
-                  <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{row.sub}</div>
-                </div>
-                <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
-              </div>
-            ))}
-
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em' }}>Conformité</span>
               <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10, fontWeight: 700, background: idOk && rcOk ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: idOk && rcOk ? '#0C8F7E' : '#9A6712' }}>
@@ -243,14 +202,13 @@ export default function ProDashboard() {
               </div>
             ))}
 
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginTop: 6 }}>Mes pièces & documents</div>
-            <div onClick={() => router.push('/pro/documents')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#12B39C,#0e7f70)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M6 2h9l3 3v17H6z" /></svg>
+            <div onClick={() => setTab('missions')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer', marginTop: 6 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#6E8592,#4c6472)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M4 4h7v7H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 13h7v7H4z" /></svg>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Pièces justificatives</div>
-                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>Identité · assurance · diplôme</div>
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Historique de mes missions</div>
+                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>Statut et montant net, mission par mission</div>
               </div>
               <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
             </div>
@@ -264,61 +222,6 @@ export default function ProDashboard() {
               Se déconnecter
             </div>
           </div>
-        )}
-
-        {tab === 'overview' && (
-          <>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <button onClick={() => router.push('/pro/tarifs')} style={{ flex: 1, padding: '12px 6px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', fontSize: 11.5, fontWeight: 700, color: '#123644' }}>Mes tarifs</button>
-              <button onClick={() => router.push('/pro/revenus')} style={{ flex: 1, padding: '12px 6px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', fontSize: 11.5, fontWeight: 700, color: '#123644' }}>Mes revenus</button>
-              <button onClick={() => router.push('/pro/documents')} style={{ flex: 1, padding: '12px 6px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', fontSize: 11.5, fontWeight: 700, color: '#123644' }}>Documents</button>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
-              <div style={{ padding: 16, borderRadius: 16, background: 'rgba(18,179,156,.08)' }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#0C8F7E' }}>{(caMoisCents / 100).toFixed(0)} €</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Revenus ce mois</div>
-              </div>
-              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB' }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{completedCount}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Missions terminées</div>
-              </div>
-              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB' }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#F59E0B' }}>{Number(pro?.rating) > 0 ? Number(pro.rating).toFixed(1) : '—'}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>{pro?.reviews_count ?? 0} avis</div>
-              </div>
-              <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB' }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{(totalCommissionCents / 100).toFixed(0)} €</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Commission PING versée</div>
-              </div>
-            </div>
-
-            {transactions.length === 0 && (
-              <div style={{ padding: 18, borderRadius: 14, background: '#F3F6F5', fontSize: 12.5, color: '#6E8592', fontWeight: 600, textAlign: 'center' }}>
-                Aucune mission pour l'instant. Votre profil est {available ? 'visible sur la carte' : 'actuellement masqué'} — les demandes apparaîtront ici dès qu'un client vous contacte.
-              </div>
-            )}
-
-            {transactions.some(t => ['pending', 'arrived'].includes(t.status)) && (
-              <>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 8 }}>Prochains rendez-vous</div>
-                {transactions.filter(t => ['pending', 'arrived'].includes(t.status)).slice(0, 3).map(t => (
-                  <button key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: 12, borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', marginBottom: 8 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 11, background: 'linear-gradient(160deg,#F2A93B,#d98a1f)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                      {(names[t.id] || '?').charAt(0).toUpperCase()}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: '#123644' }}>{names[t.id] || 'Client'}</div>
-                      <div style={{ fontSize: 11, color: '#6E8592', marginTop: 1 }}>{new Date(t.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</div>
-                    </div>
-                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: t.status === 'arrived' ? 'rgba(18,179,156,.12)' : '#FFF7ED', color: t.status === 'arrived' ? '#0C8F7E' : '#8a6520' }}>
-                      {t.status === 'arrived' ? 'En cours' : 'À confirmer'}
-                    </span>
-                  </button>
-                ))}
-              </>
-            )}
-          </>
         )}
 
         {tab === 'missions' && (
@@ -340,30 +243,6 @@ export default function ProDashboard() {
                 </button>
               )
             })}
-          </div>
-        )}
-
-        {tab === 'factures' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {invoices.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>
-                Aucun document pour l'instant.
-                <div style={{ fontSize: 11.5, marginTop: 6 }}>Ils sont émis à la fin de chaque mission, au scan du code de départ.</div>
-              </div>
-            ) : invoices.map(i => (
-              // Cliquable : la fiche ouvre la previsualisation et le telechargement PDF.
-              <button key={i.id} onClick={() => router.push(`/mission/${i.transaction_id}/facture`)}
-                style={{ padding: 14, borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff',
-                         textAlign: 'left', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#123644' }}>{i.number}</span>
-                  <span style={{ fontWeight: 700, fontSize: 13, color: '#0C8F7E' }}>{(i.net_cents / 100).toFixed(2)} €</span>
-                </div>
-                <div style={{ fontSize: 11, color: '#6E8592', marginTop: 3 }}>
-                  {new Date(i.issued_at).toLocaleDateString('fr-FR')} · ouvrir et télécharger
-                </div>
-              </button>
-            ))}
           </div>
         )}
 
