@@ -207,6 +207,24 @@ export default function ChatPage() {
     setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'declined' } : x))
   }
 
+  const [cancelling, setCancelling] = useState(false)
+  async function cancelMission() {
+    if (!tx || !userId) return
+    if (!confirm('Annuler cette réservation ? Cette action est définitive.')) return
+    setCancelling(true)
+    const supabase = createClient()
+    const { data: updated, error } = await supabase.from('transactions')
+      .update({ status: 'cancelled' }).eq('id', tx.id).select().maybeSingle()
+    if (!error && updated) {
+      setTx(updated)
+      await supabase.from('messages').insert({
+        transaction_id: tx.id, sender_id: null,
+        body: `✕ Réservation annulée par ${userId === updated.buyer_id ? 'le client' : 'le prestataire'}.`,
+      })
+    }
+    setCancelling(false)
+  }
+
   async function counterOffer(m: Msg) {
     await declineOffer(m)
     setNewAmount(m.offer_cents ? String(m.offer_cents / 100) : '')
@@ -254,6 +272,22 @@ export default function ChatPage() {
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
         <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} confirmed={!!tx && !!tx.price_confirmed} />
+      )}
+
+      {/* Annulation gratuite tant que le prestataire n'est pas arrivé (QR non
+          scanné) — rend réelle la promesse affichée à la réservation
+          (mission/new) plutôt que de la laisser sans mécanisme derrière. */}
+      {tx && userId && !tx.arrived_at && !['cancelled', 'completed', 'released'].includes(tx.status) && (
+        <div style={{ padding: '8px 16px', textAlign: 'center' }}>
+          <button onClick={cancelMission} disabled={cancelling} style={{ border: 'none', background: 'none', color: '#9CA3AF', fontSize: 11.5, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
+            {cancelling ? 'Annulation…' : 'Annuler cette réservation'}
+          </button>
+        </div>
+      )}
+      {tx && tx.status === 'cancelled' && (
+        <div style={{ padding: '8px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#9CA3AF' }}>
+          Réservation annulée
+        </div>
       )}
 
       {tx && userId && (

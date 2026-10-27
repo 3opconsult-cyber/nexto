@@ -192,6 +192,19 @@ function MissionForm() {
           <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Frais de service PING inclus</div>
         </div>
 
+        {/* Argument de confiance discret, façon Airbnb : une ligne, pas un pavé —
+            cf. critique "pas d'argumentaire visible" + décision de garder la
+            sobriété plutôt que lister des badges. Politique honnête vu l'état
+            actuel (rien n'est débité avant la prestation, Stripe non branché) :
+            l'annulation est donc réellement gratuite jusqu'à l'arrivée, ce n'est
+            pas une promesse en avance sur la fonctionnalité. */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.07)', marginBottom: 14 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
+          <span style={{ fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
+            Annulation gratuite jusqu'à l'arrivée du prestataire. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
+          </span>
+        </div>
+
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
         <button onClick={() => setConfirming(true)} disabled={!pro || !mode || creating} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
