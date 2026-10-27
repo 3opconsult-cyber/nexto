@@ -25,6 +25,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   const [open, setOpen] = useState(false)
   const [profile, setProfile] = useState<any>(null)
   const [isPro, setIsPro] = useState(false)
+  const [available, setAvailable] = useState<boolean | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -33,8 +34,24 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
       const { data } = await supabase.from('profiles').select('first_name, city, created_at, is_pro, avatar_hue').eq('id', user.id).single()
       setProfile(data)
       setIsPro(!!data?.is_pro)
+      if (data?.is_pro) {
+        const { data: pp } = await supabase.from('provider_profiles').select('is_active').eq('id', user.id).maybeSingle()
+        if (pp) setAvailable(pp.is_active)
+      }
     })
   }, [])
+
+  // Raccourci de disponibilité façon Airbnb : visible d'un coup d'œil en
+  // ouvrant le menu, pas enfoui dans Mon entreprise (demande de Romain).
+  async function toggleAvailable() {
+    if (available == null) return
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const next = !available
+    setAvailable(next)
+    await supabase.from('provider_profiles').update({ is_active: next }).eq('id', user.id)
+  }
 
   const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
   const isClientRoute = pathname.startsWith('/client/profil')
@@ -112,6 +129,22 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
             </div>
+
+            {onProSide && available != null && (
+              <button onClick={toggleAvailable} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, margin: '12px 16px 4px',
+                padding: '12px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: available ? 'rgba(18,179,156,.1)' : '#F3F6F5',
+              }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: available ? '#12B39C' : '#9CA3AF', flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#123644' }}>{available ? 'Disponible — visible sur la carte' : 'Masqué — hors ligne'}</span>
+                </span>
+                <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#12B39C' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
+                  <span style={{ position: 'absolute', top: 2, left: available ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
+                </span>
+              </button>
+            )}
 
             <div style={{ padding: '8px 8px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
               {links.map(l => (
