@@ -204,7 +204,7 @@ export default function ProDashboard() {
 
             <div onClick={() => setTab('missions')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer', marginTop: 6 }}>
               <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#6E8592,#4c6472)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M4 4h7v7H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 13h7v7H4z" /></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Historique de mes missions</div>
