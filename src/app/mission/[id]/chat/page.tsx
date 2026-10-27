@@ -208,18 +208,31 @@ export default function ChatPage() {
   }
 
   const [cancelling, setCancelling] = useState(false)
+  // Annulation façon Uber : gratuite tant que le prestataire n'a pas annoncé
+  // son départ ; des frais s'appliquent une fois en route (il a déjà engagé du
+  // temps/trajet) ; impossible une fois arrivé (QR scanné) — ça, c'est un
+  // litige, pas une annulation. Les frais restent déclaratifs (pas de
+  // prélèvement réel tant que Stripe n'est pas branché), comme le reste du
+  // séquestre simulé.
   async function cancelMission() {
     if (!tx || !userId) return
-    if (!confirm('Annuler cette réservation ? Cette action est définitive.')) return
+    const late = !!tx.en_route_at
+    const feeCents = late ? Math.round((tx.subtotal_cents || 0) * 0.15) : 0
+    const confirmMsg = late
+      ? `Le prestataire est déjà en route : des frais d'annulation de ${(feeCents / 100).toFixed(2)} € s'appliquent. Annuler quand même ?`
+      : 'Annuler cette réservation ? Cette action est définitive.'
+    if (!confirm(confirmMsg)) return
     setCancelling(true)
     const supabase = createClient()
     const { data: updated, error } = await supabase.from('transactions')
       .update({ status: 'cancelled' }).eq('id', tx.id).select().maybeSingle()
     if (!error && updated) {
       setTx(updated)
+      const who = userId === updated.buyer_id ? 'le client' : 'le prestataire'
+      const feeNote = late ? ` — frais d'annulation tardive : ${(feeCents / 100).toFixed(2)} € (appliqués dès le paiement en ligne actif)` : ''
       await supabase.from('messages').insert({
         transaction_id: tx.id, sender_id: null,
-        body: `✕ Réservation annulée par ${userId === updated.buyer_id ? 'le client' : 'le prestataire'}.`,
+        body: `✕ Réservation annulée par ${who}${feeNote}.`,
       })
     }
     setCancelling(false)
@@ -274,13 +287,14 @@ export default function ChatPage() {
         <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} confirmed={!!tx && !!tx.price_confirmed} />
       )}
 
-      {/* Annulation gratuite tant que le prestataire n'est pas arrivé (QR non
-          scanné) — rend réelle la promesse affichée à la réservation
-          (mission/new) plutôt que de la laisser sans mécanisme derrière. */}
+      {/* Annulation façon Uber : gratuite avant le départ du prestataire, payante
+          une fois en route, impossible une fois arrivé (QR scanné — passe alors
+          par un litige, pas une annulation). Rend réelle la promesse affichée à
+          la réservation (mission/new) plutôt que de la laisser sans mécanisme. */}
       {tx && userId && !tx.arrived_at && !['cancelled', 'completed', 'released'].includes(tx.status) && (
         <div style={{ padding: '8px 16px', textAlign: 'center' }}>
-          <button onClick={cancelMission} disabled={cancelling} style={{ border: 'none', background: 'none', color: '#9CA3AF', fontSize: 11.5, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
-            {cancelling ? 'Annulation…' : 'Annuler cette réservation'}
+          <button onClick={cancelMission} disabled={cancelling} style={{ border: 'none', background: 'none', color: tx.en_route_at ? '#c0503a' : '#9CA3AF', fontSize: 11.5, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
+            {cancelling ? 'Annulation…' : tx.en_route_at ? 'Annuler (frais applicables)' : 'Annuler cette réservation'}
           </button>
         </div>
       )}

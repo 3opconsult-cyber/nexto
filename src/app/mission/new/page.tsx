@@ -201,7 +201,7 @@ function MissionForm() {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.07)', marginBottom: 14 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
           <span style={{ fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
-            Annulation gratuite jusqu'à l'arrivée du prestataire. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
+            Annulation gratuite tant que le prestataire n'est pas en route — des frais s'appliquent au-delà, comme chez Uber. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
           </span>
         </div>
 
