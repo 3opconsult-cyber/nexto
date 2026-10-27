@@ -19,6 +19,16 @@ import { createClient } from '@/lib/supabase/client'
  */
 const ETAS = [5, 10, 15, 20, 30, 45]
 
+// Distance à vol d'oiseau (Haversine) — suffisant pour une alerte de
+// plausibilité, pas pour un itinéraire réel.
+function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 export default function DepartureBar({
   tx, userId, onChange, address, confirmed,
 }: { tx: any; userId: string; onChange: (t: any) => void; address?: string | null; confirmed?: boolean }) {
@@ -26,6 +36,26 @@ export default function DepartureBar({
   const [eta, setEta] = useState(15)
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(() => Date.now())
+  // Distance entre l'adresse déclarée du prestataire et celle du rendez-vous —
+  // demande de Romain : "si la personne est à 4 km, elle ne peut pas être là
+  // dans les 22 secondes". Pas de pistage en direct (invariant produit) :
+  // juste la position statique déjà connue des deux côtés, comparée une fois.
+  const [minPlausibleMin, setMinPlausibleMin] = useState<number | null>(null)
+  useEffect(() => {
+    const reqLat = tx?.requests?.lat, reqLng = tx?.requests?.lng
+    if (reqLat == null || reqLng == null) return
+    const supabase = createClient()
+    supabase.from('provider_profiles').select('lat, lng').eq('id', tx.seller_id).single()
+      .then(({ data }) => {
+        if (data?.lat == null || data?.lng == null) return
+        const km = distanceKm(data.lat, data.lng, reqLat, reqLng)
+        // ~35 km/h de moyenne en ville, +2 min de marge (sortir, se garer) —
+        // volontairement généreux pour ne jamais bloquer un trajet réel.
+        const min = Math.max(2, Math.ceil((km / 35) * 60) + 2)
+        setMinPlausibleMin(min)
+        setEta(e => (e < min ? (ETAS.find(x => x >= min) ?? ETAS[ETAS.length - 1]) : e))
+      })
+  }, [tx?.seller_id, tx?.requests?.lat, tx?.requests?.lng])
 
   const isSeller = userId === tx.seller_id
   const enRoute = !!tx.en_route_at && !tx.arrived_at
@@ -92,15 +122,24 @@ export default function DepartureBar({
             Le client verra un compte à rebours. Ce n'est qu'une estimation : c'est le code scanné
             sur place qui déclenchera réellement la mission.
           </p>
+          {minPlausibleMin != null && minPlausibleMin > ETAS[0] && (
+            <p style={{ fontSize: 11.5, color: '#9CA3AF', margin: '10px 0 0' }}>
+              Compte tenu de la distance, une arrivée en moins de {minPlausibleMin} min n'est pas réaliste — ces créneaux sont désactivés.
+            </p>
+          )}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
-            {ETAS.map(m => (
-              <button key={m} onClick={() => setEta(m)} aria-pressed={eta === m} style={{
-                flex: '1 0 28%', padding: '13px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
-                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15,
-                background: eta === m ? '#12B39C' : '#fff', color: eta === m ? '#fff' : '#123644',
-                boxShadow: eta === m ? 'none' : '0 0 0 1px #DCE5E3',
-              }}>{m} min</button>
-            ))}
+            {ETAS.map(m => {
+              const impossible = minPlausibleMin != null && m < minPlausibleMin
+              return (
+                <button key={m} onClick={() => !impossible && setEta(m)} disabled={impossible} aria-pressed={eta === m} style={{
+                  flex: '1 0 28%', padding: '13px 0', borderRadius: 12, border: 'none', cursor: impossible ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15,
+                  background: impossible ? '#F3F6F5' : eta === m ? '#12B39C' : '#fff',
+                  color: impossible ? '#DCE5E3' : eta === m ? '#fff' : '#123644',
+                  boxShadow: impossible || eta === m ? 'none' : '0 0 0 1px #DCE5E3',
+                }}>{m} min</button>
+              )
+            })}
           </div>
           <div style={{ height: 10 }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 10 }}>
