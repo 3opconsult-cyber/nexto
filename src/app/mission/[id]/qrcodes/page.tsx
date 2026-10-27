@@ -15,7 +15,7 @@ export default function MissionQrCodes() {
     const supabase = createClient()
     await supabase.from('messages').insert({
       transaction_id: params.id, sender_id: null,
-      body: `📍 Le client ne sera peut-être pas sur place. Code d'arrivée à scanner en arrivant : ${url}`,
+      body: `Le client ne sera peut-être pas sur place. Code d'arrivée à scanner en arrivant : ${url}`,
     })
     setShared(true)
   }

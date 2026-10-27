@@ -61,6 +61,7 @@ design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand
   « + Proposer un tarif » n'apparaît que tant qu'aucun devis n'est accepté.
 - **3 modes de prix pro** : forfait, horaire, **sur devis** (enum `pricing_type` inclut `devis`).
 - **Langage déclaratif** : « pièce fournie », « assurance renseignée » — jamais « vérifiée/certifié/garanti ».
+- **Pas d'emoji, que des pictogrammes** (rappel de Romain, 27/10/2026) : icônes = SVG inline (voir NavDrawer, LiveMap), jamais de caractère emoji coloré (🗺️📊🔑 etc.) dans l'UI ni dans les messages système insérés en base. ✓/✕/★/←/→ en texte brut (horodatage de message, étoiles d'avis, flèche de retour) restent tolérés — ce sont des symboles typographiques standards, pas des emoji — mais à vérifier au cas par cas si Romain élargit la règle.
 - **Pas de GPS** pour le suivi, SAUF la validation d'arrivée « client absent » (photo horodatée + GPS).
 - **Adresse du RDV** visible seulement quand la mission est **confirmée** — colonne
   `transactions.price_confirmed` (posée par `mission/new` à la création, ou par l'acceptation
