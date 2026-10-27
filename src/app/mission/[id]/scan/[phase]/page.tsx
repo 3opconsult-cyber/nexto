@@ -4,6 +4,19 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { getRates } from '@/lib/pricing'
+import { distanceKm, getOneShotPosition } from '@/lib/geo'
+
+// Double sécurité demandée par Romain : au scan, un relevé GPS ponctuel
+// (jamais de suivi continu) comparé à l'adresse du rendez-vous. Ne bloque
+// jamais le scan — beaucoup refusent la permission ou sont en intérieur
+// sans signal — juste une note horodatée en cas de litige.
+async function gpsNote(reqLat?: number | null, reqLng?: number | null): Promise<string> {
+  if (reqLat == null || reqLng == null) return ''
+  const pos = await getOneShotPosition()
+  if (!pos) return ''
+  const km = distanceKm(pos.lat, pos.lng, reqLat, reqLng)
+  return km > 0.3 ? ` · position GPS à ${km.toFixed(1)} km de l'adresse` : ' · position GPS conforme'
+}
 
 export default function ScanQR() {
   const params = useParams<{ id: string; phase: string }>()
@@ -17,7 +30,7 @@ export default function ScanQR() {
   useEffect(() => {
     async function run() {
       const supabase = createClient()
-      const { data: tx } = await supabase.from('transactions').select('*').eq('id', params.id).single()
+      const { data: tx } = await supabase.from('transactions').select('*, requests(lat, lng)').eq('id', params.id).single()
 
       if (!tx) { setStatus('error'); setMessage('Mission introuvable.'); return }
 
@@ -45,9 +58,10 @@ export default function ScanQR() {
         setStatus('ok'); setMessage('Arrivée validée.')
         if (tx.hourly_rate_cents) setMessage(m => m + ' Le temps commence à courir.')
         const now = new Date()
+        const gps = await gpsNote(tx.requests?.lat, tx.requests?.lng)
         await supabase.from('messages').insert({
           transaction_id: tx.id, sender_id: null,
-          body: `✓ Arrivée scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}${tx.hourly_rate_cents ? ' — le chrono démarre' : ''}`,
+          body: `✓ Arrivée scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}${tx.hourly_rate_cents ? ' — le chrono démarre' : ''}${gps}`,
         })
         trackEvent('qr_scan_arrival', { transaction_id: tx.id })
       } else {
@@ -96,9 +110,10 @@ export default function ScanQR() {
         setDuration(`${h > 0 ? h + ' h ' : ''}${m} min`)
         setStatus('ok'); setMessage('Sortie validée.')
         const finalTotal = (updates.total_charged_cents as number | undefined) ?? tx.total_charged_cents
+        const gpsOut = await gpsNote(tx.requests?.lat, tx.requests?.lng)
         await supabase.from('messages').insert({
           transaction_id: tx.id, sender_id: null,
-          body: `✓ Sortie scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — ${h > 0 ? h + ' h ' : ''}${m} min, ${(finalTotal / 100).toFixed(2)} € facturés`,
+          body: `✓ Sortie scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — ${h > 0 ? h + ' h ' : ''}${m} min, ${(finalTotal / 100).toFixed(2)} € facturés${gpsOut}`,
         })
         trackEvent('qr_scan_complete', { transaction_id: tx.id, duration_minutes: mins })
       }

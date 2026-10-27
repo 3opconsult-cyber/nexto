@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Modal, { Cta } from './Modal'
 import ArrivalProof from './ArrivalProof'
 import { createClient } from '@/lib/supabase/client'
+import { distanceKm } from '@/lib/geo'
 
 /**
  * Suivi d'arrivée — volontairement sobre.
@@ -18,16 +19,6 @@ import { createClient } from '@/lib/supabase/client'
  * c'est lui qui fait foi, pas ce compte à rebours.
  */
 const ETAS = [5, 10, 15, 20, 30, 45]
-
-// Distance à vol d'oiseau (Haversine) — suffisant pour une alerte de
-// plausibilité, pas pour un itinéraire réel.
-function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const R = 6371
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
 
 export default function DepartureBar({
   tx, userId, onChange, address, confirmed,
