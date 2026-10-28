@@ -1,5 +1,5 @@
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>PING en 30 secondes</title>
+<title>Animation PING</title>
 <style>
 %%FONTS%%
   /* Lecteur sombre : la scène 9:16 à gauche, le scénario à droite (empilé sur mobile). */
@@ -115,6 +115,81 @@
         <!-- notifications façon "croisé à…" -->
         <g id="notifs"></g>
 
+        <!-- chat, réservation instantanée, agenda : écrans insérés entre les demandes et l'arrivée -->
+        <rect id="dim2" width="540" height="960" fill="#0B1F27" opacity="0"/>
+        <g id="phone2" transform="translate(145,980)">
+          <rect width="250" height="500" rx="38" fill="#0B1B22"/>
+          <rect x="10" y="10" width="230" height="480" rx="29" fill="#F6F9F8"/>
+          <rect x="95" y="20" width="60" height="9" rx="4.5" fill="#0B1B22"/>
+
+          <g id="sChat">
+            <circle cx="40" cy="60" r="15" fill="#12B39C"/>
+            <text x="40" y="65" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="14" fill="#fff">M</text>
+            <text x="64" y="57" font-family="Quicksand" font-weight="700" font-size="15" fill="#123644">Marc</text>
+            <text x="64" y="74" font-family="Inter" font-size="11" fill="#6E8592">prestataire · à 120 m</text>
+            <rect x="20" y="88" width="210" height="1" fill="#E2ECEA"/>
+            <g id="cB1"><rect x="20" y="102" width="172" height="46" rx="15" fill="#E7EDEB"/>
+              <text x="34" y="121" font-family="Inter" font-size="12.5" fill="#123644">Ménage demain matin,</text>
+              <text x="34" y="138" font-family="Inter" font-size="12.5" fill="#123644">vous êtes dispo ?</text></g>
+            <g id="cB2"><rect x="76" y="158" width="154" height="32" rx="15" fill="#12B39C"/>
+              <text x="153" y="178" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#fff">Oui ! Voici mon tarif :</text></g>
+            <g id="cQ">
+              <rect x="34" y="202" width="182" height="134" rx="16" fill="#fff" stroke="#12B39C" stroke-width="1.6"/>
+              <text x="125" y="224" text-anchor="middle" font-family="Inter" font-size="11" fill="#6E8592">Proposition de Marc</text>
+              <text x="125" y="245" text-anchor="middle" font-family="Inter" font-weight="600" font-size="13" fill="#123644">Ménage · forfait 2 h 30</text>
+              <text x="125" y="281" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="30" fill="#123644">60 €</text>
+              <g id="cBtn" transform="translate(125,310)">
+                <rect id="cBtnBg" x="-72" y="-15" width="144" height="30" rx="15" fill="#12B39C"/>
+                <text id="cBtnTx" y="5" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="13.5" fill="#fff">Accepter</text>
+              </g>
+            </g>
+            <circle id="cTap" cx="125" cy="310" r="10" fill="#fff" opacity="0"/>
+          </g>
+
+          <g id="sBook">
+            <text x="125" y="58" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="15" fill="#123644">Réserver avec Marc</text>
+            <text x="125" y="76" text-anchor="middle" font-family="Inter" font-size="11" fill="#6E8592">Ménage · 60 €</text>
+            <g id="bDays"></g>
+            <g id="bSlots"></g>
+            <text x="125" y="316" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#6E8592">Disponibilités de Marc, à jour</text>
+            <g id="bBtn" transform="translate(125,352)">
+              <rect id="bBtnBg" x="-96" y="-20" width="192" height="40" rx="20" fill="#123644"/>
+              <text id="bBtnTx" y="5" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="14" fill="#fff">Confirmer · mer. 9:00</text>
+            </g>
+            <circle id="bTap" r="10" fill="#fff" opacity="0"/>
+          </g>
+
+          <g id="sAgenda">
+            <text x="125" y="58" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="15" fill="#123644">Agenda de Marc</text>
+            <text x="125" y="76" text-anchor="middle" font-family="Inter" font-size="11" fill="#6E8592">mercredi 29 octobre</text>
+            <g id="aDays"></g>
+            <g id="aFree">
+              <rect x="20" y="164" width="210" height="52" rx="12" fill="none" stroke="#B8C9C5" stroke-width="1.4" stroke-dasharray="4 4"/>
+              <text x="34" y="186" font-family="Quicksand" font-weight="700" font-size="14" fill="#6E8592">9:00</text>
+              <text x="34" y="204" font-family="Inter" font-size="11" fill="#9CA3AF">Créneau libre</text>
+            </g>
+            <g id="aNew">
+              <rect x="20" y="164" width="210" height="52" rx="12" fill="#fff" stroke="#12B39C" stroke-width="2"/>
+              <text x="34" y="186" font-family="Quicksand" font-weight="700" font-size="14" fill="#123644">9:00</text>
+              <text x="34" y="204" font-family="Inter" font-size="11" fill="#6E8592">Sophie · ménage 2 h 30</text>
+              <rect x="156" y="178" width="64" height="22" rx="11" fill="#DDF5F0"/>
+              <text x="188" y="193" text-anchor="middle" font-family="Inter" font-weight="600" font-size="10.5" fill="#0C8F7E">Confirmé</text>
+            </g>
+            <g>
+              <rect x="20" y="226" width="210" height="52" rx="12" fill="#fff" stroke="#E2ECEA" stroke-width="1.2"/>
+              <text x="34" y="248" font-family="Quicksand" font-weight="700" font-size="14" fill="#123644">14:00</text>
+              <text x="34" y="266" font-family="Inter" font-size="11" fill="#6E8592">Paul · repassage</text>
+              <rect x="156" y="240" width="64" height="22" rx="11" fill="#DDF5F0"/>
+              <text x="188" y="255" text-anchor="middle" font-family="Inter" font-weight="600" font-size="10.5" fill="#0C8F7E">Confirmé</text>
+            </g>
+            <g>
+              <rect x="20" y="288" width="210" height="52" rx="12" fill="none" stroke="#B8C9C5" stroke-width="1.4" stroke-dasharray="4 4"/>
+              <text x="34" y="310" font-family="Quicksand" font-weight="700" font-size="14" fill="#6E8592">17:00</text>
+              <text x="34" y="328" font-family="Inter" font-size="11" fill="#9CA3AF">Créneau libre</text>
+            </g>
+          </g>
+        </g>
+
         <!-- téléphone : QR arrivée / départ / avis -->
         <rect id="dim" width="540" height="960" fill="#0B1F27" opacity="0"/>
         <g id="phone" transform="translate(145,980)">
@@ -144,14 +219,14 @@
               <path d="M-22 1 L-6 17 L24 -15" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
             </g>
             <text id="okTitle" x="125" y="282" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="21" fill="#123644">Arrivée validée</text>
-            <text id="okTime" x="125" y="322" text-anchor="middle" font-family="Inter" font-weight="600" font-size="30" fill="#123644">14:02</text>
+            <text id="okTime" x="125" y="322" text-anchor="middle" font-family="Inter" font-weight="600" font-size="30" fill="#123644">9:02</text>
             <text id="okSub" x="125" y="346" text-anchor="middle" font-family="Inter" font-size="12" fill="#6E8592">horodaté</text>
           </g>
 
           <g id="clock">
             <circle cx="125" cy="196" r="58" fill="none" stroke="#E2ECEA" stroke-width="10"/>
             <circle id="clockArc" cx="125" cy="196" r="58" fill="none" stroke="#12B39C" stroke-width="10" stroke-linecap="round" transform="rotate(-90 125 196)" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
-            <text id="clockTime" x="125" y="206" text-anchor="middle" font-family="Inter" font-weight="600" font-size="28" fill="#123644">14:02</text>
+            <text id="clockTime" x="125" y="206" text-anchor="middle" font-family="Inter" font-weight="600" font-size="28" fill="#123644">9:02</text>
             <text x="125" y="292" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="16" fill="#123644">Intervention en cours</text>
             <text x="125" y="314" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#6E8592">le temps est compté au scan</text>
           </g>
@@ -167,7 +242,7 @@
             <g id="total" transform="translate(125,330)">
               <rect x="-100" y="-46" width="200" height="92" rx="18" fill="#fff" stroke="#E2ECEA" stroke-width="1.5"/>
               <text y="-18" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#6E8592">Facture générée automatiquement</text>
-              <text id="totalVal" y="20" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="32" fill="#123644">110,00 €</text>
+              <text id="totalVal" y="20" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="32" fill="#123644">60,00 €</text>
             </g>
             <g id="coins"></g>
           </g>
@@ -214,21 +289,30 @@
   </div>
 
   <aside class="side">
-    <div class="eyebrow">Animation explicative · 30 s · 9:16</div>
+    <div class="eyebrow">Animation explicative · 37 s · 9:16</div>
     <h1>Le parcours d'une mission PING</h1>
     <p class="lead">Format vertical pour TikTok, Reels et Stories, lisible sans le son. Un clic sur une scène pour y aller directement.</p>
     <ol class="scenes" id="scenes"></ol>
     <p class="foot">Tout est dessiné en vecteur aux couleurs PING, sans photo ni vidéo filmée. Le logo de fin reprend l'écho radar de la marque. Le QR final pointe vers /l/vid, ce qui permet de mesurer le trafic venu de cette vidéo.</p>
-    <p class="foot"><a href="/brand/files/ping-animation-30s.mp4" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">Fichier vidéo MP4 · 1080 × 1920 · 30 s</a> — à publier tel quel sur TikTok, Reels ou Stories.</p>
+    <p class="foot"><a href="/brand/files/ping-animation.mp4" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">Fichier vidéo MP4 · 1080 × 1920 · 37 s</a> — à publier tel quel sur TikTok, Reels ou Stories.</p>
   </aside>
 </div>
 
 <script>
 (function(){
-  // FAST > 1 accélère tout jusqu'à la signature (logo + QR), qui reste à vitesse normale.
-  var DUR = 30, FAST = 1, SIGN = 26, REAL = SIGN/FAST + (DUR - SIGN);
-  function inner(x){ return x < SIGN/FAST ? x*FAST : SIGN + (x - SIGN/FAST); }
-  function outer(T){ return T < SIGN ? T/FAST : SIGN/FAST + (T - SIGN); }
+  // Scénario de base sur 30 s (temps « interne » T). Le décor se fige à T = P1 pendant X s,
+  // le temps de jouer chat, réservation et agenda (horloge locale INS), puis reprend.
+  // Le début (marche, écho, demandes) est joué un peu plus vite (E).
+  var DUR = 30, P1 = 13.9, X = 9.0, E = 1.12, Q = P1/E, REAL = Q + X + (DUR - P1);
+  function inner(x){ return x < Q ? x*E : (x < Q + X ? P1 : P1 + (x - Q - X)); }
+  function insClock(x){ return x >= Q && x < Q + X ? x - Q : -1; }
+  function outer(T){ return T <= P1 ? T/E : Q + X + (T - P1); }
+  var INS = -1, RT = 0;
+  var INS_CAPS = [
+    { a:0,    b:3.05, title:'Le chat', lines:['Un message, un tarif.','Sophie accepte.'], d:"Sophie écrit, Marc lui propose son tarif dans la conversation, elle l'accepte." },
+    { a:3.05, b:6.05, title:'Réservation instantanée', lines:['Un créneau, un clic.',"C'est réservé."], d:"Sophie choisit un créneau libre parmi les disponibilités de Marc : la réservation est faite." },
+    { a:6.05, b:9.0,  title:"L'agenda", lines:["Le rendez-vous s'inscrit",'dans son agenda.'], d:"Le rendez-vous de mercredi 9 h apparaît dans l'agenda de Marc, confirmé." }
+  ];
   var NS = 'http://www.w3.org/2000/svg';
   var $ = function(id){ return document.getElementById(id); };
   function el(tag, attrs, parent){ var n = document.createElementNS(NS, tag); for (var k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; }
@@ -242,10 +326,10 @@
   var SCENES = [
     { a:0,    b:4.6,  title:'Marc, dans votre quartier', lines:['Marc fait le ménage','dans votre quartier.'], d:"Marc, prestataire PING, se déplace dans une rue de la Côte d'Azur entre deux interventions." },
     { a:4.6,  b:9.2,  title:"L'écho PING", lines:['Disponible ? PING le rend','visible autour de lui.'], d:"Le point du logo s'allume au-dessus de lui et rayonne comme un sonar : il apparaît sur la carte." },
-    { a:9.2,  b:14.8, title:'Les demandes arrivent', lines:['Juste à côté,','les demandes arrivent.'], d:"Les voisins touchés par l'écho le voient et lui écrivent : « croisée à 120 m »." },
-    { a:14.8, b:18.2, title:'Arrivée enregistrée', lines:["Un scan à l'arrivée.","L'heure est enregistrée."], d:"Il arrive chez Sophie et scanne son code : l'arrivée est horodatée." },
+    { a:9.2,  b:13.9, title:'Les demandes arrivent', lines:['Juste à côté,','les demandes arrivent.'], d:"Les voisins touchés par l'écho le voient et lui écrivent : « croisée à 120 m »." },
+    { a:13.9, b:18.2, title:'Arrivée enregistrée', lines:["Un scan à l'arrivée.","L'heure est enregistrée."], d:"Il arrive chez Sophie et scanne son code : l'arrivée est horodatée." },
     { a:18.2, b:21.6, title:'Départ enregistré', lines:['Un scan au départ.','La durée fait foi.'], d:'Fin de mission, second scan : la durée réelle est enregistrée.' },
-    { a:21.6, b:26.0, title:'Avis, pourboire, facture', lines:['Avis, pourboire, facture.','Zéro paperasse.'], d:'Cinq étoiles, 15 € de pourboire, facture de 110 € générée automatiquement.' },
+    { a:21.6, b:26.0, title:'Avis, pourboire, facture', lines:['Avis, pourboire, facture.','Zéro paperasse.'], d:'Cinq étoiles, 15 € de pourboire, facture de 60 € générée automatiquement.' },
     { a:26.0, b:30,   title:'Signature', lines:null, d:"Logo ping, « Et si ce que vous cherchez était juste à côté ? », QR vers l'inscription." }
   ];
 
@@ -341,7 +425,7 @@
 
   // ---------- notifications ----------
   var NOTIFS = [
-    {t:9.9,  y:192, i:'S', c:'#12B39C', h:'Sophie, croisée à 120 m', m:'Ménage 2 h demain matin, dispo ?'},
+    {t:9.9,  y:192, i:'S', c:'#12B39C', h:'Sophie, croisée à 120 m', m:'Ménage demain matin, dispo ?'},
     {t:10.9, y:284, i:'P', c:'#F2A93B', h:'Paul, croisé à 300 m',   m:'Repassage ce soir, possible ?'},
     {t:11.9, y:376, i:'',  c:'#123644', h:'Nouvelle demande à 450 m', m:'Nettoyage de vitres, 3 pièces'}
   ];
@@ -472,12 +556,12 @@
     var okv = Math.max(okA, okB); show($('ok'), okv);
     var pop = t < 18.5 ? back(seg(t, 17.05, 17.45)) : back(seg(t, 20.45, 20.85));
     tr($('okDisc'), 'translate(125,190) scale('+pop.toFixed(3)+')');
-    if (t < 19) { $('okTitle').textContent = 'Arrivée validée'; $('okTime').textContent = '14:02'; $('okSub').textContent = 'horodaté'; }
-    else { $('okTitle').textContent = 'Départ validé'; $('okTime').textContent = '16:07'; $('okSub').textContent = 'durée réelle : 2 h 05'; }
+    if (t < 19) { $('okTitle').textContent = 'Arrivée validée'; $('okTime').textContent = '9:02'; $('okSub').textContent = 'horodaté'; }
+    else { $('okTitle').textContent = 'Départ validé'; $('okTime').textContent = '11:07'; $('okSub').textContent = 'durée réelle : 2 h 05'; }
     show($('clock'), clk);
     var ck = eio(seg(t, 18.35, 19.35));
     $('clockArc').setAttribute('stroke-dashoffset', (364.4*(1-ck)).toFixed(1));
-    $('clockTime').textContent = hhmm(14*60+2 + ck*125);
+    $('clockTime').textContent = hhmm(9*60+2 + ck*125);
     show($('rate'), rate);
     stars.forEach(function(sp, i){ var k = back(seg(t, 21.95 + i*0.2, 22.25 + i*0.2)); sp.setAttribute('transform', 'scale('+k.toFixed(3)+')'); });
     show($('quote'), seg(t, 23.0, 23.3));
@@ -491,14 +575,16 @@
 
     // légende
     var cur = null, co = 0;
-    for (var i=0; i<SCENES.length-1; i++){ var S = SCENES[i]; var o = win(t, S.a, S.b, .3); if (i===0) o = Math.min(1, 1 - seg(t, S.b-.3, S.b)); if (o > co) { co = o; cur = S; } }
+    if (INS >= 0) { INS_CAPS.forEach(function(S){ var o = win(INS, S.a, S.b, .3); if (S.a === 0) o = Math.min(1, 1 - seg(INS, S.b-.3, S.b)); if (o > co) { co = o; cur = S; } }); }
+    else for (var i=0; i<SCENES.length-1; i++){ var S = SCENES[i]; var o = win(t, S.a, S.b, .3); if (i===0) o = Math.min(1, 1 - seg(t, S.b-.3, S.b)); if (o > co) { co = o; cur = S; } }
     if (cur) { capLines[0].textContent = cur.lines[0]; capLines[1].textContent = cur.lines[1]; }
     capLines[0].setAttribute('y', 104); capLines[1].setAttribute('y', 140);
     var lift = (1-co)*8;
     tr($('capText'), 'translate(0,'+lift.toFixed(1)+')');
     show($('capText'), co);
     show($('cap'), 1 - seg(t, 25.8, 26.2));
-    $('prog').setAttribute('width', (540*t/DUR).toFixed(1));
+    $('prog').setAttribute('width', (540*RT/REAL).toFixed(1));
+    renderIns(INS);
 
     // fin
     show($('end'), seg(t, 26.0, 26.45));
@@ -514,14 +600,76 @@
     });
   }
 
+  // ---------- écrans insérés : chat, réservation instantanée, agenda ----------
+  var DAYS = [['mar.','28'],['mer.','29'],['jeu.','30'],['ven.','31']];
+  function dayStrip(g, sel){
+    var cells = [];
+    DAYS.forEach(function(d, i){
+      var x = 27 + i*50, c = el('g', {}, g);
+      var r = el('rect', {x:x, y:96, width:46, height:52, rx:13, fill:'#fff', stroke:'#E2ECEA', 'stroke-width':1.2}, c);
+      var a = el('text', {x:x+23, y:116, 'text-anchor':'middle', 'font-family':'Inter', 'font-size':10.5, fill:'#6E8592'}, c); a.textContent = d[0];
+      var b = el('text', {x:x+23, y:136, 'text-anchor':'middle', 'font-family':'Quicksand', 'font-weight':700, 'font-size':16, fill:'#123644'}, c); b.textContent = d[1];
+      cells.push({r:r, a:a, b:b});
+    });
+    return cells;
+  }
+  function paintDay(c, on){ c.r.setAttribute('fill', on ? '#12B39C' : '#fff'); c.r.setAttribute('stroke', on ? '#12B39C' : '#E2ECEA'); c.a.setAttribute('fill', on ? '#DDF5F0' : '#6E8592'); c.b.setAttribute('fill', on ? '#fff' : '#123644'); }
+  var bDays = dayStrip($('bDays')), aDays = dayStrip($('aDays'));
+  aDays.forEach(function(c, i){ paintDay(c, i === 1); });
+  var SLOTS = [['8:00',1],['9:00',0],['10:30',1],['14:00',0],['15:30',0],['17:00',0]], slotEls = [];
+  SLOTS.forEach(function(s, i){
+    var x = 22 + (i%2)*106, y = 166 + Math.floor(i/2)*44, g = el('g', {}, $('bSlots'));
+    var r = el('rect', {x:x, y:y, width:100, height:36, rx:11, fill: s[1] ? '#EEF2F1' : '#fff', stroke: s[1] ? '#EEF2F1' : '#DCE5E3', 'stroke-width':1.2}, g);
+    var tx = el('text', {x:x+50, y:y+23, 'text-anchor':'middle', 'font-family':'Inter', 'font-weight':600, 'font-size':13, fill: s[1] ? '#B8C4C9' : '#123644'}, g); tx.textContent = s[0];
+    if (s[1]) el('rect', {x:x+30, y:y+18, width:40, height:1.4, fill:'#B8C4C9'}, g);
+    slotEls.push({r:r, tx:tx, busy:s[1], x:x, y:y});
+  });
+
+  function renderIns(k){
+    var on = k >= 0;
+    var up = on ? eout(seg(k, 0, 0.5)) * (1 - eio(seg(k, X - 0.5, X))) : 0;
+    show($('dim2'), 0.62 * up);
+    tr($('phone2'), 'translate(145,'+(980 - (980-238)*up).toFixed(1)+')');
+    if (!on) return;
+    var chat = 1 - seg(k, 2.95, 3.2), book = Math.min(seg(k, 2.95, 3.2), 1 - seg(k, 5.95, 6.2)), agen = seg(k, 5.95, 6.2);
+    show($('sChat'), chat); show($('sBook'), book); show($('sAgenda'), agen);
+    // chat
+    show($('cB1'), seg(k, 0.45, 0.65)); tr($('cB1'), 'translate(0,'+(8*(1-eout(seg(k,0.45,0.75)))).toFixed(1)+')');
+    show($('cB2'), seg(k, 1.0, 1.2)); tr($('cB2'), 'translate(0,'+(8*(1-eout(seg(k,1.0,1.3)))).toFixed(1)+')');
+    var q = back(seg(k, 1.45, 1.85)); show($('cQ'), seg(k, 1.45, 1.6));
+    tr($('cQ'), 'translate(125,269) scale('+q.toFixed(3)+') translate(-125,-269)');
+    var acc = k >= 2.35;
+    $('cBtnBg').setAttribute('fill', acc ? '#2FD06E' : '#12B39C'); $('cBtnTx').textContent = acc ? 'Tarif accepté' : 'Accepter';
+    var press = 1 - 0.08*Math.sin(Math.PI*seg(k, 2.1, 2.45)); tr($('cBtn'), 'translate(125,310) scale('+press.toFixed(3)+')');
+    var tp = seg(k, 2.1, 2.7); $('cTap').setAttribute('r', (8 + tp*26).toFixed(1)); show($('cTap'), tp > 0 && tp < 1 ? 0.55*(1-tp) : 0);
+    // réservation instantanée
+    bDays.forEach(function(c, i){ paintDay(c, i === 1 && k >= 3.55); });
+    var picked = k >= 4.25;
+    slotEls.forEach(function(s, i){ if (s.busy) return; var sel = picked && i === 1; s.r.setAttribute('fill', sel ? '#12B39C' : '#fff'); s.r.setAttribute('stroke', sel ? '#12B39C' : '#DCE5E3'); s.tx.setAttribute('fill', sel ? '#fff' : '#123644'); });
+    var bt = k < 4.25 ? [slotEls[1].x + 50, slotEls[1].y + 18, seg(k, 4.0, 4.6)] : [125, 352, seg(k, 4.95, 5.55)];
+    $('bTap').setAttribute('cx', bt[0]); $('bTap').setAttribute('cy', bt[1]);
+    $('bTap').setAttribute('r', (8 + bt[2]*26).toFixed(1)); $('bTap').setAttribute('fill', k < 4.7 ? '#12B39C' : '#fff');
+    show($('bTap'), bt[2] > 0 && bt[2] < 1 ? 0.5*(1-bt[2]) : 0);
+    show($('bBtn'), seg(k, 4.4, 4.65)); var done = k >= 5.2;
+    $('bBtnBg').setAttribute('fill', done ? '#2FD06E' : '#123644'); $('bBtnTx').textContent = done ? 'Réservé · mer. 9:00' : 'Confirmer · mer. 9:00';
+    var bp = 1 - 0.06*Math.sin(Math.PI*seg(k, 4.95, 5.3)); tr($('bBtn'), 'translate(125,352) scale('+bp.toFixed(3)+')');
+    // agenda
+    var nk = back(seg(k, 6.7, 7.15));
+    show($('aFree'), 1 - seg(k, 6.6, 6.8)); show($('aNew'), seg(k, 6.7, 6.85));
+    tr($('aNew'), 'translate(125,190) scale('+nk.toFixed(3)+') translate(-125,-190)');
+  }
+
   // ---------- lecteur ----------
   var list = $('scenes'), sceneBtns = [];
-  SCENES.forEach(function(S, i){
+  var PANEL = SCENES.slice(0, 3).map(function(S){ return { at: outer(S.a), S: S }; })
+    .concat(INS_CAPS.map(function(S){ return { at: Q + S.a, S: S }; }))
+    .concat(SCENES.slice(3).map(function(S){ return { at: S.a === P1 ? Q + X : outer(S.a), S: S }; }));
+  PANEL.forEach(function(P, i){
     var li = document.createElement('li'), b = document.createElement('button');
     b.type = 'button';
-    b.innerHTML = '<span class="tc">'+outer(S.a).toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
-    b.querySelector('b').textContent = (i+1)+'. '+S.title; b.querySelector('.d').textContent = S.d;
-    b.addEventListener('click', function(){ seek(outer(S.a) + 0.01); playing = true; sync(); });
+    b.innerHTML = '<span class="tc">'+P.at.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
+    b.querySelector('b').textContent = (i+1)+'. '+P.S.title; b.querySelector('.d').textContent = P.S.d;
+    b.addEventListener('click', function(){ seek(P.at + 0.01); playing = true; sync(); });
     li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
   });
 
@@ -530,10 +678,10 @@
   if (rec) { document.body.classList.add('rec'); playing = false; }
   function seek(x){ t = clamp(x, 0, REAL); paint(); }
   function paint(){
+    RT = t; INS = insClock(t);
     render(inner(t));
     $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
-    var T = inner(t);
-    sceneBtns.forEach(function(b, i){ var S = SCENES[i]; b.classList.toggle('on', T >= S.a && T < S.b); });
+    sceneBtns.forEach(function(b, i){ var nx = i + 1 < PANEL.length ? PANEL[i+1].at : REAL + 1; b.classList.toggle('on', t >= PANEL[i].at && t < nx); });
   }
   function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
   function loop(now){
@@ -548,6 +696,6 @@
   window.PING_ANIM = { duration: REAL, seek: function(x){ seek(x); } };
   var start = function(){ buildWord(); paint(); sync(); if (!rec) requestAnimationFrame(loop); window.PING_ANIM.ready = true; };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
-  if (!playing && !rec) seek(outer(9.6));
+  if (!playing && !rec) seek(Q + 4.6);
 })();
 </script>

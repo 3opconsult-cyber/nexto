@@ -61,7 +61,7 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   pqd: { path: '/landing-pro', source: 'plaquette', medium: 'digital', content: 'plaquette_devenir_pro' },
 
   // --- animation explicative (toutes cibles) : la page qui présente les deux côtés ---
-  vid: { path: '/comment-ca-marche', source: 'video', medium: 'social', content: 'anim_explicative_30s' },
+  vid: { path: '/comment-ca-marche', source: 'video', medium: 'social', content: 'anim_explicative' },
 
   // --- prospection directe (DM, vignettes de campagne) ---
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
