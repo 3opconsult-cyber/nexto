@@ -317,7 +317,8 @@ carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dép�
   `public/brand/files/ping-animation-25s.mp4` (procédure d'enregistrement dans `brand/anim/build.py`).
   Remplace l'ancienne « Animation d'accroche » `/presentation` (gardée).
 - `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche « Airbnb / Uber /
-  Booking » (verdict : l'idée sans les noms, jamais côté pros — « ubérisation » et commissions Booking).
+  Booking ». **Décision Romain 28/10** : accroche retenue malgré la critique, en texte seul (jamais de
+  logos) sur les plaquettes `#particulier`, `#pro`, `#devenir-pro` (écran « Aussi simple qu'Airbnb… »).
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
