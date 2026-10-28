@@ -55,6 +55,11 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   mp:  { path: '/landing-pro', source: 'email', medium: 'mailing', content: 'mailing_pro' },
   ent: { path: '/landing-pro', source: 'plaquette', medium: 'b2b', content: 'plaquette_entreprises' },
 
+  // --- plaquettes interactives /plaquettes (brand/plaquettes) ---
+  pq:  { path: '/landing-particulier', source: 'plaquette', medium: 'digital', content: 'plaquette_particulier' },
+  pqp: { path: '/landing-pro', source: 'plaquette', medium: 'digital', content: 'plaquette_pro' },
+  pqd: { path: '/landing-pro', source: 'plaquette', medium: 'digital', content: 'plaquette_devenir_pro' },
+
   // --- animation explicative (toutes cibles) : la page qui présente les deux côtés ---
   vid: { path: '/comment-ca-marche', source: 'video', medium: 'social', content: 'anim_explicative_30s' },
 

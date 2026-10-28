@@ -1,0 +1,310 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><meta name="claude:viewport-fit-sides" content="cover">
+<title>Plan marketing & commercial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#12B39C; --tealD:#0C8F7E; --navy:#123644; --green:#2FD06E; --gold:#F2A93B;
+    --slate:#6E8592; --paper:#F3F6F5; --line:#E7EDEB; --ink:#123644; --muted:#9CA3AF;
+    --bg:#EDF1F0; --card:#fff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#0f1b1f; --card:#152228; --line:#223238; --ink:#eef3f2; --muted:#7f9196; --paper:#192a2f; color-scheme:dark; }
+  }
+  :root[data-theme="dark"]{ --bg:#0f1b1f; --card:#152228; --line:#223238; --ink:#eef3f2; --muted:#7f9196; --paper:#192a2f; color-scheme:dark; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));}
+  h1,h2,h3,.fh{font-family:'Quicksand',sans-serif; font-weight:700;}
+  .wrap{max-width:1020px; margin:0 auto; padding-block:40px;}
+  header.top{margin-bottom:30px;}
+  header.top .eyebrow{font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--teal);}
+  header.top h1{font-size:26px; margin:8px 0 10px; text-wrap:balance;}
+  header.top p{font-size:14px; color:var(--slate); line-height:1.6; max-width:70ch; margin:0;}
+  nav.toc{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;}
+  nav.toc a{font-size:11.5px; font-weight:700; color:var(--tealD); background:rgba(18,179,156,.1); padding:6px 12px; border-radius:999px; text-decoration:none;}
+
+  section.sec{padding-block:32px; border-top:1px solid var(--line);}
+  section.sec h2{font-size:19px; margin:0 0 6px;}
+  section.sec .sub{font-size:12.5px; color:var(--muted); margin-bottom:16px;}
+
+  /* Critique */
+  .audit-row{display:flex; gap:12px; align-items:flex-start; padding:13px 0; border-bottom:1px solid var(--line);}
+  .audit-row:last-child{border-bottom:none;}
+  .audit-row .tag{flex-shrink:0; width:76px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:4px 0; text-align:center; border-radius:999px;}
+  .tag.fort{background:rgba(47,208,110,.15); color:#1a8f4c;}
+  .tag.faible{background:rgba(255,122,102,.15); color:#c0503a;}
+  .tag.manque{background:rgba(242,169,59,.18); color:#8a6520;}
+  .audit-row .tx{font-size:13px; line-height:1.55; min-width:0;}
+  .audit-row .tx b{display:block; color:var(--ink); margin-bottom:2px;}
+  .audit-row .tx span{color:var(--slate);}
+
+  /* Cibles / axes */
+  .target{background:var(--paper); border-radius:16px; padding:18px 20px; margin-bottom:14px;}
+  .target .who{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .target .dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .target .who b{font-size:13px; text-transform:uppercase; letter-spacing:.03em;}
+  .target .hook{font-family:'Quicksand',sans-serif; font-weight:700; font-size:16px; color:var(--navy); line-height:1.3; margin-bottom:8px;}
+  .target .lines{font-size:12.5px; color:var(--slate); line-height:1.7;}
+  .target .lines ul{margin:6px 0 0; padding-left:18px;}
+
+  /* Plan d'action */
+  .plan-row{display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--line);}
+  .plan-row:last-child{border-bottom:none;}
+  .plan-row .prio{flex-shrink:0; width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:'Quicksand',sans-serif; font-weight:700; font-size:13px; color:#fff;}
+  .plan-row .tx{min-width:0; flex:1;}
+  .plan-row .tx b{display:block; font-size:13.5px; color:var(--ink);}
+  .plan-row .tx span{font-size:12px; color:var(--slate); line-height:1.5;}
+  .plan-row .status{flex-shrink:0; font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap;}
+  .status.fait{background:rgba(47,208,110,.15); color:#1a8f4c;}
+  .status.attente{background:rgba(242,169,59,.18); color:#8a6520;}
+  .status.bloque{background:rgba(255,122,102,.15); color:#c0503a;}
+
+  /* Brochure B2B */
+  .brochure{background:var(--navy); border-radius:18px; padding:26px 24px; color:#fff;}
+  .brochure .kicker{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--gold);}
+  .brochure h3{font-size:21px; color:#fff; margin:8px 0 10px; line-height:1.3;}
+  .brochure p.lead{font-size:13.5px; color:rgba(255,255,255,.75); line-height:1.6; max-width:60ch;}
+  .brochure .args{display:flex; flex-direction:column; gap:10px; margin-top:18px;}
+  .brochure .arg{display:flex; gap:10px; align-items:flex-start; background:rgba(255,255,255,.06); border-radius:12px; padding:12px 14px;}
+  .brochure .arg b{display:block; font-size:12.5px; color:#fff;}
+  .brochure .arg span{font-size:11.5px; color:rgba(255,255,255,.6);}
+  .brochure .cta{display:inline-block; margin-top:18px; background:var(--teal); color:#fff; font-family:'Quicksand',sans-serif; font-weight:700; font-size:12.5px; padding:11px 22px; border-radius:999px;}
+
+  /* Plaquettes : une idée par écran, gros pictogramme, contact direct au dernier écran */
+  .deck{max-width:540px; margin:0 auto; background:var(--navy); border-radius:24px; color:#fff; overflow:hidden; box-shadow:0 18px 50px rgba(18,54,68,.25);}
+  .deck-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 24px 0;}
+  .deck-head .kicker{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--gold);}
+  .deck-head .count{font-size:12px; font-weight:600; color:rgba(255,255,255,.5); font-variant-numeric:tabular-nums;}
+  .deck-track{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch;}
+  .deck-track::-webkit-scrollbar{display:none;}
+  .slide{flex:0 0 100%; scroll-snap-align:center; min-height:370px; padding:26px 28px 18px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:16px;}
+  .picto{width:116px; height:116px; border-radius:34px; background:rgba(18,179,156,.16); display:flex; align-items:center; justify-content:center; color:var(--teal); flex-shrink:0;}
+  .picto svg{width:62px; height:62px;}
+  .picto svg.device{width:46px; height:74px;}
+  .slide h4{font-family:'Quicksand',sans-serif; font-weight:700; font-size:27px; line-height:1.18; margin:0; color:#fff; text-wrap:balance; max-width:15ch;}
+  .slide p{font-size:15px; color:rgba(255,255,255,.72); margin:0; max-width:30ch; line-height:1.5;}
+  .deck-nav{display:flex; align-items:center; justify-content:center; gap:18px; padding:4px 0 24px;}
+  .deck-nav .arrow{width:42px; height:42px; border-radius:50%; border:none; background:rgba(255,255,255,.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .deck-nav .arrow:disabled{opacity:.28; cursor:default;}
+  .dots{display:flex; gap:7px;}
+  .dots button{width:8px; height:8px; padding:0; border:none; border-radius:4px; background:rgba(255,255,255,.28); cursor:pointer; transition:width .2s, background .2s;}
+  .dots button.on{width:22px; background:var(--teal);}
+  .deck button:focus-visible, .deck a:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .join h4{font-size:25px;}
+  .join-row{display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap; text-align:left;}
+  .join-qr{width:136px; height:136px; background:#fff; border-radius:18px; padding:8px; flex-shrink:0;}
+  .join-qr svg{display:block; width:100%; height:100%;}
+  .join-acts{display:flex; flex-direction:column; gap:10px; min-width:0;}
+  .join-acts .go{display:inline-flex; justify-content:center; background:var(--teal); color:#fff; text-decoration:none; font-family:'Quicksand',sans-serif; font-weight:700; font-size:14.5px; padding:12px 22px; border-radius:999px;}
+  .join-acts .lbl{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:rgba(255,255,255,.5);}
+  .mail{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.09); border-radius:999px; padding:5px 5px 5px 16px;}
+  .mail span{font-size:14px; font-weight:600; user-select:all; overflow-wrap:anywhere;}
+  .mail button{flex-shrink:0; border:none; background:#fff; color:var(--navy); font-family:'Quicksand',sans-serif; font-weight:700; font-size:12px; padding:8px 13px; border-radius:999px; cursor:pointer;}
+  .join small{font-size:12px; color:rgba(255,255,255,.55);}
+
+  .note{margin-top:14px; padding:12px 14px; border-radius:10px; background:rgba(18,179,156,.08); font-size:12px; color:var(--ink); line-height:1.6;}
+  footer{margin-top:40px; padding-top:20px; border-top:1px solid var(--line); font-size:12px; color:var(--muted);}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">PING — fiche de travail</div>
+    <h1>Critique, plan d'action, et les deux plaquettes manquantes</h1>
+    <p>Tout ce qui a été dicté dans les derniers échanges, organisé en un seul document : où on en est vraiment, ce qui manque, et dans quel ordre on avance.</p>
+    <nav class="toc">
+      <a href="#critique">Critique honnête</a><a href="#cibles">4 cibles</a><a href="#plan">Plan d'action</a>
+      <a href="#plaquettes">Plaquettes (5 publics)</a><a href="#accroche">Accroche Airbnb / Uber / Booking</a><a href="#credit">Pont crédit d'impôt</a>
+    </nav>
+  </header>
+
+  <!-- CRITIQUE -->
+  <section class="sec" id="critique">
+    <h2>Critique honnête de l'existant</h2>
+    <div class="sub">Vérifié dans le code et les fichiers réels, pas supposé.</div>
+
+    <div class="audit-row">
+      <span class="tag fort">Solide</span>
+      <div class="tx"><b>Landing pages (/landing-particulier, /landing-pro)</b><span>Déjà épurées, un seul CTA, exactement le principe Airbnb/Booking demandé — pas besoin d'y retoucher.</span></div>
+    </div>
+    <div class="audit-row">
+      <span class="tag faible">Faible</span>
+      <div class="tx"><b>Pitch decks existants (brand/out/pitch-ping-*.pdf)</b><span>Bon sur le ton général ("Et si ce que vous cherchez..."), mais ne portent aucun des nouveaux arguments financiers (séquestre détaillé, crédit d'impôt, comparaison pages jaunes/Marketplace). À mettre à jour, pas à refaire.</span></div>
+    </div>
+    <div class="audit-row">
+      <span class="tag manque">Manquant</span>
+      <div class="tx"><b>Toute communication vers les entreprises (B2B multi-salariés)</b><span>Rien n'existait avant cette fiche — nouveau segment, construit ci-dessous.</span></div>
+    </div>
+    <div class="audit-row">
+      <span class="tag manque">Manquant</span>
+      <div class="tx"><b>Communication annonceurs/sponsors</b><span>La régie pub (socle technique) existe côté produit, mais aucun matériel pour démarcher les annonceurs eux-mêmes.</span></div>
+    </div>
+    <div class="audit-row">
+      <span class="tag faible">Faible</span>
+      <div class="tx"><b>Cohérence inter-supports</b><span>Chaque création (TikTok, Facebook, mailing) a sa propre accroche — bien pour tester, mais rien ne martèle encore UN message répété partout. Risque : trop de variantes, aucune ne s'installe dans la tête de la cible.</span></div>
+    </div>
+  </section>
+
+  <!-- CIBLES -->
+  <section class="sec" id="cibles">
+    <h2>Les 4 cibles — messages intégrés tels que dictés</h2>
+    <div class="sub">Reformulés pour être courts et répétables, sens d'origine conservé.</div>
+
+    <div class="target">
+      <div class="who"><span class="dot" style="background:var(--teal)"></span><b style="color:var(--tealD)">Particuliers</b></div>
+      <div class="hook">Trouvez votre prestataire juste à côté.</div>
+      <div class="lines">
+        Arrêtez de chercher sur les Pages Jaunes, sur Marketplace, sur dix sites différents — PING scanne les prestataires disponibles autour de vous. Un clic, une commande, aussi simple qu'Airbnb, aussi simple que Booking.
+        <ul>
+          <li>Accès au profil, paiement sous séquestre</li>
+          <li>Déduction fiscale directement depuis votre crédit d'impôt — plus besoin de faire l'avance*</li>
+          <li>Délais réduits, sécurité et fiabilité augmentées</li>
+        </ul>
+        <div style="font-size:10.5px; color:var(--muted); margin-top:8px;">*Offre soumise à l'activation du dispositif et à votre situation fiscale — voir conditions. Dispositif détaillé en section « Pont crédit d'impôt ».</div>
+      </div>
+    </div>
+
+    <div class="target">
+      <div class="who"><span class="dot" style="background:var(--gold)"></span><b style="color:#8a6520">Prestataires</b></div>
+      <div class="hook">Et si vos clients se trouvaient à quelques mètres ?</div>
+      <div class="lines">
+        Matching instantané. À chaque déplacement, vous devenez visible. Plus de question sur les délais — votre travail est horodaté. Paiement sécurisé, facture automatisée.
+        <ul>
+          <li>Passez plus de temps à produire qu'à faire des devis</li>
+          <li>Planning et outil de gestion intégré, simple, efficace</li>
+          <li>Inscription gratuite, visible instantanément</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="target">
+      <div class="who"><span class="dot" style="background:#6E8592"></span><b style="color:#6E8592">Entreprises (multi-salariés)</b></div>
+      <div class="hook">Chaque salarié, un point visible sur la carte.</div>
+      <div class="lines">
+        Équipez vos équipes terrain de PING : chaque intervention rend un salarié visible, là où il travaille — votre entreprise prend littéralement de la place sur la carte.
+        <ul>
+          <li>Visibilité locale démultipliée par le nombre de salariés actifs</li>
+          <li>Reporting centralisé des interventions (à construire, voir plan d'action)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="target">
+      <div class="who"><span class="dot" style="background:#9CA3AF"></span><b style="color:#6E8592">Annonceurs</b></div>
+      <div class="hook">Visible en local, auprès de vos clients directs et indirects.</div>
+      <div class="lines">Un emplacement publicitaire ciblé géographiquement, vu par des particuliers et des professionnels actifs sur leur secteur — pas un bandeau générique perdu dans un flux.</div>
+    </div>
+  </section>
+
+  <!-- PLAN D'ACTION -->
+  <section class="sec" id="plan">
+    <h2>Plan d'action — ordre conseillé</h2>
+    <div class="plan-row">
+      <div class="prio" style="background:var(--teal)">1</div>
+      <div class="tx"><b>Logo/device — 3-4 vraies variantes</b><span>Condition préalable : tout le reste réutilise ce signe visuel.</span></div>
+      <span class="status attente">En attente</span>
+    </div>
+    <div class="plan-row">
+      <div class="prio" style="background:var(--teal)">2</div>
+      <div class="tx"><b>Mettre à jour les 2 pitch decks existants</b><span>Ajouter séquestre détaillé + argument crédit d'impôt + comparaison Pages Jaunes/Marketplace — pas une refonte, une mise à jour.</span></div>
+      <span class="status attente">À faire</span>
+    </div>
+    <div class="plan-row">
+      <div class="prio" style="background:var(--gold)">3</div>
+      <div class="tx"><b>Finir TikTok / Facebook en vraies créations</b><span>La vidéo TikTok/Reels existe désormais (animation 30 s) ; restent les visuels Facebook fixes.</span></div>
+      <span class="status attente">À reprendre</span>
+    </div>
+    <div class="plan-row">
+      <div class="prio" style="background:var(--gold)">4</div>
+      <div class="tx"><b>Plaquettes 5 publics + animation explicative 30 s</b><span>En ligne sur /plaquettes et /animation, rangées dans l'admin (Supports &amp; visuels).</span></div>
+      <span class="status fait">Livré</span>
+    </div>
+    <div class="plan-row">
+      <div class="prio" style="background:#c0503a">5</div>
+      <div class="tx"><b>Pont crédit d'impôt (URSSAF Avance Immédiate)</b><span>Chantier double : technique (API) + administratif (statut d'intermédiaire déclarant). Peut avancer en parallèle du séquestre.</span></div>
+      <span class="status bloque">Nécessite une démarche admin, pas que du code</span>
+    </div>
+    <div class="plan-row">
+      <div class="prio" style="background:#c0503a">6</div>
+      <div class="tx"><b>Concept entreprise multi-salariés</b><span>Voir analyse technique ci-dessous — faisable dès aujourd'hui en version simple, plus structurant en version complète.</span></div>
+      <span class="status bloque">Décision produit à prendre</span>
+    </div>
+  </section>
+
+  <!-- PLAQUETTES -->
+  <section class="sec" id="plaquettes">
+    <h2>Plaquettes — 5 publics, un seul gabarit</h2>
+    <div class="sub">Rangées dans l'admin, rubrique Supports &amp; visuels. Un lien par public à envoyer.</div>
+    <div class="audit-row"><span class="tag fort">En ligne</span><div class="tx"><b><a href="https://nexto-eta.vercel.app/plaquettes#particulier" target="_blank" rel="noopener" style="color:inherit">Particuliers</a></b><span>Juste à côté · fini les annuaires · un clic · vous savez qui vient · arrivée et départ horodatés · QR /l/pq.</span></div></div>
+    <div class="audit-row"><span class="tag fort">En ligne</span><div class="tx"><b><a href="https://nexto-eta.vercel.app/plaquettes#pro" target="_blank" rel="noopener" style="color:inherit">Pros indépendants</a></b><span>Clients à quelques mètres · visible là où vous travaillez · horodaté · facture automatique · planning intégré · QR /l/pqp.</span></div></div>
+    <div class="audit-row"><span class="tag fort">En ligne</span><div class="tx"><b><a href="https://nexto-eta.vercel.app/plaquettes#devenir-pro" target="_blank" rel="noopener" style="color:inherit">Devenir prestataire</a></b><span>Pour le particulier qui veut proposer ses services : un compte deux usages · vos prix · vos horaires · démarrage simple · QR /l/pqd.</span></div></div>
+    <div class="audit-row"><span class="tag fort">En ligne</span><div class="tx"><b><a href="https://nexto-eta.vercel.app/plaquettes#entreprises" target="_blank" rel="noopener" style="color:inherit">Entreprises</a></b><span>Vos équipes visibles sur la carte · un compte par salarié · QR /l/ent + email.</span></div></div>
+    <div class="audit-row"><span class="tag fort">En ligne</span><div class="tx"><b><a href="https://nexto-eta.vercel.app/plaquettes#annonceurs" target="_blank" rel="noopener" style="color:inherit">Annonceurs</a></b><span>Nouvel écran « Votre encart, ici » : maquette de l'écran Mes demandes avec l'emplacement partenaire, tel qu'il existe dans l'app. QR email.</span></div></div>
+    <div class="audit-row"><span class="tag manque">Volontaire</span><div class="tx"><b>Ce que les plaquettes ne promettent pas</b><span>Pas de « paiement sous séquestre » ni de « crédit d'impôt sans avance » : Stripe et l'avance immédiate URSSAF ne sont pas branchés. On les ajoute le jour où ils fonctionnent, pas avant.</span></div></div>
+    <div class="note">
+      <b>Analyse technique honnête :</b> aujourd'hui, chaque salarié peut s'inscrire individuellement sur PING dès maintenant, sans rien construire — c'est déjà possible. Ce qui n'existe pas encore : un véritable « compte entreprise » qui regrouperait plusieurs salariés sous une facturation unique et un tableau de bord commun. C'est une vraie fonctionnalité nouvelle (pas un réglage), qui mérite une décision produit avant d'être construite — je ne veux pas la promettre dans la plaquette avant qu'elle existe.
+    </div>
+  </section>
+
+  <!-- ACCROCHE AIRBNB / UBER / BOOKING -->
+  <section class="sec" id="accroche">
+    <h2>Critique — « aussi simple qu'Airbnb, aussi facile qu'Uber, aussi pratique que Booking »</h2>
+    <div class="sub">Verdict : bonne image pour expliquer PING à l'oral, mauvaise idée imprimée, et à proscrire côté pros.</div>
+    <div class="audit-row"><span class="tag fort">Pour</span><div class="tx"><b>Compris en une seconde</b><span>Le particulier connaît ces trois gestes (réserver, commander une course, comparer). L'image résume la promesse de simplicité mieux qu'une phrase.</span></div></div>
+    <div class="audit-row"><span class="tag faible">Contre</span><div class="tx"><b>Uber, côté pros : le mot qui fait fuir</b><span>En France, « ubérisation » veut dire précarité et mise en concurrence des indépendants, exactement le reproche fait aux plateformes de ménage. Dire à un pro « PING, c'est Uber » revient à lui dire « vous serez un chauffeur Uber ».</span></div></div>
+    <div class="audit-row"><span class="tag faible">Contre</span><div class="tx"><b>Booking, côté pros : synonyme de commission subie</b><span>Les hôteliers (UMIH) dénoncent 15 à 25 % de commission, jusqu'à environ 30 %, et une dépendance au point d'avoir saisi l'Autorité de la concurrence. Avec 25 % au total, PING s'expose à la comparaison directe.</span></div></div>
+    <div class="audit-row"><span class="tag faible">Contre</span><div class="tx"><b>Airbnb, sur la Côte d'Azur : image ambivalente</b><span>Nice a plafonné les meublés touristiques à 671 logements dans quatre quartiers (novembre 2025) au nom du logement des habitants. Les habitants sont précisément notre cible.</span></div></div>
+    <div class="audit-row"><span class="tag faible">Contre</span><div class="tx"><b>Juridique et différenciation</b><span>S'appuyer sur la renommée d'une marque tierce peut relever de l'article L713-5 du Code de la propriété intellectuelle (risque faible, mais réel sur de l'affichage). Surtout, tous les concurrents promettent déjà la simplicité : le vrai différenciant de PING, c'est la proximité et la preuve (QR horodaté).</span></div></div>
+    <div class="note"><b>Recommandation appliquée dans les plaquettes :</b> l'idée sans les noms. Côté particulier, « Un clic, c'est réservé » ; en voix off TikTok, on peut dire « aussi simple que réserver une chambre, aussi rapide que commander une course ». Aucune des trois marques côté pros, entreprises ou devenir prestataire. Si tu tiens aux noms, uniquement à l'oral et côté particulier.</div>
+  </section>
+
+  <!-- PONT CREDIT IMPOT -->
+  <section class="sec" id="credit">
+    <h2>Pont technique — crédit d'impôt (rappel)</h2>
+    <p style="font-size:13px; color:var(--slate); line-height:1.6; max-width:70ch;">
+      Déjà documenté en détail dans le document précédent (mécanisme URSSAF Avance Immédiate, étapes 1 à 5).
+      Point ajouté ici : la « passerelle technique » que tu demandes — le dépôt de la déclaration/certification
+      par l'utilisateur — correspond à l'intégration de l'API officielle de l'URSSAF, pas à un formulaire à construire
+      nous-mêmes. C'est un chantier à deux volets : <b>administratif</b> (obtenir le statut d'intermédiaire déclarant
+      auprès de l'URSSAF, nécessite la structure juridique de PING stabilisée) et <b>technique</b> (une fois ce statut
+      obtenu, brancher l'API). Je peux préparer le volet technique dès maintenant (schéma d'intégration, champs
+      nécessaires), mais le volet administratif n'est pas quelque chose que je peux accomplir à ta place.
+    </p>
+  </section>
+
+  <footer>Document de travail — à valider point par point, rien n'est figé.</footer>
+</div>
+
+<script>
+(function(){
+  document.querySelectorAll('.deck').forEach(function(deck){
+    var track = deck.querySelector('.deck-track'), n = track.children.length;
+    var dots = deck.querySelector('.dots'), prev = deck.querySelector('.prev'), next = deck.querySelector('.next'), count = deck.querySelector('.count');
+    function cur(){ return Math.round(track.scrollLeft / track.clientWidth); }
+    function go(i){ track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); }
+    for (var i = 0; i < n; i++) (function(i){
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Écran ' + (i + 1));
+      b.addEventListener('click', function(){ go(i); }); dots.appendChild(b);
+    })(i);
+    function update(){
+      var k = cur();
+      Array.prototype.forEach.call(dots.children, function(d, i){ d.classList.toggle('on', i === k); });
+      prev.disabled = k === 0; next.disabled = k === n - 1; count.textContent = (k + 1) + ' / ' + n;
+    }
+    prev.addEventListener('click', function(){ go(Math.max(0, cur() - 1)); });
+    next.addEventListener('click', function(){ go(Math.min(n - 1, cur() + 1)); });
+    var tick = false;
+    track.addEventListener('scroll', function(){ if (tick) return; tick = true; requestAnimationFrame(function(){ update(); tick = false; }); });
+    update();
+  });
+  document.querySelectorAll('.mail button').forEach(function(b){
+    b.addEventListener('click', function(){
+      var s = b.parentNode.querySelector('span');
+      function select(){ var r = document.createRange(); r.selectNodeContents(s); var w = getSelection(); w.removeAllRanges(); w.addRange(r); }
+      function done(){ b.textContent = 'Copié'; setTimeout(function(){ b.textContent = 'Copier'; }, 1600); }
+      if (navigator.clipboard) navigator.clipboard.writeText(s.textContent).then(done, select); else select();
+    });
+  });
+})();
+</script>

@@ -3,7 +3,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone).html',
+        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|plaquettes|animation|plan-marketing).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
       {
@@ -35,6 +35,9 @@ const nextConfig = {
         { source: '/landing-pro', destination: '/landing-pro.html' },
         { source: '/planche-de-marque', destination: '/planche-de-marque.html' },
         { source: '/maquette-inscription-telephone', destination: '/maquette-inscription-telephone.html' },
+        { source: '/plaquettes', destination: '/plaquettes.html' },
+        { source: '/animation', destination: '/animation.html' },
+        { source: '/plan-marketing', destination: '/plan-marketing.html' },
       ],
       // Tout le reste tombe sur le prototype : l'app EST /demo.
       fallback: [

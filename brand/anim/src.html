@@ -1,0 +1,548 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>PING en 30 secondes</title>
+<style>
+%%FONTS%%
+  /* Lecteur sombre : la scène 9:16 à gauche, le scénario à droite (empilé sur mobile). */
+  :root{
+    --night:#0B1F27; --panel:#12303B; --line:#1E4250;
+    --teal:#12B39C; --green:#2FD06E; --gold:#F2A93B;
+    --text:#EEF4F3; --soft:#9DB4BC;
+    --display:'Quicksand', 'Trebuchet MS', sans-serif;
+    --body:'Inter', system-ui, sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:var(--night); color:var(--text);}
+  body{font-family:var(--body); margin:0; padding-block:28px 40px;
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));}
+  .layout{max-width:1000px; margin:0 auto; display:grid; grid-template-columns:minmax(0, 420px) minmax(0,1fr); gap:36px; align-items:start;}
+  .player{display:flex; flex-direction:column; gap:12px; min-width:0;}
+  .stage{width:100%; aspect-ratio:9/16; max-height:80vh; margin:0 auto; border-radius:22px; overflow:hidden; background:#000; box-shadow:0 20px 60px rgba(0,0,0,.45);}
+  .stage svg{display:block; width:100%; height:100%;}
+  .controls{display:flex; align-items:center; gap:10px;}
+  .controls button{flex-shrink:0; border:none; border-radius:999px; background:var(--teal); color:#fff; font-family:var(--display); font-weight:700; font-size:13px; padding:9px 16px; cursor:pointer;}
+  .controls button.ghost{background:transparent; box-shadow:inset 0 0 0 1.5px var(--line); color:var(--text);}
+  .controls button:focus-visible, .scenes button:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .controls input[type=range]{flex:1; min-width:0; accent-color:var(--teal);}
+  .controls .time{font-size:12px; color:var(--soft); font-variant-numeric:tabular-nums; width:42px; text-align:right;}
+  .side{min-width:0;}
+  .side .eyebrow{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--teal);}
+  .side h1{font-family:var(--display); font-weight:700; font-size:26px; margin:6px 0 8px; text-wrap:balance;}
+  .side p.lead{font-size:13.5px; color:var(--soft); line-height:1.6; margin:0 0 20px; max-width:56ch;}
+  .scenes{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .scenes button{width:100%; display:grid; grid-template-columns:52px minmax(0,1fr); gap:12px; align-items:start; text-align:left; background:var(--panel); border:none; border-radius:14px; padding:12px 14px; color:var(--text); cursor:pointer; font:inherit;}
+  .scenes button.on{box-shadow:inset 0 0 0 1.5px var(--teal);}
+  .scenes .tc{font-size:11.5px; font-weight:600; color:var(--teal); font-variant-numeric:tabular-nums; padding-top:2px;}
+  .scenes b{display:block; font-family:var(--display); font-size:14.5px; margin-bottom:2px;}
+  .scenes span.d{font-size:12.5px; color:var(--soft); line-height:1.5;}
+  .foot{margin-top:18px; font-size:12px; color:var(--soft); line-height:1.6;}
+  @media (max-width:760px){ .layout{grid-template-columns:minmax(0,1fr);} .stage{max-height:none;} }
+  /* Mode capture vidéo : seule la scène, au pixel. */
+  body.rec{padding:0; background:#000;}
+  body.rec .layout{display:block; max-width:none;}
+  body.rec .side, body.rec .controls{display:none;}
+  body.rec .stage{width:540px; height:960px; max-height:none; border-radius:0; box-shadow:none;}
+</style>
+
+<div class="layout">
+  <div class="player">
+    <div class="stage">
+      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animation PING : un artisan se déplace, devient visible, reçoit des demandes, valide son arrivée et son départ par QR code, puis reçoit avis, pourboire et facture.">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8FD3E0"/><stop offset=".7" stop-color="#D7F0EE"/><stop offset="1" stop-color="#F4EFE2"/>
+          </linearGradient>
+          <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#0B1F27" flood-opacity=".22"/></filter>
+          <filter id="glow" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="4"/></filter>
+          <clipPath id="vf"><rect x="40" y="112" width="170" height="170" rx="16"/></clipPath>
+        </defs>
+
+        <!-- MONDE -->
+        <g id="world">
+          <rect width="540" height="960" fill="url(#sky)"/>
+          <circle cx="430" cy="250" r="46" fill="#FFE7A8" opacity=".85"/>
+          <g id="clouds" fill="#fff" opacity=".85">
+            <g id="cloudA"><ellipse cx="0" cy="0" rx="46" ry="15"/><ellipse cx="18" cy="-10" rx="26" ry="15"/></g>
+            <g id="cloudB"><ellipse cx="0" cy="0" rx="36" ry="12"/><ellipse cx="-12" cy="-8" rx="20" ry="12"/></g>
+          </g>
+          <g id="far"></g>
+          <g id="city"></g>
+          <rect x="0" y="700" width="540" height="76" fill="#ECE3D2"/>
+          <g id="joints"></g>
+          <rect x="0" y="770" width="540" height="8" fill="#CDBFA6"/>
+          <rect x="0" y="778" width="540" height="182" fill="#56636B"/>
+          <g id="dashes"></g>
+          <g id="house"></g>
+
+          <!-- écho radar : le point du logo, au-dessus de l'artisan -->
+          <g id="rings" fill="none" stroke="#12B39C" stroke-width="3"></g>
+
+          <!-- artisan -->
+          <g id="artisan">
+            <g id="legB"><rect x="-7" y="662" width="14" height="74" rx="7" fill="#1A3440"/><rect x="-9" y="730" width="27" height="13" rx="6.5" fill="#10232B"/></g>
+            <g id="armB"><rect x="-6" y="598" width="13" height="58" rx="6.5" fill="#0C8F7E"/><circle cx="0.5" cy="656" r="7" fill="#D9A983"/></g>
+            <g id="legF"><rect x="-7" y="662" width="14" height="74" rx="7" fill="#24485A"/><rect x="-9" y="730" width="27" height="13" rx="6.5" fill="#152C36"/></g>
+            <rect x="-6" y="578" width="14" height="14" fill="#E8B892"/>
+            <rect x="-26" y="588" width="52" height="84" rx="17" fill="#12B39C"/>
+            <rect x="-25" y="656" width="50" height="18" rx="6" fill="#24485A"/>
+            <circle cx="12" cy="608" r="4.5" fill="#2FD06E"/>
+            <circle cx="12" cy="608" r="8.5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>
+            <g id="head">
+              <circle cx="3" cy="560" r="23" fill="#F0C4A0"/>
+              <circle cx="-8" cy="563" r="5" fill="#E2AE88"/>
+              <circle cx="14" cy="558" r="2.7" fill="#123644"/>
+              <path d="M11 570 Q16 574 21 569" fill="none" stroke="#123644" stroke-width="2" stroke-linecap="round"/>
+              <path d="M-21 556 A24 24 0 0 1 27 551 L27 555 L-21 559 Z" fill="#0C8F7E"/>
+              <path d="M20 550 L44 555 Q34 561 20 558 Z" fill="#0A7466"/>
+            </g>
+            <g id="armF"><rect x="-6" y="598" width="13" height="58" rx="6.5" fill="#12B39C"/><circle cx="0.5" cy="656" r="7" fill="#F0C4A0"/></g>
+            <g id="bucket">
+              <path d="M-15 -8 Q0 -26 15 -8" fill="none" stroke="#5E7380" stroke-width="2.4"/>
+              <rect x="-6" y="-14" width="11" height="12" rx="3" fill="#F2C94C"/>
+              <path d="M-17 -6 L17 -6 L13 26 L-13 26 Z" fill="#7DBFD0"/>
+              <rect x="-18" y="-8" width="36" height="6" rx="3" fill="#5FA7BA"/>
+            </g>
+          </g>
+          <g id="beacon">
+            <circle r="17" fill="none" stroke="#12B39C" stroke-width="3" opacity=".6"/>
+            <circle r="8.5" fill="#2FD06E"/>
+          </g>
+
+          <g id="pins"></g>
+          <g id="bubbles"></g>
+        </g>
+
+        <!-- notifications façon "croisé à…" -->
+        <g id="notifs"></g>
+
+        <!-- téléphone : QR arrivée / départ / avis -->
+        <rect id="dim" width="540" height="960" fill="#0B1F27" opacity="0"/>
+        <g id="phone" transform="translate(145,980)">
+          <rect width="250" height="500" rx="38" fill="#0B1B22"/>
+          <rect x="10" y="10" width="230" height="480" rx="29" fill="#F6F9F8"/>
+          <rect x="95" y="20" width="60" height="9" rx="4.5" fill="#0B1B22"/>
+          <text x="125" y="62" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="16" fill="#123644">Mission · Sophie</text>
+          <text x="125" y="82" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#6E8592">Ménage · Antibes</text>
+
+          <g id="scan">
+            <rect x="40" y="112" width="170" height="170" rx="16" fill="#123644"/>
+            <g clip-path="url(#vf)">
+              <rect x="62" y="134" width="126" height="126" rx="6" fill="#fff"/>
+              <g transform="translate(68,140) scale(%%QR_SCAN_SCALE%%)">%%QR_SCAN%%</g>
+              <g id="scanline"><rect x="40" y="-3" width="170" height="6" fill="#2FD06E" filter="url(#glow)" opacity=".9"/><rect x="40" y="-1.2" width="170" height="2.4" fill="#2FD06E"/></g>
+            </g>
+            <g fill="none" stroke="#2FD06E" stroke-width="4" stroke-linecap="round">
+              <path d="M52 140 V124 H68"/><path d="M182 124 H198 V140"/><path d="M198 254 V270 H182"/><path d="M68 270 H52 V254"/>
+            </g>
+            <text id="scanLabel" x="125" y="316" text-anchor="middle" font-family="Inter" font-weight="600" font-size="13" fill="#123644">Scan du code client</text>
+            <text x="125" y="336" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#6E8592">depuis votre compte PING</text>
+          </g>
+
+          <g id="ok">
+            <g id="okDisc" transform="translate(125,190)">
+              <circle r="52" fill="#2FD06E"/>
+              <path d="M-22 1 L-6 17 L24 -15" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <text id="okTitle" x="125" y="282" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="21" fill="#123644">Arrivée validée</text>
+            <text id="okTime" x="125" y="322" text-anchor="middle" font-family="Inter" font-weight="600" font-size="30" fill="#123644">14:02</text>
+            <text id="okSub" x="125" y="346" text-anchor="middle" font-family="Inter" font-size="12" fill="#6E8592">horodaté</text>
+          </g>
+
+          <g id="clock">
+            <circle cx="125" cy="196" r="58" fill="none" stroke="#E2ECEA" stroke-width="10"/>
+            <circle id="clockArc" cx="125" cy="196" r="58" fill="none" stroke="#12B39C" stroke-width="10" stroke-linecap="round" transform="rotate(-90 125 196)" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
+            <text id="clockTime" x="125" y="206" text-anchor="middle" font-family="Inter" font-weight="600" font-size="28" fill="#123644">14:02</text>
+            <text x="125" y="292" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="16" fill="#123644">Intervention en cours</text>
+            <text x="125" y="314" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#6E8592">le temps est compté au scan</text>
+          </g>
+
+          <g id="rate">
+            <text x="125" y="128" text-anchor="middle" font-family="Inter" font-weight="600" font-size="13" fill="#123644">Sophie a noté la prestation</text>
+            <g id="stars"></g>
+            <text id="quote" x="125" y="200" text-anchor="middle" font-family="Inter" font-style="italic" font-size="12.5" fill="#6E8592">« Impeccable, merci ! »</text>
+            <g id="tip" transform="translate(125,240)">
+              <rect x="-92" y="-21" width="184" height="42" rx="21" fill="#DDF5F0"/>
+              <text y="6" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="17" fill="#0C8F7E">+15 € de pourboire</text>
+            </g>
+            <g id="total" transform="translate(125,330)">
+              <rect x="-100" y="-46" width="200" height="92" rx="18" fill="#fff" stroke="#E2ECEA" stroke-width="1.5"/>
+              <text y="-18" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#6E8592">Facture générée automatiquement</text>
+              <text id="totalVal" y="20" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="32" fill="#123644">110,00 €</text>
+            </g>
+            <g id="coins"></g>
+          </g>
+        </g>
+
+        <!-- légende -->
+        <g id="cap" filter="url(#sh)">
+          <rect id="capBg" x="26" y="58" width="488" height="112" rx="24" fill="#fff"/>
+        </g>
+        <g id="capText"></g>
+        <rect id="prog" x="0" y="0" width="0" height="6" fill="#12B39C"/>
+
+        <!-- fin -->
+        <g id="end" opacity="0">
+          <rect width="540" height="960" fill="#123644"/>
+          <g id="endRings" fill="none" stroke="#12B39C"></g>
+          <g id="device" transform="translate(270,370)">
+            <g transform="scale(1.75) translate(-60,-95)">
+              <path d="M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 98" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="64" cy="148" r="30" fill="none" stroke="#12B39C" stroke-width="2" opacity=".35"/>
+              <circle cx="64" cy="148" r="19.8" fill="none" stroke="#12B39C" stroke-width="2.9" opacity=".7"/>
+              <circle cx="64" cy="148" r="7.7" fill="#2FD06E"/>
+            </g>
+          </g>
+          <g id="word"></g>
+          <text id="tag1" x="270" y="700" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="31" fill="#fff">Envoyez un ping.</text>
+          <text id="tag2" x="270" y="742" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="31" fill="#2FD06E">Quelqu'un est déjà là.</text>
+          <text id="tag3" x="270" y="784" text-anchor="middle" font-family="Inter" font-size="15" fill="#9DB4BC">Particuliers et pros · inscription gratuite</text>
+          <g id="cta" transform="translate(0,0)">
+            <rect x="96" y="822" width="104" height="104" rx="14" fill="#fff"/>
+            <g transform="translate(104,830) scale(%%QR_END_SCALE%%)">%%QR_END%%</g>
+            <text x="222" y="866" font-family="Inter" font-weight="600" font-size="19" fill="#fff">nexto-eta.vercel.app</text>
+            <text x="222" y="892" font-family="Inter" font-size="13.5" fill="#9DB4BC">Scannez pour découvrir PING</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="controls">
+      <button id="play" type="button">Pause</button>
+      <button id="replay" class="ghost" type="button">Rejouer</button>
+      <input id="scrub" type="range" min="0" max="30" step="0.01" value="0" aria-label="Position dans l'animation">
+      <span class="time" id="tc">0,0 s</span>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="eyebrow">Animation explicative · 30 s · 9:16</div>
+    <h1>Le parcours d'une mission PING</h1>
+    <p class="lead">Format vertical pour TikTok, Reels et Stories, lisible sans le son. Un clic sur une scène pour y aller directement.</p>
+    <ol class="scenes" id="scenes"></ol>
+    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, sans photo ni vidéo filmée. Le logo de fin reprend l'écho radar de la marque. Le QR final pointe vers /l/vid, ce qui permet de mesurer le trafic venu de cette vidéo.</p>
+    <p class="foot"><a href="/brand/files/ping-animation-30s.mp4" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">Fichier vidéo MP4 · 1080 × 1920 · 30 s</a> — à publier tel quel sur TikTok, Reels ou Stories.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var DUR = 30;
+  var NS = 'http://www.w3.org/2000/svg';
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, attrs, parent){ var n = document.createElementNS(NS, tag); for (var k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; }
+  function clamp(x,a,b){ a = a==null?0:a; b = b==null?1:b; return Math.max(a, Math.min(b, x)); }
+  function seg(t,a,b){ return clamp((t-a)/(b-a)); }
+  function eio(x){ return x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2; }
+  function eout(x){ return 1-Math.pow(1-x,3); }
+  function back(x){ var c1=1.70158, c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
+  function win(t,a,b,f){ f = f||.35; return Math.min(seg(t,a,a+f), 1-seg(t,b-f,b)); }
+
+  var SCENES = [
+    { a:0,    b:4.6,  title:'Il se déplace', lines:['Un artisan se déplace','entre deux chantiers.'], d:"Un pro PING marche dans une rue de la Côte d'Azur, entre deux interventions." },
+    { a:4.6,  b:9.2,  title:"L'écho PING", lines:['PING le rend visible','autour de lui.'], d:"Le point du logo s'allume au-dessus de lui et rayonne comme un sonar." },
+    { a:9.2,  b:14.8, title:'Les clients le voient', lines:['Les clients à proximité','le voient et lui écrivent.'], d:"Les personnes touchées par l'écho apparaissent, puis les messages arrivent : « croisée à 120 m »." },
+    { a:14.8, b:18.2, title:'Arrivée validée', lines:["Arrivée : un scan,","l'heure est enregistrée."], d:'Il arrive au chantier, scanne le code du client : arrivée horodatée.' },
+    { a:18.2, b:21.6, title:'Départ validé', lines:['Départ : un scan,','la durée fait foi.'], d:'Fin de mission, second scan : la durée réelle est enregistrée.' },
+    { a:21.6, b:26.0, title:'Avis, pourboire, facture', lines:['Avis, pourboire, facture :','tout est fait.'], d:'Cinq étoiles, 15 € de pourboire, facture de 110 € générée automatiquement.' },
+    { a:26.0, b:30,   title:'Signature', lines:null, d:"Logo écho, « Envoyez un ping. Quelqu'un est déjà là. », QR vers l'inscription." }
+  ];
+
+  // ---------- décor procédural (graine fixe : même image à chaque lecture) ----------
+  var seed = 7; function rnd(){ seed = (seed*16807) % 2147483647; return (seed-1)/2147483646; }
+  var W = 1100;
+  var FACADES = ['#EBC48A','#E9AFA0','#F3E4C4','#DE9A76','#F2D592','#E7C9A9'];
+  var SHUTTERS = ['#4F8F86','#6C9BB5','#3E7C74','#8AA9B8'];
+  function buildCity(g){
+    [0, W].forEach(function(ox){
+      var tile = el('g', {transform:'translate('+ox+',0)'}, g);
+      var x = 0;
+      while (x < W - 60) {
+        var w = 96 + Math.floor(rnd()*58), h = 250 + Math.floor(rnd()*170);
+        if (x + w > W) w = W - x;
+        var top = 700 - h, col = FACADES[Math.floor(rnd()*FACADES.length)], sh = SHUTTERS[Math.floor(rnd()*SHUTTERS.length)];
+        el('rect', {x:x, y:top, width:w, height:h, fill:col}, tile);
+        el('rect', {x:x-3, y:top-8, width:w+6, height:10, fill:'#C9805E'}, tile);
+        var cols = Math.max(1, Math.floor((w-20)/40)), rows = Math.max(1, Math.floor((h-70)/58));
+        var gx = (w - cols*40)/2 + 8;
+        for (var r=0; r<rows; r++) for (var c=0; c<cols; c++){
+          var wx = x + gx + c*40, wy = top + 26 + r*58;
+          el('rect', {x:wx-6, y:wy, width:5, height:28, fill:sh}, tile);
+          el('rect', {x:wx+19, y:wy, width:5, height:28, fill:sh}, tile);
+          el('rect', {x:wx, y:wy, width:18, height:28, fill:'#CFE5EC'}, tile);
+        }
+        el('rect', {x:x + w/2 - 13, y:658, width:26, height:42, rx:3, fill:'#6B5446'}, tile);
+        x += w;
+        if (rnd() < .45 && x < W - 70) { palm(tile, x + 22); x += 44; }
+      }
+      if (x < W) el('rect', {x:x, y:400, width:W-x, height:300, fill:'#EBC48A'}, tile);
+    });
+  }
+  function palm(p, x){
+    el('rect', {x:x-4, y:540, width:8, height:160, rx:4, fill:'#9C7350'}, p);
+    [[-50,-10],[50,-10],[-34,-30],[34,-30],[0,-40]].forEach(function(v){
+      el('path', {d:'M'+x+' 540 Q'+(x+v[0]/2)+' '+(540+v[1]-14)+' '+(x+v[0])+' '+(546+v[1]/3), fill:'none', stroke:'#2E8B6E', 'stroke-width':9, 'stroke-linecap':'round'}, p);
+    });
+  }
+  function buildFar(g){
+    [0, W].forEach(function(ox){
+      var t = el('g', {transform:'translate('+ox+',0)'}, g);
+      el('path', {d:'M0 470 Q150 380 300 440 T600 420 T900 450 T1100 430 V700 H0 Z', fill:'#A9CFD6'}, t);
+      for (var i=0;i<14;i++){ var bw = 40+rnd()*50, bh = 60+rnd()*90, bx = i*80+rnd()*20; el('rect', {x:bx, y:700-bh-150, width:bw, height:bh+150, fill:'#BFDDE2'}, t); }
+    });
+  }
+  function buildGround(){
+    var j = $('joints'), d = $('dashes');
+    for (var i=0;i<=Math.ceil(W*2/80);i++) el('rect', {x:i*80, y:702, width:2, height:68, fill:'#DCD0BA'}, j);
+    for (var k=0;k<=Math.ceil(W*2/110);k++) el('rect', {x:k*110, y:866, width:54, height:8, rx:4, fill:'#E9EEF0'}, d);
+  }
+  // Villa du chantier, posée dans le monde pour s'arrêter pile devant l'artisan.
+  var HOUSE_X = 1330 + 125;
+  function buildHouse(g){
+    el('rect', {x:0, y:430, width:300, height:270, fill:'#F4E2C8'}, g);
+    el('path', {d:'M-16 436 L150 352 L316 436 Z', fill:'#C9704F'}, g);
+    el('rect', {x:-16, y:430, width:332, height:10, fill:'#B45F42'}, g);
+    [[30,470],[210,470],[210,580]].forEach(function(p){
+      el('rect', {x:p[0]-8, y:p[1], width:7, height:52, fill:'#3E7C74'}, g);
+      el('rect', {x:p[0]+60, y:p[1], width:7, height:52, fill:'#3E7C74'}, g);
+      el('rect', {x:p[0], y:p[1], width:59, height:52, fill:'#CFE5EC'}, g);
+    });
+    el('rect', {x:80, y:582, width:54, height:118, rx:26, fill:'#12B39C'}, g);
+    el('circle', {cx:122, cy:644, r:4, fill:'#F2C94C'}, g);
+    el('rect', {x:52, y:684, width:110, height:16, fill:'#D8C9B0'}, g);
+    for (var i=0;i<6;i++) el('rect', {x:180+i*20, y:650, width:7, height:50, rx:3, fill:'#fff'}, g);
+    el('rect', {x:176, y:664, width:130, height:6, fill:'#fff'}, g);
+    el('circle', {cx:300, cy:600, r:40, fill:'#6E9E6A'}, g);
+    el('rect', {x:296, y:620, width:8, height:80, fill:'#8A6B4C'}, g);
+  }
+
+  // ---------- personnes touchées par l'écho ----------
+  var BEACON = {x:200, y:494};
+  var PINS = [
+    {x:438, y:292, i:'S', c:'#12B39C'},
+    {x:96,  y:268, i:'P', c:'#F2A93B'},
+    {x:468, y:506, i:'M', c:'#6C9BB5'},
+    {x:70,  y:470, i:'L', c:'#E07A64'}
+  ];
+  var RING0 = 4.9, RPER = 1.35, RSPEED = 310;
+  PINS.forEach(function(p){
+    var dist = Math.hypot(p.x-BEACON.x, p.y-BEACON.y);
+    p.t = RING0 + dist/RSPEED;
+    p.g = el('g', {}, $('pins'));
+    p.halo = el('circle', {r:22, fill:'none', stroke:p.c, 'stroke-width':2.5}, p.g);
+    el('path', {d:'M0 26 C-6 18 -20 8 -20 -4 a20 20 0 1 1 40 0 c0 12 -14 22 -20 30z', fill:'#fff', filter:'url(#sh)'}, p.g);
+    el('circle', {cy:-4, r:14.5, fill:p.c}, p.g);
+    var tx = el('text', {y:2, 'text-anchor':'middle', 'font-family':'Quicksand', 'font-weight':700, 'font-size':15, fill:'#fff'}, p.g); tx.textContent = p.i;
+    p.b = el('g', {}, $('bubbles'));
+    el('rect', {x:-20, y:-13, width:40, height:26, rx:13, fill:'#fff', filter:'url(#sh)'}, p.b);
+    [-9,0,9].forEach(function(dx){ el('circle', {cx:dx, cy:0, r:3, fill:p.c}, p.b); });
+  });
+
+  // ---------- notifications ----------
+  var NOTIFS = [
+    {t:9.9,  y:192, i:'S', c:'#12B39C', h:'Sophie, croisée à 120 m', m:'Ménage 2 h demain matin, dispo ?'},
+    {t:10.9, y:284, i:'P', c:'#F2A93B', h:'Paul, croisé à 300 m',   m:'Repassage ce soir, possible ?'},
+    {t:11.9, y:376, i:'',  c:'#123644', h:'Nouvelle demande à 450 m', m:'Nettoyage de vitres, 3 pièces'}
+  ];
+  NOTIFS.forEach(function(n){
+    n.g = el('g', {}, $('notifs'));
+    el('rect', {x:30, y:0, width:480, height:80, rx:20, fill:'#fff', filter:'url(#sh)'}, n.g);
+    el('circle', {cx:72, cy:40, r:21, fill:n.c}, n.g);
+    if (n.i) { var t = el('text', {x:72, y:46, 'text-anchor':'middle', 'font-family':'Quicksand', 'font-weight':700, 'font-size':17, fill:'#fff'}, n.g); t.textContent = n.i; }
+    else { el('path', {d:'M72 54 C68 48 61 43 61 36 a11 11 0 1 1 22 0 c0 7 -7 12 -11 18z', fill:'#fff'}, n.g); el('circle', {cx:72, cy:36, r:4, fill:'#2FD06E'}, n.g); }
+    var h = el('text', {x:106, y:35, 'font-family':'Inter', 'font-weight':600, 'font-size':15.5, fill:'#123644'}, n.g); h.textContent = n.h;
+    var m = el('text', {x:106, y:58, 'font-family':'Inter', 'font-size':14, fill:'#5C7582'}, n.g); m.textContent = n.m;
+    var k = el('text', {x:494, y:30, 'text-anchor':'end', 'font-family':'Inter', 'font-size':11, fill:'#9CA3AF'}, n.g); k.textContent = 'maintenant';
+  });
+
+  // ---------- étoiles, pièces ----------
+  var STAR = 'M0 -13 L3.8 -4.2 L13 -4 L5.8 2 L8 11.5 L0 6.2 L-8 11.5 L-5.8 2 L-13 -4 L-3.8 -4.2 Z';
+  var stars = [];
+  for (var s=0; s<5; s++){
+    var sg = el('g', {transform:'translate('+(65+s*30)+',162)'}, $('stars'));
+    el('path', {d:STAR, fill:'#E2ECEA'}, sg);
+    stars.push(el('path', {d:STAR, fill:'#F2A93B'}, sg));
+  }
+  var coins = [];
+  for (var c=0; c<3; c++){
+    var cg = el('g', {}, $('coins'));
+    el('ellipse', {rx:15, ry:6, fill:'#D8902A'}, cg);
+    el('rect', {x:-15, y:-6, width:30, height:6, fill:'#D8902A'}, cg);
+    el('ellipse', {cy:-6, rx:15, ry:6, fill:'#F2B84B'}, cg);
+    coins.push(cg);
+  }
+
+  // ---------- légende ----------
+  var capLines = [el('text', {x:270, 'text-anchor':'middle', 'font-family':'Quicksand', 'font-weight':700, 'font-size':28, fill:'#123644'}, $('capText')),
+                  el('text', {x:270, 'text-anchor':'middle', 'font-family':'Quicksand', 'font-weight':700, 'font-size':28, fill:'#123644'}, $('capText'))];
+
+  // ---------- anneaux ----------
+  var rings = []; for (var r=0; r<4; r++) rings.push(el('circle', {r:0}, $('rings')));
+  var endRings = []; for (var e=0; e<3; e++) endRings.push(el('circle', {cx:270, cy:370+53*1.75*0+ (148-95)*1.75, r:0, 'stroke-width':2.5}, $('endRings')));
+
+  buildFar($('far')); buildCity($('city')); buildGround(); buildHouse($('house'));
+
+  // ---------- logotype p·ng (l'épingle remplace le i) ----------
+  function buildWord(){
+    var g = $('word'); g.innerHTML = '';
+    var size = 92, y = 640;
+    var p = el('text', {y:y, 'font-family':'Quicksand', 'font-weight':700, 'font-size':size, fill:'#fff'}, g); p.textContent = 'p';
+    var ng = el('text', {y:y, 'font-family':'Quicksand', 'font-weight':700, 'font-size':size, fill:'#fff'}, g); ng.textContent = 'ng';
+    var wp = p.getComputedTextLength(), wn = ng.getComputedTextLength();
+    var ph = size*0.74, pw = ph*38/65, gap = size*0.06;
+    var total = wp + gap + pw + gap + wn, x0 = 270 - total/2;
+    p.setAttribute('x', x0);
+    var pin = el('g', {transform:'translate('+(x0+wp+gap)+','+(y-ph)+') scale('+(ph/65)+') translate(-71,-35)'}, g);
+    el('path', {d:'M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z', fill:'#fff'}, pin);
+    el('circle', {cx:90, cy:53, r:8.6, fill:'#2FD06E'}, pin);
+    ng.setAttribute('x', x0+wp+gap+pw+gap);
+  }
+
+  // ---------- trajectoire ----------
+  var V = 95, T1 = 12.6, D = 2.8;
+  function offset(t){ if (t<=T1) return V*t; var s = Math.min(t-T1, D); return V*T1 + V*(s - s*s/(2*D)); }
+  function speed(t){ if (t<=T1) return 1; return 1 - Math.min(t-T1, D)/D; }
+  function mod(a,n){ return ((a%n)+n)%n; }
+  function show(n, o){ n.setAttribute('opacity', clamp(o).toFixed(3)); }
+  function tr(n, s){ n.setAttribute('transform', s); }
+  function hhmm(m){ var h = Math.floor(m/60), mm = Math.round(m%60); if (mm===60){h++;mm=0;} return h+':'+(mm<10?'0':'')+mm; }
+
+  function render(t){
+    var off = offset(t), v = speed(t);
+    tr($('far'), 'translate('+(-mod(off*0.35, W))+',0)');
+    tr($('city'), 'translate('+(-mod(off, W))+',0)');
+    tr($('joints'), 'translate('+(-mod(off, 80))+',0)');
+    tr($('dashes'), 'translate('+(-mod(off*1.25, 110))+',0)');
+    tr($('cloudA'), 'translate('+(mod(120 - t*12, 700)-80)+',150)');
+    tr($('cloudB'), 'translate('+(mod(420 - t*9, 700)-80)+',215)');
+    tr($('house'), 'translate('+(HOUSE_X - off)+',0)');
+
+    // marche
+    var ph = off/V * Math.PI * 2 * 0.9, sw = Math.sin(ph) * v;
+    var bob = -Math.abs(Math.sin(ph)) * 4 * v;
+    tr($('artisan'), 'translate(200,'+bob.toFixed(2)+')');
+    tr($('legF'), 'rotate('+(26*sw)+' 0 668)');
+    tr($('legB'), 'rotate('+(-26*sw)+' 0 668)');
+    tr($('armB'), 'rotate('+(22*sw)+' 0 602)');
+    var aF = -10*sw; tr($('armF'), 'rotate('+aF+' 0 602)');
+    var rad = aF*Math.PI/180, hx = 0.5 - 54*Math.sin(rad), hy = 602 + 54*Math.cos(rad);
+    tr($('bucket'), 'translate('+(hx+2)+','+(hy+14)+')');
+
+    // écho
+    var bIn = back(seg(t, 4.6, 5.1));
+    tr($('beacon'), 'translate('+BEACON.x+','+(BEACON.y+bob)+') scale('+bIn+')');
+    show($('beacon'), seg(t,4.6,4.8) * (1 - seg(t, 14.6, 15.0)));
+    rings.forEach(function(c, i){
+      var e = RING0 + i*RPER, k = -1;
+      for (var n=0; n<8; n++){ var st = e + n*RPER*rings.length; if (t >= st && t < st + RPER*rings.length && st < 13.8) { k = (t-st)/(RPER*rings.length); } }
+      if (k < 0) { show(c, 0); return; }
+      var r = 16 + k*RSPEED*RPER*rings.length;
+      c.setAttribute('cx', BEACON.x); c.setAttribute('cy', BEACON.y + bob); c.setAttribute('r', r.toFixed(1));
+      show(c, (1-k)*0.8);
+    });
+
+    PINS.forEach(function(p, i){
+      var a = back(seg(t, p.t, p.t+0.45));
+      var o = seg(t, p.t, p.t+0.2) * (1 - seg(t, 9.7, 10.1));
+      tr(p.g, 'translate('+p.x+','+p.y+') scale('+a.toFixed(3)+')');
+      show(p.g, o);
+      var hk = seg(t, p.t, p.t+0.8); p.halo.setAttribute('r', (22 + hk*26).toFixed(1)); show(p.halo, (1-hk)*0.9);
+      var bs = 7.9 + i*0.35, bk = eio(seg(t, bs, bs+0.9));
+      var bx = p.x + (BEACON.x - p.x)*bk, by = p.y - 40 + (BEACON.y + 40 - (p.y - 40))*bk - Math.sin(bk*Math.PI)*60;
+      tr(p.b, 'translate('+bx.toFixed(1)+','+by.toFixed(1)+') scale('+(1-0.4*bk).toFixed(3)+')');
+      show(p.b, seg(t, bs-0.15, bs) * (1 - seg(t, bs+0.75, bs+0.9)));
+    });
+
+    NOTIFS.forEach(function(n){
+      var k = eout(seg(t, n.t, n.t+0.45));
+      tr(n.g, 'translate(0,'+(n.y - 26*(1-k)).toFixed(1)+')');
+      show(n.g, k * (1 - seg(t, 14.0, 14.5)));
+    });
+
+    // téléphone
+    show($('dim'), 0.62 * seg(t, 15.0, 15.6) * (1 - seg(t, 26.0, 26.4)));
+    var py = 980 - (980-238)*eout(seg(t, 15.3, 15.95));
+    tr($('phone'), 'translate(145,'+py.toFixed(1)+')');
+    var scanA = win(t, 15.6, 17.15, .2), okA = win(t, 17.0, 18.35, .2), clk = win(t, 18.2, 19.55, .2), scanB = win(t, 19.4, 20.55, .2), okB = win(t, 20.4, 21.75, .2), rate = seg(t, 21.6, 21.85);
+    show($('scan'), Math.max(scanA, scanB));
+    var sl = t < 18 ? seg(t, 15.9, 17.0) : seg(t, 19.55, 20.4);
+    tr($('scanline'), 'translate(0,'+(134 + 126*Math.sin(sl*Math.PI)).toFixed(1)+')');
+    $('scanLabel').textContent = t < 18 ? 'Scan du code client' : 'Scan de fin de mission';
+    var okv = Math.max(okA, okB); show($('ok'), okv);
+    var pop = t < 18.5 ? back(seg(t, 17.05, 17.45)) : back(seg(t, 20.45, 20.85));
+    tr($('okDisc'), 'translate(125,190) scale('+pop.toFixed(3)+')');
+    if (t < 19) { $('okTitle').textContent = 'Arrivée validée'; $('okTime').textContent = '14:02'; $('okSub').textContent = 'horodaté'; }
+    else { $('okTitle').textContent = 'Départ validé'; $('okTime').textContent = '16:07'; $('okSub').textContent = 'durée réelle : 2 h 05'; }
+    show($('clock'), clk);
+    var ck = eio(seg(t, 18.35, 19.35));
+    $('clockArc').setAttribute('stroke-dashoffset', (364.4*(1-ck)).toFixed(1));
+    $('clockTime').textContent = hhmm(14*60+2 + ck*125);
+    show($('rate'), rate);
+    stars.forEach(function(sp, i){ var k = back(seg(t, 21.95 + i*0.2, 22.25 + i*0.2)); sp.setAttribute('transform', 'scale('+k.toFixed(3)+')'); });
+    show($('quote'), seg(t, 23.0, 23.3));
+    var tk = back(seg(t, 23.3, 23.7)); tr($('tip'), 'translate(125,240) scale('+tk.toFixed(3)+')');
+    var tt = back(seg(t, 23.9, 24.3)); tr($('total'), 'translate(125,330) scale('+tt.toFixed(3)+')');
+    coins.forEach(function(cg, i){
+      var k = eout(seg(t, 24.4 + i*0.18, 24.7 + i*0.18));
+      tr(cg, 'translate(125,'+(436 - i*9 - 22*(1-k)).toFixed(1)+')');
+      show(cg, k);
+    });
+
+    // légende
+    var cur = null, co = 0;
+    for (var i=0; i<SCENES.length-1; i++){ var S = SCENES[i]; var o = win(t, S.a, S.b, .3); if (i===0) o = Math.min(1, 1 - seg(t, S.b-.3, S.b)); if (o > co) { co = o; cur = S; } }
+    if (cur) { capLines[0].textContent = cur.lines[0]; capLines[1].textContent = cur.lines[1]; }
+    capLines[0].setAttribute('y', 104); capLines[1].setAttribute('y', 140);
+    var lift = (1-co)*8;
+    tr($('capText'), 'translate(0,'+lift.toFixed(1)+')');
+    show($('capText'), co);
+    show($('cap'), 1 - seg(t, 25.8, 26.2));
+    $('prog').setAttribute('width', (540*t/DUR).toFixed(1));
+
+    // fin
+    show($('end'), seg(t, 26.0, 26.45));
+    var dk = back(seg(t, 26.3, 26.8)); tr($('device'), 'translate(270,370) scale('+dk.toFixed(3)+')');
+    var ex = 270, ey = 370 + (148-95)*1.75;
+    endRings.forEach(function(c, i){
+      var k = mod(t - 26.6 - i*0.6, 1.8)/1.8;
+      c.setAttribute('cx', ex); c.setAttribute('cy', ey); c.setAttribute('r', (14 + k*170).toFixed(1));
+      show(c, t > 26.6 + i*0.6 ? (1-k)*0.55 : 0);
+    });
+    [['word',26.8],['tag1',27.2],['tag2',27.6],['tag3',28.0],['cta',28.3]].forEach(function(q){
+      var k = eout(seg(t, q[1], q[1]+0.45)); show($(q[0]), k); tr($(q[0]), 'translate(0,'+(14*(1-k)).toFixed(1)+')');
+    });
+  }
+
+  // ---------- lecteur ----------
+  var list = $('scenes'), sceneBtns = [];
+  SCENES.forEach(function(S, i){
+    var li = document.createElement('li'), b = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = '<span class="tc">'+S.a.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
+    b.querySelector('b').textContent = (i+1)+'. '+S.title; b.querySelector('.d').textContent = S.d;
+    b.addEventListener('click', function(){ seek(S.a + 0.01); playing = true; sync(); });
+    li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
+  });
+
+  var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
+  var rec = location.hash === '#record';
+  if (rec) { document.body.classList.add('rec'); playing = false; }
+  function seek(x){ t = clamp(x, 0, DUR); paint(); }
+  function paint(){
+    render(t);
+    $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
+    sceneBtns.forEach(function(b, i){ var S = SCENES[i]; b.classList.toggle('on', t >= S.a && t < S.b); });
+  }
+  function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
+  function loop(now){
+    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= DUR) t = 0; } paint(); }
+    last = now; requestAnimationFrame(loop);
+  }
+  $('play').addEventListener('click', function(){ playing = !playing; sync(); });
+  $('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
+  $('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
+
+  window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); } };
+  var start = function(){ buildWord(); paint(); sync(); if (!rec) requestAnimationFrame(loop); window.PING_ANIM.ready = true; };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+  if (!playing && !rec) seek(9.6);
+})();
+</script>

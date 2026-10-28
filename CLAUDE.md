@@ -303,6 +303,22 @@ directement vers `/map` sans un mot d'explication. Corrigé :
   avec le tunnel pro. Le pro, lui, a déjà un écran de clôture équivalent (`/pro/attente`), pas touché.
 - Keyframes CSS partagées `ob-slide-r`/`ob-slide-l` ajoutées dans `ping-ui.css` pour ces trois écrans.
 
+## Marketing — plaquettes 5 publics, animation 30 s (28/10/2026)
+Tout est rangé dans l'admin (`/admin` → Communication & commercialisation → **Supports & visuels**,
+carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dépôt.
+- `/plaquettes` (`public/plaquettes.html`, généré par `brand/plaquettes/build.py` depuis `src.html`) :
+  une plaquette-carrousel par public, ancres `#particulier` `#pro` `#devenir-pro` `#entreprises`
+  `#annonceurs`. Une idée par écran, contact direct au dernier (QR `/l/pq` `/l/pqp` `/l/pqd` `/l/ent`,
+  email `info@opconsult.co` — orthographe dictée par Romain, à confirmer). La plaquette annonceurs
+  montre l'encart réel (`SponsorBanner` sur `/client/demandes`). Volontairement absents : séquestre et
+  crédit d'impôt sans avance (Stripe et URSSAF non branchés).
+- `/animation` (`public/animation.html`, généré par `brand/anim/build.py`) : animation explicative 30 s,
+  9:16, vecteur pur, rendu déterministe `PING_ANIM.seek(t)`. MP4 1080×1920 dans
+  `public/brand/files/ping-animation-30s.mp4` (procédure d'enregistrement dans `brand/anim/build.py`).
+  Remplace l'ancienne « Animation d'accroche » `/presentation` (gardée).
+- `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche « Airbnb / Uber /
+  Booking » (verdict : l'idée sans les noms, jamais côté pros — « ubérisation » et commissions Booking).
+
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
 Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /
