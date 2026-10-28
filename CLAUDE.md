@@ -303,7 +303,7 @@ directement vers `/map` sans un mot d'explication. Corrigé :
   avec le tunnel pro. Le pro, lui, a déjà un écran de clôture équivalent (`/pro/attente`), pas touché.
 - Keyframes CSS partagées `ob-slide-r`/`ob-slide-l` ajoutées dans `ping-ui.css` pour ces trois écrans.
 
-## Marketing — plaquettes 5 publics, animation 25 s (28/10/2026)
+## Marketing — plaquettes 5 publics, animation 30 s (28/10/2026)
 Tout est rangé dans l'admin (`/admin` → Communication & commercialisation → **Supports & visuels**,
 carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dépôt.
 - `/plaquettes` (`public/plaquettes.html`, généré par `brand/plaquettes/build.py` depuis `src.html`) :
@@ -312,13 +312,34 @@ carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dép�
   email `info@opconsult.co` — orthographe dictée par Romain, à confirmer). La plaquette annonceurs
   montre l'encart réel (`SponsorBanner` sur `/client/demandes`). Volontairement absents : séquestre et
   crédit d'impôt sans avance (Stripe et URSSAF non branchés).
-- `/animation` (`public/animation.html`, généré par `brand/anim/build.py`) : animation explicative 25 s,
+- `/animation` (`public/animation.html`, généré par `brand/anim/build.py`) : animation explicative 30 s,
   9:16, vecteur pur, rendu déterministe `PING_ANIM.seek(t)`. MP4 1080×1920 dans
-  `public/brand/files/ping-animation-25s.mp4` (procédure d'enregistrement dans `brand/anim/build.py`).
+  `public/brand/files/ping-animation-30s.mp4` (procédure d'enregistrement dans `brand/anim/build.py`).
   Remplace l'ancienne « Animation d'accroche » `/presentation` (gardée).
 - `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche « Airbnb / Uber /
   Booking ». **Décision Romain 28/10** : accroche retenue malgré la critique, en texte seul (jamais de
   logos) sur les plaquettes `#particulier`, `#pro`, `#devenir-pro` (écran « Aussi simple qu'Airbnb… »).
+
+## Audit démo (/demo) vs app — 28/10/2026 (Romain aime l'agenda et le litige de la démo)
+Parité ou mieux : carte, recherche, chat/devis, QR, factures, avis, messages, revenus, tarifs.
+Écarts principaux, par vague :
+- **Vague 1, sans schéma** : tableau de bord pro (`p_dash` : CA du mois, interventions, note, prochains
+  RDV, raccourcis, « N demandes près de vous », alerte litige 48 h, jauge profil) ; boîte « réservations
+  reçues » Accepter/Refuser ; propositions comparables dans `/client/demandes` (prix, note, distance,
+  badges, extrait, Accepter — `v_offre_detail`) ; agenda : litige en tête, badges Confirmé/En route,
+  mission terminée → facture ; avis depuis la facture ; « Signaler avant de valider » à l'étape QR 2 ;
+  « Vous percevez X € » dans le devis ; filtres demandes pro ; export CSV `/documents`.
+- **Vague 2, schéma Supabase** : **litige complet** comme `v_litige`/`v_litige_suivi`/`p_litige` —
+  `disputes` + `category`, `claimed_cents`, `deadline_at`, `photo_paths`, `agreed_cents`, `closed_at` ;
+  table `dispute_events` (fil chronologique) ; page `/litiges/[id]` client+pro (le chat reste le fil
+  principal) ; fiche assurance `v_assur` via RPC. **Date de RDV** : l'agenda trie aujourd'hui par
+  `created_at` car aucune date de rendez-vous n'est stockée → `transactions.scheduled_at` posé par
+  `mission/new` et l'acceptation du devis. Surface/durée sur `requests`, signalement de modération
+  distinct du litige.
+- **Vague 3, décisions Romain en attente** : créneaux réservables (`v_booking`, table `provider_slots`) ;
+  règle « sans réponse sous 48 h la demande du client s'applique » (auto ou décision admin) ; avoir.
+Corrigé pendant l'audit : `/mission/[id]/qrcodes` promettait « séquestre / libère le paiement » ;
+message système litige sans « ⚠ ».
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.

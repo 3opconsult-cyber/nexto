@@ -256,7 +256,7 @@ export default function ChatPage() {
     })
     await supabase.from('messages').insert({
       transaction_id: transactionId, sender_id: null,
-      body: '⚠ Un litige a été ouvert sur cette mission.',
+      body: 'Litige ouvert sur cette mission.',
     })
     setReportSent(true)
     setReportReason('')

@@ -1,5 +1,5 @@
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>PING en 25 secondes</title>
+<title>PING en 30 secondes</title>
 <style>
 %%FONTS%%
   /* Lecteur sombre : la scène 9:16 à gauche, le scénario à droite (empilé sur mobile). */
@@ -193,8 +193,8 @@
             </g>
           </g>
           <g id="word"></g>
-          <text id="tag1" x="270" y="700" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="31" fill="#fff">Envoyez un ping.</text>
-          <text id="tag2" x="270" y="742" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="31" fill="#2FD06E">Quelqu'un est déjà là.</text>
+          <text id="tag1" x="270" y="700" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="31" fill="#fff">Et si ce que vous cherchez</text>
+          <text id="tag2" x="270" y="742" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="31" fill="#2FD06E">était juste à côté ?</text>
           <text id="tag3" x="270" y="784" text-anchor="middle" font-family="Inter" font-size="15" fill="#9DB4BC">Particuliers et pros · inscription gratuite</text>
           <g id="cta" transform="translate(0,0)">
             <rect x="96" y="822" width="104" height="104" rx="14" fill="#fff"/>
@@ -214,20 +214,19 @@
   </div>
 
   <aside class="side">
-    <div class="eyebrow">Animation explicative · 25 s · 9:16</div>
+    <div class="eyebrow">Animation explicative · 30 s · 9:16</div>
     <h1>Le parcours d'une mission PING</h1>
     <p class="lead">Format vertical pour TikTok, Reels et Stories, lisible sans le son. Un clic sur une scène pour y aller directement.</p>
     <ol class="scenes" id="scenes"></ol>
     <p class="foot">Tout est dessiné en vecteur aux couleurs PING, sans photo ni vidéo filmée. Le logo de fin reprend l'écho radar de la marque. Le QR final pointe vers /l/vid, ce qui permet de mesurer le trafic venu de cette vidéo.</p>
-    <p class="foot"><a href="/brand/files/ping-animation-25s.mp4" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">Fichier vidéo MP4 · 1080 × 1920 · 25 s</a> — à publier tel quel sur TikTok, Reels ou Stories.</p>
+    <p class="foot"><a href="/brand/files/ping-animation-30s.mp4" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">Fichier vidéo MP4 · 1080 × 1920 · 30 s</a> — à publier tel quel sur TikTok, Reels ou Stories.</p>
   </aside>
 </div>
 
 <script>
 (function(){
-  // Scénario écrit sur 30 s ; joué en 24,8 s : tout jusqu'à la signature en accéléré x1,25,
-  // la signature (logo + QR) à vitesse normale pour laisser le temps de scanner.
-  var DUR = 30, FAST = 1.25, SIGN = 26, REAL = SIGN/FAST + (DUR - SIGN);
+  // FAST > 1 accélère tout jusqu'à la signature (logo + QR), qui reste à vitesse normale.
+  var DUR = 30, FAST = 1, SIGN = 26, REAL = SIGN/FAST + (DUR - SIGN);
   function inner(x){ return x < SIGN/FAST ? x*FAST : SIGN + (x - SIGN/FAST); }
   function outer(T){ return T < SIGN ? T/FAST : SIGN/FAST + (T - SIGN); }
   var NS = 'http://www.w3.org/2000/svg';
@@ -241,13 +240,13 @@
   function win(t,a,b,f){ f = f||.35; return Math.min(seg(t,a,a+f), 1-seg(t,b-f,b)); }
 
   var SCENES = [
-    { a:0,    b:4.6,  title:'Il se déplace', lines:['Un artisan se déplace','entre deux chantiers.'], d:"Un pro PING marche dans une rue de la Côte d'Azur, entre deux interventions." },
-    { a:4.6,  b:9.2,  title:"L'écho PING", lines:['PING le rend visible','autour de lui.'], d:"Le point du logo s'allume au-dessus de lui et rayonne comme un sonar." },
-    { a:9.2,  b:14.8, title:'Les clients le voient', lines:['Les clients à proximité','le voient et lui écrivent.'], d:"Les personnes touchées par l'écho apparaissent, puis les messages arrivent : « croisée à 120 m »." },
-    { a:14.8, b:18.2, title:'Arrivée validée', lines:["Arrivée : un scan,","l'heure est enregistrée."], d:'Il arrive au chantier, scanne le code du client : arrivée horodatée.' },
-    { a:18.2, b:21.6, title:'Départ validé', lines:['Départ : un scan,','la durée fait foi.'], d:'Fin de mission, second scan : la durée réelle est enregistrée.' },
-    { a:21.6, b:26.0, title:'Avis, pourboire, facture', lines:['Avis, pourboire, facture :','tout est fait.'], d:'Cinq étoiles, 15 € de pourboire, facture de 110 € générée automatiquement.' },
-    { a:26.0, b:30,   title:'Signature', lines:null, d:"Logo écho, « Envoyez un ping. Quelqu'un est déjà là. », QR vers l'inscription." }
+    { a:0,    b:4.6,  title:'Marc, dans votre quartier', lines:['Marc fait le ménage','dans votre quartier.'], d:"Marc, prestataire PING, se déplace dans une rue de la Côte d'Azur entre deux interventions." },
+    { a:4.6,  b:9.2,  title:"L'écho PING", lines:['Disponible ? PING le rend','visible autour de lui.'], d:"Le point du logo s'allume au-dessus de lui et rayonne comme un sonar : il apparaît sur la carte." },
+    { a:9.2,  b:14.8, title:'Les demandes arrivent', lines:['Juste à côté,','les demandes arrivent.'], d:"Les voisins touchés par l'écho le voient et lui écrivent : « croisée à 120 m »." },
+    { a:14.8, b:18.2, title:'Arrivée enregistrée', lines:["Un scan à l'arrivée.","L'heure est enregistrée."], d:"Il arrive chez Sophie et scanne son code : l'arrivée est horodatée." },
+    { a:18.2, b:21.6, title:'Départ enregistré', lines:['Un scan au départ.','La durée fait foi.'], d:'Fin de mission, second scan : la durée réelle est enregistrée.' },
+    { a:21.6, b:26.0, title:'Avis, pourboire, facture', lines:['Avis, pourboire, facture.','Zéro paperasse.'], d:'Cinq étoiles, 15 € de pourboire, facture de 110 € générée automatiquement.' },
+    { a:26.0, b:30,   title:'Signature', lines:null, d:"Logo ping, « Et si ce que vous cherchez était juste à côté ? », QR vers l'inscription." }
   ];
 
   // ---------- décor procédural (graine fixe : même image à chaque lecture) ----------

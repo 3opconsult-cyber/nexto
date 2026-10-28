@@ -59,7 +59,7 @@ export default function MissionQrCodes() {
               {step === 1 ? "Montrez ce QR au prestataire" : "QR de fin de prestation"}
             </div>
             <p className="ping-sub" style={{ textAlign: 'center', maxWidth: '30ch' }}>
-              Étape {step} sur 2 — {step === 1 ? "enregistre l'heure d'arrivée. Le paiement reste sous séquestre." : "libère le paiement une fois la prestation faite."}
+              Étape {step} sur 2 — {step === 1 ? "enregistre l'heure d'arrivée." : "enregistre l'heure de fin et déclenche la facture."}
             </p>
 
             <div className="ping-qr">
@@ -90,7 +90,7 @@ export default function MissionQrCodes() {
               <div style={{ marginTop: 18, width: '100%', background: '#F3F6F5', borderRadius: 14, padding: 14, textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Vous ne serez pas sur place ?</div>
                 <p style={{ fontSize: 11.5, color: '#6E8592', margin: '5px 0 11px', lineHeight: 1.5 }}>
-                  Envoyez le code d'arrivée au prestataire : il validera son arrivée en scannant à votre domicile. Le paiement reste sous séquestre — en cas de souci, ouvrez un litige.
+                  Envoyez le code d'arrivée au prestataire : il validera son arrivée en scannant à votre domicile. En cas de souci, ouvrez un litige depuis la conversation.
                 </p>
                 <button onClick={() => shareArrival(arrivalUrl)} disabled={shared} style={{
                   width: '100%', border: 'none', borderRadius: 999, padding: '10px 0', cursor: shared ? 'default' : 'pointer',
