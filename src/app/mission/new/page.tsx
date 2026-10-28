@@ -7,6 +7,7 @@ import { getRates, DEFAULT_BUYER_RATE, DEFAULT_SELLER_RATE } from '@/lib/pricing
 import PaymentPendingModal from '@/components/PaymentPendingModal'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
+import { fetchSlots, dayKey, dayLabel, hhmm, type Slot } from '@/lib/slots'
 
 function MissionForm() {
   const router = useRouter()
@@ -21,6 +22,10 @@ function MissionForm() {
   const [mode, setMode] = useState<'forfait' | 'horaire' | null>(null)
   const [error, setError] = useState('')
   const [confirming, setConfirming] = useState(false)
+  // Créneaux publiés par le pro (migration 012). null = fonctionnalité pas encore en base.
+  const [slots, setSlots] = useState<Slot[] | null>(null)
+  const [slotDay, setSlotDay] = useState<string | null>(null)
+  const [slotId, setSlotId] = useState<string | null>(null)
   // Taux pilotés depuis l'admin (app_settings) — valeurs par défaut le temps
   // du chargement, jamais utilisées pour le calcul final (submit() relit
   // getRates(), qui a déjà mis le cache à jour à ce moment-là).
@@ -36,7 +41,17 @@ function MissionForm() {
     if (!proId) return
     createClient().from('provider_profiles').select('*').eq('id', proId).single()
       .then(({ data }) => { setPro(data) })
+    fetchSlots(createClient(), proId, 21).then(list => {
+      const free = list ? list.filter(x => !x.transaction_id) : null
+      setSlots(free)
+      if (free?.length) setSlotDay(dayKey(free[0].starts_at))
+    })
   }, [proId])
+
+  const slotDays = slots ? Array.from(new Set(slots.map(x => dayKey(x.starts_at)))) : []
+  const daySlots = slots && slotDay ? slots.filter(x => dayKey(x.starts_at) === slotDay) : []
+  const chosen = slots?.find(x => x.id === slotId) || null
+  const needsSlot = !!slots && slots.length > 0
 
   useEffect(() => {
     if (!serviceId) { setArticle(null); return }
@@ -71,12 +86,22 @@ function MissionForm() {
 
   async function submit() {
     if (!address.trim()) { setError('Indique une adresse.'); return }
+    if (needsSlot && !chosen) { setError('Choisissez un créneau.'); return }
     if (!pro || !mode) return
     setError('')
     setCreating(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
+
+    if (chosen) {
+      const { data: still } = await supabase.from('provider_slots').select('id').eq('id', chosen.id).is('transaction_id', null).maybeSingle()
+      if (!still) {
+        setError("Ce créneau vient d'être réservé. Choisissez-en un autre.")
+        setSlots(prev => prev ? prev.filter(x => x.id !== chosen.id) : prev); setSlotId(null); setCreating(false)
+        return
+      }
+    }
 
     const { data: req, error: reqErr } = await supabase.from('requests').insert({
       // description est NOT NULL en base : le champ est facultatif a l'ecran,
@@ -114,9 +139,16 @@ function MissionForm() {
       ? `${(pricing.base_price_cents / 100).toFixed(0)} € (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}, puis ${(pricing.hourly_rate_cents / 100).toFixed(0)} €/h au-delà)`
       : mode === 'horaire' ? `${(pricing.hourly_rate_cents / 100).toFixed(0)} €/h`
         : `${(pricing.base_price_cents / 100).toFixed(0)} €`
+    let when = ''
+    if (chosen) {
+      const { error: slotErr } = await supabase.rpc('book_slot', { p_slot: chosen.id, p_transaction: tx.id })
+      when = slotErr
+        ? ' · créneau à convenir dans la conversation (celui choisi vient d\'être pris)'
+        : ` · ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}`
+    }
     await supabase.from('messages').insert({
       transaction_id: tx.id, sender_id: null,
-      body: `✓ Réservation confirmée — ${label} · ${priceLabel} · ${address.trim()}`,
+      body: `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
     })
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
@@ -179,6 +211,39 @@ function MissionForm() {
           </label>
         )}
 
+        {needsSlot && (
+          <div style={{ marginBottom: 18 }}>
+            <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Choisir un créneau</span>
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', margin: '8px 0 10px', paddingBottom: 2 }}>
+              {slotDays.map(k => {
+                const first = slots!.find(x => dayKey(x.starts_at) === k)!.starts_at
+                const on = k === slotDay
+                return (
+                  <button key={k} onClick={() => { setSlotDay(k); setSlotId(null) }} style={{
+                    flexShrink: 0, width: 58, padding: '8px 0', borderRadius: 13, cursor: 'pointer',
+                    border: on ? '2px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? '#12B39C' : '#fff', color: on ? '#fff' : '#123644',
+                  }}>
+                    <div style={{ fontSize: 10.5, opacity: .8 }}>{dayLabel(first, { weekday: 'short' })}</div>
+                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17 }}>{dayLabel(first, { day: 'numeric' })}</div>
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+              {daySlots.map(x => {
+                const on = x.id === slotId
+                return (
+                  <button key={x.id} onClick={() => setSlotId(x.id)} style={{
+                    padding: '11px 0', borderRadius: 11, cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                    border: on ? '2px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? '#12B39C' : '#fff', color: on ? '#fff' : '#123644',
+                  }}>{hhmm(x.starts_at)}</button>
+                )
+              })}
+            </div>
+            <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8 }}>Disponibilités publiées par le prestataire.</div>
+          </div>
+        )}
+
         {/* Prix tout compris, façon Airbnb/Booking : un seul montant à l'écran,
             pas une addition qui s'allonge sous les yeux du client — le détail
             reste disponible (facture, mission/[id]/facture) sans être imposé
@@ -208,7 +273,7 @@ function MissionForm() {
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
         <button onClick={() => setConfirming(true)} disabled={!pro || !mode || creating} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
-          {creating ? 'Confirmation…' : 'Confirmer la réservation'}
+          {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
         <p style={{ fontSize: 11, color: '#9CA3AF', textAlign: 'center', marginTop: 10 }}>
           Vous verrez le détail avant de confirmer.

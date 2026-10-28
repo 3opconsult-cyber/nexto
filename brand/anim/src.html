@@ -237,15 +237,19 @@
             <text id="quote" x="125" y="200" text-anchor="middle" font-family="Inter" font-style="italic" font-size="12.5" fill="#6E8592">« Impeccable, merci ! »</text>
             <g id="tip" transform="translate(125,240)">
               <rect x="-92" y="-21" width="184" height="42" rx="21" fill="#DDF5F0"/>
-              <text y="6" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="17" fill="#0C8F7E">+15 € de pourboire</text>
+              <text y="6" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="17" fill="#0C8F7E">+10 € de pourboire</text>
             </g>
             <g id="total" transform="translate(125,330)">
               <rect x="-100" y="-46" width="200" height="92" rx="18" fill="#fff" stroke="#E2ECEA" stroke-width="1.5"/>
               <text y="-18" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#6E8592">Facture générée automatiquement</text>
               <text id="totalVal" y="20" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="32" fill="#123644">60,00 €</text>
             </g>
-            <g id="coins"></g>
           </g>
+        </g>
+
+        <g id="who" opacity="0">
+          <rect x="178" y="196" width="184" height="30" rx="15" fill="#fff"/>
+          <text id="whoTx" x="270" y="216" text-anchor="middle" font-family="Inter" font-weight="600" font-size="13" fill="#123644">Téléphone de Marc</text>
         </g>
 
         <!-- légende -->
@@ -324,12 +328,12 @@
   function win(t,a,b,f){ f = f||.35; return Math.min(seg(t,a,a+f), 1-seg(t,b-f,b)); }
 
   var SCENES = [
-    { a:0,    b:4.6,  title:'Marc, dans votre quartier', lines:['Marc fait le ménage','dans votre quartier.'], d:"Marc, prestataire PING, se déplace dans une rue de la Côte d'Azur entre deux interventions." },
-    { a:4.6,  b:9.2,  title:"L'écho PING", lines:['Disponible ? PING le rend','visible autour de lui.'], d:"Le point du logo s'allume au-dessus de lui et rayonne comme un sonar : il apparaît sur la carte." },
-    { a:9.2,  b:13.9, title:'Les demandes arrivent', lines:['Juste à côté,','les demandes arrivent.'], d:"Les voisins touchés par l'écho le voient et lui écrivent : « croisée à 120 m »." },
+    { a:0,    b:4.6,  title:'La question', lines:['Un ménage, un repassage ?','La solution est à côté.'], d:"Marc, prestataire PING, se déplace dans une rue de la Côte d'Azur entre deux interventions." },
+    { a:4.6,  b:9.2,  title:"L'écho PING", lines:['Marc est disponible :','PING le rend visible.'], d:"Le point du logo s'allume au-dessus de lui et rayonne comme un sonar : il apparaît sur la carte." },
+    { a:9.2,  b:13.9, title:'Les demandes arrivent', lines:['Juste à côté,','les demandes arrivent.'], d:"Les demandes publiées autour de lui apparaissent, avec la distance." },
     { a:13.9, b:18.2, title:'Arrivée enregistrée', lines:["Un scan à l'arrivée.","L'heure est enregistrée."], d:"Il arrive chez Sophie et scanne son code : l'arrivée est horodatée." },
     { a:18.2, b:21.6, title:'Départ enregistré', lines:['Un scan au départ.','La durée fait foi.'], d:'Fin de mission, second scan : la durée réelle est enregistrée.' },
-    { a:21.6, b:26.0, title:'Avis, pourboire, facture', lines:['Avis, pourboire, facture.','Zéro paperasse.'], d:'Cinq étoiles, 15 € de pourboire, facture de 60 € générée automatiquement.' },
+    { a:21.6, b:26.0, title:'Avis, pourboire, facture', lines:['Avis, pourboire, facture.','Zéro paperasse.'], d:'Cinq étoiles, 10 € de pourboire, facture de 60 € générée automatiquement.' },
     { a:26.0, b:30,   title:'Signature', lines:null, d:"Logo ping, « Et si ce que vous cherchez était juste à côté ? », QR vers l'inscription." }
   ];
 
@@ -425,9 +429,9 @@
 
   // ---------- notifications ----------
   var NOTIFS = [
-    {t:9.9,  y:192, i:'S', c:'#12B39C', h:'Sophie, croisée à 120 m', m:'Ménage demain matin, dispo ?'},
-    {t:10.9, y:284, i:'P', c:'#F2A93B', h:'Paul, croisé à 300 m',   m:'Repassage ce soir, possible ?'},
-    {t:11.9, y:376, i:'',  c:'#123644', h:'Nouvelle demande à 450 m', m:'Nettoyage de vitres, 3 pièces'}
+    {t:9.9,  y:192, i:'S', c:'#12B39C', h:'Nouvelle demande à 120 m', m:'Sophie · ménage demain matin'},
+    {t:10.9, y:284, i:'P', c:'#F2A93B', h:'Nouvelle demande à 300 m', m:'Paul · repassage ce soir'},
+    {t:11.9, y:376, i:'',  c:'#123644', h:'Nouvelle demande à 450 m', m:'Léa · nettoyage de vitres'}
   ];
   NOTIFS.forEach(function(n){
     n.g = el('g', {}, $('notifs'));
@@ -437,7 +441,7 @@
     else { el('path', {d:'M72 54 C68 48 61 43 61 36 a11 11 0 1 1 22 0 c0 7 -7 12 -11 18z', fill:'#fff'}, n.g); el('circle', {cx:72, cy:36, r:4, fill:'#2FD06E'}, n.g); }
     var h = el('text', {x:106, y:35, 'font-family':'Inter', 'font-weight':600, 'font-size':15.5, fill:'#123644'}, n.g); h.textContent = n.h;
     var m = el('text', {x:106, y:58, 'font-family':'Inter', 'font-size':14, fill:'#5C7582'}, n.g); m.textContent = n.m;
-    var k = el('text', {x:494, y:30, 'text-anchor':'end', 'font-family':'Inter', 'font-size':11, fill:'#9CA3AF'}, n.g); k.textContent = 'maintenant';
+    var k = el('text', {x:494, y:30, 'text-anchor':'end', 'font-family':'Inter', 'font-size':11, fill:'#9CA3AF'}, n.g); k.textContent = 'il y a 1 min';
   });
 
   // ---------- étoiles, pièces ----------
@@ -447,14 +451,6 @@
     var sg = el('g', {transform:'translate('+(65+s*30)+',162)'}, $('stars'));
     el('path', {d:STAR, fill:'#E2ECEA'}, sg);
     stars.push(el('path', {d:STAR, fill:'#F2A93B'}, sg));
-  }
-  var coins = [];
-  for (var c=0; c<3; c++){
-    var cg = el('g', {}, $('coins'));
-    el('ellipse', {rx:15, ry:6, fill:'#D8902A'}, cg);
-    el('rect', {x:-15, y:-6, width:30, height:6, fill:'#D8902A'}, cg);
-    el('ellipse', {cy:-6, rx:15, ry:6, fill:'#F2B84B'}, cg);
-    coins.push(cg);
   }
 
   // ---------- légende ----------
@@ -548,6 +544,7 @@
     show($('dim'), 0.62 * seg(t, 15.0, 15.6) * (1 - seg(t, 26.0, 26.4)));
     var py = 980 - (980-238)*eout(seg(t, 15.3, 15.95));
     tr($('phone'), 'translate(145,'+py.toFixed(1)+')');
+    show($('who'), eout(seg(t, 15.5, 15.95)) * (1 - seg(t, 25.8, 26.1))); $('whoTx').textContent = 'Téléphone de Marc';
     var scanA = win(t, 15.6, 17.15, .2), okA = win(t, 17.0, 18.35, .2), clk = win(t, 18.2, 19.55, .2), scanB = win(t, 19.4, 20.55, .2), okB = win(t, 20.4, 21.75, .2), rate = seg(t, 21.6, 21.85);
     show($('scan'), Math.max(scanA, scanB));
     var sl = t < 18 ? seg(t, 15.9, 17.0) : seg(t, 19.55, 20.4);
@@ -567,11 +564,6 @@
     show($('quote'), seg(t, 23.0, 23.3));
     var tk = back(seg(t, 23.3, 23.7)); tr($('tip'), 'translate(125,240) scale('+tk.toFixed(3)+')');
     var tt = back(seg(t, 23.9, 24.3)); tr($('total'), 'translate(125,330) scale('+tt.toFixed(3)+')');
-    coins.forEach(function(cg, i){
-      var k = eout(seg(t, 24.4 + i*0.18, 24.7 + i*0.18));
-      tr(cg, 'translate(125,'+(436 - i*9 - 22*(1-k)).toFixed(1)+')');
-      show(cg, k);
-    });
 
     // légende
     var cur = null, co = 0;
@@ -631,6 +623,7 @@
     show($('dim2'), 0.62 * up);
     tr($('phone2'), 'translate(145,'+(980 - (980-238)*up).toFixed(1)+')');
     if (!on) return;
+    show($('who'), up); $('whoTx').textContent = k < 5.95 ? 'Téléphone de Sophie' : 'Téléphone de Marc';
     var chat = 1 - seg(k, 2.95, 3.2), book = Math.min(seg(k, 2.95, 3.2), 1 - seg(k, 5.95, 6.2)), agen = seg(k, 5.95, 6.2);
     show($('sChat'), chat); show($('sBook'), book); show($('sAgenda'), agen);
     // chat

@@ -26,6 +26,7 @@ const PRO_NAV: [string, string][] = [
   ['Demandes autour de moi', '/pro/carte'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
+  ['Mes disponibilités', '/pro/disponibilites'],
   ['Litiges', '/litiges'],
   ['Mon entreprise', '/pro/dashboard'],
 ]
@@ -42,6 +43,7 @@ function navIcon(label: string) {
   if (l.includes('carte')) return p('M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4')
   if (l.includes('demande')) return p('M4 5h16v14H4z|M8 9h8M8 13h5')
   if (l.includes('message')) return p('M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z')
+  if (l.includes('disponib')) return p('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18|M12 7v5l3.5 2')
   if (l.includes('agenda')) return p('M3 5h18v16H3z|M3 9h18M8 3v4M16 3v4')
   if (l.includes('réclam') || l.includes('litige')) return p('M12 2 2 21h20z|M12 9v5M12 18h.01')
   if (l.includes('entreprise')) return p('M3 21V9l9-6 9 6v12|M9 21v-6h6v6')

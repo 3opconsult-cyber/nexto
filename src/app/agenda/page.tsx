@@ -4,14 +4,17 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
+import { fetchSlots, dayLabel, hhmm, type Slot } from '@/lib/slots'
 
 const UPCOMING = ['pending', 'matched', 'en_route', 'arrived']
 const DONE = ['completed', 'released']
 const WD = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
+// Date du rendez-vous quand elle existe (créneau réservé, migration 012), sinon repli sur la création.
 function txDate(t: any): Date {
-  return new Date(DONE.includes(t.status) ? (t.completed_at || t.created_at) : t.created_at)
+  if (DONE.includes(t.status)) return new Date(t.completed_at || t.scheduled_at || t.created_at)
+  return new Date(t.scheduled_at || t.created_at)
 }
 function eur(c?: number | null) { return c != null ? `${(c / 100).toFixed(2).replace('.', ',')} €` : '' }
 
@@ -21,6 +24,8 @@ export default function AgendaPage() {
   const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [disputes, setDisputes] = useState<any[]>([])
+  const [freeSlots, setFreeSlots] = useState<Slot[] | null>(null)
+  const [isPro, setIsPro] = useState(false)
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
   useEffect(() => {
@@ -33,6 +38,13 @@ export default function AgendaPage() {
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
       setTxs(data ?? [])
+
+      const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
+      if (pp) {
+        setIsPro(true)
+        const list = await fetchSlots(supabase, user.id, 14)
+        setFreeSlots(list ? list.filter(x => !x.transaction_id) : null)
+      }
 
       // Le nom de l'interlocuteur remplace l'adresse comme titre (comme la
       // demo, "Sofia M. · Menage") : l'adresse ne s'affiche jamais ici, meme
@@ -55,6 +67,7 @@ export default function AgendaPage() {
   }, [router])
 
   const upcoming = txs.filter(t => UPCOMING.includes(t.status))
+    .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
   const done = txs.filter(t => DONE.includes(t.status))
 
   const y = month.getFullYear(), m = month.getMonth()
@@ -86,7 +99,12 @@ export default function AgendaPage() {
           {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
         </div>
         <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
-        <div style={{ fontSize: 11, color: '#9aa6a3', marginTop: 3 }}>{txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}</div>
+        <div style={{ fontSize: 11, color: t.scheduled_at && !DONE.includes(t.status) ? '#0C8F7E' : '#9aa6a3', fontWeight: t.scheduled_at && !DONE.includes(t.status) ? 700 : 400, marginTop: 3 }}>
+          {t.scheduled_at && !DONE.includes(t.status)
+            ? `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`
+            : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+          {t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}
+        </div>
       </div>
       <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, flexShrink: 0, background: badge(t).bg, color: badge(t).fg }}>
         {badge(t).label}
@@ -150,6 +168,23 @@ export default function AgendaPage() {
           <>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>À venir</div>
             {upcoming.length ? upcoming.map(card) : <p style={{ fontSize: 12.5, color: '#9aa6a3', marginBottom: 20 }}>Rien de prévu pour l&apos;instant.</p>}
+
+            {isPro && freeSlots !== null && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'baseline', margin: '22px 0 10px' }}>
+                  <div style={{ flex: 1, fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em' }}>Mes créneaux libres</div>
+                  <span onClick={() => router.push('/pro/disponibilites')} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer' }}>Gérer</span>
+                </div>
+                {freeSlots.length ? freeSlots.slice(0, 6).map(x => (
+                  <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px dashed #B8C9C5', borderRadius: 13, padding: '10px 14px', marginBottom: 8 }}>
+                    <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, color: '#6E8592', width: 46 }}>{hhmm(x.starts_at)}</b>
+                    <span style={{ fontSize: 12, color: '#9aa6a3' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
+                  </div>
+                )) : (
+                  <p onClick={() => router.push('/pro/disponibilites')} style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600, cursor: 'pointer' }}>Publiez vos disponibilités pour être réservé en un clic.</p>
+                )}
+              </>
+            )}
 
             <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '22px 0 10px' }}>Effectuées</div>
             {done.length ? done.map(card) : <p style={{ fontSize: 12.5, color: '#9aa6a3' }}>Aucune prestation terminée pour l&apos;instant.</p>}

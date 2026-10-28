@@ -33,7 +33,7 @@ design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand
   **persisté en `localStorage('ping_mode')`**. Seul `/pro/(carte|dashboard|documents|onboarding)`
   force le mode pro ; seul `/client/profil` force le particulier ; le reste respecte le mode courant.
 - `src/components/NavDrawer.tsx` : drawer mobile (même logique).
-- Menu pro (dédupliqué) : Demandes autour de moi (/pro/carte) · Messages · Agenda · Litiges ·
+- Menu pro (dédupliqué) : Demandes autour de moi (/pro/carte) · Messages · Agenda · Mes disponibilités (/pro/disponibilites) · Litiges ·
   Mon entreprise (/pro/dashboard) — puis Mes opérations (/documents) · Mes pièces (/pro/documents) ·
   Mon parrainage (/client/parrainage) · Support PING.
 - Menu client : Carte (/map) · Mes demandes (/client/demandes) · Messages · Agenda ·
@@ -338,6 +338,17 @@ Parité ou mieux : carte, recherche, chat/devis, QR, factures, avis, messages, r
   distinct du litige.
 - **Vague 3, décisions Romain en attente** : créneaux réservables (`v_booking`, table `provider_slots`) ;
   règle « sans réponse sous 48 h la demande du client s'applique » (auto ou décision admin) ; avoir.
+**Construit le 28/10 (demande Romain « complète l'app de ce qui manque ») :**
+- Sans schéma, en prod : bandeau « Intervention en cours » (DepartureBar), durée sur place +
+  « Signaler avant de valider » à l'étape QR 2 (ouvre `chat?signaler`), avis (`chat?avis`) et facture
+  en fin de QR ; agenda : litige en tête, statuts, terminée → facture.
+- **Réservation par créneau** : migration `supabase/migrations/012_creneaux_et_heure_de_rdv.sql`
+  (`transactions.scheduled_at`, table `provider_slots`, RPC `book_slot` atomique, trigger qui libère
+  le créneau à l'annulation). **PAS ENCORE APPLIQUÉE** (Supabase déconnecté) : tant qu'elle ne l'est pas,
+  `fetchSlots()` (`src/lib/slots.ts`) renvoie `null` et les écrans masquent les créneaux. Code prêt :
+  `/pro/disponibilites` (le pro publie ses créneaux, répétition hebdo), grille de créneaux dans
+  `mission/new` (+ `book_slot` après création de la transaction), agenda trié par `scheduled_at`
+  avec heure + « Mes créneaux libres » côté pro. À tester en réel juste après application.
 Corrigé pendant l'audit : `/mission/[id]/qrcodes` promettait « séquestre / libère le paiement » ;
 message système litige sans « ⚠ ».
 
