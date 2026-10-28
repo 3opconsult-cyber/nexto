@@ -1,9 +1,9 @@
-"""Animation explicative 30 s : src.html -> public/animation.html (servi sur /animation).
+"""Animation explicative 25 s : src.html -> public/animation.html (servi sur /animation).
 
 Vidéo : `python3 brand/anim/build.py` puis
 `node brand/anim/record.js $PWD/public/animation.html` (dans brand/anim, écrit frames/)
 et `ffmpeg -framerate 30 -i frames/%04d.png -c:v libx264 -pix_fmt yuv420p -crf 18
-public/brand/files/ping-animation-30s.mp4`. Le QR de fin pointe vers /l/vid."""
+public/brand/files/ping-animation-25s.mp4`. Le QR de fin pointe vers /l/vid."""
 import base64
 import pathlib
 

@@ -6,7 +6,7 @@ const fs = require('fs');
   await p.goto('file://' + process.argv[2] + '#record');
   await p.waitForFunction(() => window.PING_ANIM && window.PING_ANIM.ready);
   fs.mkdirSync('frames', { recursive: true });
-  const FPS = 30, N = 30 * FPS;
+  const FPS = 30, N = Math.floor(await p.evaluate(() => window.PING_ANIM.duration) * FPS);
   const svg = p.locator('#svg');
   for (let i = 0; i < N; i++) {
     await p.evaluate(x => window.PING_ANIM.seek(x), i / FPS);

@@ -1,5 +1,5 @@
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>PING en 30 secondes</title>
+<title>PING en 25 secondes</title>
 <style>
 %%FONTS%%
   /* Lecteur sombre : la scène 9:16 à gauche, le scénario à droite (empilé sur mobile). */
@@ -214,18 +214,22 @@
   </div>
 
   <aside class="side">
-    <div class="eyebrow">Animation explicative · 30 s · 9:16</div>
+    <div class="eyebrow">Animation explicative · 25 s · 9:16</div>
     <h1>Le parcours d'une mission PING</h1>
     <p class="lead">Format vertical pour TikTok, Reels et Stories, lisible sans le son. Un clic sur une scène pour y aller directement.</p>
     <ol class="scenes" id="scenes"></ol>
     <p class="foot">Tout est dessiné en vecteur aux couleurs PING, sans photo ni vidéo filmée. Le logo de fin reprend l'écho radar de la marque. Le QR final pointe vers /l/vid, ce qui permet de mesurer le trafic venu de cette vidéo.</p>
-    <p class="foot"><a href="/brand/files/ping-animation-30s.mp4" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">Fichier vidéo MP4 · 1080 × 1920 · 30 s</a> — à publier tel quel sur TikTok, Reels ou Stories.</p>
+    <p class="foot"><a href="/brand/files/ping-animation-25s.mp4" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600;">Fichier vidéo MP4 · 1080 × 1920 · 25 s</a> — à publier tel quel sur TikTok, Reels ou Stories.</p>
   </aside>
 </div>
 
 <script>
 (function(){
-  var DUR = 30;
+  // Scénario écrit sur 30 s ; joué en 24,8 s : tout jusqu'à la signature en accéléré x1,25,
+  // la signature (logo + QR) à vitesse normale pour laisser le temps de scanner.
+  var DUR = 30, FAST = 1.25, SIGN = 26, REAL = SIGN/FAST + (DUR - SIGN);
+  function inner(x){ return x < SIGN/FAST ? x*FAST : SIGN + (x - SIGN/FAST); }
+  function outer(T){ return T < SIGN ? T/FAST : SIGN/FAST + (T - SIGN); }
   var NS = 'http://www.w3.org/2000/svg';
   var $ = function(id){ return document.getElementById(id); };
   function el(tag, attrs, parent){ var n = document.createElementNS(NS, tag); for (var k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; }
@@ -516,33 +520,35 @@
   SCENES.forEach(function(S, i){
     var li = document.createElement('li'), b = document.createElement('button');
     b.type = 'button';
-    b.innerHTML = '<span class="tc">'+S.a.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
+    b.innerHTML = '<span class="tc">'+outer(S.a).toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
     b.querySelector('b').textContent = (i+1)+'. '+S.title; b.querySelector('.d').textContent = S.d;
-    b.addEventListener('click', function(){ seek(S.a + 0.01); playing = true; sync(); });
+    b.addEventListener('click', function(){ seek(outer(S.a) + 0.01); playing = true; sync(); });
     li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
   });
 
   var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
   var rec = location.hash === '#record';
   if (rec) { document.body.classList.add('rec'); playing = false; }
-  function seek(x){ t = clamp(x, 0, DUR); paint(); }
+  function seek(x){ t = clamp(x, 0, REAL); paint(); }
   function paint(){
-    render(t);
+    render(inner(t));
     $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
-    sceneBtns.forEach(function(b, i){ var S = SCENES[i]; b.classList.toggle('on', t >= S.a && t < S.b); });
+    var T = inner(t);
+    sceneBtns.forEach(function(b, i){ var S = SCENES[i]; b.classList.toggle('on', T >= S.a && T < S.b); });
   }
   function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
   function loop(now){
-    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= DUR) t = 0; } paint(); }
+    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= REAL) t = 0; } paint(); }
     last = now; requestAnimationFrame(loop);
   }
   $('play').addEventListener('click', function(){ playing = !playing; sync(); });
   $('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
   $('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
 
-  window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); } };
+  $('scrub').max = REAL;
+  window.PING_ANIM = { duration: REAL, seek: function(x){ seek(x); } };
   var start = function(){ buildWord(); paint(); sync(); if (!rec) requestAnimationFrame(loop); window.PING_ANIM.ready = true; };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
-  if (!playing && !rec) seek(9.6);
+  if (!playing && !rec) seek(outer(9.6));
 })();
 </script>
