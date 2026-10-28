@@ -20,6 +20,7 @@ export default function AgendaPage() {
   const [txs, setTxs] = useState<any[]>([])
   const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [disputes, setDisputes] = useState<any[]>([])
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
   useEffect(() => {
@@ -41,6 +42,12 @@ export default function AgendaPage() {
         const map: Record<string, string> = {}
         ;(rows ?? []).forEach((r: any) => { if (r.full_name) map[r.transaction_id] = r.full_name })
         setNames(map)
+        const { data: ds } = await supabase.from('disputes')
+          .select('id, transaction_id, reason, status, created_at')
+          .in('transaction_id', data.map((t: any) => t.id))
+          .in('status', ['open', 'investigating'])
+          .order('created_at', { ascending: false })
+        setDisputes(ds ?? [])
       }
       setLoading(false)
     }
@@ -62,8 +69,17 @@ export default function AgendaPage() {
   const daysInMonth = new Date(y, m + 1, 0).getDate()
   const cells: (number | null)[] = [...Array(startWd).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
 
+  // Comme la démo (v_agenda) : un statut qui dit où en est la mission, pas juste « à venir ».
+  function badge(t: any): { label: string; bg: string; fg: string } {
+    if (DONE.includes(t.status)) return { label: 'Effectuée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
+    if (t.status === 'arrived') return { label: 'En cours', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
+    if (t.en_route_at) return { label: 'En route', bg: 'rgba(47,208,110,.15)', fg: '#1a8f4c' }
+    if (t.price_confirmed) return { label: 'Confirmé', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
+    return { label: 'Tarif à valider', bg: '#FFF7ED', fg: '#8a6520' }
+  }
+
   const card = (t: any) => (
-    <div key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
+    <div key={t.id} onClick={() => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)}
       style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
@@ -72,8 +88,8 @@ export default function AgendaPage() {
         <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
         <div style={{ fontSize: 11, color: '#9aa6a3', marginTop: 3 }}>{txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}</div>
       </div>
-      <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, flexShrink: 0, background: DONE.includes(t.status) ? 'rgba(18,179,156,.12)' : '#FFF7ED', color: DONE.includes(t.status) ? '#0C8F7E' : '#8a6520' }}>
-        {DONE.includes(t.status) ? 'Effectuée' : t.status === 'arrived' ? 'En cours' : 'À venir'}
+      <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, flexShrink: 0, background: badge(t).bg, color: badge(t).fg }}>
+        {badge(t).label}
       </span>
     </div>
   )
@@ -86,6 +102,24 @@ export default function AgendaPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
+        {disputes.map(d => (
+          <div key={d.id} onClick={() => router.push(`/mission/${d.transaction_id}/chat`)}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 11, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
+                Litige en cours{names[d.transaction_id] ? ` · ${names[d.transaction_id]}` : ''}
+              </div>
+              <div style={{ fontSize: 11.5, color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {d.status === 'investigating' ? 'En cours d\'examen par PING' : 'Ouvert le ' + new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{d.reason ? ` · ${d.reason}` : ''}
+              </div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
+          </div>
+        ))}
+
         {/* Calendrier */}
         <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 18, padding: 16, marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
