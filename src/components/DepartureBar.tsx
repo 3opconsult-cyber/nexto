@@ -50,14 +50,15 @@ export default function DepartureBar({
 
   const isSeller = userId === tx.seller_id
   const enRoute = !!tx.en_route_at && !tx.arrived_at
+  const inProgress = !!tx.arrived_at && !tx.completed_at
   const bookable = !!confirmed && !tx.en_route_at && !tx.arrived_at
 
   // Le compte à rebours n'a besoin de battre que pendant l'approche.
   useEffect(() => {
-    if (!enRoute) return
-    const id = setInterval(() => setNow(Date.now()), 1000)
+    if (!enRoute && !inProgress) return
+    const id = setInterval(() => setNow(Date.now()), enRoute ? 1000 : 30000)
     return () => clearInterval(id)
-  }, [enRoute])
+  }, [enRoute, inProgress])
 
   async function declareDeparture() {
     setBusy(true)
@@ -141,6 +142,25 @@ export default function DepartureBar({
           </div>
         </Modal>
       </>
+    )
+  }
+
+  // ---------- pendant l'intervention : les deux côtés voient le temps qui court depuis le scan ----------
+  if (inProgress) {
+    const mins = Math.max(0, Math.floor((now - new Date(tx.arrived_at).getTime()) / 60000))
+    const h = Math.floor(mins / 60), m = mins % 60
+    const since = new Date(tx.arrived_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    return (
+      <div style={{ padding: '13px 16px', background: '#123644', color: '#fff', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2FD06E', flexShrink: 0 }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Intervention en cours</div>
+          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.6)', marginTop: 2 }}>Arrivée scannée à {since} · le scan de fin enregistrera la durée réelle.</div>
+        </div>
+        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+          {h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`}
+        </span>
+      </div>
     )
   }
 

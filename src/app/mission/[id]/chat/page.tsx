@@ -60,6 +60,16 @@ export default function ChatPage() {
   const [askReview, setAskReview] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  // Raccourcis depuis l'écran QR : ?signaler ouvre le signalement, ?avis l'avis (client, mission terminée).
+  const shortcutDone = useRef(false)
+  useEffect(() => {
+    if (shortcutDone.current || !tx || !userId) return
+    shortcutDone.current = true
+    const q = new URLSearchParams(window.location.search)
+    if (q.has('signaler')) setReporting(true)
+    if (q.has('avis') && userId === tx.buyer_id && tx.completed_at) setAskReview(true)
+  }, [tx, userId])
+
   useEffect(() => {
     const supabase = createClient()
     async function init() {

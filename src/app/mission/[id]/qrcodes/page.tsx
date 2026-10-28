@@ -9,7 +9,13 @@ export default function MissionQrCodes() {
   const router = useRouter()
   const [tx, setTx] = useState<any>(null)
   const [shared, setShared] = useState(false)
+  const [now, setNow] = useState(() => Date.now())
   const timer = useRef<any>(null)
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000)
+    return () => clearInterval(id)
+  }, [])
 
   async function shareArrival(url: string) {
     const supabase = createClient()
@@ -42,6 +48,8 @@ export default function MissionQrCodes() {
   const completeUrl = `${base}/mission/${tx.id}/scan/complete?token=${tx.qr_complete_token}`
   const step = tx.completed_at ? 3 : tx.arrived_at ? 2 : 1
   const fmt = (d: string) => new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  const onSite = tx.arrived_at ? Math.max(0, Math.round(((tx.completed_at ? new Date(tx.completed_at).getTime() : now) - new Date(tx.arrived_at).getTime()) / 60000)) : 0
+  const dur = `${Math.floor(onSite / 60) ? Math.floor(onSite / 60) + ' h ' : ''}${String(onSite % 60).padStart(Math.floor(onSite / 60) ? 2 : 1, '0')} min`
 
   return (
     <div className="ping-screen">
@@ -73,6 +81,12 @@ export default function MissionQrCodes() {
                   {tx.arrived_at ? `validée · ${fmt(tx.arrived_at)}` : 'en attente de scan'}
                 </span>
               </div>
+              {step === 2 && (
+                <div className="ping-lrow">
+                  <span className="s">Sur place depuis</span>
+                  <span className="v" style={{ color: '#123644', fontVariantNumeric: 'tabular-nums' }}>{dur}</span>
+                </div>
+              )}
               <div className="ping-lrow">
                 <span className="s">Départ</span>
                 <span className="v" style={{ color: tx.completed_at ? 'var(--tealD)' : 'var(--slate)' }}>
@@ -85,6 +99,13 @@ export default function MissionQrCodes() {
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', animation: 'pingPulse 1.4s ease-in-out infinite' }} />
               En attente du scan…
             </div>
+
+            {step === 2 && (
+              <button onClick={() => router.push(`/mission/${tx.id}/chat?signaler`)} style={{
+                marginTop: 16, width: '100%', border: '1.5px solid #F2A93B', background: '#FFF7ED', color: '#8a6520',
+                borderRadius: 999, padding: '11px 0', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+              }}>Un problème ? Signaler avant de valider</button>
+            )}
 
             {step === 1 && (
               <div style={{ marginTop: 18, width: '100%', background: '#F3F6F5', borderRadius: 14, padding: 14, textAlign: 'center' }}>
@@ -109,9 +130,14 @@ export default function MissionQrCodes() {
             </div>
             <div className="ping-h1" style={{ textAlign: 'center' }}>Prestation terminée</div>
             <p className="ping-sub" style={{ textAlign: 'center' }}>
-              Arrivée {fmt(tx.arrived_at)} · départ {fmt(tx.completed_at)}
+              Arrivée {fmt(tx.arrived_at)} · départ {fmt(tx.completed_at)} · durée réelle {dur}
             </p>
-            <button className="ping-btn" style={{ marginTop: 20 }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Retour à la conversation</button>
+            <button className="ping-btn" style={{ marginTop: 20 }} onClick={() => router.push(`/mission/${tx.id}/chat?avis`)}>Laisser un avis</button>
+            <button onClick={() => router.push(`/mission/${tx.id}/facture`)} style={{
+              marginTop: 10, width: '100%', border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644',
+              borderRadius: 999, padding: '12px 0', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+            }}>Voir la facture</button>
+            <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ marginTop: 10, border: 'none', background: 'none', color: '#6E8592', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Retour à la conversation</button>
           </>
         )}
       </div>
