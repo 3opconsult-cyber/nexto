@@ -764,10 +764,10 @@ textarea.minput{min-height:120px;resize:vertical}
           <div class="kpi"><div class="l">Profit net commissions (mois)</div><div class="v">9 730 €</div><div class="d up">après frais PSP estimés</div></div>
         </div>
         <div class="card mt"><h3>Brique de paiement &amp; séquestre <span class="muted">agnostique · remplaçable</span></h3>
-          <div class="qrow"><div class="m"><b>Connecteur</b><small>Stripe Connect (comptes connectés) · modèle application fee / separate charges &amp; transfers</small></div><span class="tag wait">À câbler</span></div>
-          <div class="qrow"><div class="m"><b>Fournisseur interchangeable</b><small>Mangopay, Lemonway, Stancer… un seul connecteur à remplacer</small></div><span class="tag ink">Agnostique</span></div>
+          <div class="qrow"><div class="m"><b>Connecteur</b><small>Stripe Connect, Mangopay et Lemonway codés · choix par la variable PAYMENT_PROVIDER · éteint tant que les clés manquent</small></div><span class="tag wait">Prêt, à brancher</span></div>
+          <div class="qrow"><div class="m"><b>Séquestre — vue OpConsult</b><small>Argent bloqué, versements et remboursements : seul PING décide</small></div><a class="link" style="text-decoration:none" href="/admin/paiements" target="_blank" rel="noopener">Ouvrir</a></div>
           <div class="qrow"><div class="m"><b>Séquestre</b><small>Fonds bloqués chez le PSP — jamais sur un compte PING</small></div><span class="tag ok">Modèle validé</span></div>
-          <div class="qrow"><div class="m"><b>Libération automatique</b><small>T+12/24 h sans litige → versement auto au pro (− commission PING)</small></div><span class="tag wait">À câbler</span></div>
+          <div class="qrow"><div class="m"><b>Libération automatique</b><small>24 h après le scan de fin sans litige → versement au pro (− commission PING) · ou mode manuel (PAYMENT_RELEASE_MODE=manuel)</small></div><span class="tag wait">Prêt, à brancher</span></div>
           <div class="qrow"><div class="m"><b>Données bancaires</b><small>Jamais stockées par PING — tokenisation PSP (PCI-DSS)</small></div><span class="tag ok">Conforme</span></div>
           <div class="lawbox" style="margin-top:12px">Le client ne peut pas faire opposition sans justificatif valable (photo + requête) dans la fenêtre. En cas de vol/casse/dégradation prouvée, PING transmet les coordonnées de l'assurance RC du pro — <b>PING n'indemnise pas</b> et ne se substitue pas à l'assurance.</div>
         </div>

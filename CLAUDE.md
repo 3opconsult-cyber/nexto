@@ -397,6 +397,12 @@ Tout en REST via fetch, sans SDK. Noms de champs Mangopay/Lemonway à recontrôl
   avant versement) → cron quotidien `/api/payments/release` (vercel.json) verse au pro 24 h après la fin si
   aucun litige `open`/`investigating`. Annulation dans le chat → `/api/payments/refund` (frais d'annulation
   tardive versés au pro). Admin : `POST /api/payments/release {transactionId, immediat}` et refund partiel.
+- **Antifraude (Romain 29/10 : « le séquestre ne peut être libéré que par PING/OpConsult »)** : versement
+  uniquement par le serveur (cron, règle 24 h sans litige) ou un admin sur `/admin/paiements` ;
+  `PAYMENT_RELEASE_MODE=manuel` coupe le versement automatique. Remboursement par une partie : seulement
+  l'annulation AVANT « en route » (100 % au client) ; annulation tardive, geste, litige = admin. Un
+  encaissement dont le montant reçu ≠ montant demandé est marqué `failed` + alerte. En base (trigger) :
+  montants figés, `en_route_at` posé par le pro seul et jamais effacé, pas d'annulation après l'arrivée.
 - Pro : `/pro/paiements` (lien depuis `/pro/revenus`) : Stripe = page hébergée ; Mangopay/Lemonway = IBAN
   saisi chez PING mais transmis au PSP, jamais stocké ; pièces « identite »/« kbis » de Mes pièces envoyées.
 - **`transactions.status` n'est jamais touché** : l'argent a sa colonne `payment_status` (none, awaiting,

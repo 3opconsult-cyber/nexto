@@ -75,20 +75,33 @@ begin
     if new.payment_status <> 'none' or new.payment_provider is not null then
       raise exception 'Statut de paiement réservé au serveur';
     end if;
-  elsif new.payment_status is distinct from old.payment_status
+    return new;
+  end if;
+  if new.payment_status is distinct from old.payment_status
      or new.payment_provider is distinct from old.payment_provider then
     raise exception 'Statut de paiement réservé au serveur';
-  -- Une fois un paiement engagé, les montants sont figés (sinon un client pourrait baisser le total
-  -- et se faire rembourser la différence au déblocage). Seule exception : le scan de fin par le
-  -- prestataire, qui calcule le dépassement horaire (le client paie alors un complément).
-  elsif old.payment_status <> 'none' and (
-        new.total_charged_cents is distinct from old.total_charged_cents
-     or new.payout_cents is distinct from old.payout_cents
-     or new.subtotal_cents is distinct from old.subtotal_cents
-     or new.buyer_fee_cents is distinct from old.buyer_fee_cents
-     or new.seller_fee_cents is distinct from old.seller_fee_cents)
+  end if;
+  if old.payment_status = 'none' then return new; end if;
+
+  -- Paiement engagé : antifraude (décision Romain 29/10, « seul PING libère le séquestre »).
+  -- 1. Montants figés (sinon un client baisserait le total et se ferait rembourser la différence).
+  --    Seule exception : le scan de fin par le prestataire, qui calcule le dépassement horaire.
+  if (new.total_charged_cents is distinct from old.total_charged_cents
+      or new.payout_cents is distinct from old.payout_cents
+      or new.subtotal_cents is distinct from old.subtotal_cents
+      or new.buyer_fee_cents is distinct from old.buyer_fee_cents
+      or new.seller_fee_cents is distinct from old.seller_fee_cents)
      and not (auth.uid() = old.seller_id and old.completed_at is null and new.completed_at is not null) then
     raise exception 'Montants figés : un paiement est en cours sur cette mission';
+  end if;
+  -- 2. « En route » posé par le prestataire seul, jamais effacé (il décide des frais d'annulation).
+  if new.en_route_at is distinct from old.en_route_at
+     and (auth.uid() <> old.seller_id or new.en_route_at is null) then
+    raise exception 'Départ du prestataire non modifiable';
+  end if;
+  -- 3. Plus d'annulation une fois le prestataire arrivé : c'est un litige.
+  if new.status = 'cancelled' and old.status <> 'cancelled' and old.arrived_at is not null then
+    raise exception 'Mission commencée : ouvrez un litige plutôt qu''une annulation';
   end if;
   return new;
 end $$;

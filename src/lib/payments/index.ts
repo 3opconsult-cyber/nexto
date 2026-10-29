@@ -23,8 +23,6 @@ export const PROVIDERS: Record<ProviderName, PaymentProvider> = { stripe, mangop
 
 // Délai entre le scan de fin et le versement au prestataire, pour laisser le client signaler un souci.
 export const RELEASE_DELAY_HOURS = Number(process.env.PAYMENT_RELEASE_DELAY_HOURS || 24)
-// Frais d'annulation tardive (prestataire déjà en route), même règle que le chat.
-const LATE_CANCEL_RATE = 0.15
 
 export function paymentsProvider(): PaymentProvider | null {
   const p = PROVIDERS[process.env.PAYMENT_PROVIDER as ProviderName]
@@ -209,8 +207,12 @@ export async function syncTransaction(txId: string) {
 
 async function syncCharge(db: SupabaseClient, p: PaymentProvider, row: PaymentRow) {
   const c = await p.getCharge(row.external_id!)
-  if (c.status === row.status && !c.meta) return
-  await db.from('payments').update({ status: c.status, meta: { ...row.meta, ...(c.meta ?? {}) }, updated_at: new Date().toISOString() }).eq('id', row.id)
+  // Antifraude : un encaissement ne compte que s'il correspond exactement au montant demandé.
+  const mismatch = c.status === 'succeeded' && c.amountCents !== row.amount_cents
+  const status = mismatch ? 'failed' : c.status
+  if (status === row.status && !c.meta) return
+  const meta = { ...row.meta, ...(c.meta ?? {}), ...(mismatch ? { alerte: `Montant reçu ${c.amountCents} ≠ attendu ${row.amount_cents}` } : {}) }
+  await db.from('payments').update({ status, meta, updated_at: new Date().toISOString() }).eq('id', row.id)
 }
 
 // ---------- déblocage du séquestre ----------
@@ -221,7 +223,13 @@ export async function settle(txId: string, opts: { force?: boolean } = {}) {
   const db = createAdminClient()
   const tx = await loadTx(db, txId)
   if (tx.payment_provider && tx.payment_provider !== p.name) return { etat: 'autre_prestataire' }
-  if (tx.status === 'cancelled') return { etat: 'annulee' }
+  if (tx.status === 'cancelled') {
+    // Annulation tardive : après remboursement par l'admin, ce qui reste (les frais) va au prestataire,
+    // uniquement sur décision admin.
+    if (!opts.force) return { etat: 'annulee' }
+    const { charges, paid } = await chargesOf(db, txId)
+    return paid > 0 ? releaseAmount(db, p, tx, charges, paid, 0) : { etat: 'rien_a_verser' }
+  }
   if (!tx.completed_at) return { etat: 'mission_non_terminee' }
   if (!['held', 'complement_due'].includes(tx.payment_status)) return { etat: tx.payment_status }
   if (!opts.force && Date.now() - new Date(tx.completed_at).getTime() < RELEASE_DELAY_HOURS * 3600_000) return { etat: 'delai_reclamation' }
@@ -284,31 +292,32 @@ async function refundAmount(db: SupabaseClient, p: PaymentProvider, txId: string
   return amount - left
 }
 
-// Remboursement : annulation (le client récupère tout, moins les frais d'annulation tardive versés au
-// prestataire), geste du prestataire, ou litige tranché par un admin. Toujours avant le déblocage.
+// Remboursement. Règle antifraude (décision Romain 29/10) : l'argent du séquestre ne sort que sur
+// décision de PING. Seule exception automatique : l'annulation AVANT que le prestataire soit en route,
+// remboursée en entier au client (aucune somme ne part vers le prestataire). Tout le reste (annulation
+// tardive, geste commercial, litige) est décidé par un admin OpConsult.
 export async function refund(actor: { userId: string; isAdmin: boolean }, txId: string, input: { amountCents?: number; reason: string }) {
   const p = need()
   const db = createAdminClient()
   const tx = await loadTx(db, txId)
-  const isBuyer = actor.userId === tx.buyer_id, isSeller = actor.userId === tx.seller_id
-  if (!actor.isAdmin && !isBuyer && !isSeller) throw new PaymentError('Mission introuvable.', 404)
+  const isParty = actor.userId === tx.buyer_id || actor.userId === tx.seller_id
+  if (!actor.isAdmin && !isParty) throw new PaymentError('Mission introuvable.', 404)
   if (tx.payment_status === 'released') throw new PaymentError('Déjà versé au prestataire : passez par un litige.', 409)
   const { charges, paid } = await chargesOf(db, txId)
   if (paid <= 0) return { rembourseCents: 0 }
 
-  if (tx.status === 'cancelled') {
-    // Annulation : seuls client, prestataire ou admin, et le montant n'est pas au choix.
-    const fee = tx.en_route_at && !tx.arrived_at ? Math.min(paid, Math.round((tx.subtotal_cents || 0) * LATE_CANCEL_RATE)) : 0
-    const back = await refundAmount(db, p, txId, charges, paid - fee, 'Annulation')
-    if (fee > 0) {
-      const after = await chargesOf(db, txId)
-      await releaseAmount(db, p, tx, after.charges, fee, 0)
-    } else await setPaymentStatus(db, txId, 'refunded')
-    return { rembourseCents: back, fraisAnnulationCents: fee }
+  if (!actor.isAdmin) {
+    // Partie à la mission : uniquement l'annulation gratuite, montant non choisi.
+    if (tx.status !== 'cancelled') throw new PaymentError('Ouvrez un litige depuis la conversation.', 403)
+    if (tx.en_route_at || tx.arrived_at || tx.completed_at) {
+      return { rembourseCents: 0, enAttente: 'Annulation tardive : remboursement décidé par PING sous 48 h.' }
+    }
+    const back = await refundAmount(db, p, txId, charges, paid, 'Annulation')
+    await setPaymentStatus(db, txId, 'refunded')
+    return { rembourseCents: back }
   }
 
-  // Hors annulation : le client ne se rembourse pas lui-même (c'est l'objet du litige).
-  if (isBuyer && !actor.isAdmin) throw new PaymentError('Ouvrez un litige depuis la conversation.', 403)
+  // Admin : montant libre (litige, annulation tardive : on rembourse tout sauf les frais).
   const amount = Math.min(paid, input.amountCents ?? paid)
   const back = await refundAmount(db, p, txId, charges, amount, input.reason || 'Remboursement')
   if (back >= paid) await setPaymentStatus(db, txId, 'refunded')
@@ -337,8 +346,12 @@ export async function handleWebhook(name: ProviderName, events: WebhookEvent[]) 
 }
 
 // ---------- déblocage automatique (cron) ----------
+// PAYMENT_RELEASE_MODE=manuel : rien ne part tout seul, chaque versement est validé dans /admin/paiements.
+export const AUTO_RELEASE = process.env.PAYMENT_RELEASE_MODE !== 'manuel'
+
 export async function releaseDue() {
   need()
+  if (!AUTO_RELEASE) return []
   const db = createAdminClient()
   const before = new Date(Date.now() - RELEASE_DELAY_HOURS * 3600_000).toISOString()
   const { data } = await db.from('transactions').select('id').eq('payment_status', 'held').not('completed_at', 'is', null).lte('completed_at', before).limit(100)
@@ -348,4 +361,26 @@ export async function releaseDue() {
     catch (e) { out.push({ id: t.id, etat: 'erreur', erreur: (e as Error).message }) }
   }
   return out
+}
+
+// ---------- admin : missions dont l'argent est bloqué ----------
+export async function adminOverview() {
+  const db = createAdminClient()
+  const { data } = await db.from('transactions')
+    .select('id, status, payment_status, payment_provider, total_charged_cents, payout_cents, completed_at, en_route_at, arrived_at, created_at')
+    .in('payment_status', ['held', 'complement_due', 'awaiting', 'failed']).order('created_at', { ascending: false }).limit(200)
+  const ids = (data ?? []).map(t => t.id)
+  const [{ data: pays }, { data: disputes }] = await Promise.all([
+    ids.length ? db.from('payments').select('transaction_id, kind, amount_cents, status, meta').in('transaction_id', ids) : Promise.resolve({ data: [] as any[] }),
+    ids.length ? db.from('disputes').select('transaction_id, status').in('transaction_id', ids).in('status', ['open', 'investigating']) : Promise.resolve({ data: [] as any[] }),
+  ])
+  return (data ?? []).map(t => {
+    const mine = (pays ?? []).filter(p => p.transaction_id === t.id)
+    const sum = (k: string) => mine.filter(p => p.kind === k && p.status === 'succeeded').reduce((s, p) => s + p.amount_cents, 0)
+    return {
+      ...t, payeCents: sum('charge') - sum('refund'),
+      litige: (disputes ?? []).some(d => d.transaction_id === t.id),
+      alerte: mine.find(p => p.meta?.alerte)?.meta?.alerte ?? null,
+    }
+  })
 }
