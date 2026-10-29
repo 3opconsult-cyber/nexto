@@ -6,6 +6,10 @@
 -- Rappel de l'invariant : les montants restent déclaratifs tant que le paiement en ligne n'est pas
 -- branché ; l'avance immédiate ne fait que réduire la part à la charge du client (50 %).
 
+-- Nouveaux justificatifs prestataire : récépissé SAP (NOVA) et RIB professionnel.
+alter type public.doc_kind add value if not exists 'sap';
+alter type public.doc_kind add value if not exists 'rib';
+
 -- Numéro SAP (déclaration NOVA) du prestataire : sans lui, ses prestations ne sont pas éligibles.
 alter table public.provider_profiles
   add column if not exists sap_number text;
@@ -64,3 +68,10 @@ as $$
 $$;
 revoke all on function public.avance_immediate_context(uuid) from public;
 grant execute on function public.avance_immediate_context(uuid) to authenticated;
+
+-- Verrou du scan QR (fonction créée en 011, jamais branchée) : seul le prestataire de la mission
+-- (ou un admin) peut poser l'heure d'arrivée ou de fin.
+drop trigger if exists trg_enforce_arrival_departure on public.transactions;
+create trigger trg_enforce_arrival_departure
+  before update of arrived_at, completed_at on public.transactions
+  for each row execute function public.enforce_arrival_departure_by_seller();

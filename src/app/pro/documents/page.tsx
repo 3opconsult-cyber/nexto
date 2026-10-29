@@ -5,7 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
-import { DOC_TYPES } from '@/lib/documents'
+import { DOC_TYPES, EXTRA_DOC_TYPES } from '@/lib/documents'
+
+const ALL_DOCS = [...DOC_TYPES, ...EXTRA_DOC_TYPES]
 
 const ICONS: Record<string, JSX.Element> = {
   identite: (
@@ -16,6 +18,12 @@ const ICONS: Record<string, JSX.Element> = {
   ),
   kbis: (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="1.6"><path d="M4 4h10l6 6v10H4z" /><path d="M14 4v6h6" /><path d="M8 13h8M8 16.5h5" /></svg>
+  ),
+  sap: (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="1.6"><path d="M3 11l9-7 9 7v9H3z" /><path d="M9 20v-5h6v5" /><path d="M16.5 3.5l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.9 1 .4-2-1.5-1.4 2-.3z" /></svg>
+  ),
+  rib: (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="1.6"><path d="M3 10l9-6 9 6" /><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8" /><path d="M3 20h18" /></svg>
   ),
   diplome: (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="1.6"><path d="M12 2l9 5-9 5-9-5 9-5z" /><path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5" /><path d="M21 8v6" /></svg>
@@ -113,7 +121,7 @@ export default function ProDocumentsPage() {
       </div>
 
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {DOC_TYPES.map(doc => {
+        {ALL_DOCS.map(doc => {
           const row = rows[doc.key]
           const st = row ? STATUS_LABEL[row.status] : null
           const busy = uploadingKey === doc.key
@@ -149,7 +157,7 @@ export default function ProDocumentsPage() {
         })}
       </div>
 
-      <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing ? DOC_TYPES.find(d => d.key === viewing.key)?.label : undefined}>
+      <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing ? ALL_DOCS.find(d => d.key === viewing.key)?.label : undefined}>
         {viewing && (
           <div>
             <p style={{ fontSize: 12, color: '#6E8592', margin: '0 0 12px' }}>
