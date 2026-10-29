@@ -15,6 +15,7 @@ export default function AdminCommissionPage() {
   const [authed, setAuthed] = useState<boolean | null>(null)
   const [buyer, setBuyer] = useState('')
   const [seller, setSeller] = useState('')
+  const [threshold, setThreshold] = useState('15')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -29,11 +30,12 @@ export default function AdminCommissionPage() {
       setAuthed(isAdmin)
       if (!isAdmin) { setLoading(false); return }
       const { data } = await supabase.from('app_settings').select('key, value')
-        .in('key', ['commission_buyer_rate', 'commission_seller_rate'])
+        .in('key', ['commission_buyer_rate', 'commission_seller_rate', 'billing_hour_threshold_minutes'])
       const byKey: Record<string, number> = {}
       ;(data ?? []).forEach((r: any) => { byKey[r.key] = Number(r.value) })
       setBuyer(String((byKey.commission_buyer_rate ?? 0.08) * 100))
       setSeller(String((byKey.commission_seller_rate ?? 0.17) * 100))
+      setThreshold(String(byKey.billing_hour_threshold_minutes ?? 15))
       setLoading(false)
     })
   }, [])
@@ -44,11 +46,14 @@ export default function AdminCommissionPage() {
     if (!(buyerPct >= 0 && buyerPct <= 100) || !(sellerPct >= 0 && sellerPct <= 100)) {
       setError('Les deux taux doivent être des pourcentages entre 0 et 100.'); return
     }
+    const thr = Number(threshold)
+    if (!Number.isInteger(thr) || thr < 0 || thr > 59) { setError('Le seuil doit être un nombre entier de minutes entre 0 et 59.'); return }
     setError(''); setSaving(true); setSaved(false)
     const supabase = createClient()
     const { error: err } = await supabase.from('app_settings').upsert([
       { key: 'commission_buyer_rate', value: buyerPct / 100 },
       { key: 'commission_seller_rate', value: sellerPct / 100 },
+      { key: 'billing_hour_threshold_minutes', value: thr },
     ])
     setSaving(false)
     if (err) { setError("Échec de l'enregistrement — vérifiez que vous êtes bien connecté en admin."); return }
@@ -77,7 +82,7 @@ export default function AdminCommissionPage() {
       <div style={{ padding: '28px 24px', maxWidth: 560, margin: '0 auto' }}>
         <a href="/admin" style={{ fontSize: 13, fontWeight: 700, color: '#6E8592', textDecoration: 'none' }}>← Retour à l'admin</a>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644', marginTop: 10 }}>
-          Taux de commission
+          Commission et facturation horaire
         </h1>
         <p style={{ fontSize: 13.5, color: '#6E8592', marginTop: 4, lineHeight: 1.5 }}>
           S'applique à toutes les nouvelles réservations et aux devis acceptés après l'enregistrement.
@@ -104,6 +109,20 @@ export default function AdminCommissionPage() {
 
           <div style={{ padding: '10px 14px', borderRadius: 10, background: '#F3F6F5', fontSize: 12.5, color: '#6E8592', marginBottom: 16 }}>
             Total prélevé par PING sur chaque prestation : <b style={{ color: '#123644' }}>{total.toFixed(1)} %</b>
+          </div>
+
+          <div style={{ borderTop: '1px solid #E7EDEB', paddingTop: 16, marginBottom: 16 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#123644' }}>Heure entamée, heure due — à partir de</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+              <input value={threshold} onChange={e => setThreshold(e.target.value.replace(/[^0-9]/g, ''))} inputMode="numeric"
+                style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
+              <span style={{ color: '#6E8592', fontWeight: 700 }}>minutes</span>
+            </div>
+            <p style={{ fontSize: 12, color: '#6E8592', lineHeight: 1.55, margin: '8px 0 0' }}>
+              Tarif horaire et dépassement de forfait uniquement (un forfait seul ne bouge jamais).
+              Exemple avec {Number(threshold) || 0} min : {(() => { const t = Number(threshold) || 0; const ex = (m: number) => Math.floor(m / 60) + (m % 60 >= t ? 1 : 0); return `3 h 10 → ${ex(190)} h facturées, 3 h 20 → ${ex(200)} h` })()}.
+              Mission plus courte que prévu : le client est remboursé de la différence avant le versement.
+            </p>
           </div>
 
           {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}

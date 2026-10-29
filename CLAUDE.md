@@ -59,6 +59,10 @@ design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand
 - **Règle suprême du tarif** : le prix se valide au **paramétrage initial** ; la facturation suit ;
   **seul un litige** peut le rouvrir. Pas de re-négociation une fois accepté. Dans le chat,
   « + Proposer un tarif » n'apparaît que tant qu'aucun devis n'est accepté.
+- **Heure entamée, heure due** (Romain 29/10) : au scan de fin, une heure commencée n'est facturée qu'à partir
+  de N minutes (15 par défaut, réglable sur `/admin/commission`, clé `billing_hour_threshold_minutes`,
+  `billedHours()` dans `src/lib/pricing.ts`). Horaire pur : minimum 1 h. Forfait seul : jamais ajusté. Le scan
+  de fin réutilise les taux de commission figés à la réservation (plus `getRates()` du jour).
 - **3 modes de prix pro** : forfait, horaire, **sur devis** (enum `pricing_type` inclut `devis`).
 - **Langage déclaratif** : « pièce fournie », « assurance renseignée » — jamais « vérifiée/certifié/garanti ».
 - **Pas d'emoji, que des pictogrammes** (rappel de Romain, 27/10/2026) : icônes = SVG inline (voir NavDrawer, LiveMap), jamais de caractère emoji coloré (🗺️📊🔑 etc.) dans l'UI ni dans les messages système insérés en base. ✓/✕/★/←/→ en texte brut (horodatage de message, étoiles d'avis, flèche de retour) restent tolérés — ce sont des symboles typographiques standards, pas des emoji — mais à vérifier au cas par cas si Romain élargit la règle.

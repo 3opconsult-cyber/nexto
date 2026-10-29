@@ -23,3 +23,20 @@ export async function getRates(): Promise<{ buyer: number; seller: number }> {
   }
   return cache
 }
+
+// Règle « heure entamée, heure due » (décision Romain 29/10) : une heure commencée n'est comptée qu'à
+// partir de N minutes (15 par défaut). Réglable sur /admin/commission (clé app_settings
+// `billing_hour_threshold_minutes`). Ne s'applique qu'au tarif horaire et au dépassement d'un forfait.
+export const DEFAULT_HOUR_THRESHOLD_MINUTES = 15
+
+export async function getHourThreshold(): Promise<number> {
+  const { data } = await createClient().from('app_settings').select('value').eq('key', 'billing_hour_threshold_minutes').maybeSingle()
+  const n = Number(data?.value)
+  return Number.isFinite(n) && n >= 0 && n <= 59 ? n : DEFAULT_HOUR_THRESHOLD_MINUTES
+}
+
+// Heures facturées pour une durée réelle : 3 h 10 → 3 h, 3 h 20 → 4 h (seuil 15 min).
+export function billedHours(minutes: number, thresholdMinutes: number): number {
+  const full = Math.floor(minutes / 60)
+  return full + (minutes % 60 >= thresholdMinutes ? 1 : 0)
+}

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
-import { getRates } from '@/lib/pricing'
+import { billedHours, getHourThreshold, getRates } from '@/lib/pricing'
 import { distanceKm, getOneShotPosition } from '@/lib/geo'
 
 // Double sécurité demandée par Romain : au scan, un relevé GPS ponctuel
@@ -73,24 +73,24 @@ export default function ScanQR() {
         const updates: Record<string, unknown> = {
           completed_at: now.toISOString(), status: 'completed', duration_minutes: mins,
         }
-        if (tx.base_forfait_cents != null && tx.included_hours != null && tx.hourly_rate_cents) {
-          // Forfait + depassement : le forfait est du integralement, seules les
-          // heures au-dela de celles incluses sont facturees au tarif de
-          // depassement — jamais l'inverse (le forfait ne se substitue pas).
-          const rates = await getRates()
-          const includedMinutes = tx.included_hours * 60
-          const overtimeHours = Math.max(0, (mins - includedMinutes) / 60)
-          const subtotal = tx.base_forfait_cents + Math.round(tx.hourly_rate_cents * overtimeHours)
-          const buyerFee = Math.round(subtotal * rates.buyer)
-          const sellerFee = Math.round(subtotal * rates.seller)
-          updates.subtotal_cents = subtotal
-          updates.buyer_fee_cents = buyerFee
-          updates.seller_fee_cents = sellerFee
-          updates.total_charged_cents = subtotal + buyerFee
-          updates.payout_cents = subtotal - sellerFee
-        } else if (tx.hourly_rate_cents) {
-          const rates = await getRates()
-          const subtotal = Math.round(tx.hourly_rate_cents * (mins / 60))
+        if (tx.hourly_rate_cents) {
+          // Heure entamée = heure due au-delà du seuil réglé dans l'admin (15 min par défaut).
+          // Taux de commission : ceux figés à la réservation (jamais le réglage du jour).
+          const threshold = await getHourThreshold()
+          const live = await getRates()
+          const rates = tx.subtotal_cents > 0
+            ? { buyer: (tx.buyer_fee_cents ?? 0) / tx.subtotal_cents, seller: (tx.seller_fee_cents ?? 0) / tx.subtotal_cents }
+            : live
+          let subtotal: number
+          if (tx.base_forfait_cents != null && tx.included_hours != null) {
+            // Forfait + dépassement : le forfait est dû en entier, seules les heures au-delà de celles
+            // incluses sont facturées au tarif de dépassement (jamais l'inverse).
+            const overtime = billedHours(Math.max(0, mins - tx.included_hours * 60), threshold)
+            subtotal = tx.base_forfait_cents + tx.hourly_rate_cents * overtime
+          } else {
+            // Horaire pur : au moins une heure dès que le prestataire s'est déplacé.
+            subtotal = tx.hourly_rate_cents * Math.max(1, billedHours(mins, threshold))
+          }
           const buyerFee = Math.round(subtotal * rates.buyer)
           const sellerFee = Math.round(subtotal * rates.seller)
           updates.subtotal_cents = subtotal
