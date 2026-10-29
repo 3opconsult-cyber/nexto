@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import QrCode from '@/components/QrCode'
+import PaymentCard from '@/components/PaymentCard'
 
 export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
@@ -61,6 +62,7 @@ export default function MissionQrCodes() {
       </div>
 
       <div className="ping-body pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 420 }}><PaymentCard transactionId={tx.id} /></div>
         {step < 3 && (
           <>
             <div className="ping-h1" style={{ textAlign: 'center', marginTop: 8 }}>

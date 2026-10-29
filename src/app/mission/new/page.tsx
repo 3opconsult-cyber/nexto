@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { getRates, DEFAULT_BUYER_RATE, DEFAULT_SELLER_RATE } from '@/lib/pricing'
 import PaymentPendingModal from '@/components/PaymentPendingModal'
+import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
 import { fetchSlots, dayKey, dayLabel, hhmm, type Slot } from '@/lib/slots'
@@ -84,6 +85,8 @@ function MissionForm() {
   const totalTtc = subtotalCents + buyerFee
 
   const [creating, setCreating] = useState(false)
+  // Paiement en ligne actif : on saute la simulation et on envoie le client vers la vraie page de paiement.
+  const paymentsOn = usePaymentsActive()
 
   async function submit() {
     if (!address.trim()) { setError('Indique une adresse.'); return }
@@ -154,6 +157,12 @@ function MissionForm() {
     })
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
+    if (paymentsOn) {
+      // Si le prestataire n'a pas encore de compte de paiement, la mission reste réservée et le
+      // bouton « Payer » de l'écran suivant prendra le relais.
+      const pay = await startCheckout(tx.id)
+      if (pay.redirectUrl) { window.location.href = pay.redirectUrl; return }
+    }
     router.push(`/mission/${tx.id}/qrcodes`)
   }
 
@@ -280,7 +289,7 @@ function MissionForm() {
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
-        <button onClick={() => setConfirming(true)} disabled={!pro || !mode || creating} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
+        <button onClick={() => paymentsOn ? submit() : setConfirming(true)} disabled={!pro || !mode || creating || paymentsOn === null} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
           {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
         <p style={{ fontSize: 11, color: '#9CA3AF', textAlign: 'center', marginTop: 10 }}>

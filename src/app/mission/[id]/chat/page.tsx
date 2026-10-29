@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef, Fragment } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
 import ReviewModal from '@/components/ReviewModal'
 import DepartureBar from '@/components/DepartureBar'
@@ -206,6 +207,10 @@ export default function ChatPage() {
     }).eq('id', transactionId).select().single()
     if (!error && updated) {
       setTx(updated)
+      // Paiement en ligne actif : remboursement (moins les frais d'annulation tardive). Sans effet sinon.
+      if (await paymentsActive()) {
+        fetch('/api/payments/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ transactionId: tx.id, motif: 'Annulation' }) }).catch(() => {})
+      }
       await supabase.from('messages').update({ offer_status: 'accepted' }).eq('id', m.id)
       setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'accepted' } : x))
     }
@@ -238,6 +243,10 @@ export default function ChatPage() {
       .update({ status: 'cancelled' }).eq('id', tx.id).select().maybeSingle()
     if (!error && updated) {
       setTx(updated)
+      // Paiement en ligne actif : remboursement (moins les frais d'annulation tardive). Sans effet sinon.
+      if (await paymentsActive()) {
+        fetch('/api/payments/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ transactionId: tx.id, motif: 'Annulation' }) }).catch(() => {})
+      }
       const who = userId === updated.buyer_id ? 'le client' : 'le prestataire'
       const feeNote = late ? ` — frais d'annulation tardive : ${(feeCents / 100).toFixed(2)} € (appliqués dès le paiement en ligne actif)` : ''
       await supabase.from('messages').insert({

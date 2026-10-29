@@ -105,8 +105,8 @@ renvoient plus vers /pro/dashboard.
    `public/presentation.html` (une animation d'accroche, déjà au design system, correcte) — cette
    règle de rewrite passe AVANT le routeur App Router, donc la page React n'était jamais atteignable.
    Supprimée plutôt que restylée pour rien.
-4. **Stripe non branché** = pas de séquestre réel, pas de `held`/`released`. Gros chantier, EN ATTENTE
-   (décision Romain : on prépare mais pas maintenant).
+4. **Paiement en ligne** : module prêt au branchement (29/10/2026), ÉTEINT — voir section « Paiement en
+   ligne sous séquestre » plus bas. Tant qu'il est éteint, rien n'est débité (PaymentPendingModal).
 5. ~~**« Mon entreprise » à enrichir**~~ CORRIGÉ pour la partie faisable sans Stripe :
    `/pro/tarifs` (catalogue de prestations à prix fixe, table `services`) et `/pro/revenus`
    (récapitulatif + rappel DAC7, langage adapté aux prestations de service) ajoutés et liés depuis
@@ -384,6 +384,35 @@ Demande Romain : « fais le code et branche prêt au branchement de l'API de l'�
   soi-même ; garde-fous dans `openConversation` et `mission/new`. 7 anciennes missions de test du
   24-25/08 (compte admin + démo) violent encore la règle : suppression à valider par Romain.
 - `trackEvent` enregistre le mode dans `metadata.mode`.
+
+## Paiement en ligne sous séquestre — 29/10/2026, prêt au branchement, ÉTEINT
+Romain n'a encore contacté aucun prestataire de paiement : « code les 3 au cas où ». `src/lib/payments/` :
+une interface commune (`types.ts`) + un adaptateur par PSP (`stripe.ts` Connect Express « separate charges
+and transfers » ; `mangopay.ts` séquestre dans le porte-monnaie du client puis transfert avec les commissions
+en Fees + virement ; `lemonway.ts` encaissement sur le compte du pro puis money-out avec commissionAmount).
+Tout en REST via fetch, sans SDK. Noms de champs Mangopay/Lemonway à recontrôler en bac à sable.
+- Parcours : réservation (`mission/new`) ou bouton « Payer » (`PaymentCard` sur `/mission/[id]/qrcodes`) →
+  page de paiement hébergée du PSP → webhook `/api/payments/webhook/<psp>` → `payment_status='held'` →
+  scan de fin (dépassement horaire = `complement_due`, le client paie le complément ; trop payé = remboursé
+  avant versement) → cron quotidien `/api/payments/release` (vercel.json) verse au pro 24 h après la fin si
+  aucun litige `open`/`investigating`. Annulation dans le chat → `/api/payments/refund` (frais d'annulation
+  tardive versés au pro). Admin : `POST /api/payments/release {transactionId, immediat}` et refund partiel.
+- Pro : `/pro/paiements` (lien depuis `/pro/revenus`) : Stripe = page hébergée ; Mangopay/Lemonway = IBAN
+  saisi chez PING mais transmis au PSP, jamais stocké ; pièces « identite »/« kbis » de Mes pièces envoyées.
+- **`transactions.status` n'est jamais touché** : l'argent a sa colonne `payment_status` (none, awaiting,
+  held, complement_due, released, refunded, failed). L'invariant « held/released jamais posés » reste vrai
+  pour `status`.
+- Migration `supabase/migrations/014_paiement_en_ligne.sql` : **PAS ENCORE APPLIQUÉE** (MCP en attente de
+  confirmation, à coller dans l'éditeur SQL). Tables `payment_accounts`, `payments`, colonnes de paiement,
+  trigger `trg_guard_payment_status` (seul le serveur pose le statut ; montants figés dès qu'un paiement est
+  engagé, sauf scan de fin par le pro).
+- Activation (Vercel, côté serveur) : `PAYMENT_PROVIDER` = stripe | mangopay | lemonway, ses clés
+  (en-tête de chaque adaptateur), `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`. `GET /api/payments` dit si
+  c'est actif (et, pour un admin, ce qui manque).
+- Crédit d'impôt : avec le séquestre, le client paie 100 % et récupère 50 % sur sa déclaration (classique).
+  L'avance immédiate (Urssaf encaisse la part client et verse 100 % au pro, ~J+4) est un circuit à part :
+  la commission PING devrait alors être facturée séparément — piste : IBAN virtuel du porte-monnaie PSP
+  déclaré à l'Urssaf, à vérifier.
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
