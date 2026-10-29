@@ -202,6 +202,17 @@ export default function ProDashboard() {
               </div>
             ))}
 
+            <div onClick={() => router.push('/pro/disponibilites')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer', marginTop: 6 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#12B39C,#0C8F7E)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4" /></svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Mes disponibilités</div>
+                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>Les créneaux que vos clients réservent en un clic</div>
+              </div>
+              <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
+            </div>
+
             <div onClick={() => setTab('missions')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer', marginTop: 6 }}>
               <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#6E8592,#4c6472)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
