@@ -164,12 +164,12 @@ export default function ProDetailPage() {
             const devis = a.pricing_type === 'devis'
             return (
               <div key={a.id ?? 'primary'} className="ping-rev" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="t"><span className="n">{a.name}</span></div>
                   {a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
                   {label && <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 4 }}>{label}</div>}
                 </div>
-                <button className="ping-btn ghost" style={{ padding: '8px 14px', fontSize: 12.5, flexShrink: 0 }}
+                <button className="ping-btn ghost" style={{ width: 'auto', padding: '8px 14px', fontSize: 12.5, flexShrink: 0, whiteSpace: 'nowrap' }}
                   onClick={() => reserve(a.id ?? undefined, devis)}>
                   {devis ? 'Devis' : 'Réserver'}
                 </button>
