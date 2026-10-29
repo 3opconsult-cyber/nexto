@@ -344,8 +344,9 @@ Parité ou mieux : carte, recherche, chat/devis, QR, factures, avis, messages, r
   en fin de QR ; agenda : litige en tête, statuts, terminée → facture.
 - **Réservation par créneau** : migration `supabase/migrations/012_creneaux_et_heure_de_rdv.sql`
   (`transactions.scheduled_at`, table `provider_slots`, RPC `book_slot` atomique, trigger qui libère
-  le créneau à l'annulation). **PAS ENCORE APPLIQUÉE** (Supabase déconnecté) : tant qu'elle ne l'est pas,
-  `fetchSlots()` (`src/lib/slots.ts`) renvoie `null` et les écrans masquent les créneaux. Code prêt :
+  le créneau à l'annulation). **APPLIQUÉE le 29/10 et TESTÉE en base** (comptes audit, transaction
+  annulée) : publication du créneau par le pro, visibilité client, `book_slot` pose `scheduled_at`,
+  l'annulation libère le créneau. `fetchSlots()` (`src/lib/slots.ts`) renvoie `null` si la table manque. Code prêt :
   `/pro/disponibilites` (le pro publie ses créneaux, répétition hebdo), grille de créneaux dans
   `mission/new` (+ `book_slot` après création de la transaction), agenda trié par `scheduled_at`
   avec heure + « Mes créneaux libres » côté pro. À tester en réel juste après application.
@@ -354,7 +355,9 @@ message système litige sans « ⚠ ».
 
 ## Avance immédiate du crédit d'impôt (Urssaf) — 29/10/2026, prête au branchement, ÉTEINTE
 Demande Romain : « fais le code et branche prêt au branchement de l'API de l'État ».
-- Migration `supabase/migrations/013_avance_immediate.sql` (**pas encore appliquée**) :
+- Migration `supabase/migrations/013_avance_immediate.sql` (**appliquée le 29/10**, + enum `doc_kind`
+  étendu à `sap`/`rib` pour « Mes pièces », + **verrou du scan QR enfin branché** : trigger
+  `trg_enforce_arrival_departure`, testé : un client ne peut pas poser `arrived_at`, le pro si) :
   `provider_profiles.sap_number`, tables `avance_immediate_clients` (idClient Urssaf, date de naissance,
   statut ; jamais l'IBAN) et `avance_immediate_demandes`, RPC `avance_immediate_context` (le pro lit
   l'idClient de SON client pour SA mission terminée, rien d'autre).
