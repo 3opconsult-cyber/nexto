@@ -8,6 +8,7 @@ import PaymentPendingModal from '@/components/PaymentPendingModal'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
 import { fetchSlots, dayKey, dayLabel, hhmm, type Slot } from '@/lib/slots'
+import { AVANCE_IMMEDIATE_ACTIVE, isEligible, partClientCents } from '@/lib/creditImpot'
 
 function MissionForm() {
   const router = useRouter()
@@ -255,6 +256,12 @@ function MissionForm() {
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{(totalTtc / 100).toFixed(2)} €</span>
           </div>
           <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Frais de service PING inclus</div>
+          {AVANCE_IMMEDIATE_ACTIVE && pro?.sap_number && isEligible(pro?.trade) && (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#0C8F7E' }}>{(partClientCents(totalTtc) / 100).toFixed(2)} €</span>
+            </div>
+          )}
         </div>
 
         {/* Argument de confiance discret, façon Airbnb : une ligne, pas un pavé —

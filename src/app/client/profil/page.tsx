@@ -81,6 +81,10 @@ export default function ClientProfil() {
             <div className="row" style={{ cursor: 'default' }}>
               <div className="m"><div className="nm" style={{ fontSize: 13 }}>Moyens de paiement</div><div className="ds">Bientôt disponible</div></div>
             </div>
+            <div className="row" onClick={() => router.push('/client/avance-immediate')}>
+              <div className="m"><div className="nm" style={{ fontSize: 13 }}>Crédit d&apos;impôt immédiat</div><div className="ds">Ne payez que 50 % du ménage et du repassage</div></div>
+              <span style={{ color: 'var(--slate)' }}>›</span>
+            </div>
 
             <div className="h2">Mon activité</div>
             <div className="row" onClick={() => router.push('/documents')}>

@@ -303,7 +303,7 @@ directement vers `/map` sans un mot d'explication. Corrigé :
   avec le tunnel pro. Le pro, lui, a déjà un écran de clôture équivalent (`/pro/attente`), pas touché.
 - Keyframes CSS partagées `ob-slide-r`/`ob-slide-l` ajoutées dans `ping-ui.css` pour ces trois écrans.
 
-## Marketing — plaquettes 5 publics, animation 37 s (28/10/2026)
+## Marketing — plaquettes 5 publics, animation 42 s (28-29/10/2026)
 Tout est rangé dans l'admin (`/admin` → Communication & commercialisation → **Supports & visuels**,
 carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dépôt.
 - `/plaquettes` (`public/plaquettes.html`, généré par `brand/plaquettes/build.py` depuis `src.html`) :
@@ -312,7 +312,7 @@ carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dép�
   email `info@opconsult.co` — orthographe dictée par Romain, à confirmer). La plaquette annonceurs
   montre l'encart réel (`SponsorBanner` sur `/client/demandes`). Volontairement absents : séquestre et
   crédit d'impôt sans avance (Stripe et URSSAF non branchés).
-- `/animation` (`public/animation.html`, généré par `brand/anim/build.py`) : animation explicative 37 s (chat, réservation instantanée et agenda insérés),
+- `/animation` (`public/animation.html`, généré par `brand/anim/build.py`) : animation explicative 42 s (chat, réservation instantanée, agenda et écran « En toute confiance » insérés),
   9:16, vecteur pur, rendu déterministe `PING_ANIM.seek(t)`. MP4 1080×1920 dans
   `public/brand/files/ping-animation.mp4` (procédure d'enregistrement dans `brand/anim/build.py`).
   Remplace l'ancienne « Animation d'accroche » `/presentation` (gardée).
@@ -351,6 +351,25 @@ Parité ou mieux : carte, recherche, chat/devis, QR, factures, avis, messages, r
   avec heure + « Mes créneaux libres » côté pro. À tester en réel juste après application.
 Corrigé pendant l'audit : `/mission/[id]/qrcodes` promettait « séquestre / libère le paiement » ;
 message système litige sans « ⚠ ».
+
+## Avance immédiate du crédit d'impôt (Urssaf) — 29/10/2026, prête au branchement, ÉTEINTE
+Demande Romain : « fais le code et branche prêt au branchement de l'API de l'État ».
+- Migration `supabase/migrations/013_avance_immediate.sql` (**pas encore appliquée**) :
+  `provider_profiles.sap_number`, tables `avance_immediate_clients` (idClient Urssaf, date de naissance,
+  statut ; jamais l'IBAN) et `avance_immediate_demandes`, RPC `avance_immediate_context` (le pro lit
+  l'idClient de SON client pour SA mission terminée, rien d'autre).
+- Serveur : `src/lib/urssaf/avanceImmediate.ts` (OAuth client_credentials, `/atp/v1/tiersPrestations`
+  `/particulier`, `/demandePaiement`, `/demandePaiement/rechercher`), routes `/api/avance-immediate`
+  (`GET` = actif ?), `/inscription`, `/demande`. **Noms de champs et codes nature à recontrôler sur le
+  Swagger officiel remis à l'habilitation**, tester d'abord en bac à sable (`URSSAF_API_BASE`).
+- Activation : variables Vercel `URSSAF_CLIENT_ID`, `URSSAF_CLIENT_SECRET` (+ `URSSAF_API_BASE`,
+  `URSSAF_TOKEN_URL`, `URSSAF_SCOPE` si besoin) côté serveur, puis `NEXT_PUBLIC_AVANCE_IMMEDIATE=1`
+  pour afficher le « payez 50 % » (mission/new) et la carte de transmission (facture).
+- UI : `/client/avance-immediate` (lien dans le profil client ; affiche « bientôt » tant que non actif),
+  numéro SAP dans `/pro/revenus`, `AvanceImmediateCard` sur la facture.
+- Prérequis hors code : habilitation API Tiers de prestation (api.gouv.fr / DataPass, attestation de
+  régularité fiscale), prestataires déclarés SAP (NOVA). Vigilance : amendements PLF 2026 visant les
+  plateformes de mise en relation avec auto-entrepreneurs (non adoptés à notre connaissance).
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.

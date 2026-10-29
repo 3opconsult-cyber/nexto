@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
 import NavDrawer from '@/components/NavDrawer'
+import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
          PLATFORM_PENDING, type Invoice } from '@/lib/invoice-pdf'
 
@@ -30,6 +31,7 @@ export default function FacturePage() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+  const [isSeller, setIsSeller] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -45,6 +47,7 @@ export default function FacturePage() {
       const list = ((data ?? []) as Invoice[])
         .filter(v => v.kind === 'prestation' || v.kind === mine)
         .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
+      setIsSeller(!!user && !!tx && user.id === (tx as any).seller_id)
       setInvoices(list); setActive(0); setLoading(false)
     }
     load()
@@ -276,6 +279,9 @@ export default function FacturePage() {
         )}
 
         {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B4402C', fontSize: 12.5 }}>{err}</p>}
+        <div className="no-print" style={{ maxWidth: 620, margin: '0 auto' }}>
+          <AvanceImmediateCard transactionId={String(params.id)} isSeller={isSeller} />
+        </div>
 
         <div className="no-print" style={{ maxWidth: 620, margin: '16px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button onClick={download} disabled={busy} style={{
