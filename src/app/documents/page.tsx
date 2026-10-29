@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
 import NavDrawer from '@/components/NavDrawer'
+import { useMode, roleColumn } from '@/lib/mode'
+import ModeHint from '@/components/ModeHint'
 import { EUR, TITLE } from '@/lib/invoice-pdf'
 
 /**
@@ -29,28 +31,40 @@ export default function DocumentsPage() {
   const [svc, setSvc] = useState<Record<string, string>>({})
   const [me, setMe] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [txRole, setTxRole] = useState<Record<string, { buyer_id: string; seller_id: string }>>({})
+  const [isPro, setIsPro] = useState<boolean | null>(null)
+  const [mode, setMode] = useMode(isPro)
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/auth/login'); return }
       setMe(user.id)
+      const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
+      setIsPro(!!pp)
       const { data } = await supabase.from('invoices').select('*').order('issued_at', { ascending: false })
       const list = ((data ?? []) as Row[]).sort((a, b) => new Date(b.issued_at).getTime() - new Date(a.issued_at).getTime())
       setRows(list)
       const txIds = Array.from(new Set(list.map(r => r.transaction_id).filter(Boolean)))
       if (txIds.length) {
-        const { data: txs } = await supabase.from('transactions').select('id, requests(category)').in('id', txIds)
+        const { data: txs } = await supabase.from('transactions').select('id, buyer_id, seller_id, requests(category)').in('id', txIds)
         const m: Record<string, string> = {}
-        ;(txs ?? []).forEach((t: any) => { if (t.requests?.category) m[t.id] = t.requests.category })
-        setSvc(m)
+        const roles: Record<string, { buyer_id: string; seller_id: string }> = {}
+        ;(txs ?? []).forEach((t: any) => { if (t.requests?.category) m[t.id] = t.requests.category; roles[t.id] = { buyer_id: t.buyer_id, seller_id: t.seller_id } })
+        setSvc(m); setTxRole(roles)
       }
       setLoading(false)
     })
   }, [router])
 
   const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
-  const groups = rows.reduce((acc, r) => {
+  // Comme Airbnb : en mode particulier, les factures reçues et SES frais de service ; en mode pro,
+  // les factures émises et SA commission. Jamais la commission de l'autre partie.
+  const MODE_KINDS = { particulier: ['prestation', 'commission_client'], pro: ['prestation', 'commission_pro'] }
+  const inMode = (r: Row, m: 'particulier' | 'pro') => txRole[r.transaction_id]?.[roleColumn(m)] === me && MODE_KINDS[m].includes(r.kind)
+  const shown = mode ? rows.filter(r => inMode(r, mode)) : []
+  const otherCount = mode ? rows.filter(r => inMode(r, mode === 'pro' ? 'particulier' : 'pro') && txRole[r.transaction_id]?.buyer_id !== txRole[r.transaction_id]?.seller_id).length : 0
+  const groups = shown.reduce((acc, r) => {
     const key = new Date(r.issued_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
     ;(acc[key] ||= []).push(r); return acc
   }, {} as Record<string, Row[]>)
@@ -65,9 +79,10 @@ export default function DocumentsPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 760, margin: '0 auto' }}>
+        {!loading && isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'documents' : 'document'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />}
         {loading ? (
           <p style={{ color: '#6E8592', fontSize: 13 }}>Chargement…</p>
-        ) : rows.length === 0 ? (
+        ) : shown.length === 0 ? (
           <div style={{ background: '#fff', borderRadius: 16, padding: 24, textAlign: 'center' }}>
             <Sign size={36} />
             <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, marginTop: 12 }}>

@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
 import { fetchSlots, dayLabel, hhmm, type Slot } from '@/lib/slots'
+import { useMode, roleColumn } from '@/lib/mode'
+import ModeHint from '@/components/ModeHint'
 
 const UPCOMING = ['pending', 'matched', 'en_route', 'arrived']
 const DONE = ['completed', 'released']
@@ -25,7 +27,9 @@ export default function AgendaPage() {
   const [loading, setLoading] = useState(true)
   const [disputes, setDisputes] = useState<any[]>([])
   const [freeSlots, setFreeSlots] = useState<Slot[] | null>(null)
-  const [isPro, setIsPro] = useState(false)
+  const [isPro, setIsPro] = useState<boolean | null>(null)
+  const [uid, setUid] = useState('')
+  const [mode, setMode] = useMode(isPro)
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
   useEffect(() => {
@@ -33,6 +37,7 @@ export default function AgendaPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
+      setUid(user.id)
       const { data } = await supabase.from('transactions')
         .select('*, requests(description, category)')
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
@@ -40,8 +45,8 @@ export default function AgendaPage() {
       setTxs(data ?? [])
 
       const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
+      setIsPro(!!pp)
       if (pp) {
-        setIsPro(true)
         const list = await fetchSlots(supabase, user.id, 14)
         setFreeSlots(list ? list.filter(x => !x.transaction_id) : null)
       }
@@ -66,17 +71,21 @@ export default function AgendaPage() {
     load()
   }, [router])
 
-  const upcoming = txs.filter(t => UPCOMING.includes(t.status))
+  // Un seul rôle à la fois : missions achetées en mode particulier, vendues en mode pro.
+  const mine = mode ? txs.filter(t => t[roleColumn(mode)] === uid) : []
+  const otherCount = mode ? txs.filter(t => t[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === uid && t.buyer_id !== t.seller_id).length : 0
+  const shownDisputes = disputes.filter(d => mine.some(t => t.id === d.transaction_id))
+  const upcoming = mine.filter(t => UPCOMING.includes(t.status))
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
-  const done = txs.filter(t => DONE.includes(t.status))
+  const done = mine.filter(t => DONE.includes(t.status))
 
   const y = month.getFullYear(), m = month.getMonth()
   const today = new Date()
   const eventsByDay = useMemo(() => {
     const map: Record<number, number> = {}
-    txs.forEach(t => { const d = txDate(t); if (d.getFullYear() === y && d.getMonth() === m) map[d.getDate()] = (map[d.getDate()] || 0) + 1 })
+    mine.forEach(t => { const d = txDate(t); if (d.getFullYear() === y && d.getMonth() === m) map[d.getDate()] = (map[d.getDate()] || 0) + 1 })
     return map
-  }, [txs, y, m])
+  }, [mine, y, m])
 
   const startWd = (new Date(y, m, 1).getDay() + 6) % 7
   const daysInMonth = new Date(y, m + 1, 0).getDate()
@@ -120,7 +129,9 @@ export default function AgendaPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
-        {disputes.map(d => (
+        {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />}
+
+        {shownDisputes.map(d => (
           <div key={d.id} onClick={() => router.push(`/mission/${d.transaction_id}/chat`)}
             style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer' }}>
             <div style={{ width: 36, height: 36, borderRadius: 11, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -169,7 +180,7 @@ export default function AgendaPage() {
             <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>À venir</div>
             {upcoming.length ? upcoming.map(card) : <p style={{ fontSize: 12.5, color: '#9aa6a3', marginBottom: 20 }}>Rien de prévu pour l&apos;instant.</p>}
 
-            {isPro && freeSlots !== null && (
+            {isPro && mode === 'pro' && freeSlots !== null && (
               <>
                 <div style={{ display: 'flex', alignItems: 'baseline', margin: '22px 0 10px' }}>
                   <div style={{ flex: 1, fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em' }}>Mes créneaux libres</div>

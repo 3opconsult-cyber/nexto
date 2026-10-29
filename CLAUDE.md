@@ -374,6 +374,17 @@ Demande Romain : « fais le code et branche prêt au branchement de l'API de l'�
   régularité fiscale), prestataires déclarés SAP (NOVA). Vigilance : amendements PLF 2026 visant les
   plateformes de mise en relation avec auto-entrepreneurs (non adoptés à notre connaissance).
 
+## Séparation client / prestataire sur un même compte — 29/10/2026 (comme voyageur / hôte Airbnb)
+- `src/lib/mode.ts` (`useMode`, `roleColumn`) + `ModeHint` : agenda, messages, litiges et « Mes opérations »
+  n'affichent que les missions du mode courant (`localStorage('ping_mode')`) : achetées (`buyer_id`) en
+  particulier, vendues (`seller_id`) en pro ; un bandeau signale ce qui attend dans l'autre espace.
+- « Mes opérations » : en particulier = factures reçues + SES frais de service ; en pro = factures émises
+  + SA commission. Corrige l'affichage de la commission de l'autre partie (la RLS reste large).
+- Contrainte `transactions_buyer_ne_seller` (NOT VALID, posée le 29/10) : plus aucune mission avec
+  soi-même ; garde-fous dans `openConversation` et `mission/new`. 7 anciennes missions de test du
+  24-25/08 (compte admin + démo) violent encore la règle : suppression à valider par Romain.
+- `trackEvent` enregistre le mode dans `metadata.mode`.
+
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
 Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /

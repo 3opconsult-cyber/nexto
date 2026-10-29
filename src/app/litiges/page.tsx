@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
+import { useMode, roleColumn } from '@/lib/mode'
+import ModeHint from '@/components/ModeHint'
 
 const STATUS_LABELS: Record<string, string> = {
   open: 'En cours', investigating: 'En cours d\u2019examen', resolved: 'Résolu', closed: 'Clôturé',
@@ -16,6 +18,8 @@ export default function LitigesPage() {
   const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState('')
+  const [isPro, setIsPro] = useState<boolean | null>(null)
+  const [mode, setMode] = useMode(isPro)
 
   useEffect(() => {
     const supabase = createClient()
@@ -23,8 +27,10 @@ export default function LitigesPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUserId(user.id)
+      const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
+      setIsPro(!!pp)
       const { data } = await supabase.from('disputes')
-        .select('*, transactions(id, requests(category))')
+        .select('*, transactions(id, buyer_id, seller_id, requests(category))')
         .order('created_at', { ascending: false })
       setRows(data ?? [])
 
@@ -43,6 +49,10 @@ export default function LitigesPage() {
     load()
   }, [router])
 
+
+  // Réclamations du mode affiché uniquement (client : missions achetées ; pro : missions réalisées).
+  const visible = mode ? rows.filter((d: any) => d.transactions?.[roleColumn(mode)] === userId) : []
+  const otherCount = mode ? rows.filter((d: any) => d.transactions && d.transactions.buyer_id !== d.transactions.seller_id && d.transactions[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === userId).length : 0
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -51,15 +61,16 @@ export default function LitigesPage() {
       </div>
 
       <div style={{ padding: 16 }}>
+        {!loading && isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'réclamations' : 'réclamation'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />}
         {loading && <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
-        {!loading && rows.length === 0 && (
+        {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucun litige pour l'instant</div>
             <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
           </div>
         )}
         {(() => {
-          const groups = rows.reduce((acc, d) => {
+          const groups = visible.reduce((acc, d) => {
             const key = new Date(d.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
             ;(acc[key] ||= []).push(d); return acc
           }, {} as Record<string, any[]>)

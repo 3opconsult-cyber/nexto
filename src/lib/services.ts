@@ -104,6 +104,8 @@ export async function openConversation(proId: string): Promise<{ missionId: stri
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { missionId: null, error: 'not_authenticated' }
+  // Un compte ne contracte jamais avec lui-même (contrainte transactions_buyer_ne_seller).
+  if (user.id === proId) return { missionId: null, error: 'own_profile' }
 
   // Deja une conversation ouverte avec ce pro ?
   const { data: existing } = await supabase

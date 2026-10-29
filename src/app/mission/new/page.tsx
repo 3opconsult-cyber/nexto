@@ -94,6 +94,7 @@ function MissionForm() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
+    if (user.id === pro.id) { setError('Vous ne pouvez pas réserver vos propres services.'); setCreating(false); return }
 
     if (chosen) {
       const { data: still } = await supabase.from('provider_slots').select('id').eq('id', chosen.id).is('transaction_id', null).maybeSingle()

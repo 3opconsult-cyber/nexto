@@ -29,7 +29,9 @@ export default function ProDetailPage() {
   }, [proId])
 
   async function contact() {
-    const { missionId } = await openConversation(proId)
+    const { missionId, error } = await openConversation(proId)
+    // Sa propre fiche : on ne se contacte pas soi-même, on renvoie vers son espace pro.
+    if (error === 'own_profile') { router.push('/pro/dashboard'); return }
     router.push(missionId ? `/mission/${missionId}/chat` : '/auth/login')
   }
 

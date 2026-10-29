@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
+import { useMode, roleColumn } from '@/lib/mode'
+import ModeHint from '@/components/ModeHint'
 
 // Repères type messagerie (WhatsApp) plutôt qu'une date brute sur chaque ligne :
 // plus lisible dès qu'il y a beaucoup de conversations (demande de Romain, 26/10).
@@ -35,12 +37,18 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [sortMode, setSortMode] = useState<'date' | 'client'>('date')
+  const [uid, setUid] = useState('')
+  const [isPro, setIsPro] = useState<boolean | null>(null)
+  const [mode, setMode] = useMode(isPro)
 
   useEffect(() => {
     const supabase = createClient()
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
+      setUid(user.id)
+      const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
+      setIsPro(!!pp)
 
       const { data: txs } = await supabase.from('transactions')
         .select('*')
@@ -81,6 +89,10 @@ export default function MessagesPage() {
     load()
   }, [router])
 
+
+  // Comme sur Airbnb (voyageur / hôte) : les conversations du mode affiché uniquement ; le support reste visible partout.
+  const visible = mode ? rows.filter(r => r.kind === 'support' || r[roleColumn(mode)] === uid) : []
+  const otherCount = mode ? rows.filter(r => r.kind === 'mission' && r.buyer_id !== r.seller_id && r[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === uid).length : 0
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -88,7 +100,13 @@ export default function MessagesPage() {
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>Messages</span>
       </div>
 
-      {!loading && rows.length > 0 && (
+      {!loading && isPro && mode && (
+        <div style={{ padding: '12px 16px 0' }}>
+          <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'conversations' : 'conversation'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />
+        </div>
+      )}
+
+      {!loading && visible.length > 0 && (
         <div style={{ padding: '12px 16px 0' }}>
           <div style={{ position: 'relative' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.2" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)' }}>
@@ -112,18 +130,18 @@ export default function MessagesPage() {
 
       <div style={{ padding: 16 }}>
         {loading && <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
-        {!loading && rows.length === 0 && (
+        {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucune conversation pour l'instant</div>
             <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Elles apparaissent ici dès qu'une mission est réservée.</div>
           </div>
         )}
-        {!loading && rows.length > 0 && (() => {
+        {!loading && visible.length > 0 && (() => {
           const q = query.trim().toLowerCase()
-          const filtered = q ? rows.filter(t => {
+          const filtered = q ? visible.filter(t => {
             const name = t.kind === 'support' ? 'Support PING' : t.counterpart
             return (name || '').toLowerCase().includes(q) || (t.lastMessage?.body || '').toLowerCase().includes(q)
-          }) : rows
+          }) : visible
 
           if (filtered.length === 0) {
             return (

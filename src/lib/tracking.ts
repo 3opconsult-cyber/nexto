@@ -36,7 +36,8 @@ export function trackEvent(eventType: string, extra: Record<string, unknown> = {
         event_type: eventType,
         path: typeof window !== 'undefined' ? window.location.pathname + window.location.search : null,
         qr_code: utm.qr || null,
-        metadata: { ...utm, ...extra },
+        // Mode (particulier / pro) au moment de l'action : un même compte peut être les deux.
+        metadata: { ...utm, mode: (() => { try { return localStorage.getItem('ping_mode') === 'pro' ? 'pro' : 'particulier' } catch { return null } })(), ...extra },
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
       }).then(() => {})
     })
