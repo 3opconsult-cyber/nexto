@@ -26,7 +26,7 @@ function YesNo({ value, onChange }: { value: boolean | null; onChange: (v: boole
         <button key={String(o.v)} type="button" onClick={() => onChange(o.v)}
           style={{ flex: 1, padding: '10px 0', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer',
             border: value === o.v ? '2px solid #12B39C' : '2px solid #E7EDEB',
-            background: value === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: value === o.v ? '#0C8F7E' : '#6E8592' }}>
+            background: value === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: value === o.v ? '#0C8F7E' : '#4E6470' }}>
           {o.label}
         </button>
       ))}
@@ -68,7 +68,7 @@ export default function EssaiAvis() {
     return (
       <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 28, textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#fff' }}>Merci&nbsp;!</h1>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', marginTop: 10, maxWidth: 300, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.8)', marginTop: 10, maxWidth: 300, lineHeight: 1.5 }}>
           Votre avis est enregistré. Si vous n'avez pas encore invité de proches à tester, c'est le bon moment.
         </p>
         <a href="/essai" style={{ marginTop: 24, padding: '14px 28px', borderRadius: 999, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
@@ -82,7 +82,7 @@ export default function EssaiAvis() {
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ padding: '26px 24px 90px', maxWidth: 440, margin: '0 auto' }}>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Votre avis sur le test</h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', marginTop: 6, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.72)', marginTop: 6, lineHeight: 1.5 }}>
           Une minute, c'est tout ce qu'il faut — soyez franc, c'est fait pour ça.
         </p>
 
@@ -93,7 +93,7 @@ export default function EssaiAvis() {
               <button key={o.v} type="button" onClick={() => setRole(o.v as any)}
                 style={{ flex: 1, padding: '10px 4px', borderRadius: 12, fontWeight: 700, fontSize: 12.5, cursor: 'pointer',
                   border: role === o.v ? '2px solid #12B39C' : '2px solid #E7EDEB',
-                  background: role === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: role === o.v ? '#0C8F7E' : '#6E8592' }}>
+                  background: role === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: role === o.v ? '#0C8F7E' : '#4E6470' }}>
                 {o.l}
               </button>
             ))}

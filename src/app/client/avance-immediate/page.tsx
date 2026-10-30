@@ -10,7 +10,7 @@ const field: React.CSSProperties = {
   display: 'block', width: '100%', border: '1.5px solid #E7EDEB', borderRadius: 11, marginTop: 5,
   padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif', background: '#fff', color: '#123644',
 }
-const lbl: React.CSSProperties = { display: 'block', fontSize: 11.5, fontWeight: 600, color: '#6E8592', marginBottom: 12 }
+const lbl: React.CSSProperties = { display: 'block', fontSize: 11.5, fontWeight: 600, color: '#4E6470', marginBottom: 12 }
 
 // Service public des communes (INSEE), pour éviter de faire saisir des codes au client.
 async function communes(q: { codePostal?: string; nom?: string }): Promise<Commune[]> {
@@ -86,7 +86,7 @@ export default function AvanceImmediate() {
       <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
       <div style={{ padding: '20px 20px 16px' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Crédit d&apos;impôt immédiat</div>
-        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.6)', marginTop: 6, maxWidth: '42ch', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', marginTop: 6, maxWidth: '42ch', lineHeight: 1.5 }}>
           Le ménage et le repassage ouvrent droit à un crédit d&apos;impôt de 50 %. Avec l&apos;avance immédiate de l&apos;Urssaf, vous ne payez que la moitié, tout de suite, au lieu d&apos;attendre l&apos;année suivante.
         </p>
       </div>
@@ -100,7 +100,7 @@ export default function AvanceImmediate() {
                 <b style={{ color: '#0C8F7E', width: 14 }}>{i + 1}</b><span>{s}</span>
               </div>
             ))}
-            <p style={{ fontSize: 11.5, color: '#9CA3AF', margin: '8px 0 0', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 11.5, color: '#6E8592', margin: '8px 0 0', lineHeight: 1.5 }}>
               Conditions de l&apos;Urssaf : avoir déjà fait au moins une déclaration de revenus, et que le prestataire soit déclaré en services à la personne. Plafond : 12 000 € de dépenses par an.
             </p>
           </div>
@@ -138,7 +138,7 @@ export default function AvanceImmediate() {
                     <input style={field} value={f.villeNaissance} onChange={e => { set('villeNaissance', e.target.value); set('inseeNaissance', '') }} placeholder="Tapez le nom de la commune" />
                     {birthOpts.length > 0 && (
                       <div style={{ border: '1px solid #E7EDEB', borderRadius: 10, marginTop: 4, background: '#fff' }}>
-                        {birthOpts.map(c => <div key={c.code} onClick={() => { set('villeNaissance', c.nom); set('inseeNaissance', c.code); setBirthOpts([]) }} style={{ padding: '8px 12px', fontSize: 13, color: '#123644', cursor: 'pointer' }}>{c.nom} <span style={{ color: '#9CA3AF' }}>({c.code.slice(0, 2)})</span></div>)}
+                        {birthOpts.map(c => <div key={c.code} onClick={() => { set('villeNaissance', c.nom); set('inseeNaissance', c.code); setBirthOpts([]) }} style={{ padding: '8px 12px', fontSize: 13, color: '#123644', cursor: 'pointer' }}>{c.nom} <span style={{ color: '#6E8592' }}>({c.code.slice(0, 2)})</span></div>)}
                       </div>
                     )}
                   </label>}
@@ -164,7 +164,7 @@ export default function AvanceImmediate() {
               <label style={lbl}>Courriel<input style={field} type="email" value={f.email} onChange={e => set('email', e.target.value)} /></label>
 
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', margin: '18px 0 4px' }}>Compte bancaire pour le prélèvement Urssaf</div>
-              <p style={{ fontSize: 11.5, color: '#9CA3AF', margin: '0 0 10px' }}>Transmis directement à l&apos;Urssaf, jamais conservé par PING.</p>
+              <p style={{ fontSize: 11.5, color: '#6E8592', margin: '0 0 10px' }}>Transmis directement à l&apos;Urssaf, jamais conservé par PING.</p>
               <label style={lbl}>IBAN<input style={field} value={f.iban} onChange={e => set('iban', e.target.value)} /></label>
               <label style={lbl}>BIC<input style={field} value={f.bic} onChange={e => set('bic', e.target.value)} /></label>
               <label style={lbl}>Titulaire du compte<input style={field} value={f.titulaire} onChange={e => set('titulaire', e.target.value)} /></label>

@@ -25,7 +25,7 @@ const CHK = (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={3}><path d="M20 6L9 17l-5-5" /></svg>
 )
 const HUES: Record<string, string> = {
-  menage: '#12B39C,#0C8F7E', repassage: '#6E8592,#4c6472', nettoyage: '#F2A93B,#d98a1f',
+  menage: '#12B39C,#0C8F7E', repassage: '#4E6470,#4c6472', nettoyage: '#F2A93B,#d98a1f',
   vitres: '#12B39C,#0e7f70', remise: '#FF7A66,#e05f4b',
 }
 const TRAD: Record<string, string> = {
@@ -211,7 +211,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                             <div className="vs">✓</div>
                           </div>
                         )) : <p className="sub">Aucune information déclarée pour l&apos;instant.</p>}
-                        <p className="sub" style={{ fontSize: 11, color: '#9aa6a3' }}>Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
+                        <p className="sub" style={{ fontSize: 11, color: '#6E8592' }}>Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
                         <div className="h2">Compétences</div>
                         <span className="chip on" style={{ display: 'inline-block' }}>{TRAD[pv.cat] || pv.cat}</span>
                         <div className="h2">Avis <span className="chip" style={{ fontSize: 10 }}>après prestation</span></div>
@@ -248,7 +248,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   </div>
                 ))}
               </div>
-              <p className="sub" style={{ fontSize: 11, color: '#9aa6a3' }}>D&apos;autres services seront ouverts progressivement sur PING.</p>
+              <p className="sub" style={{ fontSize: 11, color: '#6E8592' }}>D&apos;autres services seront ouverts progressivement sur PING.</p>
               <div className="h2">Filtres</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {['Disponible', 'Pièce d’identité fournie', 'Assurance RC renseignée', '≤ 1 km', '4★ et +'].map(f => (

@@ -22,12 +22,12 @@ export default function PricingEditor({
 
   const field = (label: string, key: 'flat' | 'hours' | 'hourly', suffix: string) => (
     <label style={{ display: 'block', flex: 1, minWidth: 0 }}>
-      <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', fontWeight: 700, marginBottom: 5 }}>{label}</span>
+      <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', fontWeight: 700, marginBottom: 5 }}>{label}</span>
       <span style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #E7EDEB', borderRadius: 11, background: '#fff', overflow: 'hidden' }}>
         <input type="number" inputMode="decimal" min="0" step={key === 'hours' ? '0.5' : '1'} value={value[key]}
           onChange={e => set({ [key]: e.target.value } as Partial<PricingDraft>)}
           style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif', color: '#123644' }} />
-        <span style={{ padding: '0 12px', fontSize: 12.5, fontWeight: 700, color: '#9CA3AF' }}>{suffix}</span>
+        <span style={{ padding: '0 12px', fontSize: 12.5, fontWeight: 700, color: '#6E8592' }}>{suffix}</span>
       </span>
     </label>
   )
@@ -39,13 +39,13 @@ export default function PricingEditor({
           const on = m.key === value.mode
           return (
             <button key={m.key} type="button" onClick={() => set({ mode: m.key })}
-              style={{ border: 'none', borderRadius: 9, padding: '9px 6px', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5, lineHeight: 1.2, background: on ? '#fff' : 'transparent', color: on ? '#0C8F7E' : '#6E8592', boxShadow: on ? '0 1px 4px rgba(18,54,68,.12)' : 'none' }}>
+              style={{ border: 'none', borderRadius: 9, padding: '9px 6px', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5, lineHeight: 1.2, background: on ? '#fff' : 'transparent', color: on ? '#0C8F7E' : '#4E6470', boxShadow: on ? '0 1px 4px rgba(18,54,68,.12)' : 'none' }}>
               {m.label}
             </button>
           )
         })}
       </div>
-      <p style={{ fontSize: 11.5, color: '#6E8592', margin: '8px 2px 12px', lineHeight: 1.45 }}>{current.hint}</p>
+      <p style={{ fontSize: 11.5, color: '#4E6470', margin: '8px 2px 12px', lineHeight: 1.45 }}>{current.hint}</p>
 
       {value.mode === 'forfait' && field('Prix du forfait', 'flat', '€')}
       {value.mode === 'horaire' && field('Taux horaire', 'hourly', '€/h')}

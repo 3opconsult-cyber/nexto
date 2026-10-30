@@ -6,7 +6,7 @@ import { trackEvent } from '@/lib/tracking'
 // Pas de sens sur les pages avant l'appli elle-même (recrutement testeurs,
 // connexion/inscription) : Romain l'a précisé, ce sont des pages de
 // présentation, pas des écrans à noter. La bulle vit dans l'application réelle.
-const HIDDEN_PREFIXES = ['/essai', '/auth']
+const HIDDEN_PREFIXES = ['/essai', '/auth', '/mission/']
 
 /**
  * Bulle de feedback permanente, demandée par Romain : un encart en bas à
@@ -86,7 +86,7 @@ export default function FeedbackBubble() {
         ) : (
           <>
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Cette page, ça va ?</div>
-            <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>Ni l'un ni l'autre n'est obligatoire.</p>
+            <p style={{ fontSize: 12, color: '#6E8592', marginTop: 4 }}>Ni l'un ni l'autre n'est obligatoire.</p>
 
             <button onClick={validatePage} disabled={sending}
               style={{ width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -96,14 +96,14 @@ export default function FeedbackBubble() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0' }}>
               <div style={{ flex: 1, height: 1, background: '#E7EDEB' }} />
-              <span style={{ fontSize: 11.5, color: '#9CA3AF', fontWeight: 700 }}>OU UN COMMENTAIRE</span>
+              <span style={{ fontSize: 11.5, color: '#6E8592', fontWeight: 700 }}>OU UN COMMENTAIRE</span>
               <div style={{ flex: 1, height: 1, background: '#E7EDEB' }} />
             </div>
 
             <textarea autoFocus value={text} onChange={e => setText(e.target.value)} rows={3}
               style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button onClick={() => setOpen(false)} style={{ flex: 1, padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#6E8592', fontWeight: 700, fontSize: 14 }}>Fermer</button>
+              <button onClick={() => setOpen(false)} style={{ flex: 1, padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 14 }}>Fermer</button>
               <button onClick={sendComment} disabled={!text.trim() || sending}
                 style={{ flex: 2, padding: 13, borderRadius: 999, border: 'none', background: (!text.trim() || sending) ? '#DCE5E3' : '#123644', color: '#fff', fontWeight: 700, fontSize: 14 }}>
                 {sending ? 'Envoi…' : 'Envoyer'}

@@ -80,7 +80,7 @@ export default function ProDetailPage() {
 
   if (loading) return (
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ color: '#6E8592', fontFamily: 'var(--fh)', fontSize: 15 }}>Chargement…</div>
+      <div style={{ color: '#4E6470', fontFamily: 'var(--fh)', fontSize: 15 }}>Chargement…</div>
     </div>
   )
   if (!pro) return (

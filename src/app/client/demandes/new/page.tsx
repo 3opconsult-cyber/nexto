@@ -85,7 +85,7 @@ export default function NewOpenRequestPage() {
   }
 
   const fieldStyle: CSSProperties = { display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, background: '#fff' }
-  const labelStyle: CSSProperties = { fontSize: 12.5, color: '#6E8592', fontWeight: 600 }
+  const labelStyle: CSSProperties = { fontSize: 12.5, color: '#4E6470', fontWeight: 600 }
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
@@ -95,13 +95,13 @@ export default function NewOpenRequestPage() {
       </div>
       <div style={{ padding: '20px 20px 16px' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Nouvelle demande</div>
-        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.6)', marginTop: 6, maxWidth: '38ch' }}>
+        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', marginTop: 6, maxWidth: '38ch' }}>
           Visible des prestataires à proximité — ils vous font une proposition chiffrée, à négocier ensuite dans la conversation.
         </p>
       </div>
 
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh' }}>
-        <div style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600, marginBottom: 8 }}>Quel service ?</div>
+        <div style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600, marginBottom: 8 }}>Quel service ?</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
           {TRADE_LIST.map(t => (
             <button key={t.key} onClick={() => setCategory(t.key)}
@@ -111,7 +111,7 @@ export default function NewOpenRequestPage() {
           ))}
         </div>
 
-        <div style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 700, marginBottom: 8 }}>Décrivez le besoin</div>
+        <div style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 700, marginBottom: 8 }}>Décrivez le besoin</div>
         <label style={{ display: 'block', marginBottom: 14 }}>
           <span style={labelStyle}>Titre</span>
           <input value={title} onChange={e => setTitle(e.target.value)} style={fieldStyle} />
@@ -122,7 +122,7 @@ export default function NewOpenRequestPage() {
             style={{ ...fieldStyle, fontFamily: 'inherit' }} />
         </label>
 
-        <div style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 700, marginBottom: 8 }}>Quand ?</div>
+        <div style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 700, marginBottom: 8 }}>Quand ?</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
           <label style={{ flex: 1 }}>
             <span style={labelStyle}>Date souhaitée</span>
@@ -144,7 +144,7 @@ export default function NewOpenRequestPage() {
           ))}
         </div>
 
-        <div style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 700, marginBottom: 8 }}>Budget indicatif</div>
+        <div style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 700, marginBottom: 8 }}>Budget indicatif</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
           <label style={{ flex: 1 }}>
             <span style={labelStyle}>Minimum</span>
@@ -155,14 +155,14 @@ export default function NewOpenRequestPage() {
             <input type="number" value={budgetMax} onChange={e => setBudgetMax(e.target.value)} min="0" step="1" style={fieldStyle} />
           </label>
         </div>
-        <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 18 }}>Indicatif seulement — les propositions reçues peuvent différer, vous restez libre de refuser.</p>
+        <p style={{ fontSize: 11, color: '#6E8592', marginBottom: 18 }}>Indicatif seulement — les propositions reçues peuvent différer, vous restez libre de refuser.</p>
 
-        <div style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 700, marginBottom: 8 }}>Localisation</div>
+        <div style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 700, marginBottom: 8 }}>Localisation</div>
         <label style={{ display: 'block', marginBottom: 8 }}>
           <span style={labelStyle}>Adresse de la prestation</span>
           <input value={address} onChange={e => setAddress(e.target.value)} style={fieldStyle} />
         </label>
-        <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 18 }}>Communiquée au prestataire seulement une fois la mission confirmée.</p>
+        <p style={{ fontSize: 11, color: '#6E8592', marginBottom: 18 }}>Communiquée au prestataire seulement une fois la mission confirmée.</p>
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 

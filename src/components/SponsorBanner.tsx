@@ -40,11 +40,11 @@ export default function SponsorBanner({ sponsor, label = 'Partenaire', style }: 
           : <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, color: '#fff', fontSize: 16 }}>{sponsor.name.charAt(0)}</span>}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 9.5, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '.04em' }}>{label}</div>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em' }}>{label}</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#123644' }}>{sponsor.name}</div>
-        <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sponsor.tagline}</div>
+        <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sponsor.tagline}</div>
       </div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
     </a>
   )
 }

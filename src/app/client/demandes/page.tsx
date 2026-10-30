@@ -56,11 +56,11 @@ export default function MesDemandesPage() {
 
   function badge(r: any) {
     const group = txByRequest[r.id] || []
-    if (r.status === 'cancelled') return { label: 'Annulée', bg: '#F3F6F5', fg: '#6E8592' }
+    if (r.status === 'cancelled') return { label: 'Annulée', bg: '#F3F6F5', fg: '#4E6470' }
     if (group.some(t => DONE.includes(t.status))) return { label: 'Terminée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (group.length > 0) return { label: `${group.length} proposition${group.length > 1 ? 's' : ''}`, bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (r.status === 'open') return { label: 'En attente', bg: '#FFF7ED', fg: '#8a6520' }
-    return { label: STATUS[r.status] || 'En cours', bg: '#F3F6F5', fg: '#6E8592' }
+    return { label: STATUS[r.status] || 'En cours', bg: '#F3F6F5', fg: '#4E6470' }
   }
 
   async function cancel(r: any) {
@@ -95,7 +95,7 @@ export default function MesDemandesPage() {
 
       <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', marginBottom: 4 }}>Publiez votre demande</div>
-        <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14, lineHeight: 1.5 }}>
           Personne de disponible autour de vous ? Décrivez ce dont vous avez besoin : les prestataires à proximité vous font une proposition chiffrée.
         </p>
         <button onClick={() => router.push('/client/demandes/new')}
@@ -103,7 +103,7 @@ export default function MesDemandesPage() {
           + Publier une demande
         </button>
 
-        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
         {!loading && rows.length === 0 && (
           <div style={{ textAlign: 'center', padding: 32, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
@@ -113,7 +113,7 @@ export default function MesDemandesPage() {
 
         {!loading && Object.entries(groups).map(([mois, list]: [string, any[]]) => (
           <div key={mois} style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
             {list.map(r => {
               const b = badge(r)
               const group = txByRequest[r.id] || []
@@ -131,8 +131,8 @@ export default function MesDemandesPage() {
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: b.bg, color: b.fg, flexShrink: 0, whiteSpace: 'nowrap' }}>{b.label}</span>
                     </div>
                     <div style={{ fontSize: 11, color: '#0C8F7E', fontWeight: 700, marginTop: 3 }}>{TRAD[r.category] || r.category}</div>
-                    {r.description && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>{r.description}</div>}
-                    <div style={{ fontSize: 11, color: '#9aa6a3', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+                    {r.description && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>{r.description}</div>}
+                    <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
                       <span>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{r.frequency && r.frequency !== 'ponctuel' ? ` · ${freqLabel(r.frequency)}` : ''}</span>
                       {budgetTxt ? <b style={{ color: '#123644' }}>{budgetTxt}</b> : null}
                     </div>
@@ -161,7 +161,7 @@ export default function MesDemandesPage() {
         ))}
 
         {!loading && rows.length > 0 && (
-          <p style={{ fontSize: 10.5, color: '#9CA3AF', lineHeight: 1.5, textAlign: 'center', marginTop: 4 }}>
+          <p style={{ fontSize: 10.5, color: '#6E8592', lineHeight: 1.5, textAlign: 'center', marginTop: 4 }}>
             Votre adresse exacte reste masquée tant que vous n&apos;avez pas accepté une proposition.
           </p>
         )}

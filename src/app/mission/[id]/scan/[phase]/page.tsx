@@ -143,9 +143,9 @@ export default function ScanQR() {
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17, color: '#123644' }}>{message}</h1>
         {duration && (
           <div style={{ marginTop: 14, padding: 12, borderRadius: 12, background: '#F3F6F5' }}>
-            <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600 }}>Durée réelle de la prestation</div>
+            <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600 }}>Durée réelle de la prestation</div>
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644', marginTop: 2 }}>{duration}</div>
-            <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 4 }}>Ce relevé fait foi en cas de litige.</div>
+            <div style={{ fontSize: 10.5, color: '#4E6470', marginTop: 4 }}>Ce relevé fait foi en cas de litige.</div>
           </div>
         )}
         {status !== 'checking' && (

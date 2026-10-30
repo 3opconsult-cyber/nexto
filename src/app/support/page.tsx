@@ -77,7 +77,7 @@ export default function SupportPage() {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {msgs.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>
+          <div style={{ textAlign: 'center', padding: '48px 0', color: '#6E8592', fontWeight: 600, fontSize: 13 }}>
             Une question, un souci ? Écrivez-nous, l'équipe PING vous répond directement ici.
           </div>
         )}

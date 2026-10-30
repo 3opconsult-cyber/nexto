@@ -101,14 +101,14 @@ export default function MessagesPage() {
 
       {!loading && isPro && mode && (
         <div style={{ padding: '12px 16px 0' }}>
-          <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'conversations' : 'conversation'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />
+          <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'conversations' : 'conversation'} />
         </div>
       )}
 
       {!loading && visible.length > 0 && (
         <div style={{ padding: '12px 16px 0' }}>
           <div style={{ position: 'relative' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.2" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)' }}>
               <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
             </svg>
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une conversation…"
@@ -119,7 +119,7 @@ export default function MessagesPage() {
               <button key={m} onClick={() => setSortMode(m)} style={{
                 padding: '6px 13px', borderRadius: 999, border: 'none', cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 11.5,
-                background: sortMode === m ? '#123644' : '#fff', color: sortMode === m ? '#fff' : '#6E8592',
+                background: sortMode === m ? '#123644' : '#fff', color: sortMode === m ? '#fff' : '#4E6470',
                 boxShadow: sortMode === m ? 'none' : '0 0 0 1px #E7EDEB',
               }}>{m === 'date' ? 'Trier par date' : mode === 'pro' ? 'Trier par client' : 'Trier par prestataire'}</button>
             ))}
@@ -128,11 +128,11 @@ export default function MessagesPage() {
       )}
 
       <div style={{ padding: 16 }}>
-        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucune conversation pour l'instant</div>
-            <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Elles apparaissent ici dès le premier message échangé.</div>
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucune conversation pour l'instant</div>
+            <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>Elles apparaissent ici dès le premier message échangé.</div>
           </div>
         )}
         {!loading && visible.length > 0 && (() => {
@@ -145,7 +145,7 @@ export default function MessagesPage() {
           if (filtered.length === 0) {
             return (
               <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucun résultat pour « {query} »</div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucun résultat pour « {query} »</div>
               </div>
             )
           }
@@ -179,7 +179,7 @@ export default function MessagesPage() {
 
           return sections.map(section => (
             <div key={section.label} style={{ marginBottom: 6 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: 0.4, padding: '6px 2px' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: 0.4, padding: '6px 2px' }}>
                 {section.label}
               </div>
               {section.items.map(t => {
@@ -190,16 +190,16 @@ export default function MessagesPage() {
                     <div style={{
                       width: 42, height: 42, borderRadius: 13, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff',
-                      background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0C8F7E)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#d98a1f)' : 'linear-gradient(160deg,#6E8592,#4c6472)'),
+                      background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0C8F7E)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#d98a1f)' : 'linear-gradient(160deg,#4E6470,#4c6472)'),
                     }}>{(name || '?').charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}</span>
-                        <span style={{ fontSize: 10.5, color: '#9CA3AF', fontWeight: 600, flexShrink: 0 }}>
+                        <span style={{ fontSize: 10.5, color: '#6E8592', fontWeight: 600, flexShrink: 0 }}>
                           {rowTime(new Date(t.lastMessage?.created_at || t.created_at))}
                         </span>
                       </div>
-                      <div style={{ fontSize: 12, color: '#6E8592', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 12, color: '#4E6470', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {t.lastMessage?.body || 'Aucun message — ouvrir la conversation'}
                       </div>
                     </div>

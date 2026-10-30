@@ -259,11 +259,11 @@ export default function ProOnboarding() {
         onBack={back} onCta={next} ctaDisabled={!status}>
         <button onClick={() => setStatus('particulier')} style={bigChoiceStyle(status === 'particulier')}>
           Un particulier
-          <div style={{ fontSize: 12, fontWeight: 500, color: '#6E8592', marginTop: 3 }}>Voisin, étudiant… pas de structure déclarée</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: '#4E6470', marginTop: 3 }}>Voisin, étudiant… pas de structure déclarée</div>
         </button>
         <button onClick={() => setStatus('professionnel')} style={bigChoiceStyle(status === 'professionnel')}>
           Un professionnel
-          <div style={{ fontSize: 12, fontWeight: 500, color: '#6E8592', marginTop: 3 }}>Auto-entrepreneur, société…</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: '#4E6470', marginTop: 3 }}>Auto-entrepreneur, société…</div>
         </button>
       </OnboardingStep>
     )
@@ -286,7 +286,7 @@ export default function ProOnboarding() {
               <button key={c.siret || c.siren} onClick={() => pickCompany(c)}
                 style={{ display: 'block', width: '100%', textAlign: 'left', padding: '11px 14px', border: 'none', borderBottom: '1px solid #F3F6F5', background: '#fff' }}>
                 <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{c.name}</div>
-                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{[c.address, c.postalCode, c.city].filter(Boolean).join(', ') || 'Adresse non communiquée'}</div>
+                <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{[c.address, c.postalCode, c.city].filter(Boolean).join(', ') || 'Adresse non communiquée'}</div>
               </button>
             ))}
           </div>
@@ -296,7 +296,7 @@ export default function ProOnboarding() {
             SIRET {selectedCompany.siret || '—'} · pré-rempli, à valider aux étapes suivantes
           </div>
         )}
-        <button onClick={() => { setManualEntry(m => !m); setSelectedCompany(null) }} style={{ marginTop: 14, background: 'none', border: 'none', color: '#6E8592', fontSize: 12.5, fontWeight: 700, textDecoration: 'underline' }}>
+        <button onClick={() => { setManualEntry(m => !m); setSelectedCompany(null) }} style={{ marginTop: 14, background: 'none', border: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700, textDecoration: 'underline' }}>
           {manualEntry ? 'Revenir à la recherche' : "Je ne trouve pas mon entreprise, saisir le SIRET à la main"}
         </button>
         {manualEntry && (
@@ -304,10 +304,10 @@ export default function ProOnboarding() {
             style={{ ...inputStyle, marginTop: 10 }} />
         )}
         <label style={{ display: 'block', marginTop: 16 }}>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Numéro de déclaration SAP (facultatif)</span>
+          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Numéro de déclaration SAP (facultatif)</span>
           <input value={sapNumber} onChange={e => setSapNumber(e.target.value)}
             style={{ ...inputStyle, marginTop: 6 }} />
-          <span style={{ display: 'block', fontSize: 11.5, color: '#9CA3AF', marginTop: 5 }}>Si vous l'avez, vos clients peuvent bénéficier du crédit d'impôt de 50 %. Pas de déclaration ? Vous pouvez continuer sans, et la renseigner plus tard.</span>
+          <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 5 }}>Si vous l'avez, vos clients peuvent bénéficier du crédit d'impôt de 50 %. Pas de déclaration ? Vous pouvez continuer sans, et la renseigner plus tard.</span>
         </label>
       </OnboardingStep>
     )
@@ -324,7 +324,7 @@ export default function ProOnboarding() {
           {locating ? 'Localisation…' : coords ? '✓ Position enregistrée' : 'Utiliser ma position actuelle'}
         </button>
         <label>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Adresse {coords ? '(affichée sur votre profil)' : '— sert aussi à vous localiser si la géolocalisation ne fonctionne pas'}</span>
+          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Adresse {coords ? '(affichée sur votre profil)' : '— sert aussi à vous localiser si la géolocalisation ne fonctionne pas'}</span>
           <input value={address} onChange={e => setAddress(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
         </label>
         {!coords && (
@@ -358,7 +358,7 @@ export default function ProOnboarding() {
       onCta={finish} ctaLabel="Terminer" ctaLoading={loading}>
       <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4}
         style={{ ...inputStyle, resize: 'vertical' }} />
-      <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8, lineHeight: 1.4 }}>
+      <p style={{ fontSize: 11, color: '#6E8592', marginTop: 8, lineHeight: 1.4 }}>
         Ce texte est public. Pour votre sécurité, n'y indiquez ni numéro de téléphone ni nom d'enseigne —
         les échanges et paiements passent par PING.
       </p>

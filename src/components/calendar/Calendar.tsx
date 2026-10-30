@@ -35,7 +35,7 @@ const WD = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.']
 const PX_PER_MIN = 0.8 // 48 px par heure
 
 const C = {
-  ink: '#123644', slate: '#6E8592', line: '#E7EDEB', teal: '#12B39C', tealD: '#0C8F7E', gold: '#F2A93B', paper: '#F3F6F5',
+  ink: '#123644', slate: '#4E6470', line: '#E7EDEB', teal: '#12B39C', tealD: '#0C8F7E', gold: '#F2A93B', paper: '#F3F6F5',
 }
 
 // Compact selon la largeur réelle du calendrier (il vit parfois dans une colonne étroite).

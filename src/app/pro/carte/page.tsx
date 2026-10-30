@@ -147,7 +147,7 @@ export default function ProCartePage() {
       <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 13, color: 'var(--ink)', marginBottom: 6 }}>Description du client</div>
       <p style={{ fontSize: 12.5, color: 'var(--slate)', lineHeight: 1.5, marginBottom: 16 }}>{selected.description || '—'}</p>
 
-      <p style={{ fontSize: 10.5, color: '#9aa6a3', lineHeight: 1.5, marginBottom: 14 }}>
+      <p style={{ fontSize: 10.5, color: '#6E8592', lineHeight: 1.5, marginBottom: 14 }}>
         L&apos;adresse exacte et les coordonnées du client vous seront communiquées si votre proposition est acceptée.
       </p>
 

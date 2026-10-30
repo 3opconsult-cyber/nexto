@@ -79,9 +79,9 @@ export default function DocumentsPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 760, margin: '0 auto' }}>
-        {!loading && isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'documents' : 'document'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />}
+        {!loading && isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'documents' : 'document'} />}
         {loading ? (
-          <p style={{ color: '#6E8592', fontSize: 13 }}>Chargement…</p>
+          <p style={{ color: '#4E6470', fontSize: 13 }}>Chargement…</p>
         ) : shown.length === 0 ? (
           <>
             <div style={{ background: '#fff', borderRadius: 16, padding: 18, textAlign: 'center', marginBottom: 14 }}>
@@ -89,7 +89,7 @@ export default function DocumentsPage() {
               <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, marginTop: 10 }}>
                 Aucune opération pour l&apos;instant
               </h2>
-              <p style={{ fontSize: 12.5, color: '#6E8592', marginTop: 6, lineHeight: 1.55 }}>
+              <p style={{ fontSize: 12.5, color: '#4E6470', marginTop: 6, lineHeight: 1.55 }}>
                 Factures et reçus sont émis à la fin de chaque mission, dès que le code de fin est scanné.
                 Voici à quoi ressemblera cette page{mode === 'pro' ? ' côté prestataire' : ''} :
               </p>
@@ -111,7 +111,7 @@ export default function DocumentsPage() {
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>{x.t}</span>
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0C8F7E' }}>{EUR(x.a)}</span>
                   </div>
-                  <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>{x.n} · exemple</div>
+                  <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>{x.n} · exemple</div>
                 </div>
               ))}
             </div>
@@ -119,7 +119,7 @@ export default function DocumentsPage() {
         ) : (
           Object.entries(groups).map(([mois, list]) => (
             <div key={mois} style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                 {list.map(r => {
                   const emis = r.issuer_id === me
@@ -134,7 +134,7 @@ export default function DocumentsPage() {
                         </span>
                         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0C8F7E' }}>{EUR(r.net_cents)}</span>
                       </div>
-                      <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>
+                      <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>
                         {r.number} · {emis ? 'émis à' : 'reçu de'} {autre || '—'} · {new Date(r.issued_at).toLocaleDateString('fr-FR')}
                       </div>
                     </button>

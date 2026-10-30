@@ -41,14 +41,14 @@ export default function MissionQrCodes() {
 
   if (!tx) return (
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ color: '#6E8592', fontFamily: 'var(--fh)', fontSize: 15 }}>Chargement…</div>
+      <div style={{ color: '#4E6470', fontFamily: 'var(--fh)', fontSize: 15 }}>Chargement…</div>
     </div>
   )
 
   if (tx.status === 'cancelled') return (
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
       <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 18, color: '#123644' }}>Réservation annulée</div>
-      <p style={{ color: '#6E8592', fontSize: 13.5, marginTop: 8, maxWidth: '32ch' }}>Les codes d&apos;arrivée et de fin ne sont plus valables.</p>
+      <p style={{ color: '#4E6470', fontSize: 13.5, marginTop: 8, maxWidth: '32ch' }}>Les codes d&apos;arrivée et de fin ne sont plus valables.</p>
       <button className="ping-btn ghost" style={{ width: 'auto', marginTop: 16, padding: '10px 20px' }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Revenir à la conversation</button>
     </div>
   )
@@ -106,7 +106,7 @@ export default function MissionQrCodes() {
               </div>
             </div>
 
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, color: '#9CA3AF', fontWeight: 600 }}>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, color: '#6E8592', fontWeight: 600 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', animation: 'pingPulse 1.4s ease-in-out infinite' }} />
               En attente du scan…
             </div>
@@ -121,7 +121,7 @@ export default function MissionQrCodes() {
             {step === 1 && (
               <div style={{ marginTop: 18, width: '100%', background: '#F3F6F5', borderRadius: 14, padding: 14, textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Vous ne serez pas sur place ?</div>
-                <p style={{ fontSize: 11.5, color: '#6E8592', margin: '5px 0 11px', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 11.5, color: '#4E6470', margin: '5px 0 11px', lineHeight: 1.5 }}>
                   Envoyez le code d'arrivée au prestataire : il validera son arrivée en scannant à votre domicile. En cas de souci, ouvrez un litige depuis la conversation.
                 </p>
                 <button onClick={() => shareArrival(arrivalUrl)} disabled={shared} style={{
@@ -148,7 +148,7 @@ export default function MissionQrCodes() {
               marginTop: 10, width: '100%', border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644',
               borderRadius: 999, padding: '12px 0', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 14, cursor: 'pointer',
             }}>Voir la facture</button>
-            <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ marginTop: 10, border: 'none', background: 'none', color: '#6E8592', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Retour à la conversation</button>
+            <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ marginTop: 10, border: 'none', background: 'none', color: '#4E6470', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Retour à la conversation</button>
           </>
         )}
       </div>

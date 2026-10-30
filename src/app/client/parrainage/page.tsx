@@ -114,11 +114,11 @@ export default function ParrainagePage() {
 
       <div style={{ padding: 16 }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
         ) : (
           <>
             <div style={{ background: '#123644', borderRadius: 18, padding: 20, marginBottom: 16, textAlign: 'center' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.5)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>Votre code</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.72)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>Votre code</div>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 26, color: '#fff', letterSpacing: '.06em', marginBottom: 14 }}>{code}</div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button onClick={shareWhatsapp} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>
@@ -147,7 +147,7 @@ export default function ParrainagePage() {
                   <div style={{ background: '#fff', borderRadius: 14, padding: 12 }}>
                     <QrCode data={shareUrl} size={140} />
                   </div>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', margin: 0, textAlign: 'center' }}>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,.8)', margin: 0, textAlign: 'center' }}>
                     À afficher sur votre stand, votre boutique ou votre camion — flashé, ça inscrit directement avec votre code.
                   </p>
                 </div>
@@ -170,13 +170,13 @@ export default function ParrainagePage() {
                         boxShadow: reached ? '0 0 0 3px rgba(18,179,156,.18)' : 'none',
                         transition: 'background .3s',
                       }} />
-                      <div style={{ fontSize: 10.5, fontWeight: 700, color: reached ? '#0C8F7E' : '#9CA3AF' }}>{t.pct} %</div>
-                      <div style={{ fontSize: 9.5, color: '#9CA3AF' }}>{t.min} parr.</div>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: reached ? '#0C8F7E' : '#6E8592' }}>{t.pct} %</div>
+                      <div style={{ fontSize: 9.5, color: '#6E8592' }}>{t.min} parr.</div>
                     </div>
                   )
                 })}
               </div>
-              <p style={{ fontSize: 11.5, color: '#6E8592', lineHeight: 1.6, margin: '12px 0 0' }}>
+              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.6, margin: '12px 0 0' }}>
                 {next
                   ? <>Encore <b>{next.min - successfulCount}</b> parrainage{next.min - successfulCount > 1 ? 's' : ''} abouti{next.min - successfulCount > 1 ? 's' : ''} pour débloquer <b>{next.pct} %</b> de commission offerte sur votre prochaine mission.</>
                   : <>Niveau maximum atteint — <b>50 %</b> de commission offerte sur votre prochaine mission.</>}
@@ -187,11 +187,11 @@ export default function ParrainagePage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
               <div style={{ background: 'rgba(18,179,156,.08)', borderRadius: 14, padding: 14 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{referrals.length}</div>
-                <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>Filleul{referrals.length > 1 ? 's' : ''} inscrit{referrals.length > 1 ? 's' : ''}</div>
+                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{referrals.length > 1 ? 's' : ''} inscrit{referrals.length > 1 ? 's' : ''}</div>
               </div>
               <div style={{ background: 'rgba(18,179,156,.08)', borderRadius: 14, padding: 14 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{successfulCount}</div>
-                <div style={{ fontSize: 11, color: '#6E8592', fontWeight: 600, marginTop: 2 }}>Parrainage{successfulCount > 1 ? 's' : ''} abouti{successfulCount > 1 ? 's' : ''}</div>
+                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Parrainage{successfulCount > 1 ? 's' : ''} abouti{successfulCount > 1 ? 's' : ''}</div>
               </div>
             </div>
 
@@ -199,7 +199,7 @@ export default function ParrainagePage() {
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>
                 {eligibleNow ? 'Récompense disponible ce mois-ci' : rewardsAvailable > 0 ? 'Récompense déjà utilisée ce mois-ci' : 'Aucune récompense disponible pour l\u2019instant'}
               </div>
-              <p style={{ fontSize: 12, color: '#6E8592', marginTop: 4, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 12, color: '#4E6470', marginTop: 4, lineHeight: 1.5 }}>
                 {eligibleNow
                   ? 'Elle s\u2019appliquera automatiquement une fois le paiement en ligne activé.'
                   : rewardsAvailable > 0

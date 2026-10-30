@@ -60,12 +60,12 @@ export default function LitigesPage() {
       </div>
 
       <div style={{ padding: 16 }}>
-        {!loading && isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'réclamations' : 'réclamation'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />}
-        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {!loading && isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'réclamations' : 'réclamation'} />}
+        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucun litige pour l'instant</div>
-            <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucun litige pour l'instant</div>
+            <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
           </div>
         )}
         {(() => {
@@ -75,7 +75,7 @@ export default function LitigesPage() {
           }, {} as Record<string, any[]>)
           return Object.entries(groups).map(([mois, list]: [string, any[]]) => (
             <div key={mois} style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
               {list.map(d => {
                 const cat = d.transactions?.requests?.category
                 return (
@@ -89,11 +89,11 @@ export default function LitigesPage() {
                         {STATUS_LABELS[d.status] || d.status}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>
+                    <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>
                       {cat ? <b style={{ color: '#0C8F7E' }}>{TRAD[cat] || cat} · </b> : null}
                       {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                     </div>
-                    <div style={{ fontSize: 12, color: '#6E8592', marginTop: 4 }}>{d.reason}</div>
+                    <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>{d.reason}</div>
                     {d.resolution && <div style={{ fontSize: 11.5, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Résolution : {d.resolution}</div>}
                   </div>
                 )

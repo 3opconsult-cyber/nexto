@@ -29,8 +29,8 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
   completed: { label: 'Terminée',        color: '#123644', bg: '#F3F6F5' },
   released:  { label: 'Réglée',          color: '#15803D', bg: '#DCFCE7' },
   disputed:  { label: 'En litige',       color: '#B91C1C', bg: '#FEE2E2' },
-  refunded:  { label: 'Remboursée',      color: '#6E8592', bg: '#F3F6F5' },
-  cancelled: { label: 'Annulée',         color: '#6E8592', bg: '#F3F6F5' },
+  refunded:  { label: 'Remboursée',      color: '#4E6470', bg: '#F3F6F5' },
+  cancelled: { label: 'Annulée',         color: '#4E6470', bg: '#F3F6F5' },
 }
 
 export default function ProDashboard() {
@@ -179,7 +179,7 @@ export default function ProDashboard() {
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644', marginTop: 10 }}>
                   {pro.company_name || `Entreprise de ${firstName || ''}`.trim()}
                 </div>
-                <div style={{ fontSize: 12.5, color: '#6E8592', marginTop: 3 }}>
+                <div style={{ fontSize: 12.5, color: '#4E6470', marginTop: 3 }}>
                   {firstName ? `${firstName} · ` : ''}{legalLabel(pro.legal_status)}{city ? ` · ${city}` : ''}
                 </div>
                 <span onClick={() => router.push('/pro/onboarding')} style={{ display: 'inline-block', marginTop: 8, fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', textDecoration: 'underline' }}>Modifier</span>
@@ -216,7 +216,7 @@ export default function ProDashboard() {
             </HubGroup>
 
             <div onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
-              style={{ textAlign: 'center', marginTop: 16, color: '#9CA3AF', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ textAlign: 'center', marginTop: 16, color: '#6E8592', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
               Se déconnecter
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function ProDashboard() {
         {tab === 'missions' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {transactions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Aucune mission pour l'instant</div>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Aucune mission pour l'instant</div>
             ) : transactions.map(t => {
               const st = STATUS_LABELS[t.status] || STATUS_LABELS.pending
               return (
@@ -238,7 +238,7 @@ export default function ProDashboard() {
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: st.bg, color: st.color }}>{st.label}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                    <span style={{ fontSize: 12.5, color: '#6E8592' }}>{t.requests?.category ? (TRADES[t.requests.category] || 'Prestation') : 'Prestation'}</span>
+                    <span style={{ fontSize: 12.5, color: '#4E6470' }}>{t.requests?.category ? (TRADES[t.requests.category] || 'Prestation') : 'Prestation'}</span>
                     {(t.payout_cents || 0) > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: '#0C8F7E' }}>{EUR(t.payout_cents)} net</span>}
                   </div>
                 </button>

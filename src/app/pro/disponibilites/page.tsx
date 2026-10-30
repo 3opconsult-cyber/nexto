@@ -146,19 +146,19 @@ export default function Disponibilites() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ background: '#123644', padding: '16px 20px 22px' }}>
         <NavDrawer />
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.45)', margin: '18px 0 4px' }}>Espace prestataire</div>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '18px 0 4px' }}>Espace prestataire</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes disponibilités</div>
-        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.6)', marginTop: 6, maxWidth: '52ch' }}>
+        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', marginTop: 6, maxWidth: '52ch' }}>
           Touchez un jour pour choisir vos horaires. Vos clients réservent ensuite l&apos;un de ces créneaux, sans aller-retour.
         </p>
       </div>
 
       <div style={{ flex: 1, padding: '16px 12px 40px' }}>
         <div style={{ maxWidth: 820, margin: '0 auto' }}>
-          {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+          {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
           {!loading && slots === null && (
-            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 18, fontSize: 13, color: '#6E8592', lineHeight: 1.55 }}>
+            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 18, fontSize: 13, color: '#4E6470', lineHeight: 1.55 }}>
               La réservation par créneau arrive très bientôt. En attendant, vos clients vous contactent et vous convenez de l&apos;heure dans la conversation.
             </div>
           )}
@@ -167,7 +167,7 @@ export default function Disponibilites() {
             <>
               {msg && <p style={{ fontSize: 13, color: msg.ok ? '#0C8F7E' : '#c0503a', margin: '0 0 10px', fontWeight: 600 }}>{msg.text}</p>}
               <Calendar events={events} views={['month']} defaultView="month" bigCells onDayClick={openDay} />
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 12, fontSize: 12, color: '#6E8592' }}>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 12, fontSize: 12, color: '#4E6470' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: 'rgba(18,179,156,.14)', border: '1.5px solid #12B39C' }} />Créneaux libres</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: '#123644' }} />Rendez-vous</span>
               </div>
@@ -205,7 +205,7 @@ export default function Disponibilites() {
               })}
             </div>
 
-            <div style={{ fontSize: 11.5, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px' }}>Appliquer à</div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px' }}>Appliquer à</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {([['day', 'Ce jour seulement'], ['week', 'Toute la semaine, mêmes horaires'], ['weekday', `Tous les ${weekdayName}s pendant ${WEEKS} semaines`]] as const).map(([k, label]) => (
                 <div key={k} onClick={() => setScope(k)} style={{ display: 'flex', alignItems: 'center', gap: 10, border: scope === k ? '2px solid #12B39C' : '1.5px solid #E7EDEB', borderRadius: 13, padding: '11px 13px', cursor: 'pointer', background: scope === k ? 'rgba(18,179,156,.06)' : '#fff' }}>
@@ -218,7 +218,7 @@ export default function Disponibilites() {
             <button onClick={save} disabled={busy} style={{ marginTop: 16, width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
               {busy ? 'Enregistrement…' : 'Enregistrer'}
             </button>
-            <p style={{ fontSize: 11.5, color: '#9CA3AF', textAlign: 'center', margin: '10px 0 0' }}>Un créneau déjà réservé par un client n&apos;est jamais retiré.</p>
+            <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', margin: '10px 0 0' }}>Un créneau déjà réservé par un client n&apos;est jamais retiré.</p>
           </div>
         </div>
       )}

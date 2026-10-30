@@ -91,7 +91,7 @@ export default function DepartureBar({
     </div>
   ) : address ? (
     <div style={{ marginTop: 10, background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '10px 12px' }}>
-      <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Adresse du rendez-vous</div>
+      <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.72)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Adresse du rendez-vous</div>
       <div style={{ fontSize: 13.5, fontWeight: 600, marginTop: 3, color: '#fff' }}>{address}</div>
       {maps && <a href={maps} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 9, background: '#12B39C', color: '#fff', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5 }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
@@ -110,7 +110,7 @@ export default function DepartureBar({
             background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif',
             fontWeight: 700, fontSize: 13.5,
           }}>Je pars maintenant</button>
-          <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.55)', textAlign: 'center', marginTop: 6 }}>
+          <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.72)', textAlign: 'center', marginTop: 6 }}>
             Le client verra votre heure d'arrivée estimée.
           </div>
           <AddressBlock />
@@ -118,12 +118,12 @@ export default function DepartureBar({
         </div>
 
         <Modal open={ask} onClose={() => setAsk(false)} title="Dans combien de temps arrivez-vous ?">
-          <p style={{ fontSize: 13, color: '#6E8592', margin: 0, lineHeight: 1.55 }}>
+          <p style={{ fontSize: 13, color: '#4E6470', margin: 0, lineHeight: 1.55 }}>
             Le client verra un compte à rebours. Ce n'est qu'une estimation : c'est le code scanné
             sur place qui déclenchera réellement la mission.
           </p>
           {minPlausibleMin != null && minPlausibleMin > ETAS[0] && (
-            <p style={{ fontSize: 11.5, color: '#9CA3AF', margin: '10px 0 0' }}>
+            <p style={{ fontSize: 11.5, color: '#6E8592', margin: '10px 0 0' }}>
               Compte tenu de la distance, une arrivée en moins de {minPlausibleMin} min n'est pas réaliste — ces créneaux sont désactivés.
             </p>
           )}
@@ -163,7 +163,7 @@ export default function DepartureBar({
         <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2FD06E', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Intervention en cours</div>
-          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.6)', marginTop: 2 }}>Arrivée scannée à {since} · le scan de fin enregistrera la durée réelle.</div>
+          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)', marginTop: 2 }}>Arrivée scannée à {since} · le scan de fin enregistrera la durée réelle.</div>
         </div>
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
           {h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`}
@@ -182,7 +182,7 @@ export default function DepartureBar({
           <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2FD06E', flexShrink: 0 }} />
           <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Vous êtes en route</span>
         </div>
-        <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>Le client suit votre arrivée. La mission démarrera au scan du code d'arrivée.</div>
+        <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>Le client suit votre arrivée. La mission démarrera au scan du code d'arrivée.</div>
         <AddressBlock />
           <ArrivalProof txId={tx.id} onDone={onChange} />
       </div>
@@ -199,7 +199,7 @@ export default function DepartureBar({
   return (
     <div style={{ padding: '13px 16px', background: '#123644', color: '#fff' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,.8)' }}>
           {late ? 'Devrait être arrivé' : 'Arrive dans'}
         </span>
         <span style={{
@@ -224,7 +224,7 @@ export default function DepartureBar({
         }} />
       </div>
 
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', marginTop: 9, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.72)', marginTop: 9, lineHeight: 1.5 }}>
         Estimation annoncée au départ. La mission démarrera au scan du code d'arrivée.
       </div>
     </div>

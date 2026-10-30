@@ -145,7 +145,7 @@ export default function ProDocumentsPage() {
   const typeLabel = (r: Rubrique, p: Piece) => r.types.find(t => t.key === p.type)?.label || r.title
 
   if (!ready) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F3F6F5', color: '#6E8592', fontFamily: 'Inter, sans-serif' }}>Chargement…</div>
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F3F6F5', color: '#4E6470', fontFamily: 'Inter, sans-serif' }}>Chargement…</div>
   }
 
   return (
@@ -157,9 +157,9 @@ export default function ProDocumentsPage() {
 
       <div style={{ background: '#123644', padding: '16px 20px 22px' }}>
         <NavDrawer />
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.45)', margin: '18px 0 4px' }}>Mon entreprise</div>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '18px 0 4px' }}>Mon entreprise</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes pièces</div>
-        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.6)', marginTop: 6, maxWidth: '46ch', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', marginTop: 6, maxWidth: '46ch', lineHeight: 1.5 }}>
           Visibles uniquement par vous et l&apos;équipe PING, jamais par les clients. Elles rassurent vos clients (« pièce fournie »,
           « assurance renseignée » sur votre profil). Photo ou fichier PDF, JPG, PNG — 10 Mo maximum.
         </p>
@@ -183,9 +183,9 @@ export default function ProDocumentsPage() {
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, color: '#123644' }}>{r.title}</span>
                     {st
                       ? <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: st.bg, color: st.fg }}>{st.label}</span>
-                      : <span style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF' }}>{r.optional ? 'Facultatif' : 'À fournir'}</span>}
+                      : <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592' }}>{r.optional ? 'Facultatif' : 'À fournir'}</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: '#6E8592', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>
+                  <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>
                 </div>
               </div>
 
@@ -198,10 +198,10 @@ export default function ProDocumentsPage() {
                       </svg>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{typeLabel(r, p)}</div>
-                        {p.at > 0 && <div style={{ fontSize: 11, color: '#9CA3AF' }}>Déposée le {new Date(p.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
+                        {p.at > 0 && <div style={{ fontSize: 11, color: '#6E8592' }}>Déposée le {new Date(p.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
                       </div>
                       <button onClick={() => open(p)} style={{ border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Voir</button>
-                      <button onClick={() => remove(p)} aria-label="Supprimer" style={{ border: 'none', background: 'none', color: '#9CA3AF', cursor: 'pointer', padding: 2, display: 'flex' }}>
+                      <button onClick={() => remove(p)} aria-label="Supprimer" style={{ border: 'none', background: 'none', color: '#6E8592', cursor: 'pointer', padding: 2, display: 'flex' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
                       </button>
                     </div>
@@ -211,7 +211,7 @@ export default function ProDocumentsPage() {
 
               {/* Ajouter une pièce : choisir son type, puis photo ou fichier. */}
               <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Ajouter une pièce</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Ajouter une pièce</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {r.types.map(t => (
                     <div key={t.key} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -239,7 +239,7 @@ export default function ProDocumentsPage() {
       <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing ? (RUBRIQUES.find(r => r.kind === viewing.piece.kind) ? typeLabel(RUBRIQUES.find(r => r.kind === viewing.piece.kind)!, viewing.piece) : 'Pièce') : undefined}>
         {viewing && (
           <div>
-            <p style={{ fontSize: 12, color: '#6E8592', margin: '0 0 12px' }}>Visible uniquement par vous et l&apos;équipe PING — jamais par les clients.</p>
+            <p style={{ fontSize: 12, color: '#4E6470', margin: '0 0 12px' }}>Visible uniquement par vous et l&apos;équipe PING — jamais par les clients.</p>
             {isImage(viewing.piece.path)
               ? <img src={viewing.url} alt="Pièce" style={{ width: '100%', borderRadius: 12, border: '1px solid #E7EDEB', display: 'block' }} />
               : <iframe src={viewing.url} style={{ width: '100%', height: 420, border: '1px solid #E7EDEB', borderRadius: 12 }} />}

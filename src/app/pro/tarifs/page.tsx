@@ -21,7 +21,7 @@ type Editing =
   | { kind: 'row'; id: string }
   | { kind: 'new' }
 
-const label: React.CSSProperties = { display: 'block', fontSize: 11.5, color: '#6E8592', fontWeight: 700, marginBottom: 5 }
+const label: React.CSSProperties = { display: 'block', fontSize: 11.5, color: '#4E6470', fontWeight: 700, marginBottom: 5 }
 const input: React.CSSProperties = {
   display: 'block', width: '100%', boxSizing: 'border-box', border: '1.5px solid #E7EDEB', borderRadius: 11,
   padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none', color: '#123644',
@@ -144,7 +144,7 @@ export default function ProTarifsPage() {
           <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{title}</span>
           {tag && <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '2px 7px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0C8F7E' }}>{tag}</span>}
         </div>
-        <div style={{ fontSize: 12, color: '#6E8592', marginTop: 3 }}>{pricingSummary(cols)}</div>
+        <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3 }}>{pricingSummary(cols)}</div>
       </div>
       <div style={{ textAlign: 'right', flexShrink: 0 }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(cols) ?? 'À compléter'}</div>
@@ -157,40 +157,44 @@ export default function ProTarifsPage() {
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ background: '#123644', padding: '16px 20px 20px' }}>
         <NavDrawer />
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.45)', margin: '16px 0 4px' }}>Espace prestataire</div>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '16px 0 4px' }}>Espace prestataire</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes tarifs</div>
       </div>
 
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '20px 16px 120px' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '20px 16px 40px' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644' }}>Catalogue de prix</div>
-        <p style={{ fontSize: 12.5, color: '#6E8592', margin: '4px 0 18px', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 18px', lineHeight: 1.5 }}>
           Un prix pour chaque prestation, fixé à l&apos;avance : forfait, à l&apos;heure, ou forfait avec heures supplémentaires.
           Vos clients réservent directement la prestation de leur choix.
         </p>
 
-        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
         {error && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#c0503a', fontSize: 12.5, fontWeight: 600, marginBottom: 10 }}>{error}</div>}
 
         {!loading && (
           <>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 8px 2px' }}>Prestations</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 8px 2px' }}>Prestations</div>
             {primary && line('primary', displayName(primary.trade), primary, () => openSheet({ kind: 'primary' }), 'Principal')}
             {rows.map(r => line(r.id, displayName(r.name), r, () => openSheet({ kind: 'row', id: r.id })))}
             {!primary && rows.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 20, background: '#fff', borderRadius: 14, border: '1px solid #E7EDEB', fontSize: 12.5, color: '#6E8592' }}>
+              <div style={{ textAlign: 'center', padding: 20, background: '#fff', borderRadius: 14, border: '1px solid #E7EDEB', fontSize: 12.5, color: '#4E6470' }}>
                 Aucun tarif pour l&apos;instant : ajoutez votre première prestation.
               </div>
             )}
+            {/* Services du catalogue pas encore tarifés : une ligne en pointillé, un tap pour fixer le prix. */}
+            {freeTrades.map(k => (
+              <button key={k} type="button" onClick={() => { openSheet({ kind: 'new' }); setPick(k) }}
+                style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'transparent', border: '1.5px dashed #B9CBC7', borderRadius: 14, padding: '13px 16px', marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
+                <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{TRADES[k]}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>+ Fixer un prix</span>
+              </button>
+            ))}
+            <button onClick={() => openSheet({ kind: 'new' })}
+              style={{ display: 'block', width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+              + Ajouter une prestation
+            </button>
           </>
         )}
-      </div>
-
-      <style>{`@media (min-width:1000px){.tarifs-foot{left:236px !important}}`}</style>
-      <div className="tarifs-foot" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px calc(14px + env(safe-area-inset-bottom, 0px))', background: 'rgba(243,246,245,.96)', borderTop: '1px solid #E7EDEB', zIndex: 20 }}>
-        <button onClick={() => openSheet({ kind: 'new' })}
-          style={{ display: 'block', width: '100%', maxWidth: 640, margin: '0 auto', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-          + Ajouter un tarif
-        </button>
       </div>
 
       {editing && (
@@ -206,7 +210,7 @@ export default function ProTarifsPage() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {[...freeTrades.map(k => ({ k, t: TRADES[k] })), { k: '__libre', t: 'Autre prestation' }].map(({ k, t }) => (
                     <button key={k} type="button" onClick={() => { setPick(k); if (k !== '__libre' && draft.mode === 'devis') setDraft(emptyDraft()) }}
-                      style={{ padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5, border: pick === k ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: pick === k ? 'rgba(18,179,156,.08)' : '#fff', color: pick === k ? '#0C8F7E' : '#6E8592' }}>
+                      style={{ padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5, border: pick === k ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: pick === k ? 'rgba(18,179,156,.08)' : '#fff', color: pick === k ? '#0C8F7E' : '#4E6470' }}>
                       {t}
                     </button>
                   ))}

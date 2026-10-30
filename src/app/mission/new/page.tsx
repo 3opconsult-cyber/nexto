@@ -191,7 +191,7 @@ function MissionForm() {
           <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700 }}>← Retour</button>
         </div>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 22, color: '#fff' }}>Réserver</h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>
           {pricing
             ? hasOvertime
               ? `${article?.name || TRADES[pro.trade] || pro.trade} — ${EUR(pricing.base_price_cents)} (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${EUR(pricing.hourly_rate_cents)}/h au-delà`
@@ -202,21 +202,21 @@ function MissionForm() {
 
       <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '24px 20px', minHeight: 'calc(100vh - 110px)' }}>
         <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Adresse</span>
+          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Adresse</span>
           <input value={address} onChange={e => setAddress(e.target.value)}
             style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14 }} />
         </label>
 
         {!needsSlot && (
           <label style={{ display: 'block', marginBottom: 16 }}>
-            <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Date et heure souhaitées</span>
+            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Date et heure souhaitées</span>
             <input type="datetime-local" value={wantedAt} onChange={e => setWantedAt(e.target.value)}
               style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, boxSizing: 'border-box' }} />
           </label>
         )}
 
         <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Description (facultatif)</span>
+          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Description (facultatif)</span>
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
             style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 13.5, fontFamily: 'inherit' }} />
         </label>
@@ -241,7 +241,7 @@ function MissionForm() {
 
         {mode === 'horaire' && !hasOvertime && (
           <label style={{ display: 'block', marginBottom: 16 }}>
-            <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
+            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
             <input type="number" value={estimatedHours} onChange={e => setEstimatedHours(e.target.value)} min="0.5" step="0.5"
               style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14 }} />
           </label>
@@ -249,12 +249,12 @@ function MissionForm() {
 
         {needsSlot && (
           <div style={{ marginBottom: 18 }}>
-            <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Choisir un créneau</span>
+            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Choisir un créneau</span>
             <div style={{ marginTop: 8 }}>
               <Calendar events={slotEvents} views={['week', 'day']} defaultView="week"
                 initialDate={slotEvents[0]?.start} />
             </div>
-            <div style={{ fontSize: 11.5, color: chosen ? '#0C8F7E' : '#9CA3AF', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
+            <div style={{ fontSize: 11.5, color: chosen ? '#0C8F7E' : '#6E8592', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
               {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
             </div>
           </div>
@@ -270,7 +270,7 @@ function MissionForm() {
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Total</span>
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{EUR(totalTtc)}</span>
           </div>
-          <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Frais de service PING inclus</div>
+          <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4 }}>Frais de service PING inclus</div>
           {AVANCE_IMMEDIATE_ACTIVE && pro?.sap_number && isEligible(pro?.trade) && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
@@ -297,7 +297,7 @@ function MissionForm() {
         <button onClick={() => paymentsOn ? submit() : setConfirming(true)} disabled={!pro || !mode || creating || paymentsOn === null} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
           {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
-        <p style={{ fontSize: 11, color: '#9CA3AF', textAlign: 'center', marginTop: 10 }}>
+        <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>
           {paymentsOn ? 'Vous serez dirigé vers le paiement sécurisé par carte.' : 'Vous verrez le détail avant de confirmer.'}
         </p>
 

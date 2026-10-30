@@ -51,7 +51,7 @@ export default function ProAttente() {
       <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#fff', marginBottom: 10 }}>
         {isActive && placed ? 'Votre profil est en ligne' : 'Dossier enregistré'}
       </h1>
-      <p style={{ fontSize: 13.5, fontWeight: 500, color: 'rgba(255,255,255,.6)', maxWidth: 320, lineHeight: 1.6, marginBottom: 28 }}>
+      <p style={{ fontSize: 13.5, fontWeight: 500, color: 'rgba(255,255,255,.8)', maxWidth: 320, lineHeight: 1.6, marginBottom: 28 }}>
         {!placed
           ? "Votre adresse n'a pas pu être placée sur la carte : les clients ne vous voient pas encore. Précisez-la pour apparaître près d'eux."
           : isActive
@@ -67,7 +67,7 @@ export default function ProAttente() {
 
       <div style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ padding: 16, borderRadius: 16, textAlign: 'left', background: 'rgba(255,255,255,.08)' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.03em', color: 'rgba(255,255,255,.4)', marginBottom: 10 }}>Documents</div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.03em', color: 'rgba(255,255,255,.72)', marginBottom: 10 }}>Documents</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {DOC_TYPES.map(doc => {
               const status = docs[doc.key]
@@ -81,7 +81,7 @@ export default function ProAttente() {
                     {status === 'valid' ? '✓' : ''}
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: status ? '#fff' : 'rgba(255,255,255,.4)' }}>{doc.label}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)' }}>
+                  <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.72)' }}>
                     {status ? (STATUS_LABEL[status] || 'Reçu') : 'Non fourni'}
                   </span>
                 </div>

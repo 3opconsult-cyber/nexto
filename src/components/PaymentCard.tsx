@@ -75,7 +75,7 @@ export default function PaymentCard({ transactionId }: { transactionId: string }
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{title}</div>
-          <div style={{ fontSize: 12, color: '#6E8592', lineHeight: 1.5, marginTop: 2 }}>{detail}</div>
+          <div style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.5, marginTop: 2 }}>{detail}</div>
         </div>
       </div>
       {canPay && (

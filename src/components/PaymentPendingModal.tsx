@@ -41,16 +41,16 @@ export default function PaymentPendingModal({
 
       <div style={{ background: '#F3F6F5', borderRadius: 13, padding: 13, marginTop: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontSize: 12.5, color: '#6E8592' }}>Montant simulé de la réservation</span>
+          <span style={{ fontSize: 12.5, color: '#4E6470' }}>Montant simulé de la réservation</span>
           <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17 }}>{eur(totalCents)}</b>
         </div>
-        <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 6, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 6, lineHeight: 1.5 }}>
           Ce montant est celui prévu. Il sera recalculé sur la durée réellement passée,
           relevée par les codes d'arrivée et de départ.
         </div>
       </div>
 
-      <div style={{ marginTop: 14, fontSize: 12.5, color: '#6E8592', lineHeight: 1.6 }}>
+      <div style={{ marginTop: 14, fontSize: 12.5, color: '#4E6470', lineHeight: 1.6 }}>
         Concrètement, dans la version finale : la somme est placée sur{' '}
         <b style={{ color: '#123644' }}>un compte séquestre</b>, débloquée au prestataire
         24 h après la fin de la prestation, sauf réclamation de votre part. Toute réclamation
@@ -59,7 +59,7 @@ export default function PaymentPendingModal({
       </div>
 
       <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #F0F4F3',
-                    fontSize: 11.5, color: '#6E8592', lineHeight: 1.55 }}>
+                    fontSize: 11.5, color: '#4E6470', lineHeight: 1.55 }}>
         Rappel : dans cette version de test, rien de tout cela n'est réellement débité ni
         versé — seule la simulation est enregistrée, pour tester le parcours.
       </div>

@@ -120,8 +120,8 @@ export default function AgendaPage() {
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
           {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
         </div>
-        <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
-        <div style={{ fontSize: 11, color: t.scheduled_at && !DONE.includes(t.status) ? '#0C8F7E' : '#9aa6a3', fontWeight: t.scheduled_at && !DONE.includes(t.status) ? 700 : 400, marginTop: 3 }}>
+        <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
+        <div style={{ fontSize: 11, color: t.scheduled_at && !DONE.includes(t.status) ? '#0C8F7E' : '#6E8592', fontWeight: t.scheduled_at && !DONE.includes(t.status) ? 700 : 400, marginTop: 3 }}>
           {t.scheduled_at && !DONE.includes(t.status)
             ? `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`
             : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
@@ -142,7 +142,7 @@ export default function AgendaPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 980, margin: '0 auto' }}>
-        {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />}
+        {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} />}
 
         {shownDisputes.map(d => (
           <div key={d.id} onClick={() => router.push(`/mission/${d.transaction_id}/chat`)}
@@ -168,14 +168,14 @@ export default function AgendaPage() {
             emptyHint={mode === 'pro' ? 'Aucun rendez-vous ni créneau pour l\u2019instant. Publiez vos disponibilités pour être réservé en un clic.' : 'Aucun rendez-vous pour l\u2019instant.'} />
         </div>
 
-        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
         {!loading && (
           <>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>À venir</div>
-            {upcoming.length ? upcoming.map(card) : <p style={{ fontSize: 12.5, color: '#9aa6a3', marginBottom: 20 }}>Rien de prévu pour l&apos;instant.</p>}
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>À venir</div>
+            {upcoming.length ? upcoming.map(card) : <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 20 }}>Rien de prévu pour l&apos;instant.</p>}
             {pendingTalks > 0 && (
-              <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#6E8592', cursor: 'pointer' }}>
+              <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#4E6470', cursor: 'pointer' }}>
                 {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
               </button>
             )}
@@ -183,13 +183,13 @@ export default function AgendaPage() {
             {isPro && mode === 'pro' && freeSlots !== null && (
               <>
                 <div style={{ display: 'flex', alignItems: 'baseline', margin: '22px 0 10px' }}>
-                  <div style={{ flex: 1, fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em' }}>Mes créneaux libres</div>
+                  <div style={{ flex: 1, fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em' }}>Mes créneaux libres</div>
                   <span onClick={() => router.push('/pro/disponibilites')} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer' }}>Gérer</span>
                 </div>
                 {freeSlots.filter(x => new Date(x.starts_at) > new Date()).length ? freeSlots.filter(x => new Date(x.starts_at) > new Date()).slice(0, 3).map(x => (
                   <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px dashed #B8C9C5', borderRadius: 13, padding: '10px 14px', marginBottom: 8 }}>
-                    <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, color: '#6E8592', width: 46 }}>{hhmm(x.starts_at)}</b>
-                    <span style={{ fontSize: 12, color: '#9aa6a3' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
+                    <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, color: '#4E6470', width: 46 }}>{hhmm(x.starts_at)}</b>
+                    <span style={{ fontSize: 12, color: '#6E8592' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
                   </div>
                 )) : (
                   <p onClick={() => router.push('/pro/disponibilites')} style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600, cursor: 'pointer' }}>Publiez vos disponibilités pour être réservé en un clic.</p>
@@ -197,8 +197,8 @@ export default function AgendaPage() {
               </>
             )}
 
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '22px 0 10px' }}>Effectuées</div>
-            {done.length ? done.map(card) : <p style={{ fontSize: 12.5, color: '#9aa6a3' }}>Aucune prestation terminée pour l&apos;instant.</p>}
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '22px 0 10px' }}>Effectuées</div>
+            {done.length ? done.map(card) : <p style={{ fontSize: 12.5, color: '#6E8592' }}>Aucune prestation terminée pour l&apos;instant.</p>}
           </>
         )}
       </div>

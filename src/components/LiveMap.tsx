@@ -48,7 +48,7 @@ function pinIcon(color: string, label: string | null, i = 0) {
 }
 
 function proIcon(p: { trade: string; is_active: boolean; pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }, i = 0) {
-  return pinIcon(p.is_active ? '#12B39C' : '#9CA3AF', pinPriceLabel(p), i)
+  return pinIcon(p.is_active ? '#12B39C' : '#6E8592', pinPriceLabel(p), i)
 }
 function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B') {
   return pinIcon(color, label ?? null, i)

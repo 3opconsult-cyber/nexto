@@ -94,7 +94,7 @@ export default function ReviewModal({
 
   return (
     <Modal open={open && !suppressed} onClose={later} title={`Comment s'est passée l'intervention ?`}>
-      <p style={{ fontSize: 13, color: '#6E8592', margin: 0, lineHeight: 1.55 }}>
+      <p style={{ fontSize: 13, color: '#4E6470', margin: 0, lineHeight: 1.55 }}>
         Votre avis s'affichera sur la fiche de <b style={{ color: '#123644' }}>{proName}</b>.
         Il compte pour les clients suivants — et pour lui.
       </p>
@@ -122,7 +122,7 @@ export default function ReviewModal({
 
       <div style={{ marginTop: 18 }}>
         <label htmlFor="avis-com" style={{ fontSize: 13, fontWeight: 600, display: 'block' }}>
-          Un mot à ajouter ? <span style={{ color: '#6E8592', fontWeight: 400 }}>facultatif</span>
+          Un mot à ajouter ? <span style={{ color: '#4E6470', fontWeight: 400 }}>facultatif</span>
         </label>
         <textarea id="avis-com" value={comment} onChange={e => setComment(e.target.value)}
           rows={3} maxLength={600}
@@ -135,7 +135,7 @@ export default function ReviewModal({
 
       <div style={{ marginTop: 18 }}>
         <div style={{ fontSize: 13, fontWeight: 600 }}>
-          Laisser un pourboire ? <span style={{ color: '#6E8592', fontWeight: 400 }}>facultatif</span>
+          Laisser un pourboire ? <span style={{ color: '#4E6470', fontWeight: 400 }}>facultatif</span>
         </div>
         <div style={{ display: 'flex', gap: 7, marginTop: 8 }}>
           {TIPS.map(c => (

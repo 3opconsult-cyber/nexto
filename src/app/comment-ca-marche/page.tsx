@@ -127,7 +127,7 @@ export default function CommentCaMarche() {
             {slide.title}
           </h1>
           {slide.body && (
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,.65)', lineHeight: 1.6, marginTop: 14, maxWidth: 340, marginLeft: 'auto', marginRight: 'auto' }}>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,.8)', lineHeight: 1.6, marginTop: 14, maxWidth: 340, marginLeft: 'auto', marginRight: 'auto' }}>
               {slide.body}
             </p>
           )}
@@ -141,7 +141,7 @@ export default function CommentCaMarche() {
                   </div>
                   <div>
                     <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#fff' }}>{c.title}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)', marginTop: 2 }}>{c.body}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.8)', marginTop: 2 }}>{c.body}</div>
                   </div>
                 </div>
               ))}

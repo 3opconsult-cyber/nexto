@@ -64,7 +64,7 @@ export default function ClientDocumentsPage() {
   if (!ready) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F3F6F5' }}>
-        <div style={{ color: '#6E8592', fontFamily: 'Quicksand, sans-serif', fontSize: 15 }}>Chargement…</div>
+        <div style={{ color: '#4E6470', fontFamily: 'Quicksand, sans-serif', fontSize: 15 }}>Chargement…</div>
       </div>
     )
   }
@@ -82,7 +82,7 @@ export default function ClientDocumentsPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 560, margin: '0 auto' }}>
-        <p style={{ fontSize: 12.5, color: '#6E8592', lineHeight: 1.5, marginBottom: 16 }}>
+        <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, marginBottom: 16 }}>
           Une pièce d&apos;identité renseignée rassure les prestataires que vous contactez. Visible
           uniquement par vous et l&apos;équipe PING — jamais par les prestataires.
         </p>
@@ -96,7 +96,7 @@ export default function ClientDocumentsPage() {
             {st ? (
               <span style={{ display: 'inline-block', marginTop: 4, padding: '2px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: st.bg, color: st.fg }}>{st.label}</span>
             ) : (
-              <div style={{ fontSize: 11.5, color: '#9CA3AF', fontWeight: 600, marginTop: 4 }}>Non fournie</div>
+              <div style={{ fontSize: 11.5, color: '#6E8592', fontWeight: 600, marginTop: 4 }}>Non fournie</div>
             )}
           </div>
           <button onClick={() => inputRef.current?.click()} disabled={uploading}
@@ -105,7 +105,7 @@ export default function ClientDocumentsPage() {
           </button>
         </div>
         {err && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, marginTop: 10 }}>{err}</p>}
-        <p style={{ fontSize: 11, color: '#9aa6a3', marginTop: 10 }}>PDF, JPG ou PNG · 10 Mo maximum.</p>
+        <p style={{ fontSize: 11, color: '#6E8592', marginTop: 10 }}>PDF, JPG ou PNG · 10 Mo maximum.</p>
       </div>
 
       <Modal open={!!viewing} onClose={() => setViewing(null)} title="Pièce d'identité">

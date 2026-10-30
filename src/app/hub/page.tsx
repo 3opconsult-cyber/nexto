@@ -66,7 +66,7 @@ export default function Hub() {
     <div className="min-h-screen" style={{background:'var(--navy)'}}>
       <div className="px-6 pt-12 pb-8 text-center">
         <div className="font-fredoka text-4xl text-white mb-2">Nexto</div>
-        <div className="text-sm font-bold" style={{color:'rgba(255,255,255,0.5)'}}>Hub — toutes les portes d'entrée</div>
+        <div className="text-sm font-bold" style={{color:'rgba(255,255,255,.72)'}}>Hub — toutes les portes d'entrée</div>
         <div className="inline-block mt-3 px-3 py-1 rounded-full text-xs font-black" style={{background:'#DCFCE7',color:'#15803D'}}>
           ● En production
         </div>

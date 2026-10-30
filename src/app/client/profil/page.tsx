@@ -6,7 +6,7 @@ import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 
-const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '12px 0 5px' }
+const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '12px 0 5px' }
 const fieldInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1.5px solid #E7EDEB', borderRadius: 12, fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644', outline: 'none', boxSizing: 'border-box' }
 
 export default function ClientProfil() {
@@ -141,7 +141,7 @@ export default function ClientProfil() {
         <input style={fieldInput} value={f.address} autoComplete="street-address" onChange={e => setF({ ...f, address: e.target.value })} />
         <label style={fieldLabel}>Ville</label>
         <input style={fieldInput} value={f.city} autoComplete="address-level2" onChange={e => setF({ ...f, city: e.target.value })} />
-        <p style={{ fontSize: 11.5, color: '#6E8592', lineHeight: 1.5, margin: '10px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
+        <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '10px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
         {editErr && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, margin: '10px 0 0' }}>{editErr}</p>}
         <button onClick={saveEdit} disabled={saving}
           style={{ width: '100%', marginTop: 16, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>

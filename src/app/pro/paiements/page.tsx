@@ -13,7 +13,7 @@ type State = {
 }
 
 const input = { width: '100%', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' as const }
-const label = { fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase' as const, letterSpacing: '.03em', margin: '10px 0 5px', display: 'block' }
+const label = { fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase' as const, letterSpacing: '.03em', margin: '10px 0 5px', display: 'block' }
 
 export default function ProPaiementsPage() {
   const router = useRouter()
@@ -59,17 +59,17 @@ export default function ProPaiementsPage() {
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
       <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
       <div style={{ padding: '20px 20px 16px' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.45)', marginBottom: 4 }}>Espace prestataire</div>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', marginBottom: 4 }}>Espace prestataire</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes versements</div>
       </div>
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh' }}>
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
           {!st ? (
-            <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
+            <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
           ) : !st.actif ? (
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Paiement en ligne bientôt disponible</div>
-              <p style={{ fontSize: 12.5, color: '#6E8592', lineHeight: 1.55, margin: '6px 0 0' }}>
+              <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
                 Le client paiera par carte à la réservation ; l&apos;argent restera bloqué chez un partenaire de paiement agréé
                 jusqu&apos;à 24 h après la fin de la mission, puis sera versé sur votre IBAN. Vous pouvez déjà déposer votre RIB
                 dans « Mes pièces » : il servira à ouvrir votre compte de versement.
@@ -82,7 +82,7 @@ export default function ProPaiementsPage() {
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Compte de versement · {st.prestataire}</div>
                   {badge && <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, background: badge.bg, color: badge.fg, whiteSpace: 'nowrap' }}>{badge.t}</span>}
                 </div>
-                <p style={{ fontSize: 12.5, color: '#6E8592', lineHeight: 1.55, margin: '6px 0 0' }}>
+                <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
                   {c?.statut === 'active'
                     ? 'Vos missions payées vous sont versées 24 h après le scan de fin, sauf réclamation du client, commission PING déduite.'
                     : c?.message || `Votre identité et votre IBAN sont contrôlés par ${st.prestataire}, établissement de paiement agréé. PING ne conserve pas votre IBAN.`}
@@ -114,7 +114,7 @@ export default function ProPaiementsPage() {
                           <input style={input} value={f.ville} onChange={e => setF({ ...f, ville: e.target.value })} />
                         </div>
                       </div>
-                      <p style={{ fontSize: 11.5, color: '#6E8592', lineHeight: 1.5, margin: '10px 0 0' }}>
+                      <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '10px 0 0' }}>
                         Les pièces déjà déposées dans « Mes pièces » (identité, justificatif de statut) sont transmises au partenaire de paiement.
                       </p>
                     </>
@@ -130,7 +130,7 @@ export default function ProPaiementsPage() {
                   <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
                     {busy ? 'Ouverture…' : c ? `Compléter chez ${st.prestataire}` : `Ouvrir mon compte chez ${st.prestataire}`}
                   </button>
-                  <p style={{ fontSize: 11.5, color: '#6E8592', lineHeight: 1.5, marginTop: 10, textAlign: 'center' }}>
+                  <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, marginTop: 10, textAlign: 'center' }}>
                     Vous saisissez identité et IBAN directement chez {st.prestataire}, puis revenez ici.
                   </p>
                 </>

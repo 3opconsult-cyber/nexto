@@ -51,7 +51,7 @@ export default function ClientAvisPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 640, margin: '0 auto' }}>
-        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
         {!loading && (
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', marginBottom: 14 }}>
@@ -61,8 +61,8 @@ export default function ClientAvisPage() {
 
         {!loading && rows.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucun avis publié pour l&apos;instant</div>
-            <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Vos avis apparaîtront ici après vos prestations.</div>
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucun avis publié pour l&apos;instant</div>
+            <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>Vos avis apparaîtront ici après vos prestations.</div>
           </div>
         )}
 
@@ -72,10 +72,10 @@ export default function ClientAvisPage() {
               <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, color: '#123644' }}>
                 {names[r.ratee_id] || 'Prestataire'}
               </b>
-              <small style={{ color: '#9CA3AF' }}>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</small>
+              <small style={{ color: '#6E8592' }}>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</small>
             </div>
             <div style={{ marginTop: 6, color: 'var(--gold, #F2A93B)', fontSize: 14 }}>{'★'.repeat(r.stars)}{'☆'.repeat(5 - r.stars)}</div>
-            {r.comment && <p style={{ marginTop: 6, fontSize: 12.5, color: '#6E8592', lineHeight: 1.5 }}>{r.comment}</p>}
+            {r.comment && <p style={{ marginTop: 6, fontSize: 12.5, color: '#4E6470', lineHeight: 1.5 }}>{r.comment}</p>}
           </div>
         ))}
       </div>

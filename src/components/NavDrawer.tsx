@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -16,7 +17,7 @@ const ICONS: Record<string, JSX.Element> = {
 }
 
 function Icon({ name }: { name: string }) {
-  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2" style={{ flexShrink: 0 }}>{ICONS[name] || ICONS.doc}</svg>
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2" style={{ flexShrink: 0 }}>{ICONS[name] || ICONS.doc}</svg>
 }
 
 export default function NavDrawer({ dark = true }: { dark?: boolean }) {
@@ -116,7 +117,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={dark ? '#fff' : '#123644'} strokeWidth="2.2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
       </button>
 
-      {open && (
+      {/* Portail sur <body> : sinon un en-tête parent (carte pro…) enferme le menu sous la barre du bas. */}
+      {open && createPortal(
         <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.45)', zIndex: 3000, display: 'flex', justifyContent: 'center' }}>
           <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, height: '100%', marginRight: 'auto', background: '#fff', display: 'flex', flexDirection: 'column' }}>
 
@@ -131,12 +133,12 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: avatarBg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, flexShrink: 0 }}>{initial}</div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{profile?.first_name || 'Vous'}</div>
-                    <div style={{ fontSize: 12, color: '#6E8592', fontWeight: 600 }}>{[profile?.city, memberYear ? `membre depuis ${memberYear}` : null].filter(Boolean).join(' · ')}</div>
+                    <div style={{ fontSize: 12, color: '#4E6470', fontWeight: 600 }}>{[profile?.city, memberYear ? `membre depuis ${memberYear}` : null].filter(Boolean).join(' · ')}</div>
                   </div>
                 </>
               )}
               <button onClick={() => setOpen(false)} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
             </div>
 
@@ -147,7 +149,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                 background: available ? 'rgba(18,179,156,.1)' : '#F3F6F5',
               }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: available ? '#12B39C' : '#9CA3AF', flexShrink: 0 }} />
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: available ? '#12B39C' : '#6E8592', flexShrink: 0 }} />
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#123644' }}>{available ? 'Disponible — visible sur la carte' : 'Masqué — hors ligne'}</span>
                 </span>
                 <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#12B39C' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
@@ -177,7 +179,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 14px', borderRadius: 14, border: 'none', background: '#123644', cursor: 'pointer' }}>
                 <span style={{ textAlign: 'left' }}>
                   <span style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: '#fff' }}>{onProSide ? 'Revenir en mode particulier' : (isPro ? 'Passer en mode pro' : 'Devenir prestataire')}</span>
-                  <span style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,.55)', marginTop: 1 }}>{onProSide ? 'Chercher un service près de moi' : 'Proposer mes services'}</span>
+                  <span style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,.72)', marginTop: 1 }}>{onProSide ? 'Chercher un service près de moi' : 'Proposer mes services'}</span>
                 </span>
                 <span style={{ width: 38, height: 22, borderRadius: 999, background: onProSide ? '#12B39C' : 'rgba(255,255,255,.18)', position: 'relative', flexShrink: 0 }}>
                   <span style={{ position: 'absolute', top: 2, left: onProSide ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
@@ -185,7 +187,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

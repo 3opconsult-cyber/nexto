@@ -12,13 +12,13 @@ const inputStyle: React.CSSProperties = {
   outline: 'none', background: '#fff',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase',
+  display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase',
   letterSpacing: '.04em', marginBottom: 6,
 }
 
 function EyeIcon({ off }: { off: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       {off
         ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><path d="M1 1l22 22" /></>
         : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>}
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <label style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
               <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
                 style={{ width: 16, height: 16, accentColor: '#12B39C' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#6E8592' }}>Rester connecté</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#4E6470' }}>Rester connecté</span>
             </label>
             <button type="button" onClick={resetPassword}
               style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
@@ -124,7 +124,7 @@ export default function LoginPage() {
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
-          <p style={{ textAlign: 'center', fontSize: 13, color: '#6E8592', fontWeight: 600, marginTop: 18 }}>
+          <p style={{ textAlign: 'center', fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 18 }}>
             Pas encore de compte ?{' '}
             <Link href={next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup'} style={{ color: '#0C8F7E', fontWeight: 700 }}>S&apos;inscrire</Link>
           </p>

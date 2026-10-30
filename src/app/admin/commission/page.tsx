@@ -61,13 +61,13 @@ export default function AdminCommissionPage() {
     setTimeout(() => setSaved(false), 3000)
   }
 
-  if (loading) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#6E8592' }}>Chargement…</div>
+  if (loading) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#4E6470' }}>Chargement…</div>
 
   if (!authed) {
     return (
       <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', maxWidth: 480 }}>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 20, color: '#123644' }}>Accès admin requis</h1>
-        <p style={{ fontSize: 14, color: '#6E8592', marginTop: 10, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: '#4E6470', marginTop: 10, lineHeight: 1.6 }}>
           Connectez-vous avec le compte admin (<code>3op.consult@gmail.com</code>) sur <a href="/auth/login">/auth/login</a>,
           puis revenez sur cette page.
         </p>
@@ -80,11 +80,11 @@ export default function AdminCommissionPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ padding: '28px 24px', maxWidth: 560, margin: '0 auto' }}>
-        <a href="/admin" style={{ fontSize: 13, fontWeight: 700, color: '#6E8592', textDecoration: 'none' }}>← Retour à l'admin</a>
+        <a href="/admin" style={{ fontSize: 13, fontWeight: 700, color: '#4E6470', textDecoration: 'none' }}>← Retour à l'admin</a>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644', marginTop: 10 }}>
           Commission et facturation horaire
         </h1>
-        <p style={{ fontSize: 13.5, color: '#6E8592', marginTop: 4, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 13.5, color: '#4E6470', marginTop: 4, lineHeight: 1.5 }}>
           S'applique à toutes les nouvelles réservations et aux devis acceptés après l'enregistrement.
           Les missions déjà réservées gardent le taux qui était en vigueur au moment de la réservation.
         </p>
@@ -95,7 +95,7 @@ export default function AdminCommissionPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <input value={buyer} onChange={e => setBuyer(e.target.value)} inputMode="decimal"
                 style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
-              <span style={{ color: '#6E8592', fontWeight: 700 }}>%</span>
+              <span style={{ color: '#4E6470', fontWeight: 700 }}>%</span>
             </div>
           </label>
           <label style={{ display: 'block', marginBottom: 18 }}>
@@ -103,11 +103,11 @@ export default function AdminCommissionPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <input value={seller} onChange={e => setSeller(e.target.value)} inputMode="decimal"
                 style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
-              <span style={{ color: '#6E8592', fontWeight: 700 }}>%</span>
+              <span style={{ color: '#4E6470', fontWeight: 700 }}>%</span>
             </div>
           </label>
 
-          <div style={{ padding: '10px 14px', borderRadius: 10, background: '#F3F6F5', fontSize: 12.5, color: '#6E8592', marginBottom: 16 }}>
+          <div style={{ padding: '10px 14px', borderRadius: 10, background: '#F3F6F5', fontSize: 12.5, color: '#4E6470', marginBottom: 16 }}>
             Total prélevé par PING sur chaque prestation : <b style={{ color: '#123644' }}>{total.toFixed(1)} %</b>
           </div>
 
@@ -116,9 +116,9 @@ export default function AdminCommissionPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <input value={threshold} onChange={e => setThreshold(e.target.value.replace(/[^0-9]/g, ''))} inputMode="numeric"
                 style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
-              <span style={{ color: '#6E8592', fontWeight: 700 }}>minutes</span>
+              <span style={{ color: '#4E6470', fontWeight: 700 }}>minutes</span>
             </div>
-            <p style={{ fontSize: 12, color: '#6E8592', lineHeight: 1.55, margin: '8px 0 0' }}>
+            <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.55, margin: '8px 0 0' }}>
               Tarif horaire et dépassement de forfait uniquement (un forfait seul ne bouge jamais).
               Exemple avec {Number(threshold) || 0} min : {(() => { const t = Number(threshold) || 0; const ex = (m: number) => Math.floor(m / 60) + (m % 60 >= t ? 1 : 0); return `3 h 10 → ${ex(190)} h facturées, 3 h 20 → ${ex(200)} h` })()}.
               Mission plus courte que prévu : le client est remboursé de la différence avant le versement.

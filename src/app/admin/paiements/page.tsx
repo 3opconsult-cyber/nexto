@@ -48,7 +48,7 @@ export default function AdminPaiementsPage() {
   }
 
   const box = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 16, marginBottom: 14 }
-  if (!d) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#6E8592' }}>Chargement…</div>
+  if (!d) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#4E6470' }}>Chargement…</div>
   if (d.error) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#c0503a' }}>{d.error}</div>
   const r = d.reglage
 
@@ -56,14 +56,14 @@ export default function AdminPaiementsPage() {
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644', padding: '28px 16px 60px' }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 24, margin: '0 0 4px' }}>Séquestre</h1>
-        <p style={{ fontSize: 13, color: '#6E8592', margin: '0 0 18px' }}>
+        <p style={{ fontSize: 13, color: '#4E6470', margin: '0 0 18px' }}>
           L&apos;argent des clients reste chez le partenaire de paiement. Il n&apos;en sort que sur décision de PING :
           {d.auto === false ? ' versement manuel, mission par mission (mode « manuel »).' : ` versement automatique ${d.delaiHeures ?? 24} h après la fin sans litige, ou manuel ci-dessous.`}
         </p>
 
         <div style={box}>
           <b style={{ fontFamily: 'Quicksand, sans-serif' }}>Réglage {r.actif ? <span style={{ color: '#0C8F7E' }}>· actif ({r.actif})</span> : <span style={{ color: '#9A6712' }}>· éteint</span>}</b>
-          <ul style={{ fontSize: 12.5, color: '#6E8592', lineHeight: 1.8, margin: '8px 0 0', paddingLeft: 18 }}>
+          <ul style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.8, margin: '8px 0 0', paddingLeft: 18 }}>
             <li>PAYMENT_PROVIDER : {r.choisi || 'non choisi'}</li>
             {r.prestataires.map(p => <li key={p.nom}>{p.label} : clés {p.cles ? 'renseignées' : 'absentes'}</li>)}
             <li>SUPABASE_SERVICE_ROLE_KEY : {r.cleService ? 'renseignée' : 'absente'}</li>
@@ -71,10 +71,10 @@ export default function AdminPaiementsPage() {
           </ul>
         </div>
 
-        {msg && <div style={{ ...box, fontSize: 12, color: '#6E8592', wordBreak: 'break-all' }}>{msg}</div>}
+        {msg && <div style={{ ...box, fontSize: 12, color: '#4E6470', wordBreak: 'break-all' }}>{msg}</div>}
 
         {r.actif && (d.missions.length === 0 ? (
-          <div style={box}><span style={{ fontSize: 13, color: '#6E8592' }}>Aucun argent bloqué en ce moment.</span></div>
+          <div style={box}><span style={{ fontSize: 13, color: '#4E6470' }}>Aucun argent bloqué en ce moment.</span></div>
         ) : d.missions.map(m => (
           <div key={m.id} style={box}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
@@ -83,7 +83,7 @@ export default function AdminPaiementsPage() {
                 {STATUT[m.payment_status] || m.payment_status}{m.litige ? ' · litige ouvert' : ''}{m.status === 'cancelled' ? ' · annulée' : ''}
               </span>
             </div>
-            <div style={{ fontSize: 12.5, color: '#6E8592', marginTop: 6, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12.5, color: '#4E6470', marginTop: 6, lineHeight: 1.6 }}>
               Payé {eur(m.payeCents)} · total {eur(m.total_charged_cents)} · part prestataire {eur(m.payout_cents)}
               {' · '}{m.completed_at ? `terminée le ${new Date(m.completed_at).toLocaleString('fr-FR')}` : m.arrived_at ? 'en cours' : m.en_route_at ? 'prestataire en route' : 'à venir'}
               {m.alerte && <div style={{ color: '#c0503a', fontWeight: 600 }}>Alerte : {m.alerte}</div>}

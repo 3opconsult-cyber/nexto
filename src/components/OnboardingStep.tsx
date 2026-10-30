@@ -54,7 +54,7 @@ export default function OnboardingStep({
               <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= step ? '#12B39C' : 'rgba(255,255,255,.15)', transition: 'background .2s' }} />
             ))}
           </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.6)' }}>Étape {step + 1} sur {total}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.8)' }}>Étape {step + 1} sur {total}</div>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export default function OnboardingStep({
       >
         <div key={step} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', lineHeight: 1.3 }}>{title}</h1>
-          {subtitle && <p style={{ fontSize: 13, color: '#6E8592', marginTop: 8, lineHeight: 1.5 }}>{subtitle}</p>}
+          {subtitle && <p style={{ fontSize: 13, color: '#4E6470', marginTop: 8, lineHeight: 1.5 }}>{subtitle}</p>}
           <div style={{ flex: 1, marginTop: 22 }}>{children}</div>
         </div>
         <div style={{ marginTop: 20 }}>
@@ -79,7 +79,7 @@ export default function OnboardingStep({
             }}
           >{ctaLoading ? '…' : ctaLabel}</button>
           {onSkip && (
-            <button onClick={onSkip} style={{ width: '100%', padding: '12px 0 0', background: 'none', border: 'none', color: '#6E8592', fontSize: 12.5, fontWeight: 700 }}>
+            <button onClick={onSkip} style={{ width: '100%', padding: '12px 0 0', background: 'none', border: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700 }}>
               {skipLabel}
             </button>
           )}

@@ -46,13 +46,13 @@ export default function AdminVisites() {
     })
   }, [])
 
-  if (loading) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#6E8592' }}>Chargement…</div>
+  if (loading) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#4E6470' }}>Chargement…</div>
 
   if (!authed) {
     return (
       <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', maxWidth: 480 }}>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 20, color: '#123644' }}>Connexion admin requise</h1>
-        <p style={{ fontSize: 14, color: '#6E8592', marginTop: 10, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: '#4E6470', marginTop: 10, lineHeight: 1.6 }}>
           Connectez-vous avec le compte admin (<code>3op.consult@gmail.com</code>) sur <a href="/auth/login">/auth/login</a>,
           puis revenez sur cette page.
         </p>
@@ -84,16 +84,16 @@ export default function AdminVisites() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ padding: '28px 24px', maxWidth: 960, margin: '0 auto' }}>
-        <a href="/admin" style={{ fontSize: 13, fontWeight: 700, color: '#6E8592', textDecoration: 'none' }}>← Retour à l'admin</a>
+        <a href="/admin" style={{ fontSize: 13, fontWeight: 700, color: '#4E6470', textDecoration: 'none' }}>← Retour à l'admin</a>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644', marginTop: 10 }}>
           Visites
         </h1>
-        <p style={{ fontSize: 13.5, color: '#6E8592', marginTop: 4 }}>
+        <p style={{ fontSize: 13.5, color: '#4E6470', marginTop: 4 }}>
           Une ligne = une visite : qui (si connu), temps passé, pages vues, commentaires laissés.
         </p>
 
         <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {visits.length === 0 && <p style={{ fontSize: 13.5, color: '#9CA3AF' }}>Aucune visite pour l'instant.</p>}
+          {visits.length === 0 && <p style={{ fontSize: 13.5, color: '#6E8592' }}>Aucune visite pour l'instant.</p>}
           {visits.map(v => (
             <div key={v.sid} style={{ background: '#fff', borderRadius: 14, padding: '16px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -105,14 +105,14 @@ export default function AdminVisites() {
                     {v.role}
                   </span>
                 )}
-                <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 'auto' }}>{fmt(v.debut)}</span>
+                <span style={{ fontSize: 12, color: '#6E8592', marginLeft: 'auto' }}>{fmt(v.debut)}</span>
               </div>
 
               {v.coords.length > 0 && (
-                <div style={{ fontSize: 12.5, color: '#6E8592', marginTop: 6 }}>{v.coords.join(' · ')}</div>
+                <div style={{ fontSize: 12.5, color: '#4E6470', marginTop: 6 }}>{v.coords.join(' · ')}</div>
               )}
 
-              <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>
+              <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>
                 <span>⏱ {duree(v.debut, v.fin)}</span>
                 <span>{v.pageCount} page{v.pageCount > 1 ? 's' : ''} vue{v.pageCount > 1 ? 's' : ''}</span>
                 <span>{v.comments.length} commentaire{v.comments.length > 1 ? 's' : ''}</span>
@@ -121,7 +121,7 @@ export default function AdminVisites() {
               {v.comments.map(c => (
                 <div key={c.id} style={{ marginTop: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(242,169,59,.1)', borderLeft: '3px solid #F2A93B' }}>
                   <div style={{ fontSize: 13, color: '#123644', fontStyle: 'italic' }}>« {c.metadata?.text || '(vide)'} »</div>
-                  <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 3 }}>sur {c.path || '/'} · {fmt(c.created_at)}</div>
+                  <div style={{ fontSize: 11, color: '#6E8592', marginTop: 3 }}>sur {c.path || '/'} · {fmt(c.created_at)}</div>
                 </div>
               ))}
             </div>

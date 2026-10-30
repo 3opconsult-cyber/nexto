@@ -13,13 +13,13 @@ const inputStyle: React.CSSProperties = {
   outline: 'none', background: '#fff',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 10.5, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase',
+  display: 'block', fontSize: 10.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase',
   letterSpacing: '.04em', marginBottom: 5,
 }
 
 function EyeIcon({ off }: { off: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       {off
         ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><path d="M1 1l22 22" /></>
         : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>}
@@ -135,7 +135,7 @@ function SignupForm() {
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
         </div>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', margin: '0 0 8px' }}>Vérifiez votre boîte mail</h1>
-        <p style={{ fontSize: 13.5, color: '#6E8592', lineHeight: 1.55, margin: 0 }}>
+        <p style={{ fontSize: 13.5, color: '#4E6470', lineHeight: 1.55, margin: 0 }}>
           Un lien de confirmation vient d&apos;être envoyé à <b style={{ color: '#123644' }}>{form.email}</b>. Cliquez dessus pour activer
           votre compte, puis connectez-vous. Pensez à regarder dans les spams.
         </p>
@@ -181,7 +181,7 @@ function SignupForm() {
           <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', marginBottom: 2 }}>
             {step === 1 ? 'Vos informations' : 'Finaliser'}
           </h1>
-          <p style={{ fontSize: 11.5, color: '#6E8592', fontWeight: 700, marginBottom: 18 }}>Étape {step} sur 2</p>
+          <p style={{ fontSize: 11.5, color: '#4E6470', fontWeight: 700, marginBottom: 18 }}>Étape {step} sur 2</p>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
             {step === 1 ? (
@@ -201,7 +201,7 @@ function SignupForm() {
                 <div>
                   <label style={labelStyle}>Date de naissance</label>
                   <DateWheelPicker value={form.birthdate} onChange={v => update('birthdate', v)} />
-                  <p style={{ fontSize: 11, color: form.birthdate ? '#0C8F7E' : '#6E8592', fontWeight: 600, margin: '5px 0 0' }}>
+                  <p style={{ fontSize: 11, color: form.birthdate ? '#0C8F7E' : '#4E6470', fontWeight: 600, margin: '5px 0 0' }}>
                     {form.birthdate ? 'Date enregistrée.' : 'Facultatif : faites défiler pour l’indiquer (utile pour le crédit d’impôt).'}
                   </p>
                 </div>
@@ -250,7 +250,7 @@ function SignupForm() {
             </button>
           </form>
           </div>
-          <p style={{ textAlign: 'center', fontSize: 13, color: '#6E8592', fontWeight: 600, marginTop: 16 }}>
+          <p style={{ textAlign: 'center', fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 16 }}>
             Déjà un compte ?{' '}
             <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'} style={{ color: '#0C8F7E', fontWeight: 700 }}>Se connecter</Link>
           </p>

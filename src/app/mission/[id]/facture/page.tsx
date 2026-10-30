@@ -85,7 +85,7 @@ export default function FacturePage() {
     </div>
   )
 
-  if (loading) return shell(<p style={{ padding: 20, color: '#6E8592', fontSize: 13 }}>Chargement…</p>)
+  if (loading) return shell(<p style={{ padding: 20, color: '#4E6470', fontSize: 13 }}>Chargement…</p>)
 
   if (!invoices.length) return shell(
     <div style={{ padding: 20 }}>
@@ -94,7 +94,7 @@ export default function FacturePage() {
         <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, marginTop: 12 }}>
           {txInfo?.self ? 'Mission de test sans facture' : txInfo?.completed ? 'Facture introuvable' : 'Pas encore de facture'}
         </h2>
-        <p style={{ fontSize: 13, color: '#6E8592', marginTop: 6, lineHeight: 1.55 }}>
+        <p style={{ fontSize: 13, color: '#4E6470', marginTop: 6, lineHeight: 1.55 }}>
           {txInfo?.self
             ? 'Vous êtes à la fois le client et le prestataire de cette mission de test : aucune facture n\u2019est émise. Elle sera supprimée.'
             : txInfo?.completed
@@ -145,11 +145,11 @@ export default function FacturePage() {
               <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>ping</span>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.1em', color: '#6E8592', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.1em', color: '#4E6470', textTransform: 'uppercase' }}>
                 {docTitle(inv)}
               </div>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, marginTop: 3 }}>{inv.number}</div>
-              <div style={{ fontSize: 11, color: '#6E8592', marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: '#4E6470', marginTop: 2 }}>
                 {new Date(inv.issued_at).toLocaleDateString('fr-FR')}
               </div>
             </div>
@@ -167,45 +167,45 @@ export default function FacturePage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#4E6470', textTransform: 'uppercase' }}>
                 {inv.template === 'commission' ? 'Émis par' : inv.template === 'recapitulatif' ? 'Intervenant' : 'Émetteur'}
               </div>
               <div style={{ fontSize: 12.5, lineHeight: 1.55, marginTop: 6 }}>
                 {inv.template === 'commission' ? (
                   <>
                     <div style={{ fontWeight: 600 }}>{inv.issuer_snapshot?.nom || PLATFORM_PENDING}</div>
-                    {inv.issuer_snapshot?.forme && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.forme}</div>}
-                    {inv.issuer_snapshot?.adresse && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.adresse}</div>}
-                    {inv.issuer_snapshot?.ville && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.ville}</div>}
+                    {inv.issuer_snapshot?.forme && <div style={{ color: '#4E6470' }}>{inv.issuer_snapshot.forme}</div>}
+                    {inv.issuer_snapshot?.adresse && <div style={{ color: '#4E6470' }}>{inv.issuer_snapshot.adresse}</div>}
+                    {inv.issuer_snapshot?.ville && <div style={{ color: '#4E6470' }}>{inv.issuer_snapshot.ville}</div>}
                     {inv.issuer_snapshot?.siret
-                      ? <div style={{ color: '#6E8592' }}>SIRET {inv.issuer_snapshot.siret}</div>
-                      : <div style={{ color: '#6E8592' }}>Immatriculation en cours</div>}
-                    {inv.issuer_snapshot?.tva && <div style={{ color: '#6E8592' }}>TVA {inv.issuer_snapshot.tva}</div>}
+                      ? <div style={{ color: '#4E6470' }}>SIRET {inv.issuer_snapshot.siret}</div>
+                      : <div style={{ color: '#4E6470' }}>Immatriculation en cours</div>}
+                    {inv.issuer_snapshot?.tva && <div style={{ color: '#4E6470' }}>TVA {inv.issuer_snapshot.tva}</div>}
                   </>
                 ) : (
                   <>
                     <div style={{ fontWeight: 600 }}>{inv.issuer_snapshot?.enseigne || inv.issuer_snapshot?.nom || '—'}</div>
                     {inv.issuer_snapshot?.enseigne && inv.issuer_snapshot?.nom
                       && inv.issuer_snapshot.enseigne !== inv.issuer_snapshot.nom
-                      && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.nom}</div>}
-                    {inv.issuer_snapshot?.adresse && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.adresse}</div>}
-                    {inv.issuer_snapshot?.ville && <div style={{ color: '#6E8592' }}>{inv.issuer_snapshot.ville}</div>}
-                    {inv.issuer_snapshot?.siret && <div style={{ color: '#6E8592' }}>SIRET {inv.issuer_snapshot.siret}</div>}
-                    {inv.legal?.forme && <div style={{ color: '#6E8592' }}>{inv.legal.forme}</div>}
-                    {inv.issuer_snapshot?.sap && <div style={{ color: '#6E8592' }}>Déclaration SAP {inv.issuer_snapshot.sap}</div>}
-                    {inv.template === 'recapitulatif' && <div style={{ color: '#6E8592' }}>Particulier — non immatriculé</div>}
+                      && <div style={{ color: '#4E6470' }}>{inv.issuer_snapshot.nom}</div>}
+                    {inv.issuer_snapshot?.adresse && <div style={{ color: '#4E6470' }}>{inv.issuer_snapshot.adresse}</div>}
+                    {inv.issuer_snapshot?.ville && <div style={{ color: '#4E6470' }}>{inv.issuer_snapshot.ville}</div>}
+                    {inv.issuer_snapshot?.siret && <div style={{ color: '#4E6470' }}>SIRET {inv.issuer_snapshot.siret}</div>}
+                    {inv.legal?.forme && <div style={{ color: '#4E6470' }}>{inv.legal.forme}</div>}
+                    {inv.issuer_snapshot?.sap && <div style={{ color: '#4E6470' }}>Déclaration SAP {inv.issuer_snapshot.sap}</div>}
+                    {inv.template === 'recapitulatif' && <div style={{ color: '#4E6470' }}>Particulier — non immatriculé</div>}
                   </>
                 )}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#4E6470', textTransform: 'uppercase' }}>
                 {inv.template === 'commission' ? 'Facturé à' : 'Client'}
               </div>
               <div style={{ fontSize: 12.5, lineHeight: 1.55, marginTop: 6 }}>
                 <div style={{ fontWeight: 600 }}>{inv.client_snapshot?.nom || '—'}</div>
-                {inv.client_snapshot?.adresse && <div style={{ color: '#6E8592' }}>{inv.client_snapshot.adresse}</div>}
-                {inv.client_snapshot?.ville && <div style={{ color: '#6E8592' }}>{inv.client_snapshot.ville}</div>}
+                {inv.client_snapshot?.adresse && <div style={{ color: '#4E6470' }}>{inv.client_snapshot.adresse}</div>}
+                {inv.client_snapshot?.ville && <div style={{ color: '#4E6470' }}>{inv.client_snapshot.ville}</div>}
               </div>
             </div>
           </div>
@@ -217,8 +217,8 @@ export default function FacturePage() {
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 14 }}>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13.5 }}>{l.libelle}</div>
-                  {l.detail && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{l.detail}</div>}
-                  {inv.legal?.taux && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>{inv.legal.taux}</div>}
+                  {l.detail && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{l.detail}</div>}
+                  {inv.legal?.taux && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>{inv.legal.taux}</div>}
                 </div>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
                   {EUR(Number(l.montant_cents ?? 0))}
@@ -238,8 +238,8 @@ export default function FacturePage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14 }}>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13.5 }}>{titre || 'Prestation'}</div>
-                  {sous && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>{sous}</div>}
-                  {l.adresse && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{l.adresse}</div>}
+                  {sous && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>{sous}</div>}
+                  {l.adresse && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{l.adresse}</div>}
                 </div>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
                   {EUR(Number(l.montant_cents ?? inv.net_cents))}
@@ -258,15 +258,15 @@ export default function FacturePage() {
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21 }}>{EUR(inv.net_cents)}</span>
           </div>
           {inv.legal?.franchise_tva && (
-            <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>{inv.legal.franchise_tva}</div>
+            <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>{inv.legal.franchise_tva}</div>
           )}
 
           <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
 
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#6E8592', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#4E6470', textTransform: 'uppercase' }}>
             {inv.template === 'recapitulatif' ? 'Déclaration' : 'Mentions légales'}
           </div>
-          <div style={{ fontSize: 11, color: '#6E8592', lineHeight: 1.6, marginTop: 7 }}>
+          <div style={{ fontSize: 11, color: '#4E6470', lineHeight: 1.6, marginTop: 7 }}>
             {inv.template === 'recapitulatif' ? (
               <p style={{ margin: 0 }}>{inv.legal?.declaration}</p>
             ) : inv.template === 'commission' ? (

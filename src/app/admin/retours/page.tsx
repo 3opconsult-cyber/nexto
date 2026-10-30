@@ -48,14 +48,14 @@ export default function AdminRetours() {
   }, [])
 
   if (rows === null) {
-    return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#6E8592' }}>Chargement…</div>
+    return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#4E6470' }}>Chargement…</div>
   }
 
   if (!authed) {
     return (
       <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', maxWidth: 480 }}>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 20, color: '#123644' }}>Connexion admin requise</h1>
-        <p style={{ fontSize: 14, color: '#6E8592', marginTop: 10, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: '#4E6470', marginTop: 10, lineHeight: 1.6 }}>
           La clé d'accès partagée suffit pour voir le tableau de bord de démonstration, mais pas pour lire les
           retours réels (protégés par une règle de sécurité en base). Connectez-vous avec le compte admin
           (<code>3op.consult@gmail.com</code>) sur <a href="/auth/login">/auth/login</a>, puis revenez sur cette page.
@@ -67,16 +67,16 @@ export default function AdminRetours() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ padding: '28px 24px', maxWidth: 900, margin: '0 auto' }}>
-        <a href="/admin" style={{ fontSize: 13, fontWeight: 700, color: '#6E8592', textDecoration: 'none' }}>← Retour à l'admin</a>
+        <a href="/admin" style={{ fontSize: 13, fontWeight: 700, color: '#4E6470', textDecoration: 'none' }}>← Retour à l'admin</a>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644', marginTop: 10 }}>
           Retours testeurs — carrousel de partage
         </h1>
-        <p style={{ fontSize: 13.5, color: '#6E8592', marginTop: 4 }}>
+        <p style={{ fontSize: 13.5, color: '#4E6470', marginTop: 4 }}>
           {rows.length} avis reçu{rows.length > 1 ? 's' : ''} via <code>/essai/avis</code>
         </p>
 
         {rows.length === 0 ? (
-          <p style={{ marginTop: 30, fontSize: 14, color: '#6E8592' }}>Aucun avis pour l'instant.</p>
+          <p style={{ marginTop: 30, fontSize: 14, color: '#4E6470' }}>Aucun avis pour l'instant.</p>
         ) : (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 24 }}>
@@ -88,7 +88,7 @@ export default function AdminRetours() {
                 { l: 'Utiliseraient', v: pct(rows, 'utiliserait') + ' %' },
               ].map(k => (
                 <div key={k.l} style={{ background: '#fff', borderRadius: 14, padding: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em' }}>{k.l}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em' }}>{k.l}</div>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644', marginTop: 6 }}>{k.v}</div>
                 </div>
               ))}
@@ -101,14 +101,14 @@ export default function AdminRetours() {
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', background: 'rgba(18,179,156,.1)', padding: '3px 10px', borderRadius: 999 }}>
                       {ROLE_LABEL[r.role]}
                     </span>
-                    <span style={{ fontSize: 11.5, color: '#9CA3AF' }}>{new Date(r.created_at).toLocaleString('fr-FR')}</span>
+                    <span style={{ fontSize: 11.5, color: '#6E8592' }}>{new Date(r.created_at).toLocaleString('fr-FR')}</span>
                   </div>
-                  <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12.5, color: '#6E8592' }}>
+                  <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12.5, color: '#4E6470' }}>
                     <span>Simplicité <b style={{ color: '#123644' }}>{r.simplicite}/5</b></span>
                     <span>Ergonomie <b style={{ color: '#123644' }}>{r.ergonomie}/5</b></span>
                     <span>Utilité <b style={{ color: '#123644' }}>{r.utilite}/5</b></span>
                   </div>
-                  <div style={{ display: 'flex', gap: 16, marginTop: 6, fontSize: 12.5, color: '#6E8592' }}>
+                  <div style={{ display: 'flex', gap: 16, marginTop: 6, fontSize: 12.5, color: '#4E6470' }}>
                     <span>Recommande : <b style={{ color: r.recommanderait ? '#0C8F7E' : '#c0503a' }}>{r.recommanderait ? 'Oui' : 'Non'}</b></span>
                     <span>Utiliserait : <b style={{ color: r.utiliserait ? '#0C8F7E' : '#c0503a' }}>{r.utiliserait ? 'Oui' : 'Non'}</b></span>
                   </div>

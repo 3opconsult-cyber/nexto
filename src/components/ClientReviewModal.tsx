@@ -85,7 +85,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
 
   return (
     <Modal open={open && !suppressed} onClose={later} title="Et ce client ?">
-      <p style={{ fontSize: 13, color: '#6E8592', lineHeight: 1.55, margin: '0 0 14px' }}>
+      <p style={{ fontSize: 13, color: '#4E6470', lineHeight: 1.55, margin: '0 0 14px' }}>
         Notez <b style={{ color: '#123644' }}>{clientName}</b>. Vous choisissez de publier l&apos;avis (autres prestataires et client)
         ou de le garder pour vous.
       </p>
@@ -102,7 +102,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
         ))}
       </div>
 
-      <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Remarques <span style={{ color: '#9CA3AF', fontWeight: 600 }}>facultatif</span></div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Remarques <span style={{ color: '#6E8592', fontWeight: 600 }}>facultatif</span></div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
         {CLIENT_TAGS.map(t => {
           const on = tags.includes(t.key)
@@ -115,19 +115,19 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
         })}
       </div>
 
-      <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Un mot à ajouter <span style={{ color: '#9CA3AF', fontWeight: 600 }}>facultatif</span></label>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Un mot à ajouter <span style={{ color: '#6E8592', fontWeight: 600 }}>facultatif</span></label>
       <textarea value={comment} onChange={e => setComment(e.target.value)} rows={3}
         style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', marginBottom: 14, boxSizing: 'border-box' }} />
 
       <div style={{ display: 'flex', gap: 6, padding: 4, background: '#F3F6F5', borderRadius: 999, marginBottom: 6 }}>
         {[true, false].map(v => (
           <button key={String(v)} onClick={() => setIsPublic(v)} aria-pressed={isPublic === v}
-            style={{ flex: 1, padding: '9px 10px', border: 'none', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5, background: isPublic === v ? '#fff' : 'transparent', color: isPublic === v ? '#123644' : '#6E8592', boxShadow: isPublic === v ? '0 1px 3px rgba(18,54,68,.15)' : 'none' }}>
+            style={{ flex: 1, padding: '9px 10px', border: 'none', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5, background: isPublic === v ? '#fff' : 'transparent', color: isPublic === v ? '#123644' : '#4E6470', boxShadow: isPublic === v ? '0 1px 3px rgba(18,54,68,.15)' : 'none' }}>
             {v ? 'Publier l’avis' : 'Note privée'}
           </button>
         ))}
       </div>
-      <p style={{ fontSize: 11.5, color: '#6E8592', margin: '0 0 14px' }}>
+      <p style={{ fontSize: 11.5, color: '#4E6470', margin: '0 0 14px' }}>
         {isPublic ? 'Visible des autres prestataires et du client.' : 'Visible de vous seul : un pense-bête pour une prochaine mission.'}
       </p>
 
