@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import ReviewModal from '@/components/ReviewModal'
 import ClientReviewModal, { CLIENT_TAGS } from '@/components/ClientReviewModal'
 import DepartureBar from '@/components/DepartureBar'
+import MissionRecap from '@/components/MissionRecap'
 import { filterMessage } from '@/lib/chatFilter'
 import { getRates } from '@/lib/pricing'
 import { EUR } from '@/lib/invoice-pdf'
@@ -408,6 +409,13 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Récapitulatif complet (contrat, durée, montants, avis, litige, factures), des deux côtés. */}
+      {tx && userId && tx.buyer_id !== tx.seller_id && (
+        <MissionRecap tx={tx} userId={userId} counterpart={counterpart}
+          address={userId === tx.buyer_id || !payOn || ['held', 'released'].includes(tx.payment_status) ? reqAddr : null}
+          refreshKey={`${myReview?.stars ?? ''}-${myClientReview?.stars ?? ''}-${myClientReview?.is_public ?? ''}-${reportSent}`} />
+      )}
+
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
         <DepartureBar tx={tx} userId={userId} onChange={setTx}
@@ -471,14 +479,7 @@ export default function ChatPage() {
         )
       )}
 
-      {/* Mission terminée : la facture, des deux côtés. */}
-      {tx && ['completed', 'released'].includes(tx.status) && (
-        <div style={{ margin: '10px 16px 0', textAlign: 'center' }}>
-          <button onClick={() => router.push(`/mission/${tx.id}/facture`)} style={{ border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif' }}>
-            Voir la facture
-          </button>
-        </div>
-      )}
+      {/* Mission terminée : la facture est dans le récapitulatif ci-dessus (bouton « Voir les factures »). */}
 
       {/* Annulation façon Uber : gratuite avant le départ du prestataire, payante
           une fois en route, impossible une fois arrivé (QR scanné — passe alors
