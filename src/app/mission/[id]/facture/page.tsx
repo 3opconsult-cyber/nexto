@@ -34,7 +34,7 @@ export default function FacturePage() {
   const [isSeller, setIsSeller] = useState(false)
   const [isBuyer, setIsBuyer] = useState(false)
   const [reviewed, setReviewed] = useState(true)
-  const [txInfo, setTxInfo] = useState<{ self: boolean; completed: boolean } | null>(null)
+  const [txInfo, setTxInfo] = useState<{ self: boolean; completed: boolean; missing?: boolean } | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -50,7 +50,8 @@ export default function FacturePage() {
       const list = ((data ?? []) as Invoice[])
         .filter(v => v.kind === 'prestation' || v.kind === mine)
         .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
-      if (tx) setTxInfo({ self: (tx as any).buyer_id === (tx as any).seller_id, completed: !!(tx as any).completed_at || ['completed', 'released'].includes((tx as any).status) })
+      if (!tx) setTxInfo({ self: false, completed: false, missing: true })
+      else setTxInfo({ self: (tx as any).buyer_id === (tx as any).seller_id, completed: !!(tx as any).completed_at || ['completed', 'released'].includes((tx as any).status) })
       setIsSeller(!!user && !!tx && user.id === (tx as any).seller_id)
       const buyer = !!user && !!tx && user.id === (tx as any).buyer_id
       setIsBuyer(buyer)
@@ -92,15 +93,20 @@ export default function FacturePage() {
       <div style={{ background: '#fff', borderRadius: 16, padding: 22, textAlign: 'center' }}>
         <Sign size={38} />
         <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, marginTop: 12 }}>
-          {txInfo?.self ? 'Mission de test sans facture' : txInfo?.completed ? 'Facture introuvable' : 'Pas encore de facture'}
+          {txInfo?.missing ? 'Mission introuvable' : txInfo?.self ? 'Mission de test sans facture' : txInfo?.completed ? 'Facture introuvable' : 'Pas encore de facture'}
         </h2>
         <p style={{ fontSize: 13, color: '#4E6470', marginTop: 6, lineHeight: 1.55 }}>
-          {txInfo?.self
+          {txInfo?.missing
+            ? 'Cette mission n\u2019existe plus ou ne vous concerne pas. Vos missions sont dans l\u2019agenda.'
+            : txInfo?.self
             ? 'Vous êtes à la fois le client et le prestataire de cette mission de test : aucune facture n\u2019est émise. Elle sera supprimée.'
             : txInfo?.completed
               ? 'Cette mission est terminée mais ses documents n\u2019ont pas été émis. Écrivez au support PING : nous les régénérons.'
               : 'Les documents sont émis automatiquement à la fin de la mission, dès que le code de fin est scanné : c\u2019est ce scan qui fixe la durée réelle, donc le montant.'}
         </p>
+        {txInfo?.missing && (
+          <a href="/agenda" style={{ display: 'inline-block', marginTop: 12, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Ouvrir mon agenda</a>
+        )}
         {txInfo?.completed && !txInfo.self && (
           <a href="/support" style={{ display: 'inline-block', marginTop: 12, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Contacter le support</a>
         )}

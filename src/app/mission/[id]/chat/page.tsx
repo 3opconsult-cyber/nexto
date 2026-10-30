@@ -58,6 +58,7 @@ export default function ChatPage() {
   const [userId, setUserId] = useState('')
   const [warning, setWarning] = useState('')
   const [tx, setTx] = useState<any>(null)
+  const [missing, setMissing] = useState(false)
   const [reqAddr, setReqAddr] = useState<string | null>(null)
   const [myReview, setMyReview] = useState<{ stars: number; comment: string | null } | null>(null)
   const [counterpart, setCounterpart] = useState<string>('Conversation')
@@ -112,6 +113,7 @@ export default function ChatPage() {
         .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents)')
         .eq('id', transactionId).single()
       setTx(t)
+      if (!t) setMissing(true)
       if (t?.requests) setReq(t.requests)
       if (t?.requests?.address) { setReqAddr(t.requests.address); setRdvAddr(t.requests.address) }
       if (t?.scheduled_at) setRdvAt(toLocalInput(t.scheduled_at))
@@ -367,6 +369,17 @@ export default function ChatPage() {
     setReportSent(true)
     setReportReason('')
   }
+
+  // Lien vers une mission supprimée ou qui ne concerne pas ce compte : pas de chat vide trompeur.
+  if (missing) return (
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', padding: 20 }}>
+      <div style={{ maxWidth: 480, margin: '40px auto', background: '#fff', borderRadius: 16, padding: 22, textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', margin: 0 }}>Mission introuvable</h2>
+        <p style={{ fontSize: 13, color: '#4E6470', marginTop: 6, lineHeight: 1.55 }}>Cette mission n&apos;existe plus ou ne vous concerne pas.</p>
+        <a href="/messages" style={{ display: 'inline-block', marginTop: 12, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Ouvrir mes messages</a>
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
