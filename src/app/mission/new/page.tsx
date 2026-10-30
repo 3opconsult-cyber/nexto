@@ -11,6 +11,7 @@ import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
 import { fetchSlots, dayKey, dayLabel, hhmm, type Slot } from '@/lib/slots'
 import { AVANCE_IMMEDIATE_ACTIVE, isEligible, partClientCents } from '@/lib/creditImpot'
+import { systemSender } from '@/lib/systemMessage'
 
 function MissionForm() {
   const router = useRouter()
@@ -165,7 +166,7 @@ function MissionForm() {
       when = ` · ${dayLabel(d.toISOString())} à ${hhmm(d.toISOString())}`
     }
     await supabase.from('messages').insert({
-      transaction_id: tx.id, sender_id: null,
+      transaction_id: tx.id, ...(await systemSender(supabase)),
       body: `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
     })
 

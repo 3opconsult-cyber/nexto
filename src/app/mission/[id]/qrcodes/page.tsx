@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import QrCode from '@/components/QrCode'
 import PaymentCard from '@/components/PaymentCard'
+import { systemSender } from '@/lib/systemMessage'
 
 export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
@@ -21,7 +22,7 @@ export default function MissionQrCodes() {
   async function shareArrival(url: string) {
     const supabase = createClient()
     await supabase.from('messages').insert({
-      transaction_id: params.id, sender_id: null,
+      transaction_id: params.id, ...(await systemSender(supabase)),
       body: `Le client ne sera peut-être pas sur place. Code d'arrivée à scanner en arrivant : ${url}`,
     })
     setShared(true)

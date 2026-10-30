@@ -233,7 +233,7 @@ export async function settle(txId: string, opts: { force?: boolean } = {}) {
   if (!tx.completed_at) return { etat: 'mission_non_terminee' }
   if (!['held', 'complement_due'].includes(tx.payment_status)) return { etat: tx.payment_status }
   if (!opts.force && Date.now() - new Date(tx.completed_at).getTime() < RELEASE_DELAY_HOURS * 3600_000) return { etat: 'delai_reclamation' }
-  const { count } = await db.from('disputes').select('id', { count: 'exact', head: true }).eq('transaction_id', txId).in('status', ['open', 'investigating'])
+  const { count } = await db.from('disputes').select('id', { count: 'exact', head: true }).eq('transaction_id', txId).eq('status', 'open')
   if (count) return { etat: 'litige_ouvert' }
 
   let { charges, paid } = await chargesOf(db, txId)
@@ -372,7 +372,7 @@ export async function adminOverview() {
   const ids = (data ?? []).map(t => t.id)
   const [{ data: pays }, { data: disputes }] = await Promise.all([
     ids.length ? db.from('payments').select('transaction_id, kind, amount_cents, status, meta').in('transaction_id', ids) : Promise.resolve({ data: [] as any[] }),
-    ids.length ? db.from('disputes').select('transaction_id, status').in('transaction_id', ids).in('status', ['open', 'investigating']) : Promise.resolve({ data: [] as any[] }),
+    ids.length ? db.from('disputes').select('transaction_id, status').in('transaction_id', ids).eq('status', 'open') : Promise.resolve({ data: [] as any[] }),
   ])
   return (data ?? []).map(t => {
     const mine = (pays ?? []).filter(p => p.transaction_id === t.id)

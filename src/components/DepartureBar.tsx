@@ -4,6 +4,7 @@ import Modal, { Cta } from './Modal'
 import ArrivalProof from './ArrivalProof'
 import { createClient } from '@/lib/supabase/client'
 import { distanceKm } from '@/lib/geo'
+import { systemSender } from '@/lib/systemMessage'
 
 /**
  * Suivi d'arrivée — volontairement sobre.
@@ -70,7 +71,7 @@ export default function DepartureBar({
     {
       onChange(data)
       await supabase.from('messages').insert({
-        transaction_id: tx.id, sender_id: null,
+        transaction_id: tx.id, ...(await systemSender(supabase)),
         body: `→ En route — arrivée estimée dans ${eta} min`,
       })
     }

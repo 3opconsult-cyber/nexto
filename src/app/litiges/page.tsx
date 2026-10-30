@@ -8,7 +8,7 @@ import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 
 const STATUS_LABELS: Record<string, string> = {
-  open: 'En cours', investigating: 'En cours d\u2019examen', resolved: 'Résolu', closed: 'Clôturé',
+  open: 'En cours', resolved: 'Résolu', rejected: 'Non retenu',
 }
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 

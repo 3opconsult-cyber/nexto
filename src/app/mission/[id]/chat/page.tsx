@@ -10,6 +10,7 @@ import { getRates } from '@/lib/pricing'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { geocodeAddress } from '@/lib/geocode'
+import { systemSender, isSystemMessage } from '@/lib/systemMessage'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -286,7 +287,7 @@ export default function ChatPage() {
       const who = userId === updated.buyer_id ? 'le client' : 'le prestataire'
       const feeNote = late ? ` — frais d'annulation tardive : ${EUR(feeCents)} (appliqués dès le paiement en ligne actif)` : ''
       await supabase.from('messages').insert({
-        transaction_id: tx.id, sender_id: null,
+        transaction_id: tx.id, ...(await systemSender(supabase)),
         body: `✕ ${tx.price_confirmed ? 'Réservation' : 'Demande'} annulée par ${who}${feeNote}.`,
       })
     }
@@ -326,7 +327,7 @@ export default function ChatPage() {
     if (txErr || !upd) { setRdvSaving(false); setRdvError('Date non enregistrée — réessayez.'); return }
     setTx((t: any) => ({ ...t, scheduled_at: upd.scheduled_at }))
     await supabase.from('messages').insert({
-      transaction_id: tx.id, sender_id: null,
+      transaction_id: tx.id, ...(await systemSender(supabase)),
       body: `✓ Rendez-vous fixé : ${rdvLabel(upd.scheduled_at)} — adresse transmise au prestataire`,
     })
     setRdvSaving(false)
@@ -341,7 +342,7 @@ export default function ChatPage() {
     })
     if (error) { setReportError('Le litige n\u2019a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.'); return }
     await supabase.from('messages').insert({
-      transaction_id: transactionId, sender_id: null,
+      transaction_id: transactionId, ...(await systemSender(supabase)),
       body: 'Litige ouvert sur cette mission.',
     })
     setReportSent(true)
@@ -603,7 +604,7 @@ export default function ChatPage() {
               </Fragment>
             )
           }
-          if (m.sender_id === null) {
+          if (isSystemMessage(m)) {
             return (
               <Fragment key={m.id}>
                 {datePill}

@@ -62,7 +62,7 @@ export default function AgendaPage() {
         const { data: ds } = await supabase.from('disputes')
           .select('id, transaction_id, reason, status, created_at')
           .in('transaction_id', data.map((t: any) => t.id))
-          .in('status', ['open', 'investigating'])
+          .eq('status', 'open')
           .order('created_at', { ascending: false })
         setDisputes(ds ?? [])
       }

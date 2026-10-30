@@ -6,6 +6,7 @@ import { trackEvent } from '@/lib/tracking'
 import { billedHours, getHourThreshold, getRates } from '@/lib/pricing'
 import { EUR } from '@/lib/invoice-pdf'
 import { distanceKm, getOneShotPosition } from '@/lib/geo'
+import { systemSender } from '@/lib/systemMessage'
 
 // Double sécurité demandée par Romain : au scan, un relevé GPS ponctuel
 // (jamais de suivi continu) comparé à l'adresse du rendez-vous. Ne bloque
@@ -69,7 +70,7 @@ export default function ScanQR() {
         const now = new Date()
         const gps = await gpsNote(tx.requests?.lat, tx.requests?.lng)
         await supabase.from('messages').insert({
-          transaction_id: tx.id, sender_id: null,
+          transaction_id: tx.id, ...(await systemSender(supabase)),
           body: `✓ Arrivée scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}${tx.hourly_rate_cents ? ' — le chrono démarre' : ''}${gps}`,
         })
         trackEvent('qr_scan_arrival', { transaction_id: tx.id })
@@ -121,7 +122,7 @@ export default function ScanQR() {
         const finalSubtotal = (updates.subtotal_cents as number | undefined) ?? tx.subtotal_cents ?? 0
         const gpsOut = await gpsNote(tx.requests?.lat, tx.requests?.lng)
         await supabase.from('messages').insert({
-          transaction_id: tx.id, sender_id: null,
+          transaction_id: tx.id, ...(await systemSender(supabase)),
           body: `✓ Sortie scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — ${h > 0 ? h + ' h ' : ''}${m} min, prestation ${EUR(finalSubtotal)}${gpsOut}`,
         })
         trackEvent('qr_scan_complete', { transaction_id: tx.id, duration_minutes: mins })

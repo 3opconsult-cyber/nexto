@@ -1,6 +1,7 @@
 "use client"
 import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { systemSender } from '@/lib/systemMessage'
 
 /**
  * Validation d'arrivée quand le client n'est pas sur place : le prestataire
@@ -48,7 +49,7 @@ export default function ArrivalProof({ txId, onDone }: { txId: string; onDone: (
       return
     }
     await supabase.from('messages').insert({
-      transaction_id: txId, sender_id: null,
+      transaction_id: txId, ...(await systemSender(supabase)),
       photo_path: path,
       body: `✓ Arrivée validée sur place à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — photo horodatée${c ? ` · GPS ${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}` : ''}`,
     })
