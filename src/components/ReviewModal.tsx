@@ -95,7 +95,7 @@ export default function ReviewModal({
   return (
     <Modal open={open && !suppressed} onClose={later} title={`Comment s'est passée l'intervention ?`}>
       <p style={{ fontSize: 13, color: '#4E6470', margin: 0, lineHeight: 1.55 }}>
-        Votre avis s'affichera sur la fiche de <b style={{ color: '#123644' }}>{proName}</b>.
+        Votre avis s'affichera sur la fiche de <b style={{ color: '#123644' }}>{proName.replace(/\.$/, "")}</b>.
         Il compte pour les clients suivants — et pour lui.
       </p>
 

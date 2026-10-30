@@ -92,7 +92,7 @@ export default function ProDetailPage() {
 
   const name = pro.profiles?.full_name?.trim() || TRADES[pro.trade] || pro.trade
   const initial = name.charAt(0).toUpperCase()
-  const dist = pro.distance_m != null ? (pro.distance_m < 1000 ? `${Math.round(pro.distance_m)} m` : `${(pro.distance_m / 1000).toFixed(1)} km`) : null
+  const dist = pro.distance_m != null ? (pro.distance_m < 1000 ? `${Math.round(pro.distance_m)} m` : `${(pro.distance_m / 1000).toFixed(1).replace(".", ",")} km`) : null
   const ratingTxt = pro.rating > 0 ? `${pro.rating.toFixed(1)} (${pro.reviews_count} avis)` : 'Nouveau'
   const isDevis = (pro as any).pricing_type === 'devis'
   const priceLabel = pricingShort(pro as any)

@@ -17,7 +17,7 @@ async function gpsNote(reqLat?: number | null, reqLng?: number | null): Promise<
   const pos = await getOneShotPosition()
   if (!pos) return ''
   const km = distanceKm(pos.lat, pos.lng, reqLat, reqLng)
-  return km > 0.3 ? ` · position GPS à ${km.toFixed(1)} km de l'adresse` : ' · position GPS conforme'
+  return km > 0.3 ? ` · position GPS à ${km.toFixed(1).replace(".", ",")} km de l'adresse` : ' · position GPS conforme'
 }
 
 export default function ScanQR() {

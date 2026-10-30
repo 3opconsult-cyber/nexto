@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 const LiveMap = dynamic(() => import('@/components/LiveMap'), { ssr: false })
 
 function distanceTxt(m: number) {
-  return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`
+  return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1).replace(".", ",")} km`
 }
 function agoTxt(iso: string) {
   const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))

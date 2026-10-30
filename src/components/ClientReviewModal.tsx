@@ -86,7 +86,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
   return (
     <Modal open={open && !suppressed} onClose={later} title="Et ce client ?">
       <p style={{ fontSize: 13, color: '#4E6470', lineHeight: 1.55, margin: '0 0 14px' }}>
-        Notez <b style={{ color: '#123644' }}>{clientName}</b>. Vous choisissez de publier l&apos;avis (autres prestataires et client)
+        Notez <b style={{ color: '#123644' }}>{clientName.replace(/\.$/, "")}</b>. Vous choisissez de publier l&apos;avis (autres prestataires et client)
         ou de le garder pour vous.
       </p>
       <Stars value={accuracy} onChange={setAccuracy} label="La demande correspondait à la réalité" />

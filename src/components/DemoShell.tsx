@@ -71,7 +71,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     const price = x.pricing_type === 'devis' ? 'Sur devis'
       : x.base_price_cents > 0 ? `${(x.base_price_cents / 100).toFixed(0)} €`
         : (x.hourly_rate_cents ? `${(x.hourly_rate_cents / 100).toFixed(0)} €/h` : '')
-    const distTxt = x.distance_m < 1000 ? `${Math.round(x.distance_m)} m` : `${(x.distance_m / 1000).toFixed(1)} km`
+    const distTxt = x.distance_m < 1000 ? `${Math.round(x.distance_m)} m` : `${(x.distance_m / 1000).toFixed(1).replace(".", ",")} km`
     const rateTxt = x.rating > 0 ? `${x.rating.toFixed(1)} (${x.reviews_count || 0})` : 'Nouveau'
     const chips: string[] = []
     if (x.has_identity) chips.push('Pièce d’identité fournie')
