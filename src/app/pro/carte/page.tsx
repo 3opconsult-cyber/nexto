@@ -44,6 +44,11 @@ export default function ProCartePage() {
   const [proId, setProId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
+  // Deux vues de la carte : les demandes ouvertes autour de soi, ou ses propres interventions
+  // confirmées (adresse connue, le tarif est validé).
+  const [view, setView] = useState<'demandes' | 'interventions'>('demandes')
+  const [missions, setMissions] = useState<any[]>([])
+  const [sendError, setSendError] = useState('')
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -71,8 +76,21 @@ export default function ProCartePage() {
     if (!proId) return
     const next = !available
     setAvailable(next)
-    await createClient().from('provider_profiles').update({ is_active: next }).eq('id', proId)
+    const { error } = await createClient().from('provider_profiles').update({ is_active: next }).eq('id', proId)
+    if (error) setAvailable(!next)
   }
+
+  useEffect(() => {
+    if (!proId) return
+    createClient().from('transactions')
+      .select('id, status, scheduled_at, created_at, subtotal_cents, requests(category, title, address, lat, lng)')
+      .eq('seller_id', proId).eq('price_confirmed', true).in('status', ['pending', 'arrived'])
+      .order('scheduled_at', { ascending: true, nullsFirst: false })
+      .then(({ data }) => setMissions(data ?? []))
+  }, [proId])
+  const missionWhen = (m: any) => m.scheduled_at
+    ? new Date(m.scheduled_at).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : 'Date à fixer'
 
   const load = useCallback(() => {
     fetchRequestsNearby(userPos.lat, userPos.lng, 25000).then(setReqs)
@@ -88,8 +106,8 @@ export default function ProCartePage() {
     const { missionId, error } = await respondToRequest(r.id)
     setSending(false)
     if (missionId) router.push(`/mission/${missionId}/chat`)
-    else if (error === 'not_authenticated') router.push('/auth/login')
-    // sinon (demande deja prise, erreur reseau...) : on reste sur la fiche, rien de casse.
+    else if (error === 'not_authenticated') router.push('/auth/login?next=/pro/carte')
+    else setSendError('Impossible de contacter ce client pour le moment (demande peut-être déjà prise). Réessayez.')
   }
 
   // Détail d'une demande sélectionnée (pin carte ou carte de la liste) : les
@@ -134,6 +152,7 @@ export default function ProCartePage() {
         L&apos;adresse exacte et les coordonnées du client vous seront communiquées si votre proposition est acceptée.
       </p>
 
+      {sendError && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{sendError}</p>}
       <div className="btn" style={{ background: 'var(--teal)', opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected)}>
         {sending ? 'Envoi…' : 'Contacter le client'}
       </div>
@@ -149,7 +168,7 @@ export default function ProCartePage() {
         <span style={{ width: 12, height: 12, borderRadius: 999, background: available ? 'var(--teal)' : '#c0503a', flex: '0 0 auto' }} />
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, color: 'var(--ink)' }}>{available ? 'Disponible maintenant' : 'Hors ligne'}</div>
-          <div style={{ fontSize: 12, color: 'var(--slate)' }}>Vous apparaissez sur la carte des clients autour de vous</div>
+          <div style={{ fontSize: 12, color: 'var(--slate)' }}>{available ? 'Vous apparaissez sur la carte des clients autour de vous' : 'Les clients ne vous voient plus sur la carte'}</div>
         </div>
         <div onClick={toggleAvailable} style={{ width: 44, height: 26, borderRadius: 999, background: available ? 'var(--gold)' : '#cdd6d3', position: 'relative', cursor: 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
           <span style={{ position: 'absolute', top: 3, left: available ? 21 : 3, width: 20, height: 20, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
@@ -179,6 +198,36 @@ export default function ProCartePage() {
     </>
   )
 
+  const missionsPanel = (
+    <>
+      <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 4 }}>Mes interventions à venir</div>
+      <div style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 12 }}>Missions au tarif validé, avec leur adresse.</div>
+      {missions.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: 'var(--slate)' }}>Aucune intervention confirmée pour l&apos;instant.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {missions.map(m => (
+            <div key={m.id} onClick={() => router.push(`/mission/${m.id}/chat`)}
+              style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{m.requests?.title || TRADES[m.requests?.category] || 'Intervention'}</b>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: m.status === 'arrived' ? '#1a8f4c' : '#0C8F7E', whiteSpace: 'nowrap' }}>{m.status === 'arrived' ? 'En cours' : missionWhen(m)}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>{m.requests?.address || 'Adresse à fixer par le client'}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+  const sidePanel = view === 'interventions' ? missionsPanel : (selected ? requestDetail : activityPanel)
+  const mapPins = view === 'interventions'
+    ? missions.filter(m => m.requests?.lat != null && m.requests?.lng != null).map(m => ({
+        id: m.id, lat: m.requests.lat, lng: m.requests.lng, color: '#12B39C',
+        label: m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null,
+      }))
+    : reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, label: b ? `${Math.round(b / 100)} €` : null } })
+
   return (
     <div className="procarte-screen">
       <div className="body full nopad procarte-body">
@@ -199,17 +248,18 @@ export default function ProCartePage() {
             </div>
           </div>
 
-          <div className="searchbar" style={{ background: '#fff' }}>
+          <div className="searchbar" style={{ background: '#fff', top: 66, padding: '11px 14px', cursor: 'default' }}>
             <div className="si" style={{ background: 'rgba(242,169,59,.14)' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
             </div>
-            <span style={{ color: 'var(--slate)', fontWeight: 600 }}>Vous êtes visible · rayon 5 km</span>
+            <span style={{ color: 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{available ? 'Visible · demandes à moins de 25 km' : 'Hors ligne · invisible des clients'}</span>
           </div>
 
-          <div className="chips">
-            <div className="chip on" style={{ background: 'var(--ink)', color: '#fff' }}>Demandes ouvertes</div>
-            <div className="chip">Mes interventions</div>
-            <div className="chip">Autres pros</div>
+          <div className="chips" style={{ top: 122 }}>
+            {([['demandes', `Demandes ouvertes (${reqs.length})`], ['interventions', `Mes interventions (${missions.length})`]] as const).map(([k, label]) => (
+              <div key={k} className={view === k ? 'chip on' : 'chip'} onClick={() => { setView(k); setSelectedId(null) }}
+                style={view === k ? { background: 'var(--ink)', color: '#fff', cursor: 'pointer' } : { cursor: 'pointer' }}>{label}</div>
+            ))}
           </div>
 
           <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
@@ -217,8 +267,8 @@ export default function ProCartePage() {
               userPos={userPos}
               pros={[]}
               onSelect={() => { }}
-              requests={reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, label: b ? `${Math.round(b / 100)} €` : null } })}
-              onSelectRequest={(id: string) => setSelectedId(id)}
+              requests={mapPins}
+              onSelectRequest={(id: string) => view === 'interventions' ? router.push(`/mission/${id}/chat`) : setSelectedId(id)}
               recenterTick={recenterTick}
               youLabel="Vous êtes ici"
             />
@@ -229,19 +279,19 @@ export default function ProCartePage() {
           {/* Mobile : fiche remontant du bas. Desktop : cachee (.app-shell .preview),
               remplacee par le panneau permanent ci-dessous. */}
           <div className="preview show" style={{ padding: 14, maxHeight: '70vh', overflowY: 'auto' }}>
-            {selected ? requestDetail : activityPanel}
+            {sidePanel}
           </div>
 
           {/* Desktop (>=1000px) : panneau permanent a cote de la carte, cachee sur
               mobile (.detail-panel { display:none } par defaut). */}
           <div className="detail-panel">
-            {!selected && (
+            {!selected && view === 'demandes' && (
               <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
                 <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>Votre activité</b>
               </div>
             )}
             <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
-              {selected ? requestDetail : activityPanel}
+              {sidePanel}
             </div>
           </div>
         </div>

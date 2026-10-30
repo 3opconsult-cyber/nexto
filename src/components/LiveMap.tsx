@@ -50,8 +50,8 @@ function pinIcon(color: string, label: string | null, i = 0) {
 function proIcon(p: { trade: string; is_active: boolean; pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }, i = 0) {
   return pinIcon(p.is_active ? '#12B39C' : '#9CA3AF', pinPriceLabel(p), i)
 }
-function reqIcon(label: string | null | undefined, i = 0) {
-  return pinIcon('#F2A93B', label ?? null, i)
+function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B') {
+  return pinIcon(color, label ?? null, i)
 }
 
 function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[]; pts?: { lat: number; lng: number }[]; recenterTick?: number }) {
@@ -70,7 +70,7 @@ function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: n
   return null
 }
 
-type ReqPin = { id: string; lat: number; lng: number; label?: string | null }
+type ReqPin = { id: string; lat: number; lng: number; label?: string | null; color?: string }
 export default function LiveMap({
   userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici',
 }: {
@@ -116,7 +116,7 @@ export default function LiveMap({
           <Marker
             key={r.id}
             position={[r.lat, r.lng]}
-            icon={reqIcon(r.label, i)}
+            icon={reqIcon(r.label, i, r.color)}
             eventHandlers={{ click: () => onSelectRequest?.(r.id) }}
           />
         ))}
