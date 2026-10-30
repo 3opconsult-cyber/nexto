@@ -20,6 +20,9 @@ function agoTxt(iso: string) {
   if (h < 24) return `il y a ${h} h`
   return `il y a ${Math.round(h / 24)} j`
 }
+function UrgentTag() {
+  return <span style={{ display: 'inline-block', marginRight: 6, padding: '1px 7px', borderRadius: 999, background: '#E8743B', color: '#fff', fontFamily: 'Inter,sans-serif', fontSize: 10.5, fontWeight: 800, verticalAlign: 2 }}>URGENT</span>
+}
 function budgetTxt(cents: number | null) {
   return cents ? `${Math.round(cents / 100)} €` : 'Sur devis'
 }
@@ -118,7 +121,7 @@ export default function ProCartePage() {
         <div onClick={() => setSelectedId(null)} style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'var(--paper)', flex: '0 0 auto' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
         </div>
-        <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>{selected.title || TRADES[selected.category] || selected.category}</b>
+        <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>{selected.urgent && <UrgentTag />}{selected.title || TRADES[selected.category] || selected.category}</b>
       </div>
 
       <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: 12, marginBottom: 14 }}>
@@ -186,7 +189,7 @@ export default function ProCartePage() {
             <div key={r.id} onClick={() => setSelectedId(r.id)}
               style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{r.title || TRADES[r.category] || r.category}</b>
+                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{r.urgent && <UrgentTag />}{r.title || TRADES[r.category] || r.category}</b>
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', whiteSpace: 'nowrap' }}>{budgetRangeTxt(r)}</span>
               </div>
               <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}</div>
@@ -225,7 +228,7 @@ export default function ProCartePage() {
         id: m.id, lat: m.requests.lat, lng: m.requests.lng, color: '#12B39C',
         label: m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null,
       }))
-    : reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, label: b ? `${Math.round(b / 100)} €` : null } })
+    : reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, color: r.urgent ? '#E8743B' : undefined, label: b ? `${Math.round(b / 100)} €` : (r.urgent ? 'Urgent' : null) } })
 
   return (
     <div className="procarte-screen">

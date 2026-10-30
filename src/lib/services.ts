@@ -32,6 +32,7 @@ export interface RequestNearby {
   desired_date: string | null
   desired_slot: string | null
   frequency: string | null
+  urgent?: boolean
   // Pas d'adresse ici par design : elle n'est communiquée qu'une fois la
   // mission confirmée (invariant CLAUDE.md), jamais pendant le parcours
   // "demandes ouvertes autour de moi" avant toute proposition.

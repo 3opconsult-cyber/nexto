@@ -1,9 +1,10 @@
-# SQL à coller dans Supabase (éditeur SQL), dans cet ordre
+# SQL Supabase
 
 Lien direct : https://supabase.com/dashboard/project/wmiawwaxwlvascyflpba/sql/new
 
-1. `../migrations/014_paiement_en_ligne.sql` — paiement en ligne (éteint tant que les clés manquent)
-2. `../migrations/015_suivi_anonyme.sql` — suivi des visiteurs avant inscription (stickers, QR)
-3. `../migrations/016_avis_prestataire_sur_client.sql` — le prestataire note le client
+**Plus rien à coller** : 014, 015, 016 et 017 sont en prod (vérifié / appliqué le 30/10/2026).
 
-Chaque fichier se colle en entier, puis « Run ». Tous sont sans danger à rejouer.
+Le jour où les données fictives ne servent plus : coller `nettoyage_donnees_fictives.sql`
+(supprime tout ce dont le titre commence par « Exemple — »).
+Les 7 anciennes missions de test « avec soi-même » ont été supprimées le 30/10 ; copie dans la
+table `_sauvegarde_missions_test_30_10` (lisible seulement depuis le tableau de bord Supabase).

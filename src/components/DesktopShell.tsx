@@ -12,7 +12,7 @@ const APP_PREFIXES = ['/map', '/messages', '/agenda', '/documents', '/litiges', 
 // Barre d'onglets mobile : sur toutes les pages principales (demande Romain 30/10 : « sur toutes les
 // pages ou pas du tout »), jamais dans un parcours qui a son propre bouton en bas (conversation,
 // réservation, scan, inscription, fiche publique d'un prestataire).
-const NO_TABBAR = /^\/(mission\/|pro\/onboarding|pro\/attente|auth\/)|^\/pro\/[0-9a-f-]{36}$/
+const NO_TABBAR = /^\/(pro\/onboarding|pro\/attente|auth\/)/
 // Pages plein écran (carte) : la barre se pose sur la carte, sans marge en bas.
 const FULLSCREEN = /^\/(map|pro\/carte)$/
 

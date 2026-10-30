@@ -1,5 +1,6 @@
 "use client"
 import { useState, type CSSProperties } from 'react'
+import { filterMessage } from '@/lib/chatFilter'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
@@ -32,6 +33,7 @@ export default function NewOpenRequestPage() {
   const [desiredSlot, setDesiredSlot] = useState('matin')
   const [budgetMin, setBudgetMin] = useState('')
   const [budgetMax, setBudgetMax] = useState('')
+  const [urgent, setUrgent] = useState(false)
   const [address, setAddress] = useState('')
   const [error, setError] = useState('')
   const [creating, setCreating] = useState(false)
@@ -46,6 +48,10 @@ export default function NewOpenRequestPage() {
   async function submit() {
     if (!title.trim()) { setError('Indiquez un titre pour votre demande.'); return }
     if (!address.trim()) { setError('Indiquez l’adresse de la prestation.'); return }
+    // Anti-contournement : la demande est lue par tous les prestataires du secteur ; un numéro ou un
+    // e-mail permettrait de traiter hors de PING (et sans commission). Les échanges se font dans le chat.
+    const leak = filterMessage(`${title} ${description}`).reasons.filter(r => r !== 'coordonnées hors plateforme')
+    if (leak.length) { setError(`Retirez le ${leak[0]} : vos coordonnées restent masquées, les prestataires vous écrivent dans PING.`); return }
     setError('')
     setCreating(true)
 
@@ -77,7 +83,7 @@ export default function NewOpenRequestPage() {
       desired_date: desiredDate || null, desired_slot: desiredSlot, frequency,
       address: address.trim(),
       lat: point.lat, lng: point.lng,
-      status: 'open',
+      status: 'open', urgent,
     })
     if (reqErr) { setError('Impossible de publier la demande. Réessayez dans un instant.'); setCreating(false); return }
 
@@ -143,6 +149,17 @@ export default function NewOpenRequestPage() {
             </button>
           ))}
         </div>
+
+        <button type="button" onClick={() => setUrgent(!urgent)} aria-pressed={urgent}
+          style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '12px 14px', marginBottom: 18, borderRadius: 14, cursor: 'pointer', border: urgent ? '2px solid #E8743B' : '1px solid #DCE5E3', background: urgent ? 'rgba(232,116,59,.07)' : '#fff' }}>
+          <span style={{ width: 38, height: 22, borderRadius: 999, background: urgent ? '#E8743B' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
+            <span style={{ position: 'absolute', top: 2, left: urgent ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
+          </span>
+          <span>
+            <span style={{ display: 'block', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>C’est urgent</span>
+            <span style={{ display: 'block', fontSize: 12, color: '#4E6470' }}>Votre demande passe en tête et s’affiche en orange chez les prestataires.</span>
+          </span>
+        </button>
 
         <div style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 700, marginBottom: 8 }}>Budget indicatif</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>

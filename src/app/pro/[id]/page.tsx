@@ -216,7 +216,7 @@ export default function ProDetailPage() {
 
       {/* Desktop : la barre reste dans la colonne de contenu, à droite de la barre latérale (236 px). */}
       <style>{`@media (min-width:1000px){.pro-foot{left:236px !important;max-width:none !important;margin:0 !important}.pro-foot>div{max-width:640px;margin:0 auto}}`}</style>
-      <div className="ping-foot pro-foot" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
+      <div className="ping-foot pro-foot" style={{ position: 'fixed', bottom: 'var(--tabbar-h, 0px)', left: 0, right: 0, maxWidth: 480, zIndex: 20, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
         {actionErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px', textAlign: 'center' }}>{actionErr}</p>}
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="ping-btn ghost" style={{ flex: 1 }} onClick={contact}>Contacter</button>

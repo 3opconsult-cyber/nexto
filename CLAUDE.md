@@ -468,10 +468,22 @@ il a trouvé 4 défauts invisibles à la relecture :
   l'agenda échouait en 400.
 - **`events` refuse l'insertion anonyme** : l'attribution marketing avant inscription (stickers, QR) est
   perdue → migration `015_suivi_anonyme.sql` À APPLIQUER.
+**Suite du 30/10 (accès SQL MCP rétabli)** : 016 (`client_reviews`) et 017 appliquées. **BUG MAJEUR corrigé** :
+`requests_nearby` n'était pas SECURITY DEFINER, la RLS `requests` masquait toute demande ouverte aux pros
+(carte pro toujours à 0) — désormais definer, position floutée ~500 m, sans ses propres demandes, `urgent`
+renvoyé (épingle orange + badge, urgentes en tête ; case « C'est urgent » dans `/client/demandes/new`, qui
+refuse aussi téléphone/e-mail dans le titre et la description). Trigger d'inscription : `is_pro` défaut false.
+Les 7 missions buyer = seller supprimées (copie `_sauvegarde_missions_test_30_10`), contrainte
+`transactions_buyer_ne_seller` validée. **Données fictives** sur le compte de Romain (3op.consult@gmail.com,
+titres « Exemple — … ») : côté pro 3 missions terminées (factures, avis, une note client privée, un litige),
+1 en cours, 1 à venir, 1 contre-proposition à traiter ; côté client 1 terminée sans avis, 1 à venir, 1 demande
+ouverte avec 2 propositions. Nettoyage : `supabase/a_coller/nettoyage_donnees_fictives.sql`.
+UI : bascule particulier/prestataire **uniquement depuis le menu** (ModeHint = simple cloche, Romain 30/10) ;
+barre du bas aussi sur les pages mission (barres collantes posées au-dessus via `--tabbar-h`) ; gris de texte
+assombris (#4E6470 pour le secondaire).
 **Restent ouverts** : parrainage jamais enregistré (lecture `profiles.referral_code` bloquée par RLS →
 RPC SECURITY DEFINER à créer) ; `/welcome` a été supprimé (commit 1181f62), la section marketing plus
-haut est périmée sur ce point ; vérifier que `requests_nearby` floute les coordonnées des demandes
-(l'épingle sur `/pro/carte` utilise `lat/lng` renvoyés) ; litige complet (vague 2) pas construit.
+haut est périmée sur ce point ; litige complet (vague 2) pas construit.
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
