@@ -8,6 +8,11 @@ export const TRADES: Record<string, string> = {
   menage: 'Ménage',
   repassage: 'Repassage',
   nettoyage: 'Nettoyage',
+  // Présent en base chez certains prestataires (cf. CLAUDE.md « + vitres en base ») : libellé
+  // nécessaire à l'affichage, mais pas proposé au choix tant que l'offre reste aux 3 services.
+  vitres: 'Vitres',
 }
 
-export const TRADE_LIST = Object.entries(TRADES).map(([key, label]) => ({ key, label }))
+// Services proposés au choix (inscription pro, demande client) : les 3 du lancement.
+const SELECTABLE = ['menage', 'repassage', 'nettoyage']
+export const TRADE_LIST = SELECTABLE.map(key => ({ key, label: TRADES[key] }))

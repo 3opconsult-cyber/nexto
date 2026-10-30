@@ -31,16 +31,28 @@ export default function ArrivalProof({ txId, onDone }: { txId: string; onDone: (
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
     const path = `${txId}/arrival-${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('offer-photos').upload(path, file)
+    if (upErr) {
+      setBusy(''); e.target.value = ''
+      alert('La photo n\u2019a pas pu être envoyée — réessayez.')
+      return
+    }
     const now = new Date()
     const c = coordsRef.current
-    const { data } = await supabase.from('transactions')
-      .update({ arrived_at: now.toISOString(), status: 'arrived' }).eq('id', txId).select().single()
+    // Jamais sur une mission annulée ou déjà commencée.
+    const { data, error: txErr } = await supabase.from('transactions')
+      .update({ arrived_at: now.toISOString(), status: 'arrived' })
+      .eq('id', txId).is('arrived_at', null).neq('status', 'cancelled').select().maybeSingle()
+    if (txErr || !data) {
+      setBusy(''); e.target.value = ''
+      alert('Arrivée non enregistrée : la mission est peut-être annulée ou déjà commencée.')
+      return
+    }
     await supabase.from('messages').insert({
       transaction_id: txId, sender_id: null,
-      photo_path: upErr ? null : path,
+      photo_path: path,
       body: `✓ Arrivée validée sur place à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — photo horodatée${c ? ` · GPS ${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}` : ''}`,
     })
-    if (data) onDone(data)
+    onDone(data)
     setBusy('')
     e.target.value = ''
   }

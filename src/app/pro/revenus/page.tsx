@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
+import { EUR } from '@/lib/invoice-pdf'
 
 const DONE = ['completed', 'released']
 
-function eur(c: number) { return `${(c / 100).toFixed(0)} €` }
+const eur = EUR
 
 export default function ProRevenusPage() {
   const router = useRouter()
@@ -15,9 +16,12 @@ export default function ProRevenusPage() {
   const [sap, setSap] = useState('')
   const [sapReady, setSapReady] = useState(false)
   const [sapSaved, setSapSaved] = useState(false)
+  const [sapError, setSapError] = useState('')
 
   async function saveSap() {
-    await createClient().from('provider_profiles').update({ sap_number: sap.trim() || null }).eq('id', uid)
+    setSapError('')
+    const { error } = await createClient().from('provider_profiles').update({ sap_number: sap.trim() || null }).eq('id', uid)
+    if (error) { setSapError("Le numéro n'a pas pu être enregistré. Réessayez."); return }
     setSapSaved(true); setTimeout(() => setSapSaved(false), 1800)
   }
   const [monthCents, setMonthCents] = useState(0)
@@ -106,15 +110,18 @@ export default function ProRevenusPage() {
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644', marginBottom: 6 }}>Crédit d&apos;impôt de vos clients (numéro SAP)</div>
                 <p style={{ fontSize: 12, color: '#6E8592', lineHeight: 1.55, margin: '0 0 10px' }}>
                   Avec votre numéro de déclaration de services à la personne (gratuit sur le portail NOVA), vos clients
-                  ne paient que 50 % grâce à l&apos;avance immédiate de l&apos;Urssaf. Un argument fort face à la concurrence.
+                  bénéficient du crédit d&apos;impôt de 50 %, et ne paieront que la moitié grâce à l&apos;avance immédiate
+                  de l&apos;Urssaf dès son ouverture sur PING. Un argument fort face à la concurrence.
                 </p>
+                <label htmlFor="sap-number" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Numéro de déclaration SAP</label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input value={sap} onChange={e => setSap(e.target.value)} placeholder="SAP123456789"
+                  <input id="sap-number" value={sap} onChange={e => setSap(e.target.value)}
                     style={{ flex: 1, minWidth: 0, border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif' }} />
                   <button onClick={saveSap} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                     {sapSaved ? 'Enregistré' : 'Enregistrer'}
                   </button>
                 </div>
+                {sapError && <p style={{ color: '#c0503a', fontSize: 12, margin: '8px 0 0' }}>{sapError}</p>}
               </div>
             )}
 

@@ -38,12 +38,40 @@ function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     email: '', password: '', firstName: '', lastName: '',
-    phone: '', birthdate: `${new Date().getFullYear() - 30}-01-01`, address: '',
+    phone: '', birthdate: '', address: '',
   })
+  // Inscription réussie mais email à confirmer (pas de session) : écran dédié plutôt qu'une
+  // arrivée déconnectée sur la carte.
+  const [checkMail, setCheckMail] = useState(false)
 
   useEffect(() => { captureAttribution() }, [])
 
   function update(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
+
+  // Les champs obligatoires de l'étape 1 doivent être remplis avant de passer à la 2,
+  // au bouton comme au glissement du doigt.
+  function step1Ok() {
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.phone.trim()) {
+      setError('Renseignez votre prénom, votre nom et votre téléphone pour continuer.')
+      return false
+    }
+    setError('')
+    return true
+  }
+
+  function frenchError(msg: string) {
+    const m = msg.toLowerCase()
+    if (m.includes('already registered') || m.includes('already exists')) return 'Un compte existe déjà avec cet email. Connectez-vous ou réinitialisez votre mot de passe.'
+    if (m.includes('password')) return 'Mot de passe trop faible : au moins 8 caractères, en mélangeant lettres et chiffres.'
+    if (m.includes('invalid') && m.includes('email')) return 'Cette adresse email n’est pas valide.'
+    if (m.includes('rate limit') || m.includes('too many')) return 'Trop de tentatives en peu de temps. Patientez quelques minutes puis réessayez.'
+    return 'L’inscription n’a pas abouti. Vérifiez vos informations et réessayez.'
+  }
+
+  function nextPath(): string | null {
+    const n = params.get('next')
+    return n && n.startsWith('/') && !n.startsWith('//') ? n : null
+  }
 
   const touchX = useRef<number | null>(null)
   function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX }
@@ -52,13 +80,13 @@ function SignupForm() {
     const dx = e.changedTouches[0].clientX - touchX.current
     touchX.current = null
     if (Math.abs(dx) < 60) return
-    if (dx < 0 && step === 1) setStep(2)
+    if (dx < 0 && step === 1) { if (step1Ok()) setStep(2) }
     else if (dx > 0 && step === 2) setStep(1)
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (step === 1) { setStep(2); return }
+    if (step === 1) { if (step1Ok()) setStep(2); return }
     setLoading(true)
     setError('')
     try {
@@ -71,7 +99,7 @@ function SignupForm() {
             first_name: form.firstName,
             last_name: form.lastName,
             phone: form.phone,
-            birthdate: form.birthdate,
+            birthdate: form.birthdate || null,
             address: form.address,
             role,
             // D'où vient cette inscription. Repris par le trigger
@@ -81,7 +109,7 @@ function SignupForm() {
           }
         }
       })
-      if (signupError) { setError(signupError.message); setLoading(false); return }
+      if (signupError) { setError(frenchError(signupError.message)); setLoading(false); return }
 
       const refCode = params.get('ref')
       if (refCode && data.user) {
@@ -91,13 +119,33 @@ function SignupForm() {
         }
       }
 
+      if (!data.session) { setCheckMail(true); setLoading(false); return }
       if (role === 'pro') router.push('/pro/onboarding')
-      else router.push('/map')
+      else router.push(nextPath() || '/map')
     } catch {
-      setError("Une erreur est survenue, réessaie dans un instant.")
+      setError("Une erreur est survenue, réessayez dans un instant.")
       setLoading(false)
     }
   }
+
+  if (checkMail) return (
+    <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 24px', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '28px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)', textAlign: 'center' }}>
+        <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(18,179,156,.12)', display: 'grid', placeItems: 'center', margin: '0 auto 14px' }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+        </div>
+        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', margin: '0 0 8px' }}>Vérifiez votre boîte mail</h1>
+        <p style={{ fontSize: 13.5, color: '#6E8592', lineHeight: 1.55, margin: 0 }}>
+          Un lien de confirmation vient d&apos;être envoyé à <b style={{ color: '#123644' }}>{form.email}</b>. Cliquez dessus pour activer
+          votre compte, puis connectez-vous. Pensez à regarder dans les spams.
+        </p>
+        <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'}
+          style={{ display: 'block', marginTop: 20, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
+          Aller à la connexion
+        </Link>
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
@@ -153,6 +201,9 @@ function SignupForm() {
                 <div>
                   <label style={labelStyle}>Date de naissance</label>
                   <DateWheelPicker value={form.birthdate} onChange={v => update('birthdate', v)} />
+                  <p style={{ fontSize: 11, color: form.birthdate ? '#0C8F7E' : '#6E8592', fontWeight: 600, margin: '5px 0 0' }}>
+                    {form.birthdate ? 'Date enregistrée.' : 'Facultatif : faites défiler pour l’indiquer (utile pour le crédit d’impôt).'}
+                  </p>
                 </div>
                 <div>
                   <label style={labelStyle}>Téléphone</label>
@@ -187,7 +238,7 @@ function SignupForm() {
                   <input type="checkbox" required style={{ marginTop: 2, width: 16, height: 16, accentColor: '#12B39C', flexShrink: 0 }} />
                   <span style={{ fontSize: 11.5, fontWeight: 600, color: '#0C8F7E', lineHeight: 1.4 }}>
                     J&apos;accepte les <Link href="/cgu" style={{ textDecoration: 'underline' }}>Conditions Générales</Link> et la{' '}
-                    <Link href="/privacy" style={{ textDecoration: 'underline' }}>Politique de confidentialité</Link> de PING
+                    <Link href="/confidentialite" style={{ textDecoration: 'underline' }}>Politique de confidentialité</Link> de PING
                   </span>
                 </label>
               </>
@@ -201,7 +252,7 @@ function SignupForm() {
           </div>
           <p style={{ textAlign: 'center', fontSize: 13, color: '#6E8592', fontWeight: 600, marginTop: 16 }}>
             Déjà un compte ?{' '}
-            <Link href="/auth/login" style={{ color: '#0C8F7E', fontWeight: 700 }}>Se connecter</Link>
+            <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'} style={{ color: '#0C8F7E', fontWeight: 700 }}>Se connecter</Link>
           </p>
         </div>
       </div>

@@ -75,7 +75,10 @@ export default function AgendaPage() {
   const mine = mode ? txs.filter(t => t[roleColumn(mode)] === uid) : []
   const otherCount = mode ? txs.filter(t => t[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === uid && t.buyer_id !== t.seller_id).length : 0
   const shownDisputes = disputes.filter(d => mine.some(t => t.id === d.transaction_id))
-  const upcoming = mine.filter(t => UPCOMING.includes(t.status))
+  // L'agenda ne montre que de vrais rendez-vous : une simple conversation (tarif pas encore validé)
+  // reste dans Messages, sinon chaque « Contacter » ajoutait une fausse date au calendrier.
+  const pendingTalks = mine.filter(t => UPCOMING.includes(t.status) && !t.price_confirmed).length
+  const upcoming = mine.filter(t => UPCOMING.includes(t.status) && t.price_confirmed)
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
   const done = mine.filter(t => DONE.includes(t.status))
 
@@ -83,7 +86,7 @@ export default function AgendaPage() {
   const today = new Date()
   const eventsByDay = useMemo(() => {
     const map: Record<number, number> = {}
-    mine.forEach(t => { const d = txDate(t); if (d.getFullYear() === y && d.getMonth() === m) map[d.getDate()] = (map[d.getDate()] || 0) + 1 })
+    mine.filter(t => t.price_confirmed || DONE.includes(t.status)).forEach(t => { const d = txDate(t); if (d.getFullYear() === y && d.getMonth() === m) map[d.getDate()] = (map[d.getDate()] || 0) + 1 })
     return map
   }, [mine, y, m])
 
@@ -179,6 +182,11 @@ export default function AgendaPage() {
           <>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>À venir</div>
             {upcoming.length ? upcoming.map(card) : <p style={{ fontSize: 12.5, color: '#9aa6a3', marginBottom: 20 }}>Rien de prévu pour l&apos;instant.</p>}
+            {pendingTalks > 0 && (
+              <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#6E8592', cursor: 'pointer' }}>
+                {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
+              </button>
+            )}
 
             {isPro && mode === 'pro' && freeSlots !== null && (
               <>

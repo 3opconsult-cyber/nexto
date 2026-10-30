@@ -28,7 +28,7 @@ export default function Disponibilites() {
   const [duration, setDuration] = useState(120)
   const [weekly, setWeekly] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [msg, setMsg] = useState('')
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
   async function reload(uid: string) {
     setSlots(await fetchSlots(createClient(), uid, 60))
@@ -54,23 +54,26 @@ export default function Disponibilites() {
     const [h, m] = time.split(':').map(Number)
     const base = new Date(`${date}T00:00:00`)
     base.setHours(h, m, 0, 0)
-    if (base.getTime() <= Date.now()) { setMsg('Choisissez un créneau à venir.'); return }
-    setBusy(true); setMsg('')
-    const rows = Array.from({ length: weekly ? 4 : 1 }, (_, i) => ({
-      provider_id: userId,
-      starts_at: new Date(base.getTime() + i * 7 * 86400000).toISOString(),
-      duration_minutes: duration,
-    }))
+    if (base.getTime() <= Date.now()) { setMsg({ text: 'Choisissez un créneau à venir.', ok: false }); return }
+    setBusy(true); setMsg(null)
+    // +7 jours sur la date locale (et non +7×24 h) : le créneau garde la même heure affichée
+    // même quand la semaine traverse un changement d'heure été/hiver.
+    const rows = Array.from({ length: weekly ? 4 : 1 }, (_, i) => {
+      const d = new Date(base)
+      d.setDate(d.getDate() + i * 7)
+      return { provider_id: userId, starts_at: d.toISOString(), duration_minutes: duration }
+    })
     const { error } = await createClient().from('provider_slots').upsert(rows, { onConflict: 'provider_id,starts_at', ignoreDuplicates: true })
     setBusy(false)
-    if (error) { setMsg("Impossible d'ajouter ce créneau."); return }
-    setMsg(weekly ? 'Créneau ajouté pour les 4 prochaines semaines.' : 'Créneau ajouté.')
+    if (error) { setMsg({ text: "Impossible d'ajouter ce créneau. Réessayez.", ok: false }); return }
+    setMsg({ text: weekly ? 'Créneau ajouté pour les 4 prochaines semaines.' : 'Créneau ajouté.', ok: true })
     reload(userId)
   }
 
   async function remove(id: string) {
     if (!userId) return
-    await createClient().from('provider_slots').delete().eq('id', id)
+    const { error } = await createClient().from('provider_slots').delete().eq('id', id)
+    if (error) setMsg({ text: "Ce créneau n'a pas pu être retiré (déjà réservé ?).", ok: false })
     reload(userId)
   }
 
@@ -118,7 +121,7 @@ export default function Disponibilites() {
                 <button onClick={add} disabled={busy} style={{ marginTop: 14, width: '100%', border: 'none', borderRadius: 999, padding: 13, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
                   {busy ? 'Ajout…' : 'Ajouter'}
                 </button>
-                {msg && <p style={{ fontSize: 12, color: '#0C8F7E', margin: '10px 0 0', textAlign: 'center' }}>{msg}</p>}
+                {msg && <p style={{ fontSize: 12, color: msg.ok ? '#0C8F7E' : '#c0503a', margin: '10px 0 0', textAlign: 'center' }}>{msg.text}</p>}
               </div>
 
               {groups.length === 0 && (

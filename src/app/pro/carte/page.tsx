@@ -228,7 +228,7 @@ export default function ProCartePage() {
 
           {/* Mobile : fiche remontant du bas. Desktop : cachee (.app-shell .preview),
               remplacee par le panneau permanent ci-dessous. */}
-          <div className="preview on" style={{ padding: 14, maxHeight: '70vh', overflowY: 'auto' }}>
+          <div className="preview show" style={{ padding: 14, maxHeight: '70vh', overflowY: 'auto' }}>
             {selected ? requestDetail : activityPanel}
           </div>
 

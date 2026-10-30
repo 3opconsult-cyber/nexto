@@ -8,8 +8,8 @@ import Modal from '@/components/Modal'
 type DocRow = { status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string }
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
-  valid: { label: 'Validée', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
-  pending: { label: 'En attente de vérification', bg: 'rgba(242,169,59,.16)', fg: '#9A6712' },
+  valid: { label: 'Fournie', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
+  pending: { label: 'Reçue — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#9A6712' },
   rejected: { label: 'Refusée — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
   expired: { label: 'Expirée — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
 }
@@ -19,6 +19,7 @@ export default function ClientDocumentsPage() {
   const [row, setRow] = useState<DocRow | null>(null)
   const [ready, setReady] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [err, setErr] = useState('')
   const [viewing, setViewing] = useState<{ url: string; isImage: boolean } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -33,6 +34,8 @@ export default function ClientDocumentsPage() {
   useEffect(() => { load() }, [])
 
   async function handleFile(file: File) {
+    setErr('')
+    if (file.size > 10 * 1024 * 1024) { setErr('Fichier trop lourd : 10 Mo maximum.'); return }
     setUploading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -40,8 +43,11 @@ export default function ClientDocumentsPage() {
     const ext = file.name.split('.').pop()
     const path = `${user.id}/identite-${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('documents').upload(path, file, { upsert: true })
-    if (!upErr) {
-      await supabase.from('documents').upsert({ owner_id: user.id, kind: 'identite', storage_path: path, status: 'pending' }, { onConflict: 'owner_id,kind' })
+    if (upErr) {
+      setErr('L’envoi du fichier a échoué. Vérifiez votre connexion et réessayez.')
+    } else {
+      const { error: dbErr } = await supabase.from('documents').upsert({ owner_id: user.id, kind: 'identite', storage_path: path, status: 'pending' }, { onConflict: 'owner_id,kind' })
+      if (dbErr) setErr('Le fichier est envoyé mais n’a pas pu être enregistré. Réessayez.')
       await load()
     }
     setUploading(false)
@@ -51,7 +57,7 @@ export default function ClientDocumentsPage() {
     if (!row?.storage_path) return
     const supabase = createClient()
     const { data, error } = await supabase.storage.from('documents').createSignedUrl(row.storage_path, 120)
-    if (error || !data) return
+    if (error || !data) { setErr('Le document ne peut pas être affiché pour le moment.'); return }
     setViewing({ url: data.signedUrl, isImage: /\.(jpe?g|png|gif|webp)$/i.test(row.storage_path) })
   }
 
@@ -98,6 +104,8 @@ export default function ClientDocumentsPage() {
             {uploading ? 'Envoi…' : row ? 'Remplacer' : 'Ajouter'}
           </button>
         </div>
+        {err && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, marginTop: 10 }}>{err}</p>}
+        <p style={{ fontSize: 11, color: '#9aa6a3', marginTop: 10 }}>PDF, JPG ou PNG · 10 Mo maximum.</p>
       </div>
 
       <Modal open={!!viewing} onClose={() => setViewing(null)} title="Pièce d'identité">

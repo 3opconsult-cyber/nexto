@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { DOC_TYPES } from '@/lib/documents'
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: 'En cours de vérification',
-  valid: 'Validé',
+  pending: 'Reçu — en cours de traitement',
+  valid: 'Fourni',
+  rejected: 'Refusé — à redéposer',
   expired: 'À renouveler',
 }
 
@@ -14,6 +15,7 @@ export default function ProAttente() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [isActive, setIsActive] = useState(false)
+  const [placed, setPlaced] = useState(true)
   const [docs, setDocs] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -22,9 +24,10 @@ export default function ProAttente() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
 
-      const { data: pp } = await supabase.from('provider_profiles').select('is_active').eq('id', user.id).single()
+      const { data: pp } = await supabase.from('provider_profiles').select('is_active, lat, lng').eq('id', user.id).single()
       if (!pp) { router.push('/pro/onboarding'); return }
       setIsActive(pp.is_active)
+      setPlaced(pp.lat != null && pp.lng != null)
 
       const { data: documents } = await supabase.from('documents').select('kind, status').eq('owner_id', user.id)
       const map: Record<string, string> = {}
@@ -46,13 +49,21 @@ export default function ProAttente() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', background: '#123644', fontFamily: 'Inter, sans-serif' }}>
       <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#fff', marginBottom: 10 }}>
-        {isActive ? 'Votre profil est en ligne' : 'Dossier enregistré'}
+        {isActive && placed ? 'Votre profil est en ligne' : 'Dossier enregistré'}
       </h1>
       <p style={{ fontSize: 13.5, fontWeight: 500, color: 'rgba(255,255,255,.6)', maxWidth: 320, lineHeight: 1.6, marginBottom: 28 }}>
-        {isActive
-          ? "Vous êtes dès à présent visible sur la carte et joignable par les clients à proximité."
-          : "Complétez votre profil pour apparaître sur la carte."}
+        {!placed
+          ? "Votre adresse n'a pas pu être placée sur la carte : les clients ne vous voient pas encore. Précisez-la pour apparaître près d'eux."
+          : isActive
+            ? "Vous êtes dès à présent visible sur la carte et joignable par les clients à proximité."
+            : "Votre profil est masqué : réactivez-le depuis Mon entreprise pour apparaître sur la carte."}
       </p>
+      {!placed && (
+        <button onClick={() => router.push('/pro/onboarding')}
+          style={{ marginTop: -14, marginBottom: 24, background: 'none', border: 'none', color: '#12B39C', fontWeight: 700, fontSize: 13.5, textDecoration: 'underline', cursor: 'pointer' }}>
+          Corriger mon adresse
+        </button>
+      )}
 
       <div style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ padding: 16, borderRadius: 16, textAlign: 'left', background: 'rgba(255,255,255,.08)' }}>
@@ -71,7 +82,7 @@ export default function ProAttente() {
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: status ? '#fff' : 'rgba(255,255,255,.4)' }}>{doc.label}</span>
                   <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.45)' }}>
-                    {status ? STATUS_LABEL[status] : 'Non fourni'}
+                    {status ? (STATUS_LABEL[status] || 'Reçu') : 'Non fourni'}
                   </span>
                 </div>
               )

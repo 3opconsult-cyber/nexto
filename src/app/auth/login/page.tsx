@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -34,6 +34,24 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [info, setInfo] = useState('')
+  const [next, setNext] = useState<string | null>(null)
+  useEffect(() => { setNext(nextPath()) }, [])
+
+  // ?next=/chemin : retour à la page d'origine après connexion (chemins internes uniquement).
+  function nextPath(): string | null {
+    if (typeof window === 'undefined') return null
+    const n = new URLSearchParams(window.location.search).get('next')
+    return n && n.startsWith('/') && !n.startsWith('//') ? n : null
+  }
+
+  async function resetPassword() {
+    setError(''); setInfo('')
+    if (!email.trim()) { setError('Indiquez votre email ci-dessus, puis cliquez à nouveau sur « Mot de passe oublié ? ».'); return }
+    const { error } = await createClient().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/login` })
+    if (error) setError('L’envoi du lien a échoué. Réessayez dans un instant.')
+    else setInfo('Si un compte existe pour cet email, un lien de réinitialisation vient d’y être envoyé (pensez aux spams).')
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -44,7 +62,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
-          setError('Email pas encore confirmé — vérifie ta boîte mail (et les spams) pour le lien de confirmation.')
+          setError('Email pas encore confirmé — vérifiez votre boîte mail (et les spams) pour le lien de confirmation.')
         } else {
           setError('Email ou mot de passe incorrect')
         }
@@ -56,12 +74,14 @@ export default function LoginPage() {
       // de raccourcir la durée du cookie de session depuis le client).
       rememberThisTabOnly(rememberMe)
       // Redirection selon le profil reel (is_admin / is_pro, plus de colonne role)
+      const next = nextPath()
+      if (next) { router.push(next); return }
       const { data: profile } = await supabase.from('profiles').select('is_admin, is_pro').single()
       if (profile?.is_admin) router.push('/admin')
       else if (profile?.is_pro) router.push('/pro/dashboard')
       else router.push('/map')
     } catch {
-      setError("Une erreur est survenue, réessaie dans un instant.")
+      setError("Une erreur est survenue, réessayez dans un instant.")
       setLoading(false)
     }
   }
@@ -93,7 +113,12 @@ export default function LoginPage() {
                 style={{ width: 16, height: 16, accentColor: '#12B39C' }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#6E8592' }}>Rester connecté</span>
             </label>
+            <button type="button" onClick={resetPassword}
+              style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+              Mot de passe oublié ?
+            </button>
             {error && <p style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
+            {info && <p style={{ color: '#0C8F7E', fontSize: 13, fontWeight: 600, margin: 0 }}>{info}</p>}
             <button type="submit" disabled={loading}
               style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
               {loading ? 'Connexion…' : 'Se connecter'}
@@ -101,7 +126,7 @@ export default function LoginPage() {
           </form>
           <p style={{ textAlign: 'center', fontSize: 13, color: '#6E8592', fontWeight: 600, marginTop: 18 }}>
             Pas encore de compte ?{' '}
-            <Link href="/auth/signup" style={{ color: '#0C8F7E', fontWeight: 700 }}>S&apos;inscrire</Link>
+            <Link href={next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup'} style={{ color: '#0C8F7E', fontWeight: 700 }}>S&apos;inscrire</Link>
           </p>
         </div>
       </div>

@@ -13,6 +13,10 @@ export default function ProDetailPage() {
   const [reviews, setReviews] = useState<any[]>([])
   const [extraServices, setExtraServices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [actionErr, setActionErr] = useState('')
+  const [uid, setUid] = useState<string | null>(null)
+  const [fav, setFav] = useState(false)
+  const [favBusy, setFavBusy] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -25,14 +29,37 @@ export default function ProDetailPage() {
       .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
       .eq('provider_id', proId)
       .then(({ data }) => { if (!cancelled) setExtraServices(data ?? []) })
+    // Favori : état réel en base pour l'utilisateur connecté.
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (cancelled || !user) return
+      setUid(user.id)
+      const { data } = await supabase.from('favorites').select('provider_id').eq('user_id', user.id).eq('provider_id', proId).maybeSingle()
+      if (!cancelled) setFav(!!data)
+    })
     return () => { cancelled = true }
   }, [proId])
 
   async function contact() {
+    setActionErr('')
     const { missionId, error } = await openConversation(proId)
+    if (missionId) { router.push(`/mission/${missionId}/chat`); return }
     // Sa propre fiche : on ne se contacte pas soi-même, on renvoie vers son espace pro.
     if (error === 'own_profile') { router.push('/pro/dashboard'); return }
-    router.push(missionId ? `/mission/${missionId}/chat` : '/auth/login')
+    if (error === 'not_authenticated') { router.push(`/auth/login?next=${encodeURIComponent(`/pro/${proId}`)}`); return }
+    setActionErr('La conversation n’a pas pu s’ouvrir. Réessayez dans un instant.')
+  }
+
+  async function toggleFav() {
+    if (!uid) { router.push(`/auth/login?next=${encodeURIComponent(`/pro/${proId}`)}`); return }
+    if (uid === proId) return
+    setFavBusy(true); setActionErr('')
+    const supabase = createClient()
+    const { error } = fav
+      ? await supabase.from('favorites').delete().eq('user_id', uid).eq('provider_id', proId)
+      : await supabase.from('favorites').insert({ user_id: uid, provider_id: proId })
+    if (error) setActionErr('Impossible de mettre à jour vos favoris pour le moment.')
+    else setFav(!fav)
+    setFavBusy(false)
   }
 
   // "Réserver" doit passer par l'écran de choix forfait/horaire + récap de prix
@@ -103,7 +130,13 @@ export default function ProDetailPage() {
         <div className="ic" onClick={() => router.push('/map')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </div>
-        <b>Profil du pro</b>
+        <b style={{ flex: 1 }}>Profil du pro</b>
+        {uid !== proId && (
+          <button onClick={toggleFav} disabled={favBusy} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={fav}
+            style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: 'none', display: 'grid', placeItems: 'center', cursor: 'pointer', opacity: favBusy ? 0.6 : 1 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={fav ? '#12B39C' : 'none'} stroke={fav ? '#12B39C' : '#123644'} strokeWidth="2" strokeLinejoin="round"><path d="M12 21s-7-4.5-9-9a4.5 4.5 0 0 1 9-2 4.5 4.5 0 0 1 9 2c-2 4.5-9 9-9 9z" /></svg>
+          </button>
+        )}
       </div>
 
       <div className="ping-body nopad" style={{ paddingBottom: 150 }}>
@@ -113,7 +146,7 @@ export default function ProDetailPage() {
           </div>
           <h2>{name}</h2>
           <div className="meta">{ratingTxt}{dist ? ` · à ${dist}` : ''}</div>
-          <div className="dispo"><span style={{ width: 9, height: 9, borderRadius: '50%', background: '#fff', display: 'inline-block' }} /> Disponible maintenant</div>
+          <div className="dispo"><span style={{ width: 9, height: 9, borderRadius: '50%', background: pro.is_active === false ? 'rgba(255,255,255,.45)' : '#fff', display: 'inline-block' }} /> {pro.is_active === false ? 'Hors ligne pour le moment' : 'Disponible'}</div>
         </div>
 
         <div style={{ padding: '14px 16px' }}>
@@ -191,7 +224,10 @@ export default function ProDetailPage() {
         </div>
       </div>
 
-      <div className="ping-foot" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
+      {/* Desktop : la barre reste dans la colonne de contenu, à droite de la barre latérale (236 px). */}
+      <style>{`@media (min-width:1000px){.pro-foot{left:236px !important;max-width:none !important;margin:0 !important}.pro-foot>div{max-width:640px;margin:0 auto}}`}</style>
+      <div className="ping-foot pro-foot" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
+        {actionErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px', textAlign: 'center' }}>{actionErr}</p>}
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="ping-btn ghost" style={{ flex: 1 }} onClick={contact}>Contacter</button>
           <button className="ping-btn" style={{ flex: 1.4 }} onClick={() => reserve()}>{isDevis ? 'Demander un devis' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}</button>

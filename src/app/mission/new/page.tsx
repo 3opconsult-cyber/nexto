@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { getRates, DEFAULT_BUYER_RATE, DEFAULT_SELLER_RATE } from '@/lib/pricing'
 import PaymentPendingModal from '@/components/PaymentPendingModal'
+import { geocodeAddress } from '@/lib/geocode'
 import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
@@ -20,6 +21,8 @@ function MissionForm() {
   const [article, setArticle] = useState<any>(null)
   const [address, setAddress] = useState('')
   const [description, setDescription] = useState('')
+  // Sans créneaux publiés par le pro, le client indique lui-même la date et l'heure souhaitées.
+  const [wantedAt, setWantedAt] = useState('')
   const [estimatedHours, setEstimatedHours] = useState('2')
   const [mode, setMode] = useState<'forfait' | 'horaire' | null>(null)
   const [error, setError] = useState('')
@@ -89,8 +92,11 @@ function MissionForm() {
   const paymentsOn = usePaymentsActive()
 
   async function submit() {
-    if (!address.trim()) { setError('Indique une adresse.'); return }
+    if (!address.trim()) { setError('Indiquez une adresse.'); return }
     if (needsSlot && !chosen) { setError('Choisissez un créneau.'); return }
+    if (!needsSlot && !wantedAt) { setError('Indiquez la date et l\u2019heure souhaitées.'); return }
+    if (!needsSlot && new Date(wantedAt).getTime() < Date.now()) { setError('Choisissez une date à venir.'); return }
+    if (!(subtotalCents > 0)) { setError('Indiquez une durée estimée.'); return }
     if (!pro || !mode) return
     setError('')
     setCreating(true)
@@ -108,6 +114,8 @@ function MissionForm() {
       }
     }
 
+    // Coordonnées de l'adresse : servent au contrôle de vraisemblance du départ et au scan.
+    const pos = await geocodeAddress(address.trim()).catch(() => null)
     const { data: req, error: reqErr } = await supabase.from('requests').insert({
       // description est NOT NULL en base : le champ est facultatif a l'ecran,
       // "|| null" faisait donc echouer la reservation des que le client ne
@@ -116,6 +124,7 @@ function MissionForm() {
       requester_id: user.id, category: pro.trade,
       description: description.trim() || (article ? article.name : ''),
       address: address.trim(), budget_cents: totalTtc, status: 'matched',
+      ...(pos ? { lat: pos.lat, lng: pos.lng } : {}),
     }).select().single()
     if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
 
@@ -134,6 +143,7 @@ function MissionForm() {
       base_forfait_cents: hasOvertime ? pricing.base_price_cents : null,
       status: 'pending',
       price_confirmed: true,
+      ...(!needsSlot && wantedAt ? { scheduled_at: new Date(wantedAt).toISOString() } : {}),
     }).select().single()
     if (txErr || !tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
 
@@ -150,6 +160,9 @@ function MissionForm() {
       when = slotErr
         ? ' · créneau à convenir dans la conversation (celui choisi vient d\'être pris)'
         : ` · ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}`
+    } else if (wantedAt) {
+      const d = new Date(wantedAt)
+      when = ` · ${dayLabel(d.toISOString())} à ${hhmm(d.toISOString())}`
     }
     await supabase.from('messages').insert({
       transaction_id: tx.id, sender_id: null,
@@ -177,8 +190,8 @@ function MissionForm() {
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>
           {pricing
             ? hasOvertime
-              ? `${article?.name || pro.trade} — ${(pricing.base_price_cents/100).toFixed(2)} € (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${(pricing.hourly_rate_cents/100).toFixed(2)} €/h au-delà`
-              : `${article?.name || pro.trade} — ${[hasFlat ? (pricing.base_price_cents/100).toFixed(2)+' € forfait' : null, hasHourly ? (pricing.hourly_rate_cents/100).toFixed(2)+' €/h' : null].filter(Boolean).join(' · ')}`
+              ? `${article?.name || TRADES[pro.trade] || pro.trade} — ${(pricing.base_price_cents/100).toFixed(2)} € (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${(pricing.hourly_rate_cents/100).toFixed(2)} €/h au-delà`
+              : `${article?.name || TRADES[pro.trade] || pro.trade} — ${[hasFlat ? (pricing.base_price_cents/100).toFixed(2)+' € forfait' : null, hasHourly ? (pricing.hourly_rate_cents/100).toFixed(2)+' €/h' : null].filter(Boolean).join(' · ')}`
             : 'Chargement…'}
         </p>
       </div>
@@ -190,8 +203,16 @@ function MissionForm() {
             style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14 }} />
         </label>
 
+        {!needsSlot && (
+          <label style={{ display: 'block', marginBottom: 16 }}>
+            <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Date et heure souhaitées</span>
+            <input type="datetime-local" value={wantedAt} onChange={e => setWantedAt(e.target.value)}
+              style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, boxSizing: 'border-box' }} />
+          </label>
+        )}
+
         <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Description</span>
+          <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Description (facultatif)</span>
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
             style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 13.5, fontFamily: 'inherit' }} />
         </label>
@@ -293,7 +314,7 @@ function MissionForm() {
           {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
         <p style={{ fontSize: 11, color: '#9CA3AF', textAlign: 'center', marginTop: 10 }}>
-          Vous verrez le détail avant de confirmer.
+          {paymentsOn ? 'Vous serez dirigé vers le paiement sécurisé par carte.' : 'Vous verrez le détail avant de confirmer.'}
         </p>
 
         {/* Le paiement en ligne n'existe pas encore : on le dit AVANT que le

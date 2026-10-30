@@ -9,6 +9,7 @@ type ServiceRow = {
   id: string; name: string; description: string | null
   pricing_type: 'forfait' | 'horaire' | 'devis'
   base_price_cents: number; included_hours: number | null; hourly_rate_cents: number | null
+  price_cents?: number | null
 }
 type PrimaryTrade = {
   trade: string; pricing_type: 'forfait' | 'horaire' | 'devis'
@@ -20,7 +21,7 @@ const inputStyle: React.CSSProperties = {
   padding: '10px 12px', fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none',
 }
 
-function priceLabel(r: { base_price_cents: number; included_hours: number | null; hourly_rate_cents: number | null }) {
+function priceLabel(r: { base_price_cents: number; included_hours: number | null; hourly_rate_cents: number | null; price_cents?: number | null }) {
   const hasFlat = r.base_price_cents > 0
   const hasHourly = r.hourly_rate_cents != null && r.hourly_rate_cents > 0
   if (hasFlat && hasHourly && r.included_hours != null) {
@@ -28,7 +29,9 @@ function priceLabel(r: { base_price_cents: number; included_hours: number | null
   }
   if (hasFlat) return `${(r.base_price_cents / 100).toFixed(0)} € forfait`
   if (hasHourly) return `${(r.hourly_rate_cents! / 100).toFixed(0)} €/h`
-  return '—'
+  // Anciennes lignes créées avant le détail forfait/horaire : seul price_cents est renseigné.
+  if (r.price_cents && r.price_cents > 0) return `${(r.price_cents / 100).toFixed(0)} €`
+  return 'Prix à préciser'
 }
 
 /**
@@ -45,6 +48,7 @@ export default function ProTarifsPage() {
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -59,7 +63,7 @@ export default function ProTarifsPage() {
     if (!user) { router.push('/auth/login'); return }
     const [{ data }, { data: pp }] = await Promise.all([
       supabase.from('services')
-        .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
+        .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents, price_cents')
         .eq('provider_id', user.id).order('created_at'),
       supabase.from('provider_profiles')
         .select('trade, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
@@ -73,19 +77,20 @@ export default function ProTarifsPage() {
 
   function resetForm() {
     setName(''); setDescription(''); setQuoteMode(false)
-    setFlatRate(''); setIncludedHours(''); setHourlyRate(''); setAdding(false)
+    setFlatRate(''); setIncludedHours(''); setHourlyRate(''); setAdding(false); setError('')
   }
 
   async function addService() {
-    if (!name.trim()) return
+    setError('')
+    if (!name.trim()) { setError("Indiquez le nom de l'article."); return }
     const flatCents = Math.round(Number(flatRate || 0) * 100)
     const hourlyCents = hourlyRate ? Math.round(Number(hourlyRate) * 100) : null
-    if (!quoteMode && flatCents <= 0 && !hourlyCents) return
+    if (!quoteMode && flatCents <= 0 && !hourlyCents) { setError('Indiquez un forfait ou un taux horaire, ou choisissez « Sur devis ».'); return }
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await supabase.from('services').insert({
+    if (!user) { setSaving(false); setError('Session expirée : reconnectez-vous.'); return }
+    const { error: insErr } = await supabase.from('services').insert({
       provider_id: user.id, name: name.trim(), description: description.trim() || null,
       pricing_type: quoteMode ? 'devis' : (flatCents > 0 ? 'forfait' : 'horaire'),
       base_price_cents: quoteMode ? 0 : flatCents,
@@ -94,13 +99,15 @@ export default function ProTarifsPage() {
       price_cents: quoteMode ? 0 : (flatCents || hourlyCents || 0), // compat ancien affichage
     })
     setSaving(false)
+    if (insErr) { setError("L'article n'a pas pu être enregistré. Réessayez."); return }
     resetForm()
     load()
   }
 
   async function remove(id: string) {
     const supabase = createClient()
-    await supabase.from('services').delete().eq('id', id)
+    const { error: delErr } = await supabase.from('services').delete().eq('id', id)
+    if (delErr) { setError("L'article n'a pas pu être retiré. Réessayez."); return }
     setRows(rows.filter(r => r.id !== id))
   }
 
@@ -140,11 +147,13 @@ export default function ProTarifsPage() {
           </div>
         )}
 
+        {error && !adding && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#c0503a', fontSize: 12.5, fontWeight: 600, marginBottom: 9 }}>{error}</div>}
+
         {rows.map(r => (
           <div key={r.id} style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 9 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{r.name}</div>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{TRADES[r.name] || r.name}</div>
                 {r.description && <div style={{ fontSize: 12, color: '#6E8592', marginTop: 3, lineHeight: 1.45 }}>{r.description}</div>}
                 <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 6 }}>
                   {r.pricing_type === 'devis' ? 'Sur devis' : priceLabel(r)}
@@ -191,6 +200,7 @@ export default function ProTarifsPage() {
               </>
             )}
 
+            {error && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 10px' }}>{error}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={resetForm}
                 style={{ flex: 1, padding: 11, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>Annuler</button>

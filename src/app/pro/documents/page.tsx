@@ -33,8 +33,8 @@ const ICONS: Record<string, JSX.Element> = {
 type DocRow = { kind: string; status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string }
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
-  valid: { label: 'Validé', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
-  pending: { label: 'En attente de vérification', bg: 'rgba(242,169,59,.16)', fg: '#9A6712' },
+  valid: { label: 'Fourni', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
+  pending: { label: 'Reçu — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#9A6712' },
   rejected: { label: 'Refusé — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
   expired: { label: 'Expiré — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
 }
@@ -46,6 +46,7 @@ export default function ProDocumentsPage() {
   const [uploadingKey, setUploadingKey] = useState<string | null>(null)
   const [viewing, setViewing] = useState<{ key: string; url: string; isImage: boolean } | null>(null)
   const [viewLoading, setViewLoading] = useState<string | null>(null)
+  const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const pendingKey = useRef<string | null>(null)
 
@@ -70,22 +71,24 @@ export default function ProDocumentsPage() {
   async function handleFile(file: File) {
     const key = pendingKey.current
     if (!key) return
+    setError('')
+    if (file.size > 10 * 1024 * 1024) { setError('Fichier trop lourd : 10 Mo maximum.'); return }
     setUploadingKey(key)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setUploadingKey(null); return }
+    if (!user) { setUploadingKey(null); setError('Session expirée : reconnectez-vous.'); return }
 
     const ext = file.name.split('.').pop()
     const path = `${user.id}/${key}-${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('documents').upload(path, file, { upsert: true })
 
-    if (!upErr) {
-      await supabase.from('documents').upsert({
-        owner_id: user.id, kind: key, storage_path: path, status: 'pending',
-      }, { onConflict: 'owner_id,kind' })
-      trackEvent('document_uploaded', { kind: key })
-      await load()
-    }
+    if (upErr) { setError("L'envoi du fichier a échoué. Vérifiez votre connexion et réessayez."); setUploadingKey(null); return }
+    const { error: rowErr } = await supabase.from('documents').upsert({
+      owner_id: user.id, kind: key, storage_path: path, status: 'pending',
+    }, { onConflict: 'owner_id,kind' })
+    if (rowErr) { setError("Le fichier est envoyé mais n'a pas pu être enregistré. Réessayez."); setUploadingKey(null); return }
+    trackEvent('document_uploaded', { kind: key })
+    await load()
     setUploadingKey(null)
   }
 
@@ -94,7 +97,7 @@ export default function ProDocumentsPage() {
     const supabase = createClient()
     const { data, error } = await supabase.storage.from('documents').createSignedUrl(path, 120)
     setViewLoading(null)
-    if (error || !data) return
+    if (error || !data) { setError("Impossible d'ouvrir ce document pour le moment. Réessayez."); return }
     setViewing({ key, url: data.signedUrl, isImage: /\.(jpe?g|png|gif|webp)$/i.test(path) })
   }
 
@@ -116,11 +119,12 @@ export default function ProDocumentsPage() {
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.45)', marginBottom: 4 }}>Espace prestataire</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes pièces</div>
         <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.55)', marginTop: 6, maxWidth: '34ch' }}>
-          Visibles uniquement par vous et l'équipe PING. Ne changent rien à votre présence sur la carte, sauf pour l'identité et l'assurance.
+          Visibles uniquement par vous et l'équipe PING. Facultatives pour apparaître sur la carte : elles rassurent vos clients (« pièce fournie », « assurance renseignée » sur votre profil). PDF, JPG ou PNG, 10 Mo maximum.
         </p>
       </div>
 
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {error && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#c0503a', fontSize: 12.5, fontWeight: 600 }}>{error}</div>}
         {ALL_DOCS.map(doc => {
           const row = rows[doc.key]
           const st = row ? STATUS_LABEL[row.status] : null

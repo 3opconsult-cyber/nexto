@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { getRates } from '@/lib/pricing'
 
 export interface ProviderNearby {
   id: string
@@ -124,9 +125,12 @@ export async function openConversation(proId: string): Promise<{ missionId: stri
     .eq('id', proId).single()
   if (!pro) return { missionId: null, error: 'pro_not_found' }
 
-  const subtotal = pro.base_price_cents ?? pro.hourly_rate_cents ?? 0
-  const buyerFee = Math.round(subtotal * (5 / 100))
-  const sellerFee = Math.round(subtotal * (11 / 100))
+  // Prix indicatif de départ (le vrai se fixe dans le chat) ; base à 0 pour un pro horaire = pas de
+  // prix, on prend alors son tarif horaire. Taux de commission : réglage courant (pas 5 %/11 % figés).
+  const subtotal = (pro.base_price_cents ?? 0) > 0 ? pro.base_price_cents : (pro.hourly_rate_cents ?? 0)
+  const rates = await getRates()
+  const buyerFee = Math.round(subtotal * rates.buyer)
+  const sellerFee = Math.round(subtotal * rates.seller)
   const hasOvertime = pro.pricing_type === 'forfait' && pro.included_hours != null && pro.hourly_rate_cents != null
 
   // description est NOT NULL en base (aucun defaut) : sans elle cet insert

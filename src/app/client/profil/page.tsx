@@ -4,12 +4,22 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
+import Modal from '@/components/Modal'
+
+const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '12px 0 5px' }
+const fieldInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1.5px solid #E7EDEB', borderRadius: 12, fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644', outline: 'none', boxSizing: 'border-box' }
 
 export default function ClientProfil() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
   const [email, setEmail] = useState<string>('')
   const [hasId, setHasId] = useState(false)
+  const [emailOk, setEmailOk] = useState(false)
+  const [uid, setUid] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [editErr, setEditErr] = useState('')
+  const [f, setF] = useState({ first_name: '', last_name: '', phone: '', address: '', city: '' })
 
   useEffect(() => {
     const supabase = createClient()
@@ -17,13 +27,38 @@ export default function ClientProfil() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setEmail(user.email || '')
+      setEmailOk(!!user.email_confirmed_at)
+      setUid(user.id)
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(p)
-      const { data: docs } = await supabase.from('documents').select('kind').eq('owner_id', user.id).eq('kind', 'identite')
-      setHasId(!!(docs && docs.length))
+      // « Fournie » seulement pour une pièce en cours de traitement ou acceptée — pas refusée ni expirée.
+      const { data: docs } = await supabase.from('documents').select('status').eq('owner_id', user.id).eq('kind', 'identite')
+      setHasId(!!docs?.some(d => d.status === 'pending' || d.status === 'valid'))
     }
     load()
   }, [router])
+
+  function openEdit() {
+    setF({
+      first_name: profile?.first_name || '', last_name: profile?.last_name || '',
+      phone: profile?.phone_enc || '', address: profile?.address || '', city: profile?.city || '',
+    })
+    setEditErr(''); setEditing(true)
+  }
+
+  async function saveEdit() {
+    if (!f.first_name.trim() || !f.last_name.trim()) { setEditErr('Le prénom et le nom sont obligatoires.'); return }
+    setSaving(true); setEditErr('')
+    const patch = {
+      first_name: f.first_name.trim(), last_name: f.last_name.trim(),
+      full_name: `${f.first_name.trim()} ${f.last_name.trim()}`,
+      phone_enc: f.phone.trim() || null, address: f.address.trim() || null, city: f.city.trim() || null,
+    }
+    const { data, error } = await createClient().from('profiles').update(patch).eq('id', uid).select().maybeSingle()
+    setSaving(false)
+    if (error || !data) { setEditErr('L’enregistrement a échoué. Réessayez dans un instant.'); return }
+    setProfile(data); setEditing(false)
+  }
 
   async function logout() {
     const supabase = createClient()
@@ -33,7 +68,7 @@ export default function ClientProfil() {
 
   const displayName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || profile?.full_name || 'Vous'
   const initial = (profile?.first_name || profile?.full_name || '?').charAt(0).toUpperCase()
-  const city = profile?.city || 'Grasse'
+  const city = profile?.city || 'ville non renseignée'
   const phoneMasked = profile?.phone_enc ? '•• •• •• •• •• ✓' : 'Non renseigné'
 
   return (
@@ -54,12 +89,12 @@ export default function ClientProfil() {
                   <div className="nm" style={{ fontSize: 15 }}>{displayName}</div>
                   <div className="ds">Particulier · {city}</div>
                 </div>
-                <span className="edit" style={{ color: 'var(--teal)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Modifier</span>
+                <span className="edit" onClick={openEdit} style={{ color: 'var(--teal)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Modifier</span>
               </div>
               <div style={{ marginTop: 12, borderTop: '1px solid var(--line)', paddingTop: 8 }}>
                 <div className="lrow"><span className="s">Adresse</span><span className="v" style={{ fontWeight: 600, textAlign: 'right', maxWidth: '62%' }}>{profile?.address || 'Non renseignée'}</span></div>
                 <div className="lrow"><span className="s">Téléphone</span><span className="v">{phoneMasked}</span></div>
-                <div className="lrow"><span className="s">E-mail</span><span className="v">{email}{email ? ' ✓' : ''}</span></div>
+                <div className="lrow"><span className="s">E-mail</span><span className="v">{email}{email && emailOk ? ' ✓' : email ? ' · à confirmer' : ''}</span></div>
               </div>
             </div>
 
@@ -109,6 +144,25 @@ export default function ClientProfil() {
         </section>
         <BottomTabBar />
       </div></div></div>
+
+      <Modal open={editing} onClose={() => setEditing(false)} title="Mes informations">
+        <label style={fieldLabel}>Prénom</label>
+        <input style={fieldInput} value={f.first_name} autoComplete="given-name" onChange={e => setF({ ...f, first_name: e.target.value })} />
+        <label style={fieldLabel}>Nom</label>
+        <input style={fieldInput} value={f.last_name} autoComplete="family-name" onChange={e => setF({ ...f, last_name: e.target.value })} />
+        <label style={fieldLabel}>Téléphone</label>
+        <input style={fieldInput} type="tel" value={f.phone} autoComplete="tel" onChange={e => setF({ ...f, phone: e.target.value })} />
+        <label style={fieldLabel}>Adresse</label>
+        <input style={fieldInput} value={f.address} autoComplete="street-address" onChange={e => setF({ ...f, address: e.target.value })} />
+        <label style={fieldLabel}>Ville</label>
+        <input style={fieldInput} value={f.city} autoComplete="address-level2" onChange={e => setF({ ...f, city: e.target.value })} />
+        <p style={{ fontSize: 11.5, color: '#6E8592', lineHeight: 1.5, margin: '10px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
+        {editErr && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, margin: '10px 0 0' }}>{editErr}</p>}
+        <button onClick={saveEdit} disabled={saving}
+          style={{ width: '100%', marginTop: 16, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+          {saving ? 'Enregistrement…' : 'Enregistrer'}
+        </button>
+      </Modal>
     </div>
   )
 }

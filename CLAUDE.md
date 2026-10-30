@@ -424,6 +424,34 @@ Tout en REST via fetch, sans SDK. Noms de champs Mangopay/Lemonway à recontrôl
   la commission PING devrait alors être facturée séparément — piste : IBAN virtuel du porte-monnaie PSP
   déclaré à l'Urssaf, à vérifier.
 
+## Audit complet des parcours client et prestataire — 30/10/2026
+Demande Romain : « beaucoup d'erreurs de fonctionnement, textes, fonctions manquantes ». Deux relectures
+de code (client, pro) + droits RLS testés en vrai avec les comptes audit (client peut modifier
+`requests.address` de sa demande et `transactions.scheduled_at` ; `favorites(user_id, provider_id)`).
+Corrigé (une cinquantaine de points), notamment :
+- **Bloquants** : `/pro/carte` mobile (`preview on` → `preview show`, le panneau n'apparaissait jamais) ;
+  codes QR inaccessibles hors réservation directe (bouton « Mes codes QR » dans le chat) ; adresse et
+  date jamais demandées après un « Contacter » → carte « Fixez le rendez-vous » dans le chat (client,
+  dès `price_confirmed`, géocode l'adresse) ; `mission/new` sans créneaux demande date+heure
+  (`scheduled_at`) ; DepartureBar/ArrivalProof désactivés sur mission annulée ; un `acceptOffer`
+  appelait par erreur le remboursement du paiement en ligne (supprimé).
+- Contacter : taux de commission du réglage (plus 5/11 % figés). Chat : libellés du formulaire de
+  tarif, offre horaire seule possible, « Vous percevez X € », montants au format français, erreurs
+  visibles, plus de faux « en ligne », récapitulatif de la demande, bouton facture en fin.
+- Agenda : seulement les rendez-vous confirmés (les conversations en attente renvoient à Messages).
+- Navigation : barre mobile selon le mode (pro → /pro/carte), tarifs/revenus dans la sidebar desktop,
+  synchro du mode (`ping-mode`), « Se connecter » dans le drawer déconnecté.
+- Client : filtres de la carte branchés, favoris (cœur sur `/pro/[id]`), édition du profil, connexion
+  `?next=` + mot de passe oublié, inscription avec écran « vérifiez votre boîte mail », pages `/cgu`
+  et `/confidentialite` (PROVISOIRES, à valider juridiquement), « Mes demandes » sans les fausses
+  demandes auto-créées, faux sponsor retiré.
+- Pro : onboarding (services lisibles, pas de doublons, édition non bloquée, `is_active` conservé,
+  géocodage), pièces (erreurs, 10 Mo, libellés déclaratifs), disponibilités (heure d'été).
+**Restent ouverts** : parrainage jamais enregistré (lecture `profiles.referral_code` bloquée par RLS →
+RPC SECURITY DEFINER à créer) ; `/welcome` a été supprimé (commit 1181f62), la section marketing plus
+haut est périmée sur ce point ; vérifier que `requests_nearby` floute les coordonnées des demandes
+(l'épingle sur `/pro/carte` utilise `lat/lng` renvoyés) ; litige complet (vague 2) pas construit.
+
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
 Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /

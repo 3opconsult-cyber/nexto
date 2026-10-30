@@ -18,6 +18,7 @@ type Pro = {
   id: string; av: string; n: string; m: string; p: string;
   d: string; c: string[]; g: string; cat: string;
   dist: number; rate: number; priceN: number
+  reviews: number; active: boolean; identity: boolean; rcpro: boolean
 }
 
 const CHK = (
@@ -43,7 +44,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [pvShow, setPvShow] = useState(false)
   const [searchCat, setSearchCat] = useState('tous')
   const [sortMode, setSortMode] = useState<'near' | 'rated' | 'price'>('near')
-  const [flt, setFlt] = useState<Set<string>>(() => new Set(['Dispo maintenant']))
+  const [flt, setFlt] = useState<Set<string>>(() => new Set())
+  const [contactErr, setContactErr] = useState('')
 
   const go = useCallback((v: string) => { setPrevView(view); setViewState(v) }, [view])
   const back = useCallback((v: string) => { setViewState(v) }, [])
@@ -77,9 +79,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     return {
       id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
       m: `${TRAD[x.trade] || x.trade} · ${rateTxt} · à ${distTxt}`, p: price,
-      d: 'Disponible maintenant', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
+      d: x.is_active ? 'Disponible' : 'Hors ligne pour le moment', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
       dist: x.distance_m ?? 0, rate: x.rating ?? 0,
       priceN: x.base_price_cents > 0 ? x.base_price_cents : (x.hourly_rate_cents ?? 0),
+      reviews: x.reviews_count || 0, active: !!x.is_active, identity: !!x.has_identity, rcpro: !!x.has_rcpro,
     }
   }), [rawPros])
 
@@ -94,8 +97,23 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     const i = pros.findIndex(q => q.id === p.id)
     if (i >= 0) { setPvIndex(i); setPvShow(true) }
   }
+  // Contacter depuis la carte : pas connecté → connexion puis retour sur la fiche du pro ;
+  // toute autre erreur est affichée au lieu d'un renvoi silencieux.
+  async function contact(proId: string) {
+    setContactErr('')
+    const { missionId, error } = await openConversation(proId)
+    if (missionId) { closePreview(); router.push(`/mission/${missionId}/chat`); return }
+    if (error === 'not_authenticated') { router.push(`/auth/login?next=${encodeURIComponent(`/pro/${proId}`)}`); return }
+    if (error === 'own_profile') { setContactErr('C’est votre propre profil prestataire.'); return }
+    setContactErr('La conversation n’a pas pu s’ouvrir. Réessayez dans un instant.')
+  }
   const searchList = [...pros]
     .filter(p => searchCat === 'tous' || p.cat === searchCat)
+    .filter(p => !flt.has('Disponible') || p.active)
+    .filter(p => !flt.has('Pièce d’identité fournie') || p.identity)
+    .filter(p => !flt.has('Assurance RC renseignée') || p.rcpro)
+    .filter(p => !flt.has('≤ 1 km') || p.dist <= 1000)
+    .filter(p => !flt.has('4★ et +') || p.rate >= 4)
     .sort((a, b) =>
       sortMode === 'rated' ? b.rate - a.rate
         : sortMode === 'price' ? a.priceN - b.priceN
@@ -125,7 +143,6 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   <div className="sp" />
                   <div className="tbell" onClick={() => router.push('/messages')}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
-                    <span className="bdg" />
                   </div>
                 </div>
 
@@ -146,7 +163,6 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 </div>
 
                 <div className="pingbtn" onClick={() => loadPros()}><span className="halo" /><span className="lbl">PING</span></div>
-                <div className="zoomctl"><div className="zb">+</div><div className="zb">−</div></div>
                 <div className="loc" onClick={() => setRecenterTick(t => t + 1)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
 
                 <div className={`preview ${pvShow ? 'show' : ''}`} id="preview">
@@ -162,9 +178,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                         </div>
                         <div className="pvprice">{pv.p}</div>
                       </div>
-                      <div className="dispo" style={{ marginTop: 11 }}><span className="livedot on" /> <span>{pv.d}</span></div>
+                      <div className="dispo" style={{ marginTop: 11 }}><span className={`livedot ${pv.active ? 'on' : ''}`} /> <span>{pv.d}</span></div>
+                      {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '8px 0 0' }}>{contactErr}</p>}
                       <div style={{ display: 'flex', gap: 9, marginTop: 10 }}>
-                        <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { closePreview(); const { missionId, error } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : error === 'not_authenticated' ? '/auth/login' : `/pro/${pv.id}`) }}>Contacter</div>
+                        <div className="btn ghost" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
                         <div className="btn" style={{ flex: 1.3 }} onClick={() => { closePreview(); router.push(`/pro/${pv.id}`) }}>Voir le profil</div>
                       </div>
                     </>
@@ -176,14 +193,14 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   <div className="detail-panel on">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
                       <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)', flex: 1 }}>Profil du prestataire</b>
-                      <div onClick={closePreview} style={{ cursor: 'pointer', color: 'var(--slate)', fontSize: 20, lineHeight: 1 }}>×</div>
+                      <div onClick={closePreview} aria-label="Fermer" style={{ cursor: 'pointer', color: 'var(--slate)', display: 'grid', placeItems: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></div>
                     </div>
                     <div style={{ overflowY: 'auto', flex: 1 }}>
                       <div style={{ background: 'linear-gradient(160deg,var(--teal),var(--tealD))', padding: '18px 16px', color: '#fff' }}>
                         <div className="pvav" style={{ background: `linear-gradient(160deg,${pv.g})`, width: 54, height: 54, fontSize: 20, marginBottom: 10 }}>{pv.av}</div>
                         <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 20 }}>{pv.n}</div>
                         <div style={{ fontSize: 13, opacity: .9 }}>{pv.m}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 13, fontWeight: 600 }}><span className="livedot on" /> {pv.d}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 13, fontWeight: 600 }}><span className={`livedot ${pv.active ? 'on' : ''}`} /> {pv.d}</div>
                       </div>
                       <div style={{ padding: 16 }}>
                         <div className="h2" style={{ marginTop: 0 }}>Informations déclarées par le pro</div>
@@ -198,11 +215,14 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                         <div className="h2">Compétences</div>
                         <span className="chip on" style={{ display: 'inline-block' }}>{TRAD[pv.cat] || pv.cat}</span>
                         <div className="h2">Avis <span className="chip" style={{ fontSize: 10 }}>après prestation</span></div>
-                        <p className="sub" style={{ color: 'var(--slate)' }}>Pas encore d&apos;avis — ils apparaîtront après les premières prestations.</p>
+                        {pv.reviews > 0
+                          ? <p className="sub" style={{ color: 'var(--ink)' }}><b>{pv.rate.toFixed(1)} / 5</b> · {pv.reviews} avis — <span style={{ color: 'var(--teal)', cursor: 'pointer', fontWeight: 700 }} onClick={() => router.push(`/pro/${pv.id}`)}>les lire sur le profil</span></p>
+                          : <p className="sub" style={{ color: 'var(--slate)' }}>Pas encore d&apos;avis — ils apparaîtront après les premières prestations.</p>}
                       </div>
                     </div>
+                    {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '10px 14px 0' }}>{contactErr}</p>}
                     <div style={{ display: 'flex', gap: 9, padding: 14, borderTop: '1px solid var(--line)' }}>
-                      <div className="btn ghost" style={{ flex: 1 }} onClick={async () => { const { missionId, error } = await openConversation(pv.id); router.push(missionId ? `/mission/${missionId}/chat` : error === 'not_authenticated' ? '/auth/login' : `/pro/${pv.id}`) }}>Contacter</div>
+                      <div className="btn ghost" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
                       <div className="btn" style={{ flex: 1.3 }} onClick={() => router.push(`/pro/${pv.id}`)}>Réserver{pv.p ? ` · ${pv.p}` : ''}</div>
                     </div>
                   </div>
@@ -231,7 +251,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
               <p className="sub" style={{ fontSize: 11, color: '#9aa6a3' }}>D&apos;autres services seront ouverts progressivement sur PING.</p>
               <div className="h2">Filtres</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {['Dispo maintenant', 'Pièce d’identité fournie', 'Assurance RC renseignée', '≤ 1 km', '4★ et +'].map(f => (
+                {['Disponible', 'Pièce d’identité fournie', 'Assurance RC renseignée', '≤ 1 km', '4★ et +'].map(f => (
                   <div key={f} className={`chip ${flt.has(f) ? 'on' : ''}`} onClick={() => tglFlt(f)}>{f}</div>
                 ))}
               </div>
@@ -240,7 +260,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 <div className={sortMode === 'rated' ? 'on' : ''} onClick={() => setSortMode('rated')}>Mieux notés</div>
                 <div className={sortMode === 'price' ? 'on' : ''} onClick={() => setSortMode('price')}>Prix croissant</div>
               </div>
-              <div className="h2">{searchList.length} personne{searchList.length > 1 ? 's' : ''} disponible{searchList.length > 1 ? 's' : ''}<span style={{ fontSize: 11, color: 'var(--slate)', fontWeight: 600, marginLeft: 6 }}>triées par {sortMode === 'rated' ? 'note' : sortMode === 'price' ? 'prix' : 'distance'}</span></div>
+              <div className="h2">{searchList.length} prestataire{searchList.length > 1 ? 's' : ''} à proximité<span style={{ fontSize: 11, color: 'var(--slate)', fontWeight: 600, marginLeft: 6 }}>triées par {sortMode === 'rated' ? 'note' : sortMode === 'price' ? 'prix' : 'distance'}</span></div>
               {searchList.map(p => (
                 <div key={p.id} className="row" onClick={() => router.push(`/pro/${p.id}`)}>
                   <div className="av" style={{ background: `linear-gradient(160deg,${p.g})` }}>{p.av}</div>
@@ -248,7 +268,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   <div className="rt"><b>{p.rate > 0 ? p.rate.toFixed(1) : 'Nouveau'}</b>{p.p}</div>
                 </div>
               ))}
-              {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)' }}>Aucun prestataire dans cette catégorie pour le moment.</p>}
+              {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)' }}>{flt.size ? 'Aucun prestataire ne correspond à ces filtres. Retirez-en un pour élargir.' : 'Aucun prestataire dans cette catégorie pour le moment.'}</p>}
             </div>
           </section>
 

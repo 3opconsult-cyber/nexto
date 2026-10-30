@@ -122,7 +122,7 @@ export default function MessagesPage() {
                 fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 11.5,
                 background: sortMode === m ? '#123644' : '#fff', color: sortMode === m ? '#fff' : '#6E8592',
                 boxShadow: sortMode === m ? 'none' : '0 0 0 1px #E7EDEB',
-              }}>{m === 'date' ? 'Trier par date' : 'Trier par client'}</button>
+              }}>{m === 'date' ? 'Trier par date' : mode === 'pro' ? 'Trier par client' : 'Trier par prestataire'}</button>
             ))}
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function MessagesPage() {
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucune conversation pour l'instant</div>
-            <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Elles apparaissent ici dès qu'une mission est réservée.</div>
+            <div style={{ fontSize: 11.5, color: '#9CA3AF', marginTop: 4 }}>Elles apparaissent ici dès le premier message échangé.</div>
           </div>
         )}
         {!loading && visible.length > 0 && (() => {

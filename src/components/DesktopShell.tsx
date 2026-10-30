@@ -27,6 +27,8 @@ const PRO_NAV: [string, string][] = [
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
   ['Mes disponibilités', '/pro/disponibilites'],
+  ['Mes tarifs', '/pro/tarifs'],
+  ['Mes revenus', '/pro/revenus'],
   ['Litiges', '/litiges'],
   ['Mon entreprise', '/pro/dashboard'],
 ]
@@ -47,6 +49,8 @@ function navIcon(label: string) {
   if (l.includes('agenda')) return p('M3 5h18v16H3z|M3 9h18M8 3v4M16 3v4')
   if (l.includes('réclam') || l.includes('litige')) return p('M12 2 2 21h20z|M12 9v5M12 18h.01')
   if (l.includes('entreprise')) return p('M3 21V9l9-6 9 6v12|M9 21v-6h6v6')
+  if (l.includes('tarif')) return p('M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z|M7.5 7.5h.01')
+  if (l.includes('revenu')) return p('M3 3v18h18|M7 15l4-4 3 3 5-6')
   if (l.includes('tableau')) return p('M4 4h7v7H4z|M13 4h7v4h-7z|M13 12h7v8h-7z|M4 15h7v5H4z')
   if (l.includes('facture') || l.includes('document') || l.includes('pièce')) return p('M6 2h9l5 5v15H6z|M14 2v6h6M9 13h6M9 17h6')
   if (l.includes('profil')) return p('M20 21a8 8 0 0 0-16 0|M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8')
@@ -60,6 +64,16 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
   const pathname = usePathname() || ''
   const router = useRouter()
   const [mode, setModeState] = React.useState<'particulier' | 'pro'>('particulier')
+  // Le compte a-t-il un profil prestataire ? Sinon « Passer en mode pro » mène à l'inscription pro.
+  const [hasPro, setHasPro] = React.useState<boolean | null>(null)
+  React.useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { setHasPro(false); return }
+      const { data } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
+      setHasPro(!!data)
+    })
+  }, [])
 
   const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
   const isClientRoute = pathname.startsWith('/client/profil')
@@ -76,6 +90,14 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
     else { try { const m = localStorage.getItem('ping_mode'); if (m === 'pro' || m === 'particulier') setModeState(m) } catch { } }
   }, [pathname, isProRoute, isClientRoute])
 
+  // Bascule de mode faite ailleurs (bandeau ModeHint, menu mobile) : on se resynchronise.
+  React.useEffect(() => {
+    const sync = () => { try { const m = localStorage.getItem('ping_mode'); if (m === 'pro' || m === 'particulier') setModeState(m) } catch { } }
+    window.addEventListener('ping-mode', sync)
+    window.addEventListener('storage', sync)
+    return () => { window.removeEventListener('ping-mode', sync); window.removeEventListener('storage', sync) }
+  }, [])
+
   const onPro = isProRoute || (!isClientRoute && mode === 'pro')
   const accent = onPro ? '#F2A93B' : '#12B39C'
   const nav = onPro ? PRO_NAV : CLIENT_NAV
@@ -84,7 +106,8 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
     const target = onPro ? 'particulier' : 'pro'
     try { localStorage.setItem('ping_mode', target) } catch { }
     setModeState(target)
-    router.push(onPro ? '/map' : '/pro/carte')
+    window.dispatchEvent(new Event('ping-mode'))
+    router.push(onPro ? '/map' : (hasPro === false ? '/pro/onboarding' : '/pro/carte'))
   }
   const isApp = APP_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
   if (!isApp) return <div className="phone-col">{children}</div>
@@ -109,7 +132,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
         {nav2.map(item)}
         <div style={{ flex: 1 }} />
         <div className="dnav-item" style={{ background: 'var(--ink)', color: '#fff' }} onClick={switchMode}>
-          {onPro ? 'Revenir en mode particulier' : 'Passer en mode pro'}
+          {onPro ? 'Revenir en mode particulier' : (hasPro === false ? 'Devenir prestataire' : 'Passer en mode pro')}
         </div>
       </aside>
       <div className="shell-main">{children}</div>

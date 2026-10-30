@@ -66,7 +66,8 @@ export default function DepartureBar({
     const at = new Date().toISOString()
     const { data, error } = await supabase.from('transactions')
       .update({ en_route_at: at, eta_minutes: eta }).eq('id', tx.id).select().single()
-    if (!error && data) {
+    if (error || !data) { setBusy(false); setAsk(false); alert('Départ non enregistré — vérifiez votre connexion et réessayez.'); return }
+    {
       onChange(data)
       await supabase.from('messages').insert({
         transaction_id: tx.id, sender_id: null,
@@ -79,6 +80,8 @@ export default function DepartureBar({
   // Rien avant la validation du prix : tant que la mission n'est pas confirmee
   // (devis en attente / paiement non place sous sequestre), pas d'adresse ni de depart.
   if (!confirmed) return null
+  // Mission annulée ou terminée : plus de départ ni d'arrivée à proposer.
+  if (['cancelled', 'completed', 'released'].includes(tx.status)) return null
 
   const maps = address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}` : null
   const AddressBlock = () => address ? (

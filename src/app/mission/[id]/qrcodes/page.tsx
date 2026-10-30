@@ -44,6 +44,14 @@ export default function MissionQrCodes() {
     </div>
   )
 
+  if (tx.status === 'cancelled') return (
+    <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
+      <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 18, color: '#123644' }}>Réservation annulée</div>
+      <p style={{ color: '#6E8592', fontSize: 13.5, marginTop: 8, maxWidth: '32ch' }}>Les codes d&apos;arrivée et de fin ne sont plus valables.</p>
+      <button className="ping-btn ghost" style={{ width: 'auto', marginTop: 16, padding: '10px 20px' }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Revenir à la conversation</button>
+    </div>
+  )
+
   const base = 'https://nexto-eta.vercel.app'
   const arrivalUrl = `${base}/mission/${tx.id}/scan/arrival?token=${tx.qr_arrival_token}`
   const completeUrl = `${base}/mission/${tx.id}/scan/complete?token=${tx.qr_complete_token}`

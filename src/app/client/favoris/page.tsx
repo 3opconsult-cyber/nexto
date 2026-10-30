@@ -9,6 +9,7 @@ import { TRADES } from '@/lib/trades'
 export default function FavorisPage() {
   const router = useRouter()
   const [rows, setRows] = useState<any[]>([])
+  const [names, setNames] = useState<Record<string, { full_name: string | null; avatar_hue: number | null }>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -17,9 +18,20 @@ export default function FavorisPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       const { data } = await supabase.from('favorites')
-        .select('created_at, provider_profiles(id, trade, base_price_cents, hourly_rate_cents, rating, reviews_count, profiles!provider_profiles_id_fkey(full_name, avatar_hue))')
+        .select('created_at, provider_profiles(id, trade, base_price_cents, hourly_rate_cents, rating, reviews_count)')
         .eq('user_id', user.id).order('created_at', { ascending: false })
-      setRows(data ?? [])
+      const list = data ?? []
+      setRows(list)
+      // Nom affiché du pro : via provider_public_name (profiles est en lecture strictement personnelle,
+      // un embed renverrait toujours null).
+      const map: Record<string, { full_name: string | null; avatar_hue: number | null }> = {}
+      await Promise.all(list.map(async (r: any) => {
+        const id = r.provider_profiles?.id
+        if (!id) return
+        const { data: pub } = await supabase.rpc('provider_public_name', { provider_id: id })
+        if (pub && pub.length) map[id] = pub[0]
+      }))
+      setNames(map)
       setLoading(false)
     }
     load()
@@ -37,15 +49,17 @@ export default function FavorisPage() {
         {!loading && rows.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#6E8592' }}>Aucun favori pour l'instant</div>
+            <div style={{ fontSize: 12, color: '#9aa6a3', marginTop: 4 }}>Touchez le cœur en haut d&apos;un profil de prestataire pour le retrouver ici.</div>
             <button onClick={() => router.push('/map')} style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: '#0C8F7E', background: 'none', border: 'none' }}>Parcourir la carte →</button>
           </div>
         )}
         {rows.map((r: any) => {
           const p = r.provider_profiles
           if (!p) return null
-          const name = p.profiles?.full_name?.trim() || TRADES[p.trade] || p.trade
+          const pub = names[p.id]
+          const name = pub?.full_name?.trim() || TRADES[p.trade] || p.trade
           const initial = name.charAt(0).toUpperCase()
-          const bg = p.profiles?.avatar_hue != null ? `hsl(${p.profiles.avatar_hue}, 55%, 45%)` : '#12B39C'
+          const bg = pub?.avatar_hue != null ? `hsl(${pub.avatar_hue}, 55%, 45%)` : '#12B39C'
           const price = p.base_price_cents > 0 ? `${(p.base_price_cents / 100).toFixed(0)} €` : p.hourly_rate_cents ? `${(p.hourly_rate_cents / 100).toFixed(0)} €/h` : '—'
           return (
             <div key={p.id} onClick={() => router.push(`/pro/${p.id}`)}

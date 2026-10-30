@@ -95,18 +95,24 @@ export default function ProPaiementsPage() {
                   <label style={label}>Titulaire du compte</label>
                   <input style={input} value={f.titulaire} onChange={e => setF({ ...f, titulaire: e.target.value })} />
                   <label style={label}>IBAN</label>
-                  <input style={input} value={f.iban} onChange={e => setF({ ...f, iban: e.target.value.toUpperCase() })} placeholder="FR76 …" />
+                  <input style={input} value={f.iban} onChange={e => setF({ ...f, iban: e.target.value.toUpperCase() })} />
                   <label style={label}>BIC (facultatif)</label>
                   <input style={input} value={f.bic} onChange={e => setF({ ...f, bic: e.target.value.toUpperCase() })} />
                   {!c && (
                     <>
                       <label style={label}>Date de naissance</label>
                       <input style={input} type="date" value={f.dateNaissance} onChange={e => setF({ ...f, dateNaissance: e.target.value })} />
-                      <label style={label}>Adresse</label>
-                      <input style={input} value={f.ligne} onChange={e => setF({ ...f, ligne: e.target.value })} placeholder="Numéro et rue" />
-                      <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 8, marginTop: 8 }}>
-                        <input style={input} value={f.codePostal} onChange={e => setF({ ...f, codePostal: e.target.value })} placeholder="Code postal" />
-                        <input style={input} value={f.ville} onChange={e => setF({ ...f, ville: e.target.value })} placeholder="Ville" />
+                      <label style={label}>Adresse (numéro et rue)</label>
+                      <input style={input} value={f.ligne} onChange={e => setF({ ...f, ligne: e.target.value })} />
+                      <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 8 }}>
+                        <div>
+                          <label style={label}>Code postal</label>
+                          <input style={input} value={f.codePostal} onChange={e => setF({ ...f, codePostal: e.target.value })} />
+                        </div>
+                        <div>
+                          <label style={label}>Ville</label>
+                          <input style={input} value={f.ville} onChange={e => setF({ ...f, ville: e.target.value })} />
+                        </div>
                       </div>
                       <p style={{ fontSize: 11.5, color: '#6E8592', lineHeight: 1.5, margin: '10px 0 0' }}>
                         Les pièces déjà déposées dans « Mes pièces » (identité, justificatif de statut) sont transmises au partenaire de paiement.

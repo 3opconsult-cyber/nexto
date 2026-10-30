@@ -27,6 +27,7 @@ export default function ProDocuments() {
   const [uploaded, setUploaded] = useState<Record<string, string>>({})
   const [uploading, setUploading] = useState(false)
   const [ready, setReady] = useState(false)
+  const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -35,7 +36,8 @@ export default function ProDocuments() {
       if (!user) { setReady(true); return }
       const { data } = await supabase.from('documents').select('kind, storage_path').eq('owner_id', user.id)
       const map: Record<string, string> = {}
-      ;(data ?? []).forEach((d: any) => { map[d.kind] = d.storage_path?.split('/').pop() || 'Déposé' })
+      // Nom lisible du justificatif (jamais le nom technique du fichier stocké).
+      ;(data ?? []).forEach((d: any) => { map[d.kind] = DOC_TYPES.find(t => t.key === d.kind)?.label || 'Document déposé' })
       setUploaded(map)
       setReady(true)
     })
@@ -53,26 +55,29 @@ export default function ProDocuments() {
   }
 
   async function handleFile(file: File) {
+    setError('')
+    if (file.size > 10 * 1024 * 1024) { setError('Fichier trop lourd : 10 Mo maximum.'); return }
     setUploading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setUploading(false); return }
+    if (!user) { setUploading(false); setError('Session expirée : reconnectez-vous pour déposer ce document.'); return }
 
     const ext = file.name.split('.').pop()
     const path = `${user.id}/${doc.key}-${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('documents').upload(path, file, { upsert: true })
 
-    if (!upErr) {
-      await supabase.from('documents').upsert({
-        owner_id: user.id, kind: doc.key, storage_path: path, status: 'pending',
-      }, { onConflict: 'owner_id,kind' })
-      setUploaded(u => ({ ...u, [doc.key]: file.name }))
-      trackEvent('document_uploaded', { kind: doc.key })
-    }
+    if (upErr) { setError("L'envoi du fichier a échoué. Vérifiez votre connexion et réessayez."); setUploading(false); return }
+    const { error: rowErr } = await supabase.from('documents').upsert({
+      owner_id: user.id, kind: doc.key, storage_path: path, status: 'pending',
+    }, { onConflict: 'owner_id,kind' })
+    if (rowErr) { setError("Le fichier est envoyé mais n'a pas pu être enregistré. Réessayez."); setUploading(false); return }
+    setUploaded(u => ({ ...u, [doc.key]: file.name }))
+    trackEvent('document_uploaded', { kind: doc.key })
     setUploading(false)
   }
 
   function goNext() {
+    setError('')
     if (isLast) router.push('/pro/attente')
     else setStepIndex(i => i + 1)
   }
@@ -82,7 +87,7 @@ export default function ProDocuments() {
       step={stepIndex}
       total={DOC_TYPES.length}
       title={doc.question}
-      subtitle={doc.subtitle || "PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Ça n'empêche pas d'être visible sur la carte."}
+      subtitle={doc.subtitle || "PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Facultatif pour apparaître sur la carte : il rassure vos futurs clients."}
       onBack={stepIndex > 0 ? () => setStepIndex(i => i - 1) : undefined}
       onSkip={goNext}
       skipLabel="Passer, je le ferai plus tard"
@@ -106,7 +111,7 @@ export default function ProDocuments() {
         {uploaded[doc.key] ? (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 14, color: '#123644' }}>{uploaded[doc.key]}</div>
-            <div style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 4 }}>Déposé — en attente de vérification</div>
+            <div style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 4 }}>Fourni — reçu par PING</div>
             <button onClick={() => inputRef.current?.click()} style={{ marginTop: 14, background: 'none', border: 'none', color: '#6E8592', fontSize: 12.5, fontWeight: 700, textDecoration: 'underline' }}>
               Remplacer le fichier
             </button>
@@ -117,6 +122,7 @@ export default function ProDocuments() {
             {uploading ? 'Envoi…' : 'Télécharger le document'}
           </button>
         )}
+        {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginTop: 14, textAlign: 'center' }}>{error}</p>}
       </div>
     </OnboardingStep>
   )

@@ -4,6 +4,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { billedHours, getHourThreshold, getRates } from '@/lib/pricing'
+import { EUR } from '@/lib/invoice-pdf'
 import { distanceKm, getOneShotPosition } from '@/lib/geo'
 
 // Double sécurité demandée par Romain : au scan, un relevé GPS ponctuel
@@ -30,9 +31,17 @@ export default function ScanQR() {
   useEffect(() => {
     async function run() {
       const supabase = createClient()
-      const { data: tx } = await supabase.from('transactions').select('*, requests(lat, lng)').eq('id', params.id).single()
+      // Scanné avec l'appareil photo du téléphone : le navigateur n'est pas forcément connecté.
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        const here = window.location.pathname + window.location.search
+        router.replace(`/auth/login?next=${encodeURIComponent(here)}`)
+        return
+      }
+      const { data: tx } = await supabase.from('transactions').select('*, requests(lat, lng)').eq('id', params.id).maybeSingle()
 
-      if (!tx) { setStatus('error'); setMessage('Mission introuvable.'); return }
+      if (!tx) { setStatus('error'); setMessage('Mission introuvable pour ce compte. Connectez-vous avec le compte du prestataire de la mission.'); return }
+      if (tx.status === 'cancelled') { setStatus('error'); setMessage('Cette réservation a été annulée.'); return }
 
       const isArrival = params.phase === 'arrival'
       const expectedToken = isArrival ? tx.qr_arrival_token : tx.qr_complete_token
@@ -109,11 +118,11 @@ export default function ScanQR() {
         const h = Math.floor(mins / 60), m = mins % 60
         setDuration(`${h > 0 ? h + ' h ' : ''}${m} min`)
         setStatus('ok'); setMessage('Sortie validée.')
-        const finalTotal = (updates.total_charged_cents as number | undefined) ?? tx.total_charged_cents
+        const finalSubtotal = (updates.subtotal_cents as number | undefined) ?? tx.subtotal_cents ?? 0
         const gpsOut = await gpsNote(tx.requests?.lat, tx.requests?.lng)
         await supabase.from('messages').insert({
           transaction_id: tx.id, sender_id: null,
-          body: `✓ Sortie scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — ${h > 0 ? h + ' h ' : ''}${m} min, ${(finalTotal / 100).toFixed(2)} € facturés${gpsOut}`,
+          body: `✓ Sortie scannée à ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — ${h > 0 ? h + ' h ' : ''}${m} min, prestation ${EUR(finalSubtotal)}${gpsOut}`,
         })
         trackEvent('qr_scan_complete', { transaction_id: tx.id, duration_minutes: mins })
       }

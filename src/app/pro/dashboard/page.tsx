@@ -4,6 +4,10 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 import NavDrawer from '@/components/NavDrawer'
+import BottomTabBar from '@/components/BottomTabBar'
+import { EUR } from '@/lib/invoice-pdf'
+import { TRADES } from '@/lib/trades'
+import { writeMode } from '@/lib/mode'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
   particulier: 'Particulier',
@@ -15,6 +19,8 @@ const LEGAL_STATUS_LABELS: Record<string, string> = {
   sasu: 'SASU',
   association: 'Association',
 }
+// Statut juridique lisible, même pour une valeur non prévue dans la liste (jamais la clé brute).
+const legalLabel = (k?: string | null) => !k ? '' : LEGAL_STATUS_LABELS[k] || (k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' '))
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   pending:   { label: 'En attente',      color: '#8a6520', bg: '#FFF7ED' },
@@ -52,7 +58,7 @@ export default function ProDashboard() {
       if (!pp) { router.push('/pro/onboarding'); return }
       setPro(pp); setAvailable(pp.is_active)
 
-      const { data: tx } = await supabase.from('transactions').select('*').eq('seller_id', pp.id).order('created_at', { ascending: false })
+      const { data: tx } = await supabase.from('transactions').select('*, requests(category)').eq('seller_id', pp.id).order('created_at', { ascending: false })
       setTransactions(tx ?? [])
 
       const { data: docRows } = await supabase.from('documents').select('kind, status').eq('owner_id', user.id)
@@ -70,7 +76,8 @@ export default function ProDashboard() {
     const supabase = createClient()
     const newVal = !available
     setAvailable(newVal)
-    await supabase.from('provider_profiles').update({ is_active: newVal }).eq('id', pro.id)
+    const { error } = await supabase.from('provider_profiles').update({ is_active: newVal }).eq('id', pro.id)
+    if (error) setAvailable(!newVal)
   }
 
   // Couverture + logo de la fiche établissement (façon fiche Google) : le
@@ -173,7 +180,7 @@ export default function ProDashboard() {
                   {pro.company_name || `Entreprise de ${firstName || ''}`.trim()}
                 </div>
                 <div style={{ fontSize: 12.5, color: '#6E8592', marginTop: 3 }}>
-                  {firstName ? `${firstName} · ` : ''}{LEGAL_STATUS_LABELS[pro.legal_status] || pro.legal_status}{city ? ` · ${city}` : ''}
+                  {firstName ? `${firstName} · ` : ''}{legalLabel(pro.legal_status)}{city ? ` · ${city}` : ''}
                 </div>
                 <span onClick={() => router.push('/pro/onboarding')} style={{ display: 'inline-block', marginTop: 8, fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', textDecoration: 'underline' }}>Modifier</span>
               </div>
@@ -188,7 +195,7 @@ export default function ProDashboard() {
             {[
               { ok: idOk, label: 'Identité & statut', sub: 'Fichier masqué · déclaré', icon: <rect x="3" y="5" width="18" height="14" rx="2" /> },
               { ok: rcOk, label: 'Responsabilité civile pro', sub: 'Assurance déclarée', icon: <path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /> },
-              { ok: diplomeOk, label: 'Diplôme ou qualification', sub: 'Certification (facultatif)', icon: <path d="M12 2l9 5-9 5-9-5 9-5z" /> },
+              { ok: diplomeOk, label: 'Diplôme ou qualification', sub: 'Qualification déclarée (facultatif)', icon: <path d="M12 2l9 5-9 5-9-5 9-5z" /> },
             ].map(r => (
               <div key={r.label} onClick={() => router.push('/pro/documents')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: `1px solid ${r.ok ? 'rgba(18,179,156,.3)' : '#E7EDEB'}`, cursor: 'pointer' }}>
                 <div style={{ width: 30, height: 30, borderRadius: 9, background: r.ok ? 'rgba(18,179,156,.12)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -224,7 +231,25 @@ export default function ProDashboard() {
               <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
             </div>
 
-            <div onClick={() => { localStorage.setItem('ping_mode', 'particulier'); router.push('/map') }}
+            {[
+              { label: 'Mes tarifs', sub: 'Vos prestations et leurs prix', path: '/pro/tarifs', icon: <><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" /><path d="M7.5 7.5h.01" /></> },
+              { label: 'Mes revenus', sub: 'Récapitulatif et déclaration', path: '/pro/revenus', icon: <path d="M3 3v18h18M7 15l4-4 3 3 5-6" /> },
+              { label: 'Mes versements', sub: 'Compte de versement pour le paiement en ligne', path: '/pro/paiements', icon: <><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20M6 15h4" /></> },
+              { label: 'Voir mon profil public', sub: 'Ce que voient les clients', path: `/pro/${pro.id}`, icon: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></> },
+            ].map(r => (
+              <div key={r.path} onClick={() => router.push(r.path)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 14, border: '1px solid #E7EDEB', cursor: 'pointer' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{r.icon}</svg>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{r.label}</div>
+                  <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{r.sub}</div>
+                </div>
+                <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
+              </div>
+            ))}
+
+            <div onClick={() => { writeMode('particulier'); router.push('/map') }}
               style={{ textAlign: 'center', marginTop: 10, padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
               Revenir en mode particulier
             </div>
@@ -250,7 +275,10 @@ export default function ProDashboard() {
                     </span>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: st.bg, color: st.color }}>{st.label}</span>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#0C8F7E' }}>{((t.payout_cents || 0) / 100).toFixed(2)} € net</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                    <span style={{ fontSize: 12.5, color: '#6E8592' }}>{t.requests?.category ? (TRADES[t.requests.category] || 'Prestation') : 'Prestation'}</span>
+                    {(t.payout_cents || 0) > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: '#0C8F7E' }}>{EUR(t.payout_cents)} net</span>}
+                  </div>
                 </button>
               )
             })}
@@ -259,15 +287,7 @@ export default function ProDashboard() {
 
       </div>
 
-      {/* Nav bas */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #E7EDEB', padding: '10px 24px', display: 'flex', justifyContent: 'space-around' }}>
-        <button onClick={() => setTab('hub')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: tab === 'hub' ? '#12B39C' : '#9CA3AF' }}>Entreprise</span>
-        </button>
-        <button onClick={() => router.push('/map')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF' }}>Carte</span>
-        </button>
-      </div>
+      <BottomTabBar />
     </div>
   )
 }

@@ -26,10 +26,12 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   const [profile, setProfile] = useState<any>(null)
   const [isPro, setIsPro] = useState(false)
   const [available, setAvailable] = useState<boolean | null>(null)
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
+      setLoggedIn(!!user)
       if (!user) return
       const { data } = await supabase.from('profiles').select('first_name, city, created_at, is_pro, avatar_hue').eq('id', user.id).single()
       setProfile(data)
@@ -50,7 +52,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     if (!user) return
     const next = !available
     setAvailable(next)
-    await supabase.from('provider_profiles').update({ is_active: next }).eq('id', user.id)
+    const { error } = await supabase.from('provider_profiles').update({ is_active: next }).eq('id', user.id)
+    if (error) setAvailable(!next)
   }
 
   const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
@@ -61,6 +64,13 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     else if (isClientRoute) { try { localStorage.setItem('ping_mode', 'particulier') } catch { }; setMode('particulier') }
     else { try { const m = localStorage.getItem('ping_mode'); if (m === 'pro' || m === 'particulier') setMode(m) } catch { } }
   }, [pathname, isProRoute, isClientRoute])
+  // Bascule de mode faite ailleurs (bandeau ModeHint, barre latérale) : on se resynchronise.
+  useEffect(() => {
+    const sync = () => { try { const m = localStorage.getItem('ping_mode'); if (m === 'pro' || m === 'particulier') setMode(m) } catch { } }
+    window.addEventListener('ping-mode', sync)
+    window.addEventListener('storage', sync)
+    return () => { window.removeEventListener('ping-mode', sync); window.removeEventListener('storage', sync) }
+  }, [])
   const onProSide = isProRoute || (!isClientRoute && mode === 'pro')
   const memberYear = profile?.created_at ? new Date(profile.created_at).getFullYear() : null
   const initial = (profile?.first_name || '?').charAt(0).toUpperCase()
@@ -74,6 +84,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     const target = onProSide ? 'particulier' : 'pro'
     try { localStorage.setItem('ping_mode', target) } catch { }
     setMode(target)
+    window.dispatchEvent(new Event('ping-mode'))
     router.push(onProSide ? '/map' : (isPro ? '/pro/carte' : '/pro/onboarding'))
   }
 
@@ -121,11 +132,20 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
           <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, height: '100%', marginRight: 'auto', background: '#fff', display: 'flex', flexDirection: 'column' }}>
 
             <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #E7EDEB', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: avatarBg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, flexShrink: 0 }}>{initial}</div>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{profile?.first_name || 'Vous'}</div>
-                <div style={{ fontSize: 12, color: '#6E8592', fontWeight: 600 }}>{[profile?.city, memberYear ? `membre depuis ${memberYear}` : null].filter(Boolean).join(' · ') || '—'}</div>
-              </div>
+              {loggedIn === false ? (
+                <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0 }}>
+                  <button onClick={() => go('/auth/login')} style={{ flex: 1, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Se connecter</button>
+                  <button onClick={() => go('/auth/signup')} style={{ flex: 1, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#F3F6F5', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Créer un compte</button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: avatarBg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, flexShrink: 0 }}>{initial}</div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{profile?.first_name || 'Vous'}</div>
+                    <div style={{ fontSize: 12, color: '#6E8592', fontWeight: 600 }}>{[profile?.city, memberYear ? `membre depuis ${memberYear}` : null].filter(Boolean).join(' · ')}</div>
+                  </div>
+                </>
+              )}
               <button onClick={() => setOpen(false)} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>

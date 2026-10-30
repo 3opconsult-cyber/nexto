@@ -57,7 +57,7 @@ export default function LitigesPage() {
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
         <NavDrawer />
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>Litiges</span>
+        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>{mode === 'pro' ? 'Litiges' : 'Mes réclamations'}</span>
       </div>
 
       <div style={{ padding: 16 }}>

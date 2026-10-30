@@ -32,6 +32,8 @@ export default function FacturePage() {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [isSeller, setIsSeller] = useState(false)
+  const [isBuyer, setIsBuyer] = useState(false)
+  const [reviewed, setReviewed] = useState(true)
 
   useEffect(() => {
     const supabase = createClient()
@@ -48,6 +50,12 @@ export default function FacturePage() {
         .filter(v => v.kind === 'prestation' || v.kind === mine)
         .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
       setIsSeller(!!user && !!tx && user.id === (tx as any).seller_id)
+      const buyer = !!user && !!tx && user.id === (tx as any).buyer_id
+      setIsBuyer(buyer)
+      if (buyer) {
+        const { data: rv } = await supabase.from('reviews').select('id').eq('transaction_id', params.id).eq('rater_id', user!.id).limit(1)
+        setReviewed(!!rv?.length)
+      }
       setInvoices(list); setActive(0); setLoading(false)
     }
     load()
@@ -296,6 +304,21 @@ export default function FacturePage() {
             fontWeight: 700, fontSize: 14.5, boxShadow: '0 0 0 1px #DCE5E3',
           }}>Imprimer</button>
         </div>
+
+        {isBuyer && (
+          <div className="no-print" style={{ maxWidth: 620, margin: '14px auto 0', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {!reviewed && (
+              <button onClick={() => router.push(`/mission/${params.id}/chat?avis`)} style={{
+                flex: '1 1 200px', border: 'none', padding: 13, borderRadius: 999, cursor: 'pointer',
+                background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14,
+              }}>Laisser un avis</button>
+            )}
+            <button onClick={() => router.push(`/mission/${params.id}/chat?signaler`)} style={{
+              flex: '1 1 200px', border: 'none', padding: 13, borderRadius: 999, cursor: 'pointer',
+              background: '#fff', color: '#8a6520', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 0 0 1px #DCE5E3',
+            }}>Signaler un problème</button>
+          </div>
+        )}
       </div>
     </>
   )

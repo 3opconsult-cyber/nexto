@@ -7,6 +7,9 @@ import ReviewModal from '@/components/ReviewModal'
 import DepartureBar from '@/components/DepartureBar'
 import { filterMessage } from '@/lib/chatFilter'
 import { getRates } from '@/lib/pricing'
+import { EUR } from '@/lib/invoice-pdf'
+import { TRADES } from '@/lib/trades'
+import { geocodeAddress } from '@/lib/geocode'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -35,6 +38,15 @@ interface Msg {
   offer_included_hours: number | null
 }
 
+// Valeur d'un <input type="datetime-local"> (heure locale, sans fuseau).
+function toLocalInput(iso: string) {
+  const d = new Date(iso)
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+}
+const rdvLabel = (iso: string) => new Date(iso).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+const SLOT_LABEL: Record<string, string> = { matin: 'le matin', 'apres-midi': "l'après-midi", soir: 'le soir', flexible: 'horaire flexible' }
+
 export default function ChatPage() {
   const params = useParams()
   const router = useRouter()
@@ -59,6 +71,12 @@ export default function ChatPage() {
   const [reportReason, setReportReason] = useState('')
   const [reportSent, setReportSent] = useState(false)
   const [askReview, setAskReview] = useState(false)
+  const [req, setReq] = useState<any>(null)
+  const [rdvAddr, setRdvAddr] = useState('')
+  const [rdvAt, setRdvAt] = useState('')
+  const [rdvSaving, setRdvSaving] = useState(false)
+  const [rdvError, setRdvError] = useState('')
+  const [reportError, setReportError] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Raccourcis depuis l'écran QR : ?signaler ouvre le signalement, ?avis l'avis (client, mission terminée).
@@ -81,9 +99,13 @@ export default function ChatPage() {
       const loaded = (data ?? []) as Msg[]
       setMsgs(loaded)
       resolvePhotoUrls(loaded)
-      const { data: t } = await supabase.from('transactions').select('*, requests(address, lat, lng)').eq('id', transactionId).single()
+      const { data: t } = await supabase.from('transactions')
+        .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents)')
+        .eq('id', transactionId).single()
       setTx(t)
-      if (t?.requests?.address) setReqAddr(t.requests.address)
+      if (t?.requests) setReq(t.requests)
+      if (t?.requests?.address) { setReqAddr(t.requests.address); setRdvAddr(t.requests.address) }
+      if (t?.scheduled_at) setRdvAt(toLocalInput(t.scheduled_at))
       if (t && user) {
         // profiles n'est lisible qu'en libre-service (RLS auth.uid() = id) : un
         // select direct sur l'id de l'autre partie ne renvoie rien — le nom passe
@@ -137,11 +159,12 @@ export default function ChatPage() {
       setTimeout(() => setWarning(''), 4000)
     }
     const supabase = createClient()
-    await supabase.from('messages').insert({
+    const { error } = await supabase.from('messages').insert({
       transaction_id: transactionId,
       sender_id: userId,
       body: result.clean,
     })
+    if (error) { setWarning('Message non envoyé — vérifiez votre connexion et réessayez.'); setTimeout(() => setWarning(''), 4000); return }
     setInput('')
   }
 
@@ -162,7 +185,7 @@ export default function ChatPage() {
     const hourlyCents = newHourly ? Math.round(Number(newHourly) * 100) : null
     const includedHoursNum = (hourlyCents && newIncludedHours) ? Number(newIncludedHours) : null
 
-    await supabase.from('messages').insert({
+    const { error: offerErr } = await supabase.from('messages').insert({
       transaction_id: transactionId,
       sender_id: userId,
       kind: 'offer',
@@ -171,8 +194,13 @@ export default function ChatPage() {
       offer_included_hours: includedHoursNum,
       offer_status: 'pending',
       photo_path: photoPath,
-      body: newAmountReason.trim() || `Nouveau tarif proposé (au lieu de ${(tx.subtotal_cents / 100).toFixed(2)} €)`,
+      body: newAmountReason.trim() || (tx.subtotal_cents > 0 ? `Nouveau tarif proposé (au lieu de ${EUR(tx.subtotal_cents)})` : 'Proposition de tarif'),
     })
+    if (offerErr) {
+      setSendingOffer(false)
+      setWarning('Proposition non envoyée — réessayez.'); setTimeout(() => setWarning(''), 4000)
+      return
+    }
 
     setEditingPrice(false)
     setNewAmount('')
@@ -193,6 +221,9 @@ export default function ChatPage() {
     // sinon prix sec, comme avant (efface toute structure de depassement
     // heritee d'une proposition precedente).
     const hasOvertime = m.offer_hourly_cents != null && m.offer_included_hours != null
+    // Tarif horaire seul (sans heures incluses) : le montant est une estimation, la facture suit
+    // les heures réellement passées au scan de fin.
+    const hourlyOnly = m.offer_hourly_cents != null && m.offer_included_hours == null
     const supabase = createClient()
     const { data: updated, error } = await supabase.from('transactions').update({
       subtotal_cents: cents,
@@ -201,16 +232,16 @@ export default function ChatPage() {
       total_charged_cents: cents + buyerFee,
       payout_cents: cents - sellerFee,
       price_confirmed: true,
-      hourly_rate_cents: hasOvertime ? m.offer_hourly_cents : null,
+      hourly_rate_cents: (hasOvertime || hourlyOnly) ? m.offer_hourly_cents : null,
       included_hours: hasOvertime ? m.offer_included_hours : null,
       base_forfait_cents: hasOvertime ? cents : null,
     }).eq('id', transactionId).select().single()
-    if (!error && updated) {
+    if (error || !updated) {
+      setWarning('Acceptation non enregistrée — réessayez.'); setTimeout(() => setWarning(''), 4000)
+      return
+    }
+    {
       setTx(updated)
-      // Paiement en ligne actif : remboursement (moins les frais d'annulation tardive). Sans effet sinon.
-      if (await paymentsActive()) {
-        fetch('/api/payments/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ transactionId: tx.id, motif: 'Annulation' }) }).catch(() => {})
-      }
       await supabase.from('messages').update({ offer_status: 'accepted' }).eq('id', m.id)
       setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'accepted' } : x))
     }
@@ -231,11 +262,16 @@ export default function ChatPage() {
   // séquestre simulé.
   async function cancelMission() {
     if (!tx || !userId) return
-    const late = !!tx.en_route_at
+    const isBuyer = userId === tx.buyer_id
+    // Les frais d'annulation tardive ne concernent que le client (le prestataire s'est déplacé).
+    const late = !!tx.en_route_at && isBuyer
     const feeCents = late ? Math.round((tx.subtotal_cents || 0) * 0.15) : 0
+    const what = tx.price_confirmed ? 'cette réservation' : 'cette demande'
     const confirmMsg = late
-      ? `Le prestataire est déjà en route : des frais d'annulation de ${(feeCents / 100).toFixed(2)} € s'appliquent. Annuler quand même ?`
-      : 'Annuler cette réservation ? Cette action est définitive.'
+      ? `Le prestataire est déjà en route : des frais d'annulation de ${EUR(feeCents)} s'appliquent. Annuler quand même ?`
+      : isBuyer || !tx.en_route_at
+        ? `Annuler ${what} ? Cette action est définitive.`
+        : 'Vous avez annoncé votre départ : le client sera prévenu de l\u2019annulation. Annuler quand même ?'
     if (!confirm(confirmMsg)) return
     setCancelling(true)
     const supabase = createClient()
@@ -248,10 +284,10 @@ export default function ChatPage() {
         fetch('/api/payments/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ transactionId: tx.id, motif: 'Annulation' }) }).catch(() => {})
       }
       const who = userId === updated.buyer_id ? 'le client' : 'le prestataire'
-      const feeNote = late ? ` — frais d'annulation tardive : ${(feeCents / 100).toFixed(2)} € (appliqués dès le paiement en ligne actif)` : ''
+      const feeNote = late ? ` — frais d'annulation tardive : ${EUR(feeCents)} (appliqués dès le paiement en ligne actif)` : ''
       await supabase.from('messages').insert({
         transaction_id: tx.id, sender_id: null,
-        body: `✕ Réservation annulée par ${who}${feeNote}.`,
+        body: `✕ ${tx.price_confirmed ? 'Réservation' : 'Demande'} annulée par ${who}${feeNote}.`,
       })
     }
     setCancelling(false)
@@ -267,12 +303,43 @@ export default function ChatPage() {
     setEditingPrice(true)
   }
 
+  // Après accord sur le prix, le client donne l'adresse et l'heure du rendez-vous (une conversation
+  // ouverte depuis la carte n'en a pas encore) : sans elles, le prestataire ne peut pas venir.
+  async function saveRdv() {
+    if (!tx || !rdvAddr.trim() || !rdvAt) { setRdvError('Indiquez l\u2019adresse et la date.'); return }
+    const when = new Date(rdvAt)
+    if (isNaN(when.getTime())) { setRdvError('Date invalide.'); return }
+    setRdvSaving(true); setRdvError('')
+    const supabase = createClient()
+    const addr = rdvAddr.trim()
+    if (req?.id && addr !== reqAddr) {
+      const pos = await geocodeAddress(addr).catch(() => null)
+      const { error } = await supabase.from('requests')
+        .update({ address: addr, ...(pos ? { lat: pos.lat, lng: pos.lng } : {}) }).eq('id', req.id)
+      if (error) { setRdvSaving(false); setRdvError('Adresse non enregistrée — réessayez.'); return }
+      setReqAddr(addr)
+      setReq((r: any) => ({ ...r, address: addr, ...(pos ? { lat: pos.lat, lng: pos.lng } : {}) }))
+      setTx((t: any) => ({ ...t, requests: { ...(t.requests || {}), address: addr, ...(pos ? { lat: pos.lat, lng: pos.lng } : {}) } }))
+    }
+    const { data: upd, error: txErr } = await supabase.from('transactions')
+      .update({ scheduled_at: when.toISOString() }).eq('id', tx.id).select().maybeSingle()
+    if (txErr || !upd) { setRdvSaving(false); setRdvError('Date non enregistrée — réessayez.'); return }
+    setTx((t: any) => ({ ...t, scheduled_at: upd.scheduled_at }))
+    await supabase.from('messages').insert({
+      transaction_id: tx.id, sender_id: null,
+      body: `✓ Rendez-vous fixé : ${rdvLabel(upd.scheduled_at)} — adresse transmise au prestataire`,
+    })
+    setRdvSaving(false)
+  }
+
   async function submitReport() {
     if (!reportReason.trim() || !userId) return
     const supabase = createClient()
-    await supabase.from('disputes').insert({
+    setReportError('')
+    const { error } = await supabase.from('disputes').insert({
       transaction_id: transactionId, opener_id: userId, reason: reportReason.trim(),
     })
+    if (error) { setReportError('Le litige n\u2019a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.'); return }
     await supabase.from('messages').insert({
       transaction_id: transactionId, sender_id: null,
       body: 'Litige ouvert sur cette mission.',
@@ -288,12 +355,10 @@ export default function ChatPage() {
         <div className="ic" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', cursor: 'pointer' }} onClick={() => router.back()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </div>
-        <b style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16 }}>{counterpart}</b>
-        <span style={{ fontSize: 11, color: 'var(--teal)', fontWeight: 600 }}>● en ligne · identité masquée</span>
-        <span style={{ flex: 1 }} />
-        {tx && (
-          <span style={{ padding: '6px 11px', borderRadius: 999, background: 'var(--paper)', color: 'var(--slate)', fontSize: 11.5, fontWeight: 700 }}>
-            {(tx.subtotal_cents / 100).toFixed(2)} €
+        <b style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{counterpart}</b>
+        {tx && tx.subtotal_cents > 0 && (
+          <span style={{ padding: '6px 11px', borderRadius: 999, background: 'var(--paper)', color: 'var(--slate)', fontSize: 11.5, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap' }}>
+            {EUR(tx.subtotal_cents)}{tx.price_confirmed ? '' : ' · à valider'}
           </span>
         )}
         <button onClick={() => setReporting(true)} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0, cursor: 'pointer' }}>
@@ -306,6 +371,71 @@ export default function ChatPage() {
         <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} confirmed={!!tx && !!tx.price_confirmed} />
       )}
 
+      {/* Récapitulatif de la demande : ce que le client a demandé, visible des deux côtés. */}
+      {tx && req && (req.title || req.description || req.desired_date || req.budget_max_cents || req.budget_min_cents) && (
+        <div style={{ margin: '10px 16px 0', background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+            Demande{req.category ? ` · ${TRADES[req.category] || req.category}` : ''}
+          </div>
+          {req.title && <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginTop: 2 }}>{req.title}</div>}
+          {req.description && <div style={{ fontSize: 12.5, color: '#3d5560', lineHeight: 1.5, marginTop: 3 }}>{req.description}</div>}
+          <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>
+            {[
+              req.desired_date ? `Souhaité le ${new Date(req.desired_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}${req.desired_slot ? `, ${SLOT_LABEL[req.desired_slot] || req.desired_slot}` : ''}` : null,
+              (req.budget_min_cents || req.budget_max_cents) ? `Budget ${req.budget_min_cents ? EUR(req.budget_min_cents) : ''}${req.budget_min_cents && req.budget_max_cents ? ' – ' : ''}${req.budget_max_cents ? EUR(req.budget_max_cents) : ''}` : null,
+            ].filter(Boolean).join(' · ')}
+          </div>
+        </div>
+      )}
+
+      {/* Rendez-vous : le client complète l'adresse et l'heure dès que le tarif est validé. */}
+      {tx && userId && tx.price_confirmed && !['cancelled', 'completed', 'released'].includes(tx.status) && (
+        (!reqAddr || !tx.scheduled_at) ? (
+          userId === tx.buyer_id ? (
+            <div style={{ margin: '10px 16px 0', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 14, padding: 14 }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Fixez le rendez-vous</div>
+              <p style={{ fontSize: 12, color: '#6E8592', margin: '3px 0 10px', lineHeight: 1.5 }}>Le tarif est validé. L&apos;adresse n&apos;est transmise qu&apos;au prestataire de cette mission.</p>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Adresse de l&apos;intervention</label>
+              <input value={rdvAddr} onChange={e => setRdvAddr(e.target.value)} autoComplete="street-address"
+                style={{ width: '100%', padding: '11px 13px', borderRadius: 11, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }} />
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Date et heure</label>
+              <input type="datetime-local" value={rdvAt} onChange={e => setRdvAt(e.target.value)}
+                style={{ width: '100%', padding: '11px 13px', borderRadius: 11, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }} />
+              {rdvError && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{rdvError}</p>}
+              <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
+                {rdvSaving ? 'Enregistrement…' : 'Confirmer le rendez-vous'}
+              </button>
+              <button onClick={() => router.push(`/mission/${tx.id}/qrcodes`)} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>
+                Mes codes QR (arrivée et fin)
+              </button>
+            </div>
+          ) : (
+            <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(242,169,59,.12)', color: '#8a6520', fontSize: 12.5, fontWeight: 600 }}>
+              Tarif validé — en attente de l&apos;adresse et de l&apos;heure du rendez-vous par le client.
+            </div>
+          )
+        ) : (
+          <div style={{ margin: '10px 16px 0', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+            <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>Rendez-vous {rdvLabel(tx.scheduled_at)}</span>
+            {userId === tx.buyer_id && !tx.completed_at && (
+              <button onClick={() => router.push(`/mission/${tx.id}/qrcodes`)} style={{ border: 'none', background: '#12B39C', color: '#fff', borderRadius: 999, padding: '7px 13px', fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                Mes codes QR
+              </button>
+            )}
+          </div>
+        )
+      )}
+
+      {/* Mission terminée : la facture, des deux côtés. */}
+      {tx && ['completed', 'released'].includes(tx.status) && (
+        <div style={{ margin: '10px 16px 0', textAlign: 'center' }}>
+          <button onClick={() => router.push(`/mission/${tx.id}/facture`)} style={{ border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif' }}>
+            Voir la facture
+          </button>
+        </div>
+      )}
+
       {/* Annulation façon Uber : gratuite avant le départ du prestataire, payante
           une fois en route, impossible une fois arrivé (QR scanné — passe alors
           par un litige, pas une annulation). Rend réelle la promesse affichée à
@@ -313,13 +443,13 @@ export default function ChatPage() {
       {tx && userId && !tx.arrived_at && !['cancelled', 'completed', 'released'].includes(tx.status) && (
         <div style={{ padding: '8px 16px', textAlign: 'center' }}>
           <button onClick={cancelMission} disabled={cancelling} style={{ border: 'none', background: 'none', color: tx.en_route_at ? '#c0503a' : '#9CA3AF', fontSize: 11.5, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
-            {cancelling ? 'Annulation…' : tx.en_route_at ? 'Annuler (frais applicables)' : 'Annuler cette réservation'}
+            {cancelling ? 'Annulation…' : (tx.en_route_at && userId === tx.buyer_id) ? 'Annuler (frais applicables)' : tx.price_confirmed ? 'Annuler cette réservation' : 'Annuler cette demande'}
           </button>
         </div>
       )}
       {tx && tx.status === 'cancelled' && (
         <div style={{ padding: '8px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#9CA3AF' }}>
-          Réservation annulée
+          {tx.price_confirmed ? 'Réservation annulée' : 'Demande annulée'}
         </div>
       )}
 
@@ -347,9 +477,10 @@ export default function ChatPage() {
             ) : (
               <>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler un problème</h3>
-                <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>Décris ce qui ne va pas — c'est tracé et visible par les deux parties.</p>
+                <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>Décrivez ce qui ne va pas : c'est tracé et visible par les deux parties.</p>
                 <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} rows={3}
                   style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
+                {reportError && <p style={{ color: '#c0503a', fontSize: 12, margin: '-6px 0 10px' }}>{reportError}</p>}
                 <button onClick={submitReport} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
                   Ouvrir le litige
                 </button>
@@ -364,15 +495,23 @@ export default function ChatPage() {
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
             <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Proposer un nouveau tarif</h3>
             <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Montant (€)</label>
             <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5"
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 10 }} />
             <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-              <input type="number" value={newIncludedHours} onChange={e => setNewIncludedHours(e.target.value)} min="0" step="0.5"
-                style={{ flex: 1, padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
-              <input type="number" value={newHourly} onChange={e => setNewHourly(e.target.value)} min="0" step="0.5"
-                style={{ flex: 1, padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Heures incluses</label>
+                <input type="number" value={newIncludedHours} onChange={e => setNewIncludedHours(e.target.value)} min="0" step="0.5"
+                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Tarif horaire (€/h)</label>
+                <input type="number" value={newHourly} onChange={e => setNewHourly(e.target.value)} min="0" step="0.5"
+                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
+              </div>
             </div>
-            <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 10 }}>Laisser vide pour un montant fixe simple — sinon le montant ci-dessus devient un forfait avec dépassement horaire.</p>
+            <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 10 }}>Les deux vides : prix fixe. Tarif horaire seul : le montant est une estimation, la facture suit les heures réelles. Les deux remplis : forfait avec dépassement au-delà des heures incluses.</p>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Motif (facultatif)</label>
             <textarea value={newAmountReason} onChange={e => setNewAmountReason(e.target.value)} rows={2}
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, fontFamily: 'inherit' }} />
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 12, border: '1px dashed #DCE5E3', marginBottom: 14, cursor: 'pointer' }}>
@@ -389,12 +528,11 @@ export default function ChatPage() {
 
       {/* Bannière sécurité */}
       <div style={{ padding: '8px 16px', fontSize: 11.5, fontWeight: 600, textAlign: 'center', background: 'rgba(18,179,156,.1)', color: '#0C8F7E' }}>
-        Coordonnées protégées jusqu'au QR de fin
+        Téléphone et e-mail restent masqués : échangez ici, l&apos;adresse s&apos;affiche une fois le tarif validé
       </div>
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div className="ping-notice">Coordonnées protégées jusqu'au QR de fin</div>
         {msgs.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Démarrez la conversation</div>
         )}
@@ -421,11 +559,21 @@ export default function ChatPage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 10, marginBottom: m.body ? 6 : 0 }}>
                   <span style={{ fontSize: 12, color: '#6E8592', lineHeight: 1.4 }}>{m.body}</span>
-                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', whiteSpace: 'nowrap' }}>{((m.offer_cents || 0) / 100).toFixed(2)} €</span>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', whiteSpace: 'nowrap' }}>{EUR(m.offer_cents || 0)}</span>
                 </div>
                 {m.offer_hourly_cents != null && m.offer_included_hours != null && (
                   <div style={{ fontSize: 11, color: '#8a6520', marginBottom: 6 }}>
-                    {m.offer_included_hours} h incluse{m.offer_included_hours > 1 ? 's' : ''}, puis {(m.offer_hourly_cents / 100).toFixed(2)} €/h au-delà
+                    {m.offer_included_hours} h incluse{m.offer_included_hours > 1 ? 's' : ''}, puis {EUR(m.offer_hourly_cents)}/h au-delà
+                  </div>
+                )}
+                {m.offer_hourly_cents != null && m.offer_included_hours == null && (
+                  <div style={{ fontSize: 11, color: '#8a6520', marginBottom: 6 }}>
+                    Estimation — facturé {EUR(m.offer_hourly_cents)}/h selon le temps réel
+                  </div>
+                )}
+                {userId === tx?.seller_id && (m.offer_cents || 0) > 0 && tx?.subtotal_cents > 0 && (
+                  <div style={{ fontSize: 11, color: '#6E8592', marginBottom: 6 }}>
+                    Vous percevez environ {EUR(Math.round((m.offer_cents || 0) * (1 - (tx.seller_fee_cents || 0) / tx.subtotal_cents)))} après commission PING
                   </div>
                 )}
                 {m.photo_path && (
@@ -497,7 +645,7 @@ export default function ChatPage() {
 
       {tx && userId === tx.seller_id && tx.status === 'pending' && !msgs.some(m => m.kind === 'offer' && (m.offer_status === 'pending' || m.offer_status === 'accepted')) && (
         <div style={{ padding: '0 16px 10px' }}>
-          <button onClick={() => { setNewAmount(String(tx.subtotal_cents / 100)); setNewAmountReason(''); setNewAmountPhoto(null); setEditingPrice(true) }}
+          <button onClick={() => { setNewAmount(tx.subtotal_cents > 0 ? String(tx.subtotal_cents / 100) : ''); setNewAmountReason(''); setNewAmountPhoto(null); setEditingPrice(true) }}
             style={{ width: '100%', padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
             + Proposer un tarif
           </button>

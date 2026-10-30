@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADE_LIST } from '@/lib/trades'
+import { geocodeAddress } from '@/lib/geocode'
 
 const SLOTS = [
   { key: 'matin', label: 'Matin' },
@@ -43,18 +44,23 @@ export default function NewOpenRequestPage() {
   }
 
   async function submit() {
-    if (!title.trim()) { setError('Indique un titre pour ta demande.'); return }
-    if (!address.trim()) { setError('Indique une adresse pour la prestation.'); return }
+    if (!title.trim()) { setError('Indiquez un titre pour votre demande.'); return }
+    if (!address.trim()) { setError('Indiquez l’adresse de la prestation.'); return }
     setError('')
     setCreating(true)
 
-    let pos: GeolocationPosition
-    try {
-      pos = await getPosition()
-    } catch {
-      setError("Active la localisation pour que les prestataires autour de vous voient la demande.")
-      setCreating(false)
-      return
+    // Position de la demande = l'adresse saisie (géocodée), pas l'endroit où se trouve le téléphone.
+    // La position de l'appareil ne sert qu'en secours si l'adresse n'est pas reconnue.
+    let point = await geocodeAddress(address.trim()).catch(() => null)
+    if (!point) {
+      try {
+        const pos = await getPosition()
+        point = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+      } catch {
+        setError("Adresse non reconnue. Précisez-la (numéro, rue, ville) ou autorisez la localisation.")
+        setCreating(false)
+        return
+      }
     }
 
     const supabase = createClient()
@@ -70,10 +76,10 @@ export default function NewOpenRequestPage() {
       budget_cents: maxCents ?? minCents,
       desired_date: desiredDate || null, desired_slot: desiredSlot, frequency,
       address: address.trim(),
-      lat: pos.coords.latitude, lng: pos.coords.longitude,
+      lat: point.lat, lng: point.lng,
       status: 'open',
     })
-    if (reqErr) { setError('Impossible de publier la demande.'); setCreating(false); return }
+    if (reqErr) { setError('Impossible de publier la demande. Réessayez dans un instant.'); setCreating(false); return }
 
     router.push('/client/demandes')
   }

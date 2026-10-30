@@ -6,7 +6,7 @@ import { trackEvent } from '@/lib/tracking'
 import { searchCompany, guessLegalStatus, CompanyMatch } from '@/lib/legalLookup'
 import { geocodeAddress } from '@/lib/geocode'
 import OnboardingStep from '@/components/OnboardingStep'
-import { TRADE_LIST as SERVICES } from '@/lib/trades'
+import { TRADE_LIST as SERVICES, TRADES } from '@/lib/trades'
 
 type Status = 'particulier' | 'professionnel' | null
 
@@ -34,6 +34,9 @@ export default function ProOnboarding() {
   const [bio, setBio] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // Profil déjà existant (« Modifier ») : on garde la visibilité, le statut et l'entreprise déjà
+  // renseignés, et on ne recrée pas les services déjà présents.
+  const [existing, setExisting] = useState<{ isActive: boolean; legalStatus: string | null; hasCompany: boolean; serviceNames: string[] } | null>(null)
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -66,8 +69,13 @@ export default function ProOnboarding() {
       const { data: pp } = await supabase.from('provider_profiles').select('*').eq('id', user.id).single()
       if (pp) {
         const { data: extra } = await supabase.from('services').select('name').eq('provider_id', user.id)
-        const extraNames = (extra ?? []).map((s: any) => s.name).filter((n: string) => n && n !== pp.trade)
-        if (pp.trade) setServices([pp.trade, ...extraNames])
+        const names = (extra ?? []).map((s: any) => String(s.name || ''))
+        // Seuls les services du catalogue (ménage, repassage…) reviennent dans la liste des métiers ;
+        // les prestations du catalogue « Mes tarifs » restent gérées sur leur propre page.
+        const tradeKey = (n: string) => SERVICES.find(t => t.key === n.toLowerCase() || t.label.toLowerCase() === n.toLowerCase())?.key
+        const extraKeys = names.map(tradeKey).filter((k): k is string => !!k && k !== pp.trade)
+        if (pp.trade) setServices(Array.from(new Set([pp.trade, ...extraKeys])))
+        setExisting({ isActive: pp.is_active !== false, legalStatus: pp.legal_status ?? null, hasCompany: !!(pp.company_name || pp.siret), serviceNames: names.map(n => n.toLowerCase()) })
         setFlatRate(pp.base_price_cents > 0 ? String(pp.base_price_cents / 100) : '')
         setHourlyRate(pp.hourly_rate_cents != null ? String(pp.hourly_rate_cents / 100) : '')
         setIncludedHours(pp.included_hours != null ? String(pp.included_hours) : '')
@@ -134,14 +142,22 @@ export default function ProOnboarding() {
     const includedHoursNum = (flatCents > 0 && includedHours) ? Number(includedHours) : null
     const legalStatus = status === 'particulier'
       ? 'particulier'
-      : (selectedCompany ? guessLegalStatus(selectedCompany.natureJuridique) : 'auto_entrepreneur')
+      : (selectedCompany ? guessLegalStatus(selectedCompany.natureJuridique)
+        : (existing?.legalStatus && existing.legalStatus !== 'particulier' ? existing.legalStatus : 'auto_entrepreneur'))
+
+    // Adresse saisie sans position : on la géolocalise ici, sinon le profil n'apparaît pas sur la carte.
+    let position = coords
+    if (!position && address.trim()) {
+      position = await geocodeAddress(address)
+      if (position) setCoords(position)
+    }
 
     const { error: profileErr } = await supabase.from('profiles').update({
       phone_enc: phone || null,
       address: address || null,
       is_pro: true,
     }).eq('id', user.id)
-    if (profileErr) { setError(profileErr.message); setLoading(false); return }
+    if (profileErr) { setError("L'enregistrement de vos coordonnées a échoué. Vérifiez votre connexion et réessayez."); setLoading(false); return }
 
     const { error: dbError } = await supabase.from('provider_profiles').upsert({
       id: user.id,
@@ -151,21 +167,32 @@ export default function ProOnboarding() {
       hourly_rate_cents: quoteMode ? null : hourlyCents,
       included_hours: quoteMode ? null : includedHoursNum,
       bio,
-      is_active: true,
+      // Première inscription : visible tout de suite. Modification : on garde le choix du prestataire.
+      is_active: existing ? existing.isActive : true,
       legal_status: legalStatus,
       siret: status === 'professionnel' ? (siret || null) : null,
       sap_number: status === 'professionnel' ? (sapNumber.trim() || null) : null,
       company_name: status === 'professionnel' ? (selectedCompany?.name || companyQuery || null) : null,
-      lat: coords?.lat ?? null,
-      lng: coords?.lng ?? null,
-      location: coords ? `SRID=4326;POINT(${coords.lng} ${coords.lat})` : null,
+      lat: position?.lat ?? null,
+      lng: position?.lng ?? null,
+      location: position ? `SRID=4326;POINT(${position.lng} ${position.lat})` : null,
     })
-    if (dbError) { setError(dbError.message); setLoading(false); return }
+    if (dbError) { setError("L'enregistrement de votre profil a échoué. Vérifiez votre connexion et réessayez."); setLoading(false); return }
 
-    if (services.length > 1) {
-      await supabase.from('services').insert(
-        services.slice(1).map(s => ({ provider_id: user.id, name: s, price_cents: flatCents || hourlyCents || 0 }))
-      )
+    // Services supplémentaires : même format que « Mes tarifs » (libellé lisible, mode de prix),
+    // sans recréer ceux qui existent déjà quand on revient modifier son profil.
+    const already = existing?.serviceNames ?? []
+    const toAdd = services.slice(1).filter(k => !already.includes(k) && !already.includes((TRADES[k] || k).toLowerCase()))
+    if (toAdd.length) {
+      const { error: svcErr } = await supabase.from('services').insert(toAdd.map(k => ({
+        provider_id: user.id, name: TRADES[k] || k,
+        pricing_type: quoteMode ? 'devis' : (flatCents > 0 ? 'forfait' : 'horaire'),
+        base_price_cents: quoteMode ? 0 : flatCents,
+        included_hours: quoteMode ? null : includedHoursNum,
+        hourly_rate_cents: quoteMode ? null : hourlyCents,
+        price_cents: quoteMode ? 0 : (flatCents || hourlyCents || 0),
+      })))
+      if (svcErr) { setError("Votre profil est enregistré, mais vos services supplémentaires n'ont pas pu l'être. Ajoutez-les dans « Mes tarifs »."); setLoading(false); return }
     }
 
     trackEvent('pro_onboarding_completed', { services, flatCents, hourlyCents, status })
@@ -260,7 +287,7 @@ export default function ProOnboarding() {
       <OnboardingStep step={stepIndex} total={visibleSteps.length}
         title="Votre entreprise"
         subtitle="Tapez son nom, on retrouve le SIRET et l'adresse pour vous."
-        onBack={back} onCta={next} ctaDisabled={!manualEntry && !selectedCompany}>
+        onBack={back} onCta={next} ctaDisabled={!manualEntry && !selectedCompany && !existing?.hasCompany}>
         <input
           value={companyQuery}
           onChange={e => { setCompanyQuery(e.target.value); setSelectedCompany(null) }}

@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Modal, { Cta } from './Modal'
 import { createClient } from '@/lib/supabase/client'
 
@@ -21,6 +21,12 @@ import { createClient } from '@/lib/supabase/client'
  */
 const TIPS = [0, 200, 500, 1000]
 
+// « Plus tard » est mémorisé par mission : l'avis ne se rouvre plus tout seul à chaque visite
+// du chat. Il reste accessible à la demande (lien « Laisser un avis », ?avis dans l'URL).
+const dismissKey = (tx: string) => `ping_review_later_${tx}`
+function wasDismissed(tx: string) { try { return localStorage.getItem(dismissKey(tx)) === '1' } catch { return false } }
+function rememberDismiss(tx: string) { try { localStorage.setItem(dismissKey(tx), '1') } catch { } }
+
 export default function ReviewModal({
   open, onClose, transactionId, raterId, rateeId, proName, onSubmitted,
 }: {
@@ -37,6 +43,18 @@ export default function ReviewModal({
   const [error, setError] = useState('')
 
   const complete = quality > 0 && service > 0 && recommend !== null
+  const missing = [quality > 0, service > 0, recommend !== null].filter(x => !x).length
+
+  // Ouverture automatique déjà repoussée par « Plus tard » : on la referme sans rien afficher,
+  // sauf si l'avis a été demandé explicitement (?avis).
+  const [suppressed, setSuppressed] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    const asked = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('avis')
+    setSuppressed(!asked && wasDismissed(transactionId))
+  }, [open, transactionId])
+
+  function later() { rememberDismiss(transactionId); onClose() }
 
   async function submit() {
     if (!complete) return
@@ -51,7 +69,7 @@ export default function ReviewModal({
       recommend, tip_cents: tip, comment: comment.trim() || null,
     })
     setBusy(false)
-    if (err) { setError("Votre avis n'a pas pu être enregistré. " + err.message); return }
+    if (err) { setError("Votre avis n'a pas pu être enregistré. Réessayez dans un instant."); return }
     onSubmitted?.({ stars: Math.round((quality + service) / 2), comment: comment.trim() || null })
     onClose()
   }
@@ -75,7 +93,7 @@ export default function ReviewModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`Comment s'est passée l'intervention ?`} dismissable={false}>
+    <Modal open={open && !suppressed} onClose={later} title={`Comment s'est passée l'intervention ?`}>
       <p style={{ fontSize: 13, color: '#6E8592', margin: 0, lineHeight: 1.55 }}>
         Votre avis s'affichera sur la fiche de <b style={{ color: '#123644' }}>{proName}</b>.
         Il compte pour les clients suivants — et pour lui.
@@ -150,9 +168,9 @@ export default function ReviewModal({
       <div style={{ height: 8 }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 10 }}>
         <Cta onClick={submit} disabled={!complete || busy}>
-          {busy ? 'Enregistrement…' : complete ? 'Publier mon avis' : 'Notez les deux critères'}
+          {busy ? 'Enregistrement…' : complete ? 'Publier mon avis' : `Encore ${missing} réponse${missing > 1 ? 's' : ''} à donner`}
         </Cta>
-        <Cta variant="ghost" onClick={onClose}>Plus tard</Cta>
+        <Cta variant="ghost" onClick={later}>Plus tard</Cta>
       </div>
     </Modal>
   )

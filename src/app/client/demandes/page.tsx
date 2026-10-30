@@ -4,10 +4,12 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
-import SponsorBanner from '@/components/SponsorBanner'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 const DONE = ['completed', 'released']
+const STATUS: Record<string, string> = { open: 'En attente', matched: 'En cours', completed: 'Terminée', cancelled: 'Annulée' }
+const FREQ: Record<string, string> = { hebdomadaire: 'Chaque semaine', bimensuel: 'Toutes les deux semaines', mensuel: 'Chaque mois', quotidien: 'Chaque jour' }
+function freqLabel(f: string) { return FREQ[f] || (f.charAt(0).toUpperCase() + f.slice(1)) }
 function eur(c?: number | null) { return c != null ? `${(c / 100).toFixed(0)} €` : '' }
 
 type Tx = { id: string; status: string; counterpart: string }
@@ -26,7 +28,10 @@ export default function MesDemandesPage() {
     if (!user) { router.push('/auth/login'); return }
     const { data } = await supabase.from('requests')
       .select('*').eq('requester_id', user.id).order('created_at', { ascending: false })
-    const list = data ?? []
+    // Seules les demandes publiées (titre saisi dans « Publier une demande », ou encore ouvertes) :
+    // les lignes créées automatiquement par « Contacter » ou une réservation directe ne sont pas
+    // des demandes du point de vue du client — elles vivent dans Messages et l'Agenda.
+    const list = (data ?? []).filter((r: any) => (r.title && r.title.trim()) || r.status === 'open')
     setRows(list)
     const ids = list.map((r: any) => r.id)
     if (ids.length) {
@@ -56,14 +61,15 @@ export default function MesDemandesPage() {
     if (group.some(t => DONE.includes(t.status))) return { label: 'Terminée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (group.length > 0) return { label: `${group.length} proposition${group.length > 1 ? 's' : ''}`, bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (r.status === 'open') return { label: 'En attente', bg: '#FFF7ED', fg: '#8a6520' }
-    return { label: r.status, bg: '#F3F6F5', fg: '#6E8592' }
+    return { label: STATUS[r.status] || 'En cours', bg: '#F3F6F5', fg: '#6E8592' }
   }
 
   async function cancel(r: any) {
     setBusy(r.id)
     const supabase = createClient()
-    await supabase.from('requests').update({ status: 'cancelled' }).eq('id', r.id)
-    setRows(rs => rs.map(x => x.id === r.id ? { ...x, status: 'cancelled' } : x))
+    const { error } = await supabase.from('requests').update({ status: 'cancelled' }).eq('id', r.id)
+    if (error) alert('L’annulation a échoué. Réessayez dans un instant.')
+    else setRows(rs => rs.map(x => x.id === r.id ? { ...x, status: 'cancelled' } : x))
     setBusy('')
   }
   async function remove(r: any) {
@@ -98,17 +104,6 @@ export default function MesDemandesPage() {
           + Publier une demande
         </button>
 
-        <SponsorBanner
-          label="Partenaire"
-          style={{ margin: '0 0 18px' }}
-          sponsor={{
-            id: 'demo-sponsor',
-            name: 'Nettoyeur Pro Équipement',
-            tagline: "Matériel professionnel — remise PING",
-            linkUrl: 'https://nexto-eta.vercel.app',
-          }}
-        />
-
         {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
         {!loading && rows.length === 0 && (
@@ -139,7 +134,7 @@ export default function MesDemandesPage() {
                     <div style={{ fontSize: 11, color: '#0C8F7E', fontWeight: 700, marginTop: 3 }}>{TRAD[r.category] || r.category}</div>
                     {r.description && <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>{r.description}</div>}
                     <div style={{ fontSize: 11, color: '#9aa6a3', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{r.frequency && r.frequency !== 'ponctuel' ? ` · ${r.frequency}` : ''}</span>
+                      <span>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{r.frequency && r.frequency !== 'ponctuel' ? ` · ${freqLabel(r.frequency)}` : ''}</span>
                       {budgetTxt ? <b style={{ color: '#123644' }}>{budgetTxt}</b> : null}
                     </div>
                   </div>
