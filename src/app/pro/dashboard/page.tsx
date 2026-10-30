@@ -202,7 +202,7 @@ export default function ProDashboard() {
             </HubGroup>
 
             <HubGroup title="Mon entreprise">
-              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalLabel(pro.legal_status), city].filter(Boolean).join(' · ') || 'Adresse et statut'} onClick={() => router.push('/pro/onboarding')} />
+              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
               <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
                 badge={idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
                 onClick={() => router.push('/pro/documents')} />

@@ -33,6 +33,7 @@ export default function ProOnboarding() {
   const [geocodeError, setGeocodeError] = useState('')
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
+  const [website, setWebsite] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   // Profil déjà existant (« Modifier ») : on garde la visibilité, le statut et l'entreprise déjà
@@ -96,6 +97,7 @@ export default function ProOnboarding() {
         if (pp.company_name) setCompanyQuery(pp.company_name)
         if (pp.lat != null && pp.lng != null) setCoords({ lat: pp.lat, lng: pp.lng })
         setBio(pp.bio || '')
+        setWebsite(pp.website || '')
       }
       const { data: prof } = await supabase.from('profiles').select('address, phone_enc').eq('id', user.id).single()
       if (prof) {
@@ -175,6 +177,7 @@ export default function ProOnboarding() {
       hourly_rate_cents: primaryCols.hourly_rate_cents,
       included_hours: primaryCols.included_hours,
       bio,
+      website: website.trim() || null,
       // Première inscription : visible tout de suite. Modification : on garde le choix du prestataire.
       is_active: existing ? existing.isActive : true,
       legal_status: legalStatus,
@@ -334,6 +337,10 @@ export default function ProOnboarding() {
           </button>
         )}
         {geocodeError && <p style={{ fontSize: 12, color: '#c0503a', marginTop: 10, lineHeight: 1.5 }}>{geocodeError}</p>}
+        <label style={{ display: 'block', marginTop: 16 }}>
+          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Site internet (facultatif)</span>
+          <input value={website} onChange={e => setWebsite(e.target.value)} inputMode="url" placeholder="www.monentreprise.fr" style={{ ...inputStyle, marginTop: 6 }} />
+        </label>
       </OnboardingStep>
     )
   }
