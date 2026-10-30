@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
 import ReviewModal from '@/components/ReviewModal'
+import ClientReviewModal, { CLIENT_TAGS } from '@/components/ClientReviewModal'
 import DepartureBar from '@/components/DepartureBar'
 import { filterMessage } from '@/lib/chatFilter'
 import { getRates } from '@/lib/pricing'
@@ -72,6 +73,10 @@ export default function ChatPage() {
   const [reportReason, setReportReason] = useState('')
   const [reportSent, setReportSent] = useState(false)
   const [askReview, setAskReview] = useState(false)
+  // Côté prestataire : son avis sur le client (table client_reviews, migration 016).
+  const [askClientReview, setAskClientReview] = useState(false)
+  const [myClientReview, setMyClientReview] = useState<{ stars: number; is_public: boolean; comment: string | null; tags: string[] } | null>(null)
+  const [clientRating, setClientRating] = useState<{ avg: number; n: number } | null>(null)
   const [req, setReq] = useState<any>(null)
   const [rdvAddr, setRdvAddr] = useState('')
   const [rdvAt, setRdvAt] = useState('')
@@ -125,6 +130,17 @@ export default function ChatPage() {
             .eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle()
           if (rev) setMyReview(rev as any)
           else setAskReview(true)
+        }
+        if (user.id === t.seller_id && t.buyer_id !== t.seller_id) {
+          // Note publique du client (avis des autres prestataires), pour se faire une idée.
+          const { data: pub, error: crErr } = await supabase.from('client_reviews').select('stars').eq('client_id', t.buyer_id).eq('is_public', true)
+          if (!crErr && pub?.length) setClientRating({ avg: pub.reduce((a: number, r: any) => a + r.stars, 0) / pub.length, n: pub.length })
+          if (!crErr && ['completed', 'released'].includes(t.status)) {
+            const { data: mine } = await supabase.from('client_reviews').select('stars, is_public, comment, tags')
+              .eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle()
+            if (mine) setMyClientReview(mine as any)
+            else setAskClientReview(true)
+          }
         }
       }
     }
@@ -359,7 +375,10 @@ export default function ChatPage() {
         <div className="ic" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', cursor: 'pointer' }} onClick={() => router.back()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </div>
-        <b style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{counterpart}</b>
+        <b style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {counterpart}
+          {clientRating && <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginLeft: 8 }}>★ {clientRating.avg.toFixed(1).replace('.', ',')} ({clientRating.n})</span>}
+        </b>
         {tx && tx.subtotal_cents > 0 && (
           <span style={{ padding: '6px 11px', borderRadius: 999, background: 'var(--paper)', color: 'var(--slate)', fontSize: 11.5, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap' }}>
             {EUR(tx.subtotal_cents)}{tx.price_confirmed ? '' : ' · à valider'}
@@ -474,6 +493,18 @@ export default function ChatPage() {
           rateeId={tx.seller_id}
           proName={counterpart}
           onSubmitted={(r) => setMyReview(r)}
+        />
+      )}
+
+      {tx && userId && userId === tx.seller_id && (
+        <ClientReviewModal
+          open={askClientReview}
+          onClose={() => setAskClientReview(false)}
+          transactionId={tx.id}
+          raterId={userId}
+          clientId={tx.buyer_id}
+          clientName={counterpart}
+          onSubmitted={(r) => setMyClientReview(r)}
         />
       )}
 
@@ -644,6 +675,22 @@ export default function ChatPage() {
             </div>
             {myReview.comment && <p style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5, margin: '8px 0 0' }}>{myReview.comment}</p>}
           </div>
+        )}
+        {myClientReview && (
+          <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #DCE5E3', borderRadius: 16, padding: '14px 18px' }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>
+              Votre avis sur le client · {myClientReview.is_public ? 'publié' : 'note privée'}
+            </div>
+            <span style={{ fontSize: 18, color: '#F2A93B', letterSpacing: 1 }}>{'★'.repeat(myClientReview.stars)}<span style={{ color: '#DCE5E3' }}>{'★'.repeat(5 - myClientReview.stars)}</span></span>
+            {myClientReview.tags?.length > 0 && <div style={{ fontSize: 12, color: '#4E6470', marginTop: 6 }}>{myClientReview.tags.map(k => CLIENT_TAGS.find(t => t.key === k)?.label || k).join(' · ')}</div>}
+            {myClientReview.comment && <p style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5, margin: '6px 0 0' }}>{myClientReview.comment}</p>}
+          </div>
+        )}
+        {tx && userId === tx.seller_id && !myClientReview && ['completed', 'released'].includes(tx.status) && tx.buyer_id !== tx.seller_id && (
+          <button onClick={() => { try { localStorage.removeItem(`ping_client_review_later_${tx.id}`) } catch { } setAskClientReview(true) }}
+            style={{ alignSelf: 'center', border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            Noter ce client
+          </button>
         )}
         <div ref={bottomRef} />
       </div>
