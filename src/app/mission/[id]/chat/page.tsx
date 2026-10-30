@@ -78,6 +78,9 @@ export default function ChatPage() {
   const [rdvSaving, setRdvSaving] = useState(false)
   const [rdvError, setRdvError] = useState('')
   const [reportError, setReportError] = useState('')
+  // Paiement en ligne actif : l'adresse du client n'est montrée au prestataire qu'une fois payé.
+  const [payOn, setPayOn] = useState(false)
+  useEffect(() => { paymentsActive().then(setPayOn) }, [])
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Raccourcis depuis l'écran QR : ?signaler ouvre le signalement, ?avis l'avis (client, mission terminée).
@@ -116,7 +119,7 @@ export default function ChatPage() {
 
         // Mission terminee et pas encore notee par ce client : on demande son
         // avis ici, c'est l'ecran ou il atterrit apres le scan de sortie.
-        if (user.id === t.buyer_id && ['completed', 'released'].includes(t.status)) {
+        if (user.id === t.buyer_id && t.buyer_id !== t.seller_id && ['completed', 'released'].includes(t.status)) {
           const { data: rev } = await supabase.from('reviews')
             .select('stars, comment')
             .eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle()
@@ -367,9 +370,17 @@ export default function ChatPage() {
         </button>
       </div>
 
+      {tx && tx.buyer_id === tx.seller_id && (
+        <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(229,72,77,.08)', color: '#B42318', fontSize: 12.5, fontWeight: 600, lineHeight: 1.5 }}>
+          Mission de test invalide : vous êtes à la fois le client et le prestataire. Elle ne correspond à aucun vrai parcours et sera supprimée.
+        </div>
+      )}
+
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
-        <DepartureBar tx={tx} userId={userId} onChange={setTx} address={reqAddr} confirmed={!!tx && !!tx.price_confirmed} />
+        <DepartureBar tx={tx} userId={userId} onChange={setTx}
+          address={!payOn || ['held', 'released'].includes(tx.payment_status) ? reqAddr : null}
+          confirmed={!!tx && !!tx.price_confirmed} />
       )}
 
       {/* Récapitulatif de la demande : ce que le client a demandé, visible des deux côtés. */}

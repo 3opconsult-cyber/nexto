@@ -85,7 +85,11 @@ export default function DepartureBar({
   if (['cancelled', 'completed', 'released'].includes(tx.status)) return null
 
   const maps = address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}` : null
-  const AddressBlock = () => address ? (
+  const AddressBlock = () => !address && isSeller ? (
+    <div style={{ marginTop: 10, background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '10px 12px', fontSize: 12.5, color: 'rgba(255,255,255,.75)' }}>
+      L&apos;adresse du client s&apos;affiche ici dès qu&apos;il a validé le rendez-vous{tx.payment_status && tx.payment_status !== 'none' ? ' et payé' : ''}.
+    </div>
+  ) : address ? (
     <div style={{ marginTop: 10, background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '10px 12px' }}>
       <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Adresse du rendez-vous</div>
       <div style={{ fontSize: 13.5, fontWeight: 600, marginTop: 3, color: '#fff' }}>{address}</div>

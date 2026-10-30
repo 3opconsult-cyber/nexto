@@ -4,6 +4,7 @@ import './globals.css'
 import './ping-ui.css'
 import './ping-legacy.css'
 import DesktopShell from '@/components/DesktopShell'
+import ChunkReload from '@/components/ChunkReload'
 import PageViewTracker from '@/components/PageViewTracker'
 import FeedbackBubble from '@/components/FeedbackBubble'
 
@@ -52,6 +53,7 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`} style={{ background: '#DCE5E3' }}>
         <PageViewTracker />
+        <ChunkReload />
         <DesktopShell>
           {children}
         </DesktopShell>
