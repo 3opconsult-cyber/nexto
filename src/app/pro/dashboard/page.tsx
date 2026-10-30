@@ -8,6 +8,7 @@ import BottomTabBar from '@/components/BottomTabBar'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { writeMode } from '@/lib/mode'
+import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
   particulier: 'Particulier',
@@ -186,75 +187,37 @@ export default function ProDashboard() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.03em' }}>Conformité</span>
-              <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10, fontWeight: 700, background: idOk && rcOk ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: idOk && rcOk ? '#0C8F7E' : '#9A6712' }}>
-                {idOk && rcOk ? 'à jour' : 'à compléter'}
-              </span>
-            </div>
-            {[
-              { ok: idOk, label: 'Identité & statut', sub: 'Fichier masqué · déclaré', icon: <rect x="3" y="5" width="18" height="14" rx="2" /> },
-              { ok: rcOk, label: 'Responsabilité civile pro', sub: 'Assurance déclarée', icon: <path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /> },
-              { ok: diplomeOk, label: 'Diplôme ou qualification', sub: 'Qualification déclarée (facultatif)', icon: <path d="M12 2l9 5-9 5-9-5 9-5z" /> },
-            ].map(r => (
-              <div key={r.label} onClick={() => router.push('/pro/documents')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, border: `1px solid ${r.ok ? 'rgba(18,179,156,.3)' : '#E7EDEB'}`, cursor: 'pointer' }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: r.ok ? 'rgba(18,179,156,.12)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={r.ok ? '#0C8F7E' : '#9CA3AF'} strokeWidth={2}>{r.icon}</svg>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12.5, color: '#123644' }}>{r.label}</div>
-                  <div style={{ fontSize: 10.5, color: '#9CA3AF' }}>{r.sub}</div>
-                </div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: r.ok ? '#0C8F7E' : '#9A6712' }}>{r.ok ? 'Fourni' : 'À fournir'}</span>
-              </div>
-            ))}
+            {/* Tout ce qui sortait du menu latéral est rangé ici, par rubrique (même présentation que
+                « Mon profil » côté particulier). */}
+            <HubGroup title="Mon activité">
+              <HubRow icon={HUB_ICONS.agenda} label="Agenda et disponibilités" sub="Vos rendez-vous et les créneaux que les clients réservent" onClick={() => router.push('/pro/disponibilites')} />
+              <HubRow icon={HUB_ICONS.history} label="Historique de mes missions" sub="Statut et montant net, mission par mission" onClick={() => setTab('missions')} />
+              <HubRow icon={HUB_ICONS.alert} label="Litiges" sub="Réclamations ouvertes sur vos missions" onClick={() => router.push('/litiges')} />
+            </HubGroup>
 
-            <div onClick={() => router.push('/pro/disponibilites')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer', marginTop: 6 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#12B39C,#0C8F7E)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4" /></svg>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Mes disponibilités</div>
-                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>Les créneaux que vos clients réservent en un clic</div>
-              </div>
-              <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
-            </div>
+            <HubGroup title="Prix et revenus">
+              <HubRow icon={HUB_ICONS.tag} label="Mes tarifs" sub="Un prix par service : forfait, à l'heure, ou forfait + heures" onClick={() => router.push('/pro/tarifs')} />
+              <HubRow icon={HUB_ICONS.chart} label="Mes revenus" sub="Récapitulatif et déclaration" onClick={() => router.push('/pro/revenus')} />
+              <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
+              <HubRow icon={HUB_ICONS.card} label="Mes versements" sub="Compte de versement pour le paiement en ligne" onClick={() => router.push('/pro/paiements')} />
+            </HubGroup>
 
-            <div onClick={() => setTab('missions')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#F3F6F5', cursor: 'pointer', marginTop: 6 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(160deg,#6E8592,#4c6472)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Historique de mes missions</div>
-                <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>Statut et montant net, mission par mission</div>
-              </div>
-              <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
-            </div>
+            <HubGroup title="Mon entreprise">
+              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalLabel(pro.legal_status), city].filter(Boolean).join(' · ') || 'Adresse et statut'} onClick={() => router.push('/pro/onboarding')} />
+              <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
+                badge={idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
+                onClick={() => router.push('/pro/documents')} />
+              <HubRow icon={HUB_ICONS.eye} label="Voir mon profil public" sub="Ce que voient les clients" onClick={() => router.push(`/pro/${pro.id}`)} />
+            </HubGroup>
 
-            {[
-              { label: 'Mes tarifs', sub: 'Vos prestations et leurs prix', path: '/pro/tarifs', icon: <><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" /><path d="M7.5 7.5h.01" /></> },
-              { label: 'Mes revenus', sub: 'Récapitulatif et déclaration', path: '/pro/revenus', icon: <path d="M3 3v18h18M7 15l4-4 3 3 5-6" /> },
-              { label: 'Mes versements', sub: 'Compte de versement pour le paiement en ligne', path: '/pro/paiements', icon: <><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20M6 15h4" /></> },
-              { label: 'Voir mon profil public', sub: 'Ce que voient les clients', path: `/pro/${pro.id}`, icon: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></> },
-            ].map(r => (
-              <div key={r.path} onClick={() => router.push(r.path)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 14, border: '1px solid #E7EDEB', cursor: 'pointer' }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{r.icon}</svg>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{r.label}</div>
-                  <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 2 }}>{r.sub}</div>
-                </div>
-                <span style={{ color: '#9CA3AF', flexShrink: 0 }}>›</span>
-              </div>
-            ))}
+            <HubGroup title="Plus">
+              <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez d'autres prestataires" onClick={() => router.push('/client/parrainage')} />
+              <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
+              <HubRow icon={HUB_ICONS.swap} label="Revenir en mode particulier" onClick={() => { writeMode('particulier'); router.push('/map') }} />
+            </HubGroup>
 
-            <div onClick={() => { writeMode('particulier'); router.push('/map') }}
-              style={{ textAlign: 'center', marginTop: 10, padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
-              Revenir en mode particulier
-            </div>
             <div onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
-              style={{ textAlign: 'center', marginTop: 2, color: '#9CA3AF', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ textAlign: 'center', marginTop: 16, color: '#9CA3AF', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
               Se déconnecter
             </div>
           </div>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
+import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 
 const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em', margin: '12px 0 5px' }
 const fieldInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1.5px solid #E7EDEB', borderRadius: 12, fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644', outline: 'none', boxSizing: 'border-box' }
@@ -98,48 +99,34 @@ export default function ClientProfil() {
               </div>
             </div>
 
-            <div className="h2">Identité &amp; sécurité</div>
-            <div className={`vrow ${hasId ? 'ok' : ''}`}>
-              <div className="vi"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 10h4M7 14h7" /></svg></div>
-              <div className="vt"><b>Pièce d&apos;identité {hasId ? 'fournie' : 'à fournir'}</b><small>Déposée sur PING · authenticité non garantie</small></div>
-              <div className="vs">{hasId ? '✓ Fournie' : 'À fournir'}</div>
-            </div>
-            <div className="row" onClick={() => router.push('/client/documents')}>
-              <div className="av g" style={{ width: 40, height: 40, fontSize: 15 }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="5" width="18" height="14" rx="2" /></svg></div>
-              <div className="m"><div className="nm" style={{ fontSize: 13 }}>Mes documents &amp; identité</div><div className="ds">Pièce d&apos;identité · chiffré &amp; masqué</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
-            </div>
-            <div className="row" onClick={() => router.push('/client/confidentialite')}>
-              <div className="m"><div className="nm" style={{ fontSize: 13 }}>Coordonnées &amp; confidentialité</div><div className="ds">Masquées jusqu&apos;à la mission confirmée · protégées</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
-            </div>
-            <div className="row" style={{ cursor: 'default' }}>
-              <div className="m"><div className="nm" style={{ fontSize: 13 }}>Moyens de paiement</div><div className="ds">Bientôt disponible</div></div>
-            </div>
-            <div className="row" onClick={() => router.push('/client/avance-immediate')}>
-              <div className="m"><div className="nm" style={{ fontSize: 13 }}>Crédit d&apos;impôt immédiat</div><div className="ds">Ne payez que 50 % du ménage et du repassage</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
-            </div>
+            {/* Même rubriques et même présentation que « Mon entreprise » côté prestataire. */}
+            <HubGroup title="Mon activité">
+              <HubRow icon={HUB_ICONS.list} label="Mes demandes" sub="Vos demandes publiées et les propositions reçues" onClick={() => router.push('/client/demandes')} />
+              <HubRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
+              <HubRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Les prestataires que vous avez gardés" onClick={() => router.push('/client/favoris')} />
+              <HubRow icon={HUB_ICONS.star} label="Avis publiés" onClick={() => router.push('/client/avis')} />
+            </HubGroup>
 
-            <div className="h2">Mon activité</div>
-            <div className="row" onClick={() => router.push('/documents')}>
-              <div className="av gold" style={{ background: 'linear-gradient(160deg,#f2a93b,#d98a1f)', width: 40, height: 40, fontSize: 15 }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M3 3v18h18M7 14l3-3 3 3 5-5" /></svg></div>
-              <div className="m"><div className="nm">Mes opérations</div><div className="ds">Réservations, factures et reçus</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
-            </div>
-            <div className="row" onClick={() => router.push('/client/avis')}>
-              <div className="m"><div className="nm" style={{ fontSize: 13 }}>Avis publiés</div></div>
-              <span style={{ color: 'var(--slate)' }}>›</span>
-            </div>
+            <HubGroup title="Paiements">
+              <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures et reçus" onClick={() => router.push('/documents')} />
+              <HubRow icon={HUB_ICONS.euro} label="Crédit d'impôt immédiat" sub="Ne payez que 50 % du ménage et du repassage" onClick={() => router.push('/client/avance-immediate')} />
+              <HubRow icon={HUB_ICONS.card} label="Moyens de paiement" sub="Bientôt disponible" />
+            </HubGroup>
 
-            <div className="h2">Vous proposez vos services&nbsp;?</div>
-            <div className="card" style={{ padding: 14 }}>
-              <div className="nm" style={{ fontSize: 14 }}>Devenez professionnel sur PING</div>
-              <div className="sub" style={{ margin: '4px 0 12px' }}>Choisissez votre statut juridique — inscription gratuite, immédiate et non bloquante.</div>
-              <div className="btn gold sm" onClick={() => router.push('/pro/onboarding')}>Saisir mon statut &amp; devenir pro</div>
-            </div>
+            <HubGroup title="Mon compte">
+              <HubRow icon={HUB_ICONS.id} label="Pièce d'identité" sub="Déposée sur PING, chiffrée et masquée"
+                badge={hasId ? { text: 'fournie', tone: 'ok' } : { text: 'à fournir', tone: 'todo' }}
+                onClick={() => router.push('/client/documents')} />
+              <HubRow icon={HUB_ICONS.lock} label="Coordonnées et confidentialité" sub="Masquées jusqu'à la mission confirmée" onClick={() => router.push('/client/confidentialite')} />
+            </HubGroup>
 
-            <div onClick={logout} style={{ textAlign: 'center', marginTop: 18, color: 'var(--slate)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>Se déconnecter</div>
+            <HubGroup title="Plus">
+              <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />
+              <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
+              <HubRow icon={HUB_ICONS.swap} label="Proposer mes services" sub="Devenir prestataire : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />
+            </HubGroup>
+
+            <div onClick={logout} style={{ textAlign: 'center', marginTop: 16, color: 'var(--slate)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>Se déconnecter</div>
           </div>
         </section>
         <BottomTabBar />

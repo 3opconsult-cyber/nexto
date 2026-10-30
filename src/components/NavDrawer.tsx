@@ -88,34 +88,23 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     router.push(onProSide ? '/map' : (isPro ? '/pro/carte' : '/pro/onboarding'))
   }
 
+  // Même structure dans les deux espaces : 4 entrées, le reste est rangé dans Mon profil / Mon entreprise.
   const clientLinks = [
     { label: 'Carte', path: '/map', icon: 'map' },
-    { label: 'Mes demandes', path: '/client/demandes', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
-    { label: 'Mes réclamations', path: '/litiges', icon: 'doc' },
-    { label: 'Profil', path: '/client/profil', icon: 'prof' },
+    { label: 'Mon profil', path: '/client/profil', icon: 'prof' },
   ]
   const clientLinksBottom = [
-    { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
-    { label: 'Mes favoris', path: '/client/favoris', icon: 'heart' },
-    { label: 'Mes opérations', path: '/documents', icon: 'doc' },
     { label: 'Support PING', path: '/support', icon: 'msg' },
   ]
   const proLinks = [
     { label: 'Demandes autour de moi', path: '/pro/carte', icon: 'off' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
-    { label: 'Mes disponibilités', path: '/pro/disponibilites', icon: 'ag' },
-    { label: 'Mes tarifs', path: '/pro/tarifs', icon: 'doc' },
-    { label: 'Mes revenus', path: '/pro/revenus', icon: 'doc' },
-    { label: 'Litiges', path: '/litiges', icon: 'doc' },
     { label: 'Mon entreprise', path: '/pro/dashboard', icon: 'ent' },
   ]
   const proLinksBottom = [
-    { label: 'Mes opérations', path: '/documents', icon: 'doc' },
-    { label: 'Mes pièces', path: '/pro/documents', icon: 'doc' },
-    { label: 'Mon parrainage', path: '/client/parrainage', icon: 'gift' },
     { label: 'Support PING', path: '/support', icon: 'msg' },
   ]
   const links = onProSide ? proLinks : clientLinks

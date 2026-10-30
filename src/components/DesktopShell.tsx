@@ -8,34 +8,24 @@ import { enforceForgottenSession } from '@/lib/auth-session'
 // Auth, presentation, hub, demo, admin : pas de sidebar.
 const APP_PREFIXES = ['/map', '/messages', '/agenda', '/documents', '/litiges', '/support', '/client', '/pro', '/mission']
 
+// Même structure dans les deux espaces (comme Airbnb voyageur / hôte) : 4 entrées, le reste est rangé
+// dans « Mon profil » / « Mon entreprise » (rubriques Hub).
 const CLIENT_NAV: [string, string][] = [
   ['Carte', '/map'],
-  ['Mes demandes', '/client/demandes'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
-  ['Mes réclamations', '/litiges'],
-  ['Profil', '/client/profil'],
+  ['Mon profil', '/client/profil'],
 ]
 const CLIENT_NAV2: [string, string][] = [
-  ['Mon parrainage', '/client/parrainage'],
-  ['Mes favoris', '/client/favoris'],
-  ['Mes opérations', '/documents'],
   ['Support PING', '/support'],
 ]
 const PRO_NAV: [string, string][] = [
   ['Demandes autour de moi', '/pro/carte'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
-  ['Mes disponibilités', '/pro/disponibilites'],
-  ['Mes tarifs', '/pro/tarifs'],
-  ['Mes revenus', '/pro/revenus'],
-  ['Litiges', '/litiges'],
   ['Mon entreprise', '/pro/dashboard'],
 ]
 const PRO_NAV2: [string, string][] = [
-  ['Mes opérations', '/documents'],
-  ['Mes pièces', '/pro/documents'],
-  ['Mon parrainage', '/client/parrainage'],
   ['Support PING', '/support'],
 ]
 

@@ -33,11 +33,15 @@ design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand
   **persisté en `localStorage('ping_mode')`**. Seul `/pro/(carte|dashboard|documents|onboarding)`
   force le mode pro ; seul `/client/profil` force le particulier ; le reste respecte le mode courant.
 - `src/components/NavDrawer.tsx` : drawer mobile (même logique).
-- Menu pro (dédupliqué) : Demandes autour de moi (/pro/carte) · Messages · Agenda · Mes disponibilités (/pro/disponibilites) · Litiges ·
-  Mon entreprise (/pro/dashboard) — puis Mes opérations (/documents) · Mes pièces (/pro/documents) ·
-  Mon parrainage (/client/parrainage) · Support PING.
-- Menu client : Carte (/map) · Mes demandes (/client/demandes) · Messages · Agenda ·
-  Mes réclamations (/litiges) · Profil — puis Mon parrainage · Mes favoris · Mes opérations · Support.
+- **Menu réduit à 4 entrées, même structure dans les deux espaces** (demande Romain 30/10 : « ça fait
+  trop », « tout pareil partout ») : pro = Demandes autour de moi (/pro/carte) · Messages · Agenda ·
+  Mon entreprise (/pro/dashboard) ; particulier = Carte (/map) · Messages · Agenda · Mon profil
+  (/client/profil) ; + Support PING en bas. Tout le reste est rangé dans Mon entreprise / Mon profil en
+  rubriques identiques (`src/components/Hub.tsx` : HubGroup/HubRow/HUB_ICONS) — pro : Mon activité
+  (agenda et disponibilités, historique, litiges) · Prix et revenus (tarifs, revenus, opérations,
+  versements) · Mon entreprise (coordonnées, pièces, profil public) · Plus ; particulier : Mon activité
+  (demandes, réclamations, favoris, avis) · Paiements · Mon compte · Plus. Ne plus rajouter d'entrée au
+  menu latéral : ajouter une ligne Hub.
 
 ## Invariants métier — NE PAS enfreindre
 - **Mono-produit** : ménage, repassage, nettoyage (+ vitres en base). Rien d'autre.
