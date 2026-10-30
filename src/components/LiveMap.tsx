@@ -17,13 +17,7 @@ function userIcon() {
   })
 }
 
-const TRADE_ICON_PATHS: Record<string, string> = {
-  menage: '<path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z"/>',
-  repassage: '<path d="M4 20h16M6 20V9l6-5 6 5v11"/><path d="M10 20v-5h4v5"/>',
-  nettoyage: '<rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M12 4v16M4 12h16"/>',
-}
-
-// Prix sous le pin (façon Booking/Airbnb) : la décision se prend sur la
+// Prix au-dessus du pin (façon Booking/Airbnb) : la décision se prend sur la
 // carte, sans avoir à ouvrir chaque fiche pour comparer un tarif.
 function pinPriceLabel(p: { pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }) {
   if (p.pricing_type === 'devis') return 'Devis'
@@ -32,35 +26,32 @@ function pinPriceLabel(p: { pricing_type: string; base_price_cents: number; hour
   return null
 }
 
-function proIcon(p: { trade: string; is_active: boolean; pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }, i = 0) {
-  const iconPath = TRADE_ICON_PATHS[p.trade] || TRADE_ICON_PATHS.menage
-  const bg = p.is_active ? '#12B39C' : '#9CA3AF'
-  const price = pinPriceLabel(p)
-  const priceTag = price
-    ? `<div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#123644;color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:10.5px;padding:2px 7px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3)">${price}</div>`
+// Épingle commune à toutes les cartes : le prix (ou budget) dans une étiquette AU-DESSUS de la
+// goutte, jamais recouvert par elle, et une goutte pleine avec un point blanc au centre.
+const PIN_W = 84
+function pinIcon(color: string, label: string | null, i = 0) {
+  const tag = label
+    ? `<div style="background:#123644;color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3);border:1.5px solid #fff;margin-bottom:4px">${label}</div>`
     : ''
   return L.divIcon({
     className: '',
-    html: `<div style="position:relative;width:34px;height:34px;">${priceTag}<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;background:${bg};transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center;animation:pinDrop .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(i * 0.12).toFixed(2)}s">
-      <div style="transform:rotate(45deg);display:flex;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">${iconPath}</svg>
-      </div>
-    </div></div>`,
-    iconSize: [34, 44],
-    iconAnchor: [17, 34],
-  })
-}
-function reqIcon(i = 0) {
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;background:#F2A93B;transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center;animation:pinDrop .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(i * 0.12).toFixed(2)}s">
-      <div style="transform:rotate(45deg);display:flex;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    html: `<div style="width:${PIN_W}px;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;animation:pinIn .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(i * 0.12).toFixed(2)}s">
+      ${tag}
+      <div style="width:28px;height:28px;margin-bottom:9px;flex-shrink:0;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center">
+        <div style="width:9px;height:9px;border-radius:50%;background:#fff"></div>
       </div>
     </div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 34],
+    iconSize: [PIN_W, 62],
+    // Pointe de la goutte : centre horizontal, bas du conteneur.
+    iconAnchor: [PIN_W / 2, 57],
   })
+}
+
+function proIcon(p: { trade: string; is_active: boolean; pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }, i = 0) {
+  return pinIcon(p.is_active ? '#12B39C' : '#9CA3AF', pinPriceLabel(p), i)
+}
+function reqIcon(label: string | null | undefined, i = 0) {
+  return pinIcon('#F2A93B', label ?? null, i)
 }
 
 function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[]; pts?: { lat: number; lng: number }[]; recenterTick?: number }) {
@@ -79,7 +70,7 @@ function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: n
   return null
 }
 
-type ReqPin = { id: string; lat: number; lng: number }
+type ReqPin = { id: string; lat: number; lng: number; label?: string | null }
 export default function LiveMap({
   userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici',
 }: {
@@ -94,7 +85,7 @@ export default function LiveMap({
   return (
     <>
       <style>{`.leaflet-top.leaflet-left{top:158px}.leaflet-control-zoom{z-index:400 !important}
-        @keyframes pinDrop{0%{opacity:0;transform:translateY(-14px) rotate(-45deg) scale(.6)}100%{opacity:1;transform:translateY(0) rotate(-45deg) scale(1)}}
+        @keyframes pinIn{0%{opacity:0;transform:translateY(-14px) scale(.7)}100%{opacity:1;transform:translateY(0) scale(1)}}
         .you-tip{background:#fff;border:none;box-shadow:0 2px 8px rgba(18,54,68,.2);border-radius:999px;padding:3px 10px;font-family:Quicksand,sans-serif;font-weight:700;font-size:11px;color:#123644}
         .you-tip::before{display:none}`}</style>
       <MapContainer
@@ -125,7 +116,7 @@ export default function LiveMap({
           <Marker
             key={r.id}
             position={[r.lat, r.lng]}
-            icon={reqIcon(i)}
+            icon={reqIcon(r.label, i)}
             eventHandlers={{ click: () => onSelectRequest?.(r.id) }}
           />
         ))}

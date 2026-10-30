@@ -217,7 +217,7 @@ export default function ProCartePage() {
               userPos={userPos}
               pros={[]}
               onSelect={() => { }}
-              requests={reqs.map(r => ({ id: r.id, lat: r.lat, lng: r.lng }))}
+              requests={reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, label: b ? `${Math.round(b / 100)} €` : null } })}
               onSelectRequest={(id: string) => setSelectedId(id)}
               recenterTick={recenterTick}
               youLabel="Vous êtes ici"
