@@ -9,6 +9,7 @@ import { geocodeAddress } from '@/lib/geocode'
 import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
+import { EUR } from '@/lib/invoice-pdf'
 import { fetchSlots, dayKey, dayLabel, hhmm, type Slot } from '@/lib/slots'
 import { AVANCE_IMMEDIATE_ACTIVE, isEligible, partClientCents } from '@/lib/creditImpot'
 import { systemSender } from '@/lib/systemMessage'
@@ -191,8 +192,8 @@ function MissionForm() {
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', marginTop: 4 }}>
           {pricing
             ? hasOvertime
-              ? `${article?.name || TRADES[pro.trade] || pro.trade} — ${(pricing.base_price_cents/100).toFixed(2)} € (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${(pricing.hourly_rate_cents/100).toFixed(2)} €/h au-delà`
-              : `${article?.name || TRADES[pro.trade] || pro.trade} — ${[hasFlat ? (pricing.base_price_cents/100).toFixed(2)+' € forfait' : null, hasHourly ? (pricing.hourly_rate_cents/100).toFixed(2)+' €/h' : null].filter(Boolean).join(' · ')}`
+              ? `${article?.name || TRADES[pro.trade] || pro.trade} — ${EUR(pricing.base_price_cents)} (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${EUR(pricing.hourly_rate_cents)}/h au-delà`
+              : `${article?.name || TRADES[pro.trade] || pro.trade} — ${[hasFlat ? EUR(pricing.base_price_cents)+' forfait' : null, hasHourly ? EUR(pricing.hourly_rate_cents)+'/h' : null].filter(Boolean).join(' · ')}`
             : 'Chargement…'}
         </p>
       </div>
@@ -223,7 +224,7 @@ function MissionForm() {
             {(['forfait', 'horaire'] as const).map(t => (
               <button key={t} onClick={() => setMode(t)}
                 style={{ flex: 1, padding: '12px 0', borderRadius: 12, border: mode === t ? '2px solid #12B39C' : '2px solid #E7EDEB', background: mode === t ? 'rgba(18,179,156,.06)' : '#fff', fontWeight: 700, fontSize: 14, color: '#123644' }}>
-                {t === 'forfait' ? `Forfait — ${(pricing.base_price_cents/100).toFixed(2)} €` : `À l'heure — ${(pricing.hourly_rate_cents/100).toFixed(2)} €/h`}
+                {t === 'forfait' ? `Forfait — ${EUR(pricing.base_price_cents)}` : `À l'heure — ${EUR(pricing.hourly_rate_cents)}/h`}
               </button>
             ))}
           </div>
@@ -231,8 +232,8 @@ function MissionForm() {
 
         {hasOvertime && (
           <div style={{ padding: 13, borderRadius: 12, background: 'rgba(242,169,59,.1)', fontSize: 12.5, color: '#8a6520', marginBottom: 16, lineHeight: 1.5 }}>
-            Forfait de {(pricing.base_price_cents/100).toFixed(2)} € incluant {pricing.included_hours} h. Au-delà,
-            {' '}{(pricing.hourly_rate_cents/100).toFixed(2)} €/h supplémentaire — ajusté automatiquement au scan de sortie selon la durée réelle.
+            Forfait de {EUR(pricing.base_price_cents)} incluant {pricing.included_hours} h. Au-delà,
+            {' '}{EUR(pricing.hourly_rate_cents)}/h supplémentaire — ajusté automatiquement au scan de sortie selon la durée réelle.
           </div>
         )}
 
@@ -285,13 +286,13 @@ function MissionForm() {
         <div style={{ background: '#F3F6F5', borderRadius: 14, padding: 16, marginBottom: 22 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Total</span>
-            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{(totalTtc / 100).toFixed(2)} €</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{EUR(totalTtc)}</span>
           </div>
           <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Frais de service PING inclus</div>
           {AVANCE_IMMEDIATE_ACTIVE && pro?.sap_number && isEligible(pro?.trade) && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#0C8F7E' }}>{(partClientCents(totalTtc) / 100).toFixed(2)} €</span>
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#0C8F7E' }}>{EUR(partClientCents(totalTtc))}</span>
             </div>
           )}
         </div>

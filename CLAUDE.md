@@ -447,6 +447,20 @@ Corrigé (une cinquantaine de points), notamment :
   demandes auto-créées, faux sponsor retiré.
 - Pro : onboarding (services lisibles, pas de doublons, édition non bloquée, `is_active` conservé,
   géocodage), pièces (erreurs, 10 Mo, libellés déclaratifs), disponibilités (heure d'été).
+**Test réel sur la prod le même jour** (`scripts/e2e/parcours.mjs`, navigateur + comptes audit) : scénario
+complet OK (Contacter → devis 90 € → accord → RDV → QR → scans → 3 factures 90 € / 7,20 € / 15,30 €), et
+il a trouvé 4 défauts invisibles à la relecture :
+- **RLS `messages` refuse `sender_id` NULL** : AUCUN message système n'était enregistré depuis le début
+  (réservation confirmée, en route, arrivée, fin, annulation, litige). Règle : passer par
+  `systemSender()` (`src/lib/systemMessage.ts`, `kind='system'` au nom de l'auteur) et afficher via
+  `isSystemMessage()`. Ne plus jamais écrire `sender_id: null`.
+- **`@supabase/ssr` 0.3 = cookies `get/set/remove`** (pas `getAll/setAll`, ignoré en silence) : aucune
+  route serveur ni le middleware admin ne voyaient l'utilisateur. Corrigé dans `src/lib/supabase/server.ts`
+  et `src/middleware.ts`.
+- **`dispute_status` = `open` / `resolved` / `rejected`** (pas `investigating`/`closed`) : la requête de
+  l'agenda échouait en 400.
+- **`events` refuse l'insertion anonyme** : l'attribution marketing avant inscription (stickers, QR) est
+  perdue → migration `015_suivi_anonyme.sql` À APPLIQUER.
 **Restent ouverts** : parrainage jamais enregistré (lecture `profiles.referral_code` bloquée par RLS →
 RPC SECURITY DEFINER à créer) ; `/welcome` a été supprimé (commit 1181f62), la section marketing plus
 haut est périmée sur ce point ; vérifier que `requests_nearby` floute les coordonnées des demandes
