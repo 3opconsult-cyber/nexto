@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 import NavDrawer from '@/components/NavDrawer'
-import BottomTabBar from '@/components/BottomTabBar'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { writeMode } from '@/lib/mode'
@@ -250,7 +249,6 @@ export default function ProDashboard() {
 
       </div>
 
-      <BottomTabBar />
     </div>
   )
 }

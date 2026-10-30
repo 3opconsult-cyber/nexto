@@ -48,6 +48,9 @@ body {
    Le format telephone centre reste sur mobile (<1000px) et sur les pages hors-app. ===== */
 .phone-col { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F3F6F5; box-shadow: 0 0 40px rgba(18,54,68,.08); }
 .shell-main { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F3F6F5; box-shadow: 0 0 40px rgba(18,54,68,.08); }
+/* Place pour la barre d'onglets fixe (mobile uniquement : elle est masquée à partir de 1000 px). */
+.shell-main.with-tabbar { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 1000px) { .shell-main.with-tabbar { padding-bottom: 0; } }
 .desk-nav { display: none; }
 .detail-panel { display: none; }
 .dnav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 14.5px; color: #123644; cursor: pointer; }

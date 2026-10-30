@@ -41,12 +41,12 @@ export default function BottomTabBar() {
 
   return (
     <div className="app-bottom-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 480, display: 'flex', background: '#fff', borderTop: '1px solid #E7EDEB', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div style={{ width: '100%', maxWidth: 480, display: 'flex', background: '#fff', borderTop: '1px solid #DCE5E3', boxShadow: '0 -4px 16px rgba(18,54,68,.06)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {tabs.map(t => {
           const on = pathname === t.path || pathname.startsWith(t.path + '/')
           return (
             <button key={t.path} onClick={() => router.push(t.path)}
-              style={{ flex: 1, border: 'none', background: 'none', padding: '10px 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: on ? accent : '#9CA3AF', cursor: 'pointer' }}>
+              style={{ flex: 1, border: 'none', background: 'none', padding: '10px 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: on ? accent : '#4E6470', cursor: 'pointer' }}>
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{ICONS[t.icon]}</svg>
               <span style={{ fontSize: 10.5, fontWeight: 700 }}>{t.label}</span>
             </button>

@@ -2,15 +2,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
-import { fetchSlots, dayLabel, hhmm, type Slot } from '@/lib/slots'
+import { fetchSlotsBetween, slotEnd, dayLabel, hhmm, type Slot } from '@/lib/slots'
+import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
+import { addDays, startOfDay } from '@/components/calendar/dates'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 
 const UPCOMING = ['pending', 'matched', 'en_route', 'arrived']
 const DONE = ['completed', 'released']
-const WD = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
 // Date du rendez-vous quand elle existe (créneau réservé, migration 012), sinon repli sur la création.
@@ -30,7 +30,6 @@ export default function AgendaPage() {
   const [isPro, setIsPro] = useState<boolean | null>(null)
   const [uid, setUid] = useState('')
   const [mode, setMode] = useMode(isPro)
-  const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
   useEffect(() => {
     const supabase = createClient()
@@ -47,7 +46,8 @@ export default function AgendaPage() {
       const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
       setIsPro(!!pp)
       if (pp) {
-        const list = await fetchSlots(supabase, user.id, 14)
+        const from = addDays(startOfDay(new Date()), -7)
+        const list = await fetchSlotsBetween(supabase, user.id, from, addDays(from, 130))
         setFreeSlots(list ? list.filter(x => !x.transaction_id) : null)
       }
 
@@ -82,18 +82,6 @@ export default function AgendaPage() {
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
   const done = mine.filter(t => DONE.includes(t.status))
 
-  const y = month.getFullYear(), m = month.getMonth()
-  const today = new Date()
-  const eventsByDay = useMemo(() => {
-    const map: Record<number, number> = {}
-    mine.filter(t => t.price_confirmed || DONE.includes(t.status)).forEach(t => { const d = txDate(t); if (d.getFullYear() === y && d.getMonth() === m) map[d.getDate()] = (map[d.getDate()] || 0) + 1 })
-    return map
-  }, [mine, y, m])
-
-  const startWd = (new Date(y, m, 1).getDay() + 6) % 7
-  const daysInMonth = new Date(y, m + 1, 0).getDate()
-  const cells: (number | null)[] = [...Array(startWd).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
-
   // Comme la démo (v_agenda) : un statut qui dit où en est la mission, pas juste « à venir ».
   function badge(t: any): { label: string; bg: string; fg: string } {
     if (DONE.includes(t.status)) return { label: 'Effectuée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
@@ -102,6 +90,28 @@ export default function AgendaPage() {
     if (t.price_confirmed) return { label: 'Confirmé', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     return { label: 'Tarif à valider', bg: '#FFF7ED', fg: '#8a6520' }
   }
+
+  // Calendrier partagé (même composant que les disponibilités et la réservation) : les rendez-vous
+  // confirmés du mode courant, et en mode pro ses créneaux encore libres.
+  const events: CalEvent[] = useMemo(() => {
+    const appts: CalEvent[] = mine
+      .filter(t => t.scheduled_at && (t.price_confirmed || DONE.includes(t.status)) && t.status !== 'cancelled')
+      .map(t => {
+        const start = new Date(t.scheduled_at)
+        return {
+          id: t.id, start, end: new Date(start.getTime() + (t.duration_minutes || 120) * 60000), kind: 'busy' as const,
+          title: `${names[t.id] || 'Rendez-vous'}${t.requests?.category ? ' · ' + (TRAD[t.requests.category] || t.requests.category) : ''}`,
+          subtitle: badge(t).label,
+          onClick: () => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`),
+        }
+      })
+    const free: CalEvent[] = mode === 'pro' && freeSlots ? freeSlots.map(x => ({
+      id: x.id, start: new Date(x.starts_at), end: slotEnd(x), kind: 'free' as const, title: 'Disponible',
+      onClick: () => router.push('/pro/disponibilites'),
+    })) : []
+    return [...appts, ...free]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mine, names, freeSlots, mode])
 
   const card = (t: any) => (
     <div key={t.id} onClick={() => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)}
@@ -131,7 +141,7 @@ export default function AgendaPage() {
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>Agenda</span>
       </div>
 
-      <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
+      <div style={{ padding: 16, maxWidth: 980, margin: '0 auto' }}>
         {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} onSwitch={() => setMode(mode === 'pro' ? 'particulier' : 'pro')} />}
 
         {shownDisputes.map(d => (
@@ -153,27 +163,9 @@ export default function AgendaPage() {
         ))}
 
         {/* Calendrier */}
-        <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 18, padding: 16, marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-            <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', flex: 1, textTransform: 'capitalize' }}>
-              {month.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-            </b>
-            <div onClick={() => setMonth(new Date(y, m - 1, 1))} style={{ cursor: 'pointer', padding: '4px 10px', color: '#6E8592', fontSize: 18 }}>‹</div>
-            <div onClick={() => setMonth(new Date(y, m + 1, 1))} style={{ cursor: 'pointer', padding: '4px 10px', color: '#6E8592', fontSize: 18 }}>›</div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4, textAlign: 'center' }}>
-            {WD.map((d, i) => <div key={i} style={{ fontSize: 11, fontWeight: 700, color: '#9aa6a3', padding: '4px 0' }}>{d}</div>)}
-            {cells.map((d, i) => {
-              const isToday = d && y === today.getFullYear() && m === today.getMonth() && d === today.getDate()
-              const has = d ? eventsByDay[d] : 0
-              return (
-                <div key={i} style={{ aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, borderRadius: 10, fontSize: 13, fontWeight: 600, color: d ? '#123644' : 'transparent', background: isToday ? 'rgba(18,179,156,.12)' : 'transparent', border: isToday ? '1.5px solid #12B39C' : '1px solid transparent' }}>
-                  <span>{d || ''}</span>
-                  {has ? <span style={{ width: 5, height: 5, borderRadius: 999, background: '#F2A93B' }} /> : <span style={{ height: 5 }} />}
-                </div>
-              )
-            })}
-          </div>
+        <div style={{ marginBottom: 20 }}>
+          <Calendar events={events}
+            emptyHint={mode === 'pro' ? 'Aucun rendez-vous ni créneau pour l\u2019instant. Publiez vos disponibilités pour être réservé en un clic.' : 'Aucun rendez-vous pour l\u2019instant.'} />
         </div>
 
         {loading && <div style={{ textAlign: 'center', padding: 30, color: '#9CA3AF', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
@@ -194,7 +186,7 @@ export default function AgendaPage() {
                   <div style={{ flex: 1, fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: '.04em' }}>Mes créneaux libres</div>
                   <span onClick={() => router.push('/pro/disponibilites')} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer' }}>Gérer</span>
                 </div>
-                {freeSlots.length ? freeSlots.slice(0, 6).map(x => (
+                {freeSlots.filter(x => new Date(x.starts_at) > new Date()).length ? freeSlots.filter(x => new Date(x.starts_at) > new Date()).slice(0, 3).map(x => (
                   <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px dashed #B8C9C5', borderRadius: 13, padding: '10px 14px', marginBottom: 8 }}>
                     <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, color: '#6E8592', width: 46 }}>{hhmm(x.starts_at)}</b>
                     <span style={{ fontSize: 12, color: '#9aa6a3' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
@@ -210,7 +202,6 @@ export default function AgendaPage() {
           </>
         )}
       </div>
-      <BottomTabBar />
     </div>
   )
 }

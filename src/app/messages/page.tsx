@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
@@ -211,7 +210,6 @@ export default function MessagesPage() {
           ))
         })()}
       </div>
-      <BottomTabBar />
     </div>
   )
 }

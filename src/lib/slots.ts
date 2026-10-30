@@ -17,6 +17,22 @@ export async function fetchSlots(supabase: SupabaseClient, providerId: string, d
   return data as Slot[]
 }
 
+// Créneaux d'une période précise (navigation dans le calendrier).
+export async function fetchSlotsBetween(supabase: SupabaseClient, providerId: string, from: Date, to: Date): Promise<Slot[] | null> {
+  const { data, error } = await supabase.from('provider_slots')
+    .select('id, provider_id, starts_at, duration_minutes, transaction_id')
+    .eq('provider_id', providerId)
+    .gte('starts_at', from.toISOString())
+    .lt('starts_at', to.toISOString())
+    .order('starts_at')
+  if (error) return null
+  return data as Slot[]
+}
+
+export function slotEnd(s: Pick<Slot, 'starts_at' | 'duration_minutes'>) {
+  return new Date(new Date(s.starts_at).getTime() + s.duration_minutes * 60000)
+}
+
 export function dayKey(iso: string) {
   const d = new Date(iso)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`

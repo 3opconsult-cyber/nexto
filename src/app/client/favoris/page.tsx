@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
 
@@ -74,7 +73,6 @@ export default function FavorisPage() {
           )
         })}
       </div>
-      <BottomTabBar />
     </div>
   )
 }

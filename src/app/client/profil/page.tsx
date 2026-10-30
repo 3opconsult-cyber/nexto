@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
@@ -129,7 +128,6 @@ export default function ClientProfil() {
             <div onClick={logout} style={{ textAlign: 'center', marginTop: 16, color: 'var(--slate)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>Se déconnecter</div>
           </div>
         </section>
-        <BottomTabBar />
       </div></div></div>
 
       <Modal open={editing} onClose={() => setEditing(false)} title="Mes informations">

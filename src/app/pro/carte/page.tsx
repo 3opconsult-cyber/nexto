@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import NavDrawer from '@/components/NavDrawer'
-import BottomTabBar from '@/components/BottomTabBar'
 import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib/services'
 import { TRADES } from '@/lib/trades'
 import { createClient } from '@/lib/supabase/client'
@@ -296,7 +295,6 @@ export default function ProCartePage() {
           </div>
         </div>
       </div>
-      <BottomTabBar />
     </div>
   )
 }

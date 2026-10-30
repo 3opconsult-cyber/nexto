@@ -10,7 +10,8 @@ import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADES } from '@/lib/trades'
 import { EUR } from '@/lib/invoice-pdf'
-import { fetchSlots, dayKey, dayLabel, hhmm, type Slot } from '@/lib/slots'
+import { fetchSlots, dayLabel, hhmm, slotEnd, type Slot } from '@/lib/slots'
+import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
 import { AVANCE_IMMEDIATE_ACTIVE, isEligible, partClientCents } from '@/lib/creditImpot'
 import { systemSender } from '@/lib/systemMessage'
 
@@ -31,7 +32,6 @@ function MissionForm() {
   const [confirming, setConfirming] = useState(false)
   // Créneaux publiés par le pro (migration 012). null = fonctionnalité pas encore en base.
   const [slots, setSlots] = useState<Slot[] | null>(null)
-  const [slotDay, setSlotDay] = useState<string | null>(null)
   const [slotId, setSlotId] = useState<string | null>(null)
   // Taux pilotés depuis l'admin (app_settings) — valeurs par défaut le temps
   // du chargement, jamais utilisées pour le calcul final (submit() relit
@@ -51,12 +51,14 @@ function MissionForm() {
     fetchSlots(createClient(), proId, 21).then(list => {
       const free = list ? list.filter(x => !x.transaction_id) : null
       setSlots(free)
-      if (free?.length) setSlotDay(dayKey(free[0].starts_at))
     })
   }, [proId])
 
-  const slotDays = slots ? Array.from(new Set(slots.map(x => dayKey(x.starts_at)))) : []
-  const daySlots = slots && slotDay ? slots.filter(x => dayKey(x.starts_at) === slotDay) : []
+  // Même calendrier que l'agenda et les disponibilités du pro : le client ne voit que les créneaux libres.
+  const slotEvents: CalEvent[] = (slots ?? []).filter(x => new Date(x.starts_at) > new Date()).map(x => ({
+    id: x.id, start: new Date(x.starts_at), end: slotEnd(x), kind: 'free', title: 'Disponible',
+    selected: x.id === slotId, onClick: () => setSlotId(x.id),
+  }))
   const chosen = slots?.find(x => x.id === slotId) || null
   const needsSlot = !!slots && slots.length > 0
 
@@ -248,33 +250,13 @@ function MissionForm() {
         {needsSlot && (
           <div style={{ marginBottom: 18 }}>
             <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Choisir un créneau</span>
-            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', margin: '8px 0 10px', paddingBottom: 2 }}>
-              {slotDays.map(k => {
-                const first = slots!.find(x => dayKey(x.starts_at) === k)!.starts_at
-                const on = k === slotDay
-                return (
-                  <button key={k} onClick={() => { setSlotDay(k); setSlotId(null) }} style={{
-                    flexShrink: 0, width: 58, padding: '8px 0', borderRadius: 13, cursor: 'pointer',
-                    border: on ? '2px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? '#12B39C' : '#fff', color: on ? '#fff' : '#123644',
-                  }}>
-                    <div style={{ fontSize: 10.5, opacity: .8 }}>{dayLabel(first, { weekday: 'short' })}</div>
-                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17 }}>{dayLabel(first, { day: 'numeric' })}</div>
-                  </button>
-                )
-              })}
+            <div style={{ marginTop: 8 }}>
+              <Calendar events={slotEvents} views={['week', 'day']} defaultView="week"
+                initialDate={slotEvents[0]?.start} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
-              {daySlots.map(x => {
-                const on = x.id === slotId
-                return (
-                  <button key={x.id} onClick={() => setSlotId(x.id)} style={{
-                    padding: '11px 0', borderRadius: 11, cursor: 'pointer', fontWeight: 700, fontSize: 14,
-                    border: on ? '2px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? '#12B39C' : '#fff', color: on ? '#fff' : '#123644',
-                  }}>{hhmm(x.starts_at)}</button>
-                )
-              })}
+            <div style={{ fontSize: 11.5, color: chosen ? '#0C8F7E' : '#9CA3AF', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
+              {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
             </div>
-            <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8 }}>Disponibilités publiées par le prestataire.</div>
           </div>
         )}
 

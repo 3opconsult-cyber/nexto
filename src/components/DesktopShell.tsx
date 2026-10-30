@@ -3,10 +3,18 @@ import React from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { enforceForgottenSession } from '@/lib/auth-session'
+import BottomTabBar from '@/components/BottomTabBar'
 
 // Routes "app" qui reçoivent la navigation laterale desktop (sidebar).
 // Auth, presentation, hub, demo, admin : pas de sidebar.
 const APP_PREFIXES = ['/map', '/messages', '/agenda', '/documents', '/litiges', '/support', '/client', '/pro', '/mission']
+
+// Barre d'onglets mobile : sur toutes les pages principales (demande Romain 30/10 : « sur toutes les
+// pages ou pas du tout »), jamais dans un parcours qui a son propre bouton en bas (conversation,
+// réservation, scan, inscription, fiche publique d'un prestataire).
+const NO_TABBAR = /^\/(mission\/|pro\/onboarding|pro\/attente|auth\/)|^\/pro\/[0-9a-f-]{36}$/
+// Pages plein écran (carte) : la barre se pose sur la carte, sans marge en bas.
+const FULLSCREEN = /^\/(map|pro\/carte)$/
 
 // Même structure dans les deux espaces (comme Airbnb voyageur / hôte) : 4 entrées, le reste est rangé
 // dans « Mon profil » / « Mon entreprise » (rubriques Hub).
@@ -101,6 +109,8 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
   }
   const isApp = APP_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
   if (!isApp) return <div className="phone-col">{children}</div>
+  const tabbar = !NO_TABBAR.test(pathname)
+  const mainClass = `shell-main${tabbar && !FULLSCREEN.test(pathname) ? ' with-tabbar' : ''}`
 
   const go = (p: string) => router.push(p)
   const item = ([label, path]: [string, string]) => {
@@ -125,7 +135,8 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
           {onPro ? 'Revenir en mode particulier' : (hasPro === false ? 'Devenir prestataire' : 'Passer en mode pro')}
         </div>
       </aside>
-      <div className="shell-main">{children}</div>
+      <div className={mainClass}>{children}</div>
+      {tabbar && <BottomTabBar />}
     </div>
   )
 }

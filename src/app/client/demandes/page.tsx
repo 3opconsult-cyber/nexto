@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import BottomTabBar from '@/components/BottomTabBar'
 import NavDrawer from '@/components/NavDrawer'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
@@ -167,7 +166,6 @@ export default function MesDemandesPage() {
           </p>
         )}
       </div>
-      <BottomTabBar />
     </div>
   )
 }

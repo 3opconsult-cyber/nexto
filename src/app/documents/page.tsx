@@ -83,15 +83,39 @@ export default function DocumentsPage() {
         {loading ? (
           <p style={{ color: '#6E8592', fontSize: 13 }}>Chargement…</p>
         ) : shown.length === 0 ? (
-          <div style={{ background: '#fff', borderRadius: 16, padding: 24, textAlign: 'center' }}>
-            <Sign size={36} />
-            <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, marginTop: 12 }}>
-              Aucune opération pour l&apos;instant
-            </h2>
-            <p style={{ fontSize: 12.5, color: '#6E8592', marginTop: 6, lineHeight: 1.55 }}>
-              Reçus et factures sont émis à la fin de chaque mission, dès que le code de départ est scanné.
-            </p>
-          </div>
+          <>
+            <div style={{ background: '#fff', borderRadius: 16, padding: 18, textAlign: 'center', marginBottom: 14 }}>
+              <Sign size={32} />
+              <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, marginTop: 10 }}>
+                Aucune opération pour l&apos;instant
+              </h2>
+              <p style={{ fontSize: 12.5, color: '#6E8592', marginTop: 6, lineHeight: 1.55 }}>
+                Factures et reçus sont émis à la fin de chaque mission, dès que le code de fin est scanné.
+                Voici à quoi ressemblera cette page{mode === 'pro' ? ' côté prestataire' : ''} :
+              </p>
+            </div>
+            {/* Exemples fictifs, clairement marqués : jamais cliquables, jamais confondus avec de vraies pièces. */}
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#9A6712', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>Exemple fictif</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9, opacity: .75 }}>
+              {(mode === 'pro' ? [
+                { t: 'Facture · Ménage', n: 'FACT-2026-00012 · émise à Julie R.', a: 9000 },
+                { t: 'Relevé de commission PING · Ménage', n: 'PING-V-2026-00012 · reçu de PING', a: 1530 },
+                { t: 'Facture · Repassage', n: 'FACT-2026-00011 · émise à Marc D.', a: 6000 },
+              ] : [
+                { t: 'Facture · Ménage', n: 'FACT-2026-00012 · reçue de Sophie L.', a: 9000 },
+                { t: 'Frais de service PING · Ménage', n: 'PING-C-2026-00012 · reçu de PING', a: 720 },
+                { t: 'Facture · Repassage', n: 'FACT-2026-00011 · reçue de Karim B.', a: 6000 },
+              ]).map(x => (
+                <div key={x.n} style={{ background: '#fff', border: '1px dashed #DCE5E3', borderRadius: 14, padding: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>{x.t}</span>
+                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0C8F7E' }}>{EUR(x.a)}</span>
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>{x.n} · exemple</div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           Object.entries(groups).map(([mois, list]) => (
             <div key={mois} style={{ marginBottom: 18 }}>

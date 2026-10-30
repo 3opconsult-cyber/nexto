@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { fetchProDetail, openConversation } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
+import { pricingLabel, pricingShort } from '@/lib/servicePricing'
 
 export default function ProDetailPage() {
   const params = useParams()
@@ -74,17 +75,8 @@ export default function ProDetailPage() {
     router.push(`/mission/new?pro=${proId}${serviceId ? `&service=${serviceId}` : ''}`)
   }
 
-  function articlePriceLabel(a: { pricing_type?: string; base_price_cents: number; included_hours?: number | null; hourly_rate_cents?: number | null }) {
-    if (a.pricing_type === 'devis') return 'Sur devis'
-    const hasFlat = a.base_price_cents > 0
-    const hasHourly = a.hourly_rate_cents != null && a.hourly_rate_cents > 0
-    if (hasFlat && hasHourly && a.included_hours != null) {
-      return `${(a.base_price_cents / 100).toFixed(0)} € (${a.included_hours} h incluse${a.included_hours > 1 ? 's' : ''}), puis ${(a.hourly_rate_cents! / 100).toFixed(0)} €/h`
-    }
-    if (hasFlat) return `${(a.base_price_cents / 100).toFixed(0)} €`
-    if (hasHourly) return `${(a.hourly_rate_cents! / 100).toFixed(0)} €/h`
-    return null
-  }
+  // Libellés de prix communs à « Mes tarifs » et à l'inscription (src/lib/servicePricing.ts).
+  const articlePriceLabel = (a: Parameters<typeof pricingLabel>[0]) => pricingLabel(a)
 
   if (loading) return (
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -103,9 +95,7 @@ export default function ProDetailPage() {
   const dist = pro.distance_m != null ? (pro.distance_m < 1000 ? `${Math.round(pro.distance_m)} m` : `${(pro.distance_m / 1000).toFixed(1)} km`) : null
   const ratingTxt = pro.rating > 0 ? `${pro.rating.toFixed(1)} (${pro.reviews_count} avis)` : 'Nouveau'
   const isDevis = (pro as any).pricing_type === 'devis'
-  const priceLabel = isDevis ? 'Sur devis'
-    : pro.base_price_cents > 0 ? `${(pro.base_price_cents / 100).toFixed(0)} €`
-      : (pro.hourly_rate_cents ? `${(pro.hourly_rate_cents / 100).toFixed(0)} €/h` : null)
+  const priceLabel = pricingShort(pro as any)
   // Le métier principal (pro.trade) n'est jamais dans `services` (services.slice(1)
   // à l'onboarding) — l'oublier ici faisait disparaître la première prestation de la
   // fiche dès qu'un pro en avait déclaré d'autres. Chaque article de `services` a

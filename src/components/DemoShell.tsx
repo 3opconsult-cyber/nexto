@@ -272,15 +272,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
             </div>
           </section>
 
-          {/* ===================== TABBAR ===================== */}
-          <nav className="tabbar mobile-only" id="tabbar_part">
-            <div className={`tab ${view === 'v_map' ? 'on' : ''}`} data-t="map" onClick={() => go('v_map')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" /></svg>Carte
-            </div>
-            <div className="tab tping" data-t="ping" onClick={() => loadPros()}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="2.5" /><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 16.5a6.4 6.4 0 0 0 0-9" strokeLinecap="round" /><path d="M4.6 4.6a10.4 10.4 0 0 0 0 14.8M19.4 19.4a10.4 10.4 0 0 0 0-14.8" strokeLinecap="round" opacity=".55" /></svg>PING
-            </div>
-          </nav>
+          {/* Barre d'onglets : commune à toute l'app (DesktopShell → BottomTabBar). */}
 
         </div></div>
       </div>

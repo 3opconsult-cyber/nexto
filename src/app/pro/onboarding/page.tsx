@@ -7,6 +7,8 @@ import { searchCompany, guessLegalStatus, CompanyMatch } from '@/lib/legalLookup
 import { geocodeAddress } from '@/lib/geocode'
 import OnboardingStep from '@/components/OnboardingStep'
 import { TRADE_LIST as SERVICES, TRADES } from '@/lib/trades'
+import PricingEditor from '@/components/PricingEditor'
+import { type PricingDraft, draftFromColumns, emptyDraft, toColumns, validateDraft } from '@/lib/servicePricing'
 
 type Status = 'particulier' | 'professionnel' | null
 
@@ -14,10 +16,9 @@ export default function ProOnboarding() {
   const router = useRouter()
 
   const [services, setServices] = useState<string[]>([])
-  const [flatRate, setFlatRate] = useState('')
-  const [hourlyRate, setHourlyRate] = useState('')
-  const [includedHours, setIncludedHours] = useState('')
-  const [quoteMode, setQuoteMode] = useState(false)
+  // Un tarif par service (ménage, repassage, nettoyage) : chacun son mode et ses prix.
+  const [pricing, setPricing] = useState<Record<string, PricingDraft>>({})
+  const [showPricingErrors, setShowPricingErrors] = useState(false)
   const [status, setStatus] = useState<Status>(null)
   const [companyQuery, setCompanyQuery] = useState('')
   const [companyResults, setCompanyResults] = useState<CompanyMatch[]>([])
@@ -36,7 +37,7 @@ export default function ProOnboarding() {
   const [error, setError] = useState('')
   // Profil déjà existant (« Modifier ») : on garde la visibilité, le statut et l'entreprise déjà
   // renseignés, et on ne recrée pas les services déjà présents.
-  const [existing, setExisting] = useState<{ isActive: boolean; legalStatus: string | null; hasCompany: boolean; serviceNames: string[] } | null>(null)
+  const [existing, setExisting] = useState<{ isActive: boolean; legalStatus: string | null; hasCompany: boolean; serviceIds: Record<string, string> } | null>(null)
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -68,18 +69,27 @@ export default function ProOnboarding() {
       if (!user) return
       const { data: pp } = await supabase.from('provider_profiles').select('*').eq('id', user.id).single()
       if (pp) {
-        const { data: extra } = await supabase.from('services').select('name').eq('provider_id', user.id)
-        const names = (extra ?? []).map((s: any) => String(s.name || ''))
+        const { data: extra } = await supabase.from('services')
+          .select('id, name, pricing_type, base_price_cents, included_hours, hourly_rate_cents, price_cents')
+          .eq('provider_id', user.id)
         // Seuls les services du catalogue (ménage, repassage…) reviennent dans la liste des métiers ;
         // les prestations du catalogue « Mes tarifs » restent gérées sur leur propre page.
         const tradeKey = (n: string) => SERVICES.find(t => t.key === n.toLowerCase() || t.label.toLowerCase() === n.toLowerCase())?.key
-        const extraKeys = names.map(tradeKey).filter((k): k is string => !!k && k !== pp.trade)
-        if (pp.trade) setServices(Array.from(new Set([pp.trade, ...extraKeys])))
-        setExisting({ isActive: pp.is_active !== false, legalStatus: pp.legal_status ?? null, hasCompany: !!(pp.company_name || pp.siret), serviceNames: names.map(n => n.toLowerCase()) })
-        setFlatRate(pp.base_price_cents > 0 ? String(pp.base_price_cents / 100) : '')
-        setHourlyRate(pp.hourly_rate_cents != null ? String(pp.hourly_rate_cents / 100) : '')
-        setIncludedHours(pp.included_hours != null ? String(pp.included_hours) : '')
-        if (pp.pricing_type === 'devis') setQuoteMode(true)
+        const serviceIds: Record<string, string> = {}
+        const drafts: Record<string, PricingDraft> = {}
+        for (const row of (extra ?? []) as any[]) {
+          const k = tradeKey(String(row.name || ''))
+          if (!k || k === pp.trade || serviceIds[k]) continue
+          serviceIds[k] = row.id
+          drafts[k] = draftFromColumns(row)
+        }
+        if (pp.trade) {
+          setServices(Array.from(new Set([pp.trade, ...Object.keys(serviceIds)])))
+          // « Sur devis » n'est plus proposé pour un service principal : le prestataire choisit un des 3 modes.
+          drafts[pp.trade] = pp.pricing_type === 'devis' ? emptyDraft() : draftFromColumns(pp)
+        }
+        setPricing(drafts)
+        setExisting({ isActive: pp.is_active !== false, legalStatus: pp.legal_status ?? null, hasCompany: !!(pp.company_name || pp.siret), serviceIds })
         setStatus(pp.legal_status === 'particulier' ? 'particulier' : 'professionnel')
         setSiret(pp.siret || '')
         setSapNumber(pp.sap_number || '')
@@ -137,9 +147,7 @@ export default function ProOnboarding() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/signup?role=pro'); return }
 
-    const flatCents = Math.round(Number(flatRate || 0) * 100)
-    const hourlyCents = hourlyRate ? Math.round(Number(hourlyRate) * 100) : null
-    const includedHoursNum = (flatCents > 0 && includedHours) ? Number(includedHours) : null
+    const primaryCols = toColumns(pricing[services[0]] ?? emptyDraft())
     const legalStatus = status === 'particulier'
       ? 'particulier'
       : (selectedCompany ? guessLegalStatus(selectedCompany.natureJuridique)
@@ -162,10 +170,10 @@ export default function ProOnboarding() {
     const { error: dbError } = await supabase.from('provider_profiles').upsert({
       id: user.id,
       trade: services[0],
-      pricing_type: quoteMode ? 'devis' : (flatCents > 0 ? 'forfait' : 'horaire'),
-      base_price_cents: quoteMode ? 0 : flatCents,
-      hourly_rate_cents: quoteMode ? null : hourlyCents,
-      included_hours: quoteMode ? null : includedHoursNum,
+      pricing_type: primaryCols.pricing_type,
+      base_price_cents: primaryCols.base_price_cents,
+      hourly_rate_cents: primaryCols.hourly_rate_cents,
+      included_hours: primaryCols.included_hours,
       bio,
       // Première inscription : visible tout de suite. Modification : on garde le choix du prestataire.
       is_active: existing ? existing.isActive : true,
@@ -179,23 +187,18 @@ export default function ProOnboarding() {
     })
     if (dbError) { setError("L'enregistrement de votre profil a échoué. Vérifiez votre connexion et réessayez."); setLoading(false); return }
 
-    // Services supplémentaires : même format que « Mes tarifs » (libellé lisible, mode de prix),
-    // sans recréer ceux qui existent déjà quand on revient modifier son profil.
-    const already = existing?.serviceNames ?? []
-    const toAdd = services.slice(1).filter(k => !already.includes(k) && !already.includes((TRADES[k] || k).toLowerCase()))
-    if (toAdd.length) {
-      const { error: svcErr } = await supabase.from('services').insert(toAdd.map(k => ({
-        provider_id: user.id, name: TRADES[k] || k,
-        pricing_type: quoteMode ? 'devis' : (flatCents > 0 ? 'forfait' : 'horaire'),
-        base_price_cents: quoteMode ? 0 : flatCents,
-        included_hours: quoteMode ? null : includedHoursNum,
-        hourly_rate_cents: quoteMode ? null : hourlyCents,
-        price_cents: quoteMode ? 0 : (flatCents || hourlyCents || 0),
-      })))
-      if (svcErr) { setError("Votre profil est enregistré, mais vos services supplémentaires n'ont pas pu l'être. Ajoutez-les dans « Mes tarifs »."); setLoading(false); return }
+    // Services supplémentaires : chacun son propre tarif, une ligne par service dans « Mes tarifs ».
+    // Mise à jour si la ligne existe déjà (retour sur « Modifier »), création sinon — jamais de doublon.
+    const ids = existing?.serviceIds ?? {}
+    for (const k of services.slice(1)) {
+      const cols = toColumns(pricing[k] ?? emptyDraft())
+      const { error: svcErr } = ids[k]
+        ? await supabase.from('services').update(cols).eq('id', ids[k])
+        : await supabase.from('services').insert({ provider_id: user.id, name: TRADES[k] || k, ...cols })
+      if (svcErr) { setError(`Votre profil est enregistré, mais le tarif « ${TRADES[k] || k} » n'a pas pu l'être. Corrigez-le dans « Mes tarifs ».`); setLoading(false); return }
     }
 
-    trackEvent('pro_onboarding_completed', { services, flatCents, hourlyCents, status })
+    trackEvent('pro_onboarding_completed', { services, pricing: services.map(k => pricing[k]?.mode), status })
     router.push('/pro/onboarding/documents')
   }
 
@@ -227,39 +230,23 @@ export default function ProOnboarding() {
   }
 
   if (stepKey === 'tarif') {
+    const draftFor = (k: string) => pricing[k] ?? emptyDraft()
+    const allValid = services.every(k => !validateDraft(draftFor(k)))
     return (
       <OnboardingStep step={stepIndex} total={visibleSteps.length}
-        title="Votre tarif"
-        subtitle="Forfait, taux horaire, ou sur devis — trois façons de fixer votre prix."
-        onBack={back} onCta={next} ctaDisabled={!quoteMode && !flatRate && !hourlyRate}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <div onClick={() => setQuoteMode(false)} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 12, cursor: 'pointer', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 12.5, border: !quoteMode ? '1.5px solid #12B39C' : '1px solid #E7EDEB', background: !quoteMode ? 'rgba(18,179,156,.08)' : '#fff', color: !quoteMode ? '#0C8F7E' : '#6E8592' }}>Forfait / horaire</div>
-          <div onClick={() => { setQuoteMode(true); setFlatRate(''); setHourlyRate('') }} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRadius: 12, cursor: 'pointer', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 12.5, border: quoteMode ? '1.5px solid #12B39C' : '1px solid #E7EDEB', background: quoteMode ? 'rgba(18,179,156,.08)' : '#fff', color: quoteMode ? '#0C8F7E' : '#6E8592' }}>Sur devis</div>
-        </div>
-        {quoteMode ? (
-          <p style={{ fontSize: 12.5, color: '#6E8592', lineHeight: 1.5 }}>
-            Vous ne fixez pas de prix à l&apos;avance. Sur votre fiche, le client verra « Sur devis » et vous enverra une demande — vous chiffrez au cas par cas dans la conversation.
-          </p>
-        ) : (
-          <>
-            <label>
-              <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Forfait (€)</span>
-              <input type="number" min="0" step="0.5" value={flatRate} onChange={e => setFlatRate(e.target.value)} style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
-            </label>
-            {flatRate && (
-              <label>
-                <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>Durée incluse dans ce forfait (heures, facultatif)</span>
-                <input type="number" min="0" step="0.5" value={includedHours} onChange={e => setIncludedHours(e.target.value)} style={{ ...inputStyle, marginTop: 6, marginBottom: 16 }} />
-                <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: -10, marginBottom: 16 }}>
-                  Si renseigné, le taux horaire ci-dessous s&apos;applique uniquement au-delà de cette durée — pas en remplacement du forfait.
-                </p>
-              </label>
-            )}
-            <label>
-              <span style={{ fontSize: 12.5, color: '#6E8592', fontWeight: 600 }}>{flatRate && includedHours ? 'Taux horaire au-delà (€/h)' : 'Taux horaire (€/h)'}</span>
-              <input type="number" min="0" step="0.5" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
-            </label>
-          </>
+        title={services.length > 1 ? 'Vos tarifs' : 'Votre tarif'}
+        subtitle={services.length > 1 ? 'Un prix pour chaque service : forfait, à l’heure, ou forfait avec heures supplémentaires.' : 'Forfait, à l’heure, ou forfait avec heures supplémentaires.'}
+        onBack={back}
+        onCta={() => { if (allValid) { setShowPricingErrors(false); next() } else setShowPricingErrors(true) }}>
+        {services.map(k => (
+          <div key={k} style={{ border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 12, background: '#fff' }}>
+            <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644', marginBottom: 10 }}>{TRADES[k] || k}</div>
+            <PricingEditor value={draftFor(k)} showError={showPricingErrors}
+              onChange={d => setPricing(p => ({ ...p, [k]: d }))} />
+          </div>
+        ))}
+        {showPricingErrors && !allValid && (
+          <p style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600 }}>Complétez le tarif de chaque service pour continuer.</p>
         )}
       </OnboardingStep>
     )
