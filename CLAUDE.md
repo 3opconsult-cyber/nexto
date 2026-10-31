@@ -496,6 +496,36 @@ assombris (#4E6470 pour le secondaire).
 RPC SECURITY DEFINER à créer) ; `/welcome` a été supprimé (commit 1181f62), la section marketing plus
 haut est périmée sur ce point ; litige complet (vague 2) pas construit.
 
+## 31/10/2026 — litiges, adresses, annonces, vérifications réelles
+- **Tests rejouables** (Playwright sur la prod, comptes audit) : `scripts/e2e/separation-espaces.mjs` (26 OK),
+  `scripts/e2e/factures.mjs` (20 OK : PDF prestation + SA commission seulement, partage, relevé annuel),
+  `scripts/e2e/audit-scenarios.mjs` (tous les écrans), `scripts/tests/pare-feu/run.cjs` (17 OK, base simulée) ;
+  verrous base du pare-feu testés en SQL (rôle authenticated + annulation). `/parcours-navigable` = captures
+  réelles (`scripts/parcours/capture.mjs` → bucket public `parcours`, aucune redéploiement nécessaire).
+- **Factures PDF** : `pdfSafe()` (`src/lib/invoice-pdf.ts`) — les polices standard ne savent pas écrire l'espace
+  fine des milliers : TOUTE facture ≥ 1 000 € échouait. Taux affiché « 8 % » (`tauxLabel`).
+- **Modal** : `onClose` gardé dans une ref — sinon le focus revenait à la boîte à chaque lettre (impossible
+  d'écrire un avis).
+- **Litige = dossier dédié** `/litiges/[id]` (table `dispute_messages`, migration 021) comme le centre de
+  résolution d'Airbnb ; ouvrir un litige depuis la mission y renvoie. PING (admin, `is_admin()`) répond en
+  médiateur (`kind='mediation'`), clôt (résolu / non retenu), voit l'argent (migration 022 : lecture admin
+  de transactions, requests, payments, messages) : remboursement depuis le séquestre (`/api/payments/refund`)
+  ou, si déjà versé, retenue `commission_debts` sur les prochains versements. Versement bloqué tant qu'un
+  litige est ouvert (déjà dans `release`).
+- **Adresse d'intervention** (migration 023, `transactions.address_status`) : adresse du profil présélectionnée et
+  confirmée (`AddressChoice`) ; autre adresse → `a_valider`, le pro la voit sans numéro (`maskAddress`) et
+  accepte/refuse dans le chat (trigger : seul le pro valide, seul le client propose) ; adresse exacte au pro
+  seulement si `addressUsable()`.
+- **Annonce détaillée** (migration 024) : `/client/demandes/new` (heures, surface, kilos et types de linge,
+  fréquence 1-3×/semaine, foyer, CESU / paiement direct), `RequestDetails`, bouton « Déposer une demande »
+  sur la carte, Mes demandes et Mon profil. `DayTimePicker` remplace le sélecteur natif date/heure.
+- **Données fictives** : colonne `fictif` (migration 020) sur transactions et requests ; tout est fictif à ce
+  jour sauf 4 demandes d'un vrai utilisateur. Nettoyage : `supabase/a_coller/nettoyage_donnees_fictives.sql`.
+  Litiges fictifs chez Fictif 1 à 5 ; compte audit.pro = aussi acheteur (test de séparation).
+- **Supabase MCP** : toute requête contenant DROP/DELETE déclenche une confirmation humaine (Romain doit
+  cliquer « Envoyer ») — privilégier ADD COLUMN / CREATE OR REPLACE, prévenir Romain sinon.
+- Audit marketing : `docs/audit-marketing-2026-10-31.md`.
+
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
 Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /
