@@ -19,6 +19,7 @@ export default function LitigesPage() {
   const [userId, setUserId] = useState('')
   const [isPro, setIsPro] = useState<boolean | null>(null)
   const [mode, setMode] = useMode(isPro)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -28,6 +29,8 @@ export default function LitigesPage() {
       setUserId(user.id)
       const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
       setIsPro(!!pp)
+      const { data: adm } = await supabase.rpc('is_admin')
+      setIsAdmin(!!adm)
       const { data } = await supabase.from('disputes')
         .select('*, transactions(id, buyer_id, seller_id, requests(category))')
         .order('created_at', { ascending: false })
@@ -61,6 +64,17 @@ export default function LitigesPage() {
 
       <div style={{ padding: 16 }}>
         {!loading && isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'réclamations' : 'réclamation'} />}
+        {/* PING (admin) : tous les litiges ouverts de la plateforme, pour la médiation. */}
+        {!loading && isAdmin && rows.some((d: any) => d.status === 'open' && d.transactions?.buyer_id !== userId && d.transactions?.seller_id !== userId) && (
+          <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12, marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', marginBottom: 8 }}>Médiation PING · litiges ouverts sur la plateforme</div>
+            {rows.filter((d: any) => d.status === 'open' && d.transactions?.buyer_id !== userId && d.transactions?.seller_id !== userId).map((d: any) => (
+              <div key={d.id} onClick={() => router.push(`/litiges/${d.id}`)} style={{ padding: '8px 0', borderTop: '1px solid #E7EDEB', cursor: 'pointer', fontSize: 12.5, color: '#123644' }}>
+                {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} · {d.reason}
+              </div>
+            ))}
+          </div>
+        )}
         {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
@@ -79,8 +93,8 @@ export default function LitigesPage() {
               {list.map(d => {
                 const cat = d.transactions?.requests?.category
                 return (
-                  <div key={d.id} onClick={() => d.transactions?.id && router.push(`/mission/${d.transactions.id}/chat`)}
-                    style={{ background: '#FFFBF2', border: '1px solid #F5D9A6', borderRadius: 14, padding: 14, marginBottom: 10, cursor: d.transactions?.id ? 'pointer' : 'default' }}>
+                  <div key={d.id} onClick={() => router.push(`/litiges/${d.id}`)}
+                    style={{ background: '#FFFBF2', border: '1px solid #F5D9A6', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                       <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
                         {names[d.transactions?.id] || 'Mission'}

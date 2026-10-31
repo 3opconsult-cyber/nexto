@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, useRef, Fragment } from 'react'
+import DayTimePicker from '@/components/DayTimePicker'
 import { useParams, useRouter } from 'next/navigation'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
@@ -359,16 +360,18 @@ export default function ChatPage() {
     if (!reportReason.trim() || !userId) return
     const supabase = createClient()
     setReportError('')
-    const { error } = await supabase.from('disputes').insert({
+    const { data: dsp, error } = await supabase.from('disputes').insert({
       transaction_id: transactionId, opener_id: userId, reason: reportReason.trim(),
-    })
-    if (error) { setReportError('Le litige n\u2019a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.'); return }
+    }).select('id').single()
+    if (error || !dsp) { setReportError('Le litige n\u2019a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.'); return }
+    // Le litige a son propre fil (comme Airbnb) : le motif en est le premier message.
+    await supabase.from('dispute_messages').insert({ dispute_id: dsp.id, sender_id: userId, body: reportReason.trim(), kind: 'text' })
     await supabase.from('messages').insert({
       transaction_id: transactionId, ...(await systemSender(supabase)),
-      body: 'Litige ouvert sur cette mission.',
+      body: 'Litige ouvert sur cette mission : la discussion continue dans le dossier du litige.',
     })
-    setReportSent(true)
     setReportReason('')
+    router.push(`/litiges/${dsp.id}`)
   }
 
   // Lien vers une mission supprimée ou qui ne concerne pas ce compte : pas de chat vide trompeur.
@@ -451,8 +454,7 @@ export default function ChatPage() {
               <input value={rdvAddr} onChange={e => setRdvAddr(e.target.value)} autoComplete="street-address"
                 style={{ width: '100%', padding: '11px 13px', borderRadius: 11, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }} />
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Date et heure</label>
-              <input type="datetime-local" value={rdvAt} onChange={e => setRdvAt(e.target.value)}
-                style={{ width: '100%', padding: '11px 13px', borderRadius: 11, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }} />
+              <div style={{ marginTop: 6 }}><DayTimePicker value={rdvAt} onChange={setRdvAt} /></div><div style={{ height: 10 }} />
               {rdvError && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{rdvError}</p>}
               <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
                 {rdvSaving ? 'Enregistrement…' : 'Confirmer le rendez-vous'}

@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, Suspense } from 'react'
+import DayTimePicker from '@/components/DayTimePicker'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
@@ -208,11 +209,10 @@ function MissionForm() {
         </label>
 
         {!needsSlot && (
-          <label style={{ display: 'block', marginBottom: 16 }}>
+          <div style={{ marginBottom: 16 }}>
             <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Date et heure souhaitées</span>
-            <input type="datetime-local" value={wantedAt} onChange={e => setWantedAt(e.target.value)}
-              style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, boxSizing: 'border-box' }} />
-          </label>
+            <div style={{ marginTop: 6 }}><DayTimePicker value={wantedAt} onChange={setWantedAt} /></div>
+          </div>
         )}
 
         <label style={{ display: 'block', marginBottom: 16 }}>

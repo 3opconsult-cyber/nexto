@@ -18,7 +18,7 @@ const DISPUTE_STATUS: Record<string, string> = { open: 'En cours', resolved: 'RÃ
 
 type Review = { stars: number; quality_stars: number | null; service_stars: number | null; recommend: boolean | null; tip_cents: number | null; comment: string | null; created_at: string }
 type ClientReview = { stars: number; accuracy_stars: number | null; welcome_stars: number | null; recommend: boolean | null; tags: string[]; comment: string | null; is_public: boolean; rater_id: string }
-type Dispute = { reason: string; status: string; created_at: string; resolution: string | null }
+type Dispute = { id?: string; reason: string; status: string; created_at: string; resolution: string | null }
 
 const fmtDate = (iso: string) => new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
@@ -83,7 +83,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
       const [rv, cr, dp, inv] = await Promise.all([
         supabase.from('reviews').select('stars, quality_stars, service_stars, recommend, tip_cents, comment, created_at').eq('transaction_id', tx.id).maybeSingle(),
         supabase.from('client_reviews').select('stars, accuracy_stars, welcome_stars, recommend, tags, comment, is_public, rater_id').eq('transaction_id', tx.id).maybeSingle(),
-        supabase.from('disputes').select('reason, status, created_at, resolution').eq('transaction_id', tx.id).order('created_at', { ascending: false }).limit(1),
+        supabase.from('disputes').select('id, reason, status, created_at, resolution').eq('transaction_id', tx.id).order('created_at', { ascending: false }).limit(1),
         supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('transaction_id', tx.id),
       ])
       if (!alive) return
@@ -203,6 +203,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
               <Row label="Ouvert le" value={new Date(dispute.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} />
               <p style={{ fontSize: 12.5, color: '#3d5560', lineHeight: 1.5, margin: '4px 0 0' }}>{dispute.reason}</p>
               {dispute.resolution && <p style={{ fontSize: 12.5, color: C.navy, fontWeight: 600, lineHeight: 1.5, margin: '6px 0 0' }}>DÃ©cision : {dispute.resolution}</p>}
+              {dispute.id && <a href={`/litiges/${dispute.id}`} style={{ display: 'inline-block', marginTop: 8, fontSize: 13, fontWeight: 700, color: C.tealD }}>Ouvrir le dossier du litige</a>}
             </Section>
           )}
 
