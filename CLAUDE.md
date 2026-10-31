@@ -531,6 +531,23 @@ haut est périmée sur ce point ; litige complet (vague 2) pas construit.
   cliquer « Envoyer ») — privilégier ADD COLUMN / CREATE OR REPLACE, prévenir Romain sinon.
 - Audit marketing : `docs/audit-marketing-2026-10-31.md`.
 
+## Virement SEPA — 31/10/2026 (décision Romain : virement d'abord, séquestre en suspens)
+- Migration `025_virement_sepa.sql` (**appliquée le 31/10**, verrous testés en SQL avec annulation). PING n'encaisse
+  jamais le prix de la prestation pour autrui : le client vire la prestation **directement au prestataire** (réf.
+  FACT-/RECAP-), ses frais à PING (PING-C-) ; le pro vire sa commission à PING (PING-V-).
+- `transfer_payments` : une ligne par facture (trigger AFTER INSERT sur `invoices`), statuts a_payer / declare_paye /
+  recu / en_retard. RLS : payeur ou destinataire seulement (plus strict que `invoices`). Trigger de garde : seul le
+  statut bouge ; le payeur annonce, le pro note reçu SA prestation, PING (admin) note reçus frais et commissions.
+- IBAN du pro dans `provider_private` (`iban`, `iban_holder`, `bic`, contrôle de format) ; donné au seul acheteur
+  d'une mission terminée et facturée via RPC `payee_bank_details`. IBAN de PING : `app_settings` `ping_iban`,
+  `ping_bic`, `ping_beneficiary` (saisis sur `/admin/paiements`, VIDES à ce jour).
+- Relance : pg_cron `ping_virements_en_retard` (6 h 23 UTC) → `mark_overdue_transfers()` : échéance 15 j
+  (`transfer_due_days`) ou virement annoncé non reçu après 10 j → en_retard ; commission pro → dette
+  `commission_debts` + alerte + suspension au-delà du plafond. Notée reçue → dette soldée.
+- UI : `TransferCard` (page Facturation), encart dans `MissionRecap`, `/pro/paiements` (IBAN + commissions à
+  régler), rangée IBAN de Mon entreprise, `/admin/paiements` (rapprochement), `PaymentPendingModal` et mention de
+  `mission/new` / `PaymentCard`. Factures fictives existantes rattrapées en « reçu ». `src/lib/transfers.ts`.
+
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
 Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /

@@ -56,7 +56,7 @@ export default function ProAttente() {
           ? "Votre adresse n'a pas pu être placée sur la carte : les clients ne vous voient pas encore. Précisez-la pour apparaître près d'eux."
           : isActive
             ? "Vous êtes dès à présent visible sur la carte et joignable par les clients à proximité."
-            : "Votre profil est masqué : réactivez-le depuis Mon entreprise pour apparaître sur la carte."}
+            : "Votre annonce est en pause : remettez-la en ligne depuis Mon annonce pour apparaître sur la carte."}
       </p>
       {!placed && (
         <button onClick={() => router.push('/pro/onboarding')}
@@ -94,9 +94,13 @@ export default function ProAttente() {
           style={{ width: '100%', padding: 14, borderRadius: 999, border: '1.5px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.06)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
           Compléter mes documents
         </button>
-        <button onClick={() => router.push('/pro/dashboard')}
+        <button onClick={() => router.push('/pro/annonce')}
           style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
-          Accéder à mon tableau de bord →
+          Voir et lancer mon annonce
+        </button>
+        <button onClick={() => router.push('/pro/dashboard')}
+          style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: 'none', color: 'rgba(255,255,255,.85)', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'underline', cursor: 'pointer' }}>
+          Accéder à Mon entreprise
         </button>
       </div>
     </div>

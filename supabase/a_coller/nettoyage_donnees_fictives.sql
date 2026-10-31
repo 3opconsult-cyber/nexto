@@ -14,6 +14,7 @@ create temp table _fictives as select id from public.transactions where fictif;
 delete from public.client_reviews   where transaction_id in (select id from _fictives);
 delete from public.reviews          where transaction_id in (select id from _fictives);
 delete from public.disputes         where transaction_id in (select id from _fictives);
+delete from public.transfer_payments where transaction_id in (select id from _fictives);
 delete from public.invoices         where transaction_id in (select id from _fictives);
 delete from public.messages         where transaction_id in (select id from _fictives);
 delete from public.commission_debts where transaction_id in (select id from _fictives);

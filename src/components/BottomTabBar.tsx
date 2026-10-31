@@ -5,7 +5,7 @@ import { readMode, type Mode } from '@/lib/mode'
 
 // Barre d'onglets mobile. Suit le mode courant (particulier / prestataire, cf. lib/mode.ts) :
 // en mode pro, « Carte » mène aux demandes autour de soi (/pro/carte), jamais à la carte client.
-const PRO_ROUTE = /^\/pro\/(carte|dashboard|documents|onboarding|attente|tarifs|revenus|paiements|disponibilites)(\/|$)/
+const PRO_ROUTE = /^\/pro\/(carte|dashboard|documents|onboarding|attente|annonce|tarifs|revenus|paiements|disponibilites)(\/|$)/
 
 const ICONS: Record<string, JSX.Element> = {
   map: <><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" /></>,

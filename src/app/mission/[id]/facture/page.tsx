@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
 import NavDrawer from '@/components/NavDrawer'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
+import TransferCard from '@/components/TransferCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
          PLATFORM_PENDING, tauxLabel, type Invoice } from '@/lib/invoice-pdf'
 
@@ -34,12 +35,14 @@ export default function FacturePage() {
   const [isSeller, setIsSeller] = useState(false)
   const [isBuyer, setIsBuyer] = useState(false)
   const [reviewed, setReviewed] = useState(true)
+  const [userId, setUserId] = useState<string | null>(null)
   const [txInfo, setTxInfo] = useState<{ self: boolean; completed: boolean; missing?: boolean } | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
+      setUserId(user?.id ?? null)
       const { data: tx } = await supabase.from('transactions')
         .select('buyer_id, seller_id, status, completed_at').eq('id', params.id).single()
       const { data } = await supabase.from('invoices').select('*').eq('transaction_id', params.id)
@@ -302,6 +305,7 @@ export default function FacturePage() {
 
         {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B4402C', fontSize: 12.5 }}>{err}</p>}
         <div className="no-print" style={{ maxWidth: 620, margin: '0 auto' }}>
+          {userId && (isBuyer || isSeller) && <TransferCard transactionId={String(params.id)} userId={userId} />}
           <AvanceImmediateCard transactionId={String(params.id)} isSeller={isSeller} />
         </div>
 

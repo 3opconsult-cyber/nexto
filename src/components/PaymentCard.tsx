@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/client'
 import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
 
 // État du paiement d'une mission (séquestre), côté client et côté prestataire.
-// N'apparaît que si le paiement en ligne est actif : sinon rien ne change dans l'écran.
+// Paiement en ligne éteint (décision 31/10 : virement SEPA d'abord) : une simple mention du règlement
+// par virement après l'intervention, sur facture (TransferCard sur la page Facturation).
 const eur = (c: number) => (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 
 export default function PaymentCard({ transactionId }: { transactionId: string }) {
@@ -38,6 +39,11 @@ export default function PaymentCard({ transactionId }: { transactionId: string }
     } else load()
   }, [actif, transactionId, load])
 
+  if (actif === false) return (
+    <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.5, textAlign: 'center', margin: '10px 0 0' }}>
+      Paiement par virement au prestataire après l&apos;intervention, sur facture.
+    </p>
+  )
   if (!actif || !state) return null
 
   async function pay() {

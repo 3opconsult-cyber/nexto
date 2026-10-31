@@ -5,6 +5,7 @@ import { fetchProDetail, openConversation } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import { pricingLabel, pricingShort } from '@/lib/servicePricing'
+import ListingExtras from '@/components/ListingExtras'
 
 export default function ProDetailPage() {
   const params = useParams()
@@ -140,14 +141,18 @@ export default function ProDetailPage() {
         </div>
 
         <div style={{ padding: '14px 16px' }}>
+          {/* « Mon annonce » (migration 026) : accroche et points forts, puis photos et zone. */}
+          <ListingExtras part="top" headline={pro.headline} highlights={pro.highlights} />
           {pro.bio && (
             <>
               <div className="ping-h2" style={{ marginTop: 0 }}>À propos</div>
               <p className="ping-sub" style={{ marginBottom: 4 }}>{pro.bio}</p>
             </>
           )}
+          <ListingExtras part="gallery" gallery={pro.gallery_paths} />
+          <ListingExtras part="zone" radiusKm={pro.service_radius_km} />
 
-          <div className="ping-h2" style={pro.bio ? undefined : { marginTop: 0 }}>
+          <div className="ping-h2" style={pro.bio || pro.gallery_paths?.length ? undefined : { marginTop: 0 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="2.4"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
               Informations déclarées par le pro

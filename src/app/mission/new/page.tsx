@@ -314,7 +314,7 @@ function MissionForm() {
           {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
         <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>
-          {paymentsOn ? 'Vous serez dirigé vers le paiement sécurisé par carte.' : 'Vous verrez le détail avant de confirmer.'}
+          {paymentsOn ? 'Vous serez dirigé vers le paiement sécurisé par carte.' : 'Paiement par virement au prestataire après l’intervention, sur facture. Rien n’est débité à la réservation.'}
         </p>
 
         {/* Le paiement en ligne n'existe pas encore : on le dit AVANT que le

@@ -73,7 +73,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
     })
   }, [])
 
-  const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
+  const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente|annonce)(\/|$)/.test(pathname)
   const isClientRoute = pathname.startsWith('/client/profil')
 
   // Une seule fois par onglet : ferme une session dont l'utilisateur avait

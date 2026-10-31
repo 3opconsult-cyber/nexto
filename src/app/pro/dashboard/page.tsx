@@ -10,6 +10,7 @@ import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import { paymentsActive } from '@/lib/paymentsClient'
+import { listingChecks, listingScore, loadListingFacts } from '@/lib/listing'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
   particulier: 'Particulier',
@@ -46,10 +47,13 @@ export default function ProDashboard() {
   const [tab, setTab] = useState<'hub' | 'missions'>('hub')
   const [docs, setDocs] = useState<Record<string, { status: string }>>({})
   const [city, setCity] = useState('')
+  // « Mon annonce » : complétude (même calcul que /pro/annonce).
+  const [listingPct, setListingPct] = useState<number | null>(null)
   // Encart « Paiements et fiscalité » : état honnête de chaque élément, « bientôt » tant que le
   // paiement en ligne est éteint (rien n'est débité ni versé par PING aujourd'hui).
   const [payOn, setPayOn] = useState(false)
   const [taxId, setTaxId] = useState<string | null>(null)
+  const [hasIban, setHasIban] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -71,9 +75,11 @@ export default function ProDashboard() {
       const docMap: Record<string, { status: string }> = {}
       ;(docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
       setDocs(docMap)
+      loadListingFacts(supabase, user.id, pp).then(r => setListingPct(listingScore(listingChecks(r.facts)))).catch(() => {})
 
-      const { data: priv } = await supabase.from('provider_private').select('tax_id').eq('id', user.id).maybeSingle()
+      const { data: priv } = await supabase.from('provider_private').select('tax_id, iban').eq('id', user.id).maybeSingle()
       setTaxId(priv?.tax_id ?? null)
+      setHasIban(!!priv?.iban)
       paymentsActive().then(setPayOn)
 
       setLoading(false)
@@ -149,6 +155,33 @@ export default function ProDashboard() {
         {tab === 'hub' && pro && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <ProSuspensionBanner />
+            {/* « Mon annonce » en tête, comme l'annonce d'un hôte Airbnb : état et complétude. */}
+            {(() => {
+              const live = available && !pro.payments_suspended_at
+              return (
+                <button onClick={() => router.push('/pro/annonce')}
+                  style={{ textAlign: 'left', width: '100%', padding: 16, borderRadius: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    border: `1.5px solid ${live ? 'rgba(18,179,156,.45)' : '#E7EDEB'}`, background: live ? 'rgba(18,179,156,.06)' : '#fff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 11, height: 11, borderRadius: '50%', flexShrink: 0, background: pro.payments_suspended_at ? '#B91C1C' : live ? '#12B39C' : '#A5B3B9' }} />
+                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', flex: 1 }}>
+                      Mon annonce · {pro.payments_suspended_at ? 'Suspendue' : live ? 'En ligne' : 'En pause'}
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2.2"><path d="M9 6l6 6-6 6" /></svg>
+                  </div>
+                  {listingPct != null && (
+                    <>
+                      <div style={{ fontSize: 12.5, color: '#4E6470', margin: '8px 0 6px', fontWeight: 600 }}>
+                        Complète à {listingPct} %{listingPct < 100 ? ' · voir ce qui manque' : ''}
+                      </div>
+                      <div style={{ height: 6, borderRadius: 999, background: '#E3EBE9', overflow: 'hidden' }}>
+                        <div style={{ width: `${listingPct}%`, height: '100%', background: '#12B39C', borderRadius: 999 }} />
+                      </div>
+                    </>
+                  )}
+                </button>
+              )
+            })()}
             <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
               <div style={{
                 height: 110, position: 'relative',
@@ -212,8 +245,8 @@ export default function ProDashboard() {
             </HubGroup>
 
             <HubGroup title="Paiements et fiscalité">
-              <HubRow icon={HUB_ICONS.card} label="Compte de versement (RIB)" sub="Votre IBAN, enregistré chez le partenaire de paiement, jamais chez PING"
-                badge={payOn ? undefined : { text: 'bientôt', tone: 'todo' }} onClick={() => router.push('/pro/paiements')} />
+              <HubRow icon={HUB_ICONS.card} label="IBAN pour être payé par virement" sub="Vos clients vous paient par virement après l'intervention, sur facture"
+                badge={hasIban ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/paiements')} />
               <HubRow icon={HUB_ICONS.lock} label="Prélèvement SEPA des commissions" sub="Mandat de prélèvement automatique"
                 badge={!payOn ? { text: 'bientôt', tone: 'todo' }
                   : pro.sepa_mandate_status === 'active' ? { text: 'actif', tone: 'ok' }
@@ -233,7 +266,9 @@ export default function ProDashboard() {
               <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
                 badge={idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
                 onClick={() => router.push('/pro/documents')} />
-              <HubRow icon={HUB_ICONS.eye} label="Voir mon profil public" sub="Ce que voient les clients" onClick={() => router.push(`/pro/${pro.id}`)} />
+              <HubRow icon={HUB_ICONS.eye} label="Mon annonce" sub="Photos, présentation, points forts, mise en ligne"
+                badge={listingPct === 100 ? { text: 'complète', tone: 'ok' } : listingPct != null ? { text: `${listingPct} %`, tone: 'todo' } : undefined}
+                onClick={() => router.push('/pro/annonce')} />
             </HubGroup>
 
             <HubGroup title="Plus">

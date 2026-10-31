@@ -4,10 +4,16 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
+import { EUR } from '@/lib/invoice-pdf'
+import { TRANSFER_STATUS, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
 
-// Compte de versement du prestataire, chez le partenaire de paiement agréé (Stripe, Mangopay ou
-// Lemonway selon le réglage serveur). PING ne stocke jamais l'IBAN : il est transmis au partenaire.
-// Tant que le paiement en ligne n'est pas actif, la page le dit simplement (pas de fausse saisie).
+// Paiements du prestataire.
+// 1. Virement SEPA (décision Romain 31/10, migration 025) : le mode de paiement actuel. Le pro saisit
+//    l'IBAN sur lequel SES clients le paient directement (provider_private, lisible par lui et l'admin ;
+//    transmis au seul client d'une mission terminée, RPC payee_bank_details). Il voit les commissions
+//    PING qu'il doit régler par virement.
+// 2. Paiement en ligne sous séquestre (Stripe, Mangopay ou Lemonway) : en suspens. Une fois actif,
+//    l'IBAN de versement est transmis au partenaire agréé ; tant qu'il ne l'est pas, la page le dit.
 type State = {
   actif: boolean; prestataire?: string; saisieIban?: boolean
   compte?: { statut: 'pending' | 'active' | 'restricted'; message: string | null; iban: boolean } | null
@@ -34,6 +40,13 @@ export default function ProPaiementsPage() {
   const [mandat, setMandat] = useState<string>('none')
   const [debts, setDebts] = useState<Array<{ id: string; amount_cents: number; reason: string; created_at: string }>>([])
   const [f, setF] = useState({ titulaire: '', iban: '', bic: '', ligne: '', codePostal: '', ville: '', dateNaissance: '' })
+  // Virement SEPA
+  const [uid, setUid] = useState<string | null>(null)
+  const [bank, setBank] = useState({ holder: '', iban: '', bic: '' })
+  const [savedIban, setSavedIban] = useState<string | null>(null)
+  const [bankMsg, setBankMsg] = useState<{ ok: boolean; t: string } | null>(null)
+  const [bankBusy, setBankBusy] = useState(false)
+  const [owed, setOwed] = useState<Transfer[]>([])
 
   async function load() {
     const supabase = createClient()
@@ -45,6 +58,14 @@ export default function ProPaiementsPage() {
       ])
       if (pp?.sepa_mandate_status) setMandat(pp.sepa_mandate_status)
       setDebts(dd ?? [])
+      setUid(user.id)
+      const [{ data: priv }, { data: tr }] = await Promise.all([
+        supabase.from('provider_private').select('iban, iban_holder, bic').eq('id', user.id).maybeSingle(),
+        supabase.from('transfer_payments').select('*').eq('payer_id', user.id).eq('payer_role', 'pro').neq('status', 'recu').order('due_at'),
+      ])
+      setSavedIban(priv?.iban ?? null)
+      setBank({ holder: priv?.iban_holder ?? '', iban: priv?.iban ? formatIban(priv.iban) : '', bic: priv?.bic ?? '' })
+      setOwed((tr ?? []) as Transfer[])
     }
     const r = await fetch('/api/payments/onboarding')
     if (r.status === 401) { router.push('/auth/login'); return }
@@ -53,6 +74,22 @@ export default function ProPaiementsPage() {
   useEffect(() => {
     createClient().auth.getUser().then(({ data: { user } }) => { if (!user) router.push('/auth/login'); else load() })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function saveBank() {
+    setBankMsg(null)
+    const iban = cleanIban(bank.iban)
+    if (!bank.holder.trim()) { setBankMsg({ ok: false, t: 'Indiquez le titulaire du compte.' }); return }
+    if (!ibanValid(iban)) { setBankMsg({ ok: false, t: 'Cet IBAN n’est pas valide : vérifiez les caractères (27 pour un IBAN français, commençant par FR76).' }); return }
+    if (!bicValid(bank.bic)) { setBankMsg({ ok: false, t: 'Ce BIC n’est pas valide (8 ou 11 caractères), ou laissez-le vide.' }); return }
+    if (!uid) return
+    setBankBusy(true)
+    const { error: e } = await createClient().from('provider_private').upsert(
+      { id: uid, iban, iban_holder: bank.holder.trim(), bic: bank.bic.trim().toUpperCase() || null, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    setBankBusy(false)
+    if (e) { setBankMsg({ ok: false, t: 'Enregistrement impossible : ' + e.message }); return }
+    setSavedIban(iban); setBank(b => ({ ...b, iban: formatIban(iban) }))
+    setBankMsg({ ok: true, t: 'IBAN enregistré. Il sera indiqué à vos clients après chaque intervention terminée.' })
+  }
 
   async function submit() {
     setError('')
@@ -88,15 +125,59 @@ export default function ProPaiementsPage() {
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh' }}>
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
           <ProSuspensionBanner />
+
+          <div id="virement" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Être payé par virement</div>
+              <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, whiteSpace: 'nowrap', ...(savedIban ? { background: 'rgba(18,179,156,.12)', color: '#0C8F7E' } : { background: 'rgba(242,169,59,.15)', color: '#9A6712' }) }}>
+                {savedIban ? 'IBAN renseigné' : 'À renseigner'}
+              </span>
+            </div>
+            <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
+              Après l&apos;intervention, votre client vous règle le prix de la prestation par virement, directement sur ce
+              compte, avec le numéro de votre facture en référence. PING ne touche pas à cet argent. Votre IBAN n&apos;est
+              communiqué qu&apos;au client d&apos;une mission terminée, jamais sur votre fiche publique.
+            </p>
+            <label style={label}>Titulaire du compte</label>
+            <input style={input} value={bank.holder} onChange={e => setBank({ ...bank, holder: e.target.value })} autoComplete="name" />
+            <label style={label}>IBAN</label>
+            <input style={{ ...input, fontFamily: 'ui-monospace, monospace' }} value={bank.iban} placeholder="FR76 …" inputMode="text" autoComplete="off"
+              onChange={e => setBank({ ...bank, iban: formatIban(e.target.value) })} />
+            <label style={label}>BIC (facultatif)</label>
+            <input style={input} value={bank.bic} onChange={e => setBank({ ...bank, bic: e.target.value.toUpperCase().replace(/\s/g, '') })} />
+            {bankMsg && <p style={{ color: bankMsg.ok ? '#0C8F7E' : '#c0503a', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
+            <button onClick={saveBank} disabled={bankBusy} style={{ width: '100%', marginTop: 14, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: bankBusy ? 0.7 : 1 }}>
+              {bankBusy ? 'Enregistrement…' : savedIban ? 'Mettre à jour mon IBAN' : 'Enregistrer mon IBAN'}
+            </button>
+          </div>
+
+          {owed.length > 0 && (
+            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Commissions PING à régler par virement</div>
+              {owed.map(t => (
+                <a key={t.id} href={`/mission/${t.transaction_id}/facture`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 12.5, color: '#123644', padding: '9px 0', borderTop: '1px solid #E7EDEB', textDecoration: 'none' }}>
+                  <span>{t.reference} · avant le {new Date(t.due_at).toLocaleDateString('fr-FR')}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <b>{EUR(t.amount_cents)}</b>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: TRANSFER_STATUS[t.status].bg, color: TRANSFER_STATUS[t.status].fg }}>{TRANSFER_STATUS[t.status].t}</span>
+                  </span>
+                </a>
+              ))}
+              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>Touchez une ligne pour les coordonnées bancaires de PING et la référence à indiquer.</p>
+            </div>
+          )}
           {!st ? (
             <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
           ) : !st.actif ? (
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Paiement en ligne bientôt disponible</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Paiement en ligne sous séquestre</div>
+                <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, background: '#EEF2F1', color: '#4E6470', whiteSpace: 'nowrap' }}>Bientôt</span>
+              </div>
               <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
-                Le client paiera par carte à la réservation ; l&apos;argent restera bloqué chez un partenaire de paiement agréé
-                jusqu&apos;à 24 h après la fin de la mission, puis sera versé sur votre IBAN. Vous pouvez déjà déposer votre RIB
-                dans « Mes pièces » : il servira à ouvrir votre compte de versement.
+                Plus tard, le client pourra payer par carte à la réservation ; l&apos;argent restera bloqué chez un partenaire de
+                paiement agréé jusqu&apos;à 24 h après la fin de la mission, puis vous sera versé. En attendant, tout se règle
+                par virement, ci-dessus.
               </p>
             </div>
           ) : (
@@ -189,7 +270,7 @@ export default function ProPaiementsPage() {
                   <b>{(d.amount_cents / 100).toFixed(2).replace('.', ',')} €</b>
                 </div>
               ))}
-              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>Retenu automatiquement sur votre prochain versement.</p>
+              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>{st?.actif ? 'Retenu automatiquement sur votre prochain versement.' : 'À régler par virement à PING, avec la référence de la facture. Au-delà du plafond d’impayés, le compte est suspendu.'}</p>
             </div>
           )}
         </div>

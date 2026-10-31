@@ -2,16 +2,12 @@
 import Modal, { Cta } from './Modal'
 
 /**
- * Pop-up de paiement — l'encaissement n'est pas branché.
+ * Pop-up avant de confirmer une réservation, tant que le paiement en ligne est éteint.
  *
- * Stripe n'est pas en place : la réservation part avec le statut « pending » et
- * rien n'est débité. Demande de Romain (26/10) : plutôt que de dire seulement
- * « ce n'est pas encore actif », simuler clairement le mécanisme prévu
- * (prélèvement à la réservation → séquestre → déblocage au prestataire 24 h
- * après la prestation, sauf réclamation justifiée) pour que les testeurs
- * vivent le parcours complet — en disant explicitement que RIEN n'est
- * réellement débité dans cette version. Le jour où l'encaissement existe,
- * cet écran est remplacé par le vrai formulaire de paiement.
+ * Décision Romain du 31/10/2026 : on règle par virement SEPA dans un premier temps, le compte
+ * séquestre est en suspens. Rien n'est débité à la réservation : après l'intervention, la facture
+ * arrive dans « Mes opérations » avec les coordonnées bancaires, et le client vire la prestation
+ * directement au prestataire, ses frais de service à PING (migration 025, TransferCard).
  */
 export default function PaymentPendingModal({
   open, onClose, onConfirm, totalCents, proName, busy,
@@ -23,45 +19,36 @@ export default function PaymentPendingModal({
     (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 
   return (
-    <Modal open={open} onClose={onClose} title="Paiement — version de test">
+    <Modal open={open} onClose={onClose} title="Paiement par virement">
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10.5, fontWeight: 700,
-        textTransform: 'uppercase', letterSpacing: '.07em', color: '#9A6712',
-        background: 'rgba(242,169,59,.15)', padding: '5px 10px', borderRadius: 999,
+        textTransform: 'uppercase', letterSpacing: '.07em', color: '#0C8F7E',
+        background: 'rgba(18,179,156,.1)', padding: '5px 10px', borderRadius: 999,
       }}>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#F2A93B' }} />
-        Simulation — aucun prélèvement réel
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#12B39C' }} />
+        Rien n&apos;est débité à la réservation
       </div>
 
       <p style={{ fontSize: 14, lineHeight: 1.6, color: '#123644', marginTop: 14 }}>
-        Votre réservation va être enregistrée et <b>{proName}</b> sera prévenu. Dans la version
-        finale, le prélèvement a lieu le jour même, à la validation de la commande. Vous êtes ici
-        dans une version de test : <b>aucune somme ne sera réellement débitée</b>.
+        Votre réservation va être enregistrée et <b>{proName}</b> sera prévenu. Vous réglez
+        <b> après l&apos;intervention, sur facture, par virement</b> : le prix de la prestation
+        directement au prestataire, et vos frais de service à PING.
       </p>
 
       <div style={{ background: '#F3F6F5', borderRadius: 13, padding: 13, marginTop: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontSize: 12.5, color: '#4E6470' }}>Montant simulé de la réservation</span>
+          <span style={{ fontSize: 12.5, color: '#4E6470' }}>Montant prévu, frais compris</span>
           <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17 }}>{eur(totalCents)}</b>
         </div>
         <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 6, lineHeight: 1.5 }}>
-          Ce montant est celui prévu. Il sera recalculé sur la durée réellement passée,
-          relevée par les codes d'arrivée et de départ.
+          Recalculé sur la durée réellement passée, relevée par les codes d&apos;arrivée et de départ.
         </div>
       </div>
 
       <div style={{ marginTop: 14, fontSize: 12.5, color: '#4E6470', lineHeight: 1.6 }}>
-        Concrètement, dans la version finale : la somme est placée sur{' '}
-        <b style={{ color: '#123644' }}>un compte séquestre</b>, débloquée au prestataire
-        24 h après la fin de la prestation, sauf réclamation de votre part. Toute réclamation
-        nécessite un justificatif (photo) et un contact avec le service client — sans
-        réclamation, le prestataire est réglé dans son intégralité.
-      </div>
-
-      <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #F0F4F3',
-                    fontSize: 11.5, color: '#4E6470', lineHeight: 1.55 }}>
-        Rappel : dans cette version de test, rien de tout cela n'est réellement débité ni
-        versé — seule la simulation est enregistrée, pour tester le parcours.
+        Après le scan de fin, les factures et les coordonnées bancaires (IBAN, référence à indiquer)
+        apparaissent dans <b style={{ color: '#123644' }}>Mes opérations</b>. Un problème ? Signalez-le
+        avant de régler : la réclamation passe par PING.
       </div>
 
       <div style={{ height: 6 }} />

@@ -1,5 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { TRANSFER_STATUS, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
 
 // Séquestre — vue OpConsult. Règle antifraude : l'argent ne sort du séquestre que sur décision de PING
 // (versement automatique par la règle des 24 h, ou bouton ci-dessous ; remboursement par un admin).
@@ -23,8 +25,105 @@ const STATUT: Record<string, string> = { held: 'Bloqué (payé)', complement_due
 const KIND: Record<string, string> = {
   mandate_revoked: 'Mandat de prélèvement révoqué', mandate_failed: 'Mandat de prélèvement refusé', debit_rejected: 'Prélèvement de commission rejeté',
   chargeback: 'Opposition d’un client', suspended: 'Compte suspendu', unsuspended: 'Suspension levée',
+  transfer_overdue: 'Commission par virement en retard',
 }
 const btn = (bg: string) => ({ border: 'none', borderRadius: 999, padding: '7px 14px', background: bg, color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' })
+
+// Virement SEPA (migration 025) : mode de paiement actuel. PING note ici les virements reçus sur SON
+// compte (frais de service des clients, commissions des prestataires) ; les prestations sont réglées
+// directement au prestataire, qui les note reçues lui-même (visibles ici pour le suivi).
+type Row = Transfer & { invoices: { client_snapshot: { nom?: string } | null } | null }
+function Virements() {
+  const db = createClient()
+  const [rows, setRows] = useState<Row[] | null>(null)
+  const [all, setAll] = useState(false)
+  const [bank, setBank] = useState({ iban: '', bic: '', beneficiary: '' })
+  const [msg, setMsg] = useState('')
+  const [busy, setBusy] = useState('')
+
+  async function load() {
+    let q = db.from('transfer_payments').select('*, invoices!transfer_payments_invoice_id_fkey(client_snapshot)').order('due_at').limit(300)
+    if (!all) q = q.eq('payee', 'ping').neq('status', 'recu')
+    const { data, error } = await q
+    if (error) setMsg('Lecture impossible : ' + error.message)
+    setRows((data ?? []) as Row[])
+    const { data: st } = await db.from('app_settings').select('key, value').in('key', ['ping_iban', 'ping_bic', 'ping_beneficiary'])
+    const get = (k: string) => { const v = (st ?? []).find(r => r.key === k)?.value; return typeof v === 'string' ? v : '' }
+    setBank({ iban: formatIban(get('ping_iban')), bic: get('ping_bic'), beneficiary: get('ping_beneficiary') })
+  }
+  useEffect(() => { load() }, [all]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function saveBank() {
+    const iban = cleanIban(bank.iban)
+    if (iban && !ibanValid(iban)) { setMsg('IBAN de PING invalide.'); return }
+    if (!bicValid(bank.bic)) { setMsg('BIC invalide.'); return }
+    const now = new Date().toISOString()
+    const { error } = await db.from('app_settings').upsert([
+      { key: 'ping_iban', value: iban, updated_at: now },
+      { key: 'ping_bic', value: bank.bic.trim().toUpperCase(), updated_at: now },
+      { key: 'ping_beneficiary', value: bank.beneficiary.trim() || 'PING', updated_at: now },
+    ], { onConflict: 'key' })
+    setMsg(error ? 'Enregistrement impossible : ' + error.message : 'Coordonnées bancaires de PING enregistrées : elles s’affichent aux clients et aux prestataires sous leurs factures.')
+  }
+
+  async function received(t: Row) {
+    if (!confirm(`Noter reçu le virement ${t.reference} de ${eur(t.amount_cents)} ? Vérifiez d’abord qu’il apparaît sur le relevé du compte PING.`)) return
+    setBusy(t.id)
+    const { error } = await db.from('transfer_payments').update({ status: 'recu' }).eq('id', t.id)
+    setBusy(''); setMsg(error ? 'Échec : ' + error.message : `${t.reference} noté reçu.`)
+    load()
+  }
+
+  const inp = { border: '1.5px solid #E7EDEB', borderRadius: 9, padding: '8px 10px', fontSize: 12.5, fontFamily: 'Inter, sans-serif', width: '100%', boxSizing: 'border-box' as const }
+  const total = (rows ?? []).filter(t => t.payee === 'ping' && t.status !== 'recu').reduce((s, t) => s + t.amount_cents, 0)
+  return (
+    <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 16, marginBottom: 14 }}>
+      <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16 }}>Virements SEPA · mode de paiement actuel</b>
+      <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '4px 0 10px' }}>
+        Le client vire la prestation directement au prestataire, et ses frais de service à PING ; le prestataire vire sa commission à PING.
+        Notez « Reçu » ce qui arrive sur le compte PING. Une commission non reçue 15 jours après la facture passe « en retard » et devient une
+        dette (relance automatique chaque matin) ; au-delà du plafond d’impayés, le compte du prestataire est suspendu.
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+        <input style={inp} placeholder="Bénéficiaire (ex. OpConsult)" value={bank.beneficiary} onChange={e => setBank({ ...bank, beneficiary: e.target.value })} />
+        <input style={{ ...inp, fontFamily: 'ui-monospace, monospace' }} placeholder="IBAN de PING" value={bank.iban} onChange={e => setBank({ ...bank, iban: formatIban(e.target.value) })} />
+        <input style={inp} placeholder="BIC" value={bank.bic} onChange={e => setBank({ ...bank, bic: e.target.value.toUpperCase().replace(/\s/g, '') })} />
+      </div>
+      <button onClick={saveBank} style={{ ...btn('#123644'), marginTop: 8 }}>Enregistrer les coordonnées de PING</button>
+      {!cleanIban(bank.iban) && <p style={{ fontSize: 12, color: '#9A6712', margin: '8px 0 0' }}>IBAN de PING non renseigné : clients et prestataires voient « coordonnées communiquées prochainement ».</p>}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '16px 0 6px', flexWrap: 'wrap' }}>
+        <b style={{ fontSize: 13.5 }}>{all ? 'Tous les virements' : `À rapprocher sur le compte PING · ${eur(total)}`}</b>
+        <label style={{ fontSize: 12, color: '#4E6470', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input type="checkbox" checked={all} onChange={e => setAll(e.target.checked)} /> afficher aussi les reçus et les prestations
+        </label>
+      </div>
+      {msg && <p style={{ fontSize: 12, color: '#123644', background: '#F3F6F5', borderRadius: 8, padding: '7px 10px' }}>{msg}</p>}
+      {!rows ? <p style={{ fontSize: 12.5, color: '#4E6470' }}>Chargement…</p> : rows.length === 0 ? (
+        <p style={{ fontSize: 12.5, color: '#4E6470' }}>Rien à rapprocher.</p>
+      ) : rows.map(t => {
+        const s = TRANSFER_STATUS[t.status]
+        return (
+          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderTop: '1px solid #E7EDEB', fontSize: 12.5, flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 260px' }}>
+              <div style={{ fontWeight: 700 }}>{t.reference} · {eur(t.amount_cents)}</div>
+              <div style={{ color: '#4E6470', fontSize: 11.5 }}>
+                {t.invoices?.client_snapshot?.nom || 'Payeur'} · {t.payee === 'pro' ? 'prestation, au prestataire' : t.payer_role === 'client' ? 'frais de service client' : 'commission prestataire'}
+                {' · échéance '}{new Date(t.due_at).toLocaleDateString('fr-FR')}
+                {t.declared_at && ` · annoncé le ${new Date(t.declared_at).toLocaleDateString('fr-FR')}`}
+              </div>
+            </div>
+            <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: s.bg, color: s.fg }}>{s.t}</span>
+            {t.payee === 'ping' && t.status !== 'recu' && (
+              <button disabled={busy === t.id} onClick={() => received(t)} style={btn('#0C8F7E')}>Reçu</button>
+            )}
+            <a href={`/mission/${t.transaction_id}/facture`} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E' }}>Mission</a>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 export default function AdminPaiementsPage() {
   const [d, setD] = useState<Data | null>(null)
@@ -57,13 +156,23 @@ export default function AdminPaiementsPage() {
 
   const box = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 16, marginBottom: 14 }
   if (!d) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#4E6470' }}>Chargement…</div>
-  if (d.error) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#c0503a' }}>{d.error}</div>
+  if (d.error || !d.reglage) return (
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644', padding: '28px 16px 60px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 24, margin: '0 0 12px' }}>Paiements</h1>
+        <Virements />
+        <p style={{ fontSize: 12.5, color: '#c0503a' }}>Séquestre : {d.error || 'indisponible'}</p>
+      </div>
+    </div>
+  )
   const r = d.reglage
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644', padding: '28px 16px 60px' }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
-        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 24, margin: '0 0 4px' }}>Séquestre</h1>
+        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 24, margin: '0 0 12px' }}>Paiements</h1>
+        <Virements />
+        <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 18, margin: '18px 0 4px' }}>Séquestre (paiement en ligne, en suspens)</h2>
         <p style={{ fontSize: 13, color: '#4E6470', margin: '0 0 18px' }}>
           L&apos;argent des clients reste chez le partenaire de paiement. Il n&apos;en sort que sur décision de PING :
           {d.auto === false ? ' versement manuel, mission par mission (mode « manuel »).' : ` versement automatique ${d.delaiHeures ?? 24} h après la fin sans litige, ou manuel ci-dessous.`}

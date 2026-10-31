@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { CLIENT_TAGS } from './ClientReviewModal'
+import { TRANSFER_STATUS, TRANSFER_LABEL, transfersFor, type Transfer } from '@/lib/transfers'
 
 /**
  * Récapitulatif complet d'une mission, en tête du chat, côté client comme côté prestataire :
@@ -74,6 +75,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
   const [clientReview, setClientReview] = useState<ClientReview | null>(null)
   const [dispute, setDispute] = useState<Dispute | null>(null)
   const [invoiceCount, setInvoiceCount] = useState(0)
+  const [transfers, setTransfers] = useState<Transfer[]>([])
   const [open, setOpen] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -91,6 +93,9 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
       if (!cr.error) setClientReview(cr.data as ClientReview | null)
       if (!dp.error) setDispute((dp.data?.[0] as Dispute) ?? null)
       if (!inv.error) setInvoiceCount(inv.count ?? 0)
+      // Virements SEPA (migration 025) : seulement ceux que ce compte doit faire ou recevoir (RLS).
+      const tr = await transfersFor(supabase, tx.id)
+      if (alive) setTransfers(tr)
     })()
     return () => { alive = false }
   }, [tx.id, tx.status, tx.completed_at, refreshKey])
@@ -142,7 +147,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
             {isBuyer ? (
               <>
                 <Row label="Frais de service PING" value={EUR(tx.buyer_fee_cents)} />
-                <Row label="Total payé" value={EUR(tx.total_charged_cents)} strong />
+                <Row label="Total, frais compris" value={EUR(tx.total_charged_cents)} strong />
               </>
             ) : (
               <>
@@ -152,6 +157,20 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
             )}
             {review?.tip_cents ? <Row label={isBuyer ? 'Pourboire laissé' : 'Pourboire indiqué par le client'} value={EUR(review.tip_cents)} /> : null}
           </Section>
+
+          {transfers.length > 0 && (
+            <Section title="Règlement par virement">
+              {transfers.map(t => (
+                <Row key={t.id} label={`${TRANSFER_LABEL(t, t.payer_id === userId)} · ${EUR(t.amount_cents)}`}
+                  value={<span style={{ color: TRANSFER_STATUS[t.status].fg }}>{TRANSFER_STATUS[t.status].t}</span>} />
+              ))}
+              {transfers.some(t => t.status !== 'recu') && (
+                <a href={`/mission/${tx.id}/facture`} style={{ display: 'inline-block', marginTop: 4, fontSize: 13, fontWeight: 700, color: C.tealD }}>
+                  {transfers.some(t => t.payer_id === userId && t.status !== 'recu') ? 'Coordonnées bancaires et références' : 'Suivre le paiement'}
+                </a>
+              )}
+            </Section>
+          )}
 
           {done && (
             <Section title={isBuyer ? 'Votre avis sur le prestataire' : 'Avis du client'}>

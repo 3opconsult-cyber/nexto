@@ -57,7 +57,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     if (error) setAvailable(!next)
   }
 
-  const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente)(\/|$)/.test(pathname)
+  const isProRoute = /^\/pro\/(carte|dashboard|documents|onboarding|attente|annonce)(\/|$)/.test(pathname)
   const isClientRoute = pathname.startsWith('/client/profil')
   const [mode, setMode] = useState<'particulier' | 'pro'>('particulier')
   useEffect(() => {
