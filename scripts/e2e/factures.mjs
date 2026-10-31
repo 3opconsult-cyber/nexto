@@ -30,10 +30,16 @@ for (const [who, email, mode] of [['client', 'audit.client.claude@ping-demo.inva
   await p.goto(`${B}/mission/${MISSION}/facture`); await p.waitForTimeout(5000)
   const t = (await p.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ')
   check(/FACT-|RECAP-/.test(t), 'la page Facturation affiche la facture du prestataire')
-  check(who === 'client' ? /PING-C-/.test(t) && !/PING-V-/.test(t) : /PING-V-/.test(t) && !/PING-C-/.test(t), 'chacun ne voit que SA commission')
-  const btns = p.getByRole('button', { name: 'Télécharger le PDF' })
-  check(await btns.count() >= 2, `${await btns.count()} boutons de téléchargement (prestation + commission)`)
-  for (let i = 0; i < await btns.count(); i++) await grab(() => btns.nth(i).click(), `PDF n°${i + 1} depuis la mission`)
+  // Deux onglets : la prestation, puis SA commission (client : « Frais de service », pro : « Commission PING »).
+  await grab(() => p.getByRole('button', { name: 'Télécharger le PDF' }).first().click(), 'PDF de la prestation depuis la mission')
+  const tab = who === 'client' ? 'Frais de service' : 'Commission PING'
+  const other = who === 'client' ? 'Commission PING' : 'Frais de service'
+  check(await p.getByRole('button', { name: tab }).count() > 0, `onglet « ${tab} » présent`)
+  check(await p.getByRole('button', { name: other, exact: true }).count() === 0, `pas d’onglet « ${other} » (commission de l’autre partie)`)
+  await p.getByRole('button', { name: tab }).first().click(); await p.waitForTimeout(800)
+  const t2 = (await p.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ')
+  check(who === 'client' ? /PING-C-/.test(t2) && !/PING-V-/.test(t2) : /PING-V-/.test(t2) && !/PING-C-/.test(t2), 'chacun ne voit que SA commission')
+  await grab(() => p.getByRole('button', { name: 'Télécharger le PDF' }).first().click(), `PDF de « ${tab} »`)
 
   await p.goto(`${B}/documents`); await p.waitForTimeout(5000)
   await p.getByText('Partager', { exact: false }).first().click(); await p.waitForTimeout(800)
