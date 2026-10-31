@@ -22,6 +22,11 @@ export default function Modal({
   dismissable?: boolean
 }) {
   const box = useRef<HTMLDivElement>(null)
+  // onClose change à chaque rendu chez l'appelant : s'il était une dépendance de l'effet, chaque
+  // lettre tapée relançait l'effet, qui redonnait le focus à la boîte — impossible d'écrire un avis
+  // (constaté par Romain le 31/10). On le garde dans une ref, et on ne prend le focus qu'à l'ouverture.
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
 
   useEffect(() => {
     if (!open) return
@@ -29,11 +34,11 @@ export default function Modal({
     document.body.style.overflow = 'hidden'
     box.current?.focus()
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' && dismissable) onClose()
+      if (e.key === 'Escape' && dismissable) closeRef.current()
     }
     window.addEventListener('keydown', onKey)
     return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
-  }, [open, dismissable, onClose])
+  }, [open, dismissable])
 
   if (!open) return null
 
