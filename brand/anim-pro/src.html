@@ -1,0 +1,787 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Animation prestataires PING</title>
+<style>
+%%FONTS%%
+  /* Lecteur sombre, comme /animation : la scène 9:16 à gauche, le scénario à droite (empilé sur mobile). */
+  :root{
+    --night:#0B1F27; --panel:#12303B; --line:#1E4250;
+    --teal:#12B39C; --green:#2FD06E; --gold:#F2A93B;
+    --text:#EEF4F3; --soft:#9DB4BC;
+    --display:'Quicksand', 'Trebuchet MS', sans-serif;
+    --body:'Inter', system-ui, sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:var(--night); color:var(--text);}
+  body{font-family:var(--body); margin:0; padding-block:28px 40px;
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));}
+  .layout{max-width:1000px; margin:0 auto; display:grid; grid-template-columns:minmax(0, 420px) minmax(0,1fr); gap:36px; align-items:start;}
+  .player{display:flex; flex-direction:column; gap:12px; min-width:0;}
+  .stage{width:100%; aspect-ratio:9/16; max-height:80vh; margin:0 auto; border-radius:22px; overflow:hidden; background:#000; box-shadow:0 20px 60px rgba(0,0,0,.45);}
+  .stage svg{display:block; width:100%; height:100%;}
+  .controls{display:flex; align-items:center; gap:10px;}
+  .controls button{flex-shrink:0; border:none; border-radius:999px; background:var(--teal); color:#fff; font-family:var(--display); font-weight:700; font-size:13px; padding:9px 16px; cursor:pointer;}
+  .controls button.ghost{background:transparent; box-shadow:inset 0 0 0 1.5px var(--line); color:var(--text);}
+  .controls button:focus-visible, .scenes button:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .controls input[type=range]{flex:1; min-width:0; accent-color:var(--teal);}
+  .controls .time{font-size:12px; color:var(--soft); font-variant-numeric:tabular-nums; width:42px; text-align:right;}
+  .side{min-width:0;}
+  .side .eyebrow{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--teal);}
+  .side h1{font-family:var(--display); font-weight:700; font-size:26px; margin:6px 0 8px; text-wrap:balance;}
+  .side p.lead{font-size:13.5px; color:var(--soft); line-height:1.6; margin:0 0 20px; max-width:56ch;}
+  .scenes{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .scenes button{width:100%; display:grid; grid-template-columns:52px minmax(0,1fr); gap:12px; align-items:start; text-align:left; background:var(--panel); border:none; border-radius:14px; padding:12px 14px; color:var(--text); cursor:pointer; font:inherit;}
+  .scenes button.on{box-shadow:inset 0 0 0 1.5px var(--teal);}
+  .scenes .tc{font-size:11.5px; font-weight:600; color:var(--teal); font-variant-numeric:tabular-nums; padding-top:2px;}
+  .scenes b{display:block; font-family:var(--display); font-size:14.5px; margin-bottom:2px;}
+  .scenes span.d{font-size:12.5px; color:var(--soft); line-height:1.5;}
+  .foot{margin-top:18px; font-size:12px; color:var(--soft); line-height:1.6;}
+  .foot a{color:var(--teal); font-weight:600;}
+  @media (max-width:760px){ .layout{grid-template-columns:minmax(0,1fr);} .stage{max-height:none;} }
+  /* Mode capture vidéo : seule la scène, au pixel. */
+  body.rec{padding:0; background:#000;}
+  body.rec .layout{display:block; max-width:none;}
+  body.rec .side, body.rec .controls{display:none;}
+  body.rec .stage{width:540px; height:960px; max-height:none; border-radius:0; box-shadow:none;}
+</style>
+
+<div class="layout">
+  <div class="player">
+    <div class="stage">
+      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animation PING pour les prestataires : fixer ses prix, ouvrir ses disponibilités, passer disponible, recevoir des demandes, proposer un tarif, recevoir l'adresse, valider l'arrivée et la fin par QR code, facture automatique, avis croisés, Mon entreprise.">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#D4EFEA"/><stop offset=".65" stop-color="#E9F4F1"/><stop offset="1" stop-color="#F4EFE2"/>
+          </linearGradient>
+          <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#0B1F27" flood-opacity=".20"/></filter>
+          <filter id="shs" x="-20%" y="-30%" width="140%" height="180%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0B1F27" flood-opacity=".16"/></filter>
+          <filter id="glow" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="4"/></filter>
+          <clipPath id="scr"><rect x="12" y="12" width="316" height="656" rx="34"/></clipPath>
+          <clipPath id="mapc"><rect x="12" y="94" width="316" height="574"/></clipPath>
+          <clipPath id="vf"><rect x="70" y="128" width="200" height="200" rx="18"/></clipPath>
+        </defs>
+
+        <!-- fond : dégradé de la marque, échos radar très légers -->
+        <rect width="540" height="960" fill="url(#bg)"/>
+        <g id="bgRings" fill="none" stroke="#12B39C" stroke-width="2"></g>
+        <text x="270" y="912" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="#4E6470">PING · espace prestataire</text>
+
+        <!-- téléphone du prestataire -->
+        <g id="phone" transform="translate(100,980)" filter="url(#sh)">
+          <rect width="340" height="680" rx="46" fill="#0B1B22"/>
+          <rect x="12" y="12" width="316" height="656" rx="34" fill="#F6F9F8"/>
+          <g clip-path="url(#scr)">
+            <g id="sTarifs"></g>
+            <g id="sDispo"></g>
+            <g id="sMap"></g>
+            <g id="sChat"></g>
+            <g id="sQR">
+              <g id="qrScan">
+                <rect x="70" y="128" width="200" height="200" rx="18" fill="#123644"/>
+                <g clip-path="url(#vf)">
+                  <rect x="92" y="150" width="156" height="156" rx="8" fill="#fff"/>
+                  <g transform="translate(100,158) scale(%%QR_SCAN_SCALE%%)">%%QR_SCAN%%</g>
+                  <g id="scanline"><rect x="70" y="-3" width="200" height="6" fill="#2FD06E" filter="url(#glow)" opacity=".9"/><rect x="70" y="-1.2" width="200" height="2.4" fill="#2FD06E"/></g>
+                </g>
+                <g fill="none" stroke="#2FD06E" stroke-width="4.5" stroke-linecap="round">
+                  <path d="M82 158 V140 H100"/><path d="M240 140 H258 V158"/><path d="M258 298 V316 H240"/><path d="M100 316 H82 V298"/>
+                </g>
+                <text id="scanLabel" x="170" y="366" text-anchor="middle" font-family="Inter" font-weight="600" font-size="15" fill="#123644">Scan du code du client</text>
+                <text id="scanSub" x="170" y="388" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#4E6470">à votre arrivée</text>
+              </g>
+              <g id="qrOk">
+                <g id="okDisc" transform="translate(170,222)">
+                  <circle r="60" fill="#2FD06E"/>
+                  <path d="M-25 1 L-7 19 L27 -17" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <text id="okTitle" x="170" y="328" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="22" fill="#123644">Arrivée validée</text>
+                <text id="okTime" x="170" y="372" text-anchor="middle" font-family="Inter" font-weight="600" font-size="34" fill="#123644">9:02</text>
+                <text id="okSub" x="170" y="398" text-anchor="middle" font-family="Inter" font-size="13" fill="#4E6470">horodaté</text>
+              </g>
+              <g id="qrClock">
+                <circle cx="170" cy="228" r="72" fill="none" stroke="#E2ECEA" stroke-width="11"/>
+                <circle id="clockArc" cx="170" cy="228" r="72" fill="none" stroke="#12B39C" stroke-width="11" stroke-linecap="round" transform="rotate(-90 170 228)" stroke-dasharray="452.4" stroke-dashoffset="452.4"/>
+                <text id="clockTime" x="170" y="240" text-anchor="middle" font-family="Inter" font-weight="600" font-size="32" fill="#123644">9:02</text>
+                <text x="170" y="350" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="18" fill="#123644">Intervention en cours</text>
+                <text x="170" y="374" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#4E6470">le temps est compté entre les deux scans</text>
+              </g>
+            </g>
+            <g id="sInv"></g>
+            <g id="sRev"></g>
+            <g id="sEnt"></g>
+            <g id="taps"></g>
+          </g>
+          <rect x="128" y="22" width="84" height="12" rx="6" fill="#0B1B22"/>
+        </g>
+
+        <!-- légende -->
+        <g id="cap" filter="url(#sh)">
+          <rect x="26" y="40" width="488" height="112" rx="24" fill="#fff"/>
+        </g>
+        <g id="capText"></g>
+        <rect id="prog" x="0" y="0" width="0" height="6" fill="#12B39C"/>
+
+        <!-- ouverture -->
+        <g id="intro">
+          <rect width="540" height="960" fill="#123644"/>
+          <g id="introRings" fill="none" stroke="#12B39C"></g>
+          <g id="introDevice"></g>
+          <text id="in0" x="270" y="520" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" letter-spacing="2" fill="#2FD06E">PRESTATAIRES</text>
+          <text id="in1" x="270" y="574" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="36" fill="#fff">Ménage, repassage,</text>
+          <text id="in2" x="270" y="618" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="36" fill="#fff">nettoyage ?</text>
+          <text id="in3" x="270" y="666" text-anchor="middle" font-family="Inter" font-size="17" fill="#9DB4BC">Les clients sont juste à côté.</text>
+        </g>
+
+        <!-- fin -->
+        <g id="end" opacity="0">
+          <rect width="540" height="960" fill="#123644"/>
+          <g id="endRings" fill="none" stroke="#12B39C"></g>
+          <g id="endDevice"></g>
+          <g id="word"></g>
+          <text id="e1" x="270" y="606" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="40" fill="#fff">Devenir prestataire</text>
+          <text id="e2" x="270" y="646" text-anchor="middle" font-family="Inter" font-size="17" fill="#2FD06E">Inscription gratuite</text>
+          <g id="e3">
+            <rect x="98" y="690" width="108" height="108" rx="14" fill="#fff"/>
+            <g transform="translate(106,698) scale(%%QR_END_SCALE%%)">%%QR_END%%</g>
+            <text x="230" y="736" font-family="Inter" font-weight="600" font-size="19" fill="#fff">Scannez pour</text>
+            <text x="230" y="762" font-family="Inter" font-weight="600" font-size="19" fill="#fff">vous inscrire</text>
+          </g>
+          <text id="e4" x="270" y="858" text-anchor="middle" font-family="Inter" font-weight="600" font-size="18" fill="#fff">nexto-eta.vercel.app/pro/onboarding</text>
+        </g>
+      </svg>
+    </div>
+    <div class="controls">
+      <button id="play" type="button">Pause</button>
+      <button id="replay" class="ghost" type="button">Rejouer</button>
+      <input id="scrub" type="range" min="0" max="55" step="0.01" value="0" aria-label="Position dans l'animation">
+      <span class="time" id="tc">0,0 s</span>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="eyebrow">Animation prestataires · 55 s · 9:16</div>
+    <h1>Le parcours d'un prestataire PING</h1>
+    <p class="lead">Pour convaincre un pro de s'inscrire : ce qu'il fait dans l'app, du réglage de ses prix à la facture. Format vertical (TikTok, Reels, Stories), lisible sans le son. Un clic sur une scène pour y aller directement.</p>
+    <ol class="scenes" id="scenes"></ol>
+    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (carte des demandes, Mes tarifs, Mes disponibilités, chat, QR codes, facture, avis, Mon entreprise). Le paiement en ligne n'est pas montré comme actif : « Paiement par virement », paiement en ligne « bientôt ». Le QR final pointe vers /l/pqd, ce qui permet de mesurer le trafic venu de cette vidéo.</p>
+    <p class="foot"><a href="/brand/files/ping-animation-pro.mp4" target="_blank" rel="noopener">Fichier vidéo MP4 · 1080 × 1920 · 55 s</a> — à publier tel quel.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var DUR = 55;
+  var NS = 'http://www.w3.org/2000/svg';
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, attrs, parent){ var n = document.createElementNS(NS, tag); for (var k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; }
+  function clamp(x,a,b){ a = a==null?0:a; b = b==null?1:b; return Math.max(a, Math.min(b, x)); }
+  function seg(t,a,b){ return clamp((t-a)/(b-a)); }
+  function eio(x){ return x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2; }
+  function eout(x){ return 1-Math.pow(1-x,3); }
+  function back(x){ var c1=1.70158, c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
+  function win(t,a,b,f){ f = f||.3; return Math.min(seg(t,a,a+f), 1-seg(t,b-f,b)); }
+  function show(n, o){ n.setAttribute('opacity', clamp(o).toFixed(3)); }
+  function tr(n, s){ n.setAttribute('transform', s); }
+  function mod(a,n){ return ((a%n)+n)%n; }
+  function hhmm(m){ var h = Math.floor(m/60), mm = Math.round(m%60); if (mm===60){h++;mm=0;} return h+':'+(mm<10?'0':'')+mm; }
+  // scale autour d'un point
+  function sc(n, k, cx, cy){ tr(n, 'translate('+cx+','+cy+') scale('+k.toFixed(3)+') translate('+(-cx)+','+(-cy)+')'); }
+
+  // ---------- texte, cartes, pictogrammes ----------
+  function tx(p, x, y, s, o){
+    o = o || {};
+    var n = el('text', {x:x, y:y, 'font-family': o.f === 'Q' ? 'Quicksand' : 'Inter', 'font-weight': o.w || (o.f === 'Q' ? 700 : 400),
+      'font-size': o.s || 13, fill: o.c || '#123644'}, p);
+    if (o.a) n.setAttribute('text-anchor', o.a);
+    if (o.it) n.setAttribute('font-style', 'italic');
+    if (o.ls) n.setAttribute('letter-spacing', o.ls);
+    n.textContent = s; return n;
+  }
+  function box(p, x, y, w, h, o){ o = o || {};
+    var a = {x:x, y:y, width:w, height:h, rx: o.rx == null ? 16 : o.rx, fill: o.fill || '#fff'};
+    if (o.stroke !== 'none') { a.stroke = o.stroke || '#E2ECEA'; a['stroke-width'] = o.sw || 1.2; }
+    if (o.dash) a['stroke-dasharray'] = o.dash;
+    if (o.sh) a.filter = 'url(#shs)';
+    return el('rect', a, p);
+  }
+  // Pictogrammes au trait sur une grille 24 × 24 (pas d'emoji : règle de Romain).
+  var IC = {
+    check: 'M5 12.5l4.5 4.5L19 7.5',
+    chev: 'M9.5 6l6 6-6 6',
+    lock: 'M6 11h12v10H6z|M8.5 11V8a3.5 3.5 0 0 1 7 0v3',
+    pin: 'M12 21c-3-4-7-7.5-7-11.5a7 7 0 0 1 14 0c0 4-4 7.5-7 11.5z|M12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5',
+    cal: 'M4 6h16v14H4z|M4 10h16|M8 3v5M16 3v5',
+    bell: 'M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z|M10 20.5a2 2 0 0 0 4 0',
+    chart: 'M4 19h16|M7 16v-5|M12 16V7|M17 16v-8',
+    idc: 'M3 6h18v12H3z|M7 14.5c.6-1.4 1.8-2 3-2s2.4.6 3 2|M10 11a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6|M15 10h3M15 13h2',
+    bank: 'M3 9l9-5 9 5|M5 10v7M9.5 10v7M14.5 10v7M19 10v7|M3 20h18',
+    tag: 'M3 12V4h8l10 10-8 8z|M7.5 8.5h.01',
+    ruler: 'M4 4l16 16|M4 4v16h16',
+    euro: 'M17 6.5a6.5 6.5 0 1 0 0 11|M4 10.5h9M4 13.5h9',
+    clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18|M12 7v5l3 2',
+    doc: 'M6 2.5h8.5l4 4v15H6z|M14.5 2.5v4h4|M9 12h6.5M9 15.5h4.5',
+    plus: 'M12 5v14M5 12h14'
+  };
+  function icon(p, name, cx, cy, s, c, w){
+    s = s || 1; var g = el('g', {transform:'translate('+(cx-12*s)+','+(cy-12*s)+') scale('+s+')', fill:'none', stroke: c || '#0C8F7E',
+      'stroke-width': w || 1.9, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, p);
+    IC[name].split('|').forEach(function(d){ el('path', {d:d}, g); });
+    return g;
+  }
+  var STAR = 'M0 -13 L3.8 -4.2 L13 -4 L5.8 2 L8 11.5 L0 6.2 L-8 11.5 L-5.8 2 L-13 -4 L-3.8 -4.2 Z';
+  function starRow(p, cx, cy, k){
+    var out = [];
+    for (var i = 0; i < 5; i++){ var g = el('g', {transform:'translate('+(cx + (i-2)*32)+','+cy+') scale('+k+')'}, p);
+      el('path', {d:STAR, fill:'#E2ECEA'}, g); out.push(el('path', {d:STAR, fill:'#F2A93B'}, g)); }
+    return out;
+  }
+  function header(p, title, sub){
+    el('rect', {x:12, y:12, width:316, height:82, fill:'#fff'}, p);
+    el('rect', {x:12, y:93, width:316, height:1, fill:'#E2ECEA'}, p);
+    tx(p, 40, 36, '9:41', {s:11.5, w:600});
+    tx(p, 170, sub ? 64 : 70, title, {f:'Q', s:18, a:'middle'});
+    if (sub) tx(p, 170, 83, sub, {s:11.5, c:'#4E6470', a:'middle'});
+  }
+  function chip(p, x, y, label, o){
+    o = o || {}; var w = o.w || (label.length * 6.4 + 20);
+    var g = el('g', {}, p);
+    var r = el('rect', {x:x, y:y, width:w, height: o.h || 22, rx: (o.h || 22)/2, fill: o.fill || '#DDF5F0'}, g);
+    var t = tx(g, x + w/2, y + (o.h || 22)/2 + 4, label, {s: o.s || 11, w:600, c: o.c || '#0C8F7E', a:'middle'});
+    g.r = r; g.t = t; g.w = w; return g;
+  }
+  function btn(p, cx, cy, w, h, label, o){
+    o = o || {}; var g = el('g', {}, p);
+    var r = el('rect', {x:cx - w/2, y:cy - h/2, width:w, height:h, rx:h/2, fill: o.fill || '#12B39C'}, g);
+    if (o.stroke) { r.setAttribute('stroke', o.stroke); r.setAttribute('stroke-width', 1.6); }
+    var t = tx(g, cx, cy + 5, label, {f:'Q', s: o.s || 15, c: o.c || '#fff', a:'middle'});
+    g.r = r; g.t = t; return g;
+  }
+
+  // ---------- 1. Mes tarifs ----------
+  var S = {};
+  (function(){
+    var g = $('sTarifs'); header(g, 'Mes tarifs', 'Vos prestations et vos prix');
+    var ROWS = [
+      ['Ménage', 'Forfait', '60 €', '2 h 30 incluses'],
+      ['Repassage', "À l'heure", '22 €/h', 'Facturé à la durée réelle'],
+      ['Grand ménage', 'Forfait + heures sup.', '90 €', '3 h incluses, puis 25 €/h']
+    ];
+    S.tRows = ROWS.map(function(r, i){
+      var y = 110 + i*112, c = el('g', {}, g);
+      box(c, 24, y, 292, 100, {sh:true, stroke:'none'});
+      tx(c, 42, y + 30, r[0], {f:'Q', s:17});
+      tx(c, 298, y + 32, r[2], {f:'Q', s:22, a:'end'});
+      var ch = chip(c, 42, y + 44, r[1]);
+      tx(c, 42, y + 86, r[3], {s:12.5, c:'#4E6470'});
+      c.chip = ch; return c;
+    });
+    var add = el('g', {}, g);
+    box(add, 24, 448, 292, 52, {dash:'5 5', stroke:'#9FC9C1', sw:1.5, fill:'none'});
+    icon(add, 'plus', 92, 474, .8, '#0C8F7E', 2.4);
+    tx(add, 106, 479, 'Ajouter une prestation', {s:14, w:600, c:'#0C8F7E'});
+    S.tAdd = add;
+    var note = el('g', {}, g);
+    tx(note, 170, 540, 'Le prix est fixé ici, avant la mission :', {s:12, c:'#4E6470', a:'middle'});
+    tx(note, 170, 558, 'pas de renégociation ensuite.', {s:12, c:'#4E6470', a:'middle'});
+    S.tNote = note;
+  })();
+
+  // ---------- 2. Mes disponibilités ----------
+  (function(){
+    var g = $('sDispo'); header(g, 'Mes disponibilités', 'novembre 2026');
+    ['L','M','M','J','V','S','D'].forEach(function(d, i){ tx(g, 24 + i*42 + 21, 118, d, {s:11.5, w:600, c:'#4E6470', a:'middle'}); });
+    // Novembre 2026 : le 1er est un dimanche (semaine du lundi). Aujourd'hui : mercredi 4.
+    S.days = {};
+    for (var d = 1; d <= 30; d++){
+      var idx = d + 5, col = idx % 7, row = Math.floor(idx / 7);
+      var x = 24 + col*42 + 2, y = 130 + row*52, c = el('g', {}, g);
+      var past = d < 4;
+      var r = el('rect', {x:x, y:y, width:38, height:46, rx:11, fill:'#fff', stroke:'#E2ECEA', 'stroke-width':1.1}, c);
+      var t = tx(c, x + 19, y + 24, String(d), {f:'Q', s:15, c: past ? '#B8C4C9' : '#123644', a:'middle'});
+      var dot = el('circle', {cx:x + 19, cy:y + 36, r:3.2, fill:'#12B39C', opacity:0}, c);
+      if (d === 4) { r.setAttribute('stroke', '#123644'); r.setAttribute('stroke-width', 1.6); }
+      S.days[d] = {g:c, r:r, t:t, dot:dot, x:x, y:y};
+    }
+    // récapitulatif après enregistrement
+    var sum = el('g', {}, g); S.dSum = sum;
+    box(sum, 24, 462, 292, 74, {rx:16, sh:true, stroke:'none'});
+    el('circle', {cx:52, cy:499, r:17, fill:'#DDF5F0'}, sum);
+    icon(sum, 'cal', 52, 499, .72, '#0C8F7E', 2.1);
+    tx(sum, 80, 493, '4 jeudis ouverts', {s:13.5, w:700});
+    tx(sum, 80, 512, '8 h – 12 h et 14 h – 16 h', {s:12, c:'#4E6470'});
+    tx(g, 170, 572, 'Les clients réservent dans vos créneaux.', {s:12, c:'#4E6470', a:'middle'}).id = 'dHint';
+    // feuille du jour touché
+    var sh = el('g', {}, g); S.sheet = sh;
+    el('rect', {x:12, y:296, width:316, height:400, rx:26, fill:'#fff', filter:'url(#sh)'}, sh);
+    el('rect', {x:150, y:306, width:40, height:5, rx:2.5, fill:'#DCE5E3'}, sh);
+    tx(sh, 32, 340, 'jeudi 5 novembre', {f:'Q', s:18});
+    S.full = el('g', {}, sh);
+    box(S.full, 24, 354, 292, 40, {rx:13, stroke:'#DCE5E3'});
+    tx(S.full, 170, 379, 'Journée complète · 8 h – 20 h', {s:13.5, w:600, a:'middle'});
+    S.bands = ['8 h – 10 h','10 h – 12 h','12 h – 14 h','14 h – 16 h','16 h – 18 h','18 h – 20 h'].map(function(b, i){
+      var x = 24 + (i%2)*150, y = 404 + Math.floor(i/2)*46, c = el('g', {}, sh);
+      var r = el('rect', {x:x, y:y, width:142, height:38, rx:12, fill:'#fff', stroke:'#DCE5E3', 'stroke-width':1.2}, c);
+      var t = tx(c, x + 71, y + 24, b, {s:13.5, w:600, a:'middle'});
+      return {r:r, t:t, x:x + 71, y:y + 19};
+    });
+    tx(sh, 32, 560, 'APPLIQUER À', {s:10.5, w:700, c:'#4E6470', ls:.6});
+    S.opt = box(sh, 24, 570, 292, 38, {rx:12, stroke:'#E7EDEB', sw:1.5});
+    S.radio = el('circle', {cx:44, cy:589, r:7, fill:'none', stroke:'#B8C9C5', 'stroke-width':2}, sh);
+    tx(sh, 60, 594, 'Tous les jeudis pendant 4 semaines', {s:12.5, w:600});
+    S.save = btn(sh, 170, 638, 292, 40, 'Enregistrer');
+  })();
+
+  // ---------- 3. Carte des demandes ----------
+  var PRO = {x:170, y:330};
+  var PINS = [
+    {x:86,  y:236, lab:'60 €'},
+    {x:252, y:222, lab:'Urgent', urgent:true},
+    {x:268, y:446, lab:'45 €'},
+    {x:82,  y:470, lab:'70 €'},
+    {x:206, y:528, lab:'Urgent', urgent:true}
+  ];
+  (function(){
+    var g = $('sMap');
+    var m = el('g', {'clip-path':'url(#mapc)'}, g);
+    el('rect', {x:12, y:94, width:316, height:574, fill:'#E8EFE8'}, m);
+    el('path', {d:'M12 540 Q80 520 130 566 T250 668 L12 668 Z', fill:'#BFDFE9'}, m);
+    el('ellipse', {cx:246, cy:318, rx:52, ry:34, fill:'#CFE6C8'}, m);
+    el('ellipse', {cx:70, cy:150, rx:40, ry:26, fill:'#CFE6C8'}, m);
+    ['M12 206 L328 172','M60 94 L118 668','M12 384 Q170 352 328 404','M226 94 L286 560'].forEach(function(d){ el('path', {d:d, fill:'none', stroke:'#fff', 'stroke-width':11, 'stroke-linecap':'round'}, m); });
+    ['M12 292 L328 270','M168 94 L182 560','M120 470 L328 500'].forEach(function(d){ el('path', {d:d, fill:'none', stroke:'#fff', 'stroke-width':5.5, 'stroke-linecap':'round'}, m); });
+    S.rings = []; var rg = el('g', {fill:'none', stroke:'#12B39C', 'stroke-width':2.6}, m);
+    for (var i = 0; i < 3; i++) S.rings.push(el('circle', {cx:PRO.x, cy:PRO.y, r:0}, rg));
+    PINS.forEach(function(p){
+      p.g = el('g', {}, m); var w = p.lab.length * 7.4 + 22, col = p.urgent ? '#E8743B' : '#12B39C';
+      p.halo = el('circle', {cx:0, cy:-14, r:16, fill:'none', stroke:col, 'stroke-width':2.4}, p.g);
+      var inner = el('g', {filter:'url(#shs)'}, p.g);
+      el('path', {d:'M-6 -3 L0 6 L6 -3 Z', fill:col}, inner);
+      el('rect', {x:-w/2, y:-28, width:w, height:26, rx:13, fill:col}, inner);
+      tx(inner, 0, -10.5, p.lab, {s:12.5, w:700, c:'#fff', a:'middle'});
+    });
+    S.me = el('g', {}, m);
+    el('circle', {cx:PRO.x, cy:PRO.y, r:20, fill:'#12B39C', opacity:.18}, S.me);
+    S.meDot = el('circle', {cx:PRO.x, cy:PRO.y, r:10, fill:'#9DB4BC', stroke:'#fff', 'stroke-width':3.5}, S.me);
+    header(g, 'Demandes autour de moi', 'Antibes et alentours');
+    // bascule disponible / hors ligne
+    var tg = el('g', {}, g); S.toggle = tg;
+    box(tg, 24, 574, 292, 78, {sh:true, stroke:'none', rx:18});
+    S.tDot = el('circle', {cx:46, cy:604, r:6, fill:'#9DB4BC'}, tg);
+    S.tTitle = tx(tg, 60, 609, 'Hors ligne', {f:'Q', s:16});
+    S.tSub = tx(tg, 40, 634, 'Hors ligne · invisible des clients', {s:12, c:'#4E6470'});
+    S.sw = el('rect', {x:254, y:592, width:46, height:26, rx:13, fill:'#C9D5D2'}, tg);
+    S.knob = el('circle', {cx:267, cy:605, r:10, fill:'#fff'}, tg);
+    // bandeau « Nouvelle demande à … »
+    var al = el('g', {}, g); S.alert = al;
+    box(al, 22, 102, 296, 64, {sh:true, stroke:'none', rx:18});
+    el('circle', {cx:52, cy:134, r:18, fill:'#E8743B'}, al);
+    icon(al, 'bell', 52, 134, .78, '#fff', 2.2);
+    tx(al, 80, 129, 'Nouvelle demande à 400 m · urgent', {s:12.5, w:700});
+    tx(al, 80, 149, 'Ménage 3 h · demain matin', {s:12, c:'#4E6470'});
+    // fiche de la demande
+    var sh = el('g', {}, g); S.req = sh;
+    el('rect', {x:12, y:360, width:316, height:340, rx:26, fill:'#fff', filter:'url(#sh)'}, sh);
+    el('rect', {x:150, y:370, width:40, height:5, rx:2.5, fill:'#DCE5E3'}, sh);
+    chip(sh, 32, 388, 'Urgent', {fill:'#FDE7DC', c:'#C2551F', w:64});
+    tx(sh, 32, 438, 'Ménage · 3 h', {f:'Q', s:21});
+    [['pin', 'À 400 m · Antibes'], ['cal', 'Demain, jeudi 5 nov. · matin'], ['ruler', '80 m² · foyer de 2 personnes'], ['euro', 'Budget : 60 à 80 €']].forEach(function(r, i){
+      var y = 470 + i*26; icon(sh, r[0], 42, y - 4, .62, '#0C8F7E', 2.2);
+      tx(sh, 60, y, r[1], {s:13, w: i === 3 ? 700 : 400, c: i === 3 ? '#123644' : '#4E6470'});
+    });
+    S.contact = btn(sh, 170, 600, 292, 44, 'Contacter le client');
+  })();
+
+  // ---------- 4. Conversation : tarif, accord, rendez-vous, adresse ----------
+  (function(){
+    var g = $('sChat');
+    el('rect', {x:12, y:94, width:316, height:574, fill:'#F6F9F8'}, g);
+    el('rect', {x:12, y:12, width:316, height:82, fill:'#fff'}, g);
+    el('rect', {x:12, y:93, width:316, height:1, fill:'#E2ECEA'}, g);
+    tx(g, 40, 36, '9:41', {s:11.5, w:600});
+    el('circle', {cx:52, cy:66, r:17, fill:'#F2A93B'}, g);
+    tx(g, 52, 71.5, 'S', {f:'Q', s:16, c:'#fff', a:'middle'});
+    tx(g, 78, 63, 'Sophie M.', {f:'Q', s:17});
+    tx(g, 78, 81, 'Ménage · jeudi 5 nov.', {s:11.5, c:'#4E6470'});
+    // 1. récapitulatif de la demande
+    S.c1 = el('g', {}, g); box(S.c1, 24, 106, 292, 62, {rx:14, fill:'#EEF3F2', stroke:'none'});
+    tx(S.c1, 40, 127, 'Demande de Sophie', {s:11, c:'#4E6470'});
+    tx(S.c1, 40, 145, 'Ménage 3 h · 80 m² · jeudi matin', {s:13, w:600});
+    tx(S.c1, 40, 161, 'Budget 60 à 80 €', {s:11.5, c:'#4E6470'});
+    // 2. message du client
+    S.c2 = el('g', {}, g); box(S.c2, 24, 180, 200, 48, {rx:16, fill:'#E4ECEA', stroke:'none'});
+    tx(S.c2, 40, 200, 'Bonjour, vous êtes libre', {s:13});
+    tx(S.c2, 40, 218, 'jeudi à 9 h ?', {s:13});
+    // 3. votre proposition
+    S.c3 = el('g', {}, g); box(S.c3, 76, 240, 240, 128, {rx:16, stroke:'#12B39C', sw:1.6});
+    tx(S.c3, 92, 262, 'Votre proposition', {s:11, c:'#4E6470'});
+    S.c3chip = chip(S.c3, 230, 250, 'En attente', {fill:'#FFF1D6', c:'#8a6520', w:74});
+    tx(S.c3, 92, 286, 'Ménage · forfait 3 h', {s:13.5, w:600});
+    tx(S.c3, 300, 318, '75 €', {f:'Q', s:28, a:'end'});
+    tx(S.c3, 92, 316, 'Prix fixé, sans surprise', {s:11, c:'#4E6470'});
+    el('rect', {x:92, y:328, width:208, height:1, fill:'#E2ECEA'}, S.c3);
+    tx(S.c3, 92, 348, 'Vous percevez environ 62,25 €', {s:12.5, w:700, c:'#0C8F7E'});
+    tx(S.c3, 92, 362, 'après commission PING', {s:10.5, c:'#4E6470'});
+    // 4. accord du client
+    S.c4 = el('g', {}, g); el('rect', {x:58, y:380, width:224, height:28, rx:14, fill:'#DDF5F0'}, S.c4);
+    icon(S.c4, 'check', 78, 394, .62, '#0C8F7E', 3);
+    tx(S.c4, 92, 398.5, 'Sophie a accepté votre tarif', {s:12, w:600, c:'#0C8F7E'});
+    // 5. rendez-vous
+    S.c5 = el('g', {}, g); box(S.c5, 24, 420, 292, 54, {rx:14, sh:true, stroke:'none'});
+    icon(S.c5, 'cal', 48, 447, .8);
+    tx(S.c5, 70, 442, 'Rendez-vous confirmé', {s:13, w:700});
+    tx(S.c5, 70, 461, 'Jeudi 5 novembre · 9 h 00', {s:12, c:'#4E6470'});
+    // 6. adresse d'intervention
+    S.c6 = el('g', {}, g); S.c6bg = box(S.c6, 24, 486, 292, 66, {rx:14, sh:true, stroke:'#fff', sw:1.8});
+    S.c6lock = icon(S.c6, 'lock', 48, 519, .8, '#8A9AA2');
+    S.c6pin = icon(S.c6, 'pin', 48, 519, .85, '#0C8F7E');
+    tx(S.c6, 70, 510, "Adresse d'intervention", {s:13, w:700});
+    S.c6a = tx(S.c6, 70, 530, 'Transmise une fois la mission validée', {s:11.5, c:'#4E6470'});
+    S.c6b = tx(S.c6, 70, 532, '12 rue des Lilas, 06600 Antibes', {s:13, w:600, c:'#0C8F7E'});
+    S.c6c = tx(S.c6, 70, 546, 'Visible maintenant que la mission est validée', {s:10.5, c:'#4E6470'});
+    // barre de saisie
+    el('rect', {x:12, y:596, width:316, height:72, fill:'#fff'}, g);
+    el('rect', {x:12, y:596, width:316, height:1, fill:'#E2ECEA'}, g);
+    S.propose = btn(g, 98, 626, 148, 34, '+ Proposer un tarif', {fill:'#fff', stroke:'#12B39C', c:'#0C8F7E', s:13});
+    S.input = el('rect', {x:180, y:609, width:136, height:34, rx:17, fill:'#EEF3F2'}, g);
+    S.inputTx = tx(g, 196, 631, 'Message…', {s:12.5, c:'#8A9AA2'});
+  })();
+
+  // ---------- 5. QR : en-tête et rappel de la mission ----------
+  (function(){
+    var g = $('sQR'), h = el('g', {}, g); g.insertBefore(h, g.firstChild);
+    header(h, 'Mission · Sophie', 'Ménage · forfait 3 h');
+    var b = el('g', {}, g); box(b, 24, 560, 292, 70, {rx:16, sh:true, stroke:'none'});
+    icon(b, 'pin', 48, 595, .85);
+    tx(b, 70, 590, 'Jeudi 5 novembre · 9 h 00', {s:13, w:700});
+    tx(b, 70, 609, '12 rue des Lilas, Antibes', {s:12, c:'#4E6470'});
+  })();
+
+  // ---------- 6. Facture ----------
+  (function(){
+    var g = $('sInv'); header(g, 'Facture', 'Mission du jeudi 5 novembre');
+    var d = el('g', {}, g); S.doc = d;
+    box(d, 26, 106, 288, 266, {rx:14, sh:true, stroke:'none'});
+    el('rect', {x:26, y:106, width:6, height:266, rx:3, fill:'#12B39C'}, d);
+    tx(d, 46, 136, 'Marc Dupuis', {f:'Q', s:18});
+    tx(d, 46, 154, 'Ménage et repassage', {s:10.5, c:'#4E6470'});
+    tx(d, 46, 169, 'SIRET 912 345 678 00012', {s:10.5, c:'#4E6470'});
+    tx(d, 296, 136, 'FACTURE', {s:12, w:700, c:'#0C8F7E', a:'end', ls:.8});
+    tx(d, 296, 154, 'FACT-2026-0042', {s:10.5, c:'#4E6470', a:'end'});
+    tx(d, 296, 169, '5 nov. 2026', {s:10.5, c:'#4E6470', a:'end'});
+    el('rect', {x:46, y:184, width:250, height:1, fill:'#E2ECEA'}, d);
+    tx(d, 46, 204, 'Client : Sophie M.', {s:11.5});
+    tx(d, 46, 230, 'PRESTATION', {s:9.5, w:700, c:'#8A9AA2', ls:.6});
+    tx(d, 296, 230, 'MONTANT', {s:9.5, w:700, c:'#8A9AA2', ls:.6, a:'end'});
+    S.dRow = el('g', {}, d);
+    tx(S.dRow, 46, 254, 'Ménage · forfait 3 h', {s:12.5, w:600});
+    tx(S.dRow, 296, 254, '75,00 €', {s:12.5, w:600, a:'end'});
+    tx(S.dRow, 46, 271, 'Intervention 9 h 02 – 12 h 04', {s:10.5, c:'#4E6470'});
+    el('rect', {x:46, y:286, width:250, height:1, fill:'#E2ECEA'}, d);
+    S.dTot = el('g', {}, d);
+    tx(S.dTot, 46, 314, 'Total', {f:'Q', s:16});
+    tx(S.dTot, 296, 315, '75,00 €', {f:'Q', s:19, a:'end'});
+    tx(d, 46, 352, 'TVA non applicable, art. 293 B du CGI', {s:9.5, c:'#8A9AA2'});
+    var p = el('g', {}, g); S.pay = p;
+    box(p, 26, 388, 288, 92, {rx:16, fill:'#DDF5F0', stroke:'none'});
+    tx(p, 46, 416, 'Vous percevez', {s:12.5, w:600, c:'#0C8F7E'});
+    tx(p, 296, 424, '62,25 €', {f:'Q', s:30, a:'end'});
+    tx(p, 46, 452, 'Commission PING 17 % : 12,75 €', {s:11.5, c:'#4E6470'});
+    tx(p, 46, 468, 'Facture à votre nom, PING n’y figure pas', {s:11.5, c:'#4E6470'});
+    S.pdf = btn(g, 170, 520, 292, 42, 'Télécharger le PDF', {fill:'#123644', s:14.5});
+  })();
+
+  // ---------- 7. Avis croisés ----------
+  (function(){
+    var g = $('sRev'); header(g, 'Avis', 'Mission du jeudi 5 novembre');
+    var a = el('g', {}, g); S.rA = a;
+    box(a, 24, 108, 292, 152, {rx:16, sh:true, stroke:'none'});
+    tx(a, 170, 136, 'Sophie vous a noté', {s:14, w:700, a:'middle'});
+    S.starsA = starRow(a, 170, 172, 1);
+    S.quote = tx(a, 170, 214, '« Impeccable, très ponctuel. »', {s:13.5, it:true, c:'#4E6470', a:'middle'});
+    S.pub = tx(a, 170, 240, 'Publié sur votre profil', {s:11, c:'#8A9AA2', a:'middle'});
+    var b = el('g', {}, g); S.rB = b;
+    box(b, 24, 274, 292, 302, {rx:16, sh:true, stroke:'none'});
+    tx(b, 170, 302, 'À vous de noter Sophie', {s:14, w:700, a:'middle'});
+    S.starsB = starRow(b, 170, 338, 1);
+    S.tags = [chip(b, 40, 368, 'Très accueillant', {w:124, h:28, s:12, fill:'#fff', c:'#123644'}), chip(b, 172, 368, 'Matériel fourni', {w:128, h:28, s:12, fill:'#fff', c:'#123644'})];
+    S.tags.forEach(function(c){ c.r.setAttribute('stroke', '#DCE5E3'); c.r.setAttribute('stroke-width', 1.2); });
+    el('rect', {x:40, y:414, width:260, height:40, rx:20, fill:'#EEF3F2'}, b);
+    S.seg = el('rect', {x:44, y:418, width:126, height:32, rx:16, fill:'#fff'}, b);
+    S.segA = tx(b, 107, 439, 'Publier l’avis', {s:12.5, w:700, a:'middle'});
+    S.segB = tx(b, 233, 439, 'Note privée', {s:12.5, w:700, c:'#4E6470', a:'middle'});
+    S.priv = tx(b, 170, 478, 'Une note privée reste pour vous.', {s:11.5, c:'#4E6470', a:'middle'});
+    S.rSave = btn(b, 170, 530, 260, 40, 'Enregistrer');
+  })();
+
+  // ---------- 8. Mon entreprise ----------
+  (function(){
+    var g = $('sEnt'); header(g, 'Mon entreprise');
+    var h = el('g', {}, g); S.eHead = h;
+    box(h, 24, 106, 292, 84, {rx:18, fill:'#123644', stroke:'none'});
+    el('circle', {cx:62, cy:148, r:22, fill:'#12B39C'}, h);
+    tx(h, 62, 155, 'M', {f:'Q', s:20, c:'#fff', a:'middle'});
+    tx(h, 96, 140, 'Marc Dupuis', {f:'Q', s:17, c:'#fff'});
+    tx(h, 96, 159, 'Ménage · Repassage · Antibes', {s:11.5, c:'#9DB4BC'});
+    var st = el('g', {transform:'translate(102,174) scale(.48)'}, h); el('path', {d:STAR, fill:'#F2A93B'}, st);
+    tx(h, 112, 178.5, '4,9 · 23 avis', {s:11.5, w:600, c:'#fff'});
+    var ROWS = [
+      ['chart', 'Revenus', 'Novembre : 1 240 € · 9 missions'],
+      ['idc', 'Mes pièces', 'Pièce fournie · assurance renseignée'],
+      ['bank', 'Paiement par virement', 'Paiement en ligne', 'soon'],
+      ['tag', 'Mes tarifs', '3 prestations'],
+      ['cal', 'Mes disponibilités', '4 jeudis ouverts en novembre']
+    ];
+    S.eRows = ROWS.map(function(r, i){
+      var y = 202 + i*70, c = el('g', {}, g);
+      var bg = box(c, 24, y, 292, 60, {rx:14, sh:true, stroke:'#fff', sw:1.8});
+      el('circle', {cx:52, cy:y + 30, r:17, fill:'#DDF5F0'}, c);
+      icon(c, r[0], 52, y + 30, .72, '#0C8F7E', 2.1);
+      tx(c, 80, y + 26, r[1], {s:13.5, w:700});
+      tx(c, 80, y + 45, r[2], {s:11.5, c:'#4E6470'});
+      if (r[3]) chip(c, 244, y + 19, 'bientôt', {fill:'#FFF1D6', c:'#8a6520', w:58});
+      else icon(c, 'chev', 298, y + 30, .7, '#9DB4BC', 2.2);
+      c.bg = bg; return c;
+    });
+  })();
+
+  // Ordre et début de chaque écran du téléphone ; un fond opaque sous chacun pour la glisse.
+  var SCREENS = [['sTarifs', 0], ['sDispo', 8.5], ['sMap', 13.9], ['sChat', 22.0], ['sQR', 30.3], ['sInv', 36.5], ['sRev', 41.1], ['sEnt', 45.7]];
+  SCREENS.forEach(function(q){ var g = $(q[0]); g.insertBefore(el('rect', {x:12, y:12, width:316, height:656, fill:'#F6F9F8'}), g.firstChild); });
+
+  // ---------- signature PING (le point d'interrogation dont le point est l'écho radar) ----------
+  function device(g){
+    var d = el('g', {transform:'translate(-60,-95)'}, g);
+    el('path', {d:'M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 98', fill:'none', stroke:'#fff', 'stroke-width':14, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, d);
+    el('circle', {cx:64, cy:148, r:30, fill:'none', stroke:'#12B39C', 'stroke-width':2, opacity:.35}, d);
+    el('circle', {cx:64, cy:148, r:19.8, fill:'none', stroke:'#12B39C', 'stroke-width':2.9, opacity:.7}, d);
+    el('circle', {cx:64, cy:148, r:7.7, fill:'#2FD06E'}, d);
+  }
+  device($('introDevice')); device($('endDevice'));
+  var introRings = [], endRings = [], bgRings = [];
+  for (var i = 0; i < 3; i++){ introRings.push(el('circle', {r:0, 'stroke-width':2.5}, $('introRings'))); endRings.push(el('circle', {r:0, 'stroke-width':2.5}, $('endRings'))); }
+  for (var j = 0; j < 4; j++) bgRings.push(el('circle', {cx:270, cy:520, r:120 + j*110, opacity:.07 - j*.012}, $('bgRings')));
+
+  // logotype p·ng (l'épingle remplace le i), comme /animation
+  function buildWord(){
+    var g = $('word'); g.innerHTML = '';
+    var size = 84, y = 528;
+    var p = el('text', {y:y, 'font-family':'Quicksand', 'font-weight':700, 'font-size':size, fill:'#fff'}, g); p.textContent = 'p';
+    var ng = el('text', {y:y, 'font-family':'Quicksand', 'font-weight':700, 'font-size':size, fill:'#fff'}, g); ng.textContent = 'ng';
+    var wp = p.getComputedTextLength(), wn = ng.getComputedTextLength();
+    var ph = size*0.74, pw = ph*38/65, gap = size*0.06;
+    var total = wp + gap + pw + gap + wn, x0 = 270 - total/2;
+    p.setAttribute('x', x0);
+    var pin = el('g', {transform:'translate('+(x0+wp+gap)+','+(y-ph)+') scale('+(ph/65)+') translate(-71,-35)'}, g);
+    el('path', {d:'M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z', fill:'#fff'}, pin);
+    el('circle', {cx:90, cy:53, r:8.6, fill:'#2FD06E'}, pin);
+    ng.setAttribute('x', x0+wp+gap+pw+gap);
+  }
+
+  // ---------- touchers (cercle qui s'élargit) ----------
+  var TAPS = [
+    [9.55, 0, 0, 'day5'], [10.6, 0, 0, 'b0'], [11.0, 0, 0, 'b1'], [11.4, 0, 0, 'b3'], [11.85, 44, 589], [12.3, 170, 638],
+    [14.9, 277, 605], [20.2, 252, 210], [21.55, 170, 600], [23.55, 98, 626], [44.0, 233, 434], [44.6, 170, 530]
+  ];
+  var tapEls = TAPS.map(function(){ return el('circle', {r:10, fill:'#12B39C', opacity:0}, $('taps')); });
+
+  // ---------- scénario ----------
+  var CAPS = [
+    { a:0,    b:3.4,  title:'Accroche', lines:null, d:"« Ménage, repassage, nettoyage ? Les clients sont juste à côté. » Signature PING et son écho radar." },
+    { a:3.4,  b:8.6,  title:'Vos prix', lines:['Vos prix, par prestation :',"forfait, à l'heure, ou les deux."], d:"Mes tarifs : ménage au forfait, repassage à l'heure, grand ménage au forfait avec heures supplémentaires. Le prix est fixé avant la mission." },
+    { a:8.6,  b:14.0, title:'Vos disponibilités', lines:['Touchez un jour :','journée ou tranches horaires.'], d:"Mes disponibilités : un jour touché, les tranches cochées, « tous les jeudis pendant 4 semaines », enregistré." },
+    { a:14.0, b:17.6, title:'Disponible', lines:['Un bouton : Disponible.','Vous apparaissez sur la carte.'], d:"La bascule passe à « Disponible maintenant » : l'écho radar part de sa position, il devient visible des clients." },
+    { a:17.6, b:20.3, title:'Les demandes arrivent', lines:['Les demandes arrivent,','les urgentes en orange.'], d:"Les demandes autour de lui apparaissent avec leur budget ; les urgentes sont en orange, avec le bandeau « Nouvelle demande à 400 m · urgent »." },
+    { a:20.3, b:22.4, title:'Répondre à une demande', lines:['Une demande vous plaît ?','Vous contactez le client.'], d:"La fiche de la demande : distance, date, surface, budget. « Contacter le client » ouvre la conversation." },
+    { a:22.4, b:26.5, title:'Proposer son prix', lines:['Vous proposez votre prix,','le client accepte.'], d:"« + Proposer un tarif » : forfait 3 h à 75 €, « vous percevez environ 62,25 € après commission PING ». Sophie accepte." },
+    { a:26.5, b:30.4, title:"L'adresse transmise", lines:['Mission validée :',"l'adresse vous est transmise."], d:"Le rendez-vous est confirmé ; l'adresse exacte, masquée jusque-là, apparaît une fois la mission validée." },
+    { a:30.4, b:33.0, title:"QR d'arrivée et de fin", lines:["Un scan à l'arrivée,",'un scan à la fin.'], d:"Il scanne le code de la cliente en arrivant : l'arrivée est horodatée." },
+    { a:33.0, b:36.6, title:'Durée réelle', lines:['La durée réelle','est enregistrée.'], d:"Second scan en partant : 3 h 02 sur place, enregistrées." },
+    { a:36.6, b:41.2, title:'Facture automatique', lines:['Votre facture, à votre nom,','faite toute seule.'], d:"Facture à son en-tête (SIRET, numéro), créée à la fin de la mission. « Vous percevez 62,25 € », commission PING 17 %." },
+    { a:41.2, b:45.8, title:'Avis croisés', lines:['Le client vous note,','vous le notez, même en privé.'], d:"Cinq étoiles de Sophie ; à son tour, Marc note sa cliente et choisit « note privée »." },
+    { a:45.8, b:50.2, title:'Mon entreprise', lines:['Revenus, pièces, paiement :','tout dans Mon entreprise.'], d:"Revenus du mois, pièces fournies, paiement par virement (paiement en ligne : bientôt), tarifs, disponibilités." },
+    { a:50.2, b:55,   title:'Devenir prestataire', lines:null, d:"Logo PING, « Devenir prestataire », inscription gratuite, QR vers /l/pqd et l'adresse nexto-eta.vercel.app/pro/onboarding." }
+  ];
+  var capLines = [tx($('capText'), 270, 87, '', {f:'Q', s:27, a:'middle'}), tx($('capText'), 270, 123, '', {f:'Q', s:27, a:'middle'})];
+
+  function render(t){
+    // ouverture
+    var io = 1 - seg(t, 2.9, 3.4); show($('intro'), io);
+    var dk = back(seg(t, 0.15, 0.7)); tr($('introDevice'), 'translate(270,300) scale('+(1.25*dk).toFixed(3)+')');
+    var ix = 270 + 4*1.25, iy = 300 + 53*1.25;
+    introRings.forEach(function(c, i){ var k = mod(t - 0.6 - i*0.55, 1.65)/1.65; c.setAttribute('cx', ix); c.setAttribute('cy', iy); c.setAttribute('r', (14 + k*190).toFixed(1)); show(c, t > 0.6 + i*0.55 ? (1-k)*0.5 : 0); });
+    [['in0',0.5],['in1',0.8],['in2',1.1],['in3',1.5]].forEach(function(q){ var k = eout(seg(t, q[1], q[1]+0.45)); show($(q[0]), k); tr($(q[0]), 'translate(0,'+(14*(1-k)).toFixed(1)+')'); });
+
+    // téléphone
+    var py = 980 - (980-176)*eout(seg(t, 2.9, 3.6));
+    tr($('phone'), 'translate(100,'+py.toFixed(1)+')');
+    // Passage d'un écran à l'autre : le suivant glisse par-dessus (comme dans l'app), sans fondu croisé.
+    SCREENS.forEach(function(q, i){
+      var a = q[1], nx = i + 1 < SCREENS.length ? SCREENS[i+1][1] + 0.4 : 99, on = t >= a && t < nx;
+      var n = $(q[0]); n.setAttribute('display', on || i === 0 ? 'inline' : 'none');
+      if (i > 0) tr(n, 'translate('+(330*(1-eout(seg(t, a, a + 0.4)))).toFixed(1)+',0)');
+    });
+
+    // 1. tarifs
+    S.tRows.forEach(function(c, i){ var k = eout(seg(t, 3.8 + i*0.55, 4.25 + i*0.55)); show(c, k); tr(c, 'translate('+(30*(1-k)).toFixed(1)+',0)'); });
+    var pk = 1 + 0.12*Math.sin(Math.PI*seg(t, 6.0, 6.6)); var ch = S.tRows[2].chip; sc(ch, pk, 42 + ch.w/2, 110 + 2*112 + 55);
+    show(S.tAdd, seg(t, 5.6, 5.9)); show(S.tNote, seg(t, 6.6, 6.9));
+
+    // 2. disponibilités
+    var sheetUp = eout(seg(t, 9.75, 10.2)) * (1 - eio(seg(t, 12.55, 12.95)));
+    tr(S.sheet, 'translate(0,'+(420*(1-sheetUp)).toFixed(1)+')');
+    var d5 = S.days[5], picked5 = t >= 9.6;
+    [5, 12, 19, 26].forEach(function(n){ var D = S.days[n]; var on = n === 5 ? picked5 : t >= 12.9 + (n-5)/7*0.18;
+      var saved = t >= 12.9 + (n-5)/7*0.18;
+      D.r.setAttribute('fill', n === 5 && picked5 && !saved ? '#12B39C' : saved ? '#DDF5F0' : '#fff');
+      D.r.setAttribute('stroke', on ? '#12B39C' : '#E2ECEA');
+      D.t.setAttribute('fill', n === 5 && picked5 && !saved ? '#fff' : '#123644');
+      D.dot.setAttribute('opacity', saved ? 1 : 0);
+      if (saved) sc(D.g, back(seg(t, 12.9 + (n-5)/7*0.18, 13.25 + (n-5)/7*0.18)), D.x + 19, D.y + 23); else D.g.removeAttribute('transform');
+    });
+    var BT = [10.6, 11.0, 99, 11.4, 99, 99];
+    S.bands.forEach(function(b, i){ var on = t >= BT[i]; b.r.setAttribute('fill', on ? '#12B39C' : '#fff'); b.r.setAttribute('stroke', on ? '#12B39C' : '#DCE5E3'); b.t.setAttribute('fill', on ? '#fff' : '#123644'); });
+    var optOn = t >= 11.85; S.opt.setAttribute('stroke', optOn ? '#12B39C' : '#E7EDEB'); S.opt.setAttribute('fill', optOn ? '#EEF9F7' : '#fff');
+    S.radio.setAttribute('stroke', optOn ? '#12B39C' : '#B8C9C5'); S.radio.setAttribute('stroke-width', optOn ? 5 : 2); S.radio.setAttribute('r', optOn ? 5.5 : 7);
+    var sk = eout(seg(t, 13.1, 13.5)); show(S.dSum, sk); tr(S.dSum, 'translate(0,'+(12*(1-sk)).toFixed(1)+')'); show($('dHint'), seg(t, 13.3, 13.6));
+    var saved = t >= 12.35; S.save.r.setAttribute('fill', saved ? '#2FD06E' : '#12B39C'); S.save.t.textContent = saved ? 'Enregistré' : 'Enregistrer';
+
+    // 3. carte
+    var avail = t >= 15.05;
+    S.tDot.setAttribute('fill', avail ? '#2FD06E' : '#9DB4BC'); S.meDot.setAttribute('fill', avail ? '#12B39C' : '#9DB4BC');
+    S.tTitle.textContent = avail ? 'Disponible maintenant' : 'Hors ligne';
+    S.tSub.textContent = avail ? 'Visible · demandes à moins de 25 km' : 'Hors ligne · invisible des clients';
+    var kx = eio(seg(t, 14.95, 15.2)); S.knob.setAttribute('cx', (267 + 20*kx).toFixed(1)); S.sw.setAttribute('fill', kx > .5 ? '#12B39C' : '#C9D5D2');
+    var R0 = 15.3, RP = 1.7, RS = 150;
+    S.rings.forEach(function(c, i){
+      var k = -1; for (var n = 0; n < 6; n++){ var st = R0 + i*0.57 + n*RP; if (t >= st && t < st + RP && st < 20.0) k = (t - st)/RP; }
+      if (k < 0) { show(c, 0); return; }
+      c.setAttribute('r', (12 + k*RS*RP).toFixed(1)); show(c, (1-k)*0.75);
+    });
+    PINS.forEach(function(p, i){
+      var t0 = R0 + Math.hypot(p.x - PRO.x, p.y - PRO.y)/RS + 0.25;
+      var a = back(seg(t, t0, t0 + 0.45)), pulse = p === PINS[1] ? 1 + 0.14*Math.sin(Math.PI*2*seg(t, 18.9, 20.1)) : 1;
+      tr(p.g, 'translate('+p.x+','+p.y+') scale('+(a*pulse).toFixed(3)+')'); show(p.g, seg(t, t0, t0 + 0.15));
+      var hk = seg(t, t0, t0 + 0.9); p.halo.setAttribute('r', (16 + hk*24).toFixed(1)); show(p.halo, (1-hk)*0.9);
+    });
+    var al = eout(seg(t, 18.55, 18.95)) * (1 - seg(t, 20.35, 20.6));
+    show(S.alert, al); tr(S.alert, 'translate(0,'+(-22*(1-eout(seg(t, 18.55, 18.95)))).toFixed(1)+')');
+    var rq = eout(seg(t, 20.45, 20.9)); tr(S.req, 'translate(0,'+(360*(1-rq)).toFixed(1)+')'); show(S.req, seg(t, 20.45, 20.55));
+    var cp = 1 - 0.05*Math.sin(Math.PI*seg(t, 21.5, 21.8)); sc(S.contact, cp, 170, 600);
+
+    // 4. conversation
+    [[S.c1, 22.45], [S.c2, 22.95], [S.c3, 24.1], [S.c4, 25.35], [S.c5, 26.55], [S.c6, 27.0]].forEach(function(q){
+      var k = eout(seg(t, q[1], q[1] + 0.4)); show(q[0], k); tr(q[0], 'translate(0,'+(12*(1-k)).toFixed(1)+')');
+    });
+    var acc = t >= 25.3;
+    S.c3chip.r.setAttribute('fill', acc ? '#DDF5F0' : '#FFF1D6'); S.c3chip.t.setAttribute('fill', acc ? '#0C8F7E' : '#8a6520'); S.c3chip.t.textContent = acc ? 'Acceptée' : 'En attente';
+    var pp = 1 - 0.06*Math.sin(Math.PI*seg(t, 23.5, 23.8)); sc(S.propose, pp, 98, 626);
+    // une fois un tarif accepté, « + Proposer un tarif » disparaît (règle du tarif)
+    var gone = eio(seg(t, 25.5, 25.9)); show(S.propose, 1 - gone);
+    S.input.setAttribute('x', (180 - 156*gone).toFixed(1)); S.input.setAttribute('width', (136 + 156*gone).toFixed(1)); S.inputTx.setAttribute('x', (196 - 156*gone).toFixed(1));
+    var un = seg(t, 28.0, 28.35);
+    show(S.c6lock, 1 - un); show(S.c6pin, un); show(S.c6a, 1 - un); show(S.c6b, un); show(S.c6c, un);
+    S.c6b.setAttribute('y', 530); S.c6bg.setAttribute('stroke', un > .5 ? '#12B39C' : '#fff');
+    sc(S.c6, 1 + 0.04*Math.sin(Math.PI*seg(t, 28.0, 28.5)), 170, 519);
+
+    // 5. QR
+    var scanA = win(t, 30.5, 32.0, .2), okA = win(t, 31.9, 33.15, .2), clk = win(t, 33.05, 34.35, .2), scanB = win(t, 34.25, 35.35, .2), okB = seg(t, 35.25, 35.45);
+    show($('qrScan'), Math.max(scanA, scanB));
+    var sl = t < 33 ? seg(t, 30.75, 31.85) : seg(t, 34.4, 35.2);
+    tr($('scanline'), 'translate(0,'+(150 + 156*Math.sin(sl*Math.PI)).toFixed(1)+')');
+    $('scanSub').textContent = t < 33 ? 'à votre arrivée' : 'en fin de mission';
+    show($('qrOk'), Math.max(okA, okB));
+    var pop = t < 34 ? back(seg(t, 31.95, 32.35)) : back(seg(t, 35.3, 35.7));
+    tr($('okDisc'), 'translate(170,222) scale('+pop.toFixed(3)+')');
+    if (t < 34) { $('okTitle').textContent = 'Arrivée validée'; $('okTime').textContent = '9:02'; $('okSub').textContent = 'horodaté'; }
+    else { $('okTitle').textContent = 'Fin de mission validée'; $('okTime').textContent = '12:04'; $('okSub').textContent = 'durée réelle : 3 h 02'; }
+    show($('qrClock'), clk);
+    var ck = eio(seg(t, 33.2, 34.2));
+    $('clockArc').setAttribute('stroke-dashoffset', (452.4*(1-ck)).toFixed(1));
+    $('clockTime').textContent = hhmm(9*60+2 + ck*182);
+
+    // 6. facture
+    var dkk = back(seg(t, 36.85, 37.3)); sc(S.doc, 0.9 + 0.1*dkk, 170, 240); show(S.doc, seg(t, 36.85, 37.0));
+    show(S.dRow, seg(t, 37.5, 37.8)); show(S.dTot, seg(t, 37.9, 38.2));
+    var pk2 = back(seg(t, 38.6, 39.05)); sc(S.pay, pk2, 170, 434);
+    show(S.pdf, seg(t, 39.4, 39.7));
+
+    // 7. avis
+    show(S.rA, seg(t, 41.4, 41.7));
+    S.starsA.forEach(function(s, i){ var k = back(seg(t, 41.8 + i*0.16, 42.1 + i*0.16)); s.setAttribute('transform', 'scale('+k.toFixed(3)+')'); });
+    show(S.quote, seg(t, 42.6, 42.9)); show(S.pub, seg(t, 42.8, 43.1));
+    var bk = eout(seg(t, 43.0, 43.4)); show(S.rB, bk); tr(S.rB, 'translate(0,'+(16*(1-bk)).toFixed(1)+')');
+    S.starsB.forEach(function(s, i){ var k = back(seg(t, 43.5 + i*0.13, 43.8 + i*0.13)); s.setAttribute('transform', 'scale('+k.toFixed(3)+')'); });
+    S.tags.forEach(function(c, i){ var on = t >= 43.95 + i*0.2; c.r.setAttribute('fill', on ? '#12B39C' : '#fff'); c.r.setAttribute('stroke', on ? '#12B39C' : '#DCE5E3'); c.t.setAttribute('fill', on ? '#fff' : '#123644'); });
+    var sg = eio(seg(t, 44.0, 44.25)); S.seg.setAttribute('x', (44 + 126*sg).toFixed(1));
+    S.segA.setAttribute('fill', sg > .5 ? '#4E6470' : '#123644'); S.segB.setAttribute('fill', sg > .5 ? '#123644' : '#4E6470');
+    show(S.priv, seg(t, 44.2, 44.45));
+    var rs = t >= 44.65; S.rSave.r.setAttribute('fill', rs ? '#2FD06E' : '#12B39C'); S.rSave.t.textContent = rs ? 'Note enregistrée' : 'Enregistrer';
+
+    // 8. Mon entreprise
+    show(S.eHead, seg(t, 45.9, 46.2));
+    S.eRows.forEach(function(c, i){ var k = eout(seg(t, 46.1 + i*0.22, 46.5 + i*0.22)); show(c, k); tr(c, 'translate('+(26*(1-k)).toFixed(1)+',0)');
+      var hl = [47.4, 48.1, 48.8][i]; var on = hl != null && t >= hl && t < hl + 0.75;
+      c.bg.setAttribute('stroke', on ? '#12B39C' : '#fff'); });
+
+    // touchers
+    TAPS.forEach(function(q, i){
+      var k = seg(t, q[0], q[0] + 0.55), x = q[1], y = q[2];
+      if (q[3] === 'day5') { x = S.days[5].x + 19; y = S.days[5].y + 23; }
+      else if (q[3]) { var b = S.bands[+q[3].slice(1)]; x = b.x; y = b.y + 420*(1-sheetUp); }
+      var c = tapEls[i]; c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', (8 + k*24).toFixed(1));
+      show(c, k > 0 && k < 1 ? 0.45*(1-k) : 0);
+    });
+
+    // légende
+    var cur = null, co = 0;
+    for (var i = 1; i < CAPS.length - 1; i++){ var C = CAPS[i]; var o = win(t, C.a, C.b, .3); if (i === 1) o = Math.min(seg(t, 3.3, 3.7), 1 - seg(t, C.b - .3, C.b)); if (o > co) { co = o; cur = C; } }
+    if (cur) { capLines[0].textContent = cur.lines[0]; capLines[1].textContent = cur.lines[1]; }
+    tr($('capText'), 'translate(0,'+((1-co)*8).toFixed(1)+')');
+    show($('capText'), co);
+    show($('cap'), seg(t, 3.1, 3.5) * (1 - seg(t, 50.0, 50.4)));
+    $('prog').setAttribute('width', (540*t/DUR).toFixed(1));
+
+    // fin
+    show($('end'), seg(t, 50.2, 50.65));
+    var ek = back(seg(t, 50.5, 51.0)); tr($('endDevice'), 'translate(270,262) scale('+(1.2*ek).toFixed(3)+')');
+    var ex = 270 + 4*1.2, ey = 262 + 53*1.2;
+    endRings.forEach(function(c, i){ var k = mod(t - 50.8 - i*0.6, 1.8)/1.8; c.setAttribute('cx', ex); c.setAttribute('cy', ey); c.setAttribute('r', (14 + k*170).toFixed(1)); show(c, t > 50.8 + i*0.6 ? (1-k)*0.5 : 0); });
+    [['word',51.0],['e1',51.4],['e2',51.8],['e3',52.2],['e4',52.6]].forEach(function(q){ var k = eout(seg(t, q[1], q[1]+0.45)); show($(q[0]), k); tr($(q[0]), 'translate(0,'+(14*(1-k)).toFixed(1)+')'); });
+  }
+
+  // ---------- lecteur ----------
+  var list = $('scenes'), sceneBtns = [];
+  CAPS.forEach(function(C, i){
+    var li = document.createElement('li'), b = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = '<span class="tc">'+C.a.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
+    b.querySelector('b').textContent = (i+1)+'. '+C.title; b.querySelector('.d').textContent = C.d;
+    b.addEventListener('click', function(){ seek(C.a + (i ? 0.35 : 0.01)); playing = true; sync(); });
+    li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
+  });
+
+  var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
+  var rec = location.hash === '#record';
+  if (rec) { document.body.classList.add('rec'); playing = false; }
+  function seek(x){ t = clamp(x, 0, DUR); paint(); }
+  function paint(){
+    render(t);
+    $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
+    sceneBtns.forEach(function(b, i){ b.classList.toggle('on', t >= CAPS[i].a && t < CAPS[i].b); });
+  }
+  function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
+  function loop(now){
+    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= DUR) t = 0; } paint(); }
+    last = now; requestAnimationFrame(loop);
+  }
+  $('play').addEventListener('click', function(){ playing = !playing; sync(); });
+  $('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
+  $('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
+
+  $('scrub').max = DUR;
+  window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); } };
+  var start = function(){ buildWord(); paint(); sync(); if (!rec) requestAnimationFrame(loop); window.PING_ANIM.ready = true; };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+  if (!playing && !rec) seek(24.8);
+})();
+</script>

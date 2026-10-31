@@ -327,6 +327,11 @@ carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dép�
   9:16, vecteur pur, rendu déterministe `PING_ANIM.seek(t)`. MP4 1080×1920 dans
   `public/brand/files/ping-animation.mp4` (procédure d'enregistrement dans `brand/anim/build.py`).
   Remplace l'ancienne « Animation d'accroche » `/presentation` (gardée).
+- `/animation-pro` (`public/animation-pro.html`, généré par `brand/anim-pro/build.py`, polices reprises de
+  `brand/anim/fonts`) : animation **prestataires** 55 s (31/10), même lecteur et même `PING_ANIM.seek(t)`. Tarifs →
+  disponibilités → Disponible/écho → demandes (urgentes en orange) → tarif dans le chat → adresse transmise → QR →
+  facture à son en-tête (« vous percevez », 17 %) → avis croisés → Mon entreprise (paiement par virement, en ligne
+  « bientôt » : jamais de séquestre montré actif). QR de fin `/l/pqd`. MP4 `public/brand/files/ping-animation-pro.mp4`.
 - `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche « Airbnb / Uber /
   Booking ». **Décision Romain 28/10** : accroche retenue malgré la critique, en texte seul (jamais de
   logos) sur les plaquettes `#particulier`, `#pro`, `#devenir-pro` (écran « Aussi simple qu'Airbnb… »).
