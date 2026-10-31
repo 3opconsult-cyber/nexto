@@ -8,6 +8,8 @@ import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
+import ProSuspensionBanner from '@/components/ProSuspensionBanner'
+import { paymentsActive } from '@/lib/paymentsClient'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
   particulier: 'Particulier',
@@ -44,6 +46,10 @@ export default function ProDashboard() {
   const [tab, setTab] = useState<'hub' | 'missions'>('hub')
   const [docs, setDocs] = useState<Record<string, { status: string }>>({})
   const [city, setCity] = useState('')
+  // Encart « Paiements et fiscalité » : état honnête de chaque élément, « bientôt » tant que le
+  // paiement en ligne est éteint (rien n'est débité ni versé par PING aujourd'hui).
+  const [payOn, setPayOn] = useState(false)
+  const [taxId, setTaxId] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -65,6 +71,10 @@ export default function ProDashboard() {
       const docMap: Record<string, { status: string }> = {}
       ;(docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
       setDocs(docMap)
+
+      const { data: priv } = await supabase.from('provider_private').select('tax_id').eq('id', user.id).maybeSingle()
+      setTaxId(priv?.tax_id ?? null)
+      paymentsActive().then(setPayOn)
 
       setLoading(false)
     }
@@ -138,6 +148,7 @@ export default function ProDashboard() {
       <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '22px 18px', minHeight: '70vh' }}>
         {tab === 'hub' && pro && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <ProSuspensionBanner />
             <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
               <div style={{
                 height: 110, position: 'relative',
@@ -198,7 +209,23 @@ export default function ProDashboard() {
               <HubRow icon={HUB_ICONS.tag} label="Mes tarifs" sub="Un prix par service : forfait, à l'heure, ou forfait + heures" onClick={() => router.push('/pro/tarifs')} />
               <HubRow icon={HUB_ICONS.chart} label="Mes revenus" sub="Récapitulatif et déclaration" onClick={() => router.push('/pro/revenus')} />
               <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
-              <HubRow icon={HUB_ICONS.card} label="Mes versements" sub="Compte de versement pour le paiement en ligne" onClick={() => router.push('/pro/paiements')} />
+            </HubGroup>
+
+            <HubGroup title="Paiements et fiscalité">
+              <HubRow icon={HUB_ICONS.card} label="Compte de versement (RIB)" sub="Votre IBAN, enregistré chez le partenaire de paiement, jamais chez PING"
+                badge={payOn ? undefined : { text: 'bientôt', tone: 'todo' }} onClick={() => router.push('/pro/paiements')} />
+              <HubRow icon={HUB_ICONS.lock} label="Prélèvement SEPA des commissions" sub="Mandat de prélèvement automatique"
+                badge={!payOn ? { text: 'bientôt', tone: 'todo' }
+                  : pro.sepa_mandate_status === 'active' ? { text: 'actif', tone: 'ok' }
+                  : ['revoked', 'failed'].includes(pro.sepa_mandate_status) ? { text: 'à régulariser', tone: 'todo' }
+                  : { text: 'à signer', tone: 'todo' }}
+                onClick={() => router.push('/pro/paiements#mandat')} />
+              <HubRow icon={HUB_ICONS.euro} label="Numéro fiscal (déclaration DAC7)" sub="Transmis à l'administration avec vos revenus annuels"
+                badge={taxId ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/revenus#fiscal')} />
+              <HubRow icon={HUB_ICONS.id} label="Numéro SAP et avance immédiate Urssaf" sub="Crédit d'impôt de 50 % pour vos clients · avance immédiate bientôt"
+                badge={pro.sap_number ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/revenus#sap')} />
+              <HubRow icon={HUB_ICONS.doc} label="CGV et contrat de commission" sub="Conditions acceptées à l'inscription"
+                badge={pro.cgv_accepted_at ? { text: 'accepté', tone: 'ok' } : { text: 'à accepter', tone: 'todo' }} onClick={() => router.push('/cgu#prestataires')} />
             </HubGroup>
 
             <HubGroup title="Mon entreprise">

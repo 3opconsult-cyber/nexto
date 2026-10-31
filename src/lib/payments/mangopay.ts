@@ -10,7 +10,9 @@
 // pour essayer, https://api.mangopay.com en production), MANGOPAY_HOOK_KEY (secret libre, repris dans
 // l'URL des hooks). Hooks à déclarer dans le tableau de bord Mangopay :
 //   https://<domaine>/api/payments/webhook/mangopay?k=<MANGOPAY_HOOK_KEY>
-// pour PAYIN_NORMAL_SUCCEEDED, PAYIN_NORMAL_FAILED, USER_KYC_REGULAR, USER_KYC_LIGHT.
+// pour PAYIN_NORMAL_SUCCEEDED, PAYIN_NORMAL_FAILED, USER_KYC_REGULAR, USER_KYC_LIGHT,
+// et pour le pare-feu des commissions (firewall.ts) : MANDATE_ACTIVATED, MANDATE_FAILED, MANDATE_EXPIRED,
+// DISPUTE_CREATED (un prélèvement par mandat rejeté arrive en PAYIN_NORMAL_FAILED de type DIRECT_DEBIT).
 // Les hooks Mangopay ne sont pas signés : on ne fait jamais confiance au contenu, on relit la ressource.
 // Noms de champs suivant la documentation publique v2.01 : à recontrôler en bac à sable.
 import { PaymentError, type PaymentProvider, type AccountPatch, type WebhookEvent } from './types'
@@ -162,6 +164,20 @@ export const mangopay: PaymentProvider = {
     const out: WebhookEvent[] = []
     if (type.startsWith('PAYIN_NORMAL_')) out.push({ type: 'payment', externalId: id })
     if (type.startsWith('USER_KYC_')) out.push({ type: 'account', externalId: id })
+    // Pare-feu : on relit chaque ressource (hooks non signés). Révocation par le titulaire = mandat
+    // FAILED ou EXPIRED selon la banque : à recontrôler en bac à sable.
+    if (type === 'MANDATE_ACTIVATED' || type === 'MANDATE_FAILED' || type === 'MANDATE_EXPIRED') {
+      const m = await call<any>('GET', `/mandates/${id}`).catch(() => null)
+      out.push({ type: 'incident', kind: type === 'MANDATE_ACTIVATED' ? 'mandate_active' : type === 'MANDATE_FAILED' ? 'mandate_failed' : 'mandate_revoked', ref: id, sellerExternalId: m?.UserId })
+    }
+    if (type === 'PAYIN_NORMAL_FAILED') {
+      const pi = await call<any>('GET', `/payins/${id}`).catch(() => null)
+      if (pi?.PaymentType === 'DIRECT_DEBIT') out.push({ type: 'incident', kind: 'debit_rejected', ref: id, sellerExternalId: pi.AuthorId, amountCents: pi.DebitedFunds?.Amount })
+    }
+    if (type === 'DISPUTE_CREATED') {
+      const d = await call<any>('GET', `/disputes/${id}`).catch(() => null)
+      out.push({ type: 'incident', kind: 'chargeback', ref: id, paymentExternalId: d?.InitialTransactionId, amountCents: d?.DisputedFunds?.Amount })
+    }
     return out
   },
 }

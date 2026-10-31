@@ -145,6 +145,14 @@ export const lemonway: PaymentProvider = {
     // 10 = money-in carte ; 8 = changement de statut du compte ; 9 = statut d'un document KYC.
     if (cat === '10' && (p.IdTransaction || p.IntId)) out.push({ type: 'payment', externalId: String(p.IdTransaction || p.IntId) })
     if ((cat === '8' || cat === '9') && (p.ExtId || p.accountId)) out.push({ type: 'account', externalId: String(p.ExtId || p.accountId) })
+    // Pare-feu des commissions (firewall.ts). HYPOTHÈSE À VÉRIFIER sur la documentation remise par
+    // Lemonway : catégorie 14 = prélèvement SEPA (SDD) rejeté, 15 = mandat SDD révoqué, 16 = opposition
+    // sur carte. Tant que ce n'est pas confirmé, un incident mal classé finit au pire en alerte admin.
+    const wallet = p.ExtId || p.accountId ? String(p.ExtId || p.accountId) : undefined
+    const cents = p.Amount != null ? Math.round(Number(String(p.Amount).replace(',', '.')) * 100) : undefined
+    if (cat === '14') out.push({ type: 'incident', kind: 'debit_rejected', ref: String(p.IdTransaction || p.IntId || ''), sellerExternalId: wallet, amountCents: cents })
+    if (cat === '15') out.push({ type: 'incident', kind: 'mandate_revoked', ref: String(p.IdMandate || p.IntId || ''), sellerExternalId: wallet })
+    if (cat === '16') out.push({ type: 'incident', kind: 'chargeback', ref: String(p.IdTransaction || p.IntId || ''), paymentExternalId: String(p.IdTransaction || p.IntId || ''), amountCents: cents })
     return out
   },
 }

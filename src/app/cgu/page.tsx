@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CgvAccept from '@/components/CgvAccept'
 
 export const metadata = { title: 'Conditions générales — PING' }
 
@@ -33,6 +34,13 @@ export default function CguPage() {
 
         <h2 style={h2}>Engagements des utilisateurs</h2>
         <p style={p}>Chacun s&apos;engage à fournir des informations exactes, à rester courtois et à ne pas contourner la plateforme pour les missions trouvées grâce à elle. PING peut suspendre un compte en cas d&apos;abus.</p>
+
+        <h2 id="prestataires" style={h2}>Conditions particulières des prestataires — contrat de commission</h2>
+        <p style={p}><b>Commission d&apos;affaires.</b> En acceptant une mission trouvée sur PING et, le cas échéant, en recevant un paiement qui transite par la plateforme, le prestataire accepte un contrat de commission d&apos;affaires avec OpConsult (PING) : une commission est due sur chaque prestation conclue via PING, au taux en vigueur au moment de la réservation, indiqué avant l&apos;acceptation du tarif et rappelé sur le relevé de commission émis par PING.</p>
+        <p style={p}><b>Paiement de la commission.</b> Quand le client paie en ligne, la commission est retenue directement sur le versement fait au prestataire. Quand ce n&apos;est pas possible (par exemple une prestation réglée par l&apos;avance immédiate de l&apos;Urssaf, versée directement au prestataire), le prestataire autorise PING et son partenaire de paiement agréé à prélever la commission sur son compte bancaire par mandat de prélèvement SEPA, signé à l&apos;ouverture de son compte de versement. Le prestataire autorise également PING à compenser toute commission restée impayée sur ses versements suivants.</p>
+        <p style={p}><b>Révocation ou rejet.</b> Si le mandat est révoqué, si un prélèvement est rejeté ou si un client obtient le remboursement d&apos;une prestation déjà versée, la somme due devient exigible et est retenue sur les versements suivants. Au-delà d&apos;un plafond d&apos;impayés fixé par PING, le compte est suspendu : le profil n&apos;apparaît plus sur la carte et aucun versement n&apos;est effectué jusqu&apos;à régularisation. PING peut engager le recouvrement des sommes restant dues.</p>
+        <p style={p}><b>Données bancaires et fiscales.</b> L&apos;IBAN est enregistré chez le partenaire de paiement, pas chez PING. Le numéro fiscal demandé sert uniquement à la déclaration annuelle des revenus perçus via la plateforme (obligation DAC7, art. 1649 ter D du CGI).</p>
+        <CgvAccept />
 
         <h2 style={h2}>Contact</h2>
         <p style={p}>Pour toute question : <a href="mailto:info@opconsult.co" style={{ color: '#0C8F7E', fontWeight: 700 }}>info@opconsult.co</a>. Voir aussi la <Link href="/confidentialite" style={{ color: '#0C8F7E', fontWeight: 700 }}>politique de confidentialité</Link>.</p>

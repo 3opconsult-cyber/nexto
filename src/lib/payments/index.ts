@@ -15,6 +15,7 @@ import { createAdminClient, hasServiceRole } from '@/lib/supabase/admin'
 import { stripe } from './stripe'
 import { mangopay } from './mangopay'
 import { lemonway } from './lemonway'
+import { applyNetting, isSuspended, planNetting, recordIncident } from './firewall'
 import { PaymentError, type AccountRow, type Iban, type Party, type PaymentProvider, type PaymentRow, type ProviderName, type WebhookEvent } from './types'
 
 export { PaymentError } from './types'
@@ -249,6 +250,13 @@ export async function settle(txId: string, opts: { force?: boolean } = {}) {
 }
 
 async function releaseAmount(db: SupabaseClient, p: PaymentProvider, tx: Tx, charges: PaymentRow[], payoutCents: number, keptCents: number) {
+  // Pare-feu : aucun versement à un prestataire suspendu (mandat révoqué, impayés au-delà du plafond).
+  // L'argent reste bloqué (held) jusqu'à la levée de la suspension par l'admin.
+  if (await isSuspended(db, tx.seller_id)) return { etat: 'prestataire_suspendu' }
+  // Compensation : les commissions impayées sont retenues sur ce versement et restent à PING.
+  const netting = await planNetting(db, tx.seller_id, payoutCents)
+  payoutCents = netting.netPayoutCents
+  keptCents += netting.recoveredCents
   // Verrou : un seul déblocage par mission, même si le cron et un admin le lancent en même temps.
   const { data: claimed } = await db.from('transactions').update({ payment_status: 'released' })
     .eq('id', tx.id).in('payment_status', ['held', 'complement_due']).select('id')
@@ -264,7 +272,8 @@ async function releaseAmount(db: SupabaseClient, p: PaymentProvider, tx: Tx, cha
       transaction_id: tx.id, provider: p.name, kind: m.kind, external_id: m.externalId,
       amount_cents: m.amountCents, fee_cents: m.feeCents, status: 'succeeded',
     })))
-    return { etat: 'verse', payoutCents, commissionCents: keptCents }
+    if (netting.plan.length) await applyNetting(db, tx.seller_id, tx.id, netting.plan)
+    return { etat: 'verse', payoutCents, commissionCents: keptCents, retenueImpayesCents: netting.recoveredCents }
   } catch (e) {
     await setPaymentStatus(db, tx.id, 'held')
     throw e
@@ -335,6 +344,20 @@ export async function handleWebhook(name: ProviderName, events: WebhookEvent[]) 
       if (!data) continue
       await syncCharge(db, p, data as PaymentRow)
       await recompute(db, (data as PaymentRow).transaction_id)
+    } else if (e.type === 'incident') {
+      const found = await incidentTarget(db, name, e)
+      if (!found) {
+        await db.from('payment_alerts').insert({ provider_id: null, kind: e.kind, detail: { psp: name, ref: e.ref, nonRattache: true } })
+        continue
+      }
+      let amount = e.amountCents
+      if (e.kind === 'chargeback' && found.transactionId) {
+        // Opposition : dette seulement si l'argent était déjà versé au prestataire, et au plus sa part
+        // (la commission perdue reste une perte PING). Avant versement, le séquestre couvre le litige.
+        const tx = await loadTx(db, found.transactionId)
+        amount = tx.payment_status === 'released' ? Math.min(amount ?? 0, tx.payout_cents ?? 0) : 0
+      }
+      await recordIncident({ providerId: found.providerId, transactionId: found.transactionId, kind: e.kind, amountCents: amount, ref: e.ref, psp: name })
     } else {
       const { data } = await db.from('payment_accounts').select('*').eq('provider', name).eq('external_id', e.externalId)
       for (const a of (data ?? []) as AccountRow[]) {
@@ -343,6 +366,24 @@ export async function handleWebhook(name: ProviderName, events: WebhookEvent[]) 
       }
     }
   }
+}
+
+// Retrouve le prestataire visé par un incident : métadonnée PING, compte chez le PSP, ou encaissement.
+async function incidentTarget(db: SupabaseClient, name: ProviderName, e: Extract<WebhookEvent, { type: 'incident' }>) {
+  if (e.pingUserId) return { providerId: e.pingUserId, transactionId: null }
+  if (e.sellerExternalId) {
+    const { data } = await db.from('payment_accounts').select('user_id').eq('provider', name).eq('role', 'seller').eq('external_id', e.sellerExternalId).maybeSingle()
+    if (data) return { providerId: data.user_id as string, transactionId: null }
+  }
+  if (e.paymentExternalId) {
+    const { data } = await db.from('payments').select('transaction_id').eq('provider', name)
+      .or(`external_id.eq.${e.paymentExternalId},meta->>payment_intent.eq.${e.paymentExternalId}`).limit(1).maybeSingle()
+    if (data) {
+      const { data: tx } = await db.from('transactions').select('seller_id').eq('id', data.transaction_id).maybeSingle()
+      if (tx) return { providerId: tx.seller_id as string, transactionId: data.transaction_id as string }
+    }
+  }
+  return null
 }
 
 // ---------- déblocage automatique (cron) ----------

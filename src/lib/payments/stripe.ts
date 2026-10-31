@@ -9,6 +9,10 @@
 // avec les événements checkout.session.completed, checkout.session.async_payment_succeeded,
 // checkout.session.async_payment_failed, checkout.session.expired et account.updated
 // (« Événements des comptes connectés » coché pour ce dernier).
+// Pare-feu des commissions (firewall.ts) : ajouter aussi mandate.updated, payment_intent.payment_failed
+// et charge.dispute.created. Les prélèvements SEPA de commission doivent porter les métadonnées
+// ping_kind=commission et ping_user_id, et le client Stripe du prestataire metadata.ping_user_id.
+// Noms d'événements et champs selon la documentation publique : à recontrôler en mode test.
 import { createHmac, timingSafeEqual } from 'crypto'
 import { PaymentError, type PaymentProvider, type AccountPatch, type WebhookEvent } from './types'
 
@@ -130,6 +134,18 @@ export const stripe: PaymentProvider = {
     const out: WebhookEvent[] = []
     if (String(evt.type).startsWith('checkout.session.')) out.push({ type: 'payment', externalId: obj.id })
     if (evt.type === 'account.updated') out.push({ type: 'account', externalId: obj.id })
+    if (evt.type === 'mandate.updated' && (obj.status === 'active' || obj.status === 'inactive')) {
+      // Le mandat ne porte pas de métadonnée : on remonte au client Stripe du prestataire.
+      const pm = obj.payment_method ? await call<any>('GET', `/payment_methods/${obj.payment_method}`).catch(() => null) : null
+      const cus = pm?.customer ? await call<any>('GET', `/customers/${pm.customer}`).catch(() => null) : null
+      out.push({ type: 'incident', kind: obj.status === 'active' ? 'mandate_active' : 'mandate_revoked', ref: obj.id, pingUserId: cus?.metadata?.ping_user_id })
+    }
+    if (evt.type === 'payment_intent.payment_failed' && obj.metadata?.ping_kind === 'commission') {
+      out.push({ type: 'incident', kind: 'debit_rejected', ref: obj.id, pingUserId: obj.metadata?.ping_user_id, amountCents: obj.amount })
+    }
+    if (evt.type === 'charge.dispute.created') {
+      out.push({ type: 'incident', kind: 'chargeback', ref: obj.id, paymentExternalId: obj.payment_intent, amountCents: obj.amount })
+    }
     return out
   },
 }

@@ -8,6 +8,7 @@ import { geocodeAddress } from '@/lib/geocode'
 import OnboardingStep from '@/components/OnboardingStep'
 import { TRADE_LIST as SERVICES, TRADES } from '@/lib/trades'
 import PricingEditor from '@/components/PricingEditor'
+import { CGV_VERSION } from '@/lib/cgv'
 import { type PricingDraft, draftFromColumns, emptyDraft, toColumns, validateDraft } from '@/lib/servicePricing'
 
 type Status = 'particulier' | 'professionnel' | null
@@ -34,6 +35,10 @@ export default function ProOnboarding() {
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
   const [website, setWebsite] = useState('')
+  // CGV prestataires + contrat de commission : case obligatoire à la dernière étape (déjà cochée si la
+  // version en vigueur a été acceptée, la date d'origine est alors conservée).
+  const [cgvOk, setCgvOk] = useState(false)
+  const [cgvAlready, setCgvAlready] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   // Profil déjà existant (« Modifier ») : on garde la visibilité, le statut et l'entreprise déjà
@@ -98,6 +103,7 @@ export default function ProOnboarding() {
         if (pp.lat != null && pp.lng != null) setCoords({ lat: pp.lat, lng: pp.lng })
         setBio(pp.bio || '')
         setWebsite(pp.website || '')
+        if (pp.cgv_version === CGV_VERSION) { setCgvOk(true); setCgvAlready(true) }
       }
       const { data: prof } = await supabase.from('profiles').select('address, phone_enc').eq('id', user.id).single()
       if (prof) {
@@ -144,6 +150,7 @@ export default function ProOnboarding() {
   function back() { setError(''); setStepIndex(i => Math.max(i - 1, 0)) }
 
   async function finish() {
+    if (!cgvOk) { setError('Cochez l’acceptation des CGV prestataires et du contrat de commission pour terminer.'); return }
     setLoading(true); setError('')
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -178,6 +185,7 @@ export default function ProOnboarding() {
       included_hours: primaryCols.included_hours,
       bio,
       website: website.trim() || null,
+      ...(cgvAlready ? {} : { cgv_accepted_at: new Date().toISOString(), cgv_version: CGV_VERSION }),
       // Première inscription : visible tout de suite. Modification : on garde le choix du prestataire.
       is_active: existing ? existing.isActive : true,
       legal_status: legalStatus,
@@ -362,13 +370,20 @@ export default function ProOnboarding() {
       title="Un mot pour vous présenter"
       subtitle="Une phrase suffit. Vous pourrez la modifier plus tard."
       onBack={back} onSkip={finish} skipLabel="Passer et terminer"
-      onCta={finish} ctaLabel="Terminer" ctaLoading={loading}>
+      onCta={finish} ctaLabel="Terminer" ctaLoading={loading} ctaDisabled={!cgvOk}>
       <textarea value={bio} onChange={e => setBio(e.target.value)} rows={4}
         style={{ ...inputStyle, resize: 'vertical' }} />
       <p style={{ fontSize: 11, color: '#6E8592', marginTop: 8, lineHeight: 1.4 }}>
         Ce texte est public. Pour votre sécurité, n'y indiquez ni numéro de téléphone ni nom d'enseigne —
         les échanges et paiements passent par PING.
       </p>
+      <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: cgvOk ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: cgvOk ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
+        <input type="checkbox" checked={cgvOk} onChange={e => { setCgvOk(e.target.checked); setError('') }} style={{ marginTop: 2, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+        <span style={{ fontSize: 12.5, color: '#123644', lineHeight: 1.5 }}>
+          J&apos;accepte les <a href="/cgu#prestataires" target="_blank" rel="noreferrer" style={{ color: '#0C8F7E', fontWeight: 700 }}>CGV prestataires et le contrat de commission</a> :
+          commission PING retenue sur mes versements, prélèvement SEPA des commissions non retenues, suspension en cas d&apos;impayé.
+        </span>
+      </label>
       {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginTop: 10 }}>{error}</p>}
     </OnboardingStep>
   )

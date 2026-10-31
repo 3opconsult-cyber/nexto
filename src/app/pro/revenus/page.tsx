@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { EUR } from '@/lib/invoice-pdf'
+import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 
 const DONE = ['completed', 'released']
 
@@ -23,6 +24,20 @@ export default function ProRevenusPage() {
     const { error } = await createClient().from('provider_profiles').update({ sap_number: sap.trim() || null }).eq('id', uid)
     if (error) { setSapError("Le numéro n'a pas pu être enregistré. Réessayez."); return }
     setSapSaved(true); setTimeout(() => setSapSaved(false), 1800)
+  }
+  // Numéro fiscal (NIF) pour la déclaration DAC7 : table privée provider_private (migration 019),
+  // jamais sur la fiche publique.
+  const [taxId, setTaxId] = useState('')
+  const [taxReady, setTaxReady] = useState(false)
+  const [taxSaved, setTaxSaved] = useState(false)
+  const [taxError, setTaxError] = useState('')
+  async function saveTax() {
+    setTaxError('')
+    const clean = taxId.replace(/\s/g, '')
+    if (clean && !/^\d{13}$/.test(clean)) { setTaxError('Le numéro fiscal français compte 13 chiffres (avis d’impôt, en haut à gauche).'); return }
+    const { error } = await createClient().from('provider_private').upsert({ id: uid, tax_id: clean || null, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    if (error) { setTaxError("Le numéro n'a pas pu être enregistré. Réessayez."); return }
+    setTaxSaved(true); setTimeout(() => setTaxSaved(false), 1800)
   }
   const [monthCents, setMonthCents] = useState(0)
   const [yearCents, setYearCents] = useState(0)
@@ -58,6 +73,8 @@ export default function ProRevenusPage() {
       const { data: sapRow, error: sapErr } = await supabase.from('provider_profiles').select('sap_number').eq('id', user.id).maybeSingle()
       if (!sapErr) { setSap(sapRow?.sap_number || ''); setSapReady(true) }
       setUid(user.id)
+      const { data: priv, error: privErr } = await supabase.from('provider_private').select('tax_id').eq('id', user.id).maybeSingle()
+      if (!privErr) { setTaxId(priv?.tax_id || ''); setTaxReady(true) }
 
       setLoading(false)
     }
@@ -77,6 +94,7 @@ export default function ProRevenusPage() {
           <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
         ) : (
           <>
+            <ProSuspensionBanner />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
               <div style={{ padding: 16, borderRadius: 16, background: 'rgba(18,179,156,.08)' }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#0C8F7E' }}>{eur(monthCents)}</div>
@@ -106,7 +124,7 @@ export default function ProRevenusPage() {
             </button>
 
             {sapReady && (
-              <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14 }}>
+              <div id="sap" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644', marginBottom: 6 }}>Crédit d&apos;impôt de vos clients (numéro SAP)</div>
                 <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.55, margin: '0 0 10px' }}>
                   Avec votre numéro de déclaration de services à la personne (gratuit sur le portail NOVA), vos clients
@@ -125,14 +143,29 @@ export default function ProRevenusPage() {
               </div>
             )}
 
-            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14 }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644', marginBottom: 6 }}>Obligation déclarative (DAC7)</div>
+            <div id="fiscal" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14 }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644', marginBottom: 6 }}>Déclaration des revenus (DAC7)</div>
               <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.55, margin: 0 }}>
                 Les revenus perçus via une plateforme comme PING pour des prestations de services sont
                 imposables et doivent être déclarés (formulaire 2042 C PRO). Conformément à la loi
                 (art. 1649 ter D du CGI), PING vous transmettra chaque année le total net perçu et le
                 nombre d&apos;opérations, et les déclarera à l&apos;administration fiscale avant le 31 janvier.
+                Pour cela, la loi demande votre numéro fiscal.
               </p>
+              {taxReady && (
+                <>
+                  <label htmlFor="tax-id" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '12px 0 5px' }}>Numéro fiscal (13 chiffres)</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input id="tax-id" value={taxId} onChange={e => setTaxId(e.target.value)} inputMode="numeric" placeholder="Sur votre avis d'impôt"
+                      style={{ flex: 1, minWidth: 0, border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif' }} />
+                    <button onClick={saveTax} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                      {taxSaved ? 'Enregistré' : 'Enregistrer'}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#6E8592', margin: '6px 0 0' }}>Visible uniquement par vous et PING, jamais sur votre profil.</p>
+                  {taxError && <p style={{ color: '#c0503a', fontSize: 12, margin: '8px 0 0' }}>{taxError}</p>}
+                </>
+              )}
             </div>
 
             <p style={{ fontSize: 10.5, color: '#6E8592', lineHeight: 1.5 }}>

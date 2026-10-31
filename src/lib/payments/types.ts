@@ -51,6 +51,17 @@ export type Iban = { iban: string; bic?: string; holder: string; address?: { lin
 export type WebhookEvent =
   | { type: 'payment'; externalId: string }
   | { type: 'account'; externalId: string }
+  // Pare-feu des commissions (firewall.ts) : mandat SEPA révoqué ou refusé, prélèvement de commission
+  // rejeté, opposition d'un client. Le prestataire est retrouvé par l'un des trois identifiants.
+  | {
+      type: 'incident'
+      kind: 'mandate_revoked' | 'mandate_failed' | 'mandate_active' | 'debit_rejected' | 'chargeback'
+      ref: string
+      pingUserId?: string          // métadonnée posée par PING à la création (Stripe)
+      sellerExternalId?: string    // identifiant du compte prestataire chez le PSP
+      paymentExternalId?: string   // encaissement client concerné (opposition)
+      amountCents?: number
+    }
 
 export interface PaymentProvider {
   name: ProviderName

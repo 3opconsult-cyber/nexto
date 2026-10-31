@@ -419,13 +419,24 @@ Tout en REST via fetch, sans SDK. Noms de champs Mangopay/Lemonway à recontrôl
 - **`transactions.status` n'est jamais touché** : l'argent a sa colonne `payment_status` (none, awaiting,
   held, complement_due, released, refunded, failed). L'invariant « held/released jamais posés » reste vrai
   pour `status`.
-- Migration `supabase/migrations/014_paiement_en_ligne.sql` : **PAS ENCORE APPLIQUÉE** (MCP en attente de
-  confirmation, à coller dans l'éditeur SQL). Tables `payment_accounts`, `payments`, colonnes de paiement,
+- Migration `supabase/migrations/014_paiement_en_ligne.sql` : appliquée (constaté le 30/10). Tables `payment_accounts`, `payments`, colonnes de paiement,
   trigger `trg_guard_payment_status` (seul le serveur pose le statut ; montants figés dès qu'un paiement est
   engagé, sauf scan de fin par le pro).
 - Activation (Vercel, côté serveur) : `PAYMENT_PROVIDER` = stripe | mangopay | lemonway, ses clés
   (en-tête de chaque adaptateur), `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`. `GET /api/payments` dit si
   c'est actif (et, pour un admin, ce qui manque).
+- **Pare-feu des commissions (migration 019, appliquée le 31/10)** : `src/lib/payments/firewall.ts`. Mandat SEPA
+  révoqué/refusé, prélèvement de commission rejeté ou opposition client après versement (webhooks des 3 PSP,
+  noms d'événements à recontrôler en bac à sable — Lemonway = hypothèse) → alerte `payment_alerts`, dette
+  `commission_debts` compensée sur le prochain versement (`releaseAmount`), suspension au-delà de
+  `app_settings.unpaid_ceiling_cents` (50 € par défaut) ou mandat révoqué avec dette : `is_active=false`,
+  `payments_suspended_at`, aucun versement. Levée par l'admin seul (`/admin/paiements`). Trigger : le pro ne
+  touche ni `sepa_mandate_status` ni `payments_suspended_at`, ne se rend pas visible suspendu. NIF (DAC7) et motif
+  de suspension dans `provider_private` (jamais `provider_profiles`, lisible publiquement). CGV prestataires
+  (`/cgu#prestataires`, PROVISOIRES) : contrat de commission d'affaires, mandat SEPA, compensation, suspension ;
+  acceptation obligatoire à la fin de `/pro/onboarding` (`cgv_accepted_at`, `cgv_version` = `src/lib/cgv.ts`).
+  Encart « Paiements et fiscalité » dans Mon entreprise. Non codé : la création du mandat et des prélèvements
+  eux-mêmes (dépend du PSP choisi).
 - Crédit d'impôt : avec le séquestre, le client paie 100 % et récupère 50 % sur sa déclaration (classique).
   L'avance immédiate (Urssaf encaisse la part client et verse 100 % au pro, ~J+4) est un circuit à part :
   la commission PING devrait alors être facturée séparément — piste : IBAN virtuel du porte-monnaie PSP

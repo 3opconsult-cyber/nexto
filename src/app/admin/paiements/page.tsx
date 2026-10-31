@@ -9,13 +9,21 @@ type Mission = {
   completed_at: string | null; en_route_at: string | null; arrived_at: string | null
   litige: boolean; alerte: string | null
 }
+type Alerte = { id: string; provider_id: string | null; kind: string; detail: Record<string, any>; created_at: string; nom: string }
+type Suspendu = { id: string; nom: string; payments_suspended_at: string; sepa_mandate_status: string; detteCents: number; motif: string | null }
+type PareFeu = { plafondCents: number; alertes: Alerte[]; suspendus: Suspendu[] }
 type Data = {
+  pareFeu?: PareFeu | null
   reglage: { choisi: string | null; actif: string | null; cleService: boolean; cron: boolean; prestataires: Array<{ nom: string; label: string; cles: boolean }> }
   auto?: boolean; delaiHeures?: number; missions: Mission[]; error?: string
 }
 
 const eur = (c: number | null) => ((c ?? 0) / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 const STATUT: Record<string, string> = { held: 'Bloqué (payé)', complement_due: 'Complément dû', awaiting: 'Paiement en attente', failed: 'Paiement refusé' }
+const KIND: Record<string, string> = {
+  mandate_revoked: 'Mandat de prélèvement révoqué', mandate_failed: 'Mandat de prélèvement refusé', debit_rejected: 'Prélèvement de commission rejeté',
+  chargeback: 'Opposition d’un client', suspended: 'Compte suspendu', unsuspended: 'Suspension levée',
+}
 const btn = (bg: string) => ({ border: 'none', borderRadius: 999, padding: '7px 14px', background: bg, color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' })
 
 export default function AdminPaiementsPage() {
@@ -31,7 +39,7 @@ export default function AdminPaiementsPage() {
 
   async function act(path: string, body: Record<string, unknown>, confirmText: string) {
     if (!confirm(confirmText)) return
-    setBusy(String(body.transactionId)); setMsg('')
+    setBusy(String(body.transactionId ?? body.providerId ?? body.alertId)); setMsg('')
     const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const j = await r.json().catch(() => ({}))
     setMsg(r.ok ? JSON.stringify(j) : (j.error || 'Échec'))
@@ -70,6 +78,50 @@ export default function AdminPaiementsPage() {
             <li>CRON_SECRET : {r.cron ? 'renseigné' : 'absent'}</li>
           </ul>
         </div>
+
+        {d.pareFeu === null && (
+          <div style={box}><span style={{ fontSize: 13, color: '#9A6712' }}>Pare-feu des commissions inactif : clé service Supabase absente côté serveur.</span></div>
+        )}
+        {d.pareFeu && (
+          <div style={box}>
+            <b style={{ fontFamily: 'Quicksand, sans-serif' }}>Pare-feu des commissions</b>
+            <p style={{ fontSize: 12.5, color: '#4E6470', margin: '6px 0 10px', lineHeight: 1.55 }}>
+              Mandat révoqué, prélèvement rejeté ou opposition : une alerte arrive ici, la commission devient une dette
+              retenue sur le prochain versement. Au-delà de {eur(d.pareFeu.plafondCents)} d&apos;impayés (réglable, clé
+              <code> unpaid_ceiling_cents</code>), le compte est suspendu : retiré de la carte, plus aucun versement.
+            </p>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '10px 0 6px' }}>Prestataires suspendus</div>
+            {d.pareFeu.suspendus.length === 0 ? <div style={{ fontSize: 13, color: '#4E6470' }}>Aucun.</div> : d.pareFeu.suspendus.map(x => (
+              <div key={x.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #E7EDEB' }}>
+                <div style={{ fontSize: 13 }}>
+                  <b>{x.nom}</b> · depuis le {new Date(x.payments_suspended_at).toLocaleDateString('fr-FR')} · dette {eur(x.detteCents)}
+                  {x.motif && <div style={{ fontSize: 12, color: '#4E6470' }}>{x.motif}</div>}
+                </div>
+                <button disabled={busy === x.id} style={btn('#12B39C')}
+                  onClick={() => act('/api/payments/admin', { action: 'unsuspend', providerId: x.id }, `Lever la suspension de ${x.nom} ?`)}>Lever la suspension</button>
+              </div>
+            ))}
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '14px 0 6px' }}>Alertes à traiter</div>
+            {d.pareFeu.alertes.length === 0 ? <div style={{ fontSize: 13, color: '#4E6470' }}>Aucune.</div> : d.pareFeu.alertes.map(a => (
+              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #E7EDEB' }}>
+                <div style={{ fontSize: 13 }}>
+                  <b style={{ color: ['suspended', 'chargeback', 'debit_rejected', 'mandate_revoked'].includes(a.kind) ? '#c0503a' : '#123644' }}>{KIND[a.kind] || a.kind}</b>
+                  {' · '}{a.provider_id ? a.nom : 'prestataire non retrouvé'} · {new Date(a.created_at).toLocaleString('fr-FR')}
+                  {a.detail?.amountCents ? <span> · {eur(a.detail.amountCents)}</span> : null}
+                  {a.detail?.reason && <div style={{ fontSize: 12, color: '#4E6470' }}>{a.detail.reason}</div>}
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {a.provider_id && !['suspended', 'unsuspended'].includes(a.kind) && (
+                    <button disabled={busy === a.provider_id} style={btn('#c0503a')}
+                      onClick={() => act('/api/payments/admin', { action: 'suspend', providerId: a.provider_id, reason: KIND[a.kind] || a.kind }, `Suspendre ${a.nom} (retrait de la carte, versements bloqués) ?`)}>Suspendre</button>
+                  )}
+                  <button disabled={busy === a.id} style={btn('#4E6470')}
+                    onClick={() => act('/api/payments/admin', { action: 'handled', alertId: a.id }, 'Marquer cette alerte comme traitée ?')}>Traitée</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {msg && <div style={{ ...box, fontSize: 12, color: '#4E6470', wordBreak: 'break-all' }}>{msg}</div>}
 
