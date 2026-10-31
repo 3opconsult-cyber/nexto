@@ -88,6 +88,22 @@ export function durationLabel(min?: number | null) {
 /** Ce que PING affiche d'elle-même tant qu'elle n'est pas immatriculée. */
 export const PLATFORM_PENDING = 'PING — société en cours de constitution'
 
+/**
+ * Les polices standard du PDF (WinAnsi) ne savent pas écrire certains caractères que produit le
+ * formatage français : l'espace fine insécable des milliers (« 1 234,56 € », U+202F), l'espace
+ * insécable (U+00A0), le signe moins (U+2212). Sans ce filtre, toute facture de 1 000 € ou plus
+ * échouait à se générer (constaté le 31/10/2026).
+ */
+/** « 8.0 % du montant » (format de la base) → « 8 % du montant ». */
+export const tauxLabel = (t: string) => String(t ?? '').replace(/(\d+)\.0\b/g, '$1').replace(/(\d)\.(\d)/g, '$1,$2')
+
+export const pdfSafe = (s: string | null | undefined) =>
+  String(s ?? '')
+    .replace(/[\u202F\u00A0\u2007\u2009]/g, ' ')
+    .replace(/\u2212/g, '-')
+    .replace(/[\u2010\u2011]/g, '-')
+    .replace(/[^\x20-\x7E\u00A1-\u00FF\u20AC\u2018\u2019\u201A\u201C\u201D\u201E\u2020\u2021\u2022\u2026\u2030\u2039\u203A\u0152\u0153\u0160\u0161\u0178\u017D\u017E\u0192\u02C6\u02DC\u2013\u2014\u2122\n]/g, '')
+
 export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
   const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
 
@@ -110,14 +126,14 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
   let y = 841.89 - M
 
   const txt = (s: string, x: number, yy: number, size = 9.5, f = reg, c = INK) =>
-    page.drawText(s ?? '', { x, y: yy, size, font: f, color: c })
+    page.drawText(pdfSafe(s), { x, y: yy, size, font: f, color: c })
   const right = (s: string, xEnd: number, yy: number, size = 9.5, f = reg, c = INK) =>
-    page.drawText(s ?? '', { x: xEnd - f.widthOfTextAtSize(s ?? '', size), y: yy, size, font: f, color: c })
+    page.drawText(pdfSafe(s), { x: xEnd - f.widthOfTextAtSize(pdfSafe(s), size), y: yy, size, font: f, color: c })
   const rule = (yy: number, c = LINE) =>
     page.drawRectangle({ x: M, y: yy, width: W - M * 2, height: 0.7, color: c })
   const wrap = (s: string, max: number, size: number, f = reg) => {
     const out: string[] = []; let cur = ''
-    for (const w of s.split(' ')) {
+    for (const w of pdfSafe(s).split(' ')) {
       const t = cur ? cur + ' ' + w : w
       if (f.widthOfTextAtSize(t, size) > max) { out.push(cur); cur = w } else cur = t
     }
@@ -207,7 +223,7 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
       if (l.detail) { txt(String(l.detail), M, y, 8.5, reg, SLATE); y -= 13 }
       y -= 4
     }
-    if (inv.legal?.taux) { txt(inv.legal.taux, M, y, 8.5, reg, SLATE); y -= 15 }
+    if (inv.legal?.taux) { txt(tauxLabel(inv.legal.taux), M, y, 8.5, reg, SLATE); y -= 15 }
   } else {
     // Sobre aussi : une ligne, et dessous ce qu'il faut pour refaire le calcul.
     // Pas de tableau à six lignes — le lecteur veut un montant, pas un formulaire.

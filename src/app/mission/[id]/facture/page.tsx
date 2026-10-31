@@ -6,7 +6,7 @@ import { Sign } from '@/components/Brand'
 import NavDrawer from '@/components/NavDrawer'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
-         PLATFORM_PENDING, type Invoice } from '@/lib/invoice-pdf'
+         PLATFORM_PENDING, tauxLabel, type Invoice } from '@/lib/invoice-pdf'
 
 /**
  * Facturation — les trois documents d'une mission.
@@ -224,7 +224,7 @@ export default function FacturePage() {
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13.5 }}>{l.libelle}</div>
                   {l.detail && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{l.detail}</div>}
-                  {inv.legal?.taux && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>{inv.legal.taux}</div>}
+                  {inv.legal?.taux && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>{tauxLabel(inv.legal.taux)}</div>}
                 </div>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
                   {EUR(Number(l.montant_cents ?? 0))}
