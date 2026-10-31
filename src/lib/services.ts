@@ -33,6 +33,12 @@ export interface RequestNearby {
   desired_slot: string | null
   frequency: string | null
   urgent?: boolean
+  hours_wanted?: number | null
+  linen_kg?: number | null
+  linen_types?: string[] | null
+  household_size?: string | null
+  surface_m2?: number | null
+  payment_pref?: string | null
   // Pas d'adresse ici par design : elle n'est communiquée qu'une fois la
   // mission confirmée (invariant CLAUDE.md), jamais pendant le parcours
   // "demandes ouvertes autour de moi" avant toute proposition.

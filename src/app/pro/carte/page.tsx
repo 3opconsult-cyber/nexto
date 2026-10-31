@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import NavDrawer from '@/components/NavDrawer'
+import RequestDetails from '@/components/RequestDetails'
+import { addressUsable, maskAddress } from '@/lib/address'
 import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib/services'
 import { TRADES } from '@/lib/trades'
 import { createClient } from '@/lib/supabase/client'
@@ -35,7 +37,6 @@ function budgetRangeTxt(r: RequestNearby) {
   return budgetTxt(r.budget_cents)
 }
 const SLOT_LABELS: Record<string, string> = { matin: 'Matin', 'apres-midi': 'Après-midi', soir: 'Soir' }
-const FREQ_LABELS: Record<string, string> = { ponctuel: 'Ponctuel', hebdomadaire: 'Hebdomadaire', mensuel: 'Mensuel' }
 
 export default function ProCartePage() {
   const router = useRouter()
@@ -85,7 +86,7 @@ export default function ProCartePage() {
   useEffect(() => {
     if (!proId) return
     createClient().from('transactions')
-      .select('id, status, scheduled_at, created_at, subtotal_cents, requests(category, title, address, lat, lng)')
+      .select('id, status, scheduled_at, created_at, subtotal_cents, address_status, requests(category, title, address, lat, lng)')
       .eq('seller_id', proId).eq('price_confirmed', true).in('status', ['pending', 'arrived'])
       .order('scheduled_at', { ascending: true, nullsFirst: false })
       .then(({ data }) => setMissions(data ?? []))
@@ -155,11 +156,7 @@ export default function ProCartePage() {
             <b style={{ color: 'var(--ink)' }}>{new Date(selected.desired_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}{selected.desired_slot ? ` · ${SLOT_LABELS[selected.desired_slot] || selected.desired_slot}` : ''}</b>
           </div>
         )}
-        {selected.frequency && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
-            <span style={{ color: 'var(--slate)' }}>Fréquence</span><b style={{ color: 'var(--ink)' }}>{FREQ_LABELS[selected.frequency] || selected.frequency}</b>
-          </div>
-        )}
+        <RequestDetails request={selected} />
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
           <span style={{ color: 'var(--slate)' }}>Publiée</span><b style={{ color: 'var(--ink)' }}>{agoTxt(selected.created_at)}</b>
         </div>
@@ -236,7 +233,10 @@ export default function ProCartePage() {
                 <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{m.requests?.title || TRADES[m.requests?.category] || 'Intervention'}</b>
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: m.status === 'arrived' ? '#1a8f4c' : '#0C8F7E', whiteSpace: 'nowrap' }}>{m.status === 'arrived' ? 'En cours' : missionWhen(m)}</span>
               </div>
-              <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>{m.requests?.address || 'Adresse à fixer par le client'}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>{!m.requests?.address ? 'Adresse à fixer par le client'
+                : addressUsable(m.address_status) ? m.requests.address
+                : m.address_status === 'a_valider' ? `${maskAddress(m.requests.address)} · autre adresse à valider dans la conversation`
+                : 'Adresse refusée : le client en propose une autre'}</div>
             </div>
           ))}
         </div>
@@ -245,7 +245,7 @@ export default function ProCartePage() {
   )
   const sidePanel = view === 'interventions' ? missionsPanel : (selected ? requestDetail : activityPanel)
   const mapPins = view === 'interventions'
-    ? missions.filter(m => m.requests?.lat != null && m.requests?.lng != null).map(m => ({
+    ? missions.filter(m => m.requests?.lat != null && m.requests?.lng != null && addressUsable(m.address_status)).map(m => ({
         id: m.id, lat: m.requests.lat, lng: m.requests.lng, color: '#12B39C',
         label: m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null,
       }))

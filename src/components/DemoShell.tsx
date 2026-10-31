@@ -163,6 +163,14 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 </div>
 
                 <div className="pingbtn" onClick={() => loadPros()}><span className="halo" /><span className="lbl">PING</span></div>
+                {/* Déposer une annonce (Romain 31/10 : introuvable depuis la carte). Masqué quand une fiche est ouverte. */}
+                {!pvShow && (
+                  <button type="button" onClick={() => router.push('/client/demandes/new')}
+                    style={{ position: 'absolute', left: 14, bottom: 80, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                    Déposer une demande
+                  </button>
+                )}
                 <div className="loc" onClick={() => setRecenterTick(t => t + 1)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
 
                 <div className={`preview ${pvShow ? 'show' : ''}`} id="preview">

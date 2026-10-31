@@ -1,4 +1,5 @@
 "use client"
+import RequestDetails from '@/components/RequestDetails'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -7,8 +8,6 @@ import NavDrawer from '@/components/NavDrawer'
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 const DONE = ['completed', 'released']
 const STATUS: Record<string, string> = { open: 'En attente', matched: 'En cours', completed: 'Terminée', cancelled: 'Annulée' }
-const FREQ: Record<string, string> = { hebdomadaire: 'Chaque semaine', bimensuel: 'Toutes les deux semaines', mensuel: 'Chaque mois', quotidien: 'Chaque jour' }
-function freqLabel(f: string) { return FREQ[f] || (f.charAt(0).toUpperCase() + f.slice(1)) }
 function eur(c?: number | null) { return c != null ? `${(c / 100).toFixed(0)} €` : '' }
 
 type Tx = { id: string; status: string; counterpart: string }
@@ -94,13 +93,13 @@ export default function MesDemandesPage() {
       </div>
 
       <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', marginBottom: 4 }}>Publiez votre demande</div>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', marginBottom: 4 }}>Déposez une demande</div>
         <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14, lineHeight: 1.5 }}>
-          Personne de disponible autour de vous ? Décrivez ce dont vous avez besoin : les prestataires à proximité vous font une proposition chiffrée.
+          Comme une annonce : service, heures ou kilos de linge, fréquence, foyer, paiement. Les prestataires à proximité vous font une proposition chiffrée.
         </p>
         <button onClick={() => router.push('/client/demandes/new')}
           style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
-          + Publier une demande
+          + Déposer une demande
         </button>
 
         {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
@@ -132,8 +131,9 @@ export default function MesDemandesPage() {
                     </div>
                     <div style={{ fontSize: 11, color: '#0C8F7E', fontWeight: 700, marginTop: 3 }}>{TRAD[r.category] || r.category}</div>
                     {r.description && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>{r.description}</div>}
+                    <RequestDetails request={r} compact />
                     <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{r.frequency && r.frequency !== 'ponctuel' ? ` · ${freqLabel(r.frequency)}` : ''}</span>
+                      <span>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
                       {budgetTxt ? <b style={{ color: '#123644' }}>{budgetTxt}</b> : null}
                     </div>
                   </div>

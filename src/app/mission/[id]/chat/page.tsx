@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useRef, Fragment } from 'react'
 import DayTimePicker from '@/components/DayTimePicker'
+import RequestDetails from '@/components/RequestDetails'
 import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
 import { maskAddress, addressUsable } from '@/lib/address'
 import { useParams, useRouter } from 'next/navigation'
@@ -118,7 +119,7 @@ export default function ChatPage() {
       setMsgs(loaded)
       resolvePhotoUrls(loaded)
       const { data: t } = await supabase.from('transactions')
-        .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents)')
+        .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents, frequency, hours_wanted, linen_kg, linen_types, household_size, surface_m2, payment_pref)')
         .eq('id', transactionId).single()
       setTx(t)
       if (!t) setMissing(true)
@@ -464,6 +465,7 @@ export default function ChatPage() {
           </div>
           {req.title && <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginTop: 2 }}>{req.title}</div>}
           {req.description && <div style={{ fontSize: 12.5, color: '#3d5560', lineHeight: 1.5, marginTop: 3 }}>{req.description}</div>}
+          <div style={{ marginTop: 6 }}><RequestDetails request={req} compact /></div>
           <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>
             {[
               req.desired_date ? `Souhaité le ${new Date(req.desired_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}${req.desired_slot ? `, ${SLOT_LABEL[req.desired_slot] || req.desired_slot}` : ''}` : null,

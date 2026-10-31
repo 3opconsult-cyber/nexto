@@ -100,6 +100,7 @@ export default function ClientProfil() {
 
             {/* Même rubriques et même présentation que « Mon entreprise » côté prestataire. */}
             <HubGroup title="Mon activité">
+              <HubRow icon={HUB_ICONS.doc} label="Déposer une demande" sub="Une annonce à votre adresse : service, heures, fréquence, paiement" onClick={() => router.push('/client/demandes/new')} />
               <HubRow icon={HUB_ICONS.list} label="Mes demandes" sub="Vos demandes publiées et les propositions reçues" onClick={() => router.push('/client/demandes')} />
               <HubRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
               <HubRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Les prestataires que vous avez gardés" onClick={() => router.push('/client/favoris')} />
