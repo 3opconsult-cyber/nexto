@@ -133,6 +133,7 @@
   }
 
   document.querySelectorAll('.side').forEach(function (b) { b.onclick = function () { side = b.dataset.side; idx = 0; render() } });
+  window.addEventListener('hashchange', function () { var cur = list()[idx]; if (cur && location.hash === '#' + cur.id) return; fromHash(); render() });
   document.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight') go(idx + 1); if (e.key === 'ArrowLeft') go(idx - 1) });
   var x0 = null;
   document.addEventListener('touchstart', function (e) { if (e.target.closest && e.target.closest('.phone')) x0 = e.touches[0].clientX }, { passive: true });
