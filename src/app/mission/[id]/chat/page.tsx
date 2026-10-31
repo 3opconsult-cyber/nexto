@@ -1,6 +1,8 @@
 "use client"
 import { useState, useEffect, useRef, Fragment } from 'react'
 import DayTimePicker from '@/components/DayTimePicker'
+import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
+import { maskAddress, addressUsable } from '@/lib/address'
 import { useParams, useRouter } from 'next/navigation'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
@@ -82,6 +84,10 @@ export default function ChatPage() {
   const [clientRating, setClientRating] = useState<{ avg: number; n: number } | null>(null)
   const [req, setReq] = useState<any>(null)
   const [rdvAddr, setRdvAddr] = useState('')
+  // Adresse d'intervention : celle du profil du client par défaut, une autre est soumise au prestataire.
+  const [myProfileAddr, setMyProfileAddr] = useState<string | null>(null)
+  const [rdvChoice, setRdvChoice] = useState<AddressValue>({ mode: 'profil', other: '', confirmed: false })
+  const [addrBusy, setAddrBusy] = useState(false)
   const [rdvAt, setRdvAt] = useState('')
   const [rdvSaving, setRdvSaving] = useState(false)
   const [rdvError, setRdvError] = useState('')
@@ -116,6 +122,10 @@ export default function ChatPage() {
         .eq('id', transactionId).single()
       setTx(t)
       if (!t) setMissing(true)
+      if (t && user && user.id === t.buyer_id) {
+        const { data: pr } = await supabase.from('profiles').select('address').eq('id', user.id).maybeSingle()
+        setMyProfileAddr(pr?.address?.trim() || null)
+      }
       if (t?.requests) setReq(t.requests)
       if (t?.requests?.address) { setReqAddr(t.requests.address); setRdvAddr(t.requests.address) }
       if (t?.scheduled_at) setRdvAt(toLocalInput(t.scheduled_at))
@@ -330,12 +340,15 @@ export default function ChatPage() {
   // Après accord sur le prix, le client donne l'adresse et l'heure du rendez-vous (une conversation
   // ouverte depuis la carte n'en a pas encore) : sans elles, le prestataire ne peut pas venir.
   async function saveRdv() {
-    if (!tx || !rdvAddr.trim() || !rdvAt) { setRdvError('Indiquez l\u2019adresse et la date.'); return }
+    if (!tx || !rdvAt) { setRdvError('Choisissez la date et l\u2019heure.'); return }
+    const chosenAddr = resolveAddress(myProfileAddr, rdvChoice)
+    if ('error' in chosenAddr) { setRdvError(chosenAddr.error as string); return }
     const when = new Date(rdvAt)
     if (isNaN(when.getTime())) { setRdvError('Date invalide.'); return }
     setRdvSaving(true); setRdvError('')
     const supabase = createClient()
-    const addr = rdvAddr.trim()
+    const addr = chosenAddr.address
+    if (chosenAddr.saveToProfile && userId) { await supabase.from('profiles').update({ address: addr }).eq('id', userId); setMyProfileAddr(addr) }
     if (req?.id && addr !== reqAddr) {
       const pos = await geocodeAddress(addr).catch(() => null)
       const { error } = await supabase.from('requests')
@@ -346,14 +359,31 @@ export default function ChatPage() {
       setTx((t: any) => ({ ...t, requests: { ...(t.requests || {}), address: addr, ...(pos ? { lat: pos.lat, lng: pos.lng } : {}) } }))
     }
     const { data: upd, error: txErr } = await supabase.from('transactions')
-      .update({ scheduled_at: when.toISOString() }).eq('id', tx.id).select().maybeSingle()
+      .update({ scheduled_at: when.toISOString(), address_status: chosenAddr.status }).eq('id', tx.id).select().maybeSingle()
     if (txErr || !upd) { setRdvSaving(false); setRdvError('Date non enregistrée — réessayez.'); return }
-    setTx((t: any) => ({ ...t, scheduled_at: upd.scheduled_at }))
+    setTx((t: any) => ({ ...t, scheduled_at: upd.scheduled_at, address_status: upd.address_status }))
     await supabase.from('messages').insert({
       transaction_id: tx.id, ...(await systemSender(supabase)),
-      body: `✓ Rendez-vous fixé : ${rdvLabel(upd.scheduled_at)} — adresse transmise au prestataire`,
+      body: chosenAddr.status === 'a_valider'
+        ? `✓ Rendez-vous proposé : ${rdvLabel(upd.scheduled_at)} — autre adresse à valider par le prestataire : ${maskAddress(addr)}`
+        : `✓ Rendez-vous fixé : ${rdvLabel(upd.scheduled_at)} — adresse transmise au prestataire`,
     })
     setRdvSaving(false)
+  }
+
+  // Le prestataire accepte ou refuse une adresse différente de celle du profil du client.
+  async function answerAddress(ok: boolean) {
+    if (!tx) return
+    setAddrBusy(true)
+    const supabase = createClient()
+    const { data: upd, error } = await supabase.from('transactions').update({ address_status: ok ? 'acceptee' : 'refusee' }).eq('id', tx.id).select().maybeSingle()
+    setAddrBusy(false)
+    if (error || !upd) { setWarning('Réponse non enregistrée — réessayez.'); setTimeout(() => setWarning(''), 4000); return }
+    setTx((t: any) => ({ ...t, address_status: upd.address_status }))
+    await supabase.from('messages').insert({
+      transaction_id: tx.id, ...(await systemSender(supabase)),
+      body: ok ? '✓ Adresse d’intervention acceptée par le prestataire' : '✕ Adresse d’intervention refusée par le prestataire : le client en propose une autre',
+    })
   }
 
   async function submitReport() {
@@ -415,14 +445,14 @@ export default function ChatPage() {
       {/* Récapitulatif complet (contrat, durée, montants, avis, litige, factures), des deux côtés. */}
       {tx && userId && tx.buyer_id !== tx.seller_id && (
         <MissionRecap tx={tx} userId={userId} counterpart={counterpart}
-          address={userId === tx.buyer_id || !payOn || ['held', 'released'].includes(tx.payment_status) ? reqAddr : null}
+          address={userId === tx.buyer_id || ((!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status)) ? reqAddr : null}
           refreshKey={`${myReview?.stars ?? ''}-${myClientReview?.stars ?? ''}-${myClientReview?.is_public ?? ''}-${reportSent}`} />
       )}
 
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
         <DepartureBar tx={tx} userId={userId} onChange={setTx}
-          address={!payOn || ['held', 'released'].includes(tx.payment_status) ? reqAddr : null}
+          address={(userId === tx.buyer_id || ((!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status))) ? reqAddr : null}
           confirmed={!!tx && !!tx.price_confirmed} />
       )}
 
@@ -443,16 +473,35 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Autre adresse proposée par le client : le prestataire la voit sans le numéro et l'accepte ou non. */}
+      {tx && userId === tx.seller_id && tx.address_status === 'a_valider' && reqAddr && !['cancelled', 'completed', 'released'].includes(tx.status) && (
+        <div style={{ margin: '10px 16px 0', background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 14, padding: 14 }}>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Adresse d&apos;intervention à valider</div>
+          <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 8px', lineHeight: 1.5 }}>Le client demande une intervention ailleurs qu&apos;à l&apos;adresse de son profil. Le numéro vous est transmis si vous acceptez.</p>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#123644', marginBottom: 10 }}>{maskAddress(reqAddr)}</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, padding: 11, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
+            <button onClick={() => answerAddress(false)} disabled={addrBusy} style={{ flex: 1, padding: 11, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
+          </div>
+        </div>
+      )}
+      {tx && userId === tx.buyer_id && tx.address_status === 'a_valider' && !['cancelled', 'completed', 'released'].includes(tx.status) && (
+        <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(242,169,59,.12)', color: '#8a6520', fontSize: 12.5, fontWeight: 600 }}>
+          Adresse d&apos;intervention en attente de validation par le prestataire.
+        </div>
+      )}
+
       {/* Rendez-vous : le client complète l'adresse et l'heure dès que le tarif est validé. */}
       {tx && userId && tx.price_confirmed && !['cancelled', 'completed', 'released'].includes(tx.status) && (
-        (!reqAddr || !tx.scheduled_at) ? (
+        (!reqAddr || !tx.scheduled_at || tx.address_status === 'refusee') ? (
           userId === tx.buyer_id ? (
             <div style={{ margin: '10px 16px 0', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 14, padding: 14 }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Fixez le rendez-vous</div>
               <p style={{ fontSize: 12, color: '#4E6470', margin: '3px 0 10px', lineHeight: 1.5 }}>Le tarif est validé. L&apos;adresse n&apos;est transmise qu&apos;au prestataire de cette mission.</p>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Adresse de l&apos;intervention</label>
-              <input value={rdvAddr} onChange={e => setRdvAddr(e.target.value)} autoComplete="street-address"
-                style={{ width: '100%', padding: '11px 13px', borderRadius: 11, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }} />
+              {tx.address_status === 'refusee' && (
+                <p style={{ fontSize: 12.5, color: '#B42318', fontWeight: 600, margin: '0 0 10px' }}>Le prestataire n&apos;intervient pas à l&apos;adresse proposée : choisissez-en une autre.</p>
+              )}
+              <div style={{ marginBottom: 12 }}><AddressChoice profileAddress={myProfileAddr} value={rdvChoice} onChange={setRdvChoice} /></div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Date et heure</label>
               <div style={{ marginTop: 6 }}><DayTimePicker value={rdvAt} onChange={setRdvAt} /></div><div style={{ height: 10 }} />
               {rdvError && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{rdvError}</p>}

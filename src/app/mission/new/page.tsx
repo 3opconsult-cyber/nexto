@@ -1,6 +1,8 @@
 "use client"
 import { useState, useEffect, Suspense } from 'react'
 import DayTimePicker from '@/components/DayTimePicker'
+import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
+import { maskAddress } from '@/lib/address'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
@@ -23,7 +25,17 @@ function MissionForm() {
   const serviceId = params.get('service')
   const [pro, setPro] = useState<any>(null)
   const [article, setArticle] = useState<any>(null)
-  const [address, setAddress] = useState('')
+  // Adresse d'intervention : celle du profil par défaut, confirmée par le client (Romain 31/10).
+  const [profileAddress, setProfileAddress] = useState<string | null>(null)
+  const [addr, setAddr] = useState<AddressValue>({ mode: 'profil', other: '', confirmed: false })
+  useEffect(() => {
+    const sb = createClient()
+    sb.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data } = await sb.from('profiles').select('address').eq('id', user.id).maybeSingle()
+      setProfileAddress(data?.address?.trim() || null)
+    })
+  }, [])
   const [description, setDescription] = useState('')
   // Sans créneaux publiés par le pro, le client indique lui-même la date et l'heure souhaitées.
   const [wantedAt, setWantedAt] = useState('')
@@ -97,7 +109,9 @@ function MissionForm() {
   const paymentsOn = usePaymentsActive()
 
   async function submit() {
-    if (!address.trim()) { setError('Indiquez une adresse.'); return }
+    const chosenAddr = resolveAddress(profileAddress, addr)
+    if ('error' in chosenAddr) { setError(chosenAddr.error as string); return }
+    const address = chosenAddr.address
     if (needsSlot && !chosen) { setError('Choisissez un créneau.'); return }
     if (!needsSlot && !wantedAt) { setError('Indiquez la date et l\u2019heure souhaitées.'); return }
     if (!needsSlot && new Date(wantedAt).getTime() < Date.now()) { setError('Choisissez une date à venir.'); return }
@@ -132,6 +146,7 @@ function MissionForm() {
       ...(pos ? { lat: pos.lat, lng: pos.lng } : {}),
     }).select().single()
     if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
+    if (chosenAddr.saveToProfile) await supabase.from('profiles').update({ address }).eq('id', user.id)
 
     // Relit les taux à l'instant T (pas le state React, qui peut dater de
     // l'affichage initial) : la source de vérité au moment de l'écriture.
@@ -148,6 +163,7 @@ function MissionForm() {
       base_forfait_cents: hasOvertime ? pricing.base_price_cents : null,
       status: 'pending',
       price_confirmed: true,
+      address_status: chosenAddr.status,
       ...(!needsSlot && wantedAt ? { scheduled_at: new Date(wantedAt).toISOString() } : {}),
     }).select().single()
     if (txErr || !tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
@@ -171,7 +187,9 @@ function MissionForm() {
     }
     await supabase.from('messages').insert({
       transaction_id: tx.id, ...(await systemSender(supabase)),
-      body: `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
+      body: chosenAddr.status === 'a_valider'
+        ? `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · autre adresse à valider par le prestataire : ${maskAddress(address)}`
+        : `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
     })
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
@@ -202,11 +220,9 @@ function MissionForm() {
       </div>
 
       <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '24px 20px', minHeight: 'calc(100vh - 110px)' }}>
-        <label style={{ display: 'block', marginBottom: 16 }}>
-          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Adresse</span>
-          <input value={address} onChange={e => setAddress(e.target.value)}
-            style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14 }} />
-        </label>
+        <div style={{ marginBottom: 16 }}>
+          <AddressChoice profileAddress={profileAddress} value={addr} onChange={setAddr} />
+        </div>
 
         {!needsSlot && (
           <div style={{ marginBottom: 16 }}>
