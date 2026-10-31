@@ -32,7 +32,7 @@ for (const [label, viewport] of [['mobile', { width: 390, height: 844 }], ['ordi
 
   // Bascule par le menu : seul chemin autorisé.
   if (label === 'mobile') { await p.locator('.app-burger').first().click(); await p.waitForTimeout(800) }
-  await p.getByText(/mode particulier/i).first().click(); await p.waitForTimeout(4500)
+  await p.locator('text=/mode particulier/i >> visible=true').first().click(); await p.waitForTimeout(4500)
   check(/\/map/.test(p.url()), `la bascule ouvre l’accueil particulier (${p.url().replace(B, '')})`)
   if (label === 'mobile') check(/Carte/.test(await tabs()) && /Profil/.test(await tabs()) && !/Entreprise/.test(await tabs()), `espace particulier : barre du bas = ${await tabs()}`)
   else check(/Mon profil/.test(await nav()) && !/Mon entreprise/.test(await nav()), `espace particulier : menu = ${await nav()}`)
