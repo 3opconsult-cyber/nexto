@@ -4,8 +4,8 @@
 <style>
 :root{
   --ink:#123644; --ink2:#0e2a34; --teal:#12B39C; --tealD:#0C8F7E; --green:#2FD06E;
-  --coral:#FF7A66; --gold:#F2A93B; --paper:#F3F6F5; --line:#DCE5E3; --slate:#6E8592;
-  --bg:#E4EBE9; --fg:#123644; --fg2:#6E8592; --chrome:#FFFFFF; --hair:#D3DEDB;
+  --coral:#FF7A66; --gold:#F2A93B; --paper:#F3F6F5; --line:#DCE5E3; --slate:#4E6470;
+  --bg:#E4EBE9; --fg:#123644; --fg2:#4E6470; --chrome:#FFFFFF; --hair:#D3DEDB;
   --fh:'Quicksand',ui-rounded,'Trebuchet MS',sans-serif;
   --fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 }
@@ -238,7 +238,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);
 <div class="lede">
   <span class="wm">p<svg viewBox="71 35 38 65" aria-hidden="true"><path d="M90 100 C84 84, 71 70, 71 54 a19 19 0 1 1 38 0 c0 16 -13 30 -19 46z" fill="currentColor"/><circle cx="90" cy="53" r="8.6" fill="#2FD06E"/></svg>ng</span>
   <h1>Le parcours complet, de la carte au reçu.</h1>
-  <p>Dix prestataires entre <b>Vence et Nice</b>. Choisissez, réservez, payez, suivez l'arrivée en direct, validez le code sur place, et récupérez le reçu — chaque écran est manipulable.</p>
+  <p>Dix prestataires entre <b>Vence et Nice</b>. Choisissez, réservez, suivez l'arrivée (en route, puis code scanné sur place), et récupérez le reçu — chaque écran est manipulable.</p>
 
   <div class="warn">
     <b>Tout est simulé.</b> Les dix prestataires sont fictifs et ne correspondent à personne. Le paiement n'appelle aucun système bancaire : aucune somme n'est débitée, aucune donnée n'est envoyée. Les tarifs sont plausibles pour les Alpes-Maritimes, pas relevés sur des prestataires réels.
@@ -262,8 +262,8 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--fb);
    Un particulier facture moins qu'une société : pas de charges
    de structure, mais pas non plus d'assurance RC Pro.
    ============================================================ */
-const BUYER_RATE = 0.05;   // frais côté client   — invariant produit
-const SELLER_RATE = 0.11;  // commission côté pro — invariant produit
+const BUYER_RATE = 0.08;   // frais côté client   — taux en vigueur (réglable sur /admin/commission)
+const SELLER_RATE = 0.17;  // commission côté pro — taux en vigueur (réglable sur /admin/commission)
 
 const ME = { lat:43.6790, lon:7.1720, adresse:"14 avenue des Oliviers, Saint-Laurent-du-Var" };
 
@@ -404,13 +404,12 @@ function carteProsHTML(p){
 /* ---------- tiroir de navigation (burger) ---------- */
 function ouvrirMenu(){ S.menuOuvert = true; render(); }
 function fermerMenu(){ S.menuOuvert = false; render(); }
+// Même menu que l'application (4 entrées, le reste rangé dans « Mon profil »).
 const LIENS_HAUT = [
-  ['Carte','carte'], ['Mes demandes',null], ['Messages',null],
-  ['Agenda',null], ['Litiges',null], ['Profil',null],
+  ['Carte','carte'], ['Messages',null], ['Agenda',null], ['Mon profil',null],
 ];
 const LIENS_BAS = [
-  ['Comment ça marche','comment-ca-marche'], ['Mon parrainage',null],
-  ['Mes favoris',null], ['Mes documents',null], ['Support PING',null],
+  ['Comment ça marche','comment-ca-marche'], ['Support PING',null],
 ];
 function drawerHTML(){
   const item = ([label,cible]) => `<div class="dlink" onclick="${
@@ -462,7 +461,7 @@ function render(){
         <h2>${p.nom}</h2>
         <div class="m">${p.metier} · ${p.ville} · à ${km(ME,p).toFixed(1)} km</div>
         <div class="badges">
-          <span class="bdg">${p.type==='pro'?'Société · SIRET vérifié':'Particulier · identité vérifiée'}</span>
+          <span class="bdg">${p.type==='pro'?'Société · SIRET renseigné':'Particulier · pièce d’identité fournie'}</span>
           ${p.type==='pro'?'<span class="bdg">Assurance RC Pro</span>':''}
           <span class="bdg">Sur PING depuis ${p.dep}</span>
         </div>
@@ -497,17 +496,17 @@ function render(){
 
         <div class="recap">
           <div class="kv"><span>${p.tarif} € × ${S.heures} h</span><b>${eur(P.base)}</b></div>
-          <div class="kv"><span>Frais de service PING (5 %)</span><b>${eur(P.fraisClient)}</b></div>
+          <div class="kv"><span>Frais de service PING (${Math.round(BUYER_RATE*100)} %)</span><b>${eur(P.fraisClient)}</b></div>
           <div class="tot"><span>À payer</span><span>${eur(P.total)}</span></div>
         </div>
-        <p class="note">Le montant est bloqué à la réservation et versé au prestataire 24 h après la fin de l'intervention, sauf litige signalé. ${p.nom} perçoit ${eur(P.netPro)} — PING prélève 11 % côté prestataire.</p>
+        <p class="note">Le tarif est fixé avant l'intervention. ${p.nom} perçoit ${eur(P.netPro)} — commission PING de ${Math.round(SELLER_RATE*100)} % côté prestataire. Paiement en ligne sous séquestre : bientôt.</p>
       </div></div>
       <div class="foot"><button class="cta" onclick="go('paiement')">Continuer vers le paiement</button></div>`;
   }
 
   else if(S.vue==='paiement'){
     h += `<div class="topbar"><button class="iconbtn" onclick="go('reservation')" aria-label="Retour">${ICON_BACK}</button>
-      <span class="ttl">Paiement sécurisé</span><span style="width:30px"></span></div>
+      <span class="ttl">Paiement (bientôt)</span><span style="width:30px"></span></div>
       <div class="body"><div class="pad">
         <div style="text-align:center;margin:4px 0 16px"><span class="simbadge">● Paiement simulé</span></div>
         <div class="fld"><label>Numéro de carte</label><input value="4242 4242 4242 4242" readonly></div>
@@ -520,26 +519,25 @@ function render(){
           <div class="kv"><span>Frais de service</span><b>${eur(P.fraisClient)}</b></div>
           <div class="tot"><span>Total</span><span>${eur(P.total)}</span></div>
         </div>
-        <p class="note">Carte de test, aucune transaction réelle : rien n'est débité et aucune donnée ne quitte cette page. Dans l'application, cette étape passe par un prestataire de paiement et la somme reste sous séquestre jusqu'à la fin de la mission.</p>
+        <p class="note">Carte de test, aucune transaction réelle : rien n'est débité et aucune donnée ne quitte cette page. Le paiement en ligne sous séquestre arrive bientôt dans l'application : il passera par un prestataire de paiement agréé.</p>
       </div></div>
       <div class="foot"><button class="cta dark" id="payBtn" onclick="payer()">Payer ${eur(P.total)}</button></div>`;
   }
 
   else if(S.vue==='suivi' || S.vue==='arrive'){
     const t = S.etaTotal ? 1 - S.etaRest/S.etaTotal : 0;
-    const pos = { lon: p.lon + (ME.lon-p.lon)*t, lat: p.lat + (ME.lat-p.lat)*t };
     const arr = S.vue==='arrive';
     h += `<div class="topbar"><span style="width:30px"></span><span class="ttl">Mission en approche</span><span style="width:30px"></span></div>
       <div class="body" style="background:var(--ink)">
         <div class="track">
           <div style="font-size:12.5px;color:rgba(255,255,255,.55)">${arr?p.nom+' est arrivé':'Arrivée estimée dans'}</div>
           <div class="eta">${arr?'Sur place':Math.ceil(S.etaRest)+' min'}</div>
-          <div class="trackmap">${mapSVG({compact:true,pins:false,moving:pos})}</div>
+          <div class="trackmap">${mapSVG({compact:true,pins:false})}</div>
           <div class="prog"><i style="width:${(t*100).toFixed(1)}%"></i></div>
           <div class="tl">
-            <div class="tli on"><span class="d"></span><div><b>Paiement bloqué</b>${eur(P.total)} sous séquestre</div></div>
+            <div class="tli on"><span class="d"></span><div><b>Réservation confirmée</b>Tarif validé : ${eur(P.total)}</div></div>
             <div class="tli on"><span class="d"></span><div><b>${p.nom} a accepté</b>Départ de ${p.ville}</div></div>
-            <div class="tli ${t>0.35?'on':''}"><span class="d"></span><div><b>En route</b>${(km(ME,p)*(1-t)).toFixed(1)} km restants</div></div>
+            <div class="tli ${t>0.35?'on':''}"><span class="d"></span><div><b>En route</b>Le prestataire a indiqué son départ</div></div>
             <div class="tli ${arr?'on':''}"><span class="d"></span><div><b>Arrivée sur place</b>Code d'arrivée à valider</div></div>
           </div>
         </div>
@@ -580,9 +578,9 @@ function render(){
           <div class="kv"><span>Prestataire</span><b>${p.nom}</b></div>
           <div class="kv"><span>Prestation</span><b>${p.metier}</b></div>
           <div class="kv"><span>Adresse</span><b style="font-size:12px;text-align:right">${S.adresse}</b></div>
-          <div class="kv"><span>Montant sous séquestre</span><b>${eur(P.total)}</b></div>
+          <div class="kv"><span>Montant de la réservation</span><b>${eur(P.total)}</b></div>
         </div>
-        <p class="note">Un problème pendant l'intervention ? Le signalement ouvre un litige et bloque le versement jusqu'à décision.</p>
+        <p class="note">Un problème pendant l'intervention ? Le signalement ouvre une réclamation, suivie par PING dans la conversation.</p>
       </div></div>
       <div class="foot"><button class="cta" onclick="go('qr-depart')">Le prestataire a terminé</button></div>`;
   }
@@ -617,7 +615,7 @@ function render(){
           <div class="docline">
             <div>
               <div class="t">${comm?'Frais de service PING':p.metier+' — '+S.heures+' h'}</div>
-              <div class="s">${comm?'5 % du montant de la prestation':'Le '+new Date().toLocaleDateString('fr-FR')+' · '+planning().arrivee+' — '+planning().depart+', scannés sur place'}</div>
+              <div class="s">${comm?Math.round(BUYER_RATE*100)+' % du montant de la prestation':'Le '+new Date().toLocaleDateString('fr-FR')+' · '+planning().arrivee+' — '+planning().depart+', scannés sur place'}</div>
               ${!comm?`<div class="s">${p.tarif} € de l'heure</div>`:''}
             </div>
             <div class="m">${comm?eur(P.fraisClient):eur(P.base)}</div>
@@ -671,7 +669,7 @@ function dessinerQR(){
   // Repli si la bibliothèque n'a pas pu être chargée : on le dit, on ne fait pas
   // passer un damier décoratif pour un code scannable.
   const c = cv.getContext('2d'); c.fillStyle='#F3F6F5'; c.fillRect(0,0,186,186);
-  c.fillStyle='#6E8592'; c.font='600 12px Inter, sans-serif'; c.textAlign='center';
+  c.fillStyle='#4E6470'; c.font='600 12px Inter, sans-serif'; c.textAlign='center';
   c.fillText('Code indisponible', 93, 88); c.fillText('hors ligne', 93, 106);
 }
 

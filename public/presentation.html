@@ -3,7 +3,7 @@
 <title>PING · Animation d'accroche</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Inter:wght@400;500;600&display=swap');
-:root{--ink:#123644;--ink2:#0e2a34;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;--teal:#12B39C;--tealD:#0C8F7E;--gold:#F2A93B;--slate:#6E8592;--line:#E7EDEB;--paper:#F3F6F5;--blue:#3B82F6;--fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;--D:46s;}
+:root{--ink:#123644;--ink2:#0e2a34;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;--teal:#12B39C;--tealD:#0C8F7E;--gold:#F2A93B;--slate:#4E6470;--line:#E7EDEB;--paper:#F3F6F5;--blue:#3B82F6;--fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;--D:46s;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
 .cap{color:#9fb6bc;font-size:13px;text-align:center;max-width:470px;line-height:1.5}
@@ -189,7 +189,7 @@ body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex
 .endacc{width:36px;height:4px;border-radius:99px;background:var(--gold)}
 </style></head>
 <body>
-<div class="cap">Démo cliquée (~46 s, boucle) : carte + position GPS du client → prestataires apparaissant un à un autour → clic sur Sofia → fiche (tarif, spécialités, qualifications) → chat → devis → validation → arrivée → note → fin.</div>
+<div class="cap">Démo cliquée (~46 s, boucle) : carte + position GPS du client → prestataires apparaissant un à un autour → clic sur Sofia → fiche (un prix par service, qualifications déclarées) → chat → tarif accepté → en route → code d'arrivée → note → fin.</div>
 <div class="frame">
 
   <!-- MAP -->
@@ -223,10 +223,10 @@ body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex
 
     <div class="cursor curMap" style="left:50%;top:22%"><span class="ripple"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="var(--ink)"><path d="M6 2l14 8-6 1.5L18 18l-2 1-4-6.5L8 16z"/></svg></div>
 
-    <div class="topbar onmap maptop"><div class="lg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><div class="searchinline"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span class="typetext">Ménage</span></div></div>
+    <div class="topbar onmap maptop"><div class="lg"><svg width="20" height="20" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/><circle cx="32" cy="32" r="18" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/><circle cx="32" cy="32" r="8" fill="#2FD06E"/></svg></div><div class="searchinline"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span class="typetext">Ménage</span></div></div>
     <div class="tabbar">
       <div class="ti on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"/></svg><span>Carte</span></div>
-      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Recherche</span></div>
+      
       <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></div>
       <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg><span>Agenda</span></div>
       <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg><span>Profil</span></div>
@@ -240,7 +240,7 @@ body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex
       <div class="pm">★★★★★ 4,9 (128 avis) · à 300 m</div>
       <div class="profav">S</div>
     </div>
-    <div class="topbar onmap" style="z-index:25"><div class="lg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><b>PING</b></div>
+    <div class="topbar onmap" style="z-index:25"><div class="lg"><svg width="20" height="20" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/><circle cx="32" cy="32" r="18" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/><circle cx="32" cy="32" r="8" fill="#2FD06E"/></svg></div><b>ping</b></div>
     <div class="profbody">
       <div class="prow"><span class="k">Tarif horaire</span><span class="v">25 €/h</span></div>
       <div class="prow"><span class="k">Forfait remise à blanc</span><span class="v">180 €</span></div>
@@ -259,7 +259,7 @@ body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex
 
   <!-- CHAT -->
   <div class="scr" id="pChat">
-    <div class="topbar"><div class="lg"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><b>PING</b></div>
+    <div class="topbar"><div class="lg"><svg width="20" height="20" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/><circle cx="32" cy="32" r="18" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/><circle cx="32" cy="32" r="8" fill="#2FD06E"/></svg></div><b>ping</b></div>
     <div class="chathd"><div class="cav">S</div><div><div class="n">Sofia · Ménage</div><div class="s"><span class="d"></span>25 €/h · Disponible</div></div></div>
     <div class="chatbody">
       <div class="bubble usr m1">Bonjour, vous êtes disponible pour le ménage ?</div>
@@ -270,13 +270,13 @@ body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex
     </div>
     <div class="paysheet">
       <div class="payrow"><span class="paylbl">Ménage · remise à blanc</span><span class="paytot">180 € + 25 €/h</span></div>
-      <div class="paysub">Paiement sécurisé (séquestre)</div>
-      <div class="paybtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Valider</div>
+      <div class="paysub">Tarif fixé avant l'intervention</div>
+      <div class="paybtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Accepter</div>
     </div>
     <div class="cursor curChat" style="left:50%;top:87%"><span class="ripple"></span><svg width="22" height="22" viewBox="0 0 24 24" fill="var(--ink)"><path d="M6 2l14 8-6 1.5L18 18l-2 1-4-6.5L8 16z"/></svg></div>
     <div class="tabbar">
       <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"/></svg><span>Carte</span></div>
-      <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Recherche</span></div>
+      
       <div class="ti on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></div>
       <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg><span>Agenda</span></div>
       <div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg><span>Profil</span></div>
@@ -286,10 +286,10 @@ body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex
   <!-- ARRIVEE -->
   <div class="scr" id="pTrack">
     <div class="trackwrap">
-      <div class="trlbl">Sofia arrive chez vous</div>
+      <div class="trlbl">Sofia est en route · arrivée vers 14 h</div>
       <div class="route"><i></i></div>
       <div class="qrwrap"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <div class="trlbl" style="font-size:12px;opacity:.75;font-weight:600">Arrivée validée</div>
+      <div class="trlbl" style="font-size:12px;opacity:.75;font-weight:600">Code d'arrivée scanné</div>
     </div>
   </div>
 
@@ -312,8 +312,8 @@ body{font-family:var(--fb);background:#0b1116;min-height:100vh;display:flex;flex
   <!-- FIN -->
   <div class="scr" id="pEnd">
     <div class="endwrap">
-      <div class="endlogo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div>
-      <div class="endtxt">Vous payez.<br>C'est réglé.<br>Juste à côté de vous.</div>
+      <div class="endlogo"><svg width="30" height="30" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/><circle cx="32" cy="32" r="18" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/><circle cx="32" cy="32" r="8" fill="#2FD06E"/></svg></div>
+      <div class="endtxt">Prix fixé.<br>Facture envoyée.<br>Juste à côté de vous.</div>
       <div class="endacc"></div>
     </div>
   </div>

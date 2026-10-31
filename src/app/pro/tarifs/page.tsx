@@ -208,12 +208,19 @@ export default function ProTarifsPage() {
               <div style={{ marginBottom: 14 }}>
                 <span style={label}>Prestation</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {[...freeTrades.map(k => ({ k, t: TRADES[k] })), { k: '__libre', t: 'Autre prestation' }].map(({ k, t }) => (
-                    <button key={k} type="button" onClick={() => { setPick(k); if (k !== '__libre' && draft.mode === 'devis') setDraft(emptyDraft()) }}
-                      style={{ padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5, border: pick === k ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: pick === k ? 'rgba(18,179,156,.08)' : '#fff', color: pick === k ? '#0C8F7E' : '#4E6470' }}>
+                  {/* « Remise à blanc » (grand nettoyage, présenté dans /presentation) : une prestation libre pré-nommée. */}
+                  {[...freeTrades.map(k => ({ k, t: TRADES[k] })), ...(rows.some(r => r.name.toLowerCase() === 'remise à blanc') ? [] : [{ k: '__remise', t: 'Remise à blanc' }]), { k: '__libre', t: 'Autre prestation' }].map(({ k, t }) => {
+                    const on = k === '__remise' ? (pick === '__libre' && name === 'Remise à blanc') : k === '__libre' ? (pick === '__libre' && name !== 'Remise à blanc') : pick === k
+                    return (
+                    <button key={k} type="button" onClick={() => {
+                      if (k === '__remise') { setPick('__libre'); setName('Remise à blanc'); return }
+                      if (k === '__libre' && name === 'Remise à blanc') setName('')
+                      setPick(k); if (k !== '__libre' && draft.mode === 'devis') setDraft(emptyDraft())
+                    }}
+                      style={{ padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5, border: on ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? 'rgba(18,179,156,.08)' : '#fff', color: on ? '#0C8F7E' : '#4E6470' }}>
                       {t}
                     </button>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}

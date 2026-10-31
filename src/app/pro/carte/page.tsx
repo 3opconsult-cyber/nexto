@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import NavDrawer from '@/components/NavDrawer'
@@ -94,10 +94,31 @@ export default function ProCartePage() {
     ? new Date(m.scheduled_at).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
     : 'Date à fixer'
 
+  // Nouvelle demande à proximité : bandeau « Nouvelle demande à … », comme les notifications de
+  // l'animation /animation. Relecture toutes les 60 s ; la première lecture ne déclenche rien.
+  const seen = useRef<Set<string> | null>(null)
+  const [fresh, setFresh] = useState<RequestNearby | null>(null)
   const load = useCallback(() => {
-    fetchRequestsNearby(userPos.lat, userPos.lng, 25000).then(setReqs)
+    fetchRequestsNearby(userPos.lat, userPos.lng, 25000).then(list => {
+      setReqs(list)
+      if (seen.current) {
+        const nouveau = list.find(r => !seen.current!.has(r.id))
+        if (nouveau) setFresh(nouveau)
+      }
+      seen.current = new Set(list.map(r => r.id))
+    })
   }, [userPos.lat, userPos.lng])
   useEffect(() => { load() }, [load])
+  useEffect(() => {
+    if (!available) return
+    const t = setInterval(load, 60000)
+    return () => clearInterval(t)
+  }, [load, available])
+  useEffect(() => {
+    if (!fresh) return
+    const t = setTimeout(() => setFresh(null), 9000)
+    return () => clearTimeout(t)
+  }, [fresh])
 
   const selected = selectedId ? reqs.find(r => r.id === selectedId) || null : null
   const nearest = reqs.length ? Math.round(reqs[0].distance_m) : null
@@ -273,8 +294,22 @@ export default function ProCartePage() {
               onSelectRequest={(id: string) => view === 'interventions' ? router.push(`/mission/${id}/chat`) : setSelectedId(id)}
               recenterTick={recenterTick}
               youLabel="Vous êtes ici"
+              echo={available}
             />
           </div>
+
+          {fresh && (
+            <div role="status" onClick={() => { setView('demandes'); setSelectedId(fresh.id); setFresh(null) }}
+              style={{ position: 'absolute', left: 12, right: 12, top: 170, zIndex: 1200, display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: '12px 14px', boxShadow: '0 8px 24px rgba(18,54,68,.18)', cursor: 'pointer', animation: 'pinIn .35s ease-out', maxWidth: 460, margin: '0 auto' }}>
+              <span style={{ width: 38, height: 38, borderRadius: 999, background: fresh.urgent ? '#E8743B' : '#12B39C', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+              </span>
+              <span style={{ minWidth: 0 }}>
+                <b style={{ display: 'block', fontSize: 14, color: 'var(--ink)' }}>Nouvelle demande à {distanceTxt(fresh.distance_m)}{fresh.urgent ? ' · urgent' : ''}</b>
+                <span style={{ display: 'block', fontSize: 12.5, color: 'var(--slate)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fresh.title || TRADES[fresh.category] || fresh.category}</span>
+              </span>
+            </div>
+          )}
 
           <div className="loc" onClick={() => setRecenterTick(t => t + 1)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
 

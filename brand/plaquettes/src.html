@@ -12,7 +12,7 @@
   /* Une plaquette par cible, même gabarit : une idée par écran, gros pictogramme, contact direct au dernier écran. */
   :root{
     --teal:#12B39C; --tealD:#0C8F7E; --navy:#123644; --green:#2FD06E; --gold:#F2A93B;
-    --ground:#EDF1F0; --ink:#123644; --slate:#6E8592;
+    --ground:#EDF1F0; --ink:#123644; --slate:#4E6470;
     --display:'Quicksand','Trebuchet MS',sans-serif; --body:'Inter',system-ui,sans-serif;
     color-scheme:light;
   }
@@ -84,7 +84,7 @@
   .mock .btn{background:var(--teal); color:#fff; font-family:var(--display); font-weight:700; font-size:8.5px; text-align:center; padding:7px; border-radius:999px;}
   .mock .ad{position:relative; display:flex; align-items:center; gap:6px; background:#fff; border-radius:9px; padding:6px; margin:8px 0; box-shadow:0 0 0 2px var(--gold), 0 0 0 6px rgba(242,169,59,.28);}
   .mock .ad .lg{width:22px; height:22px; border-radius:6px; background:linear-gradient(160deg,#F2A93B,#d98a1f); color:#fff; font-family:var(--display); font-weight:700; font-size:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
-  .mock .ad small{display:block; font-size:5.5px; font-weight:700; color:#9CA3AF; letter-spacing:.04em; text-transform:uppercase;}
+  .mock .ad small{display:block; font-size:5.5px; font-weight:700; color:#6E8592; letter-spacing:.04em; text-transform:uppercase;}
   .mock .ad b{display:block; font-family:var(--display); font-size:8px; color:var(--navy);}
   .mock .ad span{display:block; font-size:6.5px; color:var(--slate);}
   .mock .ad em{position:absolute; right:-6px; top:-11px; font-style:normal; background:var(--gold); color:#3a2a06; font-family:var(--display); font-weight:700; font-size:8px; padding:3px 7px; border-radius:999px;}
@@ -233,7 +233,7 @@
     <div class="slide">
       <div class="picto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5V4h8.5L21 13.5 13.5 21z"/><circle cx="7.5" cy="8.5" r="1.4"/></svg></div>
       <h2>Vous fixez vos prix.</h2>
-      <p>Au forfait, à l'heure ou sur devis.</p>
+      <p>Un prix par service : forfait, à l'heure, ou forfait + heures supplémentaires.</p>
     </div>
     <div class="slide">
       <div class="picto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
@@ -243,7 +243,7 @@
     <div class="slide">
       <div class="picto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><circle cx="8.5" cy="11" r="2.3"/><path d="M5 16.5c.6-1.6 2-2.5 3.5-2.5s2.9.9 3.5 2.5"/><path d="M14.5 10h4M14.5 13.5h3"/></svg></div>
       <h2>Démarrage simple.</h2>
-      <p>Pièce d'identité et SIRET à renseigner.</p>
+      <p>Pièce d'identité, assurance et SIRET à renseigner.</p>
     </div>
     <div class="slide join">
       <h2>Lancez-vous.</h2>
@@ -353,7 +353,7 @@
           <div class="mail"><span>%%EMAIL%%</span><button type="button">Copier</button></div>
         </div>
       </div>
-      <small>Zones et tarifs envoyés sur demande</small>
+      <small>Zones et tarifs envoyés sur demande · emplacement mis en ligne à la signature</small>
     </div>
   </div>
   %%NAV%%

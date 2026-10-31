@@ -8,10 +8,15 @@ import type { ProviderNearby } from '@/lib/services'
 // Icônes en divIcon (HTML/CSS inline) : évite le piège classique de Leaflet sous
 // webpack/Next.js où les PNG de marqueurs par défaut ne se résolvent pas et où
 // les pins deviennent invisibles.
-function userIcon() {
+// echo : anneaux d'écho radar autour du point (le signe PING, comme dans l'animation /animation),
+// pour un prestataire « Disponible » : il voit qu'il est visible.
+function userIcon(echo = false) {
+  const rings = echo
+    ? '<span class="ping-echo"></span><span class="ping-echo" style="animation-delay:1.1s"></span>'
+    : ''
   return L.divIcon({
     className: '',
-    html: `<div style="width:18px;height:18px;border-radius:50%;background:#12B39C;border:3px solid #fff;box-shadow:0 0 0 4px rgba(18,179,156,.25),0 2px 6px rgba(0,0,0,.25)"></div>`,
+    html: `<div style="position:relative;width:18px;height:18px">${rings}<div style="position:relative;width:18px;height:18px;border-radius:50%;background:#12B39C;border:3px solid #fff;box-sizing:border-box;box-shadow:0 0 0 4px rgba(18,179,156,.25),0 2px 6px rgba(0,0,0,.25)"></div></div>`,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
   })
@@ -72,7 +77,7 @@ function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: n
 
 type ReqPin = { id: string; lat: number; lng: number; label?: string | null; color?: string }
 export default function LiveMap({
-  userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici',
+  userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici', echo = false,
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
@@ -81,13 +86,17 @@ export default function LiveMap({
   requests?: ReqPin[]
   onSelectRequest?: (id: string) => void
   youLabel?: string
+  echo?: boolean
 }) {
   return (
     <>
       <style>{`.leaflet-top.leaflet-left{top:158px}.leaflet-control-zoom{z-index:400 !important}
         @keyframes pinIn{0%{opacity:0;transform:translateY(-14px) scale(.7)}100%{opacity:1;transform:translateY(0) scale(1)}}
         .you-tip{background:#fff;border:none;box-shadow:0 2px 8px rgba(18,54,68,.2);border-radius:999px;padding:3px 10px;font-family:Quicksand,sans-serif;font-weight:700;font-size:11px;color:#123644}
-        .you-tip::before{display:none}`}</style>
+        .you-tip::before{display:none}
+        @keyframes pingEcho{0%{transform:scale(1);opacity:.55}100%{transform:scale(6);opacity:0}}
+        .ping-echo{position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;border:2px solid #12B39C;animation:pingEcho 2.2s ease-out infinite;pointer-events:none}
+        @media (prefers-reduced-motion: reduce){.ping-echo{animation:none;display:none}}`}</style>
       <MapContainer
         center={[userPos.lat, userPos.lng]}
         zoom={13}
@@ -101,7 +110,7 @@ export default function LiveMap({
           maxZoom={19}
         />
         <FitAll userPos={userPos} pros={pros} pts={requests} recenterTick={recenterTick} />
-        <Marker position={[userPos.lat, userPos.lng]} icon={userIcon()}>
+        <Marker position={[userPos.lat, userPos.lng]} icon={userIcon(echo)}>
           <Tooltip permanent direction="bottom" offset={[0, 8]} className="you-tip">{youLabel}</Tooltip>
         </Marker>
         {pros.filter(p => p.lat != null && p.lng != null).map((p, i) => (
