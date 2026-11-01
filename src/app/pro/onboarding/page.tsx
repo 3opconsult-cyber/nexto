@@ -347,7 +347,7 @@ export default function ProOnboarding() {
         {geocodeError && <p style={{ fontSize: 12, color: '#c0503a', marginTop: 10, lineHeight: 1.5 }}>{geocodeError}</p>}
         <label style={{ display: 'block', marginTop: 16 }}>
           <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Site internet (facultatif)</span>
-          <input value={website} onChange={e => setWebsite(e.target.value)} inputMode="url" placeholder="www.monentreprise.fr" style={{ ...inputStyle, marginTop: 6 }} />
+          <input value={website} onChange={e => setWebsite(e.target.value)} inputMode="url" style={{ ...inputStyle, marginTop: 6 }} />
         </label>
       </OnboardingStep>
     )

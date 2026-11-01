@@ -7,6 +7,9 @@ import { maskAddress, addressUsable } from '@/lib/address'
 import { useParams, useRouter } from 'next/navigation'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
+import { markRead } from '@/lib/unread'
+import { notifyOther } from '@/lib/notify'
+import DisputeFields, { createDispute, EMPTY_DISPUTE, type DisputeExtra } from '@/components/DisputeFields'
 import ReviewModal from '@/components/ReviewModal'
 import ClientReviewModal, { CLIENT_TAGS } from '@/components/ClientReviewModal'
 import DepartureBar from '@/components/DepartureBar'
@@ -93,10 +96,13 @@ export default function ChatPage() {
   const [rdvSaving, setRdvSaving] = useState(false)
   const [rdvError, setRdvError] = useState('')
   const [reportError, setReportError] = useState('')
+  const [reportExtra, setReportExtra] = useState<DisputeExtra>(EMPTY_DISPUTE)
+  const [reportBusy, setReportBusy] = useState(false)
   // Paiement en ligne actif : l'adresse du client n'est montrée au prestataire qu'une fois payé.
   const [payOn, setPayOn] = useState(false)
   useEffect(() => { paymentsActive().then(setPayOn) }, [])
   const bottomRef = useRef<HTMLDivElement>(null)
+  const meRef = useRef<string | null>(null)
 
   // Raccourcis depuis l'écran QR : ?signaler ouvre le signalement, ?avis l'avis (client, mission terminée).
   const shortcutDone = useRef(false)
@@ -112,11 +118,12 @@ export default function ChatPage() {
     const supabase = createClient()
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
+      if (user) { setUserId(user.id); meRef.current = user.id }
       const { data } = await supabase.from('messages')
         .select('*').eq('transaction_id', transactionId).order('created_at')
       const loaded = (data ?? []) as Msg[]
       setMsgs(loaded)
+      if (user) markRead(supabase, user.id, transactionId, loaded.length ? loaded[loaded.length - 1].created_at : null)
       resolvePhotoUrls(loaded)
       const { data: t } = await supabase.from('transactions')
         .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents, frequency, hours_wanted, linen_kg, linen_types, household_size, surface_m2, payment_pref)')
@@ -175,6 +182,8 @@ export default function ChatPage() {
         payload => {
           const m = payload.new as Msg
           setMsgs(prev => [...prev, m])
+          // Conversation ouverte : le message de l'autre est lu à l'instant.
+          if (meRef.current && m.sender_id !== meRef.current) markRead(supabase, meRef.current, transactionId, m.created_at)
           if (m.photo_path) resolvePhotoUrls([m])
         })
       .on('postgres_changes',
@@ -200,6 +209,7 @@ export default function ChatPage() {
       body: result.clean,
     })
     if (error) { setWarning('Message non envoyé — vérifiez votre connexion et réessayez.'); setTimeout(() => setWarning(''), 4000); return }
+    notifyOther(transactionId, 'message')
     setInput('')
   }
 
@@ -237,6 +247,7 @@ export default function ChatPage() {
       return
     }
 
+    notifyOther(transactionId, 'offer')
     setEditingPrice(false)
     setNewAmount('')
     setNewHourly('')
@@ -388,20 +399,25 @@ export default function ChatPage() {
   }
 
   async function submitReport() {
-    if (!reportReason.trim() || !userId) return
+    if (!userId || reportBusy) return
+    if (!reportExtra.category) { setReportError('Choisissez un motif.'); return }
+    if (!reportReason.trim()) { setReportError('Décrivez ce qui ne va pas.'); return }
     const supabase = createClient()
-    setReportError('')
-    const { data: dsp, error } = await supabase.from('disputes').insert({
-      transaction_id: transactionId, opener_id: userId, reason: reportReason.trim(),
-    }).select('id').single()
-    if (error || !dsp) { setReportError('Le litige n\u2019a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.'); return }
+    setReportError(''); setReportBusy(true)
+    // Motif, montant réclamé et photos (DisputeFields) ; la date cible de réponse (48 h) est posée par la base.
+    const created = await createDispute(supabase, { transactionId, userId, reason: reportReason.trim(), extra: reportExtra })
+    setReportBusy(false)
+    const dsp = 'error' in created ? null : { id: created.id }
+    const error = 'error' in created ? created.error : null
+    if (error || !dsp) { setReportError(error ?? 'Le litige n\u2019a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.'); return }
     // Le litige a son propre fil (comme Airbnb) : le motif en est le premier message.
     await supabase.from('dispute_messages').insert({ dispute_id: dsp.id, sender_id: userId, body: reportReason.trim(), kind: 'text' })
     await supabase.from('messages').insert({
       transaction_id: transactionId, ...(await systemSender(supabase)),
       body: 'Litige ouvert sur cette mission : la discussion continue dans le dossier du litige.',
     })
-    setReportReason('')
+    notifyOther(transactionId, 'dispute')
+    setReportReason(''); setReportExtra(EMPTY_DISPUTE)
     router.push(`/litiges/${dsp.id}`)
   }
 
@@ -577,7 +593,7 @@ export default function ChatPage() {
 
       {reporting && (
         <div onClick={() => setReporting(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20, maxHeight: '92vh', overflowY: 'auto' }}>
             {reportSent ? (
               <>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 6 }}>Litige ouvert</h3>
@@ -587,12 +603,13 @@ export default function ChatPage() {
             ) : (
               <>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler un problème</h3>
-                <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Décrivez ce qui ne va pas : c'est tracé et visible par les deux parties.</p>
+                <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Choisissez un motif et décrivez ce qui ne va pas : c'est tracé et visible par les deux parties, qui disposent de 48 h pour répondre.</p>
+                <DisputeFields value={reportExtra} onChange={setReportExtra} />
                 <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} rows={3}
                   style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
                 {reportError && <p style={{ color: '#c0503a', fontSize: 12, margin: '-6px 0 10px' }}>{reportError}</p>}
-                <button onClick={submitReport} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
-                  Ouvrir le litige
+                <button onClick={submitReport} disabled={reportBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: reportBusy ? .6 : 1 }}>
+                  {reportBusy ? 'Envoi…' : 'Ouvrir le litige'}
                 </button>
               </>
             )}

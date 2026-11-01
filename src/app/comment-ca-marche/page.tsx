@@ -45,7 +45,7 @@ const SLIDES: Record<Mode, Slide[]> = {
       kicker: 'Pourquoi PING', title: 'Moins de temps sur l\u2019administratif,\nplus de temps sur le terrain', body: '',
       cards: [
         { icon: 'doc', title: 'Moins de devis, moins de factures', body: 'Plus de temps pour l\u2019opérationnel.' },
-        { icon: 'coin', title: 'Paiement garanti d\u2019avance', body: 'La mission est déjà financée.' },
+        { icon: 'coin', title: 'Un prix convenu d\u2019avance', body: 'Le tarif est validé avant la mission, la facture suit.' },
         { icon: 'shield', title: 'Un appui en cas de désaccord', body: 'Une équipe qui vous épaule.' },
         { icon: 'doc', title: 'Tout prêt pour votre comptable', body: 'Factures et récapitulatif générés tout seuls, chaque mois.' },
       ],

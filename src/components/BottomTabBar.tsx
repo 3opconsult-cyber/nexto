@@ -2,6 +2,8 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { readMode, type Mode } from '@/lib/mode'
+import { useUnreadTotal } from '@/lib/unread'
+import UnreadBadge from '@/components/UnreadBadge'
 
 // Barre d'onglets mobile. Suit le mode courant (particulier / prestataire, cf. lib/mode.ts) :
 // en mode pro, « Carte » mène aux demandes autour de soi (/pro/carte), jamais à la carte client.
@@ -28,6 +30,7 @@ export default function BottomTabBar() {
     return () => { window.removeEventListener('ping-mode', sync); window.removeEventListener('storage', sync) }
   }, [pathname])
 
+  const unread = useUnreadTotal(mode, pathname)
   const isPro = mode === 'pro'
   const accent = isPro ? '#F2A93B' : '#12B39C'
   const tabs = [
@@ -47,7 +50,10 @@ export default function BottomTabBar() {
           return (
             <button key={t.path} onClick={() => router.push(t.path)}
               style={{ flex: 1, border: 'none', background: 'none', padding: '10px 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: on ? accent : '#4E6470', cursor: 'pointer' }}>
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{ICONS[t.icon]}</svg>
+              <span style={{ position: 'relative', display: 'inline-flex' }}>
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{ICONS[t.icon]}</svg>
+                {t.icon === 'msg' && <UnreadBadge n={unread} absolute />}
+              </span>
               <span style={{ fontSize: 10.5, fontWeight: 700 }}>{t.label}</span>
             </button>
           )

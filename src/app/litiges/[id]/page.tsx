@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
 import { filterMessage } from '@/lib/chatFilter'
+import { categoryLabel } from '@/components/DisputeFields'
 
 /**
  * Dossier d'un litige, comme le centre de résolution d'Airbnb (Romain 31/10) : un fil de discussion
@@ -36,6 +37,7 @@ export default function LitigePage() {
   const [pays, setPays] = useState<any[]>([])
   const [refundEur, setRefundEur] = useState('')
   const [moneyMsg, setMoneyMsg] = useState('')
+  const [photoUrls, setPhotoUrls] = useState<string[]>([])
   const end = useRef<HTMLDivElement>(null)
 
   const loadMsgs = useCallback(async () => {
@@ -52,10 +54,16 @@ export default function LitigePage() {
       const { data: isAdm } = await supabase.rpc('is_admin')
       setAdmin(!!isAdm)
       const { data } = await supabase.from('disputes')
-        .select('id, reason, status, resolution, created_at, opener_id, transaction_id, transactions(id, buyer_id, seller_id, subtotal_cents, buyer_fee_cents, total_charged_cents, payout_cents, payment_status, payment_provider, scheduled_at, completed_at, requests(title, category))')
+        .select('id, reason, status, resolution, created_at, opener_id, category, claimed_cents, photo_paths, deadline_at, transaction_id, transactions(id, buyer_id, seller_id, subtotal_cents, buyer_fee_cents, total_charged_cents, payout_cents, payment_status, payment_provider, scheduled_at, completed_at, requests(title, category))')
         .eq('id', id).maybeSingle()
       if (!data) { setMissing(true); return }
       setD(data)
+      // Photos jointes : bucket privé, lues par URL signée (l'autre partie et PING y ont accès par règle de stockage).
+      const paths: string[] = data.photo_paths ?? []
+      if (paths.length) {
+        const urls = await Promise.all(paths.map(async (pa: string) => (await supabase.storage.from('dispute-photos').createSignedUrl(pa, 3600)).data?.signedUrl ?? ''))
+        setPhotoUrls(urls.filter(Boolean))
+      }
       const { data: names } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: [data.transaction_id] })
       if (names?.[0]?.full_name) setOther(names[0].full_name)
       await loadMsgs()
@@ -147,7 +155,24 @@ export default function LitigePage() {
               Ouvert le {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} par {d.opener_id === uid ? 'vous' : d.opener_id === tx?.buyer_id ? 'le client' : 'le prestataire'}
               {tx?.subtotal_cents ? <> · prestation {EUR(tx.subtotal_cents)}</> : null}
             </div>
+            {(d.category || d.claimed_cents != null) && (
+              <div style={{ fontSize: 13, color: '#123644', marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+                {d.category && <span><b>Catégorie :</b> {categoryLabel(d.category) ?? d.category}</span>}
+                {d.claimed_cents != null && <span><b>Montant réclamé :</b> {EUR(d.claimed_cents)}</span>}
+              </div>
+            )}
             <div style={{ fontSize: 13, color: '#123644', marginTop: 8 }}><b>Motif :</b> {d.reason}</div>
+            {open && d.deadline_at && <Countdown to={d.deadline_at} />}
+            {photoUrls.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                {photoUrls.map((u, i) => (
+                  <a key={i} href={u} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir la photo ${i + 1}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={u} alt={`Photo ${i + 1} jointe au litige`} style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10, border: '1px solid #E7EDEB', display: 'block' }} />
+                  </a>
+                ))}
+              </div>
+            )}
             {d.resolution && <div style={{ fontSize: 13, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Décision : {d.resolution}</div>}
             <div style={{ display: 'flex', gap: 14, marginTop: 10 }}>
               <a href={`/mission/${d.transaction_id}/chat`} style={{ fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>Voir la mission</a>
@@ -189,7 +214,7 @@ export default function LitigePage() {
         <div style={{ padding: '0 16px 10px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
           <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', marginBottom: 6 }}>Médiation PING (visible par vous seul)</div>
-            <textarea value={decision} onChange={e => setDecision(e.target.value)} rows={2} placeholder="Décision (ex. : geste commercial de 10 €)"
+            <textarea value={decision} onChange={e => setDecision(e.target.value)} rows={2} aria-label="Décision de PING"
               style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 13 }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <button onClick={() => close('resolved')} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
@@ -204,7 +229,7 @@ export default function LitigePage() {
         {open || admin ? (
           <div style={{ display: 'flex', gap: 8, maxWidth: 640, margin: '0 auto' }}>
             <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(admin ? 'mediation' : 'text') }}
-              placeholder={admin ? 'Message de PING aux deux parties…' : 'Votre message sur ce litige…'}
+              aria-label={admin ? 'Message de PING aux deux parties' : 'Votre message sur ce litige'}
               style={{ flex: 1, padding: '12px 14px', borderRadius: 999, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', background: '#F3F6F5' }} />
             <button onClick={() => send(admin ? 'mediation' : 'text')} disabled={sending || !input.trim()}
               style={{ padding: '0 18px', borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
@@ -249,7 +274,7 @@ function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, 
             <span>Déjà remboursé</span><b style={{ color: '#123644' }}>{EUR(sum('refund'))}</b>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
-            <input value={refundEur} onChange={e => setRefundEur(e.target.value)} inputMode="decimal" placeholder="Montant €"
+            <input value={refundEur} onChange={e => setRefundEur(e.target.value)} inputMode="decimal" aria-label="Montant en euros"
               style={{ width: 110, padding: '9px 11px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 13 }} />
             {ps !== 'released'
               ? <button onClick={onRefund} disabled={!held} title={held ? '' : 'Aucun paiement sous séquestre'}
@@ -261,6 +286,21 @@ function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, 
           {msg && <div style={{ fontSize: 12.5, color: '#123644', marginTop: 8, fontWeight: 600 }}>{msg}</div>}
         </>
       )}
+    </div>
+  )
+}
+
+/** Compte à rebours de la date cible de réponse (48 h après l'ouverture). */
+function Countdown({ to }: { to: string }) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t) }, [])
+  const ms = new Date(to).getTime() - now
+  const h = Math.floor(Math.abs(ms) / 3600000)
+  const m = Math.floor((Math.abs(ms) % 3600000) / 60000)
+  const late = ms <= 0
+  return (
+    <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: late ? '#B42318' : '#8a6520' }}>
+      {late ? `Réponse attendue depuis ${h} h ${String(m).padStart(2, '0')}` : `Réponse attendue sous ${h} h ${String(m).padStart(2, '0')}`}
     </div>
   )
 }

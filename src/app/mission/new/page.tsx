@@ -17,6 +17,7 @@ import { fetchSlots, dayLabel, hhmm, slotEnd, type Slot } from '@/lib/slots'
 import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
 import { AVANCE_IMMEDIATE_ACTIVE, isEligible, partClientCents } from '@/lib/creditImpot'
 import { systemSender } from '@/lib/systemMessage'
+import { notifyOther } from '@/lib/notify'
 
 function MissionForm() {
   const router = useRouter()
@@ -193,6 +194,7 @@ function MissionForm() {
     })
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
+    notifyOther(tx.id, 'booking')
     if (paymentsOn) {
       // Si le prestataire n'a pas encore de compte de paiement, la mission reste réservée et le
       // bouton « Payer » de l'écran suivant prendra le relais.

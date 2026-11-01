@@ -530,6 +530,13 @@ haut est périmée sur ce point ; litige complet (vague 2) pas construit.
 - **Supabase MCP** : toute requête contenant DROP/DELETE déclenche une confirmation humaine (Romain doit
   cliquer « Envoyer ») — privilégier ADD COLUMN / CREATE OR REPLACE, prévenir Romain sinon.
 - Audit marketing : `docs/audit-marketing-2026-10-31.md`.
+- **Parrainage réel** (migration 029, appliquée) : RPC `register_referral(p_code)` (SECURITY DEFINER, compte de moins de 14 j,
+  une seule fois, pas d'auto-parrainage) et `my_referral_stats()` ; insertion directe dans `referrals` fermée. Le code `?ref=` est gardé
+  en `localStorage('ping_ref')` puis enregistré (`src/lib/referral.ts`) à l'inscription si session, sinon à la 1re connexion ou visite de `/map`.
+  Aucune récompense n'est appliquée : `/client/parrainage` n'annonce plus de pourcentages, seulement les vrais compteurs.
+- **Litige structuré** (migration 030, appliquée) : `disputes.category|claimed_cents|photo_paths|deadline_at` (échéance 48 h posée par trigger),
+  photos dans `dispute-photos` (`<uid>/<id litige>/<fichier>`, lecture par l'autre partie et l'admin). `DisputeFields.tsx` (chat) + `/litiges/[id]`.
+- Accueil du particulier : `WelcomeCarousel.tsx` (3 écrans, `localStorage('ping_welcome_seen')`) après l'inscription, avant `/map`.
 
 ## Virement SEPA — 31/10/2026 (décision Romain : virement d'abord, séquestre en suspens)
 - Migration `025_virement_sepa.sql` (**appliquée le 31/10**, verrous testés en SQL avec annulation). PING n'encaisse
@@ -547,6 +554,18 @@ haut est périmée sur ce point ; litige complet (vague 2) pas construit.
 - UI : `TransferCard` (page Facturation), encart dans `MissionRecap`, `/pro/paiements` (IBAN + commissions à
   régler), rangée IBAN de Mon entreprise, `/admin/paiements` (rapprochement), `PaymentPendingModal` et mention de
   `mission/new` / `PaymentCard`. Factures fictives existantes rattrapées en « reçu ». `src/lib/transfers.ts`.
+
+## Notifications (31/10)
+- **Non lus** (migration 028, appliquée) : table `message_reads` (RLS self) + RPC `unread_counts()` (messages de l'autre
+  partie, hors système, plus récents que la dernière lecture). Rien n'est modifié sur `messages` (garde 027). Pastille
+  sur l'onglet Messages (`BottomTabBar`, sidebar `DesktopShell`, `NavDrawer`) selon le mode courant ; ligne en gras avec
+  point dans `/messages` ; le chat note la lecture à l'ouverture et à chaque message reçu (`src/lib/unread.ts`).
+- **E-mail** : `POST /api/notify {transactionId, event}` (message, offer, booking, dispute), appelé via `notifyOther()`
+  (`src/lib/notify.ts`) depuis le chat, `mission/new` et l'ouverture d'un litige. Jamais le texte du message ni l'adresse.
+- Activation (Vercel, serveur) : `RESEND_API_KEY`, `NOTIFY_FROM` (défaut `PING <notifications@ping.invalid>`, à remplacer par
+  un domaine vérifié chez Resend), `SUPABASE_SERVICE_ROLE_KEY`. Sans clé : réponse `{sent:false, reason:'off'}`, rien ne casse.
+- Limite : 1 e-mail par mission et destinataire toutes les 10 min (`notification_log`, serveur seul) ; comptes `.invalid` ignorés.
+- Pas encore : alerte « nouvelle demande près de soi » pour les pros (aucune infra de cron).
 
 ## Comptes de test
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.

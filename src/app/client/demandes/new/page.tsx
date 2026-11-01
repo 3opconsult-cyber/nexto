@@ -163,11 +163,11 @@ export default function NewOpenRequestPage() {
         <Section title="Votre besoin">
           <label style={{ display: 'block', marginBottom: 12 }}>
             <span style={labelStyle}>Titre de l’annonce</span>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder={linenService ? 'Ex. : repassage d’un panier de chemises' : 'Ex. : ménage complet d’un T3'} style={fieldStyle} />
+            <input value={title} onChange={e => setTitle(e.target.value)} style={fieldStyle} />
           </label>
           <label style={{ display: 'block' }}>
             <span style={labelStyle}>Description <span style={{ fontWeight: 500 }}>(facultatif)</span></span>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Pièces à faire, animaux, matériel sur place, accès…"
+            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
               style={{ ...fieldStyle, fontFamily: 'inherit' }} />
           </label>
         </Section>
@@ -190,7 +190,7 @@ export default function NewOpenRequestPage() {
           <Section title="Le logement" hint="Surface et durée souhaitée, pour une proposition au plus juste.">
             <label style={{ display: 'block', marginBottom: 14 }}>
               <span style={labelStyle}>Surface (m²)</span>
-              <input type="number" inputMode="numeric" min="1" value={surface} onChange={e => setSurface(e.target.value)} placeholder="Ex. : 65" style={{ ...fieldStyle, maxWidth: 160 }} />
+              <input type="number" inputMode="numeric" min="1" value={surface} onChange={e => setSurface(e.target.value)} style={{ ...fieldStyle, maxWidth: 160 }} />
             </label>
             <span style={labelStyle}>Nombre d’heures souhaité</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>

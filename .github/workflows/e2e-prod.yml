@@ -1,0 +1,38 @@
+name: Tests de parcours sur la prod
+
+# Rejoue chaque jour les parcours réels (navigateur Playwright) sur nexto-eta.vercel.app,
+# avec les comptes de test « audit » et des données fictives (déjà dans les scripts : aucun secret requis).
+# Détail : scripts/e2e/README.md
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # tous les jours, 05 h 17 UTC
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Installer Playwright et le client Supabase
+        run: |
+          npm i --no-save --no-package-lock playwright@1.48.2 @supabase/supabase-js
+          npx playwright install --with-deps chromium
+
+      - name: Séparation des espaces particulier / prestataire
+        run: |
+          set -o pipefail
+          node scripts/e2e/separation-espaces.mjs | tee separation.log
+          if grep -q '^ECHEC' separation.log; then echo 'Au moins une vérification a échoué'; exit 1; fi
+
+      - name: Factures (PDF, partage, relevé annuel)
+        run: |
+          set -o pipefail
+          node scripts/e2e/factures.mjs | tee factures.log
+          if grep -q '^ECHEC' factures.log; then echo 'Au moins une vérification a échoué'; exit 1; fi

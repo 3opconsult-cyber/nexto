@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useUnreadTotal } from '@/lib/unread'
+import UnreadBadge from '@/components/UnreadBadge'
 
 const ICONS: Record<string, JSX.Element> = {
   map: <><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" /></>,
@@ -73,6 +75,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     return () => { window.removeEventListener('ping-mode', sync); window.removeEventListener('storage', sync) }
   }, [])
   const onProSide = isProRoute || (!isClientRoute && mode === 'pro')
+  // Pastille « Messages » : lue seulement quand le menu est ouvert.
+  const unread = useUnreadTotal(open && loggedIn ? (onProSide ? 'pro' : 'particulier') : null)
   const memberYear = profile?.created_at ? new Date(profile.created_at).getFullYear() : null
   const initial = (profile?.first_name || '?').charAt(0).toUpperCase()
   const avatarBg = profile?.avatar_hue != null ? `hsl(${profile.avatar_hue}, 55%, 45%)` : '#12B39C'
@@ -162,7 +166,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
               {links.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
-                  <Icon name={l.icon} />{l.label}
+                  <Icon name={l.icon} />{l.label}{l.path === '/messages' && <UnreadBadge n={unread} />}
                 </button>
               ))}
               <div style={{ height: 1, background: '#E7EDEB', margin: '6px 12px' }} />

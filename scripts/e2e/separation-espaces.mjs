@@ -56,3 +56,4 @@ for (const [label, viewport] of [['mobile', { width: 390, height: 844 }], ['ordi
 }
 await b.close()
 console.log(`\n${ok} vérifications réussies, ${ko} échecs`)
+process.exit(ko ? 1 : 0)

@@ -135,7 +135,7 @@ export default function AvanceImmediate() {
               {f.etranger
                 ? <label style={lbl}>Code pays INSEE (ex. 99134 pour l&apos;Espagne)<input style={field} value={f.paysNaissance} onChange={e => set('paysNaissance', e.target.value)} /></label>
                 : <label style={lbl}>Commune de naissance
-                    <input style={field} value={f.villeNaissance} onChange={e => { set('villeNaissance', e.target.value); set('inseeNaissance', '') }} placeholder="Tapez le nom de la commune" />
+                    <input style={field} value={f.villeNaissance} onChange={e => { set('villeNaissance', e.target.value); set('inseeNaissance', '') }} />
                     {birthOpts.length > 0 && (
                       <div style={{ border: '1px solid #E7EDEB', borderRadius: 10, marginTop: 4, background: '#fff' }}>
                         {birthOpts.map(c => <div key={c.code} onClick={() => { set('villeNaissance', c.nom); set('inseeNaissance', c.code); setBirthOpts([]) }} style={{ padding: '8px 12px', fontSize: 13, color: '#123644', cursor: 'pointer' }}>{c.nom} <span style={{ color: '#6E8592' }}>({c.code.slice(0, 2)})</span></div>)}
@@ -146,7 +146,7 @@ export default function AvanceImmediate() {
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', margin: '18px 0 10px' }}>Adresse</div>
               <div style={{ display: 'grid', gridTemplateColumns: '90px minmax(0,1fr)', gap: 10 }}>
                 <label style={lbl}>N°<input style={field} value={f.numeroVoie} onChange={e => set('numeroVoie', e.target.value)} /></label>
-                <label style={lbl}>Voie<input style={field} value={f.libelleVoie} onChange={e => set('libelleVoie', e.target.value)} placeholder="rue de la Paix" /></label>
+                <label style={lbl}>Voie<input style={field} value={f.libelleVoie} onChange={e => set('libelleVoie', e.target.value)} /></label>
               </div>
               <label style={lbl}>Complément (facultatif)<input style={field} value={f.complement} onChange={e => set('complement', e.target.value)} /></label>
               <div style={{ display: 'grid', gridTemplateColumns: '120px minmax(0,1fr)', gap: 10 }}>

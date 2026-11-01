@@ -54,3 +54,4 @@ for (const [who, email, mode] of [['client', 'audit.client.claude@ping-demo.inva
 }
 await b.close()
 console.log(`\n${ok} vérifications réussies, ${ko} échecs`)
+process.exit(ko ? 1 : 0)

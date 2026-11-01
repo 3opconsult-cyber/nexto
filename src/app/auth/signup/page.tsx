@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { captureAttribution, readAttribution } from '@/lib/attribution'
 import { Sign } from '@/components/Brand'
 import DateWheelPicker from '@/components/DateWheelPicker'
+import WelcomeCarousel, { welcomeSeen } from '@/components/WelcomeCarousel'
+import { rememberReferral, flushReferral } from '@/lib/referral'
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '12px 13px', border: '1.5px solid #E7EDEB', borderRadius: 13,
@@ -43,8 +45,10 @@ function SignupForm() {
   // Inscription réussie mais email à confirmer (pas de session) : écran dédié plutôt qu'une
   // arrivée déconnectée sur la carte.
   const [checkMail, setCheckMail] = useState(false)
+  // Accueil en 3 écrans, une seule fois, pour un particulier dont le compte est actif tout de suite.
+  const [welcome, setWelcome] = useState(false)
 
-  useEffect(() => { captureAttribution() }, [])
+  useEffect(() => { captureAttribution(); rememberReferral(params.get('ref')) }, [params])
 
   function update(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
 
@@ -111,22 +115,23 @@ function SignupForm() {
       })
       if (signupError) { setError(frenchError(signupError.message)); setLoading(false); return }
 
-      const refCode = params.get('ref')
-      if (refCode && data.user) {
-        const { data: referrer } = await supabase.from('profiles').select('id').eq('referral_code', refCode.toUpperCase()).maybeSingle()
-        if (referrer && referrer.id !== data.user.id) {
-          await supabase.from('referrals').insert({ referrer_id: referrer.id, referred_id: data.user.id })
-        }
-      }
+      // Parrainage : le code est déjà gardé dans le navigateur (rememberReferral). Avec une session
+      // (e-mail non confirmé exigé = pas de session), on l'enregistre tout de suite ; sinon il reste
+      // en attente et sera enregistré à la première connexion ou première visite de /map.
+      rememberReferral(params.get('ref'))
+      if (data.session) await flushReferral()
 
       if (!data.session) { setCheckMail(true); setLoading(false); return }
-      if (role === 'pro') router.push('/pro/onboarding')
-      else router.push(nextPath() || '/map')
+      if (role === 'pro') { router.push('/pro/onboarding'); return }
+      if (!welcomeSeen()) { setWelcome(true); setLoading(false); return }
+      router.push(nextPath() || '/map')
     } catch {
       setError("Une erreur est survenue, réessayez dans un instant.")
       setLoading(false)
     }
   }
+
+  if (welcome) return <WelcomeCarousel onDone={() => router.push(nextPath() || '/map')} />
 
   if (checkMail) return (
     <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 24px', fontFamily: 'Inter, sans-serif' }}>

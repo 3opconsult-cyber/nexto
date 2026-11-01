@@ -156,7 +156,7 @@ export default function ProRevenusPage() {
                 <>
                   <label htmlFor="tax-id" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '12px 0 5px' }}>Numéro fiscal (13 chiffres)</label>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <input id="tax-id" value={taxId} onChange={e => setTaxId(e.target.value)} inputMode="numeric" placeholder="Sur votre avis d'impôt"
+                    <input id="tax-id" value={taxId} onChange={e => setTaxId(e.target.value)} inputMode="numeric"
                       style={{ flex: 1, minWidth: 0, border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif' }} />
                     <button onClick={saveTax} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                       {taxSaved ? 'Enregistré' : 'Enregistrer'}

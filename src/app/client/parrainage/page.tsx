@@ -5,24 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import QrCode from '@/components/QrCode'
 
-// Paliers dégressifs (demande de Romain, 26/10) : plus on parraine, plus la
-// part de commission offerte sur la prochaine mission grimpe — affichage
-// seul pour l'instant (la vraie déduction attend le séquestre réel, comme
-// le reste du modèle de paiement). Toujours plafonné à 50 €, 1x/mois
-// (règle produit existante, inchangée).
-const TIERS = [
-  { min: 1, pct: 10 },
-  { min: 3, pct: 20 },
-  { min: 5, pct: 30 },
-  { min: 10, pct: 50 },
-]
-function currentTier(n: number) {
-  return [...TIERS].reverse().find(t => n >= t.min) || null
-}
-function nextTier(n: number) {
-  return TIERS.find(t => n < t.min) || null
-}
-
 function makeCode(firstName: string) {
   const base = (firstName || 'PING').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6) || 'PING'
   const suffix = Math.random().toString(36).slice(2, 6).toUpperCase()
@@ -32,9 +14,9 @@ function makeCode(firstName: string) {
 export default function ParrainagePage() {
   const router = useRouter()
   const [code, setCode] = useState('')
-  const [referrals, setReferrals] = useState<any[]>([])
-  const [successfulCount, setSuccessfulCount] = useState(0)
-  const [rewardsUsedThisMonth, setRewardsUsedThisMonth] = useState(0)
+  // Chiffres réels (RPC my_referral_stats) : filleuls enregistrés, et filleuls qui ont terminé une mission.
+  const [registered, setRegistered] = useState(0)
+  const [completed, setCompleted] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -51,38 +33,14 @@ export default function ParrainagePage() {
       }
       setCode(myCode)
 
-      const { data: refs } = await supabase.from('referrals').select('*').eq('referrer_id', user.id)
-      setReferrals(refs ?? [])
-
-      if (refs && refs.length > 0) {
-        const referredIds = refs.map((r: any) => r.referred_id)
-        const { data: txs } = await supabase.from('transactions')
-          .select('buyer_id, seller_id, status')
-          .or(`buyer_id.in.(${referredIds.join(',')}),seller_id.in.(${referredIds.join(',')})`)
-          .in('status', ['completed', 'released'])
-        const successfulIds = new Set<string>()
-        ;(txs ?? []).forEach((t: any) => {
-          if (referredIds.includes(t.buyer_id)) successfulIds.add(t.buyer_id)
-          if (referredIds.includes(t.seller_id)) successfulIds.add(t.seller_id)
-        })
-        setSuccessfulCount(successfulIds.size)
-
-        const now = new Date()
-        const usedThisMonth = refs.filter((r: any) => {
-          if (!r.reward_used_at) return false
-          const d = new Date(r.reward_used_at)
-          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-        }).length
-        setRewardsUsedThisMonth(usedThisMonth)
-      }
+      const { data: stats } = await supabase.rpc('my_referral_stats')
+      const row = Array.isArray(stats) ? stats[0] : stats
+      setRegistered(row?.registered ?? 0)
+      setCompleted(row?.completed ?? 0)
       setLoading(false)
     }
     load()
   }, [router])
-
-  const rewardsUsedTotal = referrals.filter(r => r.reward_used_at).length
-  const rewardsAvailable = Math.max(0, successfulCount - rewardsUsedTotal)
-  const eligibleNow = rewardsAvailable > 0 && rewardsUsedThisMonth === 0
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/auth/signup?ref=${code}` : ''
   const shareMsg = `Je t'invite sur PING — ${shareUrl}`
@@ -102,8 +60,6 @@ export default function ParrainagePage() {
     window.location.href = `mailto:?subject=${encodeURIComponent('Je t\u2019invite sur PING')}&body=${encodeURIComponent(shareMsg)}`
   }
   const [showQr, setShowQr] = useState(false)
-  const tier = currentTier(successfulCount)
-  const next = nextTier(successfulCount)
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
@@ -154,57 +110,21 @@ export default function ParrainagePage() {
               )}
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Plus vous parrainez, plus ça paie</div>
-                {tier && <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#0C8F7E' }}>Niveau actuel : {tier.pct} %</div>}
-              </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {TIERS.map(t => {
-                  const reached = successfulCount >= t.min
-                  return (
-                    <div key={t.min} style={{ flex: 1, textAlign: 'center' }}>
-                      <div style={{
-                        height: 8, borderRadius: 999, marginBottom: 6,
-                        background: reached ? '#12B39C' : '#E7EDEB',
-                        boxShadow: reached ? '0 0 0 3px rgba(18,179,156,.18)' : 'none',
-                        transition: 'background .3s',
-                      }} />
-                      <div style={{ fontSize: 10.5, fontWeight: 700, color: reached ? '#0C8F7E' : '#6E8592' }}>{t.pct} %</div>
-                      <div style={{ fontSize: 9.5, color: '#6E8592' }}>{t.min} parr.</div>
-                    </div>
-                  )
-                })}
-              </div>
-              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.6, margin: '12px 0 0' }}>
-                {next
-                  ? <>Encore <b>{next.min - successfulCount}</b> parrainage{next.min - successfulCount > 1 ? 's' : ''} abouti{next.min - successfulCount > 1 ? 's' : ''} pour débloquer <b>{next.pct} %</b> de commission offerte sur votre prochaine mission.</>
-                  : <>Niveau maximum atteint — <b>50 %</b> de commission offerte sur votre prochaine mission.</>}
-                {' '}Toujours plafonné à 50 €, une fois par mois.
-              </p>
-            </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
               <div style={{ background: 'rgba(18,179,156,.08)', borderRadius: 14, padding: 14 }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{referrals.length}</div>
-                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{referrals.length > 1 ? 's' : ''} inscrit{referrals.length > 1 ? 's' : ''}</div>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{registered}</div>
+                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{registered > 1 ? 's' : ''} enregistré{registered > 1 ? 's' : ''}</div>
               </div>
               <div style={{ background: 'rgba(18,179,156,.08)', borderRadius: 14, padding: 14 }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{successfulCount}</div>
-                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Parrainage{successfulCount > 1 ? 's' : ''} abouti{successfulCount > 1 ? 's' : ''}</div>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{completed}</div>
+                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{completed > 1 ? 's' : ''} ayant terminé une mission</div>
               </div>
             </div>
 
-            <div style={{ padding: 16, borderRadius: 16, background: eligibleNow ? 'rgba(18,179,156,.1)' : '#F3F6F5', border: eligibleNow ? '1px solid rgba(18,179,156,.3)' : '1px solid #E7EDEB' }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>
-                {eligibleNow ? 'Récompense disponible ce mois-ci' : rewardsAvailable > 0 ? 'Récompense déjà utilisée ce mois-ci' : 'Aucune récompense disponible pour l\u2019instant'}
-              </div>
-              <p style={{ fontSize: 12, color: '#4E6470', marginTop: 4, lineHeight: 1.5 }}>
-                {eligibleNow
-                  ? 'Elle s\u2019appliquera automatiquement une fois le paiement en ligne activé.'
-                  : rewardsAvailable > 0
-                    ? 'Une nouvelle récompense sera utilisable le mois prochain.'
-                    : 'Parrainez quelqu\u2019un qui termine une mission pour en débloquer une.'}
+            <div style={{ padding: 16, borderRadius: 16, background: '#F3F6F5', border: '1px solid #E7EDEB' }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Comment ça marche</div>
+              <p style={{ fontSize: 12, color: '#4E6470', marginTop: 4, lineHeight: 1.5, marginBottom: 0 }}>
+                Votre filleul est enregistré dès son inscription avec votre code ou votre lien. L&apos;avantage sera communiqué lors du lancement.
               </p>
             </div>
           </>

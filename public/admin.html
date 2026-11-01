@@ -404,57 +404,45 @@ textarea.minput{min-height:120px;resize:vertical}
   </aside>
 
   <main class="main">
-    <div class="top"><span class="hamburger" onclick="toggleNav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span class="backarrow" id="backArrow" onclick="navBack()" style="display:none" title="Retour"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></span><h1 id="ttl">Vue d'ensemble</h1><div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher un pro, un client, une transaction…</div><div class="period"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg> Juillet 2026</div></div>
+    <div class="top"><span class="hamburger" onclick="toggleNav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span class="backarrow" id="backArrow" onclick="navBack()" style="display:none" title="Retour"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></span><h1 id="ttl">Vue d'ensemble</h1><div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher un pro, un client, une transaction…</div><div class="period"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg> Depuis le lancement</div></div>
     <div class="content">
 
       <!-- OVERVIEW -->
       <section class="section on" id="s_overview">
         <div class="grid k4">
-          <div class="kpi click" onclick="nav('tx')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span> Volume (GMV) · mois</div><div class="v">148 920 €</div><div class="d up">▲ 12,4 % vs juin</div></div>
-          <div class="kpi click" onclick="nav('commissions')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg></span> Commissions PING</div><div class="v">11 240 €</div><div class="d up">▲ 9,1 %</div></div>
-          <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v">312</div><div class="d up">▲ 18 nouveaux</div></div>
-          <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#c0503a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Taux de litige</div><div class="v">0,8 %</div><div class="d up">▼ 0,3 pt</div></div>
+          <div class="kpi click" onclick="nav('tx')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span> Volume des missions</div><div class="v" id="ovVolume">—</div><div class="d" id="ovVolumeD">cumul depuis le lancement</div></div>
+          <div class="kpi click" onclick="nav('commissions')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg></span> Commissions PING</div><div class="v" id="ovCommission">—</div><div class="d" id="ovCommissionD">cumul depuis le lancement</div></div>
+          <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v" id="ovProviders">—</div><div class="d" id="ovProvidersD">sur le total inscrit</div></div>
+          <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#c0503a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Litiges ouverts</div><div class="v" id="ovDisputes">—</div><div class="d" id="ovDisputesD">à traiter</div></div>
         </div>
-        <div class="card mt" id="liveMapCard"><h3>Carte en direct <span class="muted">prestataires connectés · position GPS</span></h3>
+        <div class="card mt" id="liveMapCard"><h3>Carte des prestataires <span class="muted">position enregistrée à l'inscription</span></h3>
           <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px;margin:4px 0 14px">
-            <div class="kpi click" onclick="showMapPeople('online')"><div class="l">Connectés · GPS actif</div><div class="v" id="mapKpiConnected" style="color:var(--tealD)">0</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
+            <div class="kpi click" onclick="showMapPeople('online')"><div class="l">Actifs sur la carte</div><div class="v" id="mapKpiConnected" style="color:var(--tealD)">0</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
             <div class="kpi click" onclick="showMapPeople('job')"><div class="l">En prestation maintenant</div><div class="v" id="mapKpiOnJob" style="color:#c0503a">0</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
           </div>
           <div id="mapPeopleList" style="display:none;margin-bottom:14px"></div>
           <div id="liveMapSvg" style="border-radius:14px;overflow:hidden;border:1px solid var(--line);height:280px"></div>
           <div style="display:flex;gap:18px;margin-top:10px;font-size:11.5px;color:var(--slate);flex-wrap:wrap">
-            <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#2FD06E;display:inline-block"></span> Connecté, GPS actif</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#2FD06E;display:inline-block"></span> Actif sur la carte</span>
             <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--coral);display:inline-block"></span> En prestation</span>
             <span style="display:flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#3B82F6;display:inline-block"></span> Client (mission active)</span>
           </div>
-          <p class="note">Prototype : positions et statuts illustratifs, actualisés au chargement de la page — clique un point pour ouvrir la fiche. Câblage réel (GPS live, websocket) prévu au lot L7.</p>
+          <p class="note">Positions enregistrées par les prestataires (pas de suivi GPS en direct) — clique un point pour ouvrir la fiche. Le statut « en prestation » vient du scan d'arrivée.</p>
         </div>
         <div class="split mt">
-          <div class="card"><h3><span>Volume &amp; commissions <span class="muted">6 derniers mois</span></span><span class="link" onclick="nav('tx')">Voir les transactions</span></h3>
-            <div class="chart">
-              <div class="bar" style="height:52%"><span>98k</span><small>Fév</small></div>
-              <div class="bar" style="height:60%"><span>112k</span><small>Mar</small></div>
-              <div class="bar" style="height:66%"><span>121k</span><small>Avr</small></div>
-              <div class="bar" style="height:72%"><span>132k</span><small>Mai</small></div>
-              <div class="bar" style="height:74%"><span>136k</span><small>Juin</small></div>
-              <div class="bar" style="height:82%;background:linear-gradient(180deg,var(--gold),#f6c877)"><span>149k</span><small>Juil</small></div>
-            </div>
+          <div class="card"><h3><span>Volume &amp; commissions <span class="muted">évolution mensuelle</span></span><span class="link" onclick="nav('tx')">Voir les transactions</span></h3>
+            <p class="muted" style="padding:34px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
           </div>
           <div class="card"><h3>À traiter</h3>
-            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b>7 justificatifs à vérifier</b><small>Assurance complémentaire, RC Pro, Certification hygiène</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b>2 litiges ouverts</b><small>Fenêtre de réclamation 48 h</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
-            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b><span id="overviewExpiryCount">0</span> assurance(s) à renouveler sous 45 j</b><small>Alerte calculée depuis les dates d'expiration</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026</b><small>À transmettre avant le 31 janv. 2027</small></div><span class="link" onclick="nav('dac7')">Préparer</span></div>
+            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b><span id="ovDocs">—</span> pièce(s) à examiner</b><small>Pièces déposées par les prestataires, en attente d'examen</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b><span id="ovDisputes2">—</span> litige(s) ouvert(s)</b><small>Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
+            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b><span id="overviewExpiryCount">0</span> assurance(s) à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026</b><small>À brancher avant janvier 2027</small></div><span class="link" onclick="nav('dac7')">Voir</span></div>
           </div>
         </div>
         <div class="card mt"><h3>Transactions récentes <span class="link" onclick="nav('tx')">Tout voir</span></h3>
-          <table class="tbl">
-            <tr><th>Date / heure</th><th>Client</th><th>Entreprise</th><th>Montant</th><th>Commission</th><th>Séquestre</th></tr>
-            <tr><td class="mono">14 juil. · 15h42</td><td>Julie R.</td><td>Sofia Services</td><td>110,25 €</td><td>9,45 €</td><td><span class="tag ok">Libéré</span></td></tr>
-            <tr><td class="mono">14 juil. · 12h08</td><td>Karim B.</td><td>Léa Nettoyage</td><td>63,00 €</td><td>5,40 €</td><td><span class="tag wait">En séquestre</span></td></tr>
-            <tr><td class="mono">13 juil. · 18h30</td><td>Sophie M.</td><td>Nadia Repassage</td><td>294,00 €</td><td>25,20 €</td><td><span class="tag ok">Libéré</span></td></tr>
-            <tr><td class="mono">13 juil. · 09h15</td><td>Paul D.</td><td>Yanis Services</td><td>36,75 €</td><td>3,15 €</td><td><span class="tag dn">Remboursé</span></td></tr>
-          </table>
+          <table class="tbl"><thead><tr><th>Date / heure</th><th>Statut</th><th>Sous-total</th><th>Commission</th><th>Total client</th></tr></thead><tbody id="ovTxBody"></tbody></table>
+          <p class="muted" id="ovTxEmpty" style="padding:18px 0;text-align:center">Données disponibles au lancement</p>
         </div>
       </section>
 
@@ -478,7 +466,7 @@ textarea.minput{min-height:120px;resize:vertical}
           </div>
         </div>
         <div class="card mt" id="liveTxCard" style="display:none"><h3>Dernières transactions</h3>
-          <table class="tbl" id="liveTxTable"><thead><tr><th>Date</th><th>Statut</th><th>Sous-total</th><th>Commission (5+11 %)</th><th>Total client</th></tr></thead><tbody></tbody></table>
+          <table class="tbl" id="liveTxTable"><thead><tr><th>Date</th><th>Statut</th><th>Sous-total</th><th>Commissions</th><th>Total client</th></tr></thead><tbody></tbody></table>
           <div class="muted" id="liveTxEmpty" style="padding:18px 0;text-align:center;display:none">Aucune transaction pour l'instant.</div>
         </div>
         <div class="card mt" id="liveDisputesCard" style="display:none"><h3>Litiges ouverts</h3>
@@ -510,32 +498,24 @@ textarea.minput{min-height:120px;resize:vertical}
 
       <!-- TRANSACTIONS -->
       <section class="section" id="s_tx">
-        <div class="card"><h3>Transactions <span class="muted">séquestre · escrow</span></h3>
-          <table class="tbl">
-            <tr><th>Réf.</th><th>Date / heure</th><th>Client</th><th>Entreprise</th><th>Total</th><th>Commission</th><th>Net pro</th><th>État</th></tr>
-            <tr><td class="mono">TX-8842</td><td class="mono">14 juil. · 15h42</td><td>Julie R.</td><td>Sofia Services</td><td>110,25 €</td><td>9,45 €</td><td>95,55 €</td><td><span class="tag ok">Libéré</span></td></tr>
-            <tr><td class="mono">TX-8841</td><td class="mono">14 juil. · 12h08</td><td>Karim B.</td><td>Léa Nettoyage</td><td>63,00 €</td><td>5,40 €</td><td>54,60 €</td><td><span class="tag wait">Séquestre 48 h</span></td></tr>
-            <tr><td class="mono">TX-8830</td><td class="mono">13 juil. · 18h30</td><td>Sophie M.</td><td>Nadia Repassage</td><td>294,00 €</td><td>25,20 €</td><td>254,80 €</td><td><span class="tag ok">Libéré</span></td></tr>
-            <tr><td class="mono">TX-8821</td><td class="mono">13 juil. · 09h15</td><td>Paul D.</td><td>Yanis Services</td><td>36,75 €</td><td>3,15 €</td><td>0 €</td><td><span class="tag dn">Remboursé (litige)</span></td></tr>
-          </table>
+        <div class="card"><h3>Transactions <span class="muted">missions réelles, les plus récentes d'abord</span></h3>
+          <table class="tbl"><thead><tr><th>Date / heure</th><th>Statut</th><th>Sous-total</th><th>Frais client</th><th>Commission pro</th><th>Total client</th></tr></thead><tbody id="txAllBody"></tbody></table>
+          <p class="muted" id="txAllEmpty" style="padding:18px 0;text-align:center">Données disponibles au lancement</p>
+          <p class="note">Le séquestre n'est pas actif : le client règle la prestation par virement. Clique une ligne pour ouvrir la mission.</p>
         </div>
       </section>
 
       <!-- COMMISSIONS -->
       <section class="section" id="s_commissions">
-        <div class="card" style="margin-bottom:14px"><h3><span>Réglages de facturation <span class="muted">taux client / prestataire · heure entamée due à partir de N minutes</span></span><a class="link" style="text-decoration:none" href="/admin/commission" target="_blank" rel="noopener">Régler</a></h3></div>
+        <div class="card" style="margin-bottom:14px"><h3><span>Réglages de facturation <span class="muted">taux client / prestataire · heure entamée due à partir de N minutes</span></span><a class="link" style="text-decoration:none" href="/admin/commission" target="_blank" rel="noopener">Régler</a></h3><p class="note" id="commRatesNote">Taux réglables dans Commission (8 % client + 17 % prestataire au 31/10).</p></div>
         <div class="grid k3">
-          <div class="kpi"><div class="l">Commission acheteur (5 %)</div><div class="v">4 980 €</div><div class="d up">ce mois</div></div>
-          <div class="kpi"><div class="l">Commission vendeur (11 %)</div><div class="v">6 260 €</div><div class="d up">ce mois</div></div>
-          <div class="kpi"><div class="l">Total commissions</div><div class="v">11 240 €</div><div class="d up">▲ 9,1 %</div></div>
+          <div class="kpi"><div class="l">Frais de service client</div><div class="v" id="commBuyer">—</div><div class="d" id="commBuyerD">cumul des missions</div></div>
+          <div class="kpi"><div class="l">Commission prestataire</div><div class="v" id="commSeller">—</div><div class="d" id="commSellerD">cumul des missions</div></div>
+          <div class="kpi"><div class="l">Total commissions</div><div class="v" id="commTotal">—</div><div class="d">cumul depuis le lancement</div></div>
         </div>
-        <div class="card mt"><h3>Reversements aux entreprises <span class="link">Exporter</span></h3>
-          <table class="tbl">
-            <tr><th>Entreprise</th><th>Prestations</th><th>Brut</th><th>Commission 11 %</th><th>Net reversé</th><th>Virement</th></tr>
-            <tr><td><div class="who"><div class="av">E</div>Nadia Repassage</div></td><td>9</td><td>5 630 €</td><td>506,70 €</td><td>5 123,30 €</td><td><span class="tag ok">Effectué</span></td></tr>
-            <tr><td><div class="who"><div class="av">P</div>Sofia Services</div></td><td>14</td><td>3 560 €</td><td>320,40 €</td><td>3 239,60 €</td><td><span class="tag ok">Effectué</span></td></tr>
-            <tr><td><div class="who"><div class="av gold">S</div>Léa Nettoyage</div></td><td>11</td><td>2 176 €</td><td>195,84 €</td><td>1 980,16 €</td><td><span class="tag wait">Programmé</span></td></tr>
-          </table>
+        <div class="card mt"><h3>Versements aux entreprises</h3>
+          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
+          <p class="note">Le client vire la prestation directement au prestataire : PING ne reverse rien. Le suivi des virements et des commissions à régler est dans Paiements.</p>
         </div>
       </section>
 
@@ -649,9 +629,9 @@ textarea.minput{min-height:120px;resize:vertical}
             <tr><th>N°</th><th>Type</th><th>Émetteur</th><th>Client</th><th>Jour / date / heure</th><th>Transaction</th><th>Montant</th></tr>
             <tbody id="liveInvoicesBody"></tbody>
           </table>
-          <div id="liveInvoicesEmpty" class="muted" style="padding:16px 0;display:none">Aucune mission terminée pour l'instant — les factures apparaissent ici automatiquement dès qu'une mission se conclut. Réel, pas une démo — voir la note ci-dessous.</div>
-          <p class="note">Réel — généré à partir des vraies transactions terminées. Les numéros (FACT-/PING-C-/PING-V-) suivent le modèle à trois factures déjà validé. Aucun PDF téléchargeable pour l'instant : la génération de document n'est pas encore construite, seul l'enregistrement en base l'est.</p>
-          <div class="mt" style="display:flex;gap:10px"><button class="btn ghost">Exporter la période (comptable)</button><button class="btn ghost">Archiver</button></div>
+          <div id="liveInvoicesEmpty" class="muted" style="padding:16px 0;display:none">Aucune mission terminée pour l'instant — les factures apparaissent ici automatiquement dès qu'une mission se conclut.</div>
+          <p class="note">Réel — généré à partir des vraies transactions terminées. Les numéros (FACT-/PING-C-/PING-V-) suivent le modèle à trois factures déjà validé. Les factures PDF sont téléchargeables par les parties depuis la page Facturation de chaque mission.</p>
+          <p class="note">Export comptable de la période et archivage : à brancher.</p>
         </div>
       </section>
 
@@ -659,18 +639,19 @@ textarea.minput{min-height:120px;resize:vertical}
       <section class="section" id="s_dac7">
         <div class="split">
           <div class="card"><h3>Déclaration DPI-DAC7 · exercice 2026</h3>
-            <p class="muted">Obligation plateforme (art. 1649 ter A à E du CGI). Collecte et vérification des données vendeurs, calcul des revenus perçus via PING, transmission à la DGFiP.</p>
-            <div class="mt"><div class="qrow"><div class="m"><b>Vendeurs concernés</b><small>Au-delà de 30 opérations ou 2 000 € (biens) · services : tous</small></div><b>128</b></div>
-              <div class="qrow"><div class="m"><b>Revenus déclarés (net perçu)</b><small>Total consolidé exercice 2026</small></div><b>1,42 M€</b></div>
+            <p class="muted">Obligation plateforme (art. 1649 ter A à E du CGI). Collecte et contrôle de cohérence des données vendeurs, calcul des revenus perçus via PING, transmission à la DGFiP.</p>
+            <div class="mt"><div class="qrow"><div class="m"><b>Vendeurs concernés</b><small>Au-delà de 30 opérations ou 2 000 € (biens) · services : tous</small></div><b>—</b></div>
+              <div class="qrow"><div class="m"><b>Revenus déclarés (net perçu)</b><small>Total consolidé exercice 2026</small></div><b>—</b></div>
               <div class="qrow"><div class="m"><b>Échéance de transmission</b><small>Au plus tard</small></div><b>31 janv. 2027</b></div>
             </div>
-            <div class="mt"><div class="qrow"><div class="m"><b>Collecte des données fiscales</b><small>NIF / SIREN capturé à l'inscription · bloquant si absent</small></div><span class="tag ok">Automatique</span></div>
-              <div class="qrow"><div class="m"><b>Consolidation des revenus</b><small>Somme des versements PSP par vendeur · recalculée en continu</small></div><span class="tag ok">Automatique</span></div>
-              <div class="qrow"><div class="m"><b>Envoi des récapitulatifs</b><small>Chaque vendeur reçoit le sien individuellement, avant le 31 janvier — détail ci-dessous</small></div><span class="tag ok">Programmé · auto</span></div>
-              <div class="qrow"><div class="m"><b>Génération du fichier DGFiP</b><small>Format XML DPI · un seul fichier consolidé, tous vendeurs · généré automatiquement en janvier</small></div><span class="tag ok">Automatique</span></div>
-              <div class="qrow"><div class="m"><b>Dépôt sur le portail DGFiP</b><small>Seule étape manuelle · aucune API de dépôt disponible à ce jour</small></div><span class="tag wait">Manuel · 1 fois/an</span></div>
+            <div class="mt"><div class="qrow"><div class="m"><b>Collecte des données fiscales</b><small>NIF / SIREN renseigné par le prestataire (NIF conservé à part, non public)</small></div><span class="tag wait">Partielle</span></div>
+              <div class="qrow"><div class="m"><b>Consolidation des revenus</b><small>Somme des prestations facturées par vendeur</small></div><span class="tag wait">À brancher</span></div>
+              <div class="qrow"><div class="m"><b>Envoi des récapitulatifs</b><small>Chaque vendeur doit recevoir le sien individuellement, avant le 31 janvier</small></div><span class="tag wait">À brancher</span></div>
+              <div class="qrow"><div class="m"><b>Génération du fichier DGFiP</b><small>Format XML DPI · un seul fichier consolidé, tous vendeurs</small></div><span class="tag wait">À brancher</span></div>
+              <div class="qrow"><div class="m"><b>Dépôt sur le portail DGFiP</b><small>Seule étape manuelle · aucune API de dépôt disponible à ce jour</small></div><span class="tag wait">Manuel · 1 fois par an</span></div>
             </div>
-            <div class="mt" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="toast('Export DGFiP généré · fichier XML DPI consolidé, 128 vendeurs')">Générer l'export DGFiP <span class="muted" style="color:rgba(255,255,255,.75);font-weight:600">· fichier unique</span></button><button class="btn ghost" onclick="toast('Aperçu du fichier XML DPI')">Prévisualiser</button></div>
+            <div class="mt"><button class="btn ghost" onclick="toast('Export DAC7 : à brancher avant janvier 2027')">Export DAC7</button>
+              <p class="note" style="margin-top:10px">Export DAC7 : à brancher avant janvier 2027. Aucun fichier n'est généré à ce jour.</p></div>
           </div>
           <div class="card"><h3>Cadre</h3>
             <div class="lawbox">La plateforme collecte les informations fiscales des vendeurs, calcule leurs revenus, envoie à chacun un récapitulatif annuel (net perçu + nombre d'opérations) et déclare à l'administration avant le 31 janvier de l'année suivante. Les particuliers en vente occasionnelle de biens personnels ne sont, en général, pas imposables.</div>
@@ -682,21 +663,21 @@ textarea.minput{min-height:120px;resize:vertical}
           <table class="tbl" data-noenh="1"><tr><th class="sortable" onclick="sortDac7By('vendeur')">Vendeur</th><th class="sortable" onclick="sortDac7By('revenus')">Revenus déclarés</th><th class="sortable" onclick="sortDac7By('operations')">Opérations</th><th class="sortable" onclick="sortDac7By('statut')">Statut d'envoi</th><th></th></tr>
             <tbody id="dac7VendorsRows"></tbody>
           </table>
-          <p class="note">5 exemples sur les 128 vendeurs concernés par l'exercice 2026. Chaque récapitulatif est propre à un vendeur — téléchargeable en aperçu, ou envoyable directement par e-mail. Distinct du fichier DGFiP ci-dessus, qui est un envoi unique et consolidé vers l'administration, pas vers les vendeurs.</p>
+          <p class="muted" style="padding:14px 0 4px;text-align:center;font-weight:600">Données disponibles au lancement</p><p class="note">Chaque récapitulatif sera propre à un vendeur. Distinct du fichier DGFiP ci-dessus, qui est un envoi unique et consolidé vers l'administration, pas vers les vendeurs. À brancher avant janvier 2027.</p>
         </div>
       </section>
 
       <!-- CONFORMITE -->
       <section class="section" id="s_conformite">
         <div class="card"><h3>Échéances documentaires <span class="muted">alerte à 45 jours</span></h3>
-          <table class="tbl"><tr><th>Type de document</th><th>Durée de validité usuelle</th><th>Ce qui est vérifié</th></tr>
+          <table class="tbl"><tr><th>Type de document</th><th>Durée de validité usuelle</th><th>Ce que PING contrôle</th></tr>
             <tr><td>Assurance responsabilité civile pro</td><td>1 an, renouvelable</td><td>Date d'expiration sur l'attestation</td></tr>
             <tr><td>Assurance complémentaire (dommages)</td><td>1 an, renouvelable</td><td>Date d'expiration sur l'attestation</td></tr>
             <tr><td>Pièce d'identité</td><td>Jusqu'à 10-15 ans (CNI/passeport)</td><td>Date de validité du document</td></tr>
             <tr><td>Justificatif SIRET / Kbis</td><td>Recommandé &lt; 3 mois à la soumission</td><td>Fraîcheur du document, pas une expiration</td></tr>
             <tr><td>Certification hygiène</td><td>1 à 3 ans selon organisme</td><td>Date sur l'attestation</td></tr>
             <tr><td>Justificatif de domicile</td><td>Recommandé &lt; 3 mois à la soumission</td><td>Fraîcheur du document</td></tr>
-            <tr><td>RIB</td><td>Pas d'expiration</td><td>Revérifié uniquement si changement de compte</td></tr>
+            <tr><td>RIB</td><td>Pas d'expiration</td><td>Recontrôlé uniquement si changement de compte</td></tr>
           </table>
           <p class="note">Durées indicatives — à confirmer avec un juriste avant mise en production. Seuls l'assurance RC et l'assurance complémentaire ont une échéance calculable dans ce prototype (`insExpiry` par entité) ; les autres nécessitent un champ de date saisi à l'upload, prévu au lot L7.</p>
         </div>
@@ -705,58 +686,46 @@ textarea.minput{min-height:120px;resize:vertical}
           <table class="tbl"><tr><th>Prestataire</th><th>Document</th><th>Échéance</th><th>Délai</th><th></th></tr>
             <tbody id="expiryRows"></tbody>
           </table>
-          <p class="note">Générée automatiquement depuis les dates d'assurance de chaque fiche — clique un prestataire pour ouvrir sa fiche et déclencher un rappel.</p>
+          <p class="note">Alimentée par les dates d'expiration d'assurance renseignées par les prestataires, quand elles existent.</p>
         </div>
 
-        <div class="card mt"><h3>File de conformité (KYC) <span class="muted">7 en attente</span></h3>
-          <table class="tbl">
-            <tr><th>Entreprise</th><th>Document</th><th>Type</th><th>Soumis le</th><th>État</th><th></th></tr>
-            <tr><td><div class="who"><div class="av g">B</div>Bruno Ménage</div></td><td>Assurance assurance complémentaire</td><td>Garantie</td><td class="mono">14 juil. · 09h02</td><td><span class="tag wait">À vérifier</span></td><td><span class="link">Vérifier</span></td></tr>
-            <tr><td><div class="who"><div class="av">C</div>Clara Nettoyage</div></td><td>Certification hygiène / attestation</td><td>Certification</td><td class="mono">13 juil. · 16h40</td><td><span class="tag wait">À vérifier</span></td><td><span class="link">Vérifier</span></td></tr>
-            <tr><td><div class="who"><div class="av">R</div>Ateliers Propreté</div></td><td>Pièce d'identité gérant</td><td>Identité</td><td class="mono">12 juil. · 10h11</td><td><span class="tag ok">Validé</span></td><td><span class="link">Voir</span></td></tr>
-          </table>
-          <p class="note">Fichiers chiffrés et masqués : seul le statut de vérification est exposé côté public.</p>
+        <div class="card mt"><h3>File de conformité (KYC)</h3>
+          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
+          <p class="note">Les pièces réellement déposées par les prestataires sont dans « Aperçu réel » (Documents en attente). Fichiers masqués : seul le statut (pièce fournie ou non) est visible côté public.</p>
         </div>
       </section>
 
       <!-- LITIGES -->
       <section class="section" id="s_litiges">
         <div class="grid k3">
-          <div class="kpi"><div class="l">Litiges ouverts</div><div class="v">2</div><div class="d">sur 247 transactions &middot; 0,8 %</div></div>
-          <div class="kpi"><div class="l">Résolus automatiquement</div><div class="v">81 %</div><div class="d up">sans intervention</div></div>
-          <div class="kpi"><div class="l">Montant gelé</div><div class="v">128,75 &euro;</div><div class="d">séquestre suspendu</div></div>
+          <div class="kpi"><div class="l">Litiges ouverts</div><div class="v" id="litOpen">—</div><div class="d">dossiers en attente</div></div>
+          <div class="kpi"><div class="l">Résolus</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
+          <div class="kpi"><div class="l">Montant en jeu</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
         </div>
 
         <div class="card mt"><h3>Files d'attente <span class="muted">triées par échéance</span></h3>
-          <table class="tbl">
-            <tr><th>Réf.</th><th>Client</th><th>Prestataire</th><th>Motif</th><th>Montant</th><th>Étape</th><th>Échéance</th><th></th></tr>
-            <tr><td class="mono">LT-114</td><td>Paul D.</td><td>Yanis Services</td><td>Travail non conforme</td><td>36,75 &euro;</td><td><span class="tag dn">Arbitrage requis</span></td><td><span class="tag wait">18 h</span></td><td><span class="link" onclick="openLitige('LT-114')">Ouvrir</span></td></tr>
-            <tr><td class="mono">LT-113</td><td>Inès F.</td><td>Bruno Ménage</td><td>Retard &gt; 2 h</td><td>92,00 &euro;</td><td><span class="tag wait">Attente prestataire</span></td><td><span class="tag wait">31 h</span></td><td><span class="link" onclick="openLitige('LT-113')">Ouvrir</span></td></tr>
-          </table>
+          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
+          <p class="note">Les litiges réellement ouverts sont listés dans « Aperçu réel » ; chaque dossier se traite dans sa page dédiée (/litiges).</p>
         </div>
 
-        <div class="card mt"><h3>Automatismes actifs <span class="muted">aucune intervention humaine</span></h3>
-          <div class="qrow"><div class="m"><b>Absence de scan d'arrivée</b><small>Créneau dépassé de 2 h &rarr; remboursement intégral, transaction annulée</small></div><span class="tag ok">Actif</span></div>
-          <div class="qrow"><div class="m"><b>Durée sur place &lt; 50 %</b><small>Proposition de remboursement proratisé envoyée au prestataire</small></div><span class="tag ok">Actif</span></div>
-          <div class="qrow"><div class="m"><b>Silence du prestataire &agrave; 48 h</b><small>Remboursement intégral automatique au client</small></div><span class="tag ok">Actif</span></div>
-          <div class="qrow"><div class="m"><b>Gel du séquestre au signalement</b><small>La libération automatique saute toute transaction en litige</small></div><span class="tag ok">Actif</span></div>
+        <div class="card mt"><h3>Règles prévues <span class="muted">pas encore automatisées : décision au cas par cas par PING</span></h3>
+          <div class="qrow"><div class="m"><b>Absence de scan d'arrivée</b><small>Créneau dépassé de 2 h &rarr; remboursement intégral, transaction annulée</small></div><span class="tag wait">Prévu</span></div>
+          <div class="qrow"><div class="m"><b>Durée sur place &lt; 50 %</b><small>Proposition de remboursement proratisé envoyée au prestataire</small></div><span class="tag wait">Prévu</span></div>
+          <div class="qrow"><div class="m"><b>Silence du prestataire &agrave; 48 h</b><small>Remboursement intégral automatique au client</small></div><span class="tag wait">Prévu</span></div>
+          <div class="qrow"><div class="m"><b>Gel du séquestre au signalement</b><small>La libération automatique saute toute transaction en litige</small></div><span class="tag wait">Prévu</span></div>
           <div class="qrow"><div class="m"><b>Casse, vol, dégradation</b><small>Jamais de remboursement automatique &rarr; transmission assurance RC du prestataire</small></div><span class="tag ink">Exclu</span></div>
         </div>
       </section>
 
       <section class="section" id="s_signalements">
         <div class="grid k3">
-          <div class="kpi"><div class="l">Signalements ouverts</div><div class="v">1</div><div class="d">sur des échanges</div></div>
-          <div class="kpi"><div class="l">Examinés sous délai</div><div class="v">100 %</div><div class="d up">objectif interne · 5 j</div></div>
-          <div class="kpi"><div class="l">Mesures prises (30 j)</div><div class="v">1</div><div class="d">avertissement</div></div>
+          <div class="kpi"><div class="l">Signalements ouverts</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
+          <div class="kpi"><div class="l">Examinés sous délai</div><div class="v">—</div><div class="d">objectif interne : 5 j</div></div>
+          <div class="kpi"><div class="l">Mesures prises (30 j)</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
         </div>
 
         <div class="card mt"><h3>Fil des signalements <span class="muted">sur signalement uniquement — pas de modération préalable</span></h3>
-          <table class="tbl">
-            <tr><th>Réf.</th><th>Signalé par</th><th>Contre</th><th>Motif</th><th>Étape</th><th>Date</th><th></th></tr>
-            <tr><td class="mono">SIG-041</td><td>Karim Benali <span class="muted">· Client</span></td><td>Bruno Ménage</td><td>Sollicitation suspecte</td><td><span class="tag dn">Examen</span></td><td class="mono">5 août</td><td><span class="link" onclick="openSignalement('SIG-041')">Ouvrir</span></td></tr>
-            <tr><td class="mono">SIG-039</td><td>Nadia Repassage <span class="muted">· Prestataire</span></td><td>Sophie Martin</td><td>Propos déplacés</td><td><span class="tag ok">Clôturé</span></td><td class="mono">2 août</td><td><span class="link" onclick="openSignalement('SIG-039')">Ouvrir</span></td></tr>
-          </table>
+          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
         </div>
 
         <div class="lawbox mt">PING n'exerce <b>aucune modération éditoriale préalable</b> des échanges (CGU art. 1.5). Ce registre existe uniquement parce qu'un utilisateur a déposé un signalement sur une conversation précise — les autres échanges ne sont jamais consultés. Mesures possibles : aucune suite, avertissement, suspension temporaire, suspension définitive, transmission aux autorités compétentes si l'infraction pénale est caractérisée. PING n'est ni juge ni enquêteur.</div>
@@ -768,9 +737,9 @@ textarea.minput{min-height:120px;resize:vertical}
 
 <section class="section" id="s_pay">
         <div class="grid k3">
-          <div class="kpi"><div class="l">Prestataire de paiement (PSP)</div><div class="v" style="font-size:19px">Stripe Connect</div><div class="d" style="color:var(--amber)">● En attente de câblage</div></div>
+          <div class="kpi"><div class="l">Prestataire de paiement (PSP)</div><div class="v" style="font-size:19px">Aucun</div><div class="d" style="color:var(--amber)">Virement SEPA d'abord, prestataire de paiement non choisi</div></div>
           <div class="kpi"><div class="l">Fonds détenus par PING</div><div class="v">0 €</div><div class="d up">via PSP · pas d'agrément requis</div></div>
-          <div class="kpi"><div class="l">Profit net commissions (mois)</div><div class="v">9 730 €</div><div class="d up">après frais PSP estimés</div></div>
+          <div class="kpi"><div class="l">Profit net commissions (mois)</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
         </div>
         <div class="card mt"><h3>Brique de paiement &amp; séquestre <span class="muted">agnostique · remplaçable</span></h3>
           <div class="qrow"><div class="m"><b>Connecteur</b><small>Stripe Connect, Mangopay et Lemonway codés · choix par la variable PAYMENT_PROVIDER · éteint tant que les clés manquent</small></div><span class="tag wait">Prêt, à brancher</span></div>
@@ -780,22 +749,16 @@ textarea.minput{min-height:120px;resize:vertical}
           <div class="qrow"><div class="m"><b>Données bancaires</b><small>Jamais stockées par PING — tokenisation PSP (PCI-DSS)</small></div><span class="tag ok">Conforme</span></div>
           <div class="lawbox" style="margin-top:12px">Le client ne peut pas faire opposition sans justificatif valable (photo + requête) dans la fenêtre. En cas de vol/casse/dégradation prouvée, PING transmet les coordonnées de l'assurance RC du pro — <b>PING n'indemnise pas</b> et ne se substitue pas à l'assurance.</div>
         </div>
-        <div class="card mt"><h3>Coût &amp; profit par opération <span class="muted">hypothèse frais PSP ≈ 1,5 % + 0,25 €</span></h3>
-          <table class="tbl">
-            <tr><th>Réf.</th><th>Prestation</th><th>Commission encaissée (5 % + 11 %)</th><th>Frais PSP</th><th>Profit net PING</th></tr>
-            <tr><td class="mono">TX-8842</td><td>105,00 €</td><td>14,70 €</td><td>1,90 €</td><td style="color:var(--tealD);font-weight:700">12,80 €</td></tr>
-            <tr><td class="mono">TX-8830</td><td>294,00 €</td><td>41,16 €</td><td>4,88 €</td><td style="color:var(--tealD);font-weight:700">36,28 €</td></tr>
-            <tr><td class="mono">TX-8841</td><td>60,00 €</td><td>8,40 €</td><td>1,20 €</td><td style="color:var(--tealD);font-weight:700">7,20 €</td></tr>
-            <tr><td colspan="2" style="font-weight:700;color:var(--ink)">Total (échantillon)</td><td style="font-weight:700">64,26 €</td><td style="font-weight:700">7,98 €</td><td style="color:var(--tealD);font-weight:700">56,28 €</td></tr>
-          </table>
-          <p class="note">Le profit net PING = commissions encaissées − frais du prestataire de paiement. Le calcul réel se fera par opération, au fil des webhooks PSP.</p>
+        <div class="card mt"><h3>Coût &amp; profit par opération</h3>
+          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
+          <p class="note">Le profit net PING = commissions encaissées − frais éventuels du prestataire de paiement. Calcul réel par opération une fois un prestataire de paiement branché.</p>
         </div>
         <div class="card mt"><h3>Modèle de facturation <span class="muted">PING = intermédiaire de mise en relation</span></h3>
           <table class="tbl">
             <tr><th>Document</th><th>Émetteur → Destinataire</th><th>Objet</th></tr>
             <tr><td>Facture de prestation</td><td>Pro → Client</td><td>La prestation réalisée — <b>PING ne l'émet pas</b></td></tr>
-            <tr><td>Facture de commission</td><td><b>PING → Client</b></td><td>Frais de mise en relation — 5 %</td></tr>
-            <tr><td>Facture de commission</td><td><b>PING → Pro</b></td><td>Commission — 11 %</td></tr>
+            <tr><td>Facture de commission</td><td><b>PING → Client</b></td><td>Frais de mise en relation (taux réglable, 8 % au 31/10)</td></tr>
+            <tr><td>Facture de commission</td><td><b>PING → Pro</b></td><td>Commission (taux réglable, 17 % au 31/10)</td></tr>
           </table>
           <p class="note">PING facture <b>sa mise en relation</b> aux deux parties ; PING ne facture pas la prestation et ne détient pas les fonds. Spécification complète : fichier « ping-conformite-architecture.md ».</p>
         </div>
@@ -838,34 +801,21 @@ textarea.minput{min-height:120px;resize:vertical}
 
         <div class="ptab" id="pt_leads">
           <div class="grid k4">
-            <div class="kpi click" onclick="clearLeadFilter();document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><div class="l">Leads entrants · 60 j</div><div class="v">49</div><div class="d up">tous canaux confondus</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
-            <div class="kpi click" onclick="document.getElementById('funnelCard').scrollIntoView({behavior:'smooth'})"><div class="l">Taux nouveau → inscrit</div><div class="v">35 %</div><div class="d up">17 inscrits sur 49</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir l'entonnoir ›</div></div>
-            <div class="kpi click" onclick="document.getElementById('channelCard').scrollIntoView({behavior:'smooth'})"><div class="l">Coût moyen par inscription</div><div class="v">≈ 22 €</div><div class="d up">tous canaux payants confondus</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir par canal ›</div></div>
-            <div class="kpi click" onclick="filterLeadsByCanal('parrainage');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><div class="l">Canal le plus rentable</div><div class="v" style="font-size:19px">Parrainage</div><div class="d up">60 % de conversion</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir ces leads ›</div></div>
+            <div class="kpi click" onclick="clearLeadFilter();document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><div class="l">Leads entrants</div><div class="v" id="kLeadsTotal">—</div><div class="d" id="kLeadsTotalD">tous canaux confondus</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
+            <div class="kpi click" onclick="document.getElementById('funnelCard').scrollIntoView({behavior:'smooth'})"><div class="l">Part de pros</div><div class="v" id="kLeadsPros">—</div><div class="d" id="kLeadsProsD">Données disponibles au lancement</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir l'entonnoir ›</div></div>
+            <div class="kpi click" onclick="document.getElementById('channelCard').scrollIntoView({behavior:'smooth'})"><div class="l">Coût moyen par inscription</div><div class="v">—</div><div class="d">Données disponibles au lancement</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir par canal ›</div></div>
+            <div class="kpi click" onclick="document.getElementById('channelCard').scrollIntoView({behavior:'smooth'})"><div class="l">Canal principal</div><div class="v" style="font-size:19px" id="kLeadsTop">—</div><div class="d" id="kLeadsTopD">Données disponibles au lancement</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir ces leads ›</div></div>
           </div>
 
           <div class="split mt">
             <div class="card" id="channelCard"><h3>Performance par canal <span class="muted">cliquer une ligne filtre les leads ci-dessous</span></h3>
-              <table class="tbl"><tr><th>Canal</th><th>Leads</th><th>Contactés</th><th>Inscrits</th><th>Conversion</th><th>Coût estimé</th><th>Coût / inscription</th></tr>
-                <tr class="click" onclick="filterLeadsByCanal('flyer_qr');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><td>Flyer QR (terrain)</td><td>14</td><td>9</td><td>6</td><td><span class="tag ok">43 %</span></td><td>0 €</td><td>0 €</td></tr>
-                <tr class="click" onclick="filterLeadsByCanal('flash_contact');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><td>Formulaire flash (QR terrain)</td><td>2</td><td>0</td><td>0</td><td><span class="tag wait">à valider</span></td><td>0 €</td><td>—</td></tr>
-                <tr class="click" onclick="filterLeadsByCanal('instagram');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><td>Instagram</td><td>11</td><td>6</td><td>3</td><td><span class="tag wait">27 %</span></td><td>45 €</td><td>15 €</td></tr>
-                <tr class="click" onclick="filterLeadsByCanal('google_ads');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><td>Google Ads</td><td>8</td><td>5</td><td>2</td><td><span class="tag wait">25 %</span></td><td>180 €</td><td>90 €</td></tr>
-                <tr class="click" onclick="filterLeadsByCanal('seo');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><td>SEO / Google Business</td><td>6</td><td>4</td><td>3</td><td><span class="tag ok">50 %</span></td><td>0 €</td><td>0 €</td></tr>
-                <tr class="click" onclick="filterLeadsByCanal('parrainage');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><td>Parrainage</td><td>5</td><td>4</td><td>3</td><td><span class="tag ok">60 %</span></td><td>150 €</td><td>50 €</td></tr>
-                <tr class="click" onclick="filterLeadsByCanal('carrousel');document.getElementById('leadsCard').scrollIntoView({behavior:'smooth'})"><td>Carrousel / démo commerciale</td><td>3</td><td>1</td><td>0</td><td><span class="tag dn">0 %</span></td><td>0 €</td><td>—</td></tr>
-                <tr><td style="font-weight:700;color:var(--ink)">Total</td><td style="font-weight:700">49</td><td style="font-weight:700">29</td><td style="font-weight:700">17</td><td style="font-weight:700">35 %</td><td style="font-weight:700">375 €</td><td style="font-weight:700">22 €</td></tr>
+              <table class="tbl"><thead><tr><th>Canal</th><th>Leads</th><th>Inscrits ou actifs</th><th>Part des leads</th></tr></thead>
+                <tbody id="canalRows"><tr><td colspan="4" class="muted">Données disponibles au lancement</td></tr></tbody>
               </table>
-              <p class="note">Le flyer QR et le SEO local sont les canaux à coût marginal nul — cohérent avec la recommandation du plan de prospection (« le canal le plus rentable en réalité »).</p>
+              <p class="note">Calculé sur les inscriptions réellement attribuées à une campagne (liens /l/code et UTM). Le coût par inscription sera calculé quand les dépenses seront saisies.</p>
             </div>
-            <div class="card" id="funnelCard"><h3>Entonnoir <span class="muted">60 j</span></h3>
-              <div class="chart" style="height:170px">
-                <div class="bar" style="height:100%"><span>49</span><small>Nouveau</small></div>
-                <div class="bar" style="height:59%"><span>29</span><small>Contacté</small></div>
-                <div class="bar" style="height:35%"><span>17</span><small>Inscrit</small></div>
-                <div class="bar" style="height:20%;background:linear-gradient(180deg,var(--gold),#f6c877)"><span>10</span><small>KYC OK</small></div>
-                <div class="bar" style="height:14%;background:linear-gradient(180deg,#2FD06E,#8fe3ac)"><span>7</span><small>Actif</small></div>
-              </div>
+            <div class="card" id="funnelCard"><h3>Entonnoir <span class="muted">leads réels</span></h3>
+              <div class="chart" style="height:170px" id="funnelChart"><p class="muted" style="align-self:center;width:100%;text-align:center;font-weight:600">Données disponibles au lancement</p></div>
               <p class="note">KYC OK et Actif ne s'appliquent pleinement qu'aux leads pros. Un lead perdu sort de l'entonnoir après la dernière relance (J+7, cf. plan de prospection).</p>
             </div>
           </div>
@@ -875,7 +825,7 @@ textarea.minput{min-height:120px;resize:vertical}
               <div id="canalDonut"></div>
               <div id="canalLegend" style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:9px"></div>
             </div>
-            <p class="note">Basé sur les 49 leads du prototype (mêmes chiffres que « Performance par canal » ci-dessus). <b>Clique une part ou une ligne pour aller directement aux supports de ce canal</b> (onglet Campagnes &amp; QR, filtré). Une fois le connecteur SIRENE et les vraies séquences câblés (lot L7), ce donut se recalculera automatiquement — c'est lui qui dira objectivement quel canal continuer et lequel arrêter.</p>
+            <p class="note">Calculé sur les inscriptions réelles, mêmes chiffres que « Performance par canal » ci-dessus. <b>Clique une part ou une ligne pour aller directement aux supports de ce canal</b> (onglet Campagnes &amp; QR, filtré). Ce donut indique objectivement quel canal continuer et lequel arrêter.</p>
           </div>
 
           <div class="card mt" id="leadsCard"><h3>Leads entrants <span class="muted">fiche complète · <span id="leadsCount">14</span> affichés <span id="leadFilterChip" class="tag ink" style="display:none;margin-left:8px;cursor:pointer" onclick="clearLeadFilter()">Filtré : <span id="leadFilterLabel"></span> ✕</span></span></h3>
@@ -885,7 +835,7 @@ textarea.minput{min-height:120px;resize:vertical}
           </div>
 
           <div class="lawbox mt">Chaque lead porte son <b>utm_source / utm_medium / utm_campaign / utm_content</b>, l'URL de provenance et l'URL d'atterrissage, capturés automatiquement par la landing (<span class="mono">ping-landing-menage.html</span>) ou le formulaire flash (<span class="mono">ping-flash-contact.html</span>) au moment de la saisie. Un lead flash arrive avec le statut <b>« À valider »</b> — clique le statut pour simuler le contrôle rapide (coordonnées plausibles, doublon) qui déclenche la séquence de bienvenue. Séquence automatique ensuite : bienvenue à J0, relance à J+2/J+7, dernière relance à J+14 puis arrêt — chaque envoi porte l'identité de l'expéditeur et un lien de désinscription (art. 14 RGPD, art. L34-5 CPCE). Détail du parcours : onglet <b>Tunnel de vente</b>. Source de la donnée : landing et formulaire flash pour l'entrant direct, connecteur SIRENE à venir pour la prospection sortante (lot L7).</div>
-          <p class="note">Clique un lead pour ouvrir sa fiche complète (coordonnées, attribution, historique, statut modifiable). Prototype : les 14 fiches ci-dessus illustrent le modèle de données <span class="mono">lead</span> spécifié dans « ping-audit-roadmap.md » §4.1 — nom, prénom, téléphone, e-mail, zone, adresse (renseignée à l'inscription complète). Les totaux des cartes et de l'entonnoir agrègent l'ensemble des 49 leads du prototype. Câblage réel (persistance des 49, mise à jour de statut) prévu au lot L7 (<span class="mono">POST /api/crm/lead</span>) — voir « ping-evaluation-technique-prospection.md ».</p>
+          <p class="note">Clique un lead pour ouvrir sa fiche (coordonnées, attribution, historique). Les leads sont de vraies inscriptions (fonction admin_leads) ; leur statut se déduit de l'état réel du compte.</p>
         </div>
 
         <div class="ptab" id="pt_pipe">
@@ -991,7 +941,7 @@ textarea.minput{min-height:120px;resize:vertical}
               <div class="tevent"><div class="dot"></div><div class="tt">3 · Validation <span class="tag wait" style="margin-left:6px">Admin, rapide</span></div><div class="tm">Statut « À valider »</div><div class="td">Contrôle rapide (coordonnées plausibles, doublon) avant déclenchement de la séquence — file d'attente dans l'onglet Leads entrants.</div></div>
               <div class="tevent"><div class="dot"></div><div class="tt">4 · Bienvenue + lien magique <span class="tag ok" style="margin-left:6px">Auto</span></div><div class="tm">J0</div><div class="td">E-mail/SMS de confirmation avec lien d'inscription — identité de l'expéditeur et désinscription sur chaque envoi.</div></div>
               <div class="tevent"><div class="dot"></div><div class="tt">5 · Inscription <span class="tag wait" style="margin-left:6px">Utilisateur</span></div><div class="tm">Dès clic sur le lien</div><div class="td">Collecte SIREN / statut / pièces (identité, assurance) côté pro ; profil et zone côté particulier.</div></div>
-              <div class="tevent"><div class="dot"></div><div class="tt">6 · Vérifications <span class="tag ok" style="margin-left:6px">Auto, majoritaire</span></div><div class="tm">Immédiat à quelques minutes</div><div class="td">SIREN (annuaire-entreprises.data.gouv.fr), identité (PSP), IBAN, assurance RC (OCR, ~70-80 % de succès) — doute → file d'attente admin.</div></div>
+              <div class="tevent"><div class="dot"></div><div class="tt">6 · Contrôles <span class="tag ok" style="margin-left:6px">Auto, majoritaire</span></div><div class="tm">Immédiat à quelques minutes</div><div class="td">SIREN (annuaire-entreprises.data.gouv.fr), identité (PSP), IBAN, assurance RC (OCR, ~70-80 % de succès) — doute → file d'attente admin.</div></div>
               <div class="tevent"><div class="dot"></div><div class="tt">7 · Activation <span class="tag ok" style="margin-left:6px">Auto</span></div><div class="tm">Fin de tunnel</div><div class="td">Profil publié, apparition sur la carte (pro) ou alerte au lancement sur sa zone (particulier).</div></div>
               <div class="tevent"><div class="dot"></div><div class="tt">8 · Relance si inactif <span class="tag ok" style="margin-left:6px">Auto</span></div><div class="tm">J+2 · J+7 · J+14</div><div class="td">Cadence détaillée dans l'onglet <b>Plan &amp; messages</b>. Dernière relance à J+14, puis arrêt.</div></div>
             </div>
@@ -1015,7 +965,7 @@ textarea.minput{min-height:120px;resize:vertical}
               <div class="crmini" style="background:radial-gradient(120% 100% at 80% 0,#1a4a5a,#0e2a34)"><div class="p"><div class="bd">PING</div><h4>Vous êtes pro du ménage ?</h4><div class="s">Visible sur la carte, près des clients · 0 €</div></div></div>
               <div class="crmini" style="background:linear-gradient(150deg,#14b39c,#0a7f70)"><div class="p"><div class="bd">PING</div><h4>Un ménage de confiance, à côté.</h4><div class="s">Réservez en 2 min · −50 % crédit d'impôt</div></div></div>
               <div class="crmini" style="background:linear-gradient(150deg,#0e2a34,#12b39c)"><div class="p"><div class="bd">PING</div><h4>Dispo près de vous. Maintenant.</h4><div class="s">Plus d'annonce, plus d'attente</div></div></div>
-              <div class="crmini" style="background:linear-gradient(160deg,#fff,#eef3f2);color:#123644"><div class="p"><div class="bd" style="opacity:.6">PING</div><h4>De vrais avis. Vérifiés.</h4><div class="s" style="opacity:.7">Pas les étoiles douteuses de Google</div></div></div>
+              <div class="crmini" style="background:linear-gradient(160deg,#fff,#eef3f2);color:#123644"><div class="p"><div class="bd" style="opacity:.6">PING</div><h4>De vrais avis, après chaque mission.</h4><div class="s" style="opacity:.7">Un avis par mission réalisée</div></div></div>
               <div class="crmini" style="background:linear-gradient(150deg,#f2a93b,#d97e1f);color:#3a2a06"><div class="p"><div class="bd">PING</div><h4 style="font-size:30px">−50%</h4><div class="s">Crédit d'impôt · avance immédiate</div></div></div>
               <div class="crmini" style="background:linear-gradient(150deg,#ff8a72,#e85c46)"><div class="p"><div class="bd">PING</div><h4>Déjà sur Google ? Ajoutez un canal.</h4><div class="s">Comme Airbnb + Booking : plus de clients</div></div></div>
             </div>
@@ -1091,10 +1041,10 @@ Je lance à Grasse PING, une plateforme de ménage : vous êtes visible sur une 
 
 Ça vous intéresse d'en faire partie au lancement (places limitées) ?</div></div>
             <div class="card"><h3>Réseaux sociaux</h3><div class="copybox">Instagram (pro) :
-« Tu fais du ménage à Grasse ? Deviens visible sur la carte, près des clients. 0 € d'inscription, paiement sécurisé, factures gérées. Rejoins PING 👉 lien en bio. »
+« Tu fais du ménage à Grasse ? Deviens visible sur la carte, près des clients. 0 € d'inscription, factures gérées. Rejoins PING, lien en bio. »
 
 Facebook (particulier, groupe quartier) :
-« Aide-ménagère sur Grasse (pièce d'identité fournie, assurance renseignée), dispo près de chez vous, −50 % crédit d'impôt. Commentez "intéressé·e" 🙂 »</div></div>
+« Aide-ménagère sur Grasse (pièce d'identité fournie, assurance renseignée), dispo près de chez vous, −50 % crédit d'impôt. Commentez "intéressé·e". »</div></div>
           </div>
         </div>
 
@@ -1175,20 +1125,20 @@ Facebook (particulier, groupe quartier) :
 var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(o*r,n*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
 
 const $=id=>document.getElementById(id);
-const TITLES={overview:"Vue d'ensemble (démo)",live:"Aperçu réel",users:"Utilisateurs",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",pay:"Paiements & séquestre"};
+const TITLES={overview:"Vue d'ensemble",live:"Aperçu réel",users:"Utilisateurs",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",pay:"Paiements & séquestre"};
 const ICN={invoice:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg>',check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>',quote:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M14 2H6v20l4-2 4 2 4-2V8z"/></svg>',doc:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 4h10l6 6v10H4z"/></svg>',star:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .8-5 4.8 1.3 6.9L12 17.8 5.4 21l1.3-6.9-5-4.8 7-.8z"/></svg>',chat:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>',user:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',mail:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'};
 function etatTag(e){return e==='Libéré'?'ok':e==='Remboursé'?'dn':'wait';}
 
 const ENT={
- 'sofia-services':{name:'Sofia Services',sub:'Sofia Moreau · Auto-entrepreneur · Ménage · Grasse',av:'P',cl:'',email:'contact@sofia-services.fr',created:'12 mars 2025',dc:'14 juil. · 15h50',insExpiry:'2026-08-20',trend:[2100,2450,2680,2900,3050,3240],stats:[['CA du mois','3 240 €'],['Interventions','14'],['Note','4,9'],['Litiges','0']],hist:[['14 juil. · 15h42','invoice','Facture 2026-0142 émise','Julie R. · net 95,55 €'],['2 mai 2026','doc','Assurance complémentaire mise à jour','MMA · vérifiée'],['12 mars 2025','star','Compte créé','Auto-entrepreneur · qualifié']],tx:[['TX-8842','14 juil.','Julie R.','110,25 €','Libéré']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','Auto-entrepreneur'],['Assurance RC','ok','Expire le 20/08/2026'],['Assurance complémentaire','ok','MMA, vérifiée'],['RIB','ok','Configuré']],docs:[['2026-0142','Facture','14 juil. 15h42','95,55 €']]},
+ 'sofia-services':{name:'Sofia Services',sub:'Sofia Moreau · Auto-entrepreneur · Ménage · Grasse',av:'P',cl:'',email:'contact@sofia-services.fr',created:'12 mars 2025',dc:'14 juil. · 15h50',insExpiry:'2026-08-20',trend:[2100,2450,2680,2900,3050,3240],stats:[['CA du mois','3 240 €'],['Interventions','14'],['Note','4,9'],['Litiges','0']],hist:[['14 juil. · 15h42','invoice','Facture 2026-0142 émise','Julie R. · net 95,55 €'],['2 mai 2026','doc','Assurance complémentaire mise à jour','MMA · renseignée'],['12 mars 2025','star','Compte créé','Auto-entrepreneur · qualifié']],tx:[['TX-8842','14 juil.','Julie R.','110,25 €','Libéré']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','Auto-entrepreneur'],['Assurance RC','ok','Expire le 20/08/2026'],['Assurance complémentaire','ok','MMA, renseignée'],['RIB','ok','Configuré']],docs:[['2026-0142','Facture','14 juil. 15h42','95,55 €']]},
  'lea-nettoyage':{name:'Léa Nettoyage',sub:'Léa Torres · Micro-entreprise · Ménage · Grasse',av:'S',cl:'gold',email:'sofia@menage-grasse.fr',created:'4 févr. 2025',dc:'14 juil. · 12h15',insExpiry:'2026-08-28',trend:[1200,1450,1600,1750,1850,1980],stats:[['CA du mois','1 980 €'],['Interventions','11'],['Note','4,8'],['Litiges','0']],hist:[['14 juil. · 12h08','invoice','Facture 2026-0141','Karim B. · 54,60 €'],['4 févr. 2025','star','Compte créé','Auto-entrepreneur qualifiée']],tx:[['TX-8841','14 juil.','Karim B.','63,00 €','Séquestre']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','Micro-entreprise'],['Assurance RC','ok','Expire le 28/08/2026'],['RIB','ok','Configuré']],docs:[['2026-0141','Facture','14 juil. 12h08','54,60 €']]},
  'nadia-repassage':{name:'Nadia Repassage',sub:'Nadia Benali · EURL · Repassage · Grasse',av:'E',cl:'',email:'contact@nadia-repassage.fr',created:'20 nov. 2024',dc:'13 juil. · 18h35',insExpiry:'2027-01-15',trend:[3800,4100,4400,4700,4900,5120],stats:[['CA du mois','5 120 €'],['Interventions','9'],['Note','4,9'],['Litiges','0']],hist:[['13 juil. · 18h30','invoice','Facture émise','Sophie M. · 254,80 €'],['20 nov. 2024','star','Compte créé','EURL · Certification hygiène']],tx:[['TX-8830','13 juil.','Sophie M.','294,00 €','Libéré']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','EURL'],['Certification hygiène','ok','Fournie'],['Assurance RC','ok','Expire le 15/01/2027'],['RIB','ok','Configuré']],docs:[['2026-0139','Facture','13 juil. 18h30','254,80 €']]},
- 'bruno-menage':{name:'Bruno Ménage',sub:'Bruno Tessier · Auto-entrepreneur · Nettoyage',av:'B',cl:'g',email:'bruno.tessier@mail.fr',created:'1 juil. 2026',dc:'14 juil. · 09h10',as:'a_verifier',trend:[640],stats:[['CA du mois','640 €'],['Interventions','3'],['Note','4,2'],['Litiges','1']],hist:[['14 juil. · 09h02','doc','Assurance complémentaire soumise','À vérifier'],['1 juil. 2026','star','Compte créé','Justificatifs incomplets']],tx:[['TX-8815','13 juil.','Inès F.','92,00 €','Séquestre']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','Auto-entrepreneur'],['Assurance RC','ok','Fournie'],['Assurance complémentaire','wait','Soumise, à vérifier'],['RIB','wait','À configurer']],docs:[]},
+ 'bruno-menage':{name:'Bruno Ménage',sub:'Bruno Tessier · Auto-entrepreneur · Nettoyage',av:'B',cl:'g',email:'bruno.tessier@mail.fr',created:'1 juil. 2026',dc:'14 juil. · 09h10',as:'a_verifier',trend:[640],stats:[['CA du mois','640 €'],['Interventions','3'],['Note','4,2'],['Litiges','1']],hist:[['14 juil. · 09h02','doc','Assurance complémentaire soumise','À examiner'],['1 juil. 2026','star','Compte créé','Justificatifs incomplets']],tx:[['TX-8815','13 juil.','Inès F.','92,00 €','Séquestre']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','Auto-entrepreneur'],['Assurance RC','ok','Fournie'],['Assurance complémentaire','wait','Soumise, à examiner'],['RIB','wait','À configurer']],docs:[]},
  'leo-services':{name:'Léo Services',sub:'Léo Petit · Particulier prestataire · Remise en état',av:'L',cl:'g',email:'leo.petit@mail.fr',created:'22 juin 2026',dc:'25 juin · 17h40',trend:[0,0,70,0,140,0],stats:[['Revenus (an)','210 €'],['Missions','3'],['Note','—'],['Statut','Non pro']],hist:[['22 juin 2026','user','Compte créé','Sous seuil DAC7']],tx:[],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut','ok','Non pro — sous seuil'],['RIB','wait','À configurer']],docs:[]},
- 'yanis-services':{name:'Yanis Services',sub:'Yanis Kaci · Remise en état · Grasse',av:'Y',cl:'gold',email:'yanis@mail.fr',created:'5 avr. 2026',dc:'13 juil. · 09h20',insExpiry:'2026-08-05',trend:[200,280,350,300,380,420],stats:[['CA du mois','420 €'],['Missions','6'],['Note','4,9'],['Litiges','1']],hist:[['13 juil. · 09h15','invoice','Prestation · litige','Paul D. · remboursé'],['5 avr. 2026','star','Compte créé','Évaluations vérifiées']],tx:[['TX-8821','13 juil.','Paul D.','36,75 €','Remboursé']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','Fournie'],['Assurance RC','ok','Expire le 05/08/2026 — proche'],['RIB','ok','Configuré']],docs:[]},
- 'julie-robert':{name:'Julie Robert',sub:'Particulier · identité vérifiée · Grasse',av:'J',cl:'coral',email:'julie.r@mail.fr',created:'8 janv. 2025',dc:'14 juil. · 15h38',trend:[420,610,780,940,1060,1180],stats:[['Réservations','4'],['Revenus P2P','1 180 €'],['Identité','Vérifiée'],['DAC7','Sous seuil']],hist:[['14 juil. · 15h42','invoice','Reçu R-0142','Sofia Services · 110,25 €'],['14 juil. · 13h20','chat','Échange messagerie','« ménage complet T3… »'],['8 janv. 2025','user','Compte créé','Identité vérifiée le 9 janv.']],tx:[['TX-8842','14 juil.','Sofia Services','110,25 €','Libéré']],kyc:[['Pièce d\u2019identité','ok','Vérifiée le 9 janv. 2025']],docs:[['R-0142','Reçu','14 juil. 15h42','110,25 €']]},
- 'karim-benali':{name:'Karim Benali',sub:'Particulier · identité vérifiée · Grasse',av:'K',cl:'coral',email:'karim.b@mail.fr',created:'2 mars 2025',dc:'14 juil. · 12h02',trend:[300,700,1150,1650,2150,2640],stats:[['Réservations','7'],['Revenus P2P','2 640 €'],['Identité','Vérifiée'],['DAC7','Signalé']],hist:[['14 juil. · 12h08','invoice','Reçu R-0141','Léa Nettoyage · 63,00 €'],['1 juin 2026','user','Seuil DAC7 franchi','signalé'],['2 mars 2025','user','Compte créé','Identité vérifiée']],tx:[['TX-8841','14 juil.','Léa Nettoyage','63,00 €','Séquestre']],kyc:[['Pièce d\u2019identité','ok','Vérifiée']],docs:[]},
- 'sophie-martin':{name:'Sophie Martin',sub:'Particulier · Mouans-Sartoux',av:'S',cl:'coral',email:'sophie.m@mail.fr',created:'10 juil. 2026',dc:'13 juil. · 18h32',as:'a_verifier',trend:[294],stats:[['Réservations','1'],['Revenus P2P','0 €'],['Identité','À vérifier'],['DAC7','Sous seuil']],hist:[['10 juil. 2026','user','Compte créé','Vérification en attente']],tx:[['TX-8830','13 juil.','Nadia Repassage','294,00 €','Libéré']],kyc:[['Pièce d\u2019identité','wait','À vérifier']],docs:[]}
+ 'yanis-services':{name:'Yanis Services',sub:'Yanis Kaci · Remise en état · Grasse',av:'Y',cl:'gold',email:'yanis@mail.fr',created:'5 avr. 2026',dc:'13 juil. · 09h20',insExpiry:'2026-08-05',trend:[200,280,350,300,380,420],stats:[['CA du mois','420 €'],['Missions','6'],['Note','4,9'],['Litiges','1']],hist:[['13 juil. · 09h15','invoice','Prestation · litige','Paul D. · remboursé'],['5 avr. 2026','star','Compte créé','Évaluations publiées']],tx:[['TX-8821','13 juil.','Paul D.','36,75 €','Remboursé']],kyc:[['Pièce d\u2019identité','ok','Fournie'],['Statut / SIRET','ok','Fournie'],['Assurance RC','ok','Expire le 05/08/2026 — proche'],['RIB','ok','Configuré']],docs:[]},
+ 'julie-robert':{name:'Julie Robert',sub:'Particulier · pièce d\u2019identité fournie · Grasse',av:'J',cl:'coral',email:'julie.r@mail.fr',created:'8 janv. 2025',dc:'14 juil. · 15h38',trend:[420,610,780,940,1060,1180],stats:[['Réservations','4'],['Revenus P2P','1 180 €'],['Identité','Pièce fournie'],['DAC7','Sous seuil']],hist:[['14 juil. · 15h42','invoice','Reçu R-0142','Sofia Services · 110,25 €'],['14 juil. · 13h20','chat','Échange messagerie','« ménage complet T3… »'],['8 janv. 2025','user','Compte créé','Pièce d\u2019identité fournie le 9 janv.']],tx:[['TX-8842','14 juil.','Sofia Services','110,25 €','Libéré']],kyc:[['Pièce d\u2019identité','ok','Fournie le 9 janv. 2025']],docs:[['R-0142','Reçu','14 juil. 15h42','110,25 €']]},
+ 'karim-benali':{name:'Karim Benali',sub:'Particulier · pièce d\u2019identité fournie · Grasse',av:'K',cl:'coral',email:'karim.b@mail.fr',created:'2 mars 2025',dc:'14 juil. · 12h02',trend:[300,700,1150,1650,2150,2640],stats:[['Réservations','7'],['Revenus P2P','2 640 €'],['Identité','Pièce fournie'],['DAC7','Signalé']],hist:[['14 juil. · 12h08','invoice','Reçu R-0141','Léa Nettoyage · 63,00 €'],['1 juin 2026','user','Seuil DAC7 franchi','signalé'],['2 mars 2025','user','Compte créé','Pièce d\u2019identité fournie']],tx:[['TX-8841','14 juil.','Léa Nettoyage','63,00 €','Séquestre']],kyc:[['Pièce d\u2019identité','ok','Fournie']],docs:[]},
+ 'sophie-martin':{name:'Sophie Martin',sub:'Particulier · Mouans-Sartoux',av:'S',cl:'coral',email:'sophie.m@mail.fr',created:'10 juil. 2026',dc:'13 juil. · 18h32',as:'a_verifier',trend:[294],stats:[['Réservations','1'],['Revenus P2P','0 €'],['Identité','À examiner'],['DAC7','Sous seuil']],hist:[['10 juil. 2026','user','Compte créé','Pièce en attente']],tx:[['TX-8830','13 juil.','Nadia Repassage','294,00 €','Libéré']],kyc:[['Pièce d\u2019identité','wait','À examiner']],docs:[]}
 };
 const TX={
  'TX-8842':{id:'TX-8842',objet:'Ménage complet · T3 85 m²',montant:'110,25 €',date:'14 juil. 2026',debut:'14 juil. · 15h00',fin:'14 juil. · 15h42',etat:'Libéré',client:'Julie Robert',clientKey:'julie-robert',pro:'Sofia Services',proKey:'sofia-services',hist:[['14 juil. · 13h20','chat','Premier contact','« ménage complet T3… »'],['14 juil. · 14h05','quote','Devis D-0142 envoyé','105 €'],['14 juil. · 14h20','check','Réservation confirmée','créneau 15h00'],['14 juil. · 14h21','doc','Paiement bloqué en séquestre','110,25 €'],['14 juil. · 15h42','check','Présence validée (QR)','—'],['14 juil. · 15h42','invoice','Facture émise · séquestre libéré','net pro 95,55 €']],analyses:[['Délai devis → résa','15 min'],['Durée intervention','42 min'],['Commission PING','9,45 €'],['Satisfaction','5★']]},
@@ -1202,11 +1152,11 @@ const TX={
 };
 
 const DOCS={
- '2026-0142':{id:'2026-0142',type:'Facture',emitter:'Sofia Services',emitterKey:'sofia-services',client:'Julie Robert',clientKey:'julie-robert',dt:'lun. 14 juil. 2026 · 15h42',tx:'TX-8842',montant:'95,55 €',lines:[['Ménage complet T3 85 m² (3 h)','105,00 €'],['TVA','TVA non applicable, art. 293 B du CGI'],['Commission PING (11 %)','−11,55 €'],['Net encaissé','95,55 €']],legal:'Émetteur : auto-entrepreneur · SIREN 000 000 000 · assurance assurance complémentaire MMA (France métropolitaine).'},
- 'R-0142':{id:'R-0142',type:'Reçu',emitter:'PING',emitterKey:null,client:'Julie Robert',clientKey:'julie-robert',dt:'lun. 14 juil. 2026 · 15h42',tx:'TX-8842',montant:'110,25 €',lines:[['Intervention + déplacement','105,00 €'],['Frais de service (5 %)','5,25 €'],['Total réglé','110,25 €']],legal:'Paiement encaissé via séquestre PING · reçu client.'},
+ '2026-0142':{id:'2026-0142',type:'Facture',emitter:'Sofia Services',emitterKey:'sofia-services',client:'Julie Robert',clientKey:'julie-robert',dt:'lun. 14 juil. 2026 · 15h42',tx:'TX-8842',montant:'95,55 €',lines:[['Ménage complet T3 85 m² (3 h)','105,00 €'],['TVA','TVA non applicable, art. 293 B du CGI'],['Commission PING','−11,55 €'],['Net encaissé','95,55 €']],legal:'Émetteur : auto-entrepreneur · SIREN 000 000 000 · assurance assurance complémentaire MMA (France métropolitaine).'},
+ 'R-0142':{id:'R-0142',type:'Reçu',emitter:'PING',emitterKey:null,client:'Julie Robert',clientKey:'julie-robert',dt:'lun. 14 juil. 2026 · 15h42',tx:'TX-8842',montant:'110,25 €',lines:[['Intervention + déplacement','105,00 €'],['Frais de service','5,25 €'],['Total réglé','110,25 €']],legal:'Paiement encaissé via séquestre PING · reçu client.'},
  'D-0142':{id:'D-0142',type:'Devis',emitter:'Sofia Services',emitterKey:'sofia-services',client:'Julie Robert',clientKey:'julie-robert',dt:'lun. 14 juil. 2026 · 14h05',tx:null,montant:'105,00 €',lines:[['Ménage complet T3 (3 h)','90,00 €'],['Produits fournis','15,00 €'],['Total devis','105,00 €']],legal:'Validité 30 jours · TVA non applicable, art. 293 B du CGI.'},
- '2026-0141':{id:'2026-0141',type:'Facture',emitter:'Léa Nettoyage',emitterKey:'lea-nettoyage',client:'Karim Benali',clientKey:'karim-benali',dt:'dim. 13 juil. 2026 · 11h20',tx:'TX-8841',montant:'54,60 €',lines:[['Ménage T3 · 3h','60,00 €'],['TVA','TVA non applicable, art. 293 B du CGI'],['Commission PING (11 %)','−6,60 €'],['Net encaissé','54,60 €']],legal:'Émetteur : micro-entreprise · prestation de services à la personne.'},
- '2026-0139':{id:'2026-0139',type:'Facture',emitter:'Nadia Repassage',emitterKey:'nadia-repassage',client:'Sophie Martin',clientKey:'sophie-martin',dt:'dim. 13 juil. 2026 · 18h30',tx:'TX-8830',montant:'254,80 €',lines:[['Remise en état T3 · forfait','294,00 €'],['TVA (20 %)','49,00 €'],['Commission PING (11 %)','−32,34 €'],['Net encaissé','254,80 €']],legal:'Émetteur : EURL · TVA applicable · assurance RC Pro.'}
+ '2026-0141':{id:'2026-0141',type:'Facture',emitter:'Léa Nettoyage',emitterKey:'lea-nettoyage',client:'Karim Benali',clientKey:'karim-benali',dt:'dim. 13 juil. 2026 · 11h20',tx:'TX-8841',montant:'54,60 €',lines:[['Ménage T3 · 3h','60,00 €'],['TVA','TVA non applicable, art. 293 B du CGI'],['Commission PING','−6,60 €'],['Net encaissé','54,60 €']],legal:'Émetteur : micro-entreprise · prestation de services à la personne.'},
+ '2026-0139':{id:'2026-0139',type:'Facture',emitter:'Nadia Repassage',emitterKey:'nadia-repassage',client:'Sophie Martin',clientKey:'sophie-martin',dt:'dim. 13 juil. 2026 · 18h30',tx:'TX-8830',montant:'254,80 €',lines:[['Remise en état T3 · forfait','294,00 €'],['TVA (20 %)','49,00 €'],['Commission PING','−32,34 €'],['Net encaissé','254,80 €']],legal:'Émetteur : EURL · TVA applicable · assurance RC Pro.'}
 };
 let stack=[{type:'section',id:'overview'}],curKey=null;
 function showSection(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('on'));$('s_'+id).classList.add('on');window.scrollTo(0,0);}
@@ -1362,7 +1312,7 @@ function sendChat(key){
 const REF_DATE=new Date('2026-07-15');
 function daysUntil(dateStr){return Math.round((new Date(dateStr)-REF_DATE)/86400000);}
 function expiringDocs(maxDays){
- return Object.keys(ENT).filter(k=>ENT[k].insExpiry).map(k=>({key:k,name:ENT[k].name,expiresAt:ENT[k].insExpiry,days:daysUntil(ENT[k].insExpiry)})).filter(x=>x.days<=maxDays).sort((a,b)=>a.days-b.days);
+ return []; /* les fiches ENT sont des exemples : aucune échéance réelle n'est lue ici pour l'instant */
 }
 function renderExpiryAlerts(){
  const tb=document.getElementById('expiryRows'); if(!tb)return;
@@ -1370,13 +1320,13 @@ function renderExpiryAlerts(){
  tb.innerHTML=list.length?list.map(x=>{
   const urgent=x.days<=14;
   return `<tr class="click" onclick="openFiche('${x.key}')"><td>${x.name}</td><td>Assurance RC</td><td class="mono">${x.expiresAt}</td><td><span class="tag ${urgent?'dn':'wait'}">${x.days} j</span></td><td><span class="link" onclick="event.stopPropagation();demanderMAJ('${x.key}')">Relancer</span></td></tr>`;
- }).join(''):'<tr><td class="muted">Aucune échéance sous 45 jours</td></tr>';
- const cnt=document.getElementById('expiryCount'); if(cnt)cnt.textContent=list.length+' document'+(list.length>1?'s':'');
+ }).join(''):'<tr><td class="muted">Données disponibles au lancement</td></tr>';
+ const cnt=document.getElementById('expiryCount'); if(cnt)cnt.textContent='';
  const ov=document.getElementById('overviewExpiryAlert');
  if(ov)ov.style.display=list.length?'flex':'none';
  const ovCount=document.getElementById('overviewExpiryCount'); if(ovCount)ovCount.textContent=list.length;
 }
-function accountStatusTag(s){return{actif:{cls:'ok',label:'Actif · qualifié'},a_verifier:{cls:'wait',label:'À vérifier'},radie:{cls:'dn',label:'Radié'}}[s||'actif']||{cls:'ink',label:s};}
+function accountStatusTag(s){return{actif:{cls:'ok',label:'Actif · qualifié'},a_verifier:{cls:'wait',label:'À examiner'},radie:{cls:'dn',label:'Radié'}}[s||'actif']||{cls:'ink',label:s};}
 function validerCompte(key){const e=ENT[key]; if(e)e.as='actif'; render(stack[stack.length-1]); toast('Compte validé · qualifié');}
 function radierCompte(key){const e=ENT[key]; if(e)e.as='radie'; render(stack[stack.length-1]); toast('Compte radié · retiré de la carte et des recherches');}
 function demanderMAJ(key){
@@ -1439,7 +1389,7 @@ function renderFiche(key){const e=ENT[key];
  <div class="split mt"><div class="card"><h3>Historique &amp; communications <span class="muted">depuis la création</span></h3><div class="timeline">${e.hist.map((h,i)=>`<div class="tevent" onclick="tglEvt(this)"><div class="dot">${ICN[h[1]]||ICN.doc}</div><div class="tt">${h[2]}</div><div class="tm">${h[0]}</div><div class="td">${h[3]}</div><span class="chv">\u203a</span></div>${histDetail(h,key)}`).join('')}</div></div>
  <div><div class="card"><h3>Transactions liées <span class="link" onclick="openCrm('${key}')">Tout voir</span></h3><table class="tbl">${e.tx.length?e.tx.map(t=>`<tr class="click" onclick="openTx('${t[0]}')"><td class="mono">${t[0]}</td><td class="mono">${t[1]}</td><td>${t[2]}</td><td>${t[3]}</td><td><span class="tag ${etatTag(t[4])}">${t[4]}</span></td></tr>`).join(''):'<tr><td class="muted">Aucune</td></tr>'}</table></div>
  <div class="card mt"><h3>Litiges <span class="muted">acc\u00e8s direct au dossier</span></h3><table class="tbl">${(LITBY[key]||[]).length?(LITBY[key]).map(r=>{const L=LITIGES[r];return `<tr class="click" onclick="openLitige('${r}')"><td class="mono">${r}</td><td class="mono">${L.tx}</td><td>${L.motif}</td><td>${PVE(L.montant)}</td><td><span class="tag ${L.etape>=3?'dn':'wait'}">${L.etape>=3?'Arbitrage':'En cours'}</span></td></tr>`;}).join(''):'<tr><td class="muted">Aucun litige</td></tr>'}</table></div>
- <div class="card mt"><h3>Pièces &amp; conformité <span class="muted">identité, statut, assurances, RIB</span></h3><table class="tbl">${(e.kyc||[]).length?e.kyc.map(k=>{const st=k[1]==='ok'?['ok','Fournie']:k[1]==='wait'?['wait','À vérifier']:['dn','Manquante'];return `<tr><td>${k[0]}</td><td><span class="tag ${st[0]}">${st[1]}</span></td><td class="muted">${k[2]}</td></tr>`;}).join(''):'<tr><td class="muted">Aucune pièce enregistrée</td></tr>'}</table>
+ <div class="card mt"><h3>Pièces &amp; conformité <span class="muted">identité, statut, assurances, RIB</span></h3><table class="tbl">${(e.kyc||[]).length?e.kyc.map(k=>{const st=k[1]==='ok'?['ok','Fournie']:k[1]==='wait'?['wait','À examiner']:['dn','Manquante'];return `<tr><td>${k[0]}</td><td><span class="tag ${st[0]}">${st[1]}</span></td><td class="muted">${k[2]}</td></tr>`;}).join(''):'<tr><td class="muted">Aucune pièce enregistrée</td></tr>'}</table>
   <button class="btn ghost" style="margin-top:10px" onclick="demanderMAJ('${key}')">Demander une mise à jour</button>
  </div>
  <div class="card mt"><h3>Documents <span class="muted">factures &amp; reçus</span></h3><table class="tbl">${e.docs.length?e.docs.map(d=>`<tr class="click" onclick="openDoc('${d[0]}')"><td class="mono">${d[0]}</td><td>${d[1]}</td><td class="mono">${d[2]}</td><td>${d[3]}</td></tr>`).join(''):'<tr><td class="muted">Aucun</td></tr>'}</table></div></div></div>`;
@@ -1487,14 +1437,14 @@ function pvFacture(kind,amount,ref){
  } else if(kind==='comcli'){
   body='<div class="sheetdoc">'+docHead('PC-2026-0311',D,'PING SAS','Place de march\u00e9 \u00b7 06130 Grasse<br>SIRET \u2014 \u00b7 TVA FR\u2014','Julie Robert','06130 Grasse',true)
   +'<table><tr><th>D\u00e9signation</th><th>Base HT</th><th>TVA</th><th>TTC</th></tr>'
-  +'<tr><td>Frais de service \u00b7 mise en relation (5 %)</td><td>'+PVE(ht)+'</td><td>'+PVE(tva)+'</td><td>'+PVE(a)+'</td></tr></table>'
+  +'<tr><td>Frais de service \u00b7 mise en relation</td><td>'+PVE(ht)+'</td><td>'+PVE(tva)+'</td><td>'+PVE(a)+'</td></tr></table>'
   +'<div class="ttl"><span>Total TTC</span><span>'+PVE(a)+'</span></div>'
   +'<div class="legal"><b>Objet :</b> acc\u00e8s au service de mise en relation. Cette facture ne porte pas sur la prestation, factur\u00e9e s\u00e9par\u00e9ment par le prestataire.<br>PING n\u2019est pas partie au contrat de prestation et ne d\u00e9tient aucun fonds. TVA fran\u00e7aise au taux de 20 %.</div></div>';
   pvOpen('Facture de commission \u00b7 client','Original',body);
  } else if(kind==='compro'){
   body='<div class="sheetdoc">'+docHead('PP-2026-0311',D,'PING SAS','Place de march\u00e9 \u00b7 06130 Grasse<br>SIRET \u2014 \u00b7 TVA FR\u2014','Sofia Services','Sofia Moreau \u00b7 SIRET 892 431 007 00018',true)
   +'<table><tr><th>D\u00e9signation</th><th>Base HT</th><th>TVA</th><th>TTC</th></tr>'
-  +'<tr><td>Commission de mise en relation (11 %)</td><td>'+PVE(ht)+'</td><td>'+PVE(tva)+'</td><td>'+PVE(a)+'</td></tr></table>'
+  +'<tr><td>Commission de mise en relation</td><td>'+PVE(ht)+'</td><td>'+PVE(tva)+'</td><td>'+PVE(a)+'</td></tr></table>'
   +'<div class="ttl"><span>Total TTC</span><span>'+PVE(a)+'</span></div>'
   +'<div class="legal">Commission pr\u00e9lev\u00e9e sur le versement op\u00e9r\u00e9 par le prestataire de services de paiement. TVA fran\u00e7aise 20 %.<br>PING ne d\u00e9tient \u00e0 aucun moment les fonds transitant entre le client et le prestataire.</div></div>';
   pvOpen('Facture de commission \u00b7 prestataire','Original',body);
@@ -1791,7 +1741,7 @@ function renderDossier(){
    <div class="r"><span>Prix de la prestation</span><b>${PVE(L.base)}</b></div>
    <div class="r"><span>\u2192 Rembours\u00e9 au client</span><b id="cRb" style="color:var(--tealD)"></b></div>
    <div class="r"><span>\u2192 Conserv\u00e9 par le prestataire</span><b id="cPro"></b></div>
-   <div class="r"><span>Commission PING (11 %)</span><b id="cCom"></b></div>
+   <div class="r"><span>Commission PING</span><b id="cCom"></b></div>
    <div class="r"><span>Commission restitu\u00e9e</span><b id="cRes" style="color:var(--tealD)"></b></div>
    <div class="r tt"><span>Net prestataire</span><b id="cNet"></b></div>
   </div>
@@ -2031,11 +1981,11 @@ function txFinance(t){
    +'</div><div class="lawbox" style="margin-top:12px">Le remboursement de la prestation ne g\u00e9n\u00e8re <b>aucun mouvement dans les comptes de PING</b> : les fonds vont du compte connect\u00e9 du prestataire vers le client. Seuls les avoirs de commission impactent PING et r\u00e9gularisent la TVA collect\u00e9e du mois.</div></div>';
  }
 
- return '<div class="card mt"><h3>R\u00e9partition financi\u00e8re <span class="muted">commission 5 % client + 11 % pro</span></h3>'
+ return '<div class="card mt"><h3>R\u00e9partition financi\u00e8re <span class="muted">taux réglables, voir Commission</span></h3>'
   +'<div class="arb-calc"><div class="r"><span>Prestation (base)</span><b>'+e(base)+'</b></div>'
-  +'<div class="r"><span>Frais de service client (5 %)</span><b>'+e(comCli)+'</b></div>'
+  +'<div class="r"><span>Frais de service client</span><b>'+e(comCli)+'</b></div>'
   +'<div class="r"><span>Total d\u00e9bit\u00e9 au client</span><b>'+e(m)+'</b></div>'
-  +'<div class="r"><span>Commission prestataire (11 %)</span><b>\u2212 '+e(comPro)+'</b></div>'
+  +'<div class="r"><span>Commission prestataire</span><b>\u2212 '+e(comPro)+'</b></div>'
   +'<div class="r tt"><span>Net vers\u00e9 au prestataire</span><b>'+e(net)+'</b></div>'
   +'<div class="r"><span style="color:var(--tealD);font-weight:700">Revenu PING</span><b style="color:var(--tealD)">'+e(comCli+comPro)+'</b></div></div>'
   +'<h3 style="margin:18px 0 8px;font-family:var(--fh)">Facturation \u00b7 mod\u00e8le \u00e0 trois documents</h3>'
@@ -2064,13 +2014,13 @@ function renderTx(id){const t=TX[id];
  </div>
  ${txFinance(t)}`;
 }
-function renderIdentity(key){const e=ENT[key];const ok=!e.stats.some(s=>s[0].includes('Identit')&&s[1].includes('vérif'))?true:true;const verified=e.sub.includes('vérifiée');
- return`<div class="fhead" style="padding:14px"><div class="av ${e.cl}">${e.av}</div><div><h2>Identité · ${e.name}</h2><div class="fsub">Vérification d'authenticité du client</div></div><div class="actions"><button class="btn" onclick="toast('Identité confirmée · consignée')">${verified?'Revérifier':'Vérifier l\'identité'}</button></div></div>
- <div class="card mt"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:var(--fh);font-weight:700">Statut de vérification</span><span class="tag ${verified?'ok':'wait'}">${verified?'Vérifiée':'À vérifier'}</span></div>
- <div class="idmask"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.4"/><path d="M14 10h4M14 14h4"/></svg><div><b>Pièce d'identité</b><small>Fichier chiffré &amp; masqué · vérifié le 9 janv. 2025</small></div><button class="btn ghost" style="margin-left:auto">Voir (masqué)</button></div>
+function renderIdentity(key){const e=ENT[key];const verified=e.sub.includes('fournie');
+ return`<div class="fhead" style="padding:14px"><div class="av ${e.cl}">${e.av}</div><div><h2>Identité · ${e.name}</h2><div class="fsub">Pièce d'identité du client</div></div><div class="actions"><button class="btn" onclick="toast('Examen de la pièce consigné')">${verified?'Réexaminer':'Examiner la pièce'}</button></div></div>
+ <div class="card mt"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:var(--fh);font-weight:700">Statut de la pièce</span><span class="tag ${verified?'ok':'wait'}">${verified?'Pièce fournie':'À examiner'}</span></div>
+ <div class="idmask"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.4"/><path d="M14 10h4M14 14h4"/></svg><div><b>Pièce d'identité</b><small>Fichier chiffré &amp; masqué · fournie le 9 janv. 2025</small></div><button class="btn ghost" style="margin-left:auto">Voir (masqué)</button></div>
  <div class="grid k2"><div class="an"><div class="v" style="font-size:14px">Contrôle documentaire</div><div class="l">Cohérence nom / prénom · OK</div></div><div class="an"><div class="v" style="font-size:14px">Vivacité (selfie)</div><div class="l">${verified?'Réussie':'En attente'}</div></div></div>
- <h3 style="margin:16px 0 8px;font-family:var(--fh)">Journal de vérification</h3>
- <div class="timeline"><div class="tevent"><div class="dot">${ICN.check}</div><div class="tt">Identité validée</div><div class="tm">9 janv. 2025 · 10h04</div><div class="td">Méthode : pièce + selfie · authenticité confirmée</div></div><div class="tevent"><div class="dot">${ICN.user}</div><div class="tt">Documents soumis</div><div class="tm">8 janv. 2025</div><div class="td">Par ${e.name}</div></div></div></div>`;
+ <h3 style="margin:16px 0 8px;font-family:var(--fh)">Journal d'examen</h3>
+ <div class="timeline"><div class="tevent"><div class="dot">${ICN.check}</div><div class="tt">Pièce examinée par PING</div><div class="tm">9 janv. 2025 · 10h04</div><div class="td">Pièce et selfie reçus, cohérence nom / prénom contrôlée par PING</div></div><div class="tevent"><div class="dot">${ICN.user}</div><div class="tt">Documents soumis</div><div class="tm">8 janv. 2025</div><div class="td">Par ${e.name}</div></div></div></div>`;
 }
 
 function renderDoc(id){const d=DOCS[id];
@@ -2591,7 +2541,7 @@ function renderLiveMap(){
  const markers=LIVE_MAP.map(m=>{
   const e=ENT[m.key]; if(!e)return'';
   const color=m.status==='job'?'#FF7A66':'#2FD06E';
-  return '<g onclick="openFiche(\''+m.key+'\')">'+pinSVG(m.x,m.y,color)+'<title>'+e.name+' · '+(m.status==='job'?'En prestation':'Connecté, GPS actif')+'</title></g>';
+  return '<g onclick="openFiche(\''+m.key+'\')">'+pinSVG(m.x,m.y,color)+'<title>'+e.name+' · '+(m.status==='job'?'En prestation':'Actif sur la carte')+'</title></g>';
  }).join('');
  box.innerHTML='<div style="position:relative;width:100%;height:100%">'
   +'<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="100%" style="display:block" preserveAspectRatio="xMidYMid slice">'+bg+markers+'</svg>'
@@ -2605,7 +2555,36 @@ function renderLiveMap(){
  el('mapKpiConnected',LIVE_MAP.length);
  el('mapKpiOnJob',LIVE_MAP.filter(m=>m.status==='job').length);
 }
+function renderLeadsPanels(){
+ const L=window.LEADS||[];
+ const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+ set('kLeadsTotal',L.length?String(L.length):'—');
+ const pros=L.filter(l=>l.type==='pro').length;
+ set('kLeadsPros',L.length?Math.round(pros/L.length*100)+' %':'—');
+ set('kLeadsProsD',L.length?pros+' pros sur '+L.length:'Données disponibles au lancement');
+ const st=window.CANAL_STATS||[];
+ set('kLeadsTop',st.length?st[0].label:'—');
+ set('kLeadsTopD',st.length?st[0].value+' lead'+(st[0].value>1?'s':''):'Données disponibles au lancement');
+ const tb=document.getElementById('canalRows');
+ if(tb){
+  const total=L.length;
+  tb.innerHTML=st.length?st.map(d=>{
+   const ins=L.filter(l=>(l.canal||'direct')===d.canal&&['inscrit','kyc_ok','actif'].includes(l.statut)).length;
+   return '<tr class="click" onclick="filterLeadsByCanal(\''+d.canal+'\');document.getElementById(\'leadsCard\').scrollIntoView({behavior:\'smooth\'})"><td>'+d.label+'</td><td>'+d.value+'</td><td>'+ins+'</td><td>'+(total?Math.round(d.value/total*100):0)+' %</td></tr>';
+  }).join(''):'<tr><td colspan="4" class="muted">Données disponibles au lancement</td></tr>';
+ }
+ const fc=document.getElementById('funnelChart');
+ if(fc){
+  if(!L.length){fc.innerHTML='<p class="muted" style="align-self:center;width:100%;text-align:center;font-weight:600">Données disponibles au lancement</p>';}
+  else{
+   const n=a=>L.filter(l=>a.includes(l.statut)).length;
+   const steps=[['Leads',L.length],['Contactés',n(['contacte','inscrit','kyc_ok','actif'])],['Inscrits',n(['inscrit','kyc_ok','actif'])],['KYC',n(['kyc_ok','actif'])],['Actifs',n(['actif'])]];
+   fc.innerHTML=steps.map((x,i)=>'<div class="bar" style="height:'+Math.max(4,Math.round(x[1]/L.length*100))+'%'+(i===3?';background:linear-gradient(180deg,var(--gold),#f6c877)':i===4?';background:linear-gradient(180deg,#2FD06E,#8fe3ac)':'')+'"><span>'+x[1]+'</span><small>'+x[0]+'</small></div>').join('');
+  }
+ }
+}
 function renderCanalStats(){
+ renderLeadsPanels();
  const box=document.getElementById('canalDonut'); if(!box)return;
  // Aucun lead : un donut a zero divise par zero et sort des NaN dans le SVG.
  if(!CANAL_STATS.length){
@@ -2674,7 +2653,7 @@ function leadHist(l){
  if(l.statut==='perdu')h.push(['—','doc','Sans réponse après relance',"Sorti de l'entonnoir (cadence J+7, cf. Plan & messages)"]);
  else if(idx>1)h.push(['—','mail','Contacté','Séquence de bienvenue envoyée']);
  if(idx>=3)h.push(['—','check','Inscription complétée','Coordonnées et statut confirmés']);
- if(idx>=4)h.push(['—','check','Vérifications automatiques OK','SIREN, identité, assurance']);
+ if(idx>=4)h.push(['—','check','Contrôles automatiques effectués','SIREN, identité, assurance']);
  if(idx>=5)h.push(['—','star','Profil activé','Apparition sur la carte']);
  return h;
 }
@@ -2723,13 +2702,7 @@ function renderLeadFiche(id){
 }
 
 /* ================= DAC7 — récapitulatifs individuels par vendeur ================= */
-const DAC7_VENDORS=[
- {key:'sofia-services',revenus:'14 400 €',operations:72,statut:'envoye'},
- {key:'nadia-repassage',revenus:'22 100 €',operations:41,statut:'envoye'},
- {key:'lea-nettoyage',revenus:'9 800 €',operations:58,statut:'envoye'},
- {key:'yanis-services',revenus:'5 200 €',operations:24,statut:'programme'},
- {key:'bruno-menage',revenus:'3 900 €',operations:17,statut:'programme'},
-];
+const DAC7_VENDORS=[]; /* aucun vendeur fictif : à alimenter depuis les factures au branchement de l'export DAC7 */
 function dac7StatutTag(s){return s==='envoye'?['ok','Envoyé']:['wait','Programmé'];}
 let dac7SortState={field:null,dir:'asc'};
 function sortDac7By(field){
@@ -2748,6 +2721,7 @@ function sortDac7By(field){
 }
 function renderDac7Vendors(){
  const tb=document.getElementById('dac7VendorsRows'); if(!tb)return;
+ if(!DAC7_VENDORS.length){tb.innerHTML='';return;}
  tb.innerHTML=DAC7_VENDORS.map(v=>{
   const e=ENT[v.key]; if(!e)return'';
   const st=dac7StatutTag(v.statut);
@@ -3691,10 +3665,94 @@ window.savePlatformIdentity = async function () {
   if (!error) toast('Coordonnees enregistrees')
 }
 
+/* ============ Chiffres réels : vue d'ensemble, transactions, commissions ============
+   Source : RPC admin_stats + tables transactions / app_settings. Tant qu'il n'y a
+   pas de session administrateur (ou pas de donnée), les cases restent à « — »
+   ou à « Données disponibles au lancement » : aucun chiffre inventé. */
+const pctFr = r => (Math.round(Number(r) * 1000) / 10).toLocaleString('fr-FR') + ' %'
+const setTxt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v }
+
+async function loadRatesNote() {
+  const { data } = await supabaseLive.from('app_settings').select('key, value')
+    .in('key', ['commission_buyer_rate', 'commission_seller_rate'])
+  const get = k => { const r = (data || []).find(x => x.key === k); return r ? Number(r.value) : NaN }
+  const b = get('commission_buyer_rate'), v = get('commission_seller_rate')
+  return { b, v, ok: !isNaN(b) && !isNaN(v) }
+}
+
+window.loadOverviewStats = async function () {
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) return
+  const [statsRes, txRes] = await Promise.all([
+    supabaseLive.rpc('admin_stats'),
+    supabaseLive.from('transactions').select('id, created_at, status, subtotal_cents, buyer_fee_cents, seller_fee_cents, total_charged_cents')
+      .order('created_at', { ascending: false }).limit(5),
+  ])
+  if (!statsRes.error && statsRes.data) {
+    const s = statsRes.data
+    setTxt('ovVolume', euros(s.total_volume_cents))
+    setTxt('ovCommission', euros(s.total_commission_cents))
+    setTxt('ovProviders', s.active_providers + ' / ' + s.total_providers)
+    setTxt('ovDisputes', String(s.open_disputes))
+    setTxt('ovDocs', String(s.pending_documents))
+    setTxt('ovDisputes2', String(s.open_disputes))
+    setTxt('litOpen', String(s.open_disputes))
+  }
+  const rows = (txRes && txRes.data) || []
+  const body = document.getElementById('ovTxBody')
+  if (body) {
+    body.innerHTML = rows.map(t =>
+      '<tr><td class="mono">' + dateTimeFr(t.created_at) + '</td><td><span class="tag ink">' + (TX_STATUS_LIVE[t.status] || t.status) + '</span></td><td>' + euros(t.subtotal_cents) +
+      '</td><td>' + euros((t.buyer_fee_cents || 0) + (t.seller_fee_cents || 0)) + '</td><td>' + euros(t.total_charged_cents) + '</td></tr>').join('')
+    const em = document.getElementById('ovTxEmpty'); if (em) em.style.display = rows.length ? 'none' : 'block'
+  }
+}
+
+window.loadTxList = async function () {
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) return
+  const { data, error } = await supabaseLive.from('transactions')
+    .select('id, created_at, status, subtotal_cents, buyer_fee_cents, seller_fee_cents, total_charged_cents')
+    .order('created_at', { ascending: false }).limit(100)
+  if (error) return
+  const rows = data || []
+  const body = document.getElementById('txAllBody')
+  if (body) {
+    body.innerHTML = rows.map(t =>
+      '<tr class="click" onclick="window.openTxDetail(\'' + t.id + '\')"><td class="mono">' + dateTimeFr(t.created_at) + '</td><td><span class="tag ink">' + (TX_STATUS_LIVE[t.status] || t.status) + '</span></td><td>' + euros(t.subtotal_cents) +
+      '</td><td>' + euros(t.buyer_fee_cents) + '</td><td>' + euros(t.seller_fee_cents) + '</td><td>' + euros(t.total_charged_cents) + '</td></tr>').join('')
+    const em = document.getElementById('txAllEmpty'); if (em) em.style.display = rows.length ? 'none' : 'block'
+  }
+}
+
+window.loadCommissionsLive = async function () {
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) return
+  const [rates, txRes] = await Promise.all([
+    loadRatesNote(),
+    supabaseLive.from('transactions').select('buyer_fee_cents, seller_fee_cents'),
+  ])
+  if (rates.ok) {
+    setTxt('commRatesNote', 'Taux réglables dans Commission (' + pctFr(rates.b) + ' client + ' + pctFr(rates.v) + ' prestataire, valeurs lues dans le réglage actuel). Une mission garde le taux en vigueur à sa réservation.')
+    setTxt('commBuyerD', 'taux actuel ' + pctFr(rates.b))
+    setTxt('commSellerD', 'taux actuel ' + pctFr(rates.v))
+  }
+  if (!txRes.error) {
+    const rows = txRes.data || []
+    const b = rows.reduce((a, t) => a + (t.buyer_fee_cents || 0), 0)
+    const v = rows.reduce((a, t) => a + (t.seller_fee_cents || 0), 0)
+    setTxt('commBuyer', euros(b)); setTxt('commSeller', euros(v)); setTxt('commTotal', euros(b + v))
+  }
+}
+
 const _navComm = window.nav
 window.nav = function (s) {
   _navComm(s)
   if (s === 'comm' && window.loadPlatformIdentity) window.loadPlatformIdentity()
+  if (s === 'overview' && window.loadOverviewStats) window.loadOverviewStats()
+  if (s === 'tx' && window.loadTxList) window.loadTxList()
+  if (s === 'commissions' && window.loadCommissionsLive) window.loadCommissionsLive()
 }
+if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOverviewStats() }
 
 </script>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
+import { fetchUnreadByTx } from '@/lib/unread'
 
 // Repères type messagerie (WhatsApp) plutôt qu'une date brute sur chaque ligne :
 // plus lisible dès qu'il y a beaucoup de conversations (demande de Romain, 26/10).
@@ -37,6 +38,7 @@ export default function MessagesPage() {
   const [query, setQuery] = useState('')
   const [sortMode, setSortMode] = useState<'date' | 'client'>('date')
   const [uid, setUid] = useState('')
+  const [unread, setUnread] = useState<Record<string, number>>({})
   const [isPro, setIsPro] = useState<boolean | null>(null)
   const [mode, setMode] = useMode(isPro)
 
@@ -69,6 +71,8 @@ export default function MessagesPage() {
         const isSeller = t.seller_id === user.id
         return { ...t, lastMessage: last, isSeller, kind: 'mission' as const, counterpart: nameById[t.id] || (isSeller ? 'Client' : 'Prestataire') }
       }))
+
+      setUnread(await fetchUnreadByTx(supabase))
 
       const { data: conv } = await supabase.from('admin_conversations').select('id, last_message_at').eq('user_id', user.id).maybeSingle()
       let supportRow: any = null
@@ -111,7 +115,7 @@ export default function MessagesPage() {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)' }}>
               <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
             </svg>
-            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher une conversation…"
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher"
               style={{ width: '100%', boxSizing: 'border-box', padding: '11px 14px 11px 36px', borderRadius: 12, border: '1px solid #E7EDEB', background: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
           </div>
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
@@ -184,6 +188,7 @@ export default function MessagesPage() {
               </div>
               {section.items.map(t => {
                 const name = t.kind === 'support' ? 'Support PING' : t.counterpart
+                const nUnread = t.kind === 'mission' ? (unread[t.id] || 0) : 0
                 return (
                   <button key={t.id} onClick={() => router.push(t.kind === 'support' ? '/support' : `/mission/${t.id}/chat`)}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', background: '#fff', border: t.kind === 'support' ? '1px solid #12B39C' : '1px solid #E7EDEB', borderRadius: 14, padding: 12, marginBottom: 10, cursor: 'pointer' }}>
@@ -194,12 +199,12 @@ export default function MessagesPage() {
                     }}>{(name || '?').charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}</span>
+                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}{nUnread > 0 && <span aria-label={`${nUnread} non lu${nUnread > 1 ? 's' : ''}`} style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#E5484D', marginLeft: 7, verticalAlign: 'middle' }} />}</span>
                         <span style={{ fontSize: 10.5, color: '#6E8592', fontWeight: 600, flexShrink: 0 }}>
                           {rowTime(new Date(t.lastMessage?.created_at || t.created_at))}
                         </span>
                       </div>
-                      <div style={{ fontSize: 12, color: '#4E6470', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 12, color: nUnread > 0 ? '#123644' : '#4E6470', fontWeight: nUnread > 0 ? 700 : 400, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {t.lastMessage?.body || 'Aucun message — ouvrir la conversation'}
                       </div>
                     </div>

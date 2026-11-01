@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
 import { rememberThisTabOnly } from '@/lib/auth-session'
+import { flushReferral } from '@/lib/referral'
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '13px 44px 13px 14px', border: '1.5px solid #E7EDEB', borderRadius: 14,
@@ -73,6 +74,7 @@ export default function LoginPage() {
       // Voir lib/auth-session.ts pour le mécanisme (le SDK Supabase ne permet pas
       // de raccourcir la durée du cookie de session depuis le client).
       rememberThisTabOnly(rememberMe)
+      await flushReferral() // parrainage laissé en attente à l'inscription (e-mail à confirmer)
       // Redirection selon le profil reel (is_admin / is_pro, plus de colonne role)
       const next = nextPath()
       if (next) { router.push(next); return }

@@ -22,7 +22,7 @@ export default function AddressChoice({ profileAddress, value, onChange }: {
     <div>
       <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Votre adresse</span>
       <input value={value.other} onChange={e => onChange({ mode: 'autre', other: e.target.value, confirmed: true })} autoComplete="street-address"
-        placeholder="Numéro, rue, ville" style={field} />
+        aria-label="Adresse (numéro, rue, ville)" style={field} />
       <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 5 }}>Enregistrée dans votre profil pour les prochaines réservations.</div>
     </div>
   )
@@ -54,7 +54,7 @@ export default function AddressChoice({ profileAddress, value, onChange }: {
       ) : (
         <div>
           <input value={value.other} onChange={e => onChange({ ...value, other: e.target.value, confirmed: true })} autoComplete="street-address"
-            placeholder="Numéro, rue, ville" style={field} />
+            aria-label="Adresse (numéro, rue, ville)" style={field} />
           {value.other.trim() && (
             <div style={{ fontSize: 12, color: '#4E6470', marginTop: 6, lineHeight: 1.5 }}>
               Le prestataire verra « <b style={{ color: '#123644' }}>{maskAddress(value.other)}</b> » et l&apos;acceptera ou non. Le numéro lui est transmis une fois l&apos;adresse acceptée.

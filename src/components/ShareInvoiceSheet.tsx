@@ -87,7 +87,7 @@ export default function ShareInvoiceSheet({ open, onClose, title, subject, text,
         {accountant && (
           <label style={{ display: 'block', marginBottom: 12 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#123644' }}>E-mail de mon comptable</span>
-            <input type="email" value={email} onChange={e => saveEmail(e.target.value)} placeholder="cabinet@exemple.fr"
+            <input type="email" value={email} onChange={e => saveEmail(e.target.value)}
               style={{ width: '100%', marginTop: 6, padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, boxSizing: 'border-box', background: '#fff' }} />
             <span style={{ display: 'block', fontSize: 11, color: '#4E6470', marginTop: 4 }}>Mémorisé sur cet appareil uniquement.</span>
           </label>

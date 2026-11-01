@@ -4,6 +4,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { enforceForgottenSession } from '@/lib/auth-session'
 import BottomTabBar from '@/components/BottomTabBar'
+import { useUnreadTotal } from '@/lib/unread'
+import UnreadBadge from '@/components/UnreadBadge'
 
 // Routes "app" qui reçoivent la navigation laterale desktop (sidebar).
 // Auth, presentation, hub, demo, admin : pas de sidebar.
@@ -98,6 +100,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
 
   const onPro = isProRoute || (!isClientRoute && mode === 'pro')
   const accent = onPro ? '#F2A93B' : '#12B39C'
+  const unread = useUnreadTotal(onPro ? 'pro' : 'particulier', pathname)
   const nav = onPro ? PRO_NAV : CLIENT_NAV
   const nav2 = onPro ? PRO_NAV2 : CLIENT_NAV2
   function switchMode() {
@@ -116,7 +119,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
   const item = ([label, path]: [string, string]) => {
     const on = pathname === path || (path !== '/map' && path !== '/pro/carte' && pathname.startsWith(path))
     return (
-      <div key={label + path} className={`dnav-item ${on ? 'on' : ''}`} onClick={() => go(path)}>{navIcon(label)}<span>{label}</span></div>
+      <div key={label + path} className={`dnav-item ${on ? 'on' : ''}`} onClick={() => go(path)}>{navIcon(label)}<span>{label}</span>{path === '/messages' && <UnreadBadge n={unread} />}</div>
     )
   }
 

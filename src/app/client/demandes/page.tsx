@@ -10,7 +10,24 @@ const DONE = ['completed', 'released']
 const STATUS: Record<string, string> = { open: 'En attente', matched: 'En cours', completed: 'Terminée', cancelled: 'Annulée' }
 function eur(c?: number | null) { return c != null ? `${(c / 100).toFixed(0)} €` : '' }
 
-type Tx = { id: string; status: string; counterpart: string }
+type Tx = {
+  id: string; status: string; counterpart: string
+  subtotal_cents: number | null; price_confirmed: boolean
+  providerId: string | null
+  hasPendingOffer: boolean // un devis du prestataire attend la réponse du client (acceptation dans le chat)
+}
+type ProInfo = { rating: number | null; reviews_count: number; lat: number | null; lng: number | null; bio: string | null; has_identity: boolean; has_rcpro: boolean }
+
+// Distance à vol d'oiseau en km (haversine) ; null si une position manque.
+function distanceKm(a?: number | null, b?: number | null, c?: number | null, d?: number | null) {
+  if (a == null || b == null || c == null || d == null) return null
+  const R = 6371, rad = Math.PI / 180
+  const dLat = (c - a) * rad, dLng = (d - b) * rad
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a * rad) * Math.cos(c * rad) * Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
+const euroFr = (c: number) => (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' €'
+const excerpt = (s: string, n = 110) => { const t = s.replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n).trimEnd() + '…' : t }
 
 export default function MesDemandesPage() {
   const router = useRouter()
@@ -19,6 +36,7 @@ export default function MesDemandesPage() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [pros, setPros] = useState<Record<string, ProInfo>>({})
 
   async function load() {
     const supabase = createClient()
@@ -36,18 +54,47 @@ export default function MesDemandesPage() {
       // Une demande ouverte peut recevoir plusieurs propositions (un pro = une
       // transaction) : on les groupe toutes par demande, pas seulement la
       // derniere, sinon les autres propositions disparaissent silencieusement.
-      const { data: txs } = await supabase.from('transactions').select('id, request_id, status').in('request_id', ids)
+      const { data: txs } = await supabase.from('transactions').select('id, request_id, status, seller_id, subtotal_cents, price_confirmed').in('request_id', ids)
       const { data: names } = txs?.length
         ? await supabase.rpc('transaction_counterparts', { p_transaction_ids: txs.map((t: any) => t.id) })
         : { data: [] }
       const nameById: Record<string, string> = {}
       ;(names ?? []).forEach((n: any) => { if (n.full_name) nameById[n.transaction_id] = n.full_name })
+      // Devis du prestataire en attente de réponse (lecture seule : l'acceptation se fait dans le chat).
+      const pendingOffer = new Set<string>()
+      if (txs?.length) {
+        const { data: offers } = await supabase.from('messages').select('transaction_id, sender_id')
+          .eq('kind', 'offer').eq('offer_status', 'pending').in('transaction_id', txs.map((t: any) => t.id))
+        const sellerOf: Record<string, string> = {}
+        txs.forEach((t: any) => { sellerOf[t.id] = t.seller_id })
+        ;(offers ?? []).forEach((o: any) => { if (o.sender_id && o.sender_id === sellerOf[o.transaction_id]) pendingOffer.add(o.transaction_id) })
+      }
       const grouped: Record<string, Tx[]> = {}
       ;(txs ?? []).forEach((t: any) => {
         if (!t.request_id) return
-        ;(grouped[t.request_id] ||= []).push({ id: t.id, status: t.status, counterpart: nameById[t.id] || 'Prestataire' })
+        ;(grouped[t.request_id] ||= []).push({
+          id: t.id, status: t.status, counterpart: nameById[t.id] || 'Prestataire',
+          subtotal_cents: t.subtotal_cents ?? null, price_confirmed: !!t.price_confirmed,
+          providerId: t.seller_id ?? null, hasPendingOffer: pendingOffer.has(t.id),
+        })
       })
       setTxByRequest(grouped)
+
+      // Note, position, présentation et pièces déclarées des prestataires qui ont répondu.
+      const proIds = Array.from(new Set((txs ?? []).map((t: any) => t.seller_id).filter(Boolean))) as string[]
+      if (proIds.length) {
+        const [{ data: pps }, trusts] = await Promise.all([
+          supabase.from('provider_profiles').select('id, rating, reviews_count, lat, lng, bio').in('id', proIds),
+          Promise.all(proIds.map(id => supabase.rpc('provider_trust_stats', { provider_id: id }))),
+        ])
+        const info: Record<string, ProInfo> = {}
+        ;(pps ?? []).forEach((p: any) => { info[p.id] = { rating: p.rating, reviews_count: p.reviews_count || 0, lat: p.lat, lng: p.lng, bio: p.bio, has_identity: false, has_rcpro: false } })
+        proIds.forEach((id, i) => {
+          const tr = trusts[i]?.data?.[0]
+          if (info[id] && tr) { info[id].has_identity = !!tr.has_identity; info[id].has_rcpro = !!tr.has_rcpro }
+        })
+        setPros(info)
+      }
     }
     setLoading(false)
   }
@@ -140,13 +187,61 @@ export default function MesDemandesPage() {
 
                   {isOpen && group.length > 0 && (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #F1F5F4', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {group.map(t => (
-                        <div key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
-                          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 11px', borderRadius: 10, background: '#F3F6F5', cursor: 'pointer' }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{t.counterpart}</span>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E' }}>Voir la conversation ›</span>
-                        </div>
-                      ))}
+                      {group.map(t => {
+                        const p = t.providerId ? pros[t.providerId] : undefined
+                        const km = p ? distanceKm(r.lat, r.lng, p.lat, p.lng) : null
+                        const cancelled = t.status === 'cancelled'
+                        const tag = { fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0C8F7E' } as const
+                        return (
+                          <div key={t.id} style={{ padding: 12, borderRadius: 12, background: '#F3F6F5', border: '1px solid #E7EDEB', opacity: cancelled ? .6 : 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, fontWeight: 700, color: '#123644' }}>{t.counterpart}</div>
+                                <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>
+                                  {p && p.reviews_count > 0 && p.rating ? `★ ${Number(p.rating).toFixed(1).replace('.', ',')} · ${p.reviews_count} avis` : 'Pas encore d’avis'}
+                                  {km != null ? ` · ${(km < 10 ? km.toFixed(1) : Math.round(km).toString()).replace('.', ',')} km` : ''}
+                                </div>
+                              </div>
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                {t.subtotal_cents && t.subtotal_cents > 0 ? (
+                                  <>
+                                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17, fontWeight: 700, color: '#123644' }}>{euroFr(t.subtotal_cents)}</div>
+                                    {!t.price_confirmed && <div style={{ fontSize: 10.5, fontWeight: 700, color: '#8a6520' }}>à valider</div>}
+                                  </>
+                                ) : (
+                                  <div style={{ fontSize: 11.5, fontWeight: 700, color: '#8a6520' }}>Prix à fixer</div>
+                                )}
+                              </div>
+                            </div>
+                            {p && (p.has_identity || p.has_rcpro) && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                                {p.has_identity && <span style={tag}>Pièce d’identité fournie</span>}
+                                {p.has_rcpro && <span style={tag}>Assurance renseignée</span>}
+                              </div>
+                            )}
+                            {p?.bio && p.bio.trim() && <div style={{ fontSize: 12, color: '#4E6470', marginTop: 8, lineHeight: 1.45 }}>{excerpt(p.bio)}</div>}
+                            {cancelled ? (
+                              <div style={{ fontSize: 11.5, fontWeight: 700, color: '#6E8592', marginTop: 10 }}>Conversation annulée</div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <button onClick={() => router.push(`/mission/${t.id}/chat`)}
+                                  style={{ flex: 1, padding: '9px 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                  Voir la discussion
+                                </button>
+                                {t.hasPendingOffer && (
+                                  <button onClick={() => router.push(`/mission/${t.id}/chat`)}
+                                    style={{ flex: 1, padding: '9px 10px', borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                    Accepter ce prestataire
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                            {!cancelled && t.hasPendingOffer && (
+                              <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 6 }}>Vous confirmez le devis dans la discussion.</div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
 

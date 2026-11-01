@@ -19,3 +19,11 @@ node parcours.mjs        # résultat : report.json + shots/
 
 Le scénario crée une vraie mission entre les deux comptes de test (laissée en base, comme les
 précédentes). Ne jamais le lancer avec de vrais comptes.
+
+## Contrôle automatique quotidien (GitHub Actions)
+
+`.github/workflows/e2e-prod.yml` lance chaque jour (05 h 17 UTC) et à la demande (onglet Actions,
+« Run workflow ») `separation-espaces.mjs` puis `factures.mjs` contre la prod. Le travail échoue si un
+script sort en erreur ou affiche une ligne qui commence par `ECHEC` (les deux scripts terminent par
+`process.exit(1)` s'il y a au moins un échec). Aucun secret : les comptes `audit.*@ping-demo.invalid`
+et leurs données fictives sont dans les scripts. `parcours.mjs` n'est pas planifié : il crée une mission en base à chaque passage, à lancer à la main.

@@ -9,6 +9,7 @@ import { TRADES } from '@/lib/trades'
 import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
+import ProMonthBlock from '@/components/ProMonthBlock'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { listingChecks, listingScore, loadListingFacts } from '@/lib/listing'
 
@@ -229,6 +230,8 @@ export default function ProDashboard() {
                 <span onClick={() => router.push('/pro/onboarding')} style={{ display: 'inline-block', marginTop: 8, fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', textDecoration: 'underline' }}>Modifier</span>
               </div>
             </div>
+
+            <ProMonthBlock pro={pro} transactions={transactions} />
 
             {/* Tout ce qui sortait du menu latéral est rangé ici, par rubrique (même présentation que
                 « Mon profil » côté particulier). */}

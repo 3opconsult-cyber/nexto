@@ -113,7 +113,7 @@ export default function AdminVisites() {
               )}
 
               <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>
-                <span>⏱ {duree(v.debut, v.fin)}</span>
+                <span>Durée : {duree(v.debut, v.fin)}</span>
                 <span>{v.pageCount} page{v.pageCount > 1 ? 's' : ''} vue{v.pageCount > 1 ? 's' : ''}</span>
                 <span>{v.comments.length} commentaire{v.comments.length > 1 ? 's' : ''}</span>
               </div>
