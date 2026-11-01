@@ -8,16 +8,10 @@ import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
 import { addDays, startOfDay } from '@/components/calendar/dates'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
+import { UPCOMING, DONE, txDate, durationMinutes } from '@/lib/agenda'
 
-const UPCOMING = ['pending', 'matched', 'en_route', 'arrived']
-const DONE = ['completed', 'released']
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
-// Date du rendez-vous quand elle existe (créneau réservé, migration 012), sinon repli sur la création.
-function txDate(t: any): Date {
-  if (DONE.includes(t.status)) return new Date(t.completed_at || t.scheduled_at || t.created_at)
-  return new Date(t.scheduled_at || t.created_at)
-}
 function eur(c?: number | null) { return c != null ? `${(c / 100).toFixed(2).replace('.', ',')} €` : '' }
 
 export default function AgendaPage() {
@@ -77,6 +71,7 @@ export default function AgendaPage() {
   const shownDisputes = disputes.filter(d => mine.some(t => t.id === d.transaction_id))
   // L'agenda ne montre que de vrais rendez-vous : une simple conversation (tarif pas encore validé)
   // reste dans Messages, sinon chaque « Contacter » ajoutait une fausse date au calendrier.
+  const disputedIds = new Set(disputes.map(d => d.transaction_id))
   const pendingTalks = mine.filter(t => UPCOMING.includes(t.status) && !t.price_confirmed).length
   const upcoming = mine.filter(t => UPCOMING.includes(t.status) && t.price_confirmed)
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
@@ -95,11 +90,11 @@ export default function AgendaPage() {
   // confirmés du mode courant, et en mode pro ses créneaux encore libres.
   const events: CalEvent[] = useMemo(() => {
     const appts: CalEvent[] = mine
-      .filter(t => t.scheduled_at && (t.price_confirmed || DONE.includes(t.status)) && t.status !== 'cancelled')
+      .filter(t => t.scheduled_at && ((t.price_confirmed || DONE.includes(t.status)) && t.status !== 'cancelled' || disputedIds.has(t.id)))
       .map(t => {
         const start = new Date(t.scheduled_at)
         return {
-          id: t.id, start, end: new Date(start.getTime() + (t.duration_minutes || 120) * 60000), kind: 'busy' as const,
+          id: t.id, start, end: new Date(start.getTime() + durationMinutes(t) * 60000), kind: 'busy' as const,
           title: `${names[t.id] || 'Rendez-vous'}${t.requests?.category ? ' · ' + (TRAD[t.requests.category] || t.requests.category) : ''}`,
           subtitle: badge(t).label,
           onClick: () => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`),
@@ -111,7 +106,7 @@ export default function AgendaPage() {
     })) : []
     return [...appts, ...free]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mine, names, freeSlots, mode])
+  }, [mine, names, freeSlots, mode, disputedIds])
 
   const card = (t: any) => (
     <div key={t.id} onClick={() => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)}
@@ -155,7 +150,7 @@ export default function AgendaPage() {
                 Litige en cours{names[d.transaction_id] ? ` · ${names[d.transaction_id]}` : ''}
               </div>
               <div style={{ fontSize: 11.5, color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {d.status === 'investigating' ? 'En cours d\'examen par PING' : 'Ouvert le ' + new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{d.reason ? ` · ${d.reason}` : ''}
+                {'Ouvert le ' + new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{d.reason ? ` · ${d.reason}` : ''}
               </div>
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>

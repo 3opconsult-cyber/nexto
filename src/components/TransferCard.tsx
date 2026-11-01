@@ -93,7 +93,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
         <Line label="Montant" value={EUR(t.amount_cents)} />
         <Line label="Bénéficiaire" value={holder} />
         {iban ? <Line label="IBAN" value={formatIban(iban)} copy /> : (
-          <p style={{ fontSize: 12, color: '#9A6712', background: 'rgba(242,169,59,.12)', borderRadius: 9, padding: '8px 10px', margin: '4px 0', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: '#8A6520', background: 'rgba(242,169,59,.12)', borderRadius: 9, padding: '8px 10px', margin: '4px 0', lineHeight: 1.5 }}>
             {toPro
               ? 'Le prestataire n’a pas encore renseigné son IBAN. Demandez-le-lui dans la conversation, ou réglez-le directement (CESU, espèces) : il le notera reçu.'
               : 'Les coordonnées bancaires de PING vous seront communiquées très prochainement.'}

@@ -98,6 +98,10 @@ export default function ProAttente() {
           style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
           Voir et lancer mon annonce
         </button>
+        <a href="/animation-inscription?part=pro" target="_blank" rel="noopener noreferrer"
+          style={{ display: 'block', boxSizing: 'border-box', width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.06)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+          Voir l&apos;animation (partie prestataire)
+        </a>
         <button onClick={() => router.push('/pro/dashboard')}
           style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: 'none', color: 'rgba(255,255,255,.85)', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'underline', cursor: 'pointer' }}>
           Accéder à Mon entreprise

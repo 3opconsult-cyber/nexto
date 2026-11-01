@@ -22,8 +22,8 @@ type State = {
 // Prélèvement automatique des commissions (mandat SEPA) : statut posé uniquement par PING / le
 // partenaire de paiement (migration 019). Libellés déclaratifs.
 const MANDAT: Record<string, { t: string; fg: string; bg: string; txt: string }> = {
-  none: { t: 'Non signé', fg: '#9A6712', bg: 'rgba(242,169,59,.15)', txt: 'Le mandat se signe avec l’ouverture de votre compte de versement, chez le partenaire de paiement.' },
-  pending: { t: 'En cours', fg: '#9A6712', bg: 'rgba(242,169,59,.15)', txt: 'Mandat transmis à votre banque, en attente de son retour.' },
+  none: { t: 'Non signé', fg: '#8A6520', bg: 'rgba(242,169,59,.15)', txt: 'Le mandat se signe avec l’ouverture de votre compte de versement, chez le partenaire de paiement.' },
+  pending: { t: 'En cours', fg: '#8A6520', bg: 'rgba(242,169,59,.15)', txt: 'Mandat transmis à votre banque, en attente de son retour.' },
   active: { t: 'Actif', fg: '#0C8F7E', bg: 'rgba(18,179,156,.12)', txt: 'Les commissions non retenues sur un versement sont prélevées automatiquement sur votre compte.' },
   revoked: { t: 'Révoqué', fg: '#c0503a', bg: 'rgba(192,80,58,.12)', txt: 'Votre banque nous a signalé la révocation du mandat. Les commissions dues sont retenues sur vos prochains versements ; au-delà du plafond d’impayés, le compte est suspendu.' },
   failed: { t: 'Refusé', fg: '#c0503a', bg: 'rgba(192,80,58,.12)', txt: 'Votre banque a refusé le mandat. Contactez le support PING pour le renouveler.' },
@@ -113,7 +113,7 @@ export default function ProPaiementsPage() {
   const c = st?.compte
   const badge = c?.statut === 'active' ? { t: 'Versements actifs', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     : c?.statut === 'restricted' ? { t: 'Compte à régulariser', bg: 'rgba(192,80,58,.12)', fg: '#c0503a' }
-    : c ? { t: 'En cours de contrôle', bg: 'rgba(242,169,59,.15)', fg: '#9A6712' } : null
+    : c ? { t: 'En cours de contrôle', bg: 'rgba(242,169,59,.15)', fg: '#8A6520' } : null
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
@@ -129,7 +129,7 @@ export default function ProPaiementsPage() {
           <div id="virement" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Être payé par virement</div>
-              <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, whiteSpace: 'nowrap', ...(savedIban ? { background: 'rgba(18,179,156,.12)', color: '#0C8F7E' } : { background: 'rgba(242,169,59,.15)', color: '#9A6712' }) }}>
+              <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, whiteSpace: 'nowrap', ...(savedIban ? { background: 'rgba(18,179,156,.12)', color: '#0C8F7E' } : { background: 'rgba(242,169,59,.15)', color: '#8A6520' }) }}>
                 {savedIban ? 'IBAN renseigné' : 'À renseigner'}
               </span>
             </div>

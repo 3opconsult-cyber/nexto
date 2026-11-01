@@ -332,6 +332,13 @@ carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dép�
   disponibilités → Disponible/écho → demandes (urgentes en orange) → tarif dans le chat → adresse transmise → QR →
   facture à son en-tête (« vous percevez », 17 %) → avis croisés → Mon entreprise (paiement par virement, en ligne
   « bientôt » : jamais de séquestre montré actif). QR de fin `/l/pqd`. MP4 `public/brand/files/ping-animation-pro.mp4`.
+- `/animation-inscription` (« Je m'inscris », 40 s, 1/11/2026) : tutoriel des vraies inscriptions, partie 1 particulier
+  (QR, compte en 2 étapes, e-mail, accueil, carte) et partie 2 prestataire (métier, tarifs, SIRET, CGV, pièces, annonce) ;
+  `?part=pro` démarre à la partie 2. Source : `brand/anim-inscription/parts/*` (build.py réassemble `src.html` puis écrit
+  `public/animation-inscription.html` ; enregistrement MP4 en tête de build.py). QR de fin et du scan = `/l/ins`
+  (route.ts → `/auth/signup`, utm animation/video). Bouton « Voir l'animation » : `WelcomeCarousel`, écran e-mail de
+  `auth/signup`, `/pro/attente`. `/admin` : aperçu iframe des 3 animations (Supports & visuels) + installable
+  (`public/admin-manifest.webmanifest`, hors `/admin` donc hors middleware ; carte « Installer le raccourci » en accueil).
 - `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche « Airbnb / Uber /
   Booking ». **Décision Romain 28/10** : accroche retenue malgré la critique, en texte seul (jamais de
   logos) sur les plaquettes `#particulier`, `#pro`, `#devenir-pro` (écran « Aussi simple qu'Airbnb… »).

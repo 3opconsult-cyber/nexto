@@ -77,7 +77,7 @@ export default function PaymentCard({ transactionId }: { transactionId: string }
     <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 14, border: '1px solid #E7EDEB' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ width: 32, height: 32, borderRadius: 10, display: 'grid', placeItems: 'center', flexShrink: 0, background: tone === 'ok' ? 'rgba(18,179,156,.12)' : tone === 'ko' ? 'rgba(192,80,58,.12)' : 'rgba(242,169,59,.15)' }}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={tone === 'ok' ? '#0C8F7E' : tone === 'ko' ? '#c0503a' : '#9A6712'} strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={tone === 'ok' ? '#0C8F7E' : tone === 'ko' ? '#c0503a' : '#8A6520'} strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg>
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{title}</div>

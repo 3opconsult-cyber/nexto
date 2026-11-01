@@ -48,9 +48,9 @@ type DocRow = { kind: Kind; status: 'pending' | 'valid' | 'expired' | 'rejected'
 
 const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
   valid: { label: 'Fourni', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
-  pending: { label: 'Reçu — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#9A6712' },
-  rejected: { label: 'Refusé — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
-  expired: { label: 'Expiré — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
+  pending: { label: 'Reçu — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#8A6520' },
+  rejected: { label: 'Refusé — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
+  expired: { label: 'Expiré — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
 }
 
 // `identite--passeport-1730…pdf` (nouveau) ou `identite-1730…pdf` (ancien format, sans type).

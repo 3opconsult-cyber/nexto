@@ -7,6 +7,7 @@ import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
 import { addDays, atMinutes, hm, minutesOfDay, sameDay, startOfDay, startOfWeek } from '@/components/calendar/dates'
 import { fetchSlotsBetween, slotEnd, type Slot } from '@/lib/slots'
 import { TRADES } from '@/lib/trades'
+import { DONE, isConfirmed, durationMinutes, txEnd } from '@/lib/agenda'
 
 // Mes disponibilités — façon calendrier d'hôte Airbnb, sans glisser ni petite grille horaire
 // (demande Romain 30/10) : un mois à grandes cases ; on touche un jour, on coche des tranches
@@ -35,11 +36,11 @@ export default function Disponibilites() {
     const from = addDays(startOfDay(new Date()), -31)
     const [list, { data: txs }] = await Promise.all([
       fetchSlotsBetween(supabase, uid, from, addDays(from, 220)),
-      supabase.from('transactions').select('id, status, scheduled_at, requests(category, title)')
+      supabase.from('transactions').select('id, status, scheduled_at, price_confirmed, duration_minutes, requests(category, title)')
         .eq('seller_id', uid).eq('price_confirmed', true).not('scheduled_at', 'is', null).neq('status', 'cancelled'),
     ])
     setSlots(list)
-    setMissions(txs ?? [])
+    setMissions((txs ?? []).filter(isConfirmed))
     setLoading(false)
   }, [])
 
@@ -60,7 +61,7 @@ export default function Disponibilites() {
         title: s.transaction_id ? name(missions.find(m => m.id === s.transaction_id)) : 'Disponible',
       })),
       ...missions.filter(m => !linked.has(m.id)).map(m => ({
-        id: `tx-${m.id}`, start: new Date(m.scheduled_at), end: new Date(new Date(m.scheduled_at).getTime() + 2 * 3600000),
+        id: `tx-${m.id}`, start: new Date(m.scheduled_at), end: txEnd(m),
         kind: 'busy' as const, title: name(m),
       })),
     ]
@@ -75,7 +76,8 @@ export default function Disponibilites() {
   const bandState = (d: Date, i: number) => {
     const list = slotsOn(d).filter(s => overlaps(s, BANDS[i]))
     if (list.some(s => s.transaction_id)) return 'booked'
-    if (missions.some(m => sameDay(new Date(m.scheduled_at), d) && (() => { const a = minutesOfDay(new Date(m.scheduled_at)); return a < BANDS[i].b && a + 120 > BANDS[i].a })())) return 'booked'
+    // Missions terminees : affichees au calendrier (passe) mais ne bloquent plus la grille libre/reservee.
+    if (missions.some(m => !DONE.includes(m.status) && sameDay(new Date(m.scheduled_at), d) && (() => { const a = minutesOfDay(new Date(m.scheduled_at)); return a < BANDS[i].b && a + durationMinutes(m) > BANDS[i].a })())) return 'booked'
     return list.length ? 'open' : 'closed'
   }
   const bandPast = (d: Date, i: number) => atMinutes(d, BANDS[i].a).getTime() <= Date.now()

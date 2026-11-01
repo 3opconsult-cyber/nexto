@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PING · Super Admin</title>
 <meta name="theme-color" content="#123644">
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="/admin-manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="icon" href="/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -92,6 +92,9 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .btn.dark{background:var(--ink)}
 .iconbtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;display:inline-grid;place-items:center;cursor:pointer;color:var(--tealD)}
 .split{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.animPrev iframe{display:block;border:0;border-radius:14px;background:#0B1F27;aspect-ratio:9/16;max-height:70vh;width:min(100%,380px);margin:0 auto}
+.animPrev{text-align:center}
+.animBtn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .qrow{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}.qrow:last-child{border:none}
 .qrow .m{flex:1}.qrow .m b{font-family:var(--fh);font-size:13px}.qrow .m small{display:block;color:var(--slate);font-size:11px}
 .lawbox{background:rgba(18,179,156,.06);border:1px solid rgba(18,179,156,.2);border-radius:12px;padding:13px;font-size:12.5px;color:var(--ink);line-height:1.55}
@@ -444,6 +447,14 @@ textarea.minput{min-height:120px;resize:vertical}
           <table class="tbl"><thead><tr><th>Date / heure</th><th>Statut</th><th>Sous-total</th><th>Commission</th><th>Total client</th></tr></thead><tbody id="ovTxBody"></tbody></table>
           <p class="muted" id="ovTxEmpty" style="padding:18px 0;text-align:center">Données disponibles au lancement</p>
         </div>
+        <div class="card" id="installCard" style="margin-top:16px"><h3>Installer le raccourci <span class="muted">PING Admin comme une application</span></h3>
+          <p class="note" style="margin-top:0;font-style:normal;color:var(--slate);font-size:12.5px;line-height:1.55">Adresse à ouvrir : <b>https://nexto-eta.vercel.app/admin</b> (connexion administrateur requise). Une fois installé, PING Admin s'ouvre dans sa propre fenêtre, avec son icône.</p>
+          <ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--ink)">
+            <li><b>Ordinateur (Chrome ou Edge)</b> : ouvrir l'adresse, cliquer sur l'icône d'installation à droite de la barre d'adresse, puis « Installer ».</li>
+            <li><b>iPhone (Safari)</b> : Partager, puis « Sur l'écran d'accueil », puis « Ajouter ».</li>
+            <li><b>Android (Chrome)</b> : menu (trois points), puis « Installer l'application ».</li>
+          </ul>
+        </div>
       </section>
 
       <!-- LIVE (donnees reelles Supabase, ajoute session 13/08) -->
@@ -521,9 +532,11 @@ textarea.minput{min-height:120px;resize:vertical}
 
       <!-- SUPPORT COMMERCIAL -->
       <section class="section" id="s_comm">
-        <div class="card"><h3>Plaquettes &amp; animation <span class="muted">à partager tel quel · sources dans brand/plaquettes et brand/anim</span></h3>
+        <div class="card"><h3>Plaquettes &amp; animation <span class="muted">à partager tel quel · sources dans brand/plaquettes, brand/anim, brand/anim-pro et brand/anim-inscription</span></h3>
           <div class="qrow">
-            <div class="m"><b>Animation explicative · 42 s · format vertical</b><small class="mono">Marc se déplace, l'écho PING le rend visible, les clients autour lui écrivent, chat et tarif, réservation instantanée, agenda, QR d'arrivée puis de départ, écran « En toute confiance », avis + pourboire + facture, signature. Lecteur avec scénario scène par scène. QR de fin → /l/vid.</small></div>
+            <div class="m"><b>Animation explicative · 42 s · format vertical</b><small class="mono">Marc se déplace, l'écho PING le rend visible, les clients autour lui écrivent, chat et tarif, réservation instantanée, agenda, QR d'arrivée puis de départ, écran « En toute confiance », avis + pourboire + facture, signature. Lecteur avec scénario scène par scène. QR de fin → /l/vid.</small>
+              <div class="animPrev" data-src="/animation" style="display:none;margin-top:10px"></div></div>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/animation" aria-expanded="false">Aperçu</button>
             <a class="link" style="text-decoration:none" href="/animation" target="_blank" rel="noopener">Ouvrir</a>
           </div>
           <div class="qrow">
@@ -531,8 +544,20 @@ textarea.minput{min-height:120px;resize:vertical}
             <a class="link" style="text-decoration:none" href="/brand/files/ping-animation.mp4" target="_blank" rel="noopener">Voir</a>
           </div>
           <div class="qrow">
-            <div class="m"><b>Animation prestataires · 55 s · format vertical</b><small class="mono">Pour recruter des pros : Mes tarifs (forfait, à l'heure, forfait + heures sup.), Mes disponibilités, bouton Disponible et écho radar, demandes urgentes en orange, tarif proposé dans le chat (« vous percevez… »), adresse transmise une fois validée, QR d'arrivée et de fin, facture à son nom, avis croisés, Mon entreprise (paiement par virement, en ligne : bientôt). QR de fin → /l/pqd.</small></div>
+            <div class="m"><b>Animation prestataires · 55 s · format vertical</b><small class="mono">Pour recruter des pros : Mes tarifs (forfait, à l'heure, forfait + heures sup.), Mes disponibilités, bouton Disponible et écho radar, demandes urgentes en orange, tarif proposé dans le chat (« vous percevez… »), adresse transmise une fois validée, QR d'arrivée et de fin, facture à son nom, avis croisés, Mon entreprise (paiement par virement, en ligne : bientôt). QR de fin → /l/pqd.</small>
+              <div class="animPrev" data-src="/animation-pro" style="display:none;margin-top:10px"></div></div>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/animation-pro" aria-expanded="false">Aperçu</button>
             <a class="link" style="text-decoration:none" href="/animation-pro" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Animation « Je m'inscris » · 40 s · format vertical</b><small class="mono">Tutoriel pas à pas des vraies inscriptions, montré aux nouveaux inscrits (bouton « Voir l'animation » à l'accueil et sur l'écran e-mail). Partie 1 particulier : QR, compte en 2 étapes, e-mail de confirmation, accueil, « Déposer une demande » ou « Contacter ». Partie 2 prestataire (lien direct : /animation-inscription?part=pro) : métier, tarifs, SIRET, CGV, pièces, annonce en ligne. QR de fin → /l/ins (ouvre /auth/signup).</small>
+              <div class="animPrev" data-src="/animation-inscription" style="display:none;margin-top:10px"></div></div>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/animation-inscription" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/animation-inscription" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Vidéo MP4 de l'animation « Je m'inscris » · 1080 × 1920</b><small class="mono">Le fichier à publier tel quel (sans son).</small></div>
+            <a class="link" style="text-decoration:none" href="/brand/files/ping-animation-inscription.mp4" target="_blank" rel="noopener">Voir</a>
           </div>
           <div class="qrow">
             <div class="m"><b>Vidéo MP4 de l'animation prestataires · 1080 × 1920</b><small class="mono">Le fichier à publier tel quel (sans son).</small></div>
@@ -2879,6 +2904,16 @@ renderCanalStats();
 renderLiveMap();
 renderExpiryAlerts();
 
+
+// Aperçu en ligne des animations : l'iframe n'est créée qu'au clic (rien n'est chargé avant).
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('.animBtn'); if(!b) return;
+  var box=b.parentNode.querySelector('.animPrev'); if(!box) return;
+  var open=box.style.display!=='none';
+  if(open){ box.style.display='none'; box.innerHTML=''; b.textContent='Aperçu'; b.setAttribute('aria-expanded','false'); return; }
+  var f=document.createElement('iframe'); f.src=b.getAttribute('data-src'); f.title='Aperçu de l\u2019animation'; f.loading='lazy'; f.allow='autoplay';
+  box.appendChild(f); box.style.display='block'; b.textContent='Fermer l\u2019aperçu'; b.setAttribute('aria-expanded','true');
+});
 </script>
 <script type="module">
 /* Aperçu réel — branché sur Supabase (session 13/08). N'affecte aucune autre section du fichier. */
@@ -3754,5 +3789,6 @@ window.nav = function (s) {
   if (s === 'commissions' && window.loadCommissionsLive) window.loadCommissionsLive()
 }
 if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOverviewStats() }
+
 
 </script>

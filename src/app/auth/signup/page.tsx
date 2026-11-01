@@ -148,6 +148,10 @@ function SignupForm() {
           style={{ display: 'block', marginTop: 20, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
           Aller à la connexion
         </Link>
+        <a href={role === 'pro' ? '/animation-inscription?part=pro' : '/animation-inscription'} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'block', marginTop: 10, border: '1.5px solid #12B39C', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 12, borderRadius: 999, textDecoration: 'none' }}>
+          Voir l&apos;animation (40 s)
+        </a>
       </div>
     </div>
   )

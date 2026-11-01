@@ -9,9 +9,9 @@ type DocRow = { status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_pa
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
   valid: { label: 'Fournie', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
-  pending: { label: 'Reçue — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#9A6712' },
-  rejected: { label: 'Refusée — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
-  expired: { label: 'Expirée — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C2432F' },
+  pending: { label: 'Reçue — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#8A6520' },
+  rejected: { label: 'Refusée — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
+  expired: { label: 'Expirée — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
 }
 
 export default function ClientDocumentsPage() {

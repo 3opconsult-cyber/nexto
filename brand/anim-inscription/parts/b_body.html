@@ -1,0 +1,113 @@
+
+<div class="layout">
+  <div class="player">
+    <div class="stage">
+      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animation PING : s'inscrire en deux parties. Particulier : scanner le QR code, créer son compte en deux étapes, confirmer son e-mail, découvrir l'accueil, déposer une demande. Prestataire : choisir son métier, fixer ses tarifs, indiquer son entreprise, accepter les CGV, déposer ses pièces, lancer son annonce.">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#D4EFEA"/><stop offset=".65" stop-color="#E9F4F1"/><stop offset="1" stop-color="#F4EFE2"/>
+          </linearGradient>
+          <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#0B1F27" flood-opacity=".20"/></filter>
+          <filter id="shs" x="-20%" y="-30%" width="140%" height="180%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0B1F27" flood-opacity=".16"/></filter>
+          <filter id="glow" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="4"/></filter>
+          <clipPath id="scr"><rect x="12" y="12" width="316" height="656" rx="34"/></clipPath>
+          <clipPath id="vf"><rect x="70" y="150" width="200" height="200" rx="18"/></clipPath>
+        </defs>
+
+        <rect width="540" height="960" fill="url(#bg)"/>
+        <g id="bgRings" fill="none" stroke="#12B39C" stroke-width="2"></g>
+        <text id="partLbl" x="270" y="912" text-anchor="middle" font-family="Inter" font-weight="600" font-size="14" fill="#4E6470">PING · Partie 1 · Particulier</text>
+
+        <g id="phone" transform="translate(100,980)" filter="url(#sh)">
+          <rect width="340" height="680" rx="46" fill="#0B1B22"/>
+          <rect x="12" y="12" width="316" height="656" rx="34" fill="#F6F9F8"/>
+          <g clip-path="url(#scr)">
+            <g id="sOpen"></g>
+            <g id="sS1"></g>
+            <g id="sS2"></g>
+            <g id="sMail"></g>
+            <g id="sWel"></g>
+            <g id="sMap"></g>
+            <g id="sSvc"></g>
+            <g id="sTar"></g>
+            <g id="sEnt"></g>
+            <g id="sCgv"></g>
+            <g id="sDoc"></g>
+            <g id="sAtt"></g>
+            <g id="sAnn"></g>
+            <g id="taps"></g>
+          </g>
+          <rect x="128" y="22" width="84" height="12" rx="6" fill="#0B1B22"/>
+        </g>
+
+        <g id="cap" filter="url(#sh)">
+          <rect x="26" y="40" width="488" height="112" rx="24" fill="#fff"/>
+        </g>
+        <g id="capText"></g>
+        <rect id="prog" x="0" y="0" width="0" height="6" fill="#12B39C"/>
+
+        <!-- ouverture -->
+        <g id="intro">
+          <rect width="540" height="960" fill="#123644"/>
+          <g id="introRings" fill="none" stroke="#12B39C"></g>
+          <g id="introDevice"></g>
+          <text id="in0" x="270" y="520" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" letter-spacing="2" fill="#2FD06E">INSCRIPTION</text>
+          <text id="in1" x="270" y="574" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="38" fill="#fff">Rejoindre PING</text>
+          <text id="in2" x="270" y="618" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="38" fill="#fff">en 2 minutes.</text>
+          <text id="in3" x="270" y="666" text-anchor="middle" font-family="Inter" font-size="17" fill="#9DB4BC">Particulier ou prestataire, pas à pas.</text>
+        </g>
+
+        <!-- séparateur partie 2 -->
+        <g id="part2" opacity="0">
+          <rect width="540" height="960" fill="#123644"/>
+          <text x="270" y="440" text-anchor="middle" font-family="Inter" font-weight="700" font-size="14" letter-spacing="2" fill="#2FD06E">PARTIE 2</text>
+          <text x="270" y="496" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="40" fill="#fff">Prestataire ?</text>
+          <text x="270" y="546" text-anchor="middle" font-family="Inter" font-size="18" fill="#9DB4BC">Proposez vos services,</text>
+          <text x="270" y="574" text-anchor="middle" font-family="Inter" font-size="18" fill="#9DB4BC">sans paperasse.</text>
+        </g>
+
+        <!-- fin : grand QR code -->
+        <g id="end" opacity="0">
+          <rect width="540" height="960" fill="#123644"/>
+          <g id="endRings" fill="none" stroke="#12B39C"></g>
+          <g id="endDevice"></g>
+          <g id="word"></g>
+          <text id="e1" x="270" y="396" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="30" fill="#fff">Inscription gratuite</text>
+          <g id="e2" font-family="Inter" font-weight="600" font-size="17" fill="#fff">
+            <g fill="none" stroke="#2FD06E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M96 428 l5 5 l9 -10"/><path d="M96 462 l5 5 l9 -10"/><path d="M96 496 l5 5 l9 -10"/>
+            </g>
+            <text x="124" y="437">Zéro paperasse</text>
+            <text x="124" y="471">Facture automatique</text>
+            <text x="124" y="505">Prix validé avant la mission</text>
+          </g>
+          <g id="e3">
+            <rect x="170" y="534" width="200" height="200" rx="18" fill="#fff"/>
+            <g transform="translate(184,548) scale(%%QR_END_SCALE%%)"><g id="qrsrc">%%QR_END%%</g></g>
+          </g>
+          <text id="e4" x="270" y="774" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="21" fill="#fff">Scannez pour vous inscrire</text>
+          <text id="e5" x="270" y="812" text-anchor="middle" font-family="Inter" font-weight="600" font-size="19" fill="#2FD06E">nexto-eta.vercel.app/l/ins</text>
+        </g>
+      </svg>
+    </div>
+    <div class="controls">
+      <button id="play" type="button">Pause</button>
+      <button id="replay" class="ghost" type="button">Rejouer</button>
+      <input id="scrub" type="range" min="0" max="40" step="0.01" value="0" aria-label="Position dans l'animation">
+      <span class="time" id="tc">0,0 s</span>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="eyebrow">Animation inscription · 40 s · 9:16</div>
+    <h1>Je m'inscris, pas à pas</h1>
+    <p class="lead">Montrée au nouvel inscrit : le vrai parcours, de l'ouverture du lien à la première demande (particulier) ou à l'annonce en ligne (prestataire). Format vertical, lisible sans le son. Un clic sur une scène pour y aller directement. Lien direct vers la partie prestataire : <b>/animation-inscription?part=pro</b>.</p>
+    <ol class="scenes" id="scenes"></ol>
+    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (inscription en 2 étapes, e-mail de confirmation, accueil, carte, parcours prestataire, CGV, pièces, Mon annonce). Aucun paiement en ligne n'est montré comme actif. Le QR final pointe vers /l/ins, qui ouvre l'inscription et permet de mesurer le trafic venu de cette vidéo.</p>
+    <p class="foot"><a href="/brand/files/ping-animation-inscription.mp4" target="_blank" rel="noopener">Fichier vidéo MP4 · 1080 × 1920 · 40 s</a> — à publier tel quel.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var DUR = 40;

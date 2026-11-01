@@ -12,7 +12,7 @@ export default function ModeHint({ mode, otherCount, what }: { mode: Mode; other
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px', marginBottom: 14 }}>
       <span style={{ position: 'relative', display: 'inline-flex', color: '#123644', flexShrink: 0 }} aria-hidden>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
-        <span style={{ position: 'absolute', top: -2, right: -2, width: 9, height: 9, borderRadius: 999, background: '#E5484D', border: '1.5px solid #fff' }} />
+        <span style={{ position: 'absolute', top: -2, right: -2, width: 9, height: 9, borderRadius: 999, background: '#C0503A', border: '1.5px solid #fff' }} />
       </span>
       <span style={{ fontSize: 12.5, color: '#123644', lineHeight: 1.45 }}>
         <b>{otherCount} {what}</b> dans votre espace {other}. Passez-y depuis le menu.

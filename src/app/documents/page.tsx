@@ -181,7 +181,7 @@ export default function DocumentsPage() {
               </p>
             </div>
             {/* Exemples fictifs, clairement marqués : jamais cliquables, jamais confondus avec de vraies pièces. */}
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#9A6712', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>Exemple fictif</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#8A6520', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>Exemple fictif</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9, opacity: .75 }}>
               {(mode === 'pro' ? [
                 { t: 'Facture · Ménage', n: 'FACT-2026-00012 · émise à Julie R.', a: 9000 },

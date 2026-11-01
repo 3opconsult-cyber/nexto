@@ -108,7 +108,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
   const trade = tx.requests?.category ? (TRADES[tx.requests.category] || tx.requests.category) : null
   const summary = [contractLabel(tx), tx.scheduled_at ? `RDV ${fmtDate(tx.scheduled_at)}` : null].filter(Boolean).join(' · ')
   const statusLabel = tx.status === 'cancelled' ? 'Annulée' : dispute?.status === 'open' ? 'Litige en cours' : done ? 'Terminée' : tx.arrived_at ? 'En cours' : 'Confirmée'
-  const statusColor = tx.status === 'cancelled' ? '#B42318' : dispute?.status === 'open' ? '#B54708' : done ? C.tealD : C.navy
+  const statusColor = tx.status === 'cancelled' ? '#C0503A' : dispute?.status === 'open' ? '#B54708' : done ? C.tealD : C.navy
 
   return (
     <div style={{ margin: '10px 16px 0', background: '#fff', border: `1px solid ${C.line}`, borderRadius: 14, padding: '10px 14px' }}>

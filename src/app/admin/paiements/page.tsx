@@ -90,7 +90,7 @@ function Virements() {
         <input style={inp} placeholder="BIC" value={bank.bic} onChange={e => setBank({ ...bank, bic: e.target.value.toUpperCase().replace(/\s/g, '') })} />
       </div>
       <button onClick={saveBank} style={{ ...btn('#123644'), marginTop: 8 }}>Enregistrer les coordonnées de PING</button>
-      {!cleanIban(bank.iban) && <p style={{ fontSize: 12, color: '#9A6712', margin: '8px 0 0' }}>IBAN de PING non renseigné : clients et prestataires voient « coordonnées communiquées prochainement ».</p>}
+      {!cleanIban(bank.iban) && <p style={{ fontSize: 12, color: '#8A6520', margin: '8px 0 0' }}>IBAN de PING non renseigné : clients et prestataires voient « coordonnées communiquées prochainement ».</p>}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '16px 0 6px', flexWrap: 'wrap' }}>
         <b style={{ fontSize: 13.5 }}>{all ? 'Tous les virements' : `À rapprocher sur le compte PING · ${eur(total)}`}</b>
@@ -179,7 +179,7 @@ export default function AdminPaiementsPage() {
         </p>
 
         <div style={box}>
-          <b style={{ fontFamily: 'Quicksand, sans-serif' }}>Réglage {r.actif ? <span style={{ color: '#0C8F7E' }}>· actif ({r.actif})</span> : <span style={{ color: '#9A6712' }}>· éteint</span>}</b>
+          <b style={{ fontFamily: 'Quicksand, sans-serif' }}>Réglage {r.actif ? <span style={{ color: '#0C8F7E' }}>· actif ({r.actif})</span> : <span style={{ color: '#8A6520' }}>· éteint</span>}</b>
           <ul style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.8, margin: '8px 0 0', paddingLeft: 18 }}>
             <li>PAYMENT_PROVIDER : {r.choisi || 'non choisi'}</li>
             {r.prestataires.map(p => <li key={p.nom}>{p.label} : clés {p.cles ? 'renseignées' : 'absentes'}</li>)}
@@ -189,7 +189,7 @@ export default function AdminPaiementsPage() {
         </div>
 
         {d.pareFeu === null && (
-          <div style={box}><span style={{ fontSize: 13, color: '#9A6712' }}>Pare-feu des commissions inactif : clé service Supabase absente côté serveur.</span></div>
+          <div style={box}><span style={{ fontSize: 13, color: '#8A6520' }}>Pare-feu des commissions inactif : clé service Supabase absente côté serveur.</span></div>
         )}
         {d.pareFeu && (
           <div style={box}>

@@ -151,7 +151,7 @@ export default function ReviewModal({
         {tip > 0 && (
           <div style={{
             marginTop: 9, padding: 10, borderRadius: 10, background: 'rgba(242,169,59,.12)',
-            fontSize: 11.5, color: '#9A6712', lineHeight: 1.5,
+            fontSize: 11.5, color: '#8A6520', lineHeight: 1.5,
           }}>
             Le paiement en ligne n'étant pas encore ouvert, ce pourboire est <b>enregistré comme
             une intention</b> : il n'est pas prélevé et {proName} ne le percevra pas tant que

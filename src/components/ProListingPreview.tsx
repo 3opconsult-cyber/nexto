@@ -87,7 +87,7 @@ export default function ProListingPreview({ pro, name, services, hasIdentity, ha
             <div key={a.id ?? 'primary'} className="ping-rev">
               <div className="t"><span className="n">{a.name}</span></div>
               {a.id && a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
-              <div style={{ fontSize: 12.5, color: label ? '#0C8F7E' : '#B45309', fontWeight: 700, marginTop: 4 }}>{label || 'Prix à fixer dans Mes tarifs'}</div>
+              <div style={{ fontSize: 12.5, color: label ? '#0C8F7E' : '#8A6520', fontWeight: 700, marginTop: 4 }}>{label || 'Prix à fixer dans Mes tarifs'}</div>
             </div>
           )
         })}

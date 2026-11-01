@@ -32,7 +32,7 @@ export default function SponsorBanner({ sponsor, label = 'Partenaire', style }: 
     >
       <div style={{
         width: 44, height: 44, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
-        background: sponsor.imageUrl ? 'transparent' : 'linear-gradient(160deg,#F2A93B,#d98a1f)',
+        background: sponsor.imageUrl ? 'transparent' : 'linear-gradient(160deg,#F2A93B,#8A6520)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {sponsor.imageUrl

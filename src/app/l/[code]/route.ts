@@ -63,6 +63,9 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   // --- animation explicative (toutes cibles) : la page qui présente les deux côtés ---
   vid: { path: '/comment-ca-marche', source: 'video', medium: 'social', content: 'anim_explicative' },
 
+  // --- animation « Je m'inscris » (/animation-inscription) : QR final, direct vers l'inscription ---
+  ins: { path: '/auth/signup', source: 'animation', medium: 'video', content: 'anim_inscription' },
+
   // --- prospection directe (DM, vignettes de campagne) ---
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
   // sans avoir à créer un code pour chacun.

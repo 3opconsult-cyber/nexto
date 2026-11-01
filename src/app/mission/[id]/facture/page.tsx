@@ -295,7 +295,7 @@ export default function FacturePage() {
         {inv.template === 'commission' && !inv.issuer_snapshot?.siret && (
           <p className="no-print" style={{
             maxWidth: 620, margin: '12px auto 0', padding: 12, borderRadius: 11,
-            background: 'rgba(242,169,59,.13)', color: '#9A6712', fontSize: 11.5, lineHeight: 1.55,
+            background: 'rgba(242,169,59,.13)', color: '#8A6520', fontSize: 11.5, lineHeight: 1.55,
           }}>
             PING n'est pas encore immatriculée : le document le mentionne tel quel. Dès que le
             SIRET existe, il se saisit dans l'admin et apparaît sur les documents émis ensuite —

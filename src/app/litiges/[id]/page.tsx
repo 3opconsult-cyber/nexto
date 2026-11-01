@@ -270,7 +270,7 @@ function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12.5, color: '#4E6470', marginTop: 10 }}>
             <span>Total payé par le client</span><b style={{ color: '#123644' }}>{EUR(tx.total_charged_cents || 0)}</b>
             <span>Encaissé (séquestre)</span><b style={{ color: '#123644' }}>{EUR(sum('charge'))}</b>
-            <span>Versé au prestataire</span><b style={{ color: sum('transfer') + sum('payout') ? '#B42318' : '#123644' }}>{EUR(sum('transfer') + sum('payout'))}</b>
+            <span>Versé au prestataire</span><b style={{ color: sum('transfer') + sum('payout') ? '#C0503A' : '#123644' }}>{EUR(sum('transfer') + sum('payout'))}</b>
             <span>Déjà remboursé</span><b style={{ color: '#123644' }}>{EUR(sum('refund'))}</b>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
@@ -299,7 +299,7 @@ function Countdown({ to }: { to: string }) {
   const m = Math.floor((Math.abs(ms) % 3600000) / 60000)
   const late = ms <= 0
   return (
-    <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: late ? '#B42318' : '#8a6520' }}>
+    <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: late ? '#C0503A' : '#8a6520' }}>
       {late ? `Réponse attendue depuis ${h} h ${String(m).padStart(2, '0')}` : `Réponse attendue sous ${h} h ${String(m).padStart(2, '0')}`}
     </div>
   )

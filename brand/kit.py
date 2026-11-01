@@ -25,7 +25,8 @@ BASE = "https://nexto-eta.vercel.app"
 def short(code: str) -> str:
     """Lien court de campagne. La table des codes vit dans
     src/app/l/[code]/route.ts — les deux doivent rester synchronisées.
-    Un QR court reste scannable à 20 mm ; une URL UTM complète, non."""
+    Un QR court reste scannable à 20 mm ; une URL UTM complète, non.
+    Code `ins` : QR de l'animation « Je m'inscris » (brand/anim-inscription), ouvre /auth/signup."""
     return f"{BASE}/l/{code}"
 
 

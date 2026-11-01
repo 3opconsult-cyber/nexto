@@ -14,7 +14,7 @@ export default function ConfidentialitePage() {
       <div style={{ maxWidth: 680, margin: '0 auto', background: '#fff', borderRadius: 20, padding: '24px 22px', border: '1px solid #E7EDEB' }}>
         <Link href="/auth/signup" style={{ fontSize: 13, fontWeight: 700, color: '#4E6470', textDecoration: 'none' }}>← Retour à l&apos;inscription</Link>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644', margin: '12px 0 8px' }}>Politique de confidentialité</h1>
-        <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: '#9A6712', background: 'rgba(242,169,59,.15)', padding: '5px 10px', borderRadius: 999, marginBottom: 8 }}>
+        <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: '#8A6520', background: 'rgba(242,169,59,.15)', padding: '5px 10px', borderRadius: 999, marginBottom: 8 }}>
           Version provisoire — en cours de validation juridique
         </div>
 

@@ -29,7 +29,7 @@ export function HubRow({ icon, label, sub, badge, onClick }: {
         {sub && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
       </div>
       {badge && (
-        <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0, background: badge.tone === 'ok' ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: badge.tone === 'ok' ? '#0C8F7E' : '#9A6712' }}>{badge.text}</span>
+        <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0, background: badge.tone === 'ok' ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: badge.tone === 'ok' ? '#0C8F7E' : '#8A6520' }}>{badge.text}</span>
       )}
       {onClick && <span style={{ color: '#6E8592', flexShrink: 0 }}>›</span>}
     </div>

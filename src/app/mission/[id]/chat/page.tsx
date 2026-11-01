@@ -454,7 +454,7 @@ export default function ChatPage() {
       </div>
 
       {tx && tx.buyer_id === tx.seller_id && (
-        <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(229,72,77,.08)', color: '#B42318', fontSize: 12.5, fontWeight: 600, lineHeight: 1.5 }}>
+        <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(229,72,77,.08)', color: '#C0503A', fontSize: 12.5, fontWeight: 600, lineHeight: 1.5 }}>
           Mission de test invalide : vous êtes à la fois le client et le prestataire. Elle ne correspond à aucun vrai parcours et sera supprimée.
         </div>
       )}
@@ -517,7 +517,7 @@ export default function ChatPage() {
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Fixez le rendez-vous</div>
               <p style={{ fontSize: 12, color: '#4E6470', margin: '3px 0 10px', lineHeight: 1.5 }}>Le tarif est validé. L&apos;adresse n&apos;est transmise qu&apos;au prestataire de cette mission.</p>
               {tx.address_status === 'refusee' && (
-                <p style={{ fontSize: 12.5, color: '#B42318', fontWeight: 600, margin: '0 0 10px' }}>Le prestataire n&apos;intervient pas à l&apos;adresse proposée : choisissez-en une autre.</p>
+                <p style={{ fontSize: 12.5, color: '#C0503A', fontWeight: 600, margin: '0 0 10px' }}>Le prestataire n&apos;intervient pas à l&apos;adresse proposée : choisissez-en une autre.</p>
               )}
               <div style={{ marginBottom: 12 }}><AddressChoice profileAddress={myProfileAddr} value={rdvChoice} onChange={setRdvChoice} /></div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Date et heure</label>
@@ -795,7 +795,7 @@ export default function ChatPage() {
 
       {/* Warning */}
       {warning && (
-        <div style={{ margin: '0 16px 8px', padding: '9px 14px', borderRadius: 12, fontSize: 11.5, fontWeight: 700, textAlign: 'center', background: '#FEE2E2', color: '#B91C1C' }}>
+        <div style={{ margin: '0 16px 8px', padding: '9px 14px', borderRadius: 12, fontSize: 11.5, fontWeight: 700, textAlign: 'center', background: '#FEE2E2', color: '#C0503A' }}>
           {warning}
         </div>
       )}

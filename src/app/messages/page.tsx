@@ -195,11 +195,11 @@ export default function MessagesPage() {
                     <div style={{
                       width: 42, height: 42, borderRadius: 13, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff',
-                      background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0C8F7E)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#d98a1f)' : 'linear-gradient(160deg,#4E6470,#4c6472)'),
+                      background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0C8F7E)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#8A6520)' : 'linear-gradient(160deg,#4E6470,#4c6472)'),
                     }}>{(name || '?').charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}{nUnread > 0 && <span aria-label={`${nUnread} non lu${nUnread > 1 ? 's' : ''}`} style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#E5484D', marginLeft: 7, verticalAlign: 'middle' }} />}</span>
+                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}{nUnread > 0 && <span aria-label={`${nUnread} non lu${nUnread > 1 ? 's' : ''}`} style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#C0503A', marginLeft: 7, verticalAlign: 'middle' }} />}</span>
                         <span style={{ fontSize: 10.5, color: '#6E8592', fontWeight: 600, flexShrink: 0 }}>
                           {rowTime(new Date(t.lastMessage?.created_at || t.created_at))}
                         </span>

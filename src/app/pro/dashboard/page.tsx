@@ -32,7 +32,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
   arrived:   { label: 'En cours',        color: '#0C8F7E', bg: 'rgba(18,179,156,.1)' },
   completed: { label: 'Terminée',        color: '#123644', bg: '#F3F6F5' },
   released:  { label: 'Réglée',          color: '#15803D', bg: '#DCFCE7' },
-  disputed:  { label: 'En litige',       color: '#B91C1C', bg: '#FEE2E2' },
+  disputed:  { label: 'En litige',       color: '#C0503A', bg: '#FEE2E2' },
   refunded:  { label: 'Remboursée',      color: '#4E6470', bg: '#F3F6F5' },
   cancelled: { label: 'Annulée',         color: '#4E6470', bg: '#F3F6F5' },
 }
@@ -164,7 +164,7 @@ export default function ProDashboard() {
                   style={{ textAlign: 'left', width: '100%', padding: 16, borderRadius: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                     border: `1.5px solid ${live ? 'rgba(18,179,156,.45)' : '#E7EDEB'}`, background: live ? 'rgba(18,179,156,.06)' : '#fff' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ width: 11, height: 11, borderRadius: '50%', flexShrink: 0, background: pro.payments_suspended_at ? '#B91C1C' : live ? '#12B39C' : '#A5B3B9' }} />
+                    <span style={{ width: 11, height: 11, borderRadius: '50%', flexShrink: 0, background: pro.payments_suspended_at ? '#C0503A' : live ? '#12B39C' : '#A5B3B9' }} />
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', flex: 1 }}>
                       Mon annonce · {pro.payments_suspended_at ? 'Suspendue' : live ? 'En ligne' : 'En pause'}
                     </span>

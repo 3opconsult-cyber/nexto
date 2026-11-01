@@ -191,7 +191,7 @@ export default function MonAnnoncePage() {
   const statusBox = (
     <div style={{ ...card, borderColor: online ? 'rgba(18,179,156,.45)' : LINE }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, background: suspended ? '#B91C1C' : online ? TEAL : '#A5B3B9', boxShadow: online ? '0 0 0 4px rgba(18,179,156,.18)' : 'none' }} />
+        <span style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, background: suspended ? '#C0503A' : online ? TEAL : '#A5B3B9', boxShadow: online ? '0 0 0 4px rgba(18,179,156,.18)' : 'none' }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: NAVY }}>
             {suspended ? 'Suspendue' : online ? 'En ligne · visible sur la carte' : 'En pause'}
@@ -313,7 +313,7 @@ export default function MonAnnoncePage() {
             </button>
           ))}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 12.5, color: liveFacts?.placed ? TEAL_D : '#B45309', fontWeight: 700 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 12.5, color: liveFacts?.placed ? TEAL_D : '#8A6520', fontWeight: 700 }}>
           {liveFacts?.placed ? 'Position enregistrée sur la carte' : 'Position manquante : les clients ne peuvent pas vous trouver'}
           <button style={{ ...link, fontSize: 12.5, marginLeft: 'auto' }} onClick={() => router.push('/pro/onboarding')}>{liveFacts?.placed ? 'Modifier l’adresse' : 'Ajouter mon adresse'}</button>
         </div>
@@ -328,7 +328,7 @@ export default function MonAnnoncePage() {
           {priced.map(p => (
             <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13.5, padding: '8px 0', borderBottom: `1px solid ${LINE}` }}>
               <span style={{ color: NAVY, fontWeight: 600 }}>{p.name}</span>
-              <span style={{ color: p.price ? TEAL_D : '#B45309', fontWeight: 700 }}>{p.price || 'prix à fixer'}</span>
+              <span style={{ color: p.price ? TEAL_D : '#8A6520', fontWeight: 700 }}>{p.price || 'prix à fixer'}</span>
             </div>
           ))}
         </div>
@@ -409,7 +409,7 @@ export default function MonAnnoncePage() {
           {statusBox}
           {msg && (
             <div role="status" style={{ padding: '11px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.45,
-              background: msg.tone === 'ok' ? 'rgba(18,179,156,.1)' : '#FEF2F2', color: msg.tone === 'ok' ? TEAL_D : '#B91C1C' }}>{msg.text}</div>
+              background: msg.tone === 'ok' ? 'rgba(18,179,156,.1)' : '#FEF2F2', color: msg.tone === 'ok' ? TEAL_D : '#C0503A' }}>{msg.text}</div>
           )}
           {gauge}
 
