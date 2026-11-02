@@ -27,6 +27,7 @@ export default function ProDocuments() {
   const [uploaded, setUploaded] = useState<Record<string, string>>({})
   const [uploading, setUploading] = useState(false)
   const [ready, setReady] = useState(false)
+  const [particulier, setParticulier] = useState(false)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -34,6 +35,8 @@ export default function ProDocuments() {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { setReady(true); return }
+      const { data: pp } = await supabase.from('provider_profiles').select('legal_status').eq('id', user.id).single()
+      setParticulier(pp?.legal_status === 'particulier')
       const { data } = await supabase.from('documents').select('kind, storage_path').eq('owner_id', user.id)
       const map: Record<string, string> = {}
       // Nom lisible du justificatif (jamais le nom technique du fichier stocké).
@@ -43,8 +46,10 @@ export default function ProDocuments() {
     })
   }, [])
 
-  const doc = DOC_TYPES[stepIndex]
-  const isLast = stepIndex === DOC_TYPES.length - 1
+  // Un particulier n'a pas d'entreprise : jamais de justificatif SIRET / Kbis pour lui.
+  const docTypes = particulier ? DOC_TYPES.filter(t => t.key !== 'kbis') : DOC_TYPES
+  const doc = docTypes[Math.min(stepIndex, docTypes.length - 1)]
+  const isLast = stepIndex === docTypes.length - 1
 
   if (!ready) {
     return (
@@ -85,9 +90,9 @@ export default function ProDocuments() {
   return (
     <OnboardingStep
       step={stepIndex}
-      total={DOC_TYPES.length}
+      total={docTypes.length}
       title={doc.question}
-      subtitle={doc.subtitle || "PDF, JPG ou PNG, 10 Mo maximum. Visible uniquement par vous et l'équipe PING. Facultatif pour apparaître sur la carte : il rassure vos futurs clients."}
+      subtitle={doc.subtitle || "Facultatif pour apparaître sur la carte : il rassure vos futurs clients."}
       onBack={stepIndex > 0 ? () => setStepIndex(i => i - 1) : undefined}
       onSkip={goNext}
       skipLabel="Passer, je le ferai plus tard"
@@ -98,6 +103,20 @@ export default function ProDocuments() {
       <input ref={inputRef} type="file" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png"
         onChange={e => { if (e.target.files?.[0]) { handleFile(e.target.files[0]); e.target.value = '' } }} />
 
+      {doc.key !== 'diplome' && (
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: 14, borderRadius: 16, background: 'rgba(18,179,156,.1)', border: '1px solid rgba(18,179,156,.35)', marginBottom: 12 }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          <div>
+            <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Rassurez vos futurs clients</div>
+            <div style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, marginTop: 3 }}>Votre pièce apparaîtra aux clients comme « pièce fournie ». Elle reste visible uniquement par vous et l&apos;équipe PING.</div>
+          </div>
+        </div>
+      )}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 6 }} aria-label="Formats acceptés">
+        {['PDF', 'JPG', 'PNG', '10 Mo maximum'].map(c => (
+          <span key={c} style={{ padding: '5px 12px', borderRadius: 999, background: '#F3F6F5', border: '1px solid #E7EDEB', color: '#123644', fontSize: 12, fontWeight: 700 }}>{c}</span>
+        ))}
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 10 }}>
         <div style={{
           width: 92, height: 92, borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',

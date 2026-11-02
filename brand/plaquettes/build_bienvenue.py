@@ -1,8 +1,10 @@
 """Plaquette PING unique : src.html (slides des plaquettes) -> public/bienvenue.html (servi sur /bienvenue).
 
-Couverture -> choix du rôle -> écran bêta -> slides du public choisi (reprises telles quelles de src.html,
-donc toujours synchronisées avec /plaquettes) -> dernier écran (inscription / découverte / QR / contact).
-Le rôle est gardé dans le hash (#particulier ou #pro). Voir l'animation = overlay iframe /animation-ping."""
+Couverture (2 boutons : rôle) -> choix « Suivre le parcours » / « Voir l'animation » -> slides du public choisi
+(reprises telles quelles de src.html, donc synchronisées avec /plaquettes) -> dernier écran (QR, « Je m'inscris »,
+« Découvrir l'application ») -> écran bêta -> /l/ins ou /l/insp. Le rôle est gardé dans le hash (#particulier ou #pro).
+Voir l'animation = overlay iframe /animation-ping?role=client|pro. Entrée directe : ?role=client|pro&go=inscription
+(fin de l'animation) ouvre l'écran bêta. Une seule étape visible à la fois (data-stage sur .deck)."""
 import pathlib
 import re
 
@@ -19,6 +21,7 @@ ROLES = {
 }
 DISCOVER = "/map"  # /demo = prototype statique à données fictives : on renvoie vers la vraie carte
 PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>'
+BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>'
 ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>'
 
 
@@ -76,10 +79,12 @@ HTML = r'''<!doctype html>
   .deck{display:flex; flex-direction:column; min-height:calc(100vh - 32px); min-height:calc(100svh - 32px);}
   .deck-track{flex:1;}
   .slide{min-height:0; justify-content:center;}
-  .deck.on-cover .deck-head .anim-btn, .deck.on-cover .deck-head .count{visibility:hidden;}
-  .deck.no-role .deck-nav{visibility:hidden;}
+  .deck[data-stage="cover"] .back, .deck:not([data-stage="slides"]) .count{visibility:hidden;}
+  .deck:not([data-stage="slides"]) .deck-nav{display:none;}
+  .back svg{width:14px; height:14px; margin-right:6px;}
+  .choice .who{font-family:var(--display); font-size:30px; line-height:1.15; margin:0; color:#fff; max-width:14ch; text-wrap:balance;}
+  .cta.a, .cta.b{text-decoration:none;}
   .anim-btn{border:none; cursor:pointer;}
-  .anim-btn.big{border:none; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35);}
   .cover{gap:14px;}
   .radar{position:relative; width:150px; height:150px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .radar i{position:absolute; inset:0; border-radius:50%; border:2px solid var(--teal); opacity:0; animation:echo 3.2s ease-out infinite;}
@@ -97,7 +102,7 @@ HTML = r'''<!doctype html>
   .deck .cta:focus-visible{outline:3px solid var(--gold); outline-offset:3px;}
   .betaw h2{font-size:25px; max-width:20ch;}
   .betaw p{max-width:34ch; font-size:15px; line-height:1.55; color:rgba(255,255,255,.85);}
-  .betaw .cta{max-width:260px; justify-content:center; margin-top:4px;}
+  .betaw .cta{max-width:340px; justify-content:center; margin-top:4px;}
   .join .mail{max-width:100%;}
   .join-acts .go{text-align:center;}
   .ov{position:fixed; inset:0; z-index:50; background:rgba(8,22,29,.88); display:flex; align-items:center; justify-content:center; padding:56px 16px 16px;}
@@ -111,21 +116,9 @@ HTML = r'''<!doctype html>
 </head>
 <body>
 <main>
-<section class="deck on-cover no-role" aria-label="Plaquette PING">
-  <div class="deck-head"><span class="kicker">Avant-première</span><button type="button" class="anim-btn" data-anim>%%PLAY%%Voir l'animation</button><span class="count"></span></div>
-  <div class="deck-track" id="track">
-    <div class="slide cover" id="cover">
-      <div class="radar" aria-hidden="true"><i></i><i></i><i></i>%%DEVICE%%</div>
-      <h1 class="word">PING</h1>
-      <p class="ask">Et si ce que vous cherchez se trouvait juste à côté ?</p>
-      <div class="rule"></div>
-      <div class="choices">
-        <button type="button" class="cta a" data-role="particulier"><span>Je cherche un prestataire</span>%%ARROW%%</button>
-        <button type="button" class="cta b" data-role="pro"><span>Je suis prestataire</span>%%ARROW%%</button>
-      </div>
-      <button type="button" class="anim-btn big" data-anim>%%PLAY%%Voir l'animation</button>
-    </div>
-  </div>
+<section class="deck" data-stage="cover" aria-label="Plaquette PING">
+  <div class="deck-head"><span class="kicker">Avant-première</span><button type="button" class="anim-btn back" data-back>%%BACK%%Retour</button><span class="count"></span></div>
+  <div class="deck-track" id="track"></div>
   <div class="deck-nav">
     <button type="button" class="arrow prev" aria-label="Écran précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <div class="dots"></div>
@@ -134,11 +127,33 @@ HTML = r'''<!doctype html>
 </section>
 </main>
 
+<template id="t-cover">
+    <div class="slide cover">
+      <div class="radar" aria-hidden="true"><i></i><i></i><i></i>%%DEVICE%%</div>
+      <h1 class="word">PING</h1>
+      <p class="ask">Et si ce que vous cherchez se trouvait juste à côté ?</p>
+      <div class="rule"></div>
+      <div class="choices">
+        <button type="button" class="cta a" data-role="particulier"><span>Je cherche un prestataire</span>%%ARROW%%</button>
+        <button type="button" class="cta b" data-role="pro"><span>Je suis prestataire</span>%%ARROW%%</button>
+      </div>
+    </div>
+</template>
+<template id="t-choice">
+    <div class="slide cover choice">
+      <h2 class="who"></h2>
+      <p class="ask">Comment voulez-vous découvrir PING ?</p>
+      <div class="choices">
+        <button type="button" class="cta a" data-act="follow"><span>Suivre le parcours</span>%%ARROW%%</button>
+        <button type="button" class="cta b" data-act="anim"><span>Voir l'animation</span>%%PLAY%%</button>
+      </div>
+    </div>
+</template>
 <template id="t-beta">
     <div class="slide betaw">
       <h2>Bienvenue sur PING — version bêta</h2>
       <p>Vous pouvez parcourir, vous inscrire : tout fonctionne, à l'exception des paiements et de la transaction réelle entre prestataires et clients. Nous vous sollicitons pour un test : votre avis sur l'ergonomie, les options qui vous manquent, vos observations et commentaires. Vous pouvez les laisser dans la petite bulle verte, sur la droite. Merci encore pour votre participation.</p>
-      <button type="button" class="cta a" data-continue><span>Continuer</span>%%ARROW%%</button>
+      <a class="cta a" id="betago" href="/l/ins"><span>Continuer vers l'inscription</span>%%ARROW%%</a>
     </div>
 </template>
 %%TEMPLATES%%
@@ -154,33 +169,40 @@ HTML = r'''<!doctype html>
   var dots = deck.querySelector('.dots'), prev = deck.querySelector('.prev'), next = deck.querySelector('.next'), count = deck.querySelector('.count');
   var kicker = deck.querySelector('.kicker');
   var KICK = { particulier: 'Particuliers', pro: 'Prestataires' };
-  var role = null;
+  var WHO = { particulier: 'Je cherche un prestataire', pro: 'Je suis prestataire' };
+  var SIGNUP = { particulier: '/l/ins', pro: '/l/insp' };
+  var ANIM = { particulier: 'client', pro: 'pro' };
+  var role = null, stage = 'cover', betaFrom = 'choice';
   var ov = document.getElementById('ov'), ovf = document.getElementById('ovf'), lastFocus = null;
   function n(){ return track.children.length; }
   function cur(){ return track.clientWidth ? Math.round(track.scrollLeft / track.clientWidth) : 0; }
   function go(i, instant){ track.scrollTo({ left: i * track.clientWidth, behavior: instant ? 'auto' : 'smooth' }); }
+  function tpl(id){ return document.getElementById(id).content.cloneNode(true); }
+  function norm(r){ return r === 'client' ? 'particulier' : ((r === 'particulier' || r === 'pro') ? r : null); }
   function update(){
+    if (stage !== 'slides'){ kicker.textContent = (stage !== 'cover' && role) ? KICK[role] : 'Avant-première'; return; }
     var k = cur(), t = n();
     Array.prototype.forEach.call(dots.children, function(d, i){ d.classList.toggle('on', i === k); });
     prev.disabled = k === 0; next.disabled = k >= t - 1; count.textContent = (k + 1) + ' / ' + t;
-    deck.classList.toggle('on-cover', k === 0);
-    deck.classList.toggle('no-role', !role);
-    kicker.textContent = (k > 0 && role) ? KICK[role] : 'Avant-première';
   }
-  function setRole(r){
-    role = (r === 'particulier' || r === 'pro') ? r : null;
-    while (track.children.length > 1) track.removeChild(track.lastChild);
-    if (role){
-      track.appendChild(document.getElementById('t-beta').content.cloneNode(true));
-      track.appendChild(document.getElementById('t-' + role).content.cloneNode(true));
-    }
-    dots.innerHTML = '';
-    for (var i = 0; i < n(); i++) (function(i){
+  function show(st){
+    if (!role && st !== 'cover') st = 'cover';
+    stage = st; deck.setAttribute('data-stage', st);
+    track.innerHTML = ''; dots.innerHTML = '';
+    track.appendChild(tpl(st === 'cover' ? 't-cover' : st === 'choice' ? 't-choice' : st === 'beta' ? 't-beta' : 't-' + role));
+    if (st === 'choice') track.querySelector('.who').textContent = WHO[role];
+    if (st === 'beta') document.getElementById('betago').href = SIGNUP[role];
+    if (st === 'slides') for (var i = 0; i < n(); i++) (function(i){
       var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Écran ' + (i + 1));
       b.addEventListener('click', function(){ go(i); }); dots.appendChild(b);
     })(i);
-    bindMail();
-    update();
+    track.scrollLeft = 0;
+    bindMail(); update();
+    window.scrollTo(0, 0);
+  }
+  function setRole(r){
+    role = norm(r);
+    try { history.replaceState(null, '', location.pathname + (role ? '#' + role : '')); } catch (x) {}
   }
   function bindMail(){
     track.querySelectorAll('.mail button').forEach(function(b){
@@ -193,33 +215,46 @@ HTML = r'''<!doctype html>
       });
     });
   }
-  function openAnim(){ lastFocus = document.activeElement; ovf.src = '/animation-ping'; ov.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('ovx').focus(); }
+  function openAnim(){ lastFocus = document.activeElement; ovf.src = '/animation-ping?role=' + ANIM[role]; ov.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('ovx').focus(); }
   function closeAnim(){ ov.hidden = true; ovf.src = 'about:blank'; document.body.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function back(){
+    if (stage === 'beta') show(betaFrom);
+    else if (stage === 'slides') show('choice');
+    else if (stage === 'choice'){ setRole(null); show('cover'); }
+  }
   var tick = false;
   track.addEventListener('scroll', function(){ if (tick) return; tick = true; requestAnimationFrame(function(){ update(); tick = false; }); });
   prev.addEventListener('click', function(){ go(Math.max(0, cur() - 1)); });
   next.addEventListener('click', function(){ go(Math.min(n() - 1, cur() + 1)); });
   document.addEventListener('keydown', function(e){
     if (!ov.hidden){ if (e.key === 'Escape') closeAnim(); return; }
+    if (stage !== 'slides') return;
     if (e.key === 'ArrowRight') go(Math.min(n() - 1, cur() + 1)); else if (e.key === 'ArrowLeft') go(Math.max(0, cur() - 1));
   });
   deck.addEventListener('click', function(e){
     var r = e.target.closest('[data-role]');
-    if (r){
-      var k = r.getAttribute('data-role');
-      try { history.replaceState(null, '', location.pathname + location.search + '#' + k); } catch (x) {}
-      setRole(k); go(1, true); update(); return;
-    }
-    if (e.target.closest('[data-continue]')) { go(2); return; }
-    if (e.target.closest('[data-anim]')) openAnim();
+    if (r){ setRole(r.getAttribute('data-role')); show('choice'); return; }
+    var a = e.target.closest('[data-act]');
+    if (a){ if (a.getAttribute('data-act') === 'anim') openAnim(); else show('slides'); return; }
+    if (e.target.closest('[data-back]')){ back(); return; }
+    var su = e.target.closest('a.signup');
+    if (su){ e.preventDefault(); betaFrom = 'slides'; show('beta'); }
   });
   document.getElementById('ovx').addEventListener('click', closeAnim);
   ov.addEventListener('click', function(e){ if (e.target === ov) closeAnim(); });
   window.addEventListener('hashchange', function(){
-    var k = (location.hash || '').slice(1);
-    if (k !== role){ setRole(k); go(0, true); }
+    var k = norm((location.hash || '').slice(1));
+    if (k !== role){ role = k; show(k ? 'choice' : 'cover'); }
   });
-  setRole((location.hash || '').slice(1));
+  // entrée : #particulier / #pro ; ?role=client|pro (&go=inscription -> écran bêta directement)
+  var q = location.search.match(/[?&]role=([a-z]+)/), g = /[?&]go=inscription\b/.test(location.search);
+  if (q && norm(q[1])){
+    setRole(q[1]);
+    if (g){ betaFrom = 'choice'; show('beta'); } else show('choice');
+  } else {
+    role = norm((location.hash || '').slice(1));
+    show(role ? 'choice' : 'cover');
+  }
 })();
 </script>
 </body>
@@ -231,6 +266,7 @@ html = (
     .replace("%%TEMPLATES%%", templates)
     .replace("%%PLAY%%", PLAY)
     .replace("%%ARROW%%", ARROW)
+    .replace("%%BACK%%", BACK)
     .replace("%%DEVICE%%", PARTS["%%DEVICE%%"])
 )
 assert "%%" not in html, "jeton non remplacé"

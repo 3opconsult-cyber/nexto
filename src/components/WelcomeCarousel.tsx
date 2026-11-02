@@ -96,11 +96,6 @@ export default function WelcomeCarousel({ onDone }: { onDone: () => void }) {
           style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
           {last ? 'Découvrir la carte' : 'Suivant'}
         </button>
-        <a href="/animation-inscription" target="_blank" rel="noopener noreferrer"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10, boxSizing: 'border-box', width: '100%', border: '1.5px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.06)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, textDecoration: 'none' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-          Voir l&apos;animation (40 s)
-        </a>
       </div>
     </div>
   )

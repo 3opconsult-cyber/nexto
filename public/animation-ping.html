@@ -131,6 +131,18 @@
         <a class="signup-cta" href="/l/ins" target="_blank" rel="noopener">Je cherche un prestataire</a>
         <a class="signup-cta alt" href="/l/insp" target="_blank" rel="noopener">Je suis prestataire</a>
       </div>
+      <script>
+      (function(){
+        var m = /[?&]role=(client|pro)\b/.exec(location.search), box = document.getElementById('cta');
+        var as = box.querySelectorAll('a'), inFrame = window.top !== window;
+        if (m){
+          as[0].textContent = "Je m'inscris";
+          as[0].href = '/bienvenue?role=' + m[1] + '&go=inscription';
+          box.removeChild(as[1]);
+        }
+        if (inFrame) Array.prototype.forEach.call(box.querySelectorAll('a'), function(a){ a.target = '_top'; a.removeAttribute('rel'); });
+      })();
+      </script>
     </div>
     <div class="controls">
       <button id="play" type="button">Pause</button>

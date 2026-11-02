@@ -352,10 +352,13 @@ carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dép�
 - **Plaquette unique `/bienvenue` (2/11/2026)** : `public/bienvenue.html` généré par `brand/plaquettes/build_bienvenue.py` (reprend les slides
   `particulier`/`pro` de `brand/plaquettes/src.html`, donc synchronisé avec `/plaquettes`) : couverture -> choix du rôle (hash `#particulier`/`#pro`) ->
   écran bêta -> slides du public -> « Je m'inscris » (`/l/ins`, `/l/insp`) + « Découvrir l'application » (`/map` : `/demo` est un prototype à données fictives).
-  « Voir l'animation » = overlay iframe `/animation-ping`. `build.py` a désormais `main()` (importable). Régénérer : `cd brand/plaquettes && python3 build_bienvenue.py`.
-- `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche « Airbnb / Uber /
-  Booking ». **Décision Romain 28/10** : accroche retenue malgré la critique, en texte seul (jamais de
-  logos) sur les plaquettes `#particulier`, `#pro`, `#devenir-pro` (écran « Aussi simple qu'Airbnb… »).
+  **Flux 2/11** : couverture (2 boutons de rôle) -> choix « Suivre le parcours » / « Voir l'animation » -> carrousel (dernier écran : QR, « Je m'inscris », « Découvrir l'application »)
+  -> écran bêta « Continuer vers l'inscription » (`/l/ins` ou `/l/insp`) ; « Retour » discret partout. « Voir l'animation » = overlay iframe `/animation-ping?role=client|pro` ;
+  en fin d'animation avec `role`, un seul bouton « Je m'inscris » -> `/bienvenue?role=...&go=inscription` (ouvre l'écran bêta). `build.py` a désormais `main()` (importable). Régénérer : `cd brand/plaquettes && python3 build_bienvenue.py`.
+- `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche (ancienne « Airbnb / Uber /
+  Booking »). **Décision Romain 28/10 SUPERSEDÉE le 2/11** : plus aucun nom de marque tierce (Airbnb, Uber, Booking, Wecasa...) dans
+  les plaquettes, `/bienvenue` et les animations (raison juridique) ; l'écran devient « Simple. Rapide. Juste à côté. »
+  (sous-titre : « Réserver, ou proposer ses services, devient un jeu d'enfant. »). Les documents internes (`/plan-marketing`, admin, démo) peuvent citer des marques.
 
 ## Audit démo (/demo) vs app — 28/10/2026 (Romain aime l'agenda et le litige de la démo)
 Parité ou mieux : carte, recherche, chat/devis, QR, factures, avis, messages, revenus, tarifs.
@@ -592,3 +595,6 @@ haut est périmée sur ce point ; litige complet (vague 2) pas construit.
 Admin : 3op.consult@gmail.com. Prestataires fictifs : fictif1..10@ping-demo.invalid / PingDemo2026!.
 Scénario complet forfait+dépassement (17/09) : audit.pro.claude@ping-demo.invalid /
 audit.client.claude@ping-demo.invalid, mdp AuditPing2026!.
+
+## Onboarding pro — téléphone et particulier (02/11/2026)
+Téléphone obligatoire à l'étape « Où intervenez-vous ? » (format français, `profiles.phone_enc`, comme le profil client ; jamais affiché publiquement). Un pro « particulier » n'a ni étape entreprise ni justificatif SIRET/Kbis (`siret` nullable) ; plus d'animation après l'inscription (tutoriel en page d'accueil seulement).

@@ -13,6 +13,10 @@ import { type PricingDraft, draftFromColumns, emptyDraft, toColumns, validateDra
 
 type Status = 'particulier' | 'professionnel' | null
 
+// Numéro français : 10 chiffres commençant par 0, ou +33 / 0033 suivi de 9 chiffres (espaces, points, tirets tolérés).
+function cleanPhone(v: string) { return v.replace(/[\s.\-()]/g, '') }
+function phoneValid(v: string) { return /^(0\d{9}|\+33\d{9}|0033\d{9})$/.test(cleanPhone(v)) }
+
 export default function ProOnboarding() {
   const router = useRouter()
 
@@ -33,6 +37,7 @@ export default function ProOnboarding() {
   const [geocoding, setGeocoding] = useState(false)
   const [geocodeError, setGeocodeError] = useState('')
   const [phone, setPhone] = useState('')
+  const [phoneTouched, setPhoneTouched] = useState(false)
   const [bio, setBio] = useState('')
   const [website, setWebsite] = useState('')
   // CGV prestataires + contrat de commission : case obligatoire à la dernière étape (déjà cochée si la
@@ -49,8 +54,8 @@ export default function ProOnboarding() {
 
   const visibleSteps = useMemo(
     () => status === 'professionnel'
-      ? ['service', 'tarif', 'statut', 'entreprise', 'adresse', 'telephone', 'bio']
-      : ['service', 'tarif', 'statut', 'adresse', 'telephone', 'bio'],
+      ? ['service', 'tarif', 'statut', 'entreprise', 'adresse', 'bio']
+      : ['service', 'tarif', 'statut', 'adresse', 'bio'],
     [status]
   )
   const [stepIndex, setStepIndex] = useState(0)
@@ -170,7 +175,7 @@ export default function ProOnboarding() {
     }
 
     const { error: profileErr } = await supabase.from('profiles').update({
-      phone_enc: phone || null,
+      phone_enc: phone.trim() ? cleanPhone(phone) : null,
       address: address || null,
       is_pro: true,
     }).eq('id', user.id)
@@ -348,7 +353,8 @@ export default function ProOnboarding() {
       <OnboardingStep step={stepIndex} total={visibleSteps.length}
         title="Où intervenez-vous ?"
         subtitle="Pour apparaître au bon endroit sur la carte."
-        onBack={back} onCta={next} ctaDisabled={!coords && !address.trim()}>
+        onBack={back} onCta={() => { setPhoneTouched(true); if (phoneValid(phone)) next() }}
+        ctaDisabled={(!coords && !address.trim()) || (phoneTouched && !phoneValid(phone))}>
         <button onClick={useMyLocation} disabled={locating}
           style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: coords ? 'rgba(18,179,156,.1)' : '#123644', color: coords ? '#0C8F7E' : '#fff', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>
           {locating ? 'Localisation…' : coords ? '✓ Position enregistrée' : 'Utiliser ma position actuelle'}
@@ -365,20 +371,18 @@ export default function ProOnboarding() {
         )}
         {geocodeError && <p style={{ fontSize: 12, color: '#c0503a', marginTop: 10, lineHeight: 1.5 }}>{geocodeError}</p>}
         <label style={{ display: 'block', marginTop: 16 }}>
+          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Téléphone</span>
+          <input value={phone} onChange={e => setPhone(e.target.value)} onBlur={() => phone.trim() && setPhoneTouched(true)}
+            type="tel" inputMode="tel" autoComplete="tel" aria-invalid={phoneTouched && !phoneValid(phone)}
+            style={{ ...inputStyle, marginTop: 6, borderColor: phoneTouched && !phoneValid(phone) ? '#c0503a' : '#DCE5E3' }} />
+          {phoneTouched && !phoneValid(phone)
+            ? <span style={{ display: 'block', fontSize: 11.5, color: '#c0503a', marginTop: 5, fontWeight: 600 }}>Numéro invalide : saisissez 10 chiffres commençant par 0, ou un numéro en +33.</span>
+            : <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 5 }}>Obligatoire. Visible uniquement par PING, jamais publié.</span>}
+        </label>
+        <label style={{ display: 'block', marginTop: 16 }}>
           <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Site internet (facultatif)</span>
           <input value={website} onChange={e => setWebsite(e.target.value)} inputMode="url" style={{ ...inputStyle, marginTop: 6 }} />
         </label>
-      </OnboardingStep>
-    )
-  }
-
-  if (stepKey === 'telephone') {
-    return (
-      <OnboardingStep step={stepIndex} total={visibleSteps.length}
-        title="Votre numéro de téléphone"
-        subtitle="Visible uniquement par PING, jamais publié."
-        onBack={back} onCta={next} ctaDisabled={phone.trim().length < 6}>
-        <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" style={inputStyle} />
       </OnboardingStep>
     )
   }

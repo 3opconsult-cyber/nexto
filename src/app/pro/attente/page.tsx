@@ -16,6 +16,7 @@ export default function ProAttente() {
   const [loading, setLoading] = useState(true)
   const [isActive, setIsActive] = useState(false)
   const [placed, setPlaced] = useState(true)
+  const [particulier, setParticulier] = useState(false)
   const [docs, setDocs] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -24,9 +25,10 @@ export default function ProAttente() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
 
-      const { data: pp } = await supabase.from('provider_profiles').select('is_active, lat, lng').eq('id', user.id).single()
+      const { data: pp } = await supabase.from('provider_profiles').select('is_active, lat, lng, legal_status').eq('id', user.id).single()
       if (!pp) { router.push('/pro/onboarding'); return }
       setIsActive(pp.is_active)
+      setParticulier(pp.legal_status === 'particulier')
       setPlaced(pp.lat != null && pp.lng != null)
 
       const { data: documents } = await supabase.from('documents').select('kind, status').eq('owner_id', user.id)
@@ -69,7 +71,7 @@ export default function ProAttente() {
         <div style={{ padding: 16, borderRadius: 16, textAlign: 'left', background: 'rgba(255,255,255,.08)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.03em', color: 'rgba(255,255,255,.72)', marginBottom: 10 }}>Documents</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {DOC_TYPES.map(doc => {
+            {DOC_TYPES.filter(d => !(particulier && d.key === 'kbis')).map(doc => {
               const status = docs[doc.key]
               return (
                 <div key={doc.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -98,10 +100,6 @@ export default function ProAttente() {
           style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
           Voir et lancer mon annonce
         </button>
-        <a href="/animation-inscription?part=pro" target="_blank" rel="noopener noreferrer"
-          style={{ display: 'block', boxSizing: 'border-box', width: '100%', padding: 13, borderRadius: 999, border: '1.5px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.06)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-          Voir l&apos;animation (partie prestataire)
-        </a>
         <button onClick={() => router.push('/pro/dashboard')}
           style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: 'none', color: 'rgba(255,255,255,.85)', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'underline', cursor: 'pointer' }}>
           Accéder à Mon entreprise
