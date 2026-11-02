@@ -468,6 +468,9 @@
     li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
   });
 
+  // Bouton « Je m'inscris » (HTML) : /l/insp si on est venu par la partie prestataire (?part=pro)
+  var cta = $('cta');
+  if (/[?&]part=pro\b/.test(location.search)) cta.setAttribute('href', '/l/insp');
   var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
   var rec = location.hash === '#record';
   if (rec) { document.body.classList.add('rec'); playing = false; }
@@ -476,6 +479,7 @@
     render(t);
     $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
     sceneBtns.forEach(function(b, i){ b.classList.toggle('on', t >= CAPS[i].a && t < CAPS[i].b); });
+    cta.classList.toggle('on', t >= 37.5);
   }
   function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
   function loop(now){

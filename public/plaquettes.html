@@ -31,7 +31,7 @@
   .deck{max-width:540px; margin:0 auto; background:var(--navy); border-radius:24px; color:#fff; overflow:hidden; box-shadow:0 18px 50px rgba(18,54,68,.25);}
   .deck-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:20px 24px 0;}
   .deck-head .kicker{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--gold);}
-  .deck-head .count{font-size:12px; font-weight:600; color:rgba(255,255,255,.5); font-variant-numeric:tabular-nums;}
+  .deck-head .count{white-space:nowrap; font-size:12px; font-weight:600; color:rgba(255,255,255,.5); font-variant-numeric:tabular-nums;}
   .deck-track{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch;}
   .deck-track::-webkit-scrollbar{display:none;}
   .slide{flex:0 0 100%; scroll-snap-align:center; min-height:390px; padding:26px 28px 18px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:16px;}
@@ -69,6 +69,12 @@
   .mail span{font-size:14px; font-weight:600; user-select:all; overflow-wrap:anywhere;}
   .mail button{flex-shrink:0; border:none; background:#fff; color:var(--navy); font-family:var(--display); font-weight:700; font-size:12px; padding:8px 13px; border-radius:999px; cursor:pointer;}
   .join small{font-size:12px; color:rgba(255,255,255,.55);}
+  .anim-btn{display:inline-flex; align-items:center; gap:6px; flex-shrink:0; background:rgba(255,255,255,.12); color:#fff; text-decoration:none; font-family:var(--display); font-weight:700; font-size:12.5px; padding:7px 13px 7px 11px; border-radius:999px;}
+  .anim-btn svg{width:14px; height:14px;}
+  .anim-btn.big{font-size:14px; padding:10px 18px 10px 15px; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35); background:transparent;}
+  .join-acts .go.alt{background:transparent; box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4); font-size:13px; padding:9px 18px;}
+  .join-acts .go.signup{font-size:16px; padding:14px 26px;}
+  .beta{margin:0; max-width:34ch; font-size:12.5px; line-height:1.5; color:var(--gold); border:1.5px dashed rgba(242,169,59,.6); border-radius:12px; padding:9px 12px;}
 
   /* Maquette de l'écran « Mes demandes » : l'encart partenaire tel qu'il apparaît dans l'app */
   .placement{gap:12px;}
@@ -110,7 +116,7 @@
 
 <!-- PARTICULIERS -->
 <section class="deck" data-deck="particulier" aria-label="Plaquette particuliers">
-  <div class="deck-head"><span class="kicker">Particuliers</span><span class="count"></span></div>
+  <div class="deck-head"><span class="kicker">Particuliers</span><a class="anim-btn" href="/animation-inscription" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Voir l'animation</a><span class="count"></span></div>
   <div class="deck-track">
     <div class="slide">
       <div class="picto"><svg class="device" viewBox="10 0 100 160" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 98" stroke="#fff" stroke-width="14"/><circle cx="64" cy="134" r="22" stroke="#12B39C" stroke-width="3" opacity=".7"/><circle cx="64" cy="134" r="8" fill="#2FD06E"/></svg></div>
@@ -138,8 +144,8 @@
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3z"/><path d="M7 14.5c.6-1.4 1.8-2 3-2s2.4.6 3 2"/><circle cx="10" cy="9.2" r="1.8"/><path d="M15 10h3M15 13h2"/></svg><b>Pièce d'identité fournie</b></div>
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.5v5c0 4.6-3.4 8.2-8 9.5-4.6-1.3-8-4.9-8-9.5v-5z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><b>Assurance renseignée</b></div>
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.5h8.5l4 4v15H6z"/><path d="M14.5 2.5v4h4"/><path d="M9 12h6.5M9 15.5h4.5"/></svg><b>Facture automatique</b></div>
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v10H6z"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/><path d="M12 15v2.5"/></svg><b>Paiement sous séquestre</b><i>bientôt</i></div>
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5"/><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></svg><b>Crédit d'impôt : payez 50 %</b><i>bientôt</i></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11h12v10H6z"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/><path d="M12 15v2.5"/></svg><b>Prix validé avant la mission</b></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5"/><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></svg><b>Règlement par virement, sur facture</b></div>
       </div>
     </div>
     <div class="slide">
@@ -152,11 +158,14 @@
       <div class="join-row">
         <div class="join-qr" aria-label="QR code vers PING"><svg viewBox="0 0 33 33" class="segno"><path fill="#fff" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#123644" d="M2 2.5h7m2 0h1m2 0h1m2 0h4m3 0h7m-29 1h1m5 0h1m1 0h1m1 0h2m1 0h2m1 0h1m3 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h1m3 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m4 0h2m2 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m4 0h2m2 0h6m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m3 0h1m4 0h1m6 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m2 0h1m1 0h3m1 0h2m-20 1h1m5 0h1m1 0h1m1 0h1m6 0h2m1 0h3m2 0h3m-28 1h2m6 0h1m2 0h1m1 0h1m2 0h4m3 0h2m1 0h2m-27 1h4m1 0h2m1 0h7m1 0h1m2 0h1m1 0h1m1 0h1m-24 1h1m2 0h1m2 0h7m4 0h1m1 0h6m-25 1h1m1 0h1m1 0h2m1 0h1m3 0h2m1 0h2m2 0h4m5 0h1m-26 1h3m2 0h1m9 0h3m1 0h3m2 0h2m-29 1h2m3 0h2m1 0h1m1 0h2m3 0h2m1 0h1m3 0h1m1 0h3m-24 1h1m1 0h1m5 0h2m3 0h1m2 0h1m1 0h2m3 0h1m1 0h1m-26 1h1m2 0h1m2 0h2m4 0h3m2 0h1m2 0h1m1 0h2m-27 1h1m1 0h4m4 0h1m2 0h4m2 0h2m1 0h3m1 0h3m-29 1h2m3 0h3m1 0h1m5 0h6m1 0h1m1 0h2m2 0h1m-29 1h1m2 0h1m4 0h6m4 0h4m1 0h2m-25 1h1m1 0h1m3 0h2m2 0h1m3 0h4m1 0h6m1 0h3m-21 1h1m1 0h1m3 0h2m4 0h1m3 0h2m-26 1h7m8 0h2m1 0h3m1 0h1m1 0h3m-27 1h1m5 0h1m3 0h3m1 0h3m1 0h1m1 0h1m3 0h1m2 0h1m-28 1h1m1 0h3m1 0h1m3 0h5m1 0h1m1 0h8m1 0h2m-29 1h1m1 0h3m1 0h1m3 0h1m3 0h2m1 0h3m1 0h1m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h4m1 0h1m4 0h6m-28 1h1m5 0h1m4 0h2m1 0h1m6 0h2m2 0h2m1 0h1m-29 1h7m1 0h1m1 0h3m4 0h1m1 0h1m1 0h1m1 0h1m2 0h1"/></svg></div>
         <div class="join-acts">
-          <a class="go" href="/l/pq" target="_blank" rel="noopener">Ouvrir PING</a>
+          <a class="go signup" href="/l/ins" target="_blank" rel="noopener">Je m'inscris</a>
+          <a class="go alt" href="/l/pq" target="_blank" rel="noopener">Ouvrir PING</a>
           <span class="lbl">ou scannez le code</span>
+          <a class="anim-btn big" href="/animation-inscription" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Voir l'animation</a>
         </div>
       </div>
       <small>Inscription gratuite · ménage, repassage, nettoyage</small>
+      <p class="beta">Testez l'application en avant-première et laissez vos commentaires dans la bulle verte, en bas à droite.</p>
     </div>
   </div>
   <div class="deck-nav"><button type="button" class="arrow prev" aria-label="Écran précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="dots"></div><button type="button" class="arrow next" aria-label="Écran suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
@@ -164,7 +173,7 @@
 
 <!-- PROS INDEPENDANTS -->
 <section class="deck" data-deck="pro" aria-label="Plaquette pros indépendants" hidden>
-  <div class="deck-head"><span class="kicker">Pros indépendants</span><span class="count"></span></div>
+  <div class="deck-head"><span class="kicker">Pros indépendants</span><a class="anim-btn" href="/animation-inscription?part=pro" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Voir l'animation</a><span class="count"></span></div>
   <div class="deck-track">
     <div class="slide">
       <div class="picto"><svg class="device" viewBox="10 0 100 160" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 98" stroke="#fff" stroke-width="14"/><circle cx="64" cy="134" r="22" stroke="#12B39C" stroke-width="3" opacity=".7"/><circle cx="64" cy="134" r="8" fill="#2FD06E"/></svg></div>
@@ -201,11 +210,14 @@
       <div class="join-row">
         <div class="join-qr" aria-label="QR code vers l'inscription pro"><svg viewBox="0 0 33 33" class="segno"><path fill="#fff" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#123644" d="M2 2.5h7m2 0h1m1 0h5m1 0h2m3 0h7m-29 1h1m5 0h1m1 0h2m1 0h2m2 0h1m4 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m2 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h4m2 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h4m1 0h4m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m4 0h1m1 0h2m7 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m2 0h3m4 0h2m-20 1h1m5 0h1m1 0h1m3 0h1m1 0h2m1 0h2m1 0h3m2 0h3m-28 1h2m1 0h3m3 0h1m2 0h1m1 0h1m1 0h4m3 0h2m1 0h2m-28 1h1m2 0h1m2 0h2m2 0h2m3 0h1m1 0h1m2 0h1m1 0h1m1 0h1m-23 1h2m1 0h1m2 0h2m2 0h1m1 0h1m3 0h1m1 0h6m-25 1h2m3 0h2m1 0h1m3 0h3m3 0h4m5 0h1m-29 1h1m2 0h3m1 0h2m1 0h1m2 0h4m1 0h3m1 0h3m2 0h2m-27 1h1m1 0h4m2 0h7m1 0h1m3 0h1m1 0h3m-27 1h1m1 0h2m3 0h2m1 0h1m1 0h3m1 0h1m2 0h1m1 0h2m3 0h1m1 0h1m-29 1h2m4 0h1m4 0h1m2 0h4m2 0h1m2 0h1m1 0h2m-27 1h1m1 0h2m8 0h1m2 0h2m2 0h2m1 0h3m1 0h3m-29 1h2m2 0h1m1 0h2m2 0h1m1 0h9m1 0h1m1 0h2m2 0h1m-29 1h1m1 0h1m5 0h1m1 0h2m2 0h1m3 0h4m1 0h2m-25 1h1m3 0h5m3 0h1m2 0h3m1 0h6m1 0h3m-21 1h1m2 0h1m1 0h1m1 0h1m4 0h1m3 0h2m-26 1h7m2 0h3m1 0h4m1 0h3m1 0h1m1 0h3m-27 1h1m5 0h1m2 0h1m1 0h3m1 0h2m1 0h1m1 0h1m3 0h1m3 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m2 0h1m1 0h8m1 0h2m-29 1h1m1 0h3m1 0h1m2 0h1m1 0h2m2 0h1m1 0h3m1 0h1m3 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h4m1 0h2m1 0h1m4 0h6m-28 1h1m5 0h1m6 0h1m7 0h2m2 0h2m1 0h1m-29 1h7m1 0h7m2 0h1m1 0h1m1 0h1m1 0h1m2 0h1"/></svg></div>
         <div class="join-acts">
-          <a class="go" href="/l/pqp" target="_blank" rel="noopener">Créer mon compte pro</a>
+          <a class="go signup" href="/l/insp" target="_blank" rel="noopener">Je m'inscris</a>
+          <a class="go alt" href="/l/pqp" target="_blank" rel="noopener">Créer mon compte pro</a>
           <span class="lbl">ou scannez le code</span>
+          <a class="anim-btn big" href="/animation-inscription?part=pro" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Voir l'animation</a>
         </div>
       </div>
       <small>Visible dès votre profil complété</small>
+      <p class="beta">Testez l'application en avant-première et laissez vos commentaires dans la bulle verte, en bas à droite.</p>
     </div>
   </div>
   <div class="deck-nav"><button type="button" class="arrow prev" aria-label="Écran précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="dots"></div><button type="button" class="arrow next" aria-label="Écran suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
@@ -213,7 +225,7 @@
 
 <!-- DEVENIR PRESTATAIRE -->
 <section class="deck" data-deck="devenir-pro" aria-label="Plaquette devenir prestataire" hidden>
-  <div class="deck-head"><span class="kicker">Devenir prestataire</span><span class="count"></span></div>
+  <div class="deck-head"><span class="kicker">Devenir prestataire</span><a class="anim-btn" href="/animation-inscription?part=pro" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Voir l'animation</a><span class="count"></span></div>
   <div class="deck-track">
     <div class="slide">
       <div class="picto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="3.5"/><path d="M3 20.5c0-3.6 3.1-6 7-6 1.4 0 2.7.3 3.8.9"/><path d="M18.5 14v7M15 17.5h7"/></svg></div>
@@ -250,11 +262,14 @@
       <div class="join-row">
         <div class="join-qr" aria-label="QR code pour devenir prestataire"><svg viewBox="0 0 33 33" class="segno"><path fill="#fff" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#123644" d="M2 2.5h7m1 0h1m2 0h2m2 0h2m1 0h3m1 0h7m-29 1h1m5 0h1m1 0h1m1 0h3m1 0h2m1 0h2m3 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m4 0h1m1 0h3m2 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m6 0h1m4 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h1m2 0h2m5 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m5 0h1m1 0h1m1 0h1m1 0h2m2 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h3m1 0h3m2 0h1m1 0h2m-21 1h1m1 0h2m1 0h3m1 0h1m2 0h3m1 0h2m1 0h2m1 0h1m2 0h1m1 0h2m-29 1h1m1 0h1m2 0h1m2 0h4m3 0h1m1 0h8m3 0h1m-29 1h2m3 0h5m2 0h1m1 0h1m3 0h1m2 0h3m2 0h2m-28 1h2m1 0h1m3 0h2m2 0h4m4 0h3m1 0h1m4 0h1m-27 1h1m1 0h3m3 0h1m1 0h1m2 0h1m1 0h1m3 0h1m1 0h1m1 0h2m-25 1h1m2 0h1m1 0h2m2 0h1m1 0h1m1 0h3m1 0h1m2 0h1m3 0h3m-29 1h1m1 0h2m1 0h4m3 0h1m1 0h1m4 0h1m1 0h1m4 0h3m-29 1h2m2 0h2m2 0h2m1 0h3m1 0h1m3 0h2m6 0h1m-26 1h1m1 0h1m1 0h1m2 0h1m1 0h1m4 0h1m1 0h1m2 0h1m2 0h2m1 0h1m-24 1h1m3 0h1m4 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h3m-28 1h1m2 0h1m2 0h2m3 0h2m2 0h1m2 0h1m4 0h2m1 0h1m-22 1h1m2 0h1m1 0h1m6 0h1m1 0h1m1 0h1m4 0h1m-26 1h6m2 0h1m3 0h1m3 0h2m1 0h7m-19 1h4m1 0h2m1 0h1m3 0h1m3 0h5m-29 1h7m1 0h4m1 0h1m2 0h2m1 0h2m1 0h1m1 0h2m1 0h1m-28 1h1m5 0h1m1 0h3m4 0h1m3 0h2m3 0h2m-26 1h1m1 0h3m1 0h1m3 0h1m1 0h1m1 0h1m2 0h2m1 0h5m1 0h2m-28 1h1m1 0h3m1 0h1m1 0h3m1 0h4m3 0h3m1 0h3m2 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h2m3 0h4m1 0h1m1 0h1m2 0h1m1 0h1m-29 1h1m5 0h1m3 0h1m1 0h2m1 0h2m3 0h1m4 0h1m1 0h1m-28 1h7m1 0h2m5 0h1m2 0h3m3 0h1m2 0h1"/></svg></div>
         <div class="join-acts">
-          <a class="go" href="/l/pqd" target="_blank" rel="noopener">Devenir prestataire</a>
+          <a class="go signup" href="/l/insp" target="_blank" rel="noopener">Je m'inscris</a>
+          <a class="go alt" href="/l/pqd" target="_blank" rel="noopener">Devenir prestataire</a>
           <span class="lbl">ou scannez le code</span>
+          <a class="anim-btn big" href="/animation-inscription?part=pro" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Voir l'animation</a>
         </div>
       </div>
       <small>Inscription gratuite · sans engagement</small>
+      <p class="beta">Testez l'application en avant-première et laissez vos commentaires dans la bulle verte, en bas à droite.</p>
     </div>
   </div>
   <div class="deck-nav"><button type="button" class="arrow prev" aria-label="Écran précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="dots"></div><button type="button" class="arrow next" aria-label="Écran suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button></div>

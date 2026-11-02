@@ -26,7 +26,9 @@ def short(code: str) -> str:
     """Lien court de campagne. La table des codes vit dans
     src/app/l/[code]/route.ts — les deux doivent rester synchronisées.
     Un QR court reste scannable à 20 mm ; une URL UTM complète, non.
-    Code `ins` : QR de l'animation « Je m'inscris » (brand/anim-inscription), ouvre /auth/signup."""
+    Code `ins` : QR de l'animation « Je m'inscris » (brand/anim-inscription), ouvre /auth/signup.
+    Codes `insp` (-> /pro/onboarding, bouton « Je m'inscris » des plaquettes pro et des animations prestataires)
+    et `bv` (-> /bienvenue, lien à envoyer aux prospects en avant-première)."""
     return f"{BASE}/l/{code}"
 
 

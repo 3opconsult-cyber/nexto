@@ -66,6 +66,12 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   // --- animation « Je m'inscris » (/animation-inscription) : QR final, direct vers l'inscription ---
   ins: { path: '/auth/signup', source: 'animation', medium: 'video', content: 'anim_inscription' },
 
+  // --- inscription pro depuis la plaquette / l'animation prestataires (/plaquettes, /animation-inscription?part=pro) ---
+  insp: { path: '/pro/onboarding', source: 'plaquette', medium: 'web', content: 'inscription_pro' },
+
+  // --- avant-première : page d'accueil /bienvenue envoyée aux prospects (liens, SMS, e-mails) ---
+  bv:  { path: '/bienvenue', source: 'prospection', medium: 'lien', content: 'bienvenue' },
+
   // --- prospection directe (DM, vignettes de campagne) ---
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
   // sans avoir à créer un code pour chacun.

@@ -339,6 +339,11 @@ carte « Plaquettes & animation »). Rien n'est en base : tout est dans le dép�
   (route.ts → `/auth/signup`, utm animation/video). Bouton « Voir l'animation » : `WelcomeCarousel`, écran e-mail de
   `auth/signup`, `/pro/attente`. `/admin` : aperçu iframe des 3 animations (Supports & visuels) + installable
   (`public/admin-manifest.webmanifest`, hors `/admin` donc hors middleware ; carte « Installer le raccourci » en accueil).
+- **Avant-première (2/11/2026)** : un seul lien à envoyer aux prospects, `/bienvenue` (`public/bienvenue.html`, rewrite + no-cache dans
+  `next.config.js`, lien court `/l/bv`) : deux gros boutons vers `/plaquettes#particulier` / `#pro` + note « bulle verte » (`FeedbackBubble`,
+  « Laisser un commentaire », masquée sur `/auth`, `/mission/*`, `/essai`). Plaquettes particulier/pro/devenir-pro : « Voir l'animation »
+  (en-tête + dernier écran), « Je m'inscris » (`/l/ins`, pro `/l/insp` -> `/pro/onboarding`), note avant-première. Animations inscription et
+  prestataires : bouton HTML « Je m'inscris » sur la scène finale (`?part=pro` -> `/l/insp`), MP4 inchangés. Admin : carte « Lien à envoyer aux prospects ».
 - `/plan-marketing` : critique, 4 cibles, plan d'action, critique de l'accroche « Airbnb / Uber /
   Booking ». **Décision Romain 28/10** : accroche retenue malgré la critique, en texte seul (jamais de
   logos) sur les plaquettes `#particulier`, `#pro`, `#devenir-pro` (écran « Aussi simple qu'Airbnb… »).

@@ -39,6 +39,12 @@
   .foot a{color:var(--teal); font-weight:600;}
   @media (max-width:760px){ .layout{grid-template-columns:minmax(0,1fr);} .stage{max-height:none;} }
   /* Mode capture vidéo : seule la scène, au pixel. */
+  /* Bouton « Je m'inscris » : HTML hors du canevas SVG, visible quand la scène finale (QR) est à l'écran. Masqué à l'enregistrement MP4. */
+  .stage{position:relative;}
+  .signup-cta{position:absolute; left:50%; bottom:3.2%; transform:translateX(-50%); display:none; align-items:center; justify-content:center; background:var(--teal); color:#fff; text-decoration:none; font-family:var(--display); font-weight:700; font-size:clamp(14px,4.2vw,18px); padding:12px 28px; border-radius:999px; box-shadow:0 8px 22px rgba(0,0,0,.35); white-space:nowrap;}
+  .signup-cta.on{display:inline-flex;}
+  .signup-cta:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  body.rec .signup-cta{display:none !important;}
   body.rec{padding:0; background:#000;}
   body.rec .layout{display:block; max-width:none;}
   body.rec .side, body.rec .controls{display:none;}
@@ -149,6 +155,7 @@
           <text id="e4" x="270" y="858" text-anchor="middle" font-family="Inter" font-weight="600" font-size="18" fill="#fff">nexto-eta.vercel.app/pro/onboarding</text>
         </g>
       </svg>
+    <a class="signup-cta" id="cta" href="/l/insp" target="_blank" rel="noopener">Je m'inscris</a>
     </div>
     <div class="controls">
       <button id="play" type="button">Pause</button>
@@ -768,6 +775,7 @@
     render(t);
     $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
     sceneBtns.forEach(function(b, i){ b.classList.toggle('on', t >= CAPS[i].a && t < CAPS[i].b); });
+    $('cta').classList.toggle('on', t >= 52.6);
   }
   function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
   function loop(now){

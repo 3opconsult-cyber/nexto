@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Bienvenue sur PING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Page unique envoyée aux prospects (avant-première) : un titre, deux choix, une note. Lien court : /l/bv */
+  :root{
+    --teal:#12B39C; --tealD:#0C8F7E; --navy:#123644; --green:#2FD06E; --gold:#F2A93B;
+    --ground:#EDF1F0; --ink:#123644; --slate:#4E6470;
+    --display:'Quicksand','Trebuchet MS',sans-serif; --body:'Inter',system-ui,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:var(--ground); color:var(--ink);}
+  body{margin:0; font-family:var(--body); min-height:100vh; display:flex; justify-content:center;
+    padding:24px max(16px, env(safe-area-inset-right,0px)) 40px max(16px, env(safe-area-inset-left,0px));}
+  main{width:100%; max-width:520px; display:flex; flex-direction:column; gap:20px;}
+  .hero{background:var(--navy); color:#fff; border-radius:24px; padding:30px 24px 28px; text-align:center; box-shadow:0 18px 50px rgba(18,54,68,.25);}
+  .brand{display:inline-flex; align-items:center; gap:10px; margin-bottom:18px;}
+  .brand svg{width:30px; height:48px;}
+  .brand span{font-family:var(--display); font-weight:700; font-size:30px; letter-spacing:.04em;}
+  h1{font-family:var(--display); font-weight:700; font-size:32px; line-height:1.15; margin:0 0 12px; text-wrap:balance;}
+  .hero p{margin:0 auto; font-size:16px; line-height:1.5; color:rgba(255,255,255,.78); max-width:34ch; text-wrap:balance;}
+  .rule{width:44px; height:3px; border-radius:2px; background:var(--gold); margin:18px auto 0;}
+  .choices{display:flex; flex-direction:column; gap:12px;}
+  .big{display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:68px; padding:14px 22px; border-radius:20px; text-decoration:none; font-family:var(--display); font-weight:700; font-size:19px; box-shadow:0 8px 22px rgba(18,54,68,.16);}
+  .big small{display:block; font-family:var(--body); font-weight:500; font-size:12.5px; opacity:.85; margin-top:2px;}
+  .big svg{width:22px; height:22px; flex-shrink:0;}
+  .big.a{background:var(--teal); color:#fff;}
+  .big.b{background:#fff; color:var(--navy); box-shadow:inset 0 0 0 2px var(--navy), 0 8px 22px rgba(18,54,68,.10);}
+  .big:focus-visible{outline:3px solid var(--gold); outline-offset:3px;}
+  .note{border:2px dashed var(--gold); background:rgba(242,169,59,.12); border-radius:16px; padding:14px 16px; font-size:14px; line-height:1.55; color:var(--ink);}
+  .note b{font-family:var(--display);}
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="brand">
+      <svg viewBox="10 0 100 160" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 56 C24 26, 46 12, 68 18 C92 25, 100 50, 82 68 C70 80, 64 86, 64 98" stroke="#fff" stroke-width="14"/><circle cx="64" cy="134" r="22" stroke="#12B39C" stroke-width="3" opacity=".7"/><circle cx="64" cy="134" r="8" fill="#2FD06E"/></svg>
+      <span>PING</span>
+    </div>
+    <h1>Bienvenue sur PING</h1>
+    <p>Ménage, repassage, nettoyage&nbsp;: un prestataire disponible juste à côté de chez vous.</p>
+    <div class="rule"></div>
+  </section>
+
+  <nav class="choices" aria-label="Votre profil">
+    <a class="big a" href="/plaquettes?src=bienvenue#particulier">
+      <span>Je cherche un prestataire<small>Découvrir PING côté client</small></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <a class="big b" href="/plaquettes?src=bienvenue#pro">
+      <span>Je suis prestataire<small>Découvrir PING côté pro</small></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+  </nav>
+
+  <p class="note"><b>Vous testez l'application en avant-première.</b> Faites vos commentaires dans la bulle verte, en bas à droite de l'écran. Merci !</p>
+</main>
+</body>
+</html>

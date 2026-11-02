@@ -532,6 +532,27 @@ textarea.minput{min-height:120px;resize:vertical}
 
       <!-- SUPPORT COMMERCIAL -->
       <section class="section" id="s_comm">
+        <div class="card" style="margin-bottom:14px"><h3>Lien à envoyer aux prospects <span class="muted">avant-première · un seul parcours : accueil, plaquette, animation, inscription</span></h3>
+          <div class="qrow">
+            <div class="m"><b>Page d'accueil de l'avant-première (à envoyer en premier)</b><small class="mono">https://nexto-eta.vercel.app/bienvenue</small></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/bienvenue" onclick="copyFrom(this)">Copier</button>
+            <a class="link" style="text-decoration:none" href="/bienvenue" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Plaquette particuliers</b><small class="mono">https://nexto-eta.vercel.app/plaquettes#particulier</small></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/plaquettes#particulier" onclick="copyFrom(this)">Copier</button>
+            <a class="link" style="text-decoration:none" href="/plaquettes#particulier" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Plaquette prestataires</b><small class="mono">https://nexto-eta.vercel.app/plaquettes#pro</small></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/plaquettes#pro" onclick="copyFrom(this)">Copier</button>
+            <a class="link" style="text-decoration:none" href="/plaquettes#pro" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow" style="align-items:flex-start">
+            <div class="m"><b>Texte d'invitation prêt à envoyer</b><small id="invitTxt" style="color:var(--ink);font-size:12.5px;line-height:1.5;margin-top:4px;user-select:all">Bonjour, je vous invite à tester PING en avant-première : https://nexto-eta.vercel.app/bienvenue . Choisissez « Je cherche un prestataire » ou « Je suis prestataire », regardez l'animation puis inscrivez-vous. Vos commentaires sont précieux : utilisez la bulle verte en bas à droite de l'écran. Merci !</small></div>
+            <button type="button" class="btn ghost" onclick="copyFrom(this,'invitTxt')">Copier</button>
+          </div>
+        </div>
         <div class="card"><h3>Plaquettes &amp; animation <span class="muted">à partager tel quel · sources dans brand/plaquettes, brand/anim, brand/anim-pro et brand/anim-inscription</span></h3>
           <div class="qrow">
             <div class="m"><b>Animation explicative · 42 s · format vertical</b><small class="mono">Marc se déplace, l'écho PING le rend visible, les clients autour lui écrivent, chat et tarif, réservation instantanée, agenda, QR d'arrivée puis de départ, écran « En toute confiance », avis + pourboire + facture, signature. Lecteur avec scénario scène par scène. QR de fin → /l/vid.</small>
@@ -2347,6 +2368,12 @@ function openQR(i){
  document.getElementById('qrm').classList.add('on');
 }
 function closeQR(){document.getElementById('qrm').classList.remove('on');}
+function copyFrom(btn,id){
+ const txt=id?document.getElementById(id).textContent:btn.getAttribute('data-copy');
+ const ok=()=>{const o=btn.textContent;btn.textContent='Copié';setTimeout(()=>{btn.textContent=o},1600);};
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok).catch(()=>toast('Copie impossible : '+txt));}
+ else{toast('Copie impossible : '+txt);}
+}
 function copyLink(url){
  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>toast('Lien copié')).catch(()=>toast('Lien : '+url));}
  else{toast('Lien : '+url);}
