@@ -92,8 +92,21 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .btn.dark{background:var(--ink)}
 .iconbtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;display:inline-grid;place-items:center;cursor:pointer;color:var(--tealD)}
 .split{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-.animPrev iframe{display:block;border:0;border-radius:14px;background:#0B1F27;aspect-ratio:9/16;max-height:70vh;width:min(100%,380px);margin:0 auto}
-.animPrev{text-align:center}
+.animPrev{text-align:center;margin-top:10px}
+.pvbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.pvbar button{border:1px solid var(--line,#DCE5E3);background:#fff;color:var(--ink,#123644);border-radius:999px;padding:6px 14px;font:600 12.5px Inter,system-ui,sans-serif;cursor:pointer}
+.pvbar button[aria-pressed="true"]{background:var(--teal,#12B39C);border-color:var(--teal,#12B39C);color:#fff}
+.pvbar button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.pvphone{width:min(100%,426px);margin:0 auto;background:#0B1B22;border-radius:44px;padding:18px 18px 22px;box-sizing:border-box;box-shadow:0 12px 34px rgba(11,27,34,.28);position:relative}
+.pvphone:before{content:"";position:absolute;top:8px;left:50%;width:84px;height:8px;margin-left:-42px;border-radius:4px;background:#1E3440}
+.pvphone .pvscr{width:100%;aspect-ratio:390/780;border-radius:28px;overflow:hidden;background:#fff}
+.pvphone iframe{display:block;border:0;width:390px;height:780px;transform-origin:0 0;background:#fff}
+.pvwin{width:100%;margin:0 auto;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 12px 34px rgba(11,27,34,.22);border:1px solid #cfd9d7}
+.pvwin .pvtop{display:flex;align-items:center;gap:6px;background:#E7EDEB;padding:8px 10px}
+.pvwin .pvtop i{width:10px;height:10px;border-radius:50%;background:#B8C9C5;display:block;flex:none}
+.pvwin .pvurl{flex:1;min-width:0;margin-left:8px;background:#fff;border-radius:999px;padding:3px 12px;font:600 11.5px Inter,system-ui,sans-serif;color:#4E6470;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pvwin .pvscr{position:relative;width:100%;overflow:hidden;background:#fff}
+.pvwin iframe{display:block;border:0;width:1280px;height:720px;transform-origin:0 0;background:#fff;position:absolute;left:0;top:0}
 .animBtn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .qrow{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}.qrow:last-child{border:none}
 .qrow .m{flex:1}.qrow .m b{font-family:var(--fh);font-size:13px}.qrow .m small{display:block;color:var(--slate);font-size:11px}
@@ -534,18 +547,24 @@ textarea.minput{min-height:120px;resize:vertical}
       <section class="section" id="s_comm">
         <div class="card" style="margin-bottom:14px"><h3>Lien à envoyer aux prospects <span class="muted">avant-première · un seul parcours : accueil, plaquette, animation, inscription</span></h3>
           <div class="qrow">
-            <div class="m"><b>Page d'accueil de l'avant-première (à envoyer en premier)</b><small class="mono">https://nexto-eta.vercel.app/bienvenue</small></div>
+            <div class="m"><b>Page d'accueil de l'avant-première (à envoyer en premier)</b><small class="mono">https://nexto-eta.vercel.app/bienvenue</small>
+              <div class="animPrev" style="display:none"></div></div>
             <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/bienvenue" onclick="copyFrom(this)">Copier</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/bienvenue" aria-expanded="false">Aperçu</button>
             <a class="link" style="text-decoration:none" href="/bienvenue" target="_blank" rel="noopener">Ouvrir</a>
           </div>
           <div class="qrow">
-            <div class="m"><b>Plaquette particuliers</b><small class="mono">https://nexto-eta.vercel.app/plaquettes#particulier</small></div>
+            <div class="m"><b>Plaquette particuliers</b><small class="mono">https://nexto-eta.vercel.app/plaquettes#particulier</small>
+              <div class="animPrev" style="display:none"></div></div>
             <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/plaquettes#particulier" onclick="copyFrom(this)">Copier</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/plaquettes#particulier" aria-expanded="false">Aperçu</button>
             <a class="link" style="text-decoration:none" href="/plaquettes#particulier" target="_blank" rel="noopener">Ouvrir</a>
           </div>
           <div class="qrow">
-            <div class="m"><b>Plaquette prestataires</b><small class="mono">https://nexto-eta.vercel.app/plaquettes#pro</small></div>
+            <div class="m"><b>Plaquette prestataires</b><small class="mono">https://nexto-eta.vercel.app/plaquettes#pro</small>
+              <div class="animPrev" style="display:none"></div></div>
             <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/plaquettes#pro" onclick="copyFrom(this)">Copier</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/plaquettes#pro" aria-expanded="false">Aperçu</button>
             <a class="link" style="text-decoration:none" href="/plaquettes#pro" target="_blank" rel="noopener">Ouvrir</a>
           </div>
           <div class="qrow" style="align-items:flex-start">
@@ -553,7 +572,7 @@ textarea.minput{min-height:120px;resize:vertical}
             <button type="button" class="btn ghost" onclick="copyFrom(this,'invitTxt')">Copier</button>
           </div>
         </div>
-        <div class="card"><h3>Plaquettes &amp; animation <span class="muted">à partager tel quel · sources dans brand/plaquettes, brand/anim, brand/anim-pro et brand/anim-inscription</span></h3>
+        <div class="card"><h3>Plaquettes &amp; animation <span class="muted">à partager tel quel · sources dans brand/plaquettes, brand/anim, brand/anim-pro, brand/anim-inscription et brand/anim-presentation</span></h3>
           <div class="qrow">
             <div class="m"><b>Animation explicative · 42 s · format vertical</b><small class="mono">Marc se déplace, l'écho PING le rend visible, les clients autour lui écrivent, chat et tarif, réservation instantanée, agenda, QR d'arrivée puis de départ, écran « En toute confiance », avis + pourboire + facture, signature. Lecteur avec scénario scène par scène. QR de fin → /l/vid.</small>
               <div class="animPrev" data-src="/animation" style="display:none;margin-top:10px"></div></div>
@@ -579,6 +598,16 @@ textarea.minput{min-height:120px;resize:vertical}
           <div class="qrow">
             <div class="m"><b>Vidéo MP4 de l'animation « Je m'inscris » · 1080 × 1920</b><small class="mono">Le fichier à publier tel quel (sans son).</small></div>
             <a class="link" style="text-decoration:none" href="/brand/files/ping-animation-inscription.mp4" target="_blank" rel="noopener">Voir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Animation « PING en 1 minute » · 69 s · format vertical</b><small class="mono">La vidéo de présentation : accroche, l'application en 5 écrans (carte et demandes proches, chat avec prix proposé puis validé, agenda, facture automatique), tuto « Je cherche un prestataire » / « Je suis prestataire », arguments en deux temps (QR arrivée et départ, avis croisés, litige) et paiement sous séquestre annoncé « bientôt » (règlement par virement sur facture en attendant). Deux boutons d'inscription sur la dernière scène de la page : /l/ins et /l/insp.</small>
+              <div class="animPrev" data-src="/animation-ping" style="display:none;margin-top:10px"></div></div>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/animation-ping" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/animation-ping" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Vidéo MP4 « PING en 1 minute » · 1080 × 1920</b><small class="mono">Le fichier à publier tel quel (sans son) ; il se termine sur le QR code d'inscription /l/ins.</small></div>
+            <a class="link" style="text-decoration:none" href="/brand/files/ping-animation-ping.mp4" target="_blank" rel="noopener">Voir</a>
           </div>
           <div class="qrow">
             <div class="m"><b>Vidéo MP4 de l'animation prestataires · 1080 × 1920</b><small class="mono">Le fichier à publier tel quel (sans son).</small></div>
@@ -2932,14 +2961,41 @@ renderLiveMap();
 renderExpiryAlerts();
 
 
-// Aperçu en ligne des animations : l'iframe n'est créée qu'au clic (rien n'est chargé avant).
+// Aperçu en ligne (animations, plaquettes, page d'accueil) : un seul composant, deux rendus (téléphone / ordinateur).
+// L'iframe n'est créée qu'au clic (rien n'est chargé avant) et retirée à la fermeture.
+function pvSrc(path){
+  var local=location.protocol==='file:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if(!local) return path;
+  var m=path.match(/^([^#?]*)(.*)$/); var base=m[1];
+  return (/\.[a-z0-9]+$/i.test(base)?base:base+'.html')+m[2];
+}
+function pvRender(box,path,mode){
+  var body=box.querySelector('.pvbody'); body.innerHTML='';
+  box.querySelectorAll('.pvbar [data-mode]').forEach(function(x){ x.setAttribute('aria-pressed',x.getAttribute('data-mode')===mode?'true':'false'); });
+  var f=document.createElement('iframe'); f.src=pvSrc(path); f.title='Aperçu '+path; f.loading='lazy'; f.allow='autoplay';
+  var wrap=document.createElement('div');
+  if(mode==='phone'){
+    wrap.className='pvphone'; var sc=document.createElement('div'); sc.className='pvscr'; sc.appendChild(f); wrap.appendChild(sc); body.appendChild(wrap);
+    var k=sc.clientWidth/390; f.style.transform='scale('+k+')';
+    sc.style.height=(780*k)+'px';
+  } else {
+    wrap.className='pvwin';
+    var top=document.createElement('div'); top.className='pvtop'; top.innerHTML='<i></i><i></i><i></i><span class="pvurl"></span>'; top.querySelector('.pvurl').textContent='nexto-eta.vercel.app'+path;
+    var sc2=document.createElement('div'); sc2.className='pvscr'; sc2.appendChild(f); wrap.appendChild(top); wrap.appendChild(sc2); body.appendChild(wrap);
+    var k2=sc2.clientWidth/1280; f.style.transform='scale('+k2+')'; sc2.style.height=(720*k2)+'px';
+  }
+}
 document.addEventListener('click',function(e){
-  var b=e.target.closest&&e.target.closest('.animBtn'); if(!b) return;
-  var box=b.parentNode.querySelector('.animPrev'); if(!box) return;
+  var t=e.target.closest&&e.target.closest('.animBtn, .pvclose, .pvbar [data-mode]'); if(!t) return;
+  var row=t.closest('.qrow'); if(!row) return;
+  var box=row.querySelector('.animPrev'), btn=row.querySelector('.animBtn'); if(!box||!btn) return;
+  var path=btn.getAttribute('data-src');
+  if(t.matches('[data-mode]')){ pvRender(box,path,t.getAttribute('data-mode')); return; }
   var open=box.style.display!=='none';
-  if(open){ box.style.display='none'; box.innerHTML=''; b.textContent='Aperçu'; b.setAttribute('aria-expanded','false'); return; }
-  var f=document.createElement('iframe'); f.src=b.getAttribute('data-src'); f.title='Aperçu de l\u2019animation'; f.loading='lazy'; f.allow='autoplay';
-  box.appendChild(f); box.style.display='block'; b.textContent='Fermer l\u2019aperçu'; b.setAttribute('aria-expanded','true');
+  if(open){ box.style.display='none'; box.innerHTML=''; btn.textContent='Aperçu'; btn.setAttribute('aria-expanded','false'); return; }
+  box.innerHTML='<div class="pvbar" role="group" aria-label="Format de l’aperçu"><button type="button" data-mode="phone" aria-pressed="true">Téléphone</button><button type="button" data-mode="desktop" aria-pressed="false">Ordinateur</button><button type="button" class="pvclose">Fermer l’aperçu</button></div><div class="pvbody"></div>';
+  box.style.display='block'; btn.textContent='Fermer l’aperçu'; btn.setAttribute('aria-expanded','true');
+  pvRender(box,path,'phone');
 });
 </script>
 <script type="module">

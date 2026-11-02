@@ -49,10 +49,15 @@ def qr(data):
     return segno.make(data, error="m").svg_inline(dark="#123644", light="#ffffff", border=2, omitsize=True)
 
 
-html = (HERE / "src.html").read_text().replace("%%EMAIL%%", EMAIL)
-for k, v in PARTS.items():
-    html = html.replace(k, v)
-html = re.sub(r"%%QR:(.+?)%%", lambda m: qr(m.group(1)), html)
-assert "%%" not in html, "jeton non remplacé"
-OUT.write_text(html)
-print("écrit", OUT)
+def main():
+    html = (HERE / "src.html").read_text().replace("%%EMAIL%%", EMAIL)
+    for k, v in PARTS.items():
+        html = html.replace(k, v)
+    html = re.sub(r"%%QR:(.+?)%%", lambda m: qr(m.group(1)), html)
+    assert "%%" not in html, "jeton non remplacé"
+    OUT.write_text(html)
+    print("écrit", OUT)
+
+
+if __name__ == "__main__":
+    main()

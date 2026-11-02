@@ -1,0 +1,54 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>PING en 1 minute</title>
+<style>
+%%FONTS%%
+  /* Lecteur sombre, comme /animation : la scène 9:16 à gauche, le scénario à droite (empilé sur mobile). */
+  :root{
+    --night:#0B1F27; --panel:#12303B; --line:#1E4250;
+    --teal:#12B39C; --green:#2FD06E; --gold:#F2A93B;
+    --text:#EEF4F3; --soft:#9DB4BC;
+    --display:'Quicksand', 'Trebuchet MS', sans-serif;
+    --body:'Inter', system-ui, sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:var(--night); color:var(--text);}
+  body{font-family:var(--body); margin:0; padding-block:28px 40px;
+    padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));}
+  .layout{max-width:1000px; margin:0 auto; display:grid; grid-template-columns:minmax(0, 420px) minmax(0,1fr); gap:36px; align-items:start;}
+  .player{display:flex; flex-direction:column; gap:12px; min-width:0;}
+  .stage{width:100%; aspect-ratio:9/16; max-height:80vh; margin:0 auto; border-radius:22px; overflow:hidden; background:#000; box-shadow:0 20px 60px rgba(0,0,0,.45);}
+  .stage svg{display:block; width:100%; height:100%;}
+  .controls{display:flex; align-items:center; gap:10px;}
+  .controls button{flex-shrink:0; border:none; border-radius:999px; background:var(--teal); color:#fff; font-family:var(--display); font-weight:700; font-size:13px; padding:9px 16px; cursor:pointer;}
+  .controls button.ghost{background:transparent; box-shadow:inset 0 0 0 1.5px var(--line); color:var(--text);}
+  .controls button:focus-visible, .scenes button:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  .controls input[type=range]{flex:1; min-width:0; accent-color:var(--teal);}
+  .controls .time{font-size:12px; color:var(--soft); font-variant-numeric:tabular-nums; width:42px; text-align:right;}
+  .side{min-width:0;}
+  .side .eyebrow{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--teal);}
+  .side h1{font-family:var(--display); font-weight:700; font-size:26px; margin:6px 0 8px; text-wrap:balance;}
+  .side p.lead{font-size:13.5px; color:var(--soft); line-height:1.6; margin:0 0 20px; max-width:56ch;}
+  .scenes{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .scenes button{width:100%; display:grid; grid-template-columns:52px minmax(0,1fr); gap:12px; align-items:start; text-align:left; background:var(--panel); border:none; border-radius:14px; padding:12px 14px; color:var(--text); cursor:pointer; font:inherit;}
+  .scenes button.on{box-shadow:inset 0 0 0 1.5px var(--teal);}
+  .scenes .tc{font-size:11.5px; font-weight:600; color:var(--teal); font-variant-numeric:tabular-nums; padding-top:2px;}
+  .scenes b{display:block; font-family:var(--display); font-size:14.5px; margin-bottom:2px;}
+  .scenes span.d{font-size:12.5px; color:var(--soft); line-height:1.5;}
+  .foot{margin-top:18px; font-size:12px; color:var(--soft); line-height:1.6;}
+  .foot a{color:var(--teal); font-weight:600;}
+  @media (max-width:760px){ .layout{grid-template-columns:minmax(0,1fr);} .stage{max-height:none;} }
+  /* Mode capture vidéo : seule la scène, au pixel. */
+  /* Bouton « Je m'inscris » : HTML hors du canevas SVG, visible quand la scène finale (QR) est à l'écran. Masqué à l'enregistrement MP4. */
+  .stage{position:relative;}
+  .cta-wrap{position:absolute; left:0; right:0; bottom:3.4%; display:none; flex-direction:column; align-items:center; gap:2.2%; padding:0 6%;}
+  .cta-wrap.on{display:flex;}
+  .signup-cta{display:flex; align-items:center; justify-content:center; width:100%; max-width:380px; background:var(--teal); color:#fff; text-decoration:none; font-family:var(--display); font-weight:700; font-size:clamp(14px,4.2vw,18px); padding:13px 20px; border-radius:999px; box-shadow:0 8px 22px rgba(0,0,0,.35); white-space:nowrap;}
+  .signup-cta.alt{background:#fff; color:#123644;}
+  .signup-cta:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  body.rec .cta-wrap{display:none !important;}
+  body.rec{padding:0; background:#000;}
+  body.rec .layout{display:block; max-width:none;}
+  body.rec .side, body.rec .controls{display:none;}
+  body.rec .stage{width:540px; height:960px; max-height:none; border-radius:0; box-shadow:none;}
+</style>
