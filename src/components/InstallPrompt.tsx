@@ -53,8 +53,8 @@ export default function InstallPrompt() {
       : ['Dans la barre d’adresse de Chrome, cliquez sur l’icône d’installation à droite.', 'Ou menu (trois points), « Enregistrer et partager », « Installer PING ».']
 
   return (
-    <div role="dialog" aria-label="Installer le raccourci PING" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(18,54,68,.55)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 16 }}>
-      <div style={{ width: '100%', maxWidth: 420, background: '#fff', borderRadius: 24, padding: 22, fontFamily: 'Inter, sans-serif', color: '#123644' }}>
+    <div role="dialog" aria-label="Installer le raccourci PING" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', justifyContent: 'center', padding: 12, pointerEvents: 'none' }}>
+      <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: 420, background: '#fff', borderRadius: 20, padding: 18, boxShadow: '0 10px 40px rgba(18,54,68,.25)', border: '1px solid #E7EDEB', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, marginBottom: 6 }}>Installer le raccourci PING sur votre écran</div>
         <p style={{ fontSize: 14, color: '#4E6470', margin: '0 0 12px' }}>En quelques secondes, plus rapide que le téléchargement d&apos;une application.</p>
         <ol style={{ fontSize: 14, margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.5 }}>
