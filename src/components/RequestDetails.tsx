@@ -34,12 +34,13 @@ const num = (n: number) => String(n).replace('.', ',')
 
 export type RequestDetailFields = {
   hours_wanted?: number | null; linen_kg?: number | null; linen_types?: string[] | null
-  frequency?: string | null; household_size?: string | null; surface_m2?: number | null; payment_pref?: string | null
+  frequency?: string | null; household_size?: string | null; surface_m2?: number | null; nombre_pieces?: number | null; payment_pref?: string | null
 }
 
 export function requestDetailRows(r: RequestDetailFields) {
   const rows: Array<[string, string]> = []
   if (r.surface_m2) rows.push(['Surface', `${r.surface_m2} m²`])
+  if (r.nombre_pieces) rows.push(['Pièces', `${r.nombre_pieces} pièce${r.nombre_pieces > 1 ? 's' : ''}`])
   if (r.hours_wanted) rows.push(['Heures souhaitées', `${num(r.hours_wanted)} h`])
   if (r.linen_kg) rows.push(['Linge', `${num(r.linen_kg)} kg`])
   if (r.linen_types?.length) rows.push(['Types de linge', r.linen_types.map(t => LINEN_LABEL[t] || t).join(', ')])

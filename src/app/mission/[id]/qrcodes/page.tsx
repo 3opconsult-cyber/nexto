@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import QrCode from '@/components/QrCode'
 import PaymentCard from '@/components/PaymentCard'
-import { systemSender } from '@/lib/systemMessage'
 
 export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
@@ -19,13 +18,19 @@ export default function MissionQrCodes() {
     return () => clearInterval(id)
   }, [])
 
-  async function shareArrival(url: string) {
-    const supabase = createClient()
-    await supabase.from('messages').insert({
-      transaction_id: params.id, ...(await systemSender(supabase)),
-      body: `Le client ne sera peut-être pas sur place. Code d'arrivée à scanner en arrivant : ${url}`,
-    })
-    setShared(true)
+  // Voie A : QR unique laissé sur place (jeton lisible par le client seul, jamais envoyé au prestataire).
+  const [onsiteToken, setOnsiteToken] = useState<string | null>(null)
+  const [onsiteErr, setOnsiteErr] = useState('')
+  const [onsiteBusy, setOnsiteBusy] = useState(false)
+  // Voie B : code à 6 chiffres demandé par le prestataire, à lui communiquer s'il est bien sur place.
+  const [arrCode, setArrCode] = useState<{ code: string; expires_at: string; geo_status: string | null } | null>(null)
+
+  async function makeOnsite(renew = false) {
+    setOnsiteBusy(true); setOnsiteErr('')
+    const { data, error } = await createClient().rpc('create_onsite_token', { p_transaction: params.id, p_renew: renew })
+    setOnsiteBusy(false)
+    if (error || !data) { setOnsiteErr(error?.message || 'QR indisponible pour le moment.'); return }
+    setOnsiteToken(data as string)
   }
 
   useEffect(() => {
@@ -33,6 +38,8 @@ export default function MissionQrCodes() {
     function load() {
       supabase.from('transactions').select('*').eq('id', params.id).single()
         .then(({ data }) => setTx(data))
+      supabase.rpc('get_arrival_code', { p_transaction: params.id })
+        .then(({ data }) => setArrCode(Array.isArray(data) && data[0] ? data[0] : null), () => setArrCode(null))
     }
     load()
     timer.current = setInterval(load, 4000)
@@ -118,17 +125,46 @@ export default function MissionQrCodes() {
               }}>Un problème ? Signaler avant de valider</button>
             )}
 
+            {step === 1 && arrCode && new Date(arrCode.expires_at).getTime() > now && (
+              <div style={{ marginTop: 18, width: '100%', background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 14, padding: 14, textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Le prestataire indique être sur place</div>
+                <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 30, letterSpacing: 6, color: '#123644', margin: '8px 0', fontVariantNumeric: 'tabular-nums' }}>{arrCode.code}</div>
+                <p style={{ fontSize: 11.5, color: '#6b4a10', margin: 0, lineHeight: 1.5 }}>
+                  Valable jusqu&apos;à {fmt(arrCode.expires_at)}. Ne le communiquez que si le prestataire est bien là.
+                  {arrCode.geo_status === 'conforme' ? ' Sa position déclarée correspond à l\u2019adresse.' : ' Sa position n\u2019a pas pu être comparée à l\u2019adresse.'}
+                </p>
+              </div>
+            )}
+
             {step === 1 && (
               <div style={{ marginTop: 18, width: '100%', background: '#F3F6F5', borderRadius: 14, padding: 14, textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Vous ne serez pas sur place ?</div>
                 <p style={{ fontSize: 11.5, color: '#4E6470', margin: '5px 0 11px', lineHeight: 1.5 }}>
-                  Envoyez le code d'arrivée au prestataire : il validera son arrivée en scannant à votre domicile. En cas de souci, ouvrez un litige depuis la conversation.
+                  Générez un QR unique pour cette mission et laissez-le sur place (à l&apos;écran ou imprimé). Le prestataire le scanne avec son compte pour valider son arrivée. En cas de souci, ouvrez un litige depuis la conversation.
                 </p>
-                <button onClick={() => shareArrival(arrivalUrl)} disabled={shared} style={{
-                  width: '100%', border: 'none', borderRadius: 999, padding: '10px 0', cursor: shared ? 'default' : 'pointer',
-                  background: shared ? '#E7EDEB' : '#123644', color: shared ? '#0C8F7E' : '#fff',
-                  fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13,
-                }}>{shared ? 'Code envoyé au prestataire ✓' : "Envoyer le code d'arrivée"}</button>
+                {!onsiteToken ? (
+                  <button onClick={() => makeOnsite(false)} disabled={onsiteBusy} style={{
+                    width: '100%', border: 'none', borderRadius: 999, padding: '10px 0', cursor: onsiteBusy ? 'default' : 'pointer',
+                    background: '#123644', color: '#fff', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13,
+                  }}>{onsiteBusy ? 'Génération…' : 'Je ne serai pas sur place'}</button>
+                ) : (
+                  <>
+                    <div className="ping-qr" style={{ margin: '0 auto' }}>
+                      <QrCode data={`${base}/mission/${tx.id}/scan/onsite?token=${onsiteToken}`} size={170} />
+                    </div>
+                    <p style={{ fontSize: 11, color: '#4E6470', margin: '8px 0', lineHeight: 1.5 }}>
+                      Ce QR n&apos;ouvre l&apos;arrivée que depuis le compte du prestataire de cette mission. Laissez-le à un endroit discret : ne le publiez pas.
+                    </p>
+                    <button onClick={() => router.push(`/mission/${tx.id}/qrcodes/imprimer`)} style={{
+                      width: '100%', border: 'none', borderRadius: 999, padding: '10px 0', cursor: 'pointer',
+                      background: '#123644', color: '#fff', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13,
+                    }}>Imprimer ce QR (A4)</button>
+                    <button onClick={() => makeOnsite(true)} disabled={onsiteBusy} style={{ marginTop: 8, border: 'none', background: 'none', color: '#4E6470', fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>
+                      Générer un nouveau QR (l&apos;ancien ne fonctionnera plus)
+                    </button>
+                  </>
+                )}
+                {onsiteErr && <div role="alert" style={{ marginTop: 8, fontSize: 12, color: '#B3402F' }}>{onsiteErr}</div>}
               </div>
             )}
           </>

@@ -181,6 +181,15 @@ export default function MonAnnoncePage() {
     </div>
   )
 
+  function goComplete(c: { href?: string; anchor?: string }) {
+    if (c.anchor) {
+      setView('edit')
+      setTimeout(() => document.getElementById(c.anchor!)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+      return
+    }
+    if (c.href) router.push(c.href)
+  }
+
   const primaryPrice = pricingShort(pro)
   const priced = [
     { key: 'primary', name: TRADES[pro.trade] || pro.trade, price: primaryPrice },
@@ -237,7 +246,7 @@ export default function MonAnnoncePage() {
               <div style={{ fontSize: 13, fontWeight: 700, color: NAVY }}>{c.label}</div>
               {!c.done && <div style={{ fontSize: 12, color: SLATE, marginTop: 1 }}>{c.hint}</div>}
             </div>
-            {!c.done && c.href && <button style={{ ...link, fontSize: 12.5, flexShrink: 0 }} onClick={() => router.push(c.href!)}>Compléter</button>}
+            {!c.done && (c.href || c.anchor) && <button style={{ ...link, fontSize: 12.5, flexShrink: 0 }} onClick={() => goComplete(c)}>Compléter</button>}
           </div>
         ))}
       </div>
@@ -247,7 +256,7 @@ export default function MonAnnoncePage() {
 
   const editor = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={card}>
+      <div id="ann-photos" style={{ ...card, scrollMarginTop: 16 }}>
         <div style={h3}>Photos principales</div>
         <p style={sub}>La photo de couverture et votre logo ou portrait, en tête de l’annonce.</p>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -273,7 +282,7 @@ export default function MonAnnoncePage() {
         <div style={{ fontSize: 11.5, color: SLATE, textAlign: 'right', marginTop: 4 }}>{headline.length} / {HEADLINE_MAX}</div>
       </div>
 
-      <div style={card}>
+      <div id="ann-bio" style={{ ...card, scrollMarginTop: 16 }}>
         <div style={h3}>Présentation</div>
         <p style={sub}>Qui vous êtes, votre expérience, votre façon de travailler. Au moins {BIO_MIN} caractères.</p>
         <textarea style={{ ...input, minHeight: 120, resize: 'vertical', lineHeight: 1.5 }} value={bio} maxLength={1200}
@@ -315,14 +324,14 @@ export default function MonAnnoncePage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 12.5, color: liveFacts?.placed ? TEAL_D : '#8A6520', fontWeight: 700 }}>
           {liveFacts?.placed ? 'Position enregistrée sur la carte' : 'Position manquante : les clients ne peuvent pas vous trouver'}
-          <button style={{ ...link, fontSize: 12.5, marginLeft: 'auto' }} onClick={() => router.push('/pro/onboarding')}>{liveFacts?.placed ? 'Modifier l’adresse' : 'Ajouter mon adresse'}</button>
+          <button style={{ ...link, fontSize: 12.5, marginLeft: 'auto' }} onClick={() => router.push(`/pro/onboarding?retour=${encodeURIComponent('/pro/annonce')}`)}>{liveFacts?.placed ? 'Modifier l’adresse' : 'Ajouter mon adresse'}</button>
         </div>
       </div>
 
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div style={h3}>Prestations et prix</div>
-          <button style={link} onClick={() => router.push('/pro/tarifs')}>Gérer mes tarifs</button>
+          <button style={link} onClick={() => router.push('/pro/tarifs?retour=%2Fpro%2Fannonce')}>Gérer mes tarifs</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
           {priced.map(p => (
@@ -337,7 +346,7 @@ export default function MonAnnoncePage() {
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div style={h3}>Disponibilités</div>
-          <button style={link} onClick={() => router.push('/pro/disponibilites')}>Gérer mes créneaux</button>
+          <button style={link} onClick={() => router.push('/pro/disponibilites?retour=%2Fpro%2Fannonce')}>Gérer mes créneaux</button>
         </div>
         {slots.length === 0 ? (
           <p style={{ ...sub, margin: '6px 0 0' }}>Aucun créneau libre publié pour les 60 prochains jours. Les clients peuvent toujours vous contacter, mais ne peuvent pas réserver directement.</p>

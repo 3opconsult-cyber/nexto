@@ -4,10 +4,11 @@ import { createClient } from '@/lib/supabase/client'
 import Modal from './Modal'
 
 /**
- * Le prestataire note le client (pendant de ReviewModal, côté pro). Deux critères, des remarques
- * rapides, un mot libre, et le choix : avis publié (autres prestataires + client) ou note privée.
- * Pas de pourboire. Table `client_reviews` (migration 016) : si elle n'existe pas encore, la fenêtre
- * le dit au lieu d'échouer en silence.
+ * Le prestataire note et commente son client (pendant de ReviewModal, côté pro). Deux critères, des
+ * remarques rapides, un commentaire que l'on peut publier (« Publier ce commentaire » : visible de tout
+ * utilisateur connecté, migration 034) et une note personnelle jamais publiée, rangée dans la table
+ * séparée `client_private_notes` (RLS prestataire seul). Pas de pourboire. Table `client_reviews`
+ * (migration 016) : si elle n'existe pas encore, la fenêtre le dit au lieu d'échouer en silence.
  */
 export const CLIENT_TAGS: { key: string; label: string }[] = [
   { key: 'acces_difficile', label: 'Accès difficile' },
@@ -39,7 +40,7 @@ function Stars({ value, onChange, label }: { value: number; onChange: (n: number
 export default function ClientReviewModal({ open, onClose, transactionId, raterId, clientId, clientName, onSubmitted }: {
   open: boolean; onClose: () => void
   transactionId: string; raterId: string; clientId: string; clientName: string
-  onSubmitted?: (r: { stars: number; is_public: boolean; comment: string | null; tags: string[] }) => void
+  onSubmitted?: (r: { stars: number; is_public: boolean; comment: string | null; tags: string[]; private_note?: string | null }) => void
 }) {
   const [accuracy, setAccuracy] = useState(0)
   const [welcome, setWelcome] = useState(0)
@@ -47,6 +48,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [isPublic, setIsPublic] = useState(true)
+  const [privateNote, setPrivateNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [suppressed, setSuppressed] = useState(false)
@@ -72,22 +74,33 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
       accuracy_stars: accuracy, welcome_stars: welcome, stars, recommend,
       tags, comment: comment.trim() || null, is_public: isPublic,
     })
-    setBusy(false)
     if (err) {
+      setBusy(false)
       setError(err.code === '42P01' || /client_reviews/.test(err.message)
         ? 'La notation des clients s’active bientôt (mise à jour de la base en cours).'
         : 'Votre avis n’a pas pu être enregistré. Réessayez.')
       return
     }
-    onSubmitted?.({ stars, is_public: isPublic, comment: comment.trim() || null, tags })
+    // Note personnelle : table séparée (le client ne peut jamais la lire). Un échec ici ne doit pas
+    // faire rejouer l'avis, déjà enregistré.
+    const note = privateNote.trim()
+    let savedNote: string | null = null
+    if (note) {
+      const { error: nErr } = await createClient().from('client_private_notes').insert({
+        seller_id: raterId, client_id: clientId, transaction_id: transactionId, note,
+      })
+      if (!nErr) savedNote = note
+    }
+    setBusy(false)
+    onSubmitted?.({ stars, is_public: isPublic, comment: comment.trim() || null, tags, private_note: savedNote })
     onClose()
   }
 
   return (
-    <Modal open={open && !suppressed} onClose={later} title="Et ce client ?">
+    <Modal open={open && !suppressed} onClose={later} title="Je note et commente mon client">
       <p style={{ fontSize: 13, color: '#4E6470', lineHeight: 1.55, margin: '0 0 14px' }}>
-        Notez <b style={{ color: '#123644' }}>{clientName.replace(/\.$/, "")}</b>. Vous choisissez de publier l&apos;avis (autres prestataires et client)
-        ou de le garder pour vous.
+        Notez <b style={{ color: '#123644' }}>{clientName.replace(/\.$/, "")}</b>. Vous choisissez de publier votre commentaire
+        (visible des utilisateurs connectés) ou de le garder pour vous.
       </p>
       <Stars value={accuracy} onChange={setAccuracy} label="La demande correspondait à la réalité" />
       <Stars value={welcome} onChange={setWelcome} label="Accueil, accès et ponctualité" />
@@ -115,26 +128,32 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
         })}
       </div>
 
-      <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Un mot à ajouter <span style={{ color: '#6E8592', fontWeight: 600 }}>facultatif</span></label>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Mon commentaire sur ce client <span style={{ color: '#6E8592', fontWeight: 600 }}>facultatif</span></label>
       <textarea value={comment} onChange={e => setComment(e.target.value)} rows={3}
-        style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', marginBottom: 14, boxSizing: 'border-box' }} />
+        style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
 
-      <div style={{ display: 'flex', gap: 6, padding: 4, background: '#F3F6F5', borderRadius: 999, marginBottom: 6 }}>
-        {[true, false].map(v => (
-          <button key={String(v)} onClick={() => setIsPublic(v)} aria-pressed={isPublic === v}
-            style={{ flex: 1, padding: '9px 10px', border: 'none', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5, background: isPublic === v ? '#fff' : 'transparent', color: isPublic === v ? '#123644' : '#4E6470', boxShadow: isPublic === v ? '0 1px 3px rgba(18,54,68,.15)' : 'none' }}>
-            {v ? 'Publier l’avis' : 'Note privée'}
-          </button>
-        ))}
-      </div>
+      <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 4 }}>
+        <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: '#123644' }}>Publier ce commentaire</span>
+      </label>
+      <p style={{ fontSize: 11.5, color: '#4E6470', margin: '0 0 16px 28px', lineHeight: 1.5 }}>
+        {isPublic
+          ? 'Votre note, vos remarques et ce commentaire seront visibles de tout utilisateur connecté, dont ce client.'
+          : 'Non publié : visible de vous seul.'}
+      </p>
+
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Note personnelle (jamais publiée) <span style={{ color: '#6E8592', fontWeight: 600 }}>facultatif</span></label>
+      <textarea value={privateNote} onChange={e => setPrivateNote(e.target.value)} rows={3} maxLength={1000}
+        placeholder="Pensez à prendre un escabeau la prochaine fois. Accès difficile, prévenir le client pour se garer."
+        style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', marginBottom: 6, boxSizing: 'border-box' }} />
       <p style={{ fontSize: 11.5, color: '#4E6470', margin: '0 0 14px' }}>
-        {isPublic ? 'Visible des autres prestataires et du client.' : 'Visible de vous seul : un pense-bête pour une prochaine mission.'}
+        Pense-bête pour vous seul : ni le client ni les autres utilisateurs ne la voient. Elle vous est rappelée lors d&apos;une prochaine mission avec ce client.
       </p>
 
       {error && <p style={{ color: '#c0503a', fontSize: 12.5, margin: '0 0 10px' }}>{error}</p>}
       <button onClick={submit} disabled={busy || missing > 0}
         style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', cursor: missing ? 'default' : 'pointer', background: missing ? '#A9DED5' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
-        {busy ? 'Enregistrement…' : missing ? `Encore ${missing} note${missing > 1 ? 's' : ''} à donner` : isPublic ? 'Publier mon avis' : 'Enregistrer ma note'}
+        {busy ? 'Enregistrement…' : missing ? `Encore ${missing} note${missing > 1 ? 's' : ''} à donner` : isPublic ? 'Publier mon commentaire' : 'Enregistrer ma note'}
       </button>
       <button onClick={later} style={{ width: '100%', marginTop: 8, padding: 12, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
         Plus tard

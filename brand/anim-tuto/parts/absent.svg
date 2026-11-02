@@ -1,0 +1,74 @@
+          <g id="gen">
+            <g id="genBtn" transform="translate(125,134)">
+              <rect id="genBtnBg" x="-92" y="-20" width="184" height="40" rx="20" fill="#123644"/>
+              <text id="genBtnTx" y="5" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="14" fill="#fff">Générer mon QR unique</text>
+            </g>
+            <circle id="genTap" cx="125" cy="134" r="10" fill="#fff" opacity="0"/>
+            <g id="genCard">
+              <rect x="68" y="172" width="114" height="114" rx="14" fill="#fff" stroke="#DCE5E3" stroke-width="1.5"/>
+              <g transform="translate(76,180) scale(.842) translate(-68,-140)"><use href="#qrg"/></g>
+              <text x="125" y="314" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12.5" fill="#123644">QR unique pour cette mission</text>
+              <text x="125" y="334" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#4E6470">À afficher ou à imprimer</text>
+              <rect x="44" y="352" width="68" height="26" rx="13" fill="#DDF5F0"/>
+              <text x="78" y="369" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11.5" fill="#0C8F7E">Écran</text>
+              <rect x="122" y="352" width="68" height="26" rx="13" fill="#DDF5F0"/>
+              <text x="156" y="369" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11.5" fill="#0C8F7E">Papier</text>
+            </g>
+          </g>
+
+          <g id="pos">
+            <circle cx="125" cy="170" r="48" fill="#DDF5F0"/>
+            <g transform="translate(125,166) scale(1.2)">
+              <path d="M0 26 C-6 18 -20 8 -20 -4 a20 20 0 1 1 40 0 c0 12 -14 22 -20 30z" fill="#12B39C"/>
+              <circle cy="-4" r="8" fill="#fff"/>
+            </g>
+            <text x="125" y="252" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="17" fill="#123644">Envoyer ma position ?</text>
+            <text x="125" y="276" text-anchor="middle" font-family="Inter" font-size="12" fill="#4E6470">Une seule fois, pour valider</text>
+            <text x="125" y="293" text-anchor="middle" font-family="Inter" font-size="12" fill="#4E6470">mon arrivée chez Sophie.</text>
+            <g id="posBtn" transform="translate(125,338)">
+              <rect id="posBtnBg" x="-76" y="-20" width="152" height="40" rx="20" fill="#12B39C"/>
+              <text id="posBtnTx" y="5" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="14" fill="#fff">J'autorise</text>
+            </g>
+            <circle id="posTap" cx="125" cy="338" r="10" fill="#fff" opacity="0"/>
+            <text x="125" y="382" text-anchor="middle" font-family="Inter" font-size="11" fill="#6E8592">Pas de suivi en direct.</text>
+          </g>
+
+          <g id="cmp">
+            <rect x="20" y="104" width="210" height="68" rx="14" fill="#fff" stroke="#E2ECEA" stroke-width="1.2"/>
+            <text x="34" y="127" font-family="Inter" font-size="10.5" fill="#4E6470">Adresse de la demande</text>
+            <text x="34" y="148" font-family="Quicksand" font-weight="700" font-size="14.5" fill="#123644">12 avenue des Palmiers</text>
+            <text x="34" y="163" font-family="Inter" font-size="11" fill="#4E6470">Antibes</text>
+            <rect x="20" y="184" width="210" height="68" rx="14" fill="#fff" stroke="#12B39C" stroke-width="1.6"/>
+            <text x="34" y="207" font-family="Inter" font-size="10.5" fill="#4E6470">Position envoyée par Marc</text>
+            <text x="34" y="228" font-family="Quicksand" font-weight="700" font-size="14.5" fill="#123644">à 18 m de l'adresse</text>
+            <text x="34" y="243" font-family="Inter" font-size="11" fill="#4E6470">à l'instant</text>
+            <g id="cmpOk" transform="translate(125,310)">
+              <circle r="30" fill="#2FD06E"/>
+              <path d="M-13 1 L-4 10 L14 -9" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <g id="cmpTx">
+              <text x="125" y="368" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="17" fill="#123644">Adresse concordante</text>
+              <text x="125" y="388" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#4E6470">la position n'est pas conservée</text>
+            </g>
+          </g>
+
+          <g id="code">
+            <rect x="20" y="104" width="210" height="200" rx="18" fill="#fff" stroke="#12B39C" stroke-width="1.6"/>
+            <rect x="52" y="122" width="146" height="24" rx="12" fill="#DDF5F0"/>
+            <text x="125" y="139" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11.5" fill="#0C8F7E">Message dans l'application</text>
+            <text x="125" y="180" text-anchor="middle" font-family="Inter" font-size="12" fill="#4E6470">Code d'arrivée de la mission</text>
+            <text x="125" y="234" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="40" letter-spacing="3" fill="#123644">482 716</text>
+            <text x="125" y="266" text-anchor="middle" font-family="Inter" font-size="12" fill="#4E6470">Valable pour cette mission seulement</text>
+            <text x="125" y="288" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12.5" fill="#0C8F7E">À transmettre à Marc</text>
+          </g>
+
+          <g id="type">
+            <text x="125" y="124" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="16" fill="#123644">Code du client</text>
+            <text x="125" y="144" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#4E6470">Saisissez le code reçu par Sophie</text>
+            <g id="typeBoxes"></g>
+            <g id="typeBtn" transform="translate(125,252)">
+              <rect id="typeBtnBg" x="-80" y="-20" width="160" height="40" rx="20" fill="#123644"/>
+              <text y="5" text-anchor="middle" font-family="Quicksand" font-weight="700" font-size="14" fill="#fff">Valider l'arrivée</text>
+            </g>
+            <circle id="typeTap" cx="125" cy="252" r="10" fill="#fff" opacity="0"/>
+          </g>

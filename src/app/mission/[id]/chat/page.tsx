@@ -84,7 +84,8 @@ export default function ChatPage() {
   const [askReview, setAskReview] = useState(false)
   // Côté prestataire : son avis sur le client (table client_reviews, migration 016).
   const [askClientReview, setAskClientReview] = useState(false)
-  const [myClientReview, setMyClientReview] = useState<{ stars: number; is_public: boolean; comment: string | null; tags: string[] } | null>(null)
+  const [myClientReview, setMyClientReview] = useState<{ stars: number; is_public: boolean; comment: string | null; tags: string[]; private_note?: string | null } | null>(null)
+  const [clientNotes, setClientNotes] = useState<{ note: string; created_at: string; transaction_id: string }[]>([])
   const [clientRating, setClientRating] = useState<{ avg: number; n: number } | null>(null)
   const [req, setReq] = useState<any>(null)
   const [rdvAddr, setRdvAddr] = useState('')
@@ -157,6 +158,10 @@ export default function ChatPage() {
           // Note publique du client (avis des autres prestataires), pour se faire une idée.
           const { data: pub, error: crErr } = await supabase.from('client_reviews').select('stars').eq('client_id', t.buyer_id).eq('is_public', true)
           if (!crErr && pub?.length) setClientRating({ avg: pub.reduce((a: number, r: any) => a + r.stars, 0) / pub.length, n: pub.length })
+          // Mes notes personnelles sur ce client (table client_private_notes, RLS prestataire seul).
+          const { data: notes, error: nErr } = await supabase.from('client_private_notes').select('note, created_at, transaction_id')
+            .eq('seller_id', user.id).eq('client_id', t.buyer_id).order('created_at', { ascending: false }).limit(5)
+          if (!nErr && notes) setClientNotes(notes as any)
           if (!crErr && ['completed', 'released'].includes(t.status)) {
             const { data: mine } = await supabase.from('client_reviews').select('stars, is_public, comment, tags')
               .eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle()
@@ -456,6 +461,21 @@ export default function ChatPage() {
       {tx && tx.buyer_id === tx.seller_id && (
         <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(229,72,77,.08)', color: '#C0503A', fontSize: 12.5, fontWeight: 600, lineHeight: 1.5 }}>
           Mission de test invalide : vous êtes à la fois le client et le prestataire. Elle ne correspond à aucun vrai parcours et sera supprimée.
+        </div>
+      )}
+
+      {/* Notes personnelles du prestataire sur ce client (jamais visibles du client). */}
+      {tx && userId === tx.seller_id && clientNotes.length > 0 && (
+        <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: '#fff', border: '1.5px solid #DCE5E3' }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 4 }}>
+            Vos notes personnelles sur ce client · visibles de vous seul
+          </div>
+          {clientNotes.map((n, i) => (
+            <p key={i} style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5, margin: i ? '6px 0 0' : 0 }}>
+              {n.note}
+              <span style={{ color: '#6E8592', fontSize: 11 }}> · {new Date(n.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            </p>
+          ))}
         </div>
       )}
 
@@ -777,17 +797,18 @@ export default function ChatPage() {
         {myClientReview && (
           <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #DCE5E3', borderRadius: 16, padding: '14px 18px' }}>
             <div style={{ fontSize: 10.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>
-              Votre avis sur le client · {myClientReview.is_public ? 'publié' : 'note privée'}
+              Mon avis sur le client · {myClientReview.is_public ? 'commentaire publié' : 'non publié'}
             </div>
             <span style={{ fontSize: 18, color: '#F2A93B', letterSpacing: 1 }}>{'★'.repeat(myClientReview.stars)}<span style={{ color: '#DCE5E3' }}>{'★'.repeat(5 - myClientReview.stars)}</span></span>
             {myClientReview.tags?.length > 0 && <div style={{ fontSize: 12, color: '#4E6470', marginTop: 6 }}>{myClientReview.tags.map(k => CLIENT_TAGS.find(t => t.key === k)?.label || k).join(' · ')}</div>}
             {myClientReview.comment && <p style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5, margin: '6px 0 0' }}>{myClientReview.comment}</p>}
+            {myClientReview.private_note && <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>Note personnelle (jamais publiée) : {myClientReview.private_note}</p>}
           </div>
         )}
         {tx && userId === tx.seller_id && !myClientReview && ['completed', 'released'].includes(tx.status) && tx.buyer_id !== tx.seller_id && (
           <button onClick={() => { try { localStorage.removeItem(`ping_client_review_later_${tx.id}`) } catch { } setAskClientReview(true) }}
             style={{ alignSelf: 'center', border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-            Noter ce client
+            Je note et commente mon client
           </button>
         )}
         <div ref={bottomRef} />

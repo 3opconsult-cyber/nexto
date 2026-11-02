@@ -191,7 +191,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
           )}
 
           {done && (!isBuyer || clientReview) && (
-            <Section title={isBuyer ? 'Avis du prestataire sur vous' : `Votre avis sur le client${clientReview ? (clientReview.is_public ? ' · publié' : ' · note privée') : ''}`}>
+            <Section title={isBuyer ? 'Avis du prestataire sur vous' : `Votre avis sur le client${clientReview ? (clientReview.is_public ? ' · commentaire publié' : ' · non publié') : ''}`}>
               {clientReview ? (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0' }}>

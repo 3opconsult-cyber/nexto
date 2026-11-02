@@ -7,6 +7,7 @@ import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
 import { addDays, atMinutes, hm, minutesOfDay, sameDay, startOfDay, startOfWeek } from '@/components/calendar/dates'
 import { fetchSlotsBetween, slotEnd, type Slot } from '@/lib/slots'
 import { TRADES } from '@/lib/trades'
+import RetourLink from '@/components/RetourLink'
 import { DONE, isConfirmed, durationMinutes, txEnd } from '@/lib/agenda'
 
 // Mes disponibilités — façon calendrier d'hôte Airbnb, sans glisser ni petite grille horaire
@@ -146,6 +147,7 @@ export default function Disponibilites() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
+      <RetourLink />
       <div style={{ background: '#123644', padding: '16px 20px 22px' }}>
         <NavDrawer />
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '18px 0 4px' }}>Espace prestataire</div>

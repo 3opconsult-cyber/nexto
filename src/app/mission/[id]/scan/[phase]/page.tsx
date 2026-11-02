@@ -44,6 +44,22 @@ export default function ScanQR() {
       if (!tx) { setStatus('error'); setMessage('Mission introuvable pour ce compte. Connectez-vous avec le compte du prestataire de la mission.'); return }
       if (tx.status === 'cancelled') { setStatus('error'); setMessage('Cette réservation a été annulée.'); return }
 
+      // Voie A : QR laissé sur place par le client. Validation par RPC (prestataire seul, jeton à usage unique) ;
+      // aucun relevé GPS ici.
+      if (params.phase === 'onsite') {
+        if (tx.arrived_at) { setStatus('ok'); setMessage('Arrivée déjà enregistrée.'); return }
+        const { error: rpcErr } = await supabase.rpc('arrive_with_onsite_token', { p_transaction: tx.id, p_token: token })
+        if (rpcErr) { setStatus('error'); setMessage(rpcErr.message || 'Code invalide ou déjà utilisé.'); return }
+        setStatus('ok'); setMessage('Arrivée validée.')
+        if (tx.hourly_rate_cents) setMessage(m => m + ' Le temps commence à courir.')
+        await supabase.from('messages').insert({
+          transaction_id: tx.id, ...(await systemSender(supabase)),
+          body: `✓ Arrivée validée à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} — QR laissé sur place par le client${tx.hourly_rate_cents ? ' — le chrono démarre' : ''}`,
+        })
+        trackEvent('qr_scan_arrival', { transaction_id: tx.id, method: 'qr_sur_place' })
+        return
+      }
+
       const isArrival = params.phase === 'arrival'
       const expectedToken = isArrival ? tx.qr_arrival_token : tx.qr_complete_token
 

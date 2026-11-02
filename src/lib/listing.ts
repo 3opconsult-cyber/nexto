@@ -37,7 +37,11 @@ type Cols = { pricing_type?: string | null; base_price_cents?: number | null; ho
 export const hasPrice = (c: Cols) =>
   c.pricing_type === 'devis' || (c.base_price_cents ?? 0) > 0 || (c.hourly_rate_cents ?? 0) > 0 || (c.price_cents ?? 0) > 0
 
-export type ListingCheck = { key: string; label: string; done: boolean; href?: string; hint: string }
+export type ListingCheck = { key: string; label: string; done: boolean; href?: string; anchor?: string; hint: string }
+
+// Page de retour transmise aux écrans de saisie (?retour=) pour afficher « Retour à mon annonce ».
+export const LISTING_RETURN = '/pro/annonce'
+const back = (path: string) => `${path}?retour=${encodeURIComponent(LISTING_RETURN)}`
 
 export type ListingFacts = {
   photo: boolean
@@ -50,12 +54,12 @@ export type ListingFacts = {
 
 export function listingChecks(f: ListingFacts): ListingCheck[] {
   return [
-    { key: 'photo', label: 'Une photo', done: f.photo, hint: 'Une photo de couverture ou un logo.' },
-    { key: 'bio', label: `Une présentation d’au moins ${BIO_MIN} caractères`, done: f.bioLength >= BIO_MIN, hint: f.bioLength ? `${f.bioLength} / ${BIO_MIN} caractères pour l’instant.` : 'Quelques phrases sur vous et votre façon de travailler.' },
-    { key: 'tarif', label: 'Au moins un tarif', done: f.tarifs > 0, href: '/pro/tarifs', hint: 'Indispensable pour être réservé.' },
-    { key: 'position', label: 'Votre position sur la carte', done: f.placed, href: '/pro/onboarding', hint: 'Votre adresse, pour apparaître près des clients.' },
-    { key: 'creneau', label: 'Au moins un créneau libre', done: f.slots > 0, href: '/pro/disponibilites', hint: 'Les clients réservent directement un créneau.' },
-    { key: 'identite', label: 'Pièce d’identité fournie', done: f.identity, href: '/pro/documents', hint: 'Affichée « fournie » sur votre annonce.' },
+    { key: 'photo', label: 'Une photo', done: f.photo, anchor: 'ann-photos', hint: 'Une photo de couverture ou un logo.' },
+    { key: 'bio', label: `Une présentation d’au moins ${BIO_MIN} caractères`, done: f.bioLength >= BIO_MIN, anchor: 'ann-bio', hint: f.bioLength ? `${f.bioLength} / ${BIO_MIN} caractères pour l’instant.` : 'Quelques phrases sur vous et votre façon de travailler.' },
+    { key: 'tarif', label: 'Au moins un tarif', done: f.tarifs > 0, href: back('/pro/tarifs'), hint: 'Indispensable pour être réservé.' },
+    { key: 'position', label: 'Votre position sur la carte', done: f.placed, href: back('/pro/onboarding'), hint: 'Votre adresse, pour apparaître près des clients.' },
+    { key: 'creneau', label: 'Au moins un créneau libre', done: f.slots > 0, href: back('/pro/disponibilites'), hint: 'Les clients réservent directement un créneau.' },
+    { key: 'identite', label: 'Pièce d’identité fournie', done: f.identity, href: back('/pro/documents'), hint: 'Affichée « fournie » sur votre annonce.' },
   ]
 }
 

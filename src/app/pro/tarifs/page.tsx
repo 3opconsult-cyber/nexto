@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import PricingEditor from '@/components/PricingEditor'
 import { TRADES } from '@/lib/trades'
+import RetourLink from '@/components/RetourLink'
 import { type PricingDraft, draftFromColumns, emptyDraft, pricingShort, pricingSummary, toColumns, validateDraft } from '@/lib/servicePricing'
 
 type Cols = {
@@ -155,6 +156,7 @@ export default function ProTarifsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
+      <RetourLink />
       <div style={{ background: '#123644', padding: '16px 20px 20px' }}>
         <NavDrawer />
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '16px 0 4px' }}>Espace prestataire</div>

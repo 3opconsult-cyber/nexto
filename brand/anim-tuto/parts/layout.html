@@ -1,0 +1,23 @@
+<div class="layout">
+  <div class="player">
+    <div class="stage">
+      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="%%ARIA%%">
+%%SVG%%
+      </svg>
+    </div>
+    <div class="controls">
+      <button id="play" type="button">Pause</button>
+      <button id="replay" class="ghost" type="button">Rejouer</button>
+      <input id="scrub" type="range" min="0" max="30" step="0.01" value="0" aria-label="Position dans l'animation">
+      <span class="time" id="tc">0,0 s</span>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="eyebrow">%%EYEBROW%%</div>
+    <h1>%%H1%%</h1>
+    <p class="lead">%%LEAD%%</p>
+    <ol class="scenes" id="scenes"></ol>
+    <p class="foot">Le décor, Marc, les écrans et les couleurs sont ceux de l'animation PING de référence (<a href="/animation" style="color:var(--teal); font-weight:600;">/animation</a>). Les montants et horaires sont des exemples.</p>
+  </aside>
+</div>

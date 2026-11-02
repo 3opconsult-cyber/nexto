@@ -57,16 +57,16 @@ export default function ProListingPreview({ pro, name, services, hasIdentity, ha
         <ListingExtras part="gallery" gallery={pro.gallery_paths} />
         <ListingExtras part="zone" radiusKm={pro.service_radius_km} />
 
-        <div className="ping-h2">Informations déclarées par le pro</div>
+        <div className="ping-h2">Informations déclarées</div>
         {hasIdentity && (
           <div className="ping-vrow ok">
-            <div className="ping-vt"><b>Pièce d'identité fournie</b><small>Déposée sur PING par le pro</small></div>
+            <div className="ping-vt"><b>Pièce d'identité fournie</b><small>Déposée sur PING par le prestataire</small></div>
             <div className="ping-vs">Fournie</div>
           </div>
         )}
         {hasRcpro && (
           <div className="ping-vrow ok">
-            <div className="ping-vt"><b>Assurance resp. civile</b><small>Renseignée par le pro (casse/dommage)</small></div>
+            <div className="ping-vt"><b>Assurance resp. civile</b><small>Renseignée par le prestataire (casse/dommage)</small></div>
             <div className="ping-vs">Renseignée</div>
           </div>
         )}

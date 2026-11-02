@@ -39,6 +39,7 @@ export default function NewOpenRequestPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [surface, setSurface] = useState('')
+  const [pieces, setPieces] = useState(0)
   const [hours, setHours] = useState<number | null>(2)
   const [kilos, setKilos] = useState<number | null>(null)
   const [linen, setLinen] = useState<string[]>([])
@@ -114,7 +115,7 @@ export default function NewOpenRequestPage() {
     const maxCents = budgetMax ? Math.round(Number(budgetMax) * 100) : null
     const surfaceN = surface ? Math.round(Number(surface)) : null
 
-    const { error: reqErr } = await supabase.from('requests').insert({
+    const row: Record<string, any> = {
       requester_id: user.id, category, title: title.trim(), description: description.trim(),
       budget_min_cents: minCents, budget_max_cents: maxCents,
       budget_cents: maxCents ?? minCents,
@@ -127,7 +128,14 @@ export default function NewOpenRequestPage() {
       address,
       lat: point.lat, lng: point.lng,
       status: 'open', urgent,
-    })
+    }
+    if (!linenService && pieces > 0) row.nombre_pieces = pieces
+    let { error: reqErr } = await supabase.from('requests').insert(row)
+    // Colonne nombre_pieces pas encore posée (migration 032) : on republie sans ce champ.
+    if (reqErr && 'nombre_pieces' in row && /nombre_pieces/i.test(reqErr.message || '')) {
+      delete row.nombre_pieces
+      ;({ error: reqErr } = await supabase.from('requests').insert(row))
+    }
     if (reqErr) { setError('Impossible de publier l’annonce. Réessayez dans un instant.'); setCreating(false); return }
 
     router.push('/client/demandes')
@@ -188,10 +196,22 @@ export default function NewOpenRequestPage() {
           </Section>
         ) : (
           <Section title="Le logement" hint="Surface et durée souhaitée, pour une proposition au plus juste.">
-            <label style={{ display: 'block', marginBottom: 14 }}>
-              <span style={labelStyle}>Surface (m²)</span>
-              <input type="number" inputMode="numeric" min="1" value={surface} onChange={e => setSurface(e.target.value)} style={{ ...fieldStyle, maxWidth: 160 }} />
-            </label>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 14 }}>
+              <label style={{ display: 'block' }}>
+                <span style={labelStyle}>Surface (m²)</span>
+                <input type="number" inputMode="numeric" min="1" value={surface} onChange={e => setSurface(e.target.value)} style={{ ...fieldStyle, width: 140 }} />
+              </label>
+              <div>
+                <span style={labelStyle}>Nombre de pièces</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+                  <button type="button" aria-label="Moins de pièces" disabled={pieces <= 0} onClick={() => setPieces(Math.max(0, pieces - 1))}
+                    style={{ width: 40, height: 40, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces <= 0 ? .45 : 1 }}>−</button>
+                  <span aria-live="polite" style={{ minWidth: 28, textAlign: 'center', fontWeight: 700, fontSize: 16, color: '#123644' }}>{pieces || '–'}</span>
+                  <button type="button" aria-label="Plus de pièces" disabled={pieces >= 30} onClick={() => setPieces(Math.min(30, pieces + 1))}
+                    style={{ width: 40, height: 40, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces >= 30 ? .45 : 1 }}>+</button>
+                </div>
+              </div>
+            </div>
             <span style={labelStyle}>Nombre d’heures souhaité</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
               {HOURS.map(h => <button key={h} type="button" onClick={() => setHours(hours === h ? null : h)} style={chip(hours === h)}>{String(h).replace('.', ',')} h</button>)}

@@ -598,3 +598,9 @@ audit.client.claude@ping-demo.invalid, mdp AuditPing2026!.
 
 ## Onboarding pro — téléphone et particulier (02/11/2026)
 Téléphone obligatoire à l'étape « Où intervenez-vous ? » (format français, `profiles.phone_enc`, comme le profil client ; jamais affiché publiquement). Un pro « particulier » n'a ni étape entreprise ni justificatif SIRET/Kbis (`siret` nullable) ; plus d'animation après l'inscription (tutoriel en page d'accueil seulement).
+
+## 02/11/2026 (soir) — client absent, avis client, tutos, fictifs
+- **Migrations à coller** (non appliquées par Claude, accès Supabase refusé) : `supabase/a_coller/appliquer_032_033_034.sql` (nombre de pièces ; arrivée client absent : QR unique `create_onsite_token`/`arrive_with_onsite_token`, géoloc + code 6 chiffres `request_arrival_code`/`arrive_with_code`, API `/api/arrival` ; `client_private_notes` + lecture publique des avis client publiés). Puis `supabase/a_coller/prestataires_fictifs_scenarios.sql` (Fictif 11-19, avis 5★ sobres, pourboires). Heure entamée : régler 10 min dans `/admin/commission`.
+- Seul le prestataire pose l'arrivée (jamais le client). GPS uniquement pour la validation « client absent », avec consentement. SMS : `sendSms()` désactivée (aucun fournisseur).
+- Tutos animés construits sur les scènes de `/animation` : `/animation-tuto` (après la commande, heure entamée) et `/animation-tuto-absent` ; source `brand/anim-tuto/build.py`.
+- `RetourLink` (`?retour=`) sur tarifs/documents/disponibilités depuis `/pro/annonce`.

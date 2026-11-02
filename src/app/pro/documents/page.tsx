@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import NavDrawer from '@/components/NavDrawer'
+import RetourLink from '@/components/RetourLink'
 import Modal from '@/components/Modal'
 
 /**
@@ -150,6 +151,7 @@ export default function ProDocumentsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
+      <RetourLink />
       <input ref={photoRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
         onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
       <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.heic" style={{ display: 'none' }}

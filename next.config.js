@@ -3,7 +3,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|plaquettes|animation|animation-pro|animation-inscription|animation-ping|bienvenue|plan-marketing).html',
+        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|plaquettes|animation|animation-pro|animation-inscription|animation-ping|animation-tuto|animation-tuto-absent|bienvenue|plan-marketing).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
       {
@@ -40,6 +40,8 @@ const nextConfig = {
         { source: '/animation-pro', destination: '/animation-pro.html' },
         { source: '/animation-inscription', destination: '/animation-inscription.html' },
         { source: '/animation-ping', destination: '/animation-ping.html' },
+        { source: '/animation-tuto', destination: '/animation-tuto.html' },
+        { source: '/animation-tuto-absent', destination: '/animation-tuto-absent.html' },
         { source: '/bienvenue', destination: '/bienvenue.html' },
         { source: '/plan-marketing', destination: '/plan-marketing.html' },
       ],
