@@ -49,7 +49,7 @@ export default function LoginPage() {
   async function resetPassword() {
     setError(''); setInfo('')
     if (!email.trim()) { setError('Indiquez votre email ci-dessus, puis cliquez à nouveau sur « Mot de passe oublié ? ».'); return }
-    const { error } = await createClient().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/login` })
+    const { error } = await createClient().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/reset` })
     if (error) setError('L’envoi du lien a échoué. Réessayez dans un instant.')
     else setInfo('Si un compte existe pour cet email, un lien de réinitialisation vient d’y être envoyé (pensez aux spams).')
   }
