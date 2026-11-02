@@ -85,9 +85,20 @@ export default function Calendar({
   const measured = useNarrow(root)
   const narrow = !!measured
   const [view, setView] = useState<CalView | null>(defaultView ?? null)
-  const [cursor, setCursor] = useState(() => startOfDay(initialDate ?? new Date()))
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => { const id = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(id) }, [])
+  // La page est préparée côté serveur à la date du build : lire « aujourd'hui » au premier rendu faisait
+  // diverger serveur et navigateur (erreur React #418) dès le lendemain. Premier rendu = date fixe, puis
+  // la vraie date est posée juste après l'affichage.
+  const [ready, setReady] = useState(false)
+  const [cursor, setCursor] = useState(() => startOfDay(initialDate ?? new Date(0)))
+  const [now, setNow] = useState(() => new Date(0))
+  useEffect(() => {
+    setReady(true)
+    setNow(new Date())
+    if (!initialDate) setCursor(startOfDay(new Date()))
+    const id = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Vue par défaut selon l'écran : jour sur téléphone, semaine sur ordinateur.
   useEffect(() => {
@@ -135,7 +146,7 @@ export default function Calendar({
           <button type="button" onClick={() => setCursor(startOfDay(new Date()))} style={btn}>Aujourd&apos;hui</button>
           <button type="button" aria-label="Suivant" onClick={() => move(1)} style={btn}><Chevron dir="r" /></button>
         </div>
-        <b style={{ flex: 1, minWidth: 140, fontFamily: 'Quicksand, sans-serif', fontSize: 15.5, textTransform: 'capitalize' }}>{title}</b>
+        <b style={{ flex: 1, minWidth: 140, fontFamily: 'Quicksand, sans-serif', fontSize: 15.5, textTransform: 'capitalize' }}>{ready ? title : "\u00a0"}</b>
         {views.length > 1 && (
           <div style={{ display: 'flex', background: C.paper, borderRadius: 11, padding: 3 }}>
             {views.map(x => (
