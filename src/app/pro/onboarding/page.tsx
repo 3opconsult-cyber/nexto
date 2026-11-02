@@ -256,8 +256,27 @@ export default function ProOnboarding() {
               onChange={d => setPricing(p => ({ ...p, [k]: d }))} />
           </div>
         ))}
+        {SERVICES.some(t => !services.includes(t.key)) && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: '#4E6470', marginBottom: 8 }}>Ajouter une prestation</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {SERVICES.filter(t => !services.includes(t.key)).map(t => (
+                <button key={t.key} type="button" onClick={() => setServices(sv => sv.includes(t.key) ? sv : [...sv, t.key])}
+                  style={{ border: '1.5px dashed #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '8px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                  + {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {services.length > 1 && (
+          <button type="button" onClick={() => setServices(sv => sv.slice(0, -1))}
+            style={{ background: 'none', border: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', marginBottom: 10 }}>
+            Retirer la dernière prestation
+          </button>
+        )}
         {showPricingErrors && !allValid && (
-          <p style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600 }}>Complétez le tarif de chaque service pour continuer.</p>
+          <p style={{ color: 'var(--danger, #C0503A)', fontSize: 12.5, fontWeight: 600 }}>Complétez le tarif de chaque service pour continuer.</p>
         )}
       </OnboardingStep>
     )
