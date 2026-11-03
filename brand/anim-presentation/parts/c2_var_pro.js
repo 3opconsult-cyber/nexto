@@ -7,7 +7,7 @@
     screens: [['sDem', 7.8], ['sProf', 31.0], ['sTar', 34.6], ['sDisp', 38.8], ['sOn', 41.0]],
     // Écrans d'argument ajoutés le 3/11 (avant « Moins de factures ») : pièces déposées, visibilité sur la carte.
     extra: [
-      { i: 'shield', l: [['Ajoutez vos pièces'], ['pour apparaître.', 'g']], s: ['Assurance, diplôme : montrez vos qualités,', 'vos pièces fournies sont visibles', 'des clients sur votre profil.'] },
+      { i: 'shield', l: [['Ajoutez vos pièces'], ['pour apparaître.', 'g']], s: ['Profil vérifié par PING : montrez vos qualités,', 'vos pièces sont visibles des clients.'], badges: [{ i: 'idc', t: 'Pièce|d’identité' }, { i: 'shield', t: 'Assurance' }, { i: 'building', t: 'Kbis' }, { i: 'doc', t: 'Attestation|URSSAF' }, { i: 'done', t: 'Missions|réalisées' }] },
       { i: 'pin', l: [['Où que vous soyez,'], ['PING vous rend visible.', 'g']], s: ['Les clients autour de vous', 'vous voient sur la carte.'] }
     ],
     args: [7, 8, 1, 3, 4, 5, 6],         // créneaux 43,2 + 3 s × n (écrans « Moins de factures » et « Moins d'administratif » retirés, 03/11)

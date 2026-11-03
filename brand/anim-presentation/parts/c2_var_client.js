@@ -9,7 +9,7 @@
     label: function(t){ return 'PING · L’application'; },
     screens: [['sMap', 4.6], ['sChat', 10.8], ['sMapT', 26.9]],
     extra: [
-      { i: 'idc', l: [['Des profils'], ['détaillés.', 'g']], s: ['Pièces fournies, assurance renseignée :', 'vous savez qui vient.'] },
+      { i: 'idc', l: [['Des profils'], ['vérifiés par PING.', 'g']], s: ['Photo et pièces contrôlées :', 'vous savez qui vient.'], badges: [{ i: 'idc', t: 'Pièce|d’identité' }, { i: 'shield', t: 'Assurance' }, { i: 'building', t: 'Kbis' }, { i: 'doc', t: 'Attestation|URSSAF' }, { i: 'done', t: 'Missions|réalisées' }] },
       { i: 'scales', l: [['Un service litige,'], ['tout est centralisé.', 'g']], s: ['Historique, factures, échanges et dossier', 'de litige au même endroit.'] }
     ],
     args: [7, 3, 4, 8],   // 7 profils · 3 QR · 4 avis · 8 litige

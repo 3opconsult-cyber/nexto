@@ -27,6 +27,8 @@
   IC.folder = 'M3 6.5h6.5l2 2.5H21v10.5H3z';
   IC.qr = 'M4 4h6v6H4z|M14 4h6v6h-6z|M4 14h6v6H4z|M14 14h2.5v2.5H14z|M18 14h2v2|M14 19h2M18 18.5h2v1.5h-3';
   IC.star = 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z';
+  IC.building = 'M5 21V5l7-2 7 2v16|M9 9h2|M13 9h2|M9 13h2|M13 13h2|M10 21v-4h4v4';
+  IC.done = 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18|M8 12l3 3 5-6';
   IC.shield = 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z|M8.5 12l2.5 2.5L16 9.5';
   IC.scales = 'M12 3v18M5 7h14|M5 7l-3 7a3.2 3.2 0 0 0 6 0L5 7z|M19 7l-3 7a3.2 3.2 0 0 0 6 0l-3-7z';
   var NAVY = '#123644', TEAL = '#12B39C', INK = '#123644', GREY = '#4E6470', ORANGE = '#E8743B', GOLD = '#F2A93B';
@@ -407,6 +409,12 @@
     var y0 = 452;
     A.ln = A.l.map(function(L, k){ return tx(c, 270, y0 + k*46, L[0], {f:'Q', s:31, a:'middle', c: L[1] === 'g' ? '#2FD06E' : (L[1] === 'y' ? GOLD : '#fff')}); });
     if (A.s) [].concat(A.s).forEach(function(line, k){ tx(c, 270, 610 + k*22, line, {s:15.5, c:'#9DB4BC', a:'middle'}); });
+    if (A.badges) A.badges.forEach(function(B, k){   // pictogrammes de vérification : icône dans une pastille + libellé
+      var bx = 270 + (k - (A.badges.length - 1)/2) * 100, by = A.s ? 618 + [].concat(A.s).length*22 + 44 : 690;
+      el('circle', {cx:bx, cy:by, r:27, fill:'#1E4352', stroke:'#2FD06E', 'stroke-width':1.4}, c);
+      icon(c, B.i, bx, by, 1.1, '#2FD06E', 1.8);
+      B.t.split('|').forEach(function(line, j){ tx(c, bx, by + 46 + j*14, line, {s:11.5, w:700, c:'#DDE9EC', a:'middle'}); });
+    });
     for (var d = 0; d < ARGS.length; d++) el('circle', {cx:270 + (d - (ARGS.length - 1)/2)*22, cy:830, r:4.5, fill: d === n ? '#2FD06E' : '#fff', opacity: d === n ? 1 : .3}, c);
     c.ic = ic; return c;
   });
