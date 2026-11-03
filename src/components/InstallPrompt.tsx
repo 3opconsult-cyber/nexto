@@ -30,7 +30,11 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     if (!PAGES.some(p => path === p || path.startsWith(p + '/'))) { setShow(false); return }
-    try { if (localStorage.getItem(KEY)) return } catch { /* ignore */ }
+    try {
+      if (localStorage.getItem(KEY)) return
+      // Application deja installee (ouverte depuis sa vignette) : jamais d'invite.
+      if (window.matchMedia('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone) return
+    } catch { /* ignore */ }
     let off = false
     createClient().auth.getSession().then(({ data }) => {
       if (!off && data.session) setTimeout(() => !off && setShow(true), 1500)
