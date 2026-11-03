@@ -153,7 +153,7 @@ HTML = r'''<!doctype html>
 <template id="t-beta">
     <div class="slide betaw">
       <h2>Bienvenue sur PING — version bêta</h2>
-      <p>Inscrivez-vous : tout fonctionne, à l'exception des paiements et de la transaction réelle entre prestataires et clients. Nous vous sollicitons pour un test : votre avis sur l'ergonomie, les options qui vous manquent, vos observations et commentaires. Vous pouvez les laisser dans la petite bulle verte, sur la droite, une fois inscrit(e). Votre inscription et vos commentaires sont conservés. Merci encore pour votre participation.</p>
+      <p>Inscrivez-vous, comme particulier ou comme prestataire (vous pouvez essayer les deux côtés) : tout fonctionne, à l'exception des paiements et de la transaction réelle entre prestataires et clients. Nous vous sollicitons pour un test : votre avis sur l'ergonomie, les options qui vous manquent, vos observations et commentaires. Vous pouvez les laisser dans la petite bulle verte, sur la droite, une fois inscrit(e). Votre inscription et vos commentaires sont conservés. Merci encore pour votre participation.</p>
       <a class="cta a" id="betago" href="/l/ins"><span>Continuer vers l'inscription</span>%%ARROW%%</a>
     </div>
 </template>
