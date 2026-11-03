@@ -28,7 +28,7 @@ export default function VisitorBar() {
         <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: 440, background: '#123644', color: '#fff', borderRadius: 18, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 10px 30px rgba(18,54,68,.3)', fontFamily: 'Inter, sans-serif' }}>
           <Link href="/bienvenue" aria-label="Retour à la présentation" style={{ color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700, padding: '8px 10px', borderRadius: 12, background: 'rgba(255,255,255,.12)', whiteSpace: 'nowrap' }}>← Présentation</Link>
           <span style={{ flex: 1, fontSize: 12, lineHeight: 1.3, color: 'rgba(255,255,255,.82)' }}>Vous découvrez PING en avant-première.</span>
-          <Link href="/l/ins" style={{ background: '#12B39C', color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700, padding: '9px 12px', borderRadius: 12, whiteSpace: 'nowrap' }}>Créer mon compte</Link>
+          <Link href="/l/vb" style={{ background: '#12B39C', color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700, padding: '9px 12px', borderRadius: 12, whiteSpace: 'nowrap' }}>Créer mon compte</Link>
         </div>
       </div>
     </>

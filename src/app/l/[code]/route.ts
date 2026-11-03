@@ -69,6 +69,9 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   // --- inscription pro depuis la plaquette / l'animation prestataires (/plaquettes, /animation-inscription?part=pro) ---
   insp: { path: '/pro/onboarding', source: 'plaquette', medium: 'web', content: 'inscription_pro' },
 
+  // --- barre « Créer mon compte » affichée aux visiteurs qui découvrent l'application (VisitorBar) ---
+  vb:  { path: '/auth/signup', source: 'application', medium: 'barre_visiteur', content: 'decouverte' },
+
   // --- avant-première : page d'accueil /bienvenue envoyée aux prospects (liens, SMS, e-mails) ---
   bv:  { path: '/bienvenue', source: 'prospection', medium: 'lien', content: 'bienvenue' },
 
