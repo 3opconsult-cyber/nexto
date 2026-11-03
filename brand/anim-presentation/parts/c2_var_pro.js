@@ -5,11 +5,18 @@
   var VAR = {
     label: function(t){ return t < 30.6 ? 'PING · Côté prestataire' : 'PING · Je suis prestataire'; },
     screens: [['sDem', 7.8], ['sProf', 31.0], ['sTar', 34.6], ['sDisp', 38.8], ['sOn', 41.0]],
+    // Écrans d'argument ajoutés le 3/11 (avant « Moins de factures ») : pièces déposées, visibilité sur la carte.
+    extra: [
+      { i: 'shield', l: [['Déposez'], ['vos pièces.', 'g']], s: ['Assurance, diplôme : vos pièces fournies', 'apparaissent sur votre profil, visibles', 'des clients à chaque intervention.'] },
+      { i: 'pin', l: [['Où que vous soyez,'], ['PING vous rend visible.', 'g']], s: ['Les clients autour de vous', 'vous voient sur la carte.'] }
+    ],
+    args: [7, 8, 0, 1, 2, 3, 4, 5, 6],   // créneaux 43,2 + 3 s × n
+    end0: 70.2,                           // écran final : 43,2 + 9 écrans × 3 s
     caps: function(C){
       C.splice(0, 9, { a: 7.8, b: 10.6, lines: ['Les demandes autour de vous,', 'urgentes en orange.'] },
                      { a: 10.6, b: 12.8, lines: ['Touchez une demande :', 'budget, distance, détail.'] });
     },
-    segs: [[0, 4.7, false], [7.8, 12.8, false], [30.9, 69.5, true]],
+    segs: [[0, 4.7, false], [7.8, 12.8, false], [30.9, 75.5, true]],
     intro: ['Et si vos prochains clients', 'se trouvaient juste', 'à côté ?'],
     end: { e1: 'PING pour les prestataires.', e5: 'nexto-eta.vercel.app/l/insp' },
     ui: [
@@ -18,13 +25,15 @@
       { s: 30.6, title: 'Je suis prestataire', d: "Mon profil > Proposer mes services : devenir prestataire, inscription gratuite." },
       { s: 34.6, title: 'Mes tarifs', d: "Un prix par service : forfait, à l'heure, ou forfait + heures supplémentaires." },
       { s: 38.8, title: 'Mes disponibilités', d: "Créneaux libres (jour, semaine, répétition), puis bouton Disponible : visible sur la carte des clients." },
-      { s: 43.2, title: 'Moins de factures, plus de services', d: "Argument 1 : la facture se génère à chaque mission." },
-      { s: 46.2, title: 'Moins de paperasse, plus de travail', d: "Argument 2 : les pièces se déposent une seule fois." },
-      { s: 49.2, title: 'Moins d’administratif, plus de productif', d: "Argument 3 : le prix est fixé avant la mission." },
-      { s: 52.2, title: 'QR de sécurité : l’heure fait foi', d: "QR code à l'arrivée et au départ." },
-      { s: 55.2, title: 'Prestataires et clients se notent', d: "Avis croisés après chaque mission." },
-      { s: 58.2, title: 'Service litige', d: "Un dossier, un médiateur PING." },
-      { s: 61.2, title: 'Paiement sécurisé sous séquestre', d: "Vous êtes payé : le paiement reste sous séquestre jusqu'à la fin de la mission." },
-      { s: 64.2, title: 'Final', d: "Logo PING, QR code d'inscription prestataire (/l/insp) et bouton « Je m'inscris » (page web seulement)." }
+      { s: 43.2, title: 'Déposez vos pièces', d: "Assurance, diplôme : les pièces fournies apparaissent sur le profil, visibles des clients à chaque intervention." },
+      { s: 46.2, title: 'PING vous rend visible', d: "Où que vous soyez, les clients autour de vous vous voient sur la carte." },
+      { s: 49.2, title: 'Moins de factures, plus de services', d: "Argument : la facture se génère à chaque mission." },
+      { s: 52.2, title: 'Moins de paperasse, plus de travail', d: "Argument : les pièces se déposent une seule fois." },
+      { s: 55.2, title: 'Moins d’administratif, plus de productif', d: "Argument : le prix est fixé avant la mission." },
+      { s: 58.2, title: 'QR de sécurité : l’heure fait foi', d: "QR code à l'arrivée et au départ." },
+      { s: 61.2, title: 'Prestataires et clients se notent', d: "Avis croisés après chaque mission." },
+      { s: 64.2, title: 'Service litige', d: "Un dossier, un médiateur PING." },
+      { s: 67.2, title: 'Paiement sécurisé sous séquestre', d: "Vous êtes payé : le paiement reste sous séquestre jusqu'à la fin de la mission." },
+      { s: 70.2, title: 'Final', d: "Logo PING, QR code d'inscription prestataire (/l/insp) et bouton « Je m'inscris » (page web seulement)." }
     ]
   };

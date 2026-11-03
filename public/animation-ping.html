@@ -334,6 +334,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
   IC.folder = 'M3 6.5h6.5l2 2.5H21v10.5H3z';
   IC.qr = 'M4 4h6v6H4z|M14 4h6v6h-6z|M4 14h6v6H4z|M14 14h2.5v2.5H14z|M18 14h2v2|M14 19h2M18 18.5h2v1.5h-3';
   IC.star = 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z';
+  IC.shield = 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z|M8.5 12l2.5 2.5L16 9.5';
   IC.scales = 'M12 3v18M5 7h14|M5 7l-3 7a3.2 3.2 0 0 0 6 0L5 7z|M19 7l-3 7a3.2 3.2 0 0 0 6 0l-3-7z';
   var NAVY = '#123644', TEAL = '#12B39C', INK = '#123644', GREY = '#4E6470', ORANGE = '#E8743B', GOLD = '#F2A93B';
   var S = {};
@@ -703,6 +704,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     {i:'lock', l:[['Paiement sécurisé'], ['sous séquestre :'], ['vous êtes payé.', 'y']], s:'Conservé jusqu’à la fin de la mission.'}
   ];
   // variante : sous-ensemble des arguments (indices dans l'ordre ci-dessus), créneaux ARG0 + n × ARGD dans le temps source
+  if (VAR.extra) ARGS = ARGS.concat(VAR.extra);   // écrans d'argument propres à la variante (indices 7, 8…)
   if (VAR.args) ARGS = VAR.args.map(function(i){ return ARGS[i]; });
   if (VAR.argEdit) VAR.argEdit(ARGS);   // textes propres à la variante (lignes l = [[texte, couleur]], sous-titre s)
   S.args = ARGS.map(function(A, n){
@@ -711,7 +713,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     icon(ic, A.i, 270, 300, 2.5, '#2FD06E', 1.6);
     var y0 = 452;
     A.ln = A.l.map(function(L, k){ return tx(c, 270, y0 + k*46, L[0], {f:'Q', s:31, a:'middle', c: L[1] === 'g' ? '#2FD06E' : (L[1] === 'y' ? GOLD : '#fff')}); });
-    if (A.s) tx(c, 270, 610, A.s, {s:15.5, c:'#9DB4BC', a:'middle'});
+    if (A.s) [].concat(A.s).forEach(function(line, k){ tx(c, 270, 610 + k*22, line, {s:15.5, c:'#9DB4BC', a:'middle'}); });
     for (var d = 0; d < ARGS.length; d++) el('circle', {cx:270 + (d - (ARGS.length - 1)/2)*22, cy:830, r:4.5, fill: d === n ? '#2FD06E' : '#fff', opacity: d === n ? 1 : .3}, c);
     c.ic = ic; return c;
   });
@@ -857,11 +859,12 @@ html.rec .player{width:auto; min-width:0; margin:0;}
       if (ARGS[n].bd) { var bk = back(seg(t, a + 0.3, a + 0.8)); sc(ARGS[n].bd, bk * (1 + 0.03*Math.sin(t*5)), 270, 394); }
     });
 
-    // fin
-    show($('end'), seg(t, 64.2, 64.7));
-    var ek = back(seg(t, 64.4, 65.0)); tr($('endWord'), 'translate('+endDot.x+','+endDot.y+') scale('+ek.toFixed(3)+') translate('+(-endDot.x)+','+(-endDot.y)+')');
-    endRings.forEach(function(c, i){ var k = mod(t - 64.8 - i*0.6, 1.8)/1.8; c.setAttribute('cx', endDot.x); c.setAttribute('cy', endDot.y); c.setAttribute('r', (12 + k*130).toFixed(1)); show(c, t > 64.8 + i*0.6 ? (1-k)*0.5 : 0); });
-    [['e1',65.0],['e2',65.3],['e3',65.6],['e4',66.0],['e5',66.3]].forEach(function(q){ appear($(q[0]), t, q[1], 0.45, 14); });
+    // fin (VAR.end0 : début de l'écran final dans le temps source, 64,2 par défaut)
+    var tE = t - ((VAR.end0 || 64.2) - 64.2);
+    show($('end'), seg(tE, 64.2, 64.7));
+    var ek = back(seg(tE, 64.4, 65.0)); tr($('endWord'), 'translate('+endDot.x+','+endDot.y+') scale('+ek.toFixed(3)+') translate('+(-endDot.x)+','+(-endDot.y)+')');
+    endRings.forEach(function(c, i){ var k = mod(tE - 64.8 - i*0.6, 1.8)/1.8; c.setAttribute('cx', endDot.x); c.setAttribute('cy', endDot.y); c.setAttribute('r', (12 + k*130).toFixed(1)); show(c, tE > 64.8 + i*0.6 ? (1-k)*0.5 : 0); });
+    [['e1',65.0],['e2',65.3],['e3',65.6],['e4',66.0],['e5',66.3]].forEach(function(q){ appear($(q[0]), tE, q[1], 0.45, 14); });
   }
 
   // liste du lecteur (scènes cliquables)

@@ -35,7 +35,7 @@
       var d = 0;
       for (var i = 1; i < SEGS.length; i++) if (SEGS[i].dip) d = Math.max(d, 1 - Math.abs(T - SEGS[i].t0)/0.25);
       show(dip, d);
-      cta.classList.toggle('on', t >= 64.6);
+      cta.classList.toggle('on', t >= (VAR.end0 || 64.2) + 0.4);
     }
   });
 })();
