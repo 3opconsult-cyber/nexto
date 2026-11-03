@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { geocodeAddress } from '@/lib/geocode'
 import ModeSwitchPill from '@/components/ModeSwitchPill'
 import NavDrawer from '@/components/NavDrawer'
 import RequestDetails from '@/components/RequestDetails'
@@ -53,6 +54,23 @@ export default function ProCartePage() {
   const [view, setView] = useState<'demandes' | 'interventions'>('demandes')
   const [missions, setMissions] = useState<any[]>([])
   const [sendError, setSendError] = useState('')
+  // Zone couverte : rayon autour de soi, ou autour d'une ville choisie.
+  const [radiusKm, setRadiusKm] = useState(25)
+  const [zoneCenter, setZoneCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const [zoneCity, setZoneCity] = useState('')
+  const [zoneOpen, setZoneOpen] = useState(false)
+  const [zoneErr, setZoneErr] = useState('')
+  const center = zoneCenter || userPos
+  async function chooseRadius(km: number) {
+    setRadiusKm(km)
+    if (proId) await createClient().from('provider_profiles').update({ service_radius_km: km }).eq('id', proId)
+  }
+  async function chooseCity() {
+    setZoneErr('')
+    const g = await geocodeAddress(zoneCity)
+    if (!g) { setZoneErr('Ville introuvable.'); return }
+    setZoneCenter(g); setRecenterTick(t => t + 1); setZoneOpen(false)
+  }
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -71,8 +89,8 @@ export default function ProCartePage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
       setProId(user.id)
-      supabase.from('provider_profiles').select('is_active').eq('id', user.id).single()
-        .then(({ data }) => { if (data) setAvailable(!!data.is_active) })
+      supabase.from('provider_profiles').select('is_active, service_radius_km').eq('id', user.id).single()
+        .then(({ data }) => { if (data) { setAvailable(!!data.is_active); if (data.service_radius_km) setRadiusKm(Math.min(50, data.service_radius_km)) } })
     })
   }, [])
 
@@ -101,7 +119,7 @@ export default function ProCartePage() {
   const seen = useRef<Set<string> | null>(null)
   const [fresh, setFresh] = useState<RequestNearby | null>(null)
   const load = useCallback(() => {
-    fetchRequestsNearby(userPos.lat, userPos.lng, 25000).then(list => {
+    fetchRequestsNearby(center.lat, center.lng, radiusKm * 1000).then(list => {
       setReqs(list)
       if (seen.current) {
         const nouveau = list.find(r => !seen.current!.has(r.id))
@@ -109,7 +127,7 @@ export default function ProCartePage() {
       }
       seen.current = new Set(list.map(r => r.id))
     })
-  }, [userPos.lat, userPos.lng])
+  }, [center.lat, center.lng, radiusKm])
   useEffect(() => { load() }, [load])
   useEffect(() => {
     if (!available) return
@@ -283,8 +301,29 @@ export default function ProCartePage() {
             <div className="si" style={{ background: 'rgba(242,169,59,.14)' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
             </div>
-            <span style={{ color: 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{available ? 'Visible · demandes à moins de 25 km' : 'Hors ligne · invisible des clients'}</span>
+            <span style={{ color: 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{available ? `Visible · demandes à moins de ${radiusKm} km${zoneCenter ? ' de ' + (zoneCity || 'la ville') : ''}` : 'Hors ligne · invisible des clients'}</span>
+            <span onClick={() => setZoneOpen(o => !o)} style={{ marginLeft: 'auto', color: 'var(--gold)', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', paddingLeft: 8 }}>Zone</span>
           </div>
+
+          {zoneOpen && (
+            <div style={{ position: 'absolute', zIndex: 30, left: 12, right: 12, top: 118, background: '#fff', borderRadius: 16, padding: 14, boxShadow: '0 10px 30px rgba(18,54,68,.25)', border: '1px solid var(--line)' }}>
+              <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 8 }}>Zone couverte</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                {[5, 10, 15, 25, 50].map(km => (
+                  <div key={km} onClick={() => chooseRadius(km)} style={{ padding: '7px 12px', borderRadius: 999, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: radiusKm === km ? 'var(--ink)' : 'var(--paper)', color: radiusKm === km ? '#fff' : 'var(--ink)' }}>{km} km</div>
+                ))}
+              </div>
+              <div style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 6 }}>Centre de la zone</div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                <div onClick={() => { setZoneCenter(null); setZoneCity(''); setRecenterTick(t => t + 1); setZoneOpen(false) }} style={{ padding: '8px 12px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: zoneCenter ? 'var(--paper)' : 'var(--gold)', color: zoneCenter ? 'var(--ink)' : '#fff' }}>Autour de moi</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input value={zoneCity} onChange={e => setZoneCity(e.target.value)} placeholder="Ou une ville (ex. Cannes)" autoComplete="off" style={{ flex: 1, padding: '9px 12px', borderRadius: 12, border: '1.5px solid var(--line)', fontSize: 16 }} />
+                <div onClick={chooseCity} style={{ padding: '9px 14px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: 'var(--teal)', color: '#fff' }}>OK</div>
+              </div>
+              {zoneErr && <p style={{ color: '#c0503a', fontSize: 12, marginTop: 6 }}>{zoneErr}</p>}
+            </div>
+          )}
 
           <div className="chips" style={{ top: 122 }}>
             {([['demandes', `Demandes ouvertes (${reqs.length})`], ['interventions', `Mes interventions (${missions.length})`]] as const).map(([k, label]) => (
@@ -295,7 +334,7 @@ export default function ProCartePage() {
 
           <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
             <LiveMap
-              userPos={userPos}
+              userPos={center}
               pros={[]}
               onSelect={() => { }}
               requests={mapPins}
