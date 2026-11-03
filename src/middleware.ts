@@ -53,7 +53,13 @@ export async function middleware(request: NextRequest) {
   }
   if (hasCookie) return response
 
-  return new NextResponse('Accès refusé — connectez-vous avec le compte administrateur', { status: 401 })
+  if (!user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/login'
+    url.search = '?next=' + encodeURIComponent(path)
+    return NextResponse.redirect(url)
+  }
+  return new NextResponse('Accès refusé — ce compte n’est pas administrateur. Connectez-vous avec 3op.consult@gmail.com', { status: 401 })
 }
 
 export const config = {
