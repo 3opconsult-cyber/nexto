@@ -8,6 +8,7 @@ import ChunkReload from '@/components/ChunkReload'
 import PageViewTracker from '@/components/PageViewTracker'
 import FeedbackBubble from '@/components/FeedbackBubble'
 import InstallPrompt from '@/components/InstallPrompt'
+import VisitorBar from '@/components/VisitorBar'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -60,6 +61,7 @@ export default function RootLayout({
         </DesktopShell>
         <FeedbackBubble />
         <InstallPrompt />
+        <VisitorBar />
       </body>
     </html>
   )
