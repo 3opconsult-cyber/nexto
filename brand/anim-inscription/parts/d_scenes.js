@@ -457,48 +457,17 @@
     [['word',35.5],['e1',35.9],['e2',36.3],['e3',36.8],['e4',37.2],['e5',37.5]].forEach(function(q){ var k = eout(seg(t, q[1], q[1]+0.45)); show($(q[0]), k); tr($(q[0]), 'translate(0,'+(14*(1-k)).toFixed(1)+')'); });
   }
 
-  // ---------- lecteur ----------
-  var list = $('scenes'), sceneBtns = [];
-  CAPS.forEach(function(C, i){
-    var li = document.createElement('li'), b = document.createElement('button');
-    b.type = 'button';
-    b.innerHTML = '<span class="tc">'+C.a.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
-    b.querySelector('b').textContent = (i+1)+'. '+C.title; b.querySelector('.d').textContent = C.d;
-    b.addEventListener('click', function(){ seek(C.a + (i ? 0.35 : 0.01)); playing = true; sync(); });
-    li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
-  });
-
+%%PLAYER_JS%%
   // Bouton « Je m'inscris » (HTML) : /l/insp si on est venu par la partie prestataire (?part=pro)
   var cta = $('cta');
   if (/[?&]part=pro\b/.test(location.search)) cta.setAttribute('href', '/l/insp');
-  var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
-  var rec = location.hash === '#record';
-  if (rec) { document.body.classList.add('rec'); playing = false; }
-  function seek(x){ t = clamp(x, 0, DUR); paint(); }
-  function paint(){
-    render(t);
-    $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
-    sceneBtns.forEach(function(b, i){ b.classList.toggle('on', t >= CAPS[i].a && t < CAPS[i].b); });
-    cta.classList.toggle('on', t >= 37.5);
-  }
-  function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
-  function loop(now){
-    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= DUR) t = 0; } paint(); }
-    last = now; requestAnimationFrame(loop);
-  }
-  $('play').addEventListener('click', function(){ playing = !playing; sync(); });
-  $('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
-  $('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
-
-  $('scrub').max = DUR;
-  window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); } };
-  var start = function(){
-    buildWord(); paint(); sync();
+  makePlayer({
+    dur: DUR,
+    scenes: CAPS.map(function(C, i){ return { a: C.a, go: C.a + (i ? 0.35 : 0.01), title: C.title, d: C.d }; }),
+    init: buildWord,
     // ?part=pro : démarre à la partie prestataire (scène 8)
-    if (!rec && /[?&]part=pro\b/.test(location.search)) { seek(19.3); }
-    if (!rec) requestAnimationFrame(loop);
-    window.PING_ANIM.ready = true;
-  };
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+    start: function(){ return /[?&]part=pro\b/.test(location.search) ? 19.3 : 0; },
+    paint: function(t){ render(t); cta.classList.toggle('on', t >= 37.5); }
+  });
 })();
 </script>

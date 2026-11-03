@@ -49,7 +49,7 @@
   body.rec .layout{display:block; max-width:none;}
   body.rec .side, body.rec .controls{display:none;}
   body.rec .stage{width:540px; height:960px; max-height:none; border-radius:0; box-shadow:none;}
-</style>
+%%PLAYER_CSS%%</style>
 
 <div class="layout">
   <div class="player">
@@ -157,15 +157,9 @@
       </svg>
     <a class="signup-cta" id="cta" href="/l/insp" target="_blank" rel="noopener">Je m'inscris</a>
     </div>
-    <div class="controls">
-      <button id="play" type="button">Pause</button>
-      <button id="replay" class="ghost" type="button">Rejouer</button>
-      <input id="scrub" type="range" min="0" max="55" step="0.01" value="0" aria-label="Position dans l'animation">
-      <span class="time" id="tc">0,0 s</span>
-    </div>
-  </div>
+%%PLAYER_CONTROLS%%  </div>
 
-  <aside class="side">
+  <aside class="side" id="side">
     <div class="eyebrow">Animation prestataires · 55 s · 9:16</div>
     <h1>Le parcours d'un prestataire PING</h1>
     <p class="lead">Pour convaincre un pro de s'inscrire : ce qu'il fait dans l'app, du réglage de ses prix à la facture. Format vertical (TikTok, Reels, Stories), lisible sans le son. Un clic sur une scène pour y aller directement.</p>
@@ -756,40 +750,12 @@
     [['word',51.0],['e1',51.4],['e2',51.8],['e3',52.2],['e4',52.6]].forEach(function(q){ var k = eout(seg(t, q[1], q[1]+0.45)); show($(q[0]), k); tr($(q[0]), 'translate(0,'+(14*(1-k)).toFixed(1)+')'); });
   }
 
-  // ---------- lecteur ----------
-  var list = $('scenes'), sceneBtns = [];
-  CAPS.forEach(function(C, i){
-    var li = document.createElement('li'), b = document.createElement('button');
-    b.type = 'button';
-    b.innerHTML = '<span class="tc">'+C.a.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
-    b.querySelector('b').textContent = (i+1)+'. '+C.title; b.querySelector('.d').textContent = C.d;
-    b.addEventListener('click', function(){ seek(C.a + (i ? 0.35 : 0.01)); playing = true; sync(); });
-    li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
+%%PLAYER_JS%%
+  makePlayer({
+    dur: DUR,
+    scenes: CAPS.map(function(C, i){ return { a: C.a, go: C.a + (i ? 0.35 : 0.01), title: C.title, d: C.d }; }),
+    init: buildWord, still: 24.8,
+    paint: function(t){ render(t); $('cta').classList.toggle('on', t >= 52.6); }
   });
-
-  var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
-  var rec = location.hash === '#record';
-  if (rec) { document.body.classList.add('rec'); playing = false; }
-  function seek(x){ t = clamp(x, 0, DUR); paint(); }
-  function paint(){
-    render(t);
-    $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
-    sceneBtns.forEach(function(b, i){ b.classList.toggle('on', t >= CAPS[i].a && t < CAPS[i].b); });
-    $('cta').classList.toggle('on', t >= 52.6);
-  }
-  function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
-  function loop(now){
-    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= DUR) t = 0; } paint(); }
-    last = now; requestAnimationFrame(loop);
-  }
-  $('play').addEventListener('click', function(){ playing = !playing; sync(); });
-  $('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
-  $('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
-
-  $('scrub').max = DUR;
-  window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); } };
-  var start = function(){ buildWord(); paint(); sync(); if (!rec) requestAnimationFrame(loop); window.PING_ANIM.ready = true; };
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
-  if (!playing && !rec) seek(24.8);
 })();
 </script>

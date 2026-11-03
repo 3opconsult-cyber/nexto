@@ -113,6 +113,8 @@ export default function MissionQrCodes() {
               </div>
             </div>
 
+            <button onClick={() => router.push('/aide/apres-commande')} style={{ marginTop: 14, border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline' }}>Voir comment ça marche</button>
+
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, color: '#6E8592', fontWeight: 600 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', animation: 'pingPulse 1.4s ease-in-out infinite' }} />
               En attente du scan…

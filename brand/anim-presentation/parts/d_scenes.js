@@ -1,3 +1,22 @@
+  /* RUBRIQUES (ordre figé : ?scene=N sur /animation-ping, N = rang ci-dessous ; ne pas réordonner, /aide s'y réfère).
+     Tableau de référence : var UI plus bas. Contrat d'URL du lecteur (brand/anim/player.js) :
+     ?admin=1 panneau scénario · ?embed=1 lecteur seul + rubriques repliables (postMessage {ping:'anim-ended'} à la fin)
+     · ?scene=N démarre au début de la rubrique N · ?autoplay=0 démarre en pause · ?speed=0.75|0.85|1.
+      1. Accroche  (à 0 s)
+      2. La carte  (à 4.6 s)
+      3. Le chat et le prix  (à 10.8 s)
+      4. Agenda et facture  (à 14.8 s)
+      5. Je cherche un prestataire  (à 20.2 s)
+      6. Je suis prestataire  (à 30.8 s)
+      7. Moins de factures, plus de services  (à 43.2 s)
+      8. Moins de paperasse, plus de travail  (à 46.2 s)
+      9. Moins d’administratif, plus de productif  (à 49.2 s)
+     10. QR de sécurité : l’heure fait foi  (à 52.2 s)
+     11. Prestataires et clients se notent  (à 55.2 s)
+     12. Service litige  (à 58.2 s)
+     13. Paiement sécurisé : bientôt  (à 61.2 s)
+     14. Final  (à 64.2 s)
+  */
 
   var QRN = %%QR_N%%;
   IC.mail = 'M3 5h18v14H3z|M3 7l9 6 9-6';
@@ -558,46 +577,16 @@
     [['e1',65.0],['e2',65.3],['e3',65.6],['e4',66.0],['e5',66.3]].forEach(function(q){ appear($(q[0]), t, q[1], 0.45, 14); });
   }
 
-  // ---------- lecteur ----------
-  var list = $('scenes'), sceneBtns = [];
-  UI.forEach(function(C, i){
-    var li = document.createElement('li'), b = document.createElement('button');
-    b.type = 'button';
-    b.innerHTML = '<span class="tc">'+C.a.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
-    b.querySelector('b').textContent = (i+1)+'. '+C.title; b.querySelector('.d').textContent = C.d;
-    b.addEventListener('click', function(){ seek(C.a + (i ? 0.7 : 0.01)); playing = true; sync(); });
-    li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
-  });
-
+%%PLAYER_JS%%
   var cta = $('cta');
-  var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
-  var rec = location.hash === '#record';
-  if (rec) { document.body.classList.add('rec'); playing = false; }
-  function seek(x){ t = clamp(x, 0, DUR); paint(); }
-  function paint(){
-    render(t);
-    $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
-    sceneBtns.forEach(function(b, i){ var nx = i + 1 < UI.length ? UI[i+1].a : 99; b.classList.toggle('on', t >= UI[i].a && t < nx); });
-    cta.classList.toggle('on', t >= 64.6);
-  }
-  function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
-  function loop(now){
-    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= DUR) t = 0; } paint(); }
-    last = now; requestAnimationFrame(loop);
-  }
-  $('play').addEventListener('click', function(){ playing = !playing; sync(); });
-  $('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
-  $('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
-
-  $('scrub').max = DUR;
-  window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); } };
-  var start = function(){
-    introDot = buildWord($('introWord'), 92, 330, 270);
-    endDot = buildWord($('endWord'), 76, 300, 270);
-    paint(); sync();
-    if (!rec) requestAnimationFrame(loop);
-    window.PING_ANIM.ready = true;
-  };
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+  makePlayer({
+    dur: DUR,
+    scenes: UI.map(function(C, i){ return { a: C.a, go: C.a + (i ? 0.7 : 0.01), title: C.title, d: C.d }; }),
+    init: function(){
+      introDot = buildWord($('introWord'), 92, 330, 270);
+      endDot = buildWord($('endWord'), 76, 300, 270);
+    },
+    paint: function(t){ render(t); cta.classList.toggle('on', t >= 64.6); }
+  });
 })();
 </script>

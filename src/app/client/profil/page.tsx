@@ -122,6 +122,7 @@ export default function ClientProfil() {
 
             <HubGroup title="Plus">
               <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />
+              <HubRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
               <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
               <HubRow icon={HUB_ICONS.swap} label="Proposer mes services" sub="Devenir prestataire : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />
             </HubGroup>

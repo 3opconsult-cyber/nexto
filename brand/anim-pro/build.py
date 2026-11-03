@@ -12,6 +12,9 @@ import base64
 import pathlib
 
 import segno
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "anim"))
+import player  # noqa: E402  (lecteur partagé)
 
 HERE = pathlib.Path(__file__).parent
 FONTS = HERE.parent / "anim" / "fonts"
@@ -56,5 +59,5 @@ html = (
 head = ('<!doctype html><html lang="fr"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
         '<meta name="robots" content="noindex">')
-OUT.write_text(head + html)
+OUT.write_text(head + player.apply(html))
 print("écrit", OUT)

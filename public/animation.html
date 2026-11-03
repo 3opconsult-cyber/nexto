@@ -43,6 +43,42 @@
   body.rec .layout{display:block; max-width:none;}
   body.rec .side, body.rec .controls{display:none;}
   body.rec .stage{width:540px; height:960px; max-height:none; border-radius:0; box-shadow:none;}
+</style><script>(function(){var q=location.search,c=document.documentElement.classList;
+if(/[?&]admin=1\b/.test(q))c.add('admin');
+if(/[?&]embed=1\b/.test(q))c.add('embed');
+if(location.hash==='#record')c.add('rec');})();
+</script><style>
+/* ---- lecteur partagé (brand/anim/player.*) : commandes, vitesse, rubriques ; panneau scénario = ?admin=1 seulement ---- */
+.player{width:min(100%, calc((100vh - 230px) * 9 / 16)); min-width:min(100%, 300px); margin-inline:auto;}
+.stage{width:100%; max-height:none;}
+html:not(.admin) .layout, html.embed .layout{grid-template-columns:minmax(0,420px); justify-content:center;}
+.controls{gap:12px;}
+.controls .time{width:auto; min-width:96px; white-space:nowrap;}
+.transport{display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;}
+.transport button{display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; min-width:44px; border:none; border-radius:999px; background:var(--panel); color:var(--text); font-family:var(--display); font-weight:700; font-size:13px; padding:10px 14px; cursor:pointer;}
+.transport button.main{background:var(--teal); color:#fff; padding:10px 22px; min-width:112px;}
+.transport button:focus-visible, .speed button:focus-visible, .rubriques button:focus-visible, .rubriques summary:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+.transport svg{width:18px; height:18px; fill:currentColor; flex:none;}
+.speed{display:flex; align-items:center; justify-content:center; gap:4px; font-size:12px; color:var(--soft);}
+.speed .speedlbl{margin-right:4px;}
+.speed button{border:none; background:transparent; color:var(--soft); font:600 12px var(--body); padding:6px 9px; border-radius:999px; cursor:pointer; box-shadow:inset 0 0 0 1px var(--line);}
+.speed button[aria-pressed=true]{color:var(--text); box-shadow:inset 0 0 0 1.5px var(--teal); background:rgba(18,179,156,.14);}
+.rubriques{background:var(--panel); border-radius:14px; padding:2px 6px;}
+.rubriques summary{cursor:pointer; font-family:var(--display); font-weight:700; font-size:13.5px; padding:11px 8px; list-style:none; display:flex; justify-content:space-between; align-items:center;}
+.rubriques summary::-webkit-details-marker{display:none;}
+.rubriques summary::after{content:''; width:8px; height:8px; border-right:2px solid var(--soft); border-bottom:2px solid var(--soft); transform:rotate(45deg); transition:transform .2s;}
+.rubriques[open] summary::after{transform:rotate(-135deg);}
+.rubriques ol{list-style:none; margin:0; padding:0 0 6px; display:flex; flex-direction:column; gap:2px;}
+.rubriques li button{width:100%; display:flex; gap:10px; text-align:left; background:transparent; border:none; color:var(--text); font:inherit; font-size:13.5px; line-height:1.35; padding:9px 10px; border-radius:10px; cursor:pointer;}
+.rubriques li button.on{background:rgba(18,179,156,.18); box-shadow:inset 0 0 0 1.5px var(--teal);}
+.rubriques .n{color:var(--teal); font-weight:700; min-width:1.5em; font-variant-numeric:tabular-nums;}
+html.admin:not(.embed) .rubriques{display:none;}
+html.embed .side{display:none !important;}
+html.embed body{padding-block:8px;}
+html.embed .player{gap:8px;}
+html.rec .transport, html.rec .speed, html.rec .rubriques, html.rec .controls{display:none !important;}
+html.rec .player{width:auto; min-width:0; margin:0;}
+@media (max-width:760px){ .player{width:min(100%, calc((100vh - 230px) * 9 / 16)); } }
 </style>
 
 <div class="layout">
@@ -292,14 +328,28 @@
       </svg>
     </div>
     <div class="controls">
-      <button id="play" type="button">Pause</button>
-      <button id="replay" class="ghost" type="button">Rejouer</button>
-      <input id="scrub" type="range" min="0" max="30" step="0.01" value="0" aria-label="Position dans l'animation">
-      <span class="time" id="tc">0,0 s</span>
+      <input id="scrub" type="range" min="0" max="70" step="0.01" value="0" aria-label="Position dans l'animation">
+      <span class="time" id="tc" aria-live="off">0,0 s</span>
     </div>
+    <div class="transport" role="group" aria-label="Commandes de lecture">
+      <button id="prev" type="button" aria-label="Scène précédente" title="Scène précédente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2.4v14H6z"/><path d="M19 5.5v13L9.5 12z"/></svg></button>
+      <button id="play" class="main" type="button" aria-label="Pause"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg><span>Pause</span></button>
+      <button id="next" type="button" aria-label="Scène suivante" title="Scène suivante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.6 5H18v14h-2.4z"/><path d="M5 5.5v13L14.5 12z"/></svg></button>
+      <button id="replay" type="button" aria-label="Rejouer depuis le début" title="Rejouer depuis le début"><svg viewBox="0 0 24 24" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4.5v4.6h4.6"/></svg></button>
+    </div>
+    <div class="speed" role="group" aria-label="Vitesse de lecture">
+      <span class="speedlbl">Vitesse</span>
+      <button type="button" data-speed="0.75" aria-pressed="false">0,75×</button>
+      <button type="button" data-speed="0.85" aria-pressed="true">0,85×</button>
+      <button type="button" data-speed="1" aria-pressed="false">1×</button>
+    </div>
+    <details class="rubriques" id="rub">
+      <summary>Rubriques</summary>
+      <ol id="rubList"></ol>
+    </details>
   </div>
 
-  <aside class="side">
+  <aside class="side" id="side">
     <div class="eyebrow">Animation explicative · 42 s · 9:16</div>
     <h1>Le parcours d'une mission PING</h1>
     <p class="lead">Format vertical pour TikTok, Reels et Stories, lisible sans le son. Un clic sur une scène pour y aller directement.</p>
@@ -694,45 +744,103 @@
     tr($('aNew'), 'translate(125,190) scale('+nk.toFixed(3)+') translate(-125,-190)');
   }
 
-  // ---------- lecteur ----------
-  var list = $('scenes'), sceneBtns = [];
+  // ---------- lecteur partagé (brand/anim/player.js, injecté par chaque build.py) ----------
+  // Contrat d'URL : ?admin=1 (panneau scénario), ?embed=1 (lecteur seul + rubriques repliables, postMessage
+  // {ping:'anim-ended'} à la fin), ?scene=N (rang 1..n dans la liste des rubriques), ?autoplay=0 (démarre en pause),
+  // ?speed=0.75|0.85|1. Vitesse par défaut 0,85× : seul le temps de lecture est ralenti, seek(t) reste déterministe.
+  // cfg = { dur, scenes:[{a:début, go:point de saut, title, d}], paint(t), init(), start(): t initial, still }
+  function makePlayer(cfg){
+    var DUR = cfg.dur, SC = cfg.scenes, q = location.search, g = function(id){ return document.getElementById(id); };
+    var admin = /[?&]admin=1\b/.test(q), embed = /[?&]embed=1\b/.test(q), rec = location.hash === '#record';
+    var speed = 0.85, ms = /[?&]speed=(0\.75|0\.85|1)(?:\.0+)?\b/.exec(q); if (ms) speed = parseFloat(ms[1]);
+    var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var playing = !reduced && !/[?&]autoplay=0\b/.test(q), last = null, t = 0, ended = false;
+    if (rec) { document.body.classList.add('rec'); playing = false; speed = 1; }
+    var side = g('side');
+    if (side && (!admin || embed)) side.parentNode.removeChild(side);
+    function fmt(x){ return x.toFixed(1).replace('.', ','); }
+    function mk(list, withDesc, cls){
+      var out = [];
+      SC.forEach(function(C, i){
+        var li = document.createElement('li'), b = document.createElement('button'); b.type = 'button';
+        if (withDesc) {
+          b.innerHTML = '<span class="tc">' + fmt(C.a) + ' s</span><span><b></b><span class="d"></span></span>';
+          b.querySelector('b').textContent = (i + 1) + '. ' + C.title; b.querySelector('.d').textContent = C.d;
+        } else {
+          b.innerHTML = '<span class="n"></span><span class="ti"></span>';
+          b.querySelector('.n').textContent = (i + 1); b.querySelector('.ti').textContent = C.title;
+        }
+        b.addEventListener('click', function(){ seek(C.go); playing = true; sync(); });
+        li.appendChild(b); list.appendChild(li); out.push(b);
+      });
+      return out;
+    }
+    var adminBtns = g('scenes') ? mk(g('scenes'), true) : [], rubBtns = mk(g('rubList'), false);
+    if (!embed && g('rub')) g('rub').open = true;
+    function cur(x){ var k = 0; SC.forEach(function(C, i){ if (x >= C.a) k = i; }); return k; }
+    function seek(x){ t = Math.max(0, Math.min(DUR, x)); if (t < DUR - 0.05) ended = false; paint(); }
+    function paint(){
+      cfg.paint(t);
+      g('scrub').value = t;
+      g('tc').textContent = fmt(t / speed) + ' / ' + fmt(DUR / speed) + ' s';
+      var k = cur(t);
+      adminBtns.concat(rubBtns).forEach(function(b, i){ b.classList.toggle('on', i % SC.length === k); });
+    }
+    var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15L19.5 12z"/></svg><span>Lecture</span>';
+    var PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg><span>Pause</span>';
+    function sync(){ var p = g('play'); p.innerHTML = playing ? PAUSE : PLAY; p.setAttribute('aria-label', playing ? 'Pause' : 'Lecture'); }
+    function finish(){
+      t = DUR; playing = false; sync();
+      if (!ended) { ended = true; try { window.parent.postMessage({ ping: 'anim-ended' }, '*'); } catch (e) {} }
+    }
+    function loop(now){
+      if (playing) {
+        if (last != null) {
+          t += Math.min((now - last) / 1000, 0.5) * speed;
+          if (t >= DUR) { if (embed) finish(); else t = 0; }
+        }
+        paint();
+      }
+      last = now; requestAnimationFrame(loop);
+    }
+    g('play').addEventListener('click', function(){
+      if (!playing && embed && t >= DUR - 0.05) { seek(0); }
+      playing = !playing; sync();
+    });
+    g('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
+    g('next').addEventListener('click', function(){ var k = cur(t); seek(SC[Math.min(k + 1, SC.length - 1)].go); });
+    g('prev').addEventListener('click', function(){
+      var k = cur(t); seek(SC[(t - SC[k].go < 2 && k > 0) ? k - 1 : k].go);
+    });
+    g('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
+    var spBtns = Array.prototype.slice.call(document.querySelectorAll('.speed [data-speed]'));
+    function setSpeed(v){ speed = v; spBtns.forEach(function(b){ b.setAttribute('aria-pressed', parseFloat(b.getAttribute('data-speed')) === v ? 'true' : 'false'); }); paint(); }
+    spBtns.forEach(function(b){ b.addEventListener('click', function(){ setSpeed(parseFloat(b.getAttribute('data-speed'))); }); });
+    g('scrub').max = DUR;
+    window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); }, get speed(){ return speed; } };
+    var start = function(){
+      if (cfg.init) cfg.init();
+      setSpeed(speed); sync();
+      var ms2 = /[?&]scene=(\d+)\b/.exec(q), n = ms2 ? parseInt(ms2[1], 10) : 0;
+      if (!rec && n >= 1 && n <= SC.length) seek(SC[n - 1].go);
+      else if (!rec && cfg.start) seek(cfg.start());
+      else if (reduced && !rec && cfg.still != null) seek(cfg.still);
+      if (!rec) requestAnimationFrame(loop);
+      window.PING_ANIM.ready = true;
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+  }
+
   var PANEL = SCENES.slice(0, 3).map(function(S){ return { at: outer(S.a), S: S }; })
     .concat(INS_CAPS.map(function(S){ return { at: Q + S.a, S: S }; }))
     .concat(SCENES.slice(3, 6).map(function(S){ return { at: S.a === P1 ? Q + X : outer(S.a), S: S }; }))
     .concat([{ at: R2, S: TRUST_CAP }])
     .concat(SCENES.slice(6).map(function(S){ return { at: outer(S.a), S: S }; }));
-  PANEL.forEach(function(P, i){
-    var li = document.createElement('li'), b = document.createElement('button');
-    b.type = 'button';
-    b.innerHTML = '<span class="tc">'+P.at.toFixed(1).replace('.',',')+' s</span><span><b></b><span class="d"></span></span>';
-    b.querySelector('b').textContent = (i+1)+'. '+P.S.title; b.querySelector('.d').textContent = P.S.d;
-    b.addEventListener('click', function(){ seek(P.at + 0.01); playing = true; sync(); });
-    li.appendChild(b); list.appendChild(li); sceneBtns.push(b);
+  makePlayer({
+    dur: REAL,
+    scenes: PANEL.map(function(P){ return { a: P.at, go: P.at + 0.01, title: P.S.title, d: P.S.d }; }),
+    init: buildWord, still: Q + 4.6,
+    paint: function(t){ RT = t; INS = insClock(t); INS2 = ins2Clock(t); render(inner(t)); }
   });
-
-  var t = 0, playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), last = null;
-  var rec = location.hash === '#record';
-  if (rec) { document.body.classList.add('rec'); playing = false; }
-  function seek(x){ t = clamp(x, 0, REAL); paint(); }
-  function paint(){
-    RT = t; INS = insClock(t); INS2 = ins2Clock(t);
-    render(inner(t));
-    $('scrub').value = t; $('tc').textContent = t.toFixed(1).replace('.',',')+' s';
-    sceneBtns.forEach(function(b, i){ var nx = i + 1 < PANEL.length ? PANEL[i+1].at : REAL + 1; b.classList.toggle('on', t >= PANEL[i].at && t < nx); });
-  }
-  function sync(){ $('play').textContent = playing ? 'Pause' : 'Lecture'; }
-  function loop(now){
-    if (playing) { if (last != null) { t += (now-last)/1000; if (t >= REAL) t = 0; } paint(); }
-    last = now; requestAnimationFrame(loop);
-  }
-  $('play').addEventListener('click', function(){ playing = !playing; sync(); });
-  $('replay').addEventListener('click', function(){ seek(0); playing = true; sync(); });
-  $('scrub').addEventListener('input', function(e){ playing = false; sync(); seek(parseFloat(e.target.value)); });
-
-  $('scrub').max = REAL;
-  window.PING_ANIM = { duration: REAL, seek: function(x){ seek(x); } };
-  var start = function(){ buildWord(); paint(); sync(); if (!rec) requestAnimationFrame(loop); window.PING_ANIM.ready = true; };
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
-  if (!playing && !rec) seek(Q + 4.6);
 })();
 </script>

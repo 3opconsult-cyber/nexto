@@ -276,6 +276,7 @@ export default function ProDashboard() {
 
             <HubGroup title="Plus">
               <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez d'autres prestataires" onClick={() => router.push('/client/parrainage')} />
+              <HubRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
               <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
               <HubRow icon={HUB_ICONS.swap} label="Revenir en mode particulier" onClick={() => { writeMode('particulier'); router.push('/map') }} />
             </HubGroup>

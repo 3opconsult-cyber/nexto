@@ -13,6 +13,9 @@ import base64
 import pathlib
 
 import segno
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "anim"))
+import player  # noqa: E402  (lecteur partagé)
 
 HERE = pathlib.Path(__file__).parent
 REF = HERE.parent / "anim"
@@ -90,7 +93,7 @@ def make(out, scene, extra_svg, title, aria, eyebrow, h1, lead):
             f"<style>\n{css}\n</style>\n{layout}\n{script}\n")
     html = (html.replace("%%QR_SCAN%%", scan).replace("%%QR_SCAN_SCALE%%", f"{114 / n1:.4f}")
             .replace("%%QR_END%%", end).replace("%%QR_END_SCALE%%", f"{88 / n2:.4f}"))
-    (PUB / out).write_text(head + html)
+    (PUB / out).write_text(head + player.apply(html))
     print("écrit", PUB / out)
 
 
