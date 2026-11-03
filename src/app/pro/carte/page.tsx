@@ -59,6 +59,7 @@ export default function ProCartePage() {
   const [zoneCenter, setZoneCenter] = useState<{ lat: number; lng: number } | null>(null)
   const [zoneCity, setZoneCity] = useState('')
   const [zoneOpen, setZoneOpen] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(true) // fiche du bas repliable (mobile)
   const [zoneErr, setZoneErr] = useState('')
   const center = zoneCenter || userPos
   async function chooseRadius(km: number) {
@@ -362,8 +363,14 @@ export default function ProCartePage() {
 
           {/* Mobile : fiche remontant du bas. Desktop : cachee (.app-shell .preview),
               remplacee par le panneau permanent ci-dessous. */}
-          <div className="preview show" style={{ padding: 14, maxHeight: '70vh', overflowY: 'auto' }}>
-            {sidePanel}
+          <div className="preview show" style={{ padding: 14, paddingBottom: sheetOpen ? 14 : 8, maxHeight: sheetOpen ? '70vh' : 74, overflowY: sheetOpen ? 'auto' : 'hidden', transition: 'max-height .3s ease' }}>
+            <div onClick={() => setSheetOpen(o => !o)} style={{ cursor: 'pointer', margin: '-6px -14px 8px', padding: '4px 14px 8px' }}>
+              <div style={{ width: 44, height: 5, borderRadius: 3, background: '#CBD7D4', margin: '0 auto 6px' }} />
+              <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: 'var(--slate)' }}>
+                {sheetOpen ? 'Réduire' : `${view === 'demandes' ? reqs.length + ' demandes' : missions.length + ' interventions'} · afficher la liste`}
+              </div>
+            </div>
+            {sheetOpen && sidePanel}
           </div>
 
           {/* Desktop (>=1000px) : panneau permanent a cote de la carte, cachee sur

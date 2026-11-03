@@ -16,9 +16,9 @@ function userIcon(echo = false) {
     : ''
   return L.divIcon({
     className: '',
-    html: `<div style="position:relative;width:18px;height:18px">${rings}<div style="position:relative;width:18px;height:18px;border-radius:50%;background:#12B39C;border:3px solid #fff;box-sizing:border-box;box-shadow:0 0 0 4px rgba(18,179,156,.25),0 2px 6px rgba(0,0,0,.25)"></div></div>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
+    html: `<div style="position:relative;width:30px;height:30px">${rings}<div style="position:relative;width:30px;height:30px;border-radius:50%;background:#12B39C;border:4px solid #fff;box-sizing:border-box;box-shadow:0 0 0 7px rgba(18,179,156,.28),0 3px 10px rgba(0,0,0,.3)"></div></div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
   })
 }
 
@@ -61,17 +61,12 @@ function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B') {
 
 function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[]; pts?: { lat: number; lng: number }[]; recenterTick?: number }) {
   const map = useMap()
+  // La carte pointe directement sur la position de l'utilisateur (zoom de quartier), sans dezoomer
+  // sur tous les prestataires ; elle ne bouge plus quand la liste se rafraichit.
   useEffect(() => {
-    const pts: [number, number][] = [[userPos.lat, userPos.lng]]
-    pros.forEach(p => { if (p.lat != null && p.lng != null) pts.push([p.lat, p.lng]) })
-    ;(extra || []).forEach(p => { if (p.lat != null && p.lng != null) pts.push([p.lat, p.lng]) })
-    if (pts.length === 1) {
-      map.setView(pts[0], 13)
-    } else {
-      map.fitBounds(pts, { padding: [50, 50], maxZoom: 14 })
-    }
+    map.setView([userPos.lat, userPos.lng], 15)
     setTimeout(() => map.invalidateSize(), 100)
-  }, [userPos.lat, userPos.lng, pros, extra, map, recenterTick])
+  }, [userPos.lat, userPos.lng, map, recenterTick])
   return null
 }
 
@@ -95,7 +90,7 @@ export default function LiveMap({
         .you-tip{background:#fff;border:none;box-shadow:0 2px 8px rgba(18,54,68,.2);border-radius:999px;padding:3px 10px;font-family:Quicksand,sans-serif;font-weight:700;font-size:11px;color:#123644}
         .you-tip::before{display:none}
         @keyframes pingEcho{0%{transform:scale(1);opacity:.55}100%{transform:scale(6);opacity:0}}
-        .ping-echo{position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;border:2px solid #12B39C;animation:pingEcho 2.2s ease-out infinite;pointer-events:none}
+        .ping-echo{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;border:2px solid #12B39C;animation:pingEcho 2.2s ease-out infinite;pointer-events:none}
         @media (prefers-reduced-motion: reduce){.ping-echo{animation:none;display:none}}`}</style>
       <MapContainer
         center={[userPos.lat, userPos.lng]}
