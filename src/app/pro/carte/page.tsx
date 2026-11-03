@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import ModeSwitchPill from '@/components/ModeSwitchPill'
 import NavDrawer from '@/components/NavDrawer'
 import RequestDetails from '@/components/RequestDetails'
 import { addressUsable, maskAddress } from '@/lib/address'
@@ -271,6 +272,7 @@ export default function ProCartePage() {
               <span className="wd">ping</span>
             </div>
             <div className="sp" />
+            <ModeSwitchPill to="particulier" />
             <div className="tbell" onClick={() => router.push('/messages')}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
               <span className="dot" />

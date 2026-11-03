@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { fetchProvidersNearby, openConversation, type ProviderNearby } from '@/lib/services'
 import NavDrawer from './NavDrawer'
+import ModeSwitchPill from './ModeSwitchPill'
 
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
@@ -141,6 +142,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                     <div><div className="wd">ping</div></div>
                   </div>
                   <div className="sp" />
+                  <ModeSwitchPill to="pro" />
                   <div className="tbell" onClick={() => router.push('/messages')}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
                   </div>
