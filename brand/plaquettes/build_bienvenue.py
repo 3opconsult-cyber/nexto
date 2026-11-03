@@ -2,7 +2,7 @@
 
 Couverture (2 boutons : rôle) -> choix « Suivre le parcours » / « Voir l'animation » -> slides du public choisi
 (reprises telles quelles de src.html, donc synchronisées avec /plaquettes) -> dernier écran (QR, « Je m'inscris »,
-« Découvrir l'application ») -> écran bêta -> /l/ins ou /l/insp. Le rôle est gardé dans le hash (#particulier ou #pro).
+« Je m'inscris » (plus de visite de l'application depuis la plaquette)) -> écran bêta -> /l/ins ou /l/insp. Le rôle est gardé dans le hash (#particulier ou #pro).
 Voir l'animation = overlay iframe /animation-ping?role=client|pro. Entrée directe : ?role=client|pro&go=inscription
 (fin de l'animation) ouvre l'écran bêta. Une seule étape visible à la fois (data-stage sur .deck)."""
 import pathlib
@@ -49,10 +49,10 @@ def last_slide(key):
         <div class="join-qr" aria-label="QR code vers PING">{qr("https://nexto-eta.vercel.app" + qrpath)}</div>
         <div class="join-acts">
           <a class="go signup" href="{signup}">Je m'inscris</a>
-          <a class="go alt" href="{DISCOVER}">Découvrir l'application</a>
           <span class="lbl">ou scannez le code</span>
         </div>
       </div>
+      <p class="bulle">Inscrivez-vous, puis laissez vos commentaires dans la <b>bulle verte</b> en bas à droite de l'écran : ils nous aident à améliorer PING.</p>
       <div class="mail"><span>{EMAIL}</span><button type="button">Copier</button></div>
       <small>{note}</small>
     </div>'''
@@ -102,6 +102,7 @@ HTML = r'''<!doctype html>
   .deck .cta:focus-visible{outline:3px solid var(--gold); outline-offset:3px;}
   .betaw h2{font-size:25px; max-width:20ch;}
   .betaw p{max-width:34ch; font-size:15px; line-height:1.55; color:rgba(255,255,255,.85);}
+  .join .bulle{max-width:34ch; margin:10px auto 0; font-size:13.5px; line-height:1.5; color:rgba(255,255,255,.88); text-align:center;}
   .betaw .cta{max-width:340px; justify-content:center; margin-top:4px;}
   .join .mail{max-width:100%;}
   .join-acts .go{text-align:center;}
@@ -152,7 +153,7 @@ HTML = r'''<!doctype html>
 <template id="t-beta">
     <div class="slide betaw">
       <h2>Bienvenue sur PING — version bêta</h2>
-      <p>Vous pouvez parcourir, vous inscrire : tout fonctionne, à l'exception des paiements et de la transaction réelle entre prestataires et clients. Nous vous sollicitons pour un test : votre avis sur l'ergonomie, les options qui vous manquent, vos observations et commentaires. Vous pouvez les laisser dans la petite bulle verte, sur la droite. Merci encore pour votre participation.</p>
+      <p>Inscrivez-vous : tout fonctionne, à l'exception des paiements et de la transaction réelle entre prestataires et clients. Nous vous sollicitons pour un test : votre avis sur l'ergonomie, les options qui vous manquent, vos observations et commentaires. Vous pouvez les laisser dans la petite bulle verte, sur la droite, une fois inscrit(e). Votre inscription et vos commentaires sont conservés. Merci encore pour votre participation.</p>
       <a class="cta a" id="betago" href="/l/ins"><span>Continuer vers l'inscription</span>%%ARROW%%</a>
     </div>
 </template>
