@@ -46,6 +46,7 @@ export interface RequestNearby {
   lng: number
   distance_m: number
   created_at: string
+  mine?: boolean
 }
 
 export async function fetchRequestsNearby(
@@ -56,7 +57,25 @@ export async function fetchRequestsNearby(
     p_lat: lat, p_lng: lng, radius_m: radiusM,
   })
   if (error) { console.error('requests_nearby', error); return [] }
-  return (data ?? []) as RequestNearby[]
+  const list = (data ?? []) as RequestNearby[]
+  // Ses propres annonces ouvertes (lisibles par leur auteur) : montrées, marquees « mine », sans reponse possible.
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: own } = await supabase.from('requests')
+        .select('id,category,title,description,budget_cents,budget_min_cents,budget_max_cents,desired_date,desired_slot,frequency,urgent,hours_wanted,linen_kg,linen_types,household_size,surface_m2,payment_pref,lat,lng,created_at')
+        .eq('requester_id', user.id).eq('status', 'open').not('lat', 'is', null).not('lng', 'is', null)
+      const rad = (x: number) => x * Math.PI / 180
+      for (const r of (own ?? []) as any[]) {
+        const dLat = rad(r.lat - lat), dLng = rad(r.lng - lng)
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat)) * Math.cos(rad(r.lat)) * Math.sin(dLng / 2) ** 2
+        const d = 2 * 6371000 * Math.asin(Math.sqrt(a))
+        if (d <= radiusM) list.push({ ...r, urgent: !!r.urgent, distance_m: d, mine: true } as RequestNearby)
+      }
+      list.sort((x, y) => Number(!!y.urgent) - Number(!!x.urgent) || x.distance_m - y.distance_m)
+    }
+  } catch { }
+  return list
 }
 
 export async function fetchProvidersNearby(

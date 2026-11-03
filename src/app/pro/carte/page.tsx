@@ -173,9 +173,15 @@ export default function ProCartePage() {
       </p>
 
       {sendError && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{sendError}</p>}
+      {selected.mine ? (
+        <p style={{ fontSize: 12.5, color: 'var(--ink)', background: '#FFF4DD', borderRadius: 12, padding: 12, lineHeight: 1.5 }}>
+          C&apos;est votre annonce. Vous la voyez comme les prestataires, mais vous ne pouvez pas y répondre avec ce compte.
+        </p>
+      ) : (
       <div className="btn" style={{ background: 'var(--teal)', opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected)}>
         {sending ? 'Envoi…' : 'Contacter le client'}
       </div>
+      )}
     </>
   )
 
