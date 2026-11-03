@@ -111,6 +111,16 @@ export default function ProCartePage() {
       .order('scheduled_at', { ascending: true, nullsFirst: false })
       .then(({ data }) => setMissions(data ?? []))
   }, [proId])
+  // Missions terminees : gardees dans « Mes interventions », sous les a-venir.
+  const [done, setDone] = useState<any[]>([])
+  useEffect(() => {
+    if (!proId) return
+    createClient().from('transactions')
+      .select('id, status, scheduled_at, created_at, completed_at, subtotal_cents, requests(category, title)')
+      .eq('seller_id', proId).eq('status', 'completed')
+      .order('created_at', { ascending: false }).limit(20)
+      .then(({ data }) => setDone(data ?? []))
+  }, [proId])
   const missionWhen = (m: any) => m.scheduled_at
     ? new Date(m.scheduled_at).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
     : 'Date à fixer'
@@ -267,6 +277,23 @@ export default function ProCartePage() {
           ))}
         </div>
       )}
+      {done.length > 0 && (
+        <>
+          <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', margin: '18px 0 8px' }}>Interventions terminées ({done.length})</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {done.map(m => (
+              <div key={m.id} onClick={() => router.push(`/mission/${m.id}/chat`)}
+                style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{m.requests?.title || TRADES[m.requests?.category] || 'Intervention'}</b>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--slate)', whiteSpace: 'nowrap' }}>Terminée</span>
+                </div>
+                <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>{new Date(m.completed_at || m.scheduled_at || m.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{m.subtotal_cents ? ` · ${(m.subtotal_cents / 100).toLocaleString('fr-FR')} €` : ''}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </>
   )
   const sidePanel = view === 'interventions' ? missionsPanel : (selected ? requestDetail : activityPanel)
@@ -327,7 +354,7 @@ export default function ProCartePage() {
           )}
 
           <div className="chips" style={{ top: 122 }}>
-            {([['demandes', `Demandes ouvertes (${reqs.length})`], ['interventions', `Mes interventions (${missions.length})`]] as const).map(([k, label]) => (
+            {([['demandes', `Demandes ouvertes (${reqs.length})`], ['interventions', `Mes interventions (${missions.length + done.length})`]] as const).map(([k, label]) => (
               <div key={k} className={view === k ? 'chip on' : 'chip'} onClick={() => { setView(k); setSelectedId(null) }}
                 style={view === k ? { background: 'var(--ink)', color: '#fff', cursor: 'pointer' } : { cursor: 'pointer' }}>{label}</div>
             ))}
