@@ -1,5 +1,5 @@
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>PING en 1 minute</title>
+<title>%%TITLE%%</title>
 <style>
 %%FONTS%%
   /* Lecteur sombre, comme /animation : la scène 9:16 à gauche, le scénario à droite (empilé sur mobile). */
@@ -56,7 +56,7 @@
 <div class="layout">
   <div class="player">
     <div class="stage">
-      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animation PING en 1 minute : Et si ce que vous cherchez se trouvait juste à côté ? Présentation de l'application (carte, demandes proches, chat avec prix proposé et validé, agenda, facture automatique), tutoriel pour chercher un prestataire ou le devenir, puis les arguments de PING. Le paiement sécurisé sous séquestre est annoncé comme bientôt, en attendant le règlement se fait par virement sur facture.">
+      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="%%ARIA%%">
         <defs>
           <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#D4EFEA"/><stop offset=".65" stop-color="#E9F4F1"/><stop offset="1" stop-color="#F4EFE2"/>
@@ -126,34 +126,10 @@
         </g>
         <rect id="prog" x="0" y="0" width="0" height="6" fill="#12B39C"/>
       </svg>
-      <div class="cta-wrap" id="cta">
-        <a class="signup-cta" href="/l/ins" target="_blank" rel="noopener">Je cherche un prestataire</a>
-        <a class="signup-cta alt" href="/l/insp" target="_blank" rel="noopener">Je suis prestataire</a>
-      </div>
-      <script>
-      (function(){
-        var m = /[?&]role=(client|pro)\b/.exec(location.search), box = document.getElementById('cta');
-        var as = box.querySelectorAll('a'), inFrame = window.top !== window;
-        if (m){
-          as[0].textContent = "Je m'inscris";
-          as[0].href = '/bienvenue?role=' + m[1] + '&go=inscription';
-          box.removeChild(as[1]);
-        }
-        if (inFrame) Array.prototype.forEach.call(box.querySelectorAll('a'), function(a){ a.target = '_top'; a.removeAttribute('rel'); });
-      })();
-      </script>
-    </div>
+%%CTA%%    </div>
 %%PLAYER_CONTROLS%%  </div>
 
-  <aside class="side" id="side">
-    <div class="eyebrow">PING en 1 minute · 69 s · 9:16</div>
-    <h1>PING en 1 minute</h1>
-    <p class="lead">La vidéo de présentation à envoyer en premier : l'accroche, l'application en cinq écrans, le tutoriel pour chercher un prestataire ou le devenir, puis les arguments. Format vertical, lisible sans le son. Un clic sur une scène pour y aller directement. Deux boutons d'inscription apparaissent sur la dernière scène de cette page (ils ne sont pas dans le fichier MP4, qui montre le QR code).</p>
-    <ol class="scenes" id="scenes"></ol>
-    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (carte, demandes autour de moi, chat et devis, agenda, facture, inscription, Mon profil, tarifs, disponibilités). Le paiement en ligne sous séquestre est présenté comme « bientôt », jamais comme actif : le règlement se fait aujourd'hui par virement sur facture. Les boutons pointent vers /l/ins (particulier) et /l/insp (prestataire), qui mesurent le trafic venu de cette vidéo.</p>
-    <p class="foot"><a href="/brand/files/ping-animation-ping.mp4" target="_blank" rel="noopener">Fichier vidéo MP4 · 1080 × 1920 · 69 s</a> — à publier tel quel.</p>
-  </aside>
-</div>
+%%SIDE%%</div>
 
 <script>
 (function(){
@@ -244,6 +220,10 @@
     g.r = r; g.t = t; return g;
   }
 
+  // ---------- variante : « PING en 1 minute » (/animation-ping), tout à la suite, inchangée ----------
+  var VAR = {
+    label: function(t){ return t < 20.2 ? 'PING · L’application' : (t < 30.8 ? 'PING · Je cherche un prestataire' : 'PING · Je suis prestataire'); }
+  };
   /* RUBRIQUES (ordre figé : ?scene=N sur /animation-ping, N = rang ci-dessous ; ne pas réordonner, /aide s'y réfère).
      Tableau de référence : var UI plus bas. Contrat d'URL du lecteur (brand/anim/player.js) :
      ?admin=1 panneau scénario · ?embed=1 lecteur seul + rubriques repliables (postMessage {ping:'anim-ended'} à la fin)
@@ -601,7 +581,11 @@
   })();
 
   // ordre et début de chaque écran du téléphone
-  var SCREENS = [['sMap', 4.6], ['sDem', 7.8], ['sChat', 10.8], ['sAgenda', 14.8], ['sFact', 17.4], ['sQR', 20.7], ['sSign', 23.4], ['sMapT', 26.9], ['sProf', 31.0], ['sTar', 34.6], ['sDisp', 38.8], ['sOn', 41.0]];
+  var SCREENS = VAR.screens || [['sMap', 4.6], ['sDem', 7.8], ['sChat', 10.8], ['sAgenda', 14.8], ['sFact', 17.4], ['sQR', 20.7], ['sSign', 23.4], ['sMapT', 26.9], ['sProf', 31.0], ['sTar', 34.6], ['sDisp', 38.8], ['sOn', 41.0]];
+  // écrans absents de la variante (animations séparées client / prestataire) : masqués
+  ['sMap', 'sDem', 'sChat', 'sAgenda', 'sFact', 'sQR', 'sSign', 'sMapT', 'sProf', 'sTar', 'sDisp', 'sOn'].forEach(function(id){
+    if (!SCREENS.some(function(q){ return q[0] === id; })) $(id).setAttribute('display', 'none');
+  });
   SCREENS.forEach(function(q){ var g = $(q[0]); g.insertBefore(el('rect', {x:12, y:12, width:316, height:656, fill:'#F6F9F8'}), g.firstChild); });
 
   // ---------- signature PING : le mot « ping », l'épingle en guise de i ----------
@@ -637,6 +621,8 @@
     {i:'scales', l:[['Service litige :'], ['un dossier,'], ['un médiateur PING.', 'g']], s:'Chaque litige est suivi dans un dossier unique.'},
     {i:'lock', badge:true, l:[['Paiement sécurisé'], ['sous séquestre,'], ['versement sous 48 h.', 'y']], s:null}
   ];
+  // variante : sous-ensemble des arguments (indices dans l'ordre ci-dessus), créneaux ARG0 + n × ARGD dans le temps source
+  if (VAR.args) ARGS = VAR.args.map(function(i){ return ARGS[i]; });
   S.args = ARGS.map(function(A, n){
     var c = el('g', {}, $('args')), ic = el('g', {}, c);
     el('circle', {cx:270, cy:300, r:58, fill:'#1E4352', stroke: A.badge ? GOLD : 'none', 'stroke-width':2, 'stroke-dasharray': A.badge ? '6 6' : 'none'}, ic);
@@ -685,25 +671,8 @@
     { a:38.8, b:41.0, lines:['Indiquez vos', 'disponibilités.'] },
     { a:41.0, b:43.2, lines:['Passez « Disponible » :', 'visible sur la carte.'] }
   ];
+  if (VAR.caps) VAR.caps(CAPS);
   var capLines = [tx($('capText'), 270, 87, '', {f:'Q', s:27, a:'middle'}), tx($('capText'), 270, 123, '', {f:'Q', s:27, a:'middle'})];
-
-  // liste du lecteur (scènes cliquables)
-  var UI = [
-    { a:0,    title:'Accroche', d:"Logo PING et son écho radar : « Et si ce que vous cherchez se trouvait juste à côté ? »" },
-    { a:4.6,  title:'La carte', d:"Prestataires disponibles près de chez soi (Contacter, Déposer une demande), puis côté prestataire « Demandes autour de moi » avec les demandes urgentes en orange." },
-    { a:10.8, title:'Le chat et le prix', d:"Le prestataire propose un devis, le client l'accepte : le tarif est validé et appliqué à la mission. Puis « Fixez le rendez-vous »." },
-    { a:14.8, title:'Agenda et facture', d:"Le rendez-vous confirmé s'ajoute à l'agenda. À la fin de la mission, la facture est générée automatiquement ; règlement par virement." },
-    { a:20.2, title:'Je cherche un prestataire', d:"Ouvrir le lien (QR code), créer son compte en deux étapes, choisir le service sur la carte, puis Contacter ou Déposer une demande." },
-    { a:30.8, title:'Je suis prestataire', d:"Mon profil > Devenir prestataire, tarifs (forfait, à l'heure, forfait + heures sup.), disponibilités, bouton Disponible." },
-    { a:43.2, title:'Moins de factures, plus de services', d:"Argument 1 : une formule en deux temps." },
-    { a:46.2, title:'Moins de paperasse, plus de travail', d:"Argument 2." },
-    { a:49.2, title:'Moins d’administratif, plus de productif', d:"Argument 3." },
-    { a:52.2, title:'QR de sécurité : l’heure fait foi', d:"QR code à l'arrivée et au départ." },
-    { a:55.2, title:'Prestataires et clients se notent', d:"Avis croisés après chaque mission." },
-    { a:58.2, title:'Service litige', d:"Un dossier, un médiateur PING." },
-    { a:61.2, title:'Paiement sécurisé : bientôt', d:"Séquestre et versement sous 48 h : badge BIENTÔT, jamais présenté comme actif. En attendant : règlement par virement sur facture." },
-    { a:64.2, title:'Final', d:"Logo PING, QR code d'inscription et deux boutons (page web seulement) : « Je cherche un prestataire » (/l/ins) et « Je suis prestataire » (/l/insp)." }
-  ];
 
   function render(t){
     // accroche
@@ -720,7 +689,7 @@
       var n = $(q[0]); n.setAttribute('display', on || i === 0 ? 'inline' : 'none');
       if (i > 0) tr(n, 'translate('+(330*(1-eout(seg(t, a, a + 0.4)))).toFixed(1)+',0)');
     });
-    $('partLbl').textContent = t < 20.2 ? 'PING · L’application' : (t < 30.8 ? 'PING · Je cherche un prestataire' : 'PING · Je suis prestataire');
+    $('partLbl').textContent = VAR.label(t);
 
     // 1. carte
     mapAnim(S.m1, t, 5.0, {});
@@ -822,6 +791,24 @@
     endRings.forEach(function(c, i){ var k = mod(t - 64.8 - i*0.6, 1.8)/1.8; c.setAttribute('cx', endDot.x); c.setAttribute('cy', endDot.y); c.setAttribute('r', (12 + k*130).toFixed(1)); show(c, t > 64.8 + i*0.6 ? (1-k)*0.5 : 0); });
     [['e1',65.0],['e2',65.3],['e3',65.6],['e4',66.0],['e5',66.3]].forEach(function(q){ appear($(q[0]), t, q[1], 0.45, 14); });
   }
+
+  // liste du lecteur (scènes cliquables)
+  var UI = [
+    { a:0,    title:'Accroche', d:"Logo PING et son écho radar : « Et si ce que vous cherchez se trouvait juste à côté ? »" },
+    { a:4.6,  title:'La carte', d:"Prestataires disponibles près de chez soi (Contacter, Déposer une demande), puis côté prestataire « Demandes autour de moi » avec les demandes urgentes en orange." },
+    { a:10.8, title:'Le chat et le prix', d:"Le prestataire propose un devis, le client l'accepte : le tarif est validé et appliqué à la mission. Puis « Fixez le rendez-vous »." },
+    { a:14.8, title:'Agenda et facture', d:"Le rendez-vous confirmé s'ajoute à l'agenda. À la fin de la mission, la facture est générée automatiquement ; règlement par virement." },
+    { a:20.2, title:'Je cherche un prestataire', d:"Ouvrir le lien (QR code), créer son compte en deux étapes, choisir le service sur la carte, puis Contacter ou Déposer une demande." },
+    { a:30.8, title:'Je suis prestataire', d:"Mon profil > Devenir prestataire, tarifs (forfait, à l'heure, forfait + heures sup.), disponibilités, bouton Disponible." },
+    { a:43.2, title:'Moins de factures, plus de services', d:"Argument 1 : une formule en deux temps." },
+    { a:46.2, title:'Moins de paperasse, plus de travail', d:"Argument 2." },
+    { a:49.2, title:'Moins d’administratif, plus de productif', d:"Argument 3." },
+    { a:52.2, title:'QR de sécurité : l’heure fait foi', d:"QR code à l'arrivée et au départ." },
+    { a:55.2, title:'Prestataires et clients se notent', d:"Avis croisés après chaque mission." },
+    { a:58.2, title:'Service litige', d:"Un dossier, un médiateur PING." },
+    { a:61.2, title:'Paiement sécurisé : bientôt', d:"Séquestre et versement sous 48 h : badge BIENTÔT, jamais présenté comme actif. En attendant : règlement par virement sur facture." },
+    { a:64.2, title:'Final', d:"Logo PING, QR code d'inscription et deux boutons (page web seulement) : « Je cherche un prestataire » (/l/ins) et « Je suis prestataire » (/l/insp)." }
+  ];
 
 %%PLAYER_JS%%
   var cta = $('cta');

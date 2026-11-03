@@ -2,7 +2,7 @@
 <div class="layout">
   <div class="player">
     <div class="stage">
-      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animation PING en 1 minute : Et si ce que vous cherchez se trouvait juste à côté ? Présentation de l'application (carte, demandes proches, chat avec prix proposé et validé, agenda, facture automatique), tutoriel pour chercher un prestataire ou le devenir, puis les arguments de PING. Le paiement sécurisé sous séquestre est annoncé comme bientôt, en attendant le règlement se fait par virement sur facture.">
+      <svg id="svg" viewBox="0 0 540 960" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="%%ARIA%%">
         <defs>
           <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#D4EFEA"/><stop offset=".65" stop-color="#E9F4F1"/><stop offset="1" stop-color="#F4EFE2"/>
@@ -72,34 +72,10 @@
         </g>
         <rect id="prog" x="0" y="0" width="0" height="6" fill="#12B39C"/>
       </svg>
-      <div class="cta-wrap" id="cta">
-        <a class="signup-cta" href="/l/ins" target="_blank" rel="noopener">Je cherche un prestataire</a>
-        <a class="signup-cta alt" href="/l/insp" target="_blank" rel="noopener">Je suis prestataire</a>
-      </div>
-      <script>
-      (function(){
-        var m = /[?&]role=(client|pro)\b/.exec(location.search), box = document.getElementById('cta');
-        var as = box.querySelectorAll('a'), inFrame = window.top !== window;
-        if (m){
-          as[0].textContent = "Je m'inscris";
-          as[0].href = '/bienvenue?role=' + m[1] + '&go=inscription';
-          box.removeChild(as[1]);
-        }
-        if (inFrame) Array.prototype.forEach.call(box.querySelectorAll('a'), function(a){ a.target = '_top'; a.removeAttribute('rel'); });
-      })();
-      </script>
-    </div>
+%%CTA%%    </div>
 %%PLAYER_CONTROLS%%  </div>
 
-  <aside class="side" id="side">
-    <div class="eyebrow">PING en 1 minute · 69 s · 9:16</div>
-    <h1>PING en 1 minute</h1>
-    <p class="lead">La vidéo de présentation à envoyer en premier : l'accroche, l'application en cinq écrans, le tutoriel pour chercher un prestataire ou le devenir, puis les arguments. Format vertical, lisible sans le son. Un clic sur une scène pour y aller directement. Deux boutons d'inscription apparaissent sur la dernière scène de cette page (ils ne sont pas dans le fichier MP4, qui montre le QR code).</p>
-    <ol class="scenes" id="scenes"></ol>
-    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (carte, demandes autour de moi, chat et devis, agenda, facture, inscription, Mon profil, tarifs, disponibilités). Le paiement en ligne sous séquestre est présenté comme « bientôt », jamais comme actif : le règlement se fait aujourd'hui par virement sur facture. Les boutons pointent vers /l/ins (particulier) et /l/insp (prestataire), qui mesurent le trafic venu de cette vidéo.</p>
-    <p class="foot"><a href="/brand/files/ping-animation-ping.mp4" target="_blank" rel="noopener">Fichier vidéo MP4 · 1080 × 1920 · 69 s</a> — à publier tel quel.</p>
-  </aside>
-</div>
+%%SIDE%%</div>
 
 <script>
 (function(){

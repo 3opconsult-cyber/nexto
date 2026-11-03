@@ -265,7 +265,7 @@
   var KICK = { particulier: 'Particuliers', pro: 'Prestataires' };
   var WHO = { particulier: 'Je cherche un prestataire', pro: 'Je suis prestataire' };
   var SIGNUP = { particulier: '/l/ins', pro: '/l/insp' };
-  var ANIM = { particulier: 'client', pro: 'pro' };
+  var ANIM = { particulier: '/animation-client?role=client', pro: '/animation-prestataire?role=pro' };
   var role = null, stage = 'cover', betaFrom = 'choice';
   var ov = document.getElementById('ov'), ovf = document.getElementById('ovf'), lastFocus = null;
   function n(){ return track.children.length; }
@@ -309,7 +309,7 @@
       });
     });
   }
-  function openAnim(){ lastFocus = document.activeElement; ovf.src = '/animation-ping?role=' + ANIM[role]; ov.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('ovx').focus(); }
+  function openAnim(){ lastFocus = document.activeElement; ovf.src = ANIM[role]; ov.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('ovx').focus(); }
   function closeAnim(){ ov.hidden = true; ovf.src = 'about:blank'; document.body.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
   function back(){
     if (stage === 'beta') show(betaFrom);

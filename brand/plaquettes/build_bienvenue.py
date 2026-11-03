@@ -3,7 +3,7 @@
 Couverture (2 boutons : rôle) -> choix « Suivre le parcours » / « Voir l'animation » -> slides du public choisi
 (reprises telles quelles de src.html, donc synchronisées avec /plaquettes) -> dernier écran (QR, « Je m'inscris »,
 « Je m'inscris » (plus de visite de l'application depuis la plaquette)) -> écran bêta -> /l/ins ou /l/insp. Le rôle est gardé dans le hash (#particulier ou #pro).
-Voir l'animation = overlay iframe /animation-ping?role=client|pro. Entrée directe : ?role=client|pro&go=inscription
+Voir l'animation = overlay iframe /animation-client?role=client (particulier) ou /animation-prestataire?role=pro (pro), deux animations séparées. Entrée directe : ?role=client|pro&go=inscription
 (fin de l'animation) ouvre l'écran bêta. Une seule étape visible à la fois (data-stage sur .deck)."""
 import pathlib
 import re
@@ -172,7 +172,7 @@ HTML = r'''<!doctype html>
   var KICK = { particulier: 'Particuliers', pro: 'Prestataires' };
   var WHO = { particulier: 'Je cherche un prestataire', pro: 'Je suis prestataire' };
   var SIGNUP = { particulier: '/l/ins', pro: '/l/insp' };
-  var ANIM = { particulier: 'client', pro: 'pro' };
+  var ANIM = { particulier: '/animation-client?role=client', pro: '/animation-prestataire?role=pro' };
   var role = null, stage = 'cover', betaFrom = 'choice';
   var ov = document.getElementById('ov'), ovf = document.getElementById('ovf'), lastFocus = null;
   function n(){ return track.children.length; }
@@ -216,7 +216,7 @@ HTML = r'''<!doctype html>
       });
     });
   }
-  function openAnim(){ lastFocus = document.activeElement; ovf.src = '/animation-ping?role=' + ANIM[role]; ov.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('ovx').focus(); }
+  function openAnim(){ lastFocus = document.activeElement; ovf.src = ANIM[role]; ov.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('ovx').focus(); }
   function closeAnim(){ ov.hidden = true; ovf.src = 'about:blank'; document.body.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
   function back(){
     if (stage === 'beta') show(betaFrom);

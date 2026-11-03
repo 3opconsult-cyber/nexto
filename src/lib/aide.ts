@@ -1,7 +1,10 @@
 // Rubriques de « Comment ça marche » : une animation par rubrique, jamais tout d'affilée.
-// `scene` = rang (1..n) de la scène dans le tableau UI de brand/anim-presentation/parts/d_scenes.js
-// (1 Accroche, 2 La carte, 3 Le chat et le prix, 4 Agenda et facture, 5 Je cherche un prestataire,
-// 6 Je suis prestataire, 11 Avis croisés). Les paramètres ?embed=1 et ?scene=N sont lus par les pages /animation*.
+// `scene` = rang (1..n) dans la liste `ui` de brand/anim-presentation/parts/c2_var_client.js (/animation-client :
+// 1 Accroche, 2 La carte, 3 Le chat et le prix, 4 Agenda et facture, 5 Je cherche un prestataire, 6 QR de sécurité,
+// 7 Avis croisés, 8 Litige, 9 Paiement bientôt, 10 Final) ou c2_var_pro.js (/animation-prestataire : 1 Accroche,
+// 2 Demandes autour de moi, 3 Je suis prestataire, 4 Mes tarifs, 5 Mes disponibilités, 6 Moins de factures,
+// 7 Moins de paperasse, 8 Moins d'administratif, 9 QR, 10 Avis croisés, 11 Litige, 12 Paiement bientôt, 13 Final).
+// Les paramètres ?embed=1 et ?scene=N sont lus par les pages /animation*. Les anciens rangs de /animation-ping ne servent plus ici.
 export type AideRubrique = {
   slug: string
   title: string
@@ -12,14 +15,15 @@ export type AideRubrique = {
 }
 
 export const AIDE_RUBRIQUES: AideRubrique[] = [
-  { slug: 'carte', title: 'Trouver un prestataire sur la carte', sub: 'Les prestataires disponibles près de chez vous, et comment les contacter.', src: '/animation-ping?embed=1&scene=2', space: 'particulier', icon: 'pin' },
-  { slug: 'prix', title: 'Contacter et fixer le prix', sub: 'Le devis dans le chat, son acceptation et la fixation du rendez-vous.', src: '/animation-ping?embed=1&scene=3', space: 'particulier', icon: 'chat' },
-  { slug: 'agenda', title: 'Agenda et rendez-vous', sub: 'Où retrouver vos rendez-vous confirmés.', src: '/animation-ping?embed=1&scene=4', space: 'particulier', icon: 'agenda' },
+  { slug: 'carte', title: 'Trouver un prestataire sur la carte', sub: 'Les prestataires disponibles près de chez vous, et comment les contacter.', src: '/animation-client?embed=1&scene=2', space: 'particulier', icon: 'pin' },
+  { slug: 'prix', title: 'Contacter et fixer le prix', sub: 'Le devis dans le chat, son acceptation et la fixation du rendez-vous.', src: '/animation-client?embed=1&scene=3', space: 'particulier', icon: 'chat' },
+  { slug: 'agenda', title: 'Agenda et rendez-vous', sub: 'Où retrouver vos rendez-vous confirmés.', src: '/animation-client?embed=1&scene=4', space: 'particulier', icon: 'agenda' },
   { slug: 'apres-commande', title: 'Après la commande : arrivée, QR, fin', sub: 'Le QR à l’arrivée et au départ, et l’heure entamée.', src: '/animation-tuto?embed=1', space: 'tous', icon: 'qr' },
   { slug: 'absent', title: 'Vous ne serez pas sur place', sub: 'Valider l’arrivée du prestataire quand vous êtes absent.', src: '/animation-tuto-absent?embed=1', space: 'particulier', icon: 'absent' },
-  { slug: 'facture', title: 'Facture, avis et pourboire', sub: 'La facture après la mission, puis les avis croisés.', src: '/animation-ping?embed=1&scene=11', space: 'tous', icon: 'doc' },
+  { slug: 'facture', title: 'Facture, avis et pourboire', sub: 'La facture après la mission, puis les avis croisés.', src: '/animation-client?embed=1&scene=7', space: 'particulier', icon: 'doc' },
+  { slug: 'facture-pro', title: 'Facture et avis', sub: 'La facture se génère à chaque mission, puis les avis croisés.', src: '/animation-prestataire?embed=1&scene=6', space: 'pro', icon: 'doc' },
   { slug: 'devenir-prestataire', title: 'Devenir prestataire', sub: 'Créer votre profil prestataire pas à pas.', src: '/animation-inscription?embed=1&part=pro', space: 'pro', icon: 'swap' },
-  { slug: 'etre-prestataire', title: 'Être prestataire : demandes, tarifs, disponibilités', sub: 'Fixer vos tarifs, indiquer vos créneaux et passer « Disponible ».', src: '/animation-ping?embed=1&scene=6', space: 'pro', icon: 'tag' },
+  { slug: 'etre-prestataire', title: 'Être prestataire : demandes, tarifs, disponibilités', sub: 'Fixer vos tarifs, indiquer vos créneaux et passer « Disponible ».', src: '/animation-prestataire?embed=1&scene=2', space: 'pro', icon: 'tag' },
 ]
 
 export const AIDE_ICONS: Record<AideRubrique['icon'], string> = {
