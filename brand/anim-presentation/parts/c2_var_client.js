@@ -1,29 +1,36 @@
   // ---------- variante : « PING pour les particuliers » (/animation-client) ----------
-  // Scènes reprises de la présentation, sans doublon : le temps SOURCE est celui de d_scenes.js ; segs (e_split.js) dit
-  // quels tronçons se jouent, à la suite. Rien du côté prestataire (carte « Demandes autour de moi », tuto « Je suis
-  // prestataire », écrans profil / tarifs / disponibilités). Les arguments (créneaux 43,2 + 3 s × n) : QR, avis, litige, paiement.
+  // Scénario (Romain, 3/11) : 1 accroche · 2 la carte (les prestataires autour de vous) · 3 vous choisissez votre prestataire ·
+  // 4 le chat : vous validez le prix et payez, paiement sous séquestre · 5 à son arrivée, QR de sécurité · 6 vous notez votre
+  // prestataire · 7 final (QR /l/ins + « Je m'inscris »). Aucune nouvelle illustration : ce sont des tronçons du temps SOURCE de
+  // d_scenes.js, rejoués dans cet ordre (segs, assemblés par e_split.js). Pas de tuto d'inscription, agenda, facture ni litige ici
+  // (ils restent dans /animation-ping et /aide). Arguments : créneaux ARG0 + 3 s × n -> QR de sécurité (43,2) et avis (46,2).
   var VAR = {
-    label: function(t){ return t < 20.2 ? 'PING · L’application' : 'PING · Je cherche un prestataire'; },
-    screens: [['sMap', 4.6], ['sChat', 10.8], ['sAgenda', 14.8], ['sFact', 17.4], ['sQR', 20.7], ['sSign', 23.4], ['sMapT', 26.9]],
-    args: [3, 4, 5, 6],
-    caps: function(C){
-      C.splice(9, 4);                      // légendes prestataire (tuto « Je suis prestataire »)
-      C.splice(1, 1);                      // « Côté pro : les demandes à portée »
-      C[0].lines = ['Les prestataires disponibles', 'autour de vous.'];
+    label: function(t){ return 'PING · L’application'; },
+    screens: [['sMap', 4.6], ['sChat', 10.8], ['sMapT', 26.9]],
+    args: [3, 4],
+    argEdit: function(A){
+      A[0].l = [['À son arrivée, vous scannez'], ['son QR code :'], ['l’heure fait foi.', 'g']];
+      A[0].s = 'Arrivée et départ sont pointés par QR code.';
+      A[1].l = [['Vous notez'], ['votre prestataire'], ['en quelques clics.', 'g']];
+      A[1].s = 'Un avis croisé après chaque mission.';
     },
-    // [début source, fin source, fondu au navy à la jonction]
-    segs: [[0, 7.8, false], [10.85, 30.55, true], [43.3, 55.2, true], [64.2, 69.5, false]],
+    caps: function(C){
+      C.length = 0;
+      C.push({ a: 4.7,  b: 7.8,  lines: ['Les prestataires disponibles', 'autour de vous.'] },
+             { a: 27.6, b: 30.2, lines: ['Vous choisissez', 'votre prestataire.'] },
+             { a: 10.9, b: 13.5, lines: ['Vous validez le prix et', 'payez directement dans le chat.'] },
+             { a: 13.5, b: 14.75, lines: ['Votre paiement reste sous séquestre', 'jusqu’à la fin de la mission.'] });
+    },
+    // [début source, fin source, fondu au navy à la jonction, vitesse]
+    segs: [[0, 7.8, false], [27.6, 30.2, true, 0.8], [10.9, 14.75, true, 0.6], [43.3, 49.2, true], [64.2, 69.5, true]],
     end: { e1: 'PING pour les particuliers.', e5: 'nexto-eta.vercel.app/l/ins' },
-    ui: [
-      { s: 0,    title: 'Accroche', d: "Logo PING et son écho radar : « Et si ce que vous cherchez se trouvait juste à côté ? »" },
-      { s: 4.6,  title: 'La carte', d: "Les prestataires disponibles près de chez soi, avec « Contacter » et « Déposer une demande »." },
-      { s: 10.8, title: 'Le chat et le prix', d: "Le prestataire propose un devis, le client l'accepte : le tarif est validé et appliqué à la mission. Puis « Fixez le rendez-vous »." },
-      { s: 14.8, title: 'Agenda et facture', d: "Le rendez-vous confirmé s'ajoute à l'agenda. À la fin de la mission, la facture est générée automatiquement ; règlement par virement." },
-      { s: 20.2, title: 'Je cherche un prestataire', d: "Ouvrir le lien (QR code), créer son compte en deux étapes, choisir le service sur la carte, puis Contacter ou Déposer une demande." },
-      { s: 43.2, title: 'QR de sécurité : l’heure fait foi', d: "QR code à l'arrivée et au départ." },
-      { s: 46.2, title: 'Prestataires et clients se notent', d: "Avis croisés après chaque mission." },
-      { s: 49.2, title: 'Service litige', d: "Un dossier, un médiateur PING." },
-      { s: 52.2, title: 'Paiement sécurisé : bientôt', d: "Séquestre et versement sous 48 h : badge BIENTÔT, jamais présenté comme actif. En attendant : règlement par virement sur facture." },
-      { s: 64.2, title: 'Final', d: "Logo PING, QR code d'inscription (/l/ins) et bouton « Je m'inscris » (page web seulement)." }
+    ui: [   // k = rang du tronçon dans segs
+      { k: 0, s: 0,    title: 'Accroche', d: "Logo PING et son écho radar : « Et si ce que vous cherchez se trouvait juste à côté ? »" },
+      { k: 0, s: 4.6,  title: 'La carte', d: "Les prestataires disponibles autour de vous, sur la carte." },
+      { k: 1, s: 27.6, title: 'Vous choisissez votre prestataire', d: "Le service choisi, la fiche du prestataire sur la carte, puis « Contacter »." },
+      { k: 2, s: 10.9, title: 'Le chat, le prix et le paiement', d: "Vous validez le prix et payez directement dans le chat ; le paiement reste sous séquestre jusqu'à la fin de la mission." },
+      { k: 3, s: 43.2, title: 'À son arrivée : le QR de sécurité', d: "Vous scannez son QR code : l'heure fait foi." },
+      { k: 3, s: 46.2, title: 'Vous notez votre prestataire', d: "Un avis en quelques clics après la mission." },
+      { k: 4, s: 64.2, title: 'Final', d: "Logo PING, QR code d'inscription (/l/ins) et bouton « Je m'inscris » (page web seulement)." }
     ]
   };

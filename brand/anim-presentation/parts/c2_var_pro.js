@@ -1,6 +1,7 @@
   // ---------- variante : « PING pour les prestataires » (/animation-prestataire) ----------
   // Même principe que c2_var_client.js. Rien du côté client (carte des prestataires, chat/devis vu du client, agenda,
-  // facture, QR d'ouverture du lien, création de compte particulier). Arguments : les 7 (créneaux 43,2 + 3 s × n).
+  // facture, QR d'ouverture du lien, création de compte particulier) ; le seul QR / « Je m'inscris » est l'écran final.
+  // Arguments : les 7 (créneaux 43,2 + 3 s × n).
   var VAR = {
     label: function(t){ return t < 30.6 ? 'PING · Côté prestataire' : 'PING · Je suis prestataire'; },
     screens: [['sDem', 7.8], ['sProf', 31.0], ['sTar', 34.6], ['sDisp', 38.8], ['sOn', 41.0]],
@@ -23,7 +24,7 @@
       { s: 52.2, title: 'QR de sécurité : l’heure fait foi', d: "QR code à l'arrivée et au départ." },
       { s: 55.2, title: 'Prestataires et clients se notent', d: "Avis croisés après chaque mission." },
       { s: 58.2, title: 'Service litige', d: "Un dossier, un médiateur PING." },
-      { s: 61.2, title: 'Paiement sécurisé : bientôt', d: "Séquestre et versement sous 48 h : badge BIENTÔT, jamais présenté comme actif. En attendant : règlement par virement sur facture." },
+      { s: 61.2, title: 'Paiement sécurisé sous séquestre', d: "Vous êtes payé : le paiement reste sous séquestre jusqu'à la fin de la mission." },
       { s: 64.2, title: 'Final', d: "Logo PING, QR code d'inscription prestataire (/l/insp) et bouton « Je m'inscris » (page web seulement)." }
     ]
   };

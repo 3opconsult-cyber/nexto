@@ -12,7 +12,7 @@
     { a:52.2, title:'QR de sécurité : l’heure fait foi', d:"QR code à l'arrivée et au départ." },
     { a:55.2, title:'Prestataires et clients se notent', d:"Avis croisés après chaque mission." },
     { a:58.2, title:'Service litige', d:"Un dossier, un médiateur PING." },
-    { a:61.2, title:'Paiement sécurisé : bientôt', d:"Séquestre et versement sous 48 h : badge BIENTÔT, jamais présenté comme actif. En attendant : règlement par virement sur facture." },
+    { a:61.2, title:'Paiement sécurisé sous séquestre', d:"Le paiement reste sous séquestre jusqu'à la fin de la mission." },
     { a:64.2, title:'Final', d:"Logo PING, QR code d'inscription et deux boutons (page web seulement) : « Je cherche un prestataire » (/l/ins) et « Je suis prestataire » (/l/insp)." }
   ];
 

@@ -315,7 +315,7 @@
   function ins2Clock(x){ return x >= R2 && x < R2 + Y ? x - R2 : -1; }
   function outer(T){ return T <= P1 ? T/E : T <= P2 ? Q + X + (T - P1) : R2 + Y + (T - P2); }
   var INS = -1, INS2 = -1, RT = 0;
-  var TRUST_CAP = { title: 'En toute confiance', lines: ['Vous savez qui vient.', 'Tout est tracé.'], d: "Pièce d'identité fournie, assurance renseignée, facture automatique ; séquestre et crédit d'impôt immédiat bientôt." };
+  var TRUST_CAP = { title: 'En toute confiance', lines: ['Vous savez qui vient.', 'Tout est tracé.'], d: "Pièce d'identité fournie, assurance renseignée, facture automatique ; paiement sous séquestre ; crédit d'impôt immédiat bientôt." };
   var INS_CAPS = [
     { a:0,    b:3.05, title:'Le chat', lines:['Un message, un tarif.','Sophie accepte.'], d:"Sophie écrit, Marc lui propose son tarif dans la conversation, elle l'accepte." },
     { a:3.05, b:6.05, title:'Réservation instantanée', lines:['Un créneau, un clic.',"C'est réservé."], d:"Sophie choisit un créneau libre parmi les disponibilités de Marc : la réservation est faite." },
@@ -603,7 +603,7 @@
     { t: "Pièce d'identité fournie", s: 'Chaque prestataire dépose la sienne', d: 'M3 6h18v12H3z|M7 14.5c.6-1.4 1.8-2 3-2s2.4.6 3 2|M10 11a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6|M15 10h3M15 13h2' },
     { t: 'Assurance renseignée', s: 'Responsabilité civile pro déclarée', d: 'M12 3l8 3.5v5c0 4.6-3.4 8.2-8 9.5-4.6-1.3-8-4.9-8-9.5v-5z|M8.5 12l2.5 2.5 4.5-5' },
     { t: 'Facture automatique', s: 'Générée à la fin de chaque mission', d: 'M6 2.5h8.5l4 4v15H6z|M14.5 2.5v4h4|M9 12h6.5M9 15.5h4.5' },
-    { t: 'Paiement sous séquestre', s: 'Débloqué après la prestation', d: 'M6 11h12v10H6z|M8.5 11V8a3.5 3.5 0 0 1 7 0v3|M12 15v2.5', soon: true },
+    { t: 'Paiement sous séquestre', s: 'Débloqué après la prestation', d: 'M6 11h12v10H6z|M8.5 11V8a3.5 3.5 0 0 1 7 0v3|M12 15v2.5' },
     { t: "Crédit d'impôt immédiat", s: 'Ne payez que 50 %', d: 'M5 19L19 5|M7.5 9.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4|M16.5 18.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4', soon: true },
   ];
   var trustEls = TRUST.map(function(r, i){

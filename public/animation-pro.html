@@ -221,7 +221,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     <h1>Le parcours d'un prestataire PING</h1>
     <p class="lead">Pour convaincre un pro de s'inscrire : ce qu'il fait dans l'app, du réglage de ses prix à la facture. Format vertical (TikTok, Reels, Stories), lisible sans le son. Un clic sur une scène pour y aller directement.</p>
     <ol class="scenes" id="scenes"></ol>
-    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (carte des demandes, Mes tarifs, Mes disponibilités, chat, QR codes, facture, avis, Mon entreprise). Le paiement en ligne n'est pas montré comme actif : « Paiement par virement », paiement en ligne « bientôt ». Le QR final pointe vers /l/pqd, ce qui permet de mesurer le trafic venu de cette vidéo.</p>
+    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (carte des demandes, Mes tarifs, Mes disponibilités, chat, QR codes, facture, avis, Mon entreprise). Mon entreprise montre « Paiement par virement » et « Paiement sous séquestre ». Le QR final pointe vers /l/pqd, ce qui permet de mesurer le trafic venu de cette vidéo.</p>
     <p class="foot"><a href="/brand/files/ping-animation-pro.mp4" target="_blank" rel="noopener">Fichier vidéo MP4 · 1080 × 1920 · 55 s</a> — à publier tel quel.</p>
   </aside>
 </div>
@@ -585,7 +585,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     var ROWS = [
       ['chart', 'Revenus', 'Novembre : 1 240 € · 9 missions'],
       ['idc', 'Mes pièces', 'Pièce fournie · assurance renseignée'],
-      ['bank', 'Paiement par virement', 'Paiement en ligne', 'soon'],
+      ['bank', 'Paiement par virement', 'Paiement sous séquestre'],
       ['tag', 'Mes tarifs', '3 prestations'],
       ['cal', 'Mes disponibilités', '4 jeudis ouverts en novembre']
     ];
@@ -656,7 +656,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     { a:33.0, b:36.6, title:'Durée réelle', lines:['La durée réelle','est enregistrée.'], d:"Second scan en partant : 3 h 02 sur place, enregistrées." },
     { a:36.6, b:41.2, title:'Facture automatique', lines:['Votre facture, à votre nom,','faite toute seule.'], d:"Facture à son en-tête (SIRET, numéro), créée à la fin de la mission. « Vous percevez 62,25 € », commission PING 17 %." },
     { a:41.2, b:45.8, title:'Avis croisés', lines:['Le client vous note,','vous le notez, même en privé.'], d:"Cinq étoiles de Sophie ; à son tour, Marc note sa cliente et choisit « note privée »." },
-    { a:45.8, b:50.2, title:'Mon entreprise', lines:['Revenus, pièces, paiement :','tout dans Mon entreprise.'], d:"Revenus du mois, pièces fournies, paiement par virement (paiement en ligne : bientôt), tarifs, disponibilités." },
+    { a:45.8, b:50.2, title:'Mon entreprise', lines:['Revenus, pièces, paiement :','tout dans Mon entreprise.'], d:"Revenus du mois, pièces fournies, paiement par virement ou sous séquestre, tarifs, disponibilités." },
     { a:50.2, b:55,   title:'Devenir prestataire', lines:null, d:"Logo PING, « Devenir prestataire », inscription gratuite, QR vers /l/pqd et l'adresse nexto-eta.vercel.app/pro/onboarding." }
   ];
   var capLines = [tx($('capText'), 270, 87, '', {f:'Q', s:27, a:'middle'}), tx($('capText'), 270, 123, '', {f:'Q', s:27, a:'middle'})];

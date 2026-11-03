@@ -14,7 +14,7 @@
      10. QR de sécurité : l’heure fait foi  (à 52.2 s)
      11. Prestataires et clients se notent  (à 55.2 s)
      12. Service litige  (à 58.2 s)
-     13. Paiement sécurisé : bientôt  (à 61.2 s)
+     13. Paiement sécurisé sous séquestre  (à 61.2 s)
      14. Final  (à 64.2 s)
   */
 
@@ -393,28 +393,19 @@
     {i:'qr', l:[['QR de sécurité à l’arrivée'], ['et au départ :'], ['l’heure fait foi.', 'g']], s:'Arrivée et fin sont pointées par QR code.'},
     {i:'star', l:[['Prestataires et clients'], ['se notent.', 'g']], s:'Un avis croisé après chaque mission.'},
     {i:'scales', l:[['Service litige :'], ['un dossier,'], ['un médiateur PING.', 'g']], s:'Chaque litige est suivi dans un dossier unique.'},
-    {i:'lock', badge:true, l:[['Paiement sécurisé'], ['sous séquestre,'], ['versement sous 48 h.', 'y']], s:null}
+    {i:'lock', l:[['Paiement sécurisé'], ['sous séquestre :'], ['vous êtes payé.', 'y']], s:'Conservé jusqu’à la fin de la mission.'}
   ];
   // variante : sous-ensemble des arguments (indices dans l'ordre ci-dessus), créneaux ARG0 + n × ARGD dans le temps source
   if (VAR.args) ARGS = VAR.args.map(function(i){ return ARGS[i]; });
+  if (VAR.argEdit) VAR.argEdit(ARGS);   // textes propres à la variante (lignes l = [[texte, couleur]], sous-titre s)
   S.args = ARGS.map(function(A, n){
     var c = el('g', {}, $('args')), ic = el('g', {}, c);
-    el('circle', {cx:270, cy:300, r:58, fill:'#1E4352', stroke: A.badge ? GOLD : 'none', 'stroke-width':2, 'stroke-dasharray': A.badge ? '6 6' : 'none'}, ic);
-    icon(ic, A.i, 270, 300, 2.5, A.badge ? GOLD : '#2FD06E', 1.6);
-    var y0 = A.badge ? 484 : 452;
-    if (A.badge) {
-      var bg = el('g', {}, c); A.bd = bg;
-      el('rect', {x:180, y:372, width:180, height:44, rx:22, fill:GOLD}, bg);
-      tx(bg, 270, 402, 'BIENTÔT', {f:'Q', s:23, c:'#123644', a:'middle', ls:2});
-    }
+    el('circle', {cx:270, cy:300, r:58, fill:'#1E4352', stroke:'none'}, ic);
+    icon(ic, A.i, 270, 300, 2.5, '#2FD06E', 1.6);
+    var y0 = 452;
     A.ln = A.l.map(function(L, k){ return tx(c, 270, y0 + k*46, L[0], {f:'Q', s:31, a:'middle', c: L[1] === 'g' ? '#2FD06E' : (L[1] === 'y' ? GOLD : '#fff')}); });
     if (A.s) tx(c, 270, 610, A.s, {s:15.5, c:'#9DB4BC', a:'middle'});
-    else {
-      el('rect', {x:60, y:644, width:420, height:78, rx:18, fill:'#1E4352', stroke:'#3F6677', 'stroke-width':1.5}, c);
-      tx(c, 270, 676, 'En attendant : règlement par virement', {s:16, w:600, c:'#fff', a:'middle'});
-      tx(c, 270, 702, 'sur facture, directement au prestataire.', {s:14, c:'#C9D8DD', a:'middle'});
-    }
-    for (var d = 0; d < ARGS.length; d++) el('circle', {cx:270 + (d - 3)*22, cy:830, r:4.5, fill: d === n ? '#2FD06E' : '#fff', opacity: d === n ? 1 : .3}, c);
+    for (var d = 0; d < ARGS.length; d++) el('circle', {cx:270 + (d - (ARGS.length - 1)/2)*22, cy:830, r:4.5, fill: d === n ? '#2FD06E' : '#fff', opacity: d === n ? 1 : .3}, c);
     c.ic = ic; return c;
   });
 

@@ -50,7 +50,7 @@ def b64(name):
     return base64.b64encode((FONTS / name).read_bytes()).decode()
 
 
-ARIA_PING = ("Animation PING en 1 minute : Et si ce que vous cherchez se trouvait juste à côté ? Présentation de l'application (carte, demandes proches, chat avec prix proposé et validé, agenda, facture automatique), tutoriel pour chercher un prestataire ou le devenir, puis les arguments de PING. Le paiement sécurisé sous séquestre est annoncé comme bientôt, en attendant le règlement se fait par virement sur facture.")
+ARIA_PING = ("Animation PING en 1 minute : Et si ce que vous cherchez se trouvait juste à côté ? Présentation de l'application (carte, demandes proches, chat avec prix proposé et validé, agenda, facture automatique), tutoriel pour chercher un prestataire ou le devenir, puis les arguments de PING. Le paiement est sécurisé sous séquestre.")
 CTA_PING = """      <div class="cta-wrap" id="cta">
         <a class="signup-cta" href="/l/ins" target="_blank" rel="noopener">Je cherche un prestataire</a>
         <a class="signup-cta alt" href="/l/insp" target="_blank" rel="noopener">Je suis prestataire</a>
@@ -73,7 +73,7 @@ SIDE_PING = """  <aside class="side" id="side">
     <h1>PING en 1 minute</h1>
     <p class="lead">La vidéo de présentation à envoyer en premier : l'accroche, l'application en cinq écrans, le tutoriel pour chercher un prestataire ou le devenir, puis les arguments. Format vertical, lisible sans le son. Un clic sur une scène pour y aller directement. Deux boutons d'inscription apparaissent sur la dernière scène de cette page (ils ne sont pas dans le fichier MP4, qui montre le QR code).</p>
     <ol class="scenes" id="scenes"></ol>
-    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (carte, demandes autour de moi, chat et devis, agenda, facture, inscription, Mon profil, tarifs, disponibilités). Le paiement en ligne sous séquestre est présenté comme « bientôt », jamais comme actif : le règlement se fait aujourd'hui par virement sur facture. Les boutons pointent vers /l/ins (particulier) et /l/insp (prestataire), qui mesurent le trafic venu de cette vidéo.</p>
+    <p class="foot">Tout est dessiné en vecteur aux couleurs PING, d'après les vrais écrans de l'app (carte, demandes autour de moi, chat et devis, agenda, facture, inscription, Mon profil, tarifs, disponibilités). Les boutons pointent vers /l/ins (particulier) et /l/insp (prestataire), qui mesurent le trafic venu de cette vidéo.</p>
     <p class="foot"><a href="/brand/files/ping-animation-ping.mp4" target="_blank" rel="noopener">Fichier vidéo MP4 · 1080 × 1920 · 69 s</a> — à publier tel quel.</p>
   </aside>
 """
@@ -101,7 +101,7 @@ def side_one(eyebrow, h1, lead, foot, code):
     <h1>{h1}</h1>
     <p class="lead">{lead}</p>
     <ol class="scenes" id="scenes"></ol>
-    <p class="foot">{foot} Le paiement en ligne sous séquestre est présenté comme « bientôt », jamais comme actif : le règlement se fait aujourd'hui par virement sur facture. Le bouton « Je m'inscris » (page web seulement, absent d'un futur MP4 qui montrera le QR) pointe vers /l/{code}, qui mesure le trafic venu de cette vidéo.</p>
+    <p class="foot">{foot} Le bouton « Je m'inscris » (page web seulement, absent d'un futur MP4 qui montrera le QR) pointe vers /l/{code}, qui mesure le trafic venu de cette vidéo.</p>
     <p class="foot">Pas encore de fichier MP4 pour cette animation : à enregistrer (procédure en tête de brand/anim-presentation/build.py).</p>
   </aside>
 """
@@ -112,13 +112,13 @@ VARIANTS = [
     dict(out="animation-ping.html", var="c2_var_ping.js", tail="e_ping.js", code="ins", title="PING en 1 minute",
          aria=ARIA_PING, cta=CTA_PING, side=SIDE_PING),
     dict(out="animation-client.html", var="c2_var_client.js", tail="e_split.js", code="ins", title="PING pour les particuliers",
-         aria="Animation PING pour les particuliers : Et si ce que vous cherchez se trouvait juste à côté ? La carte des prestataires disponibles, le chat avec prix proposé et validé, l'agenda, la facture automatique, le tutoriel pour chercher un prestataire, puis le QR de sécurité, les avis croisés, le service litige et le paiement sécurisé annoncé comme bientôt (règlement par virement sur facture en attendant). Inscription par QR code.",
+         aria="Animation PING pour les particuliers : Et si ce que vous cherchez se trouvait juste à côté ? Les prestataires disponibles autour de vous sur la carte, vous choisissez votre prestataire, vous validez le prix et payez directement dans le chat, le paiement reste sous séquestre jusqu'à la fin de la mission, à son arrivée vous scannez son QR code, vous le notez en quelques clics. Inscription par QR code.",
          cta=cta_one("ins"),
          side=side_one("PING pour les particuliers · 9:16", "PING pour les particuliers",
-                       "La vidéo à envoyer à un particulier : l'accroche, la carte, le chat et le prix, l'agenda et la facture, le tutoriel « Je cherche un prestataire », puis les arguments utiles au client. Rien du côté prestataire. Format vertical, lisible sans le son.",
-                       "Mêmes scènes que « PING en 1 minute », sans la partie prestataire.", "ins")),
+                       "La vidéo à envoyer à un particulier : l'accroche, la carte, le choix du prestataire, le chat (prix validé, paiement sous séquestre), le QR de sécurité à l'arrivée, l'avis, puis l'inscription (QR et « Je m'inscris »). Rien du côté prestataire, aucun tuto d'inscription au milieu. Format vertical, lisible sans le son.",
+                       "Mêmes scènes que « PING en 1 minute », réordonnées, sans la partie prestataire.", "ins")),
     dict(out="animation-prestataire.html", var="c2_var_pro.js", tail="e_split.js", code="insp", title="PING pour les prestataires",
-         aria="Animation PING pour les prestataires : Et si vos prochains clients se trouvaient juste à côté ? Les demandes autour de moi, le tutoriel pour devenir prestataire avec tarifs et disponibilités, puis moins de factures, moins de paperasse, moins d'administratif, le QR de sécurité, les avis croisés, le service litige et le paiement sécurisé annoncé comme bientôt (règlement par virement sur facture en attendant). Inscription par QR code.",
+         aria="Animation PING pour les prestataires : Et si vos prochains clients se trouvaient juste à côté ? Les demandes autour de moi, le tutoriel pour devenir prestataire avec tarifs et disponibilités, puis moins de factures, moins de paperasse, moins d'administratif, le QR de sécurité, les avis croisés, le service litige et le paiement sous séquestre. Inscription par QR code.",
          cta=cta_one("insp"),
          side=side_one("PING pour les prestataires · 9:16", "PING pour les prestataires",
                        "La vidéo à envoyer à un prestataire : l'accroche, les demandes autour de moi, le tutoriel « Je suis prestataire » (profil, tarifs, disponibilités), puis les arguments utiles au prestataire. Rien du côté client. Format vertical, lisible sans le son.",
