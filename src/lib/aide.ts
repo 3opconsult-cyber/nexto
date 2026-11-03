@@ -22,7 +22,7 @@ export const AIDE_RUBRIQUES: AideRubrique[] = [
   { slug: 'apres-commande', title: 'Après la commande : arrivée, QR, fin', sub: 'Le QR à l’arrivée et au départ, et l’heure entamée.', src: '/animation-tuto?embed=1', space: 'tous', icon: 'qr' },
   { slug: 'absent', title: 'Vous ne serez pas sur place', sub: 'Valider l’arrivée du prestataire quand vous êtes absent.', src: '/animation-tuto-absent?embed=1', space: 'particulier', icon: 'absent' },
   { slug: 'facture', title: 'Facture, avis et pourboire', sub: 'La facture après la mission, puis les avis croisés.', src: '/animation-client?embed=1&scene=7', space: 'particulier', icon: 'doc' },
-  { slug: 'facture-pro', title: 'Facture et avis', sub: 'La facture se génère à chaque mission, puis les avis croisés.', src: '/animation-prestataire?embed=1&scene=8', space: 'pro', icon: 'doc' },
+  { slug: 'facture-pro', title: 'Facture et avis', sub: 'La facture se génère à chaque mission, puis les avis croisés.', src: '/animation-prestataire?embed=1&scene=7', space: 'pro', icon: 'doc' },
   { slug: 'devenir-prestataire', title: 'Devenir prestataire', sub: 'Créer votre profil prestataire pas à pas.', src: '/animation-inscription?embed=1&part=pro', space: 'pro', icon: 'swap' },
   { slug: 'etre-prestataire', title: 'Être prestataire : demandes, tarifs, disponibilités', sub: 'Fixer vos tarifs, indiquer vos créneaux et passer « Disponible ».', src: '/animation-prestataire?embed=1&scene=2', space: 'pro', icon: 'tag' },
 ]

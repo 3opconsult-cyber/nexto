@@ -28,7 +28,7 @@
     },
     // [début source, fin source, fondu au navy à la jonction, vitesse]
     segs: [[0, 7.8, false], [27.6, 30.2, true, 0.8], [43.3, 46.2, true], [10.9, 14.75, true, 0.6], [46.2, 55.2, true], [64.2, 69.5, true]],
-    end: { e1: 'PING, la rencontre de proximité', e2: 'entre prestataires et clients · Côte d’Azur', e5: 'nexto-eta.vercel.app/l/ins' },
+    end: { e1: 'PING, l’application de rencontre', e2: 'client-prestataire, en proximité · Côte d’Azur', e5: 'nexto-eta.vercel.app/l/ins' },
     ui: [   // k = rang du tronçon dans segs
       { k: 0, s: 0,    title: 'Accroche', d: "Logo PING et son écho radar : « Et si ce que vous cherchez se trouvait juste à côté ? »" },
       { k: 0, s: 4.6,  title: 'La carte', d: "Les prestataires disponibles autour de vous, sur la carte." },
