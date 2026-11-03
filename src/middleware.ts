@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
-// Cle partagee conservee en secours (pendant la periode de transition),
-// mais la vraie protection est desormais un vrai compte avec is_admin=true.
-const FALLBACK_KEY = 'ping-sa-2026'
+// La vraie protection est un vrai compte avec is_admin=true.
+// Cle de secours optionnelle : variable d'environnement ADMIN_FALLBACK_KEY (Vercel, production), jamais ecrite
+// dans le code. Sans cette variable, le secours est desactive.
+const FALLBACK_KEY = process.env.ADMIN_FALLBACK_KEY || ''
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
@@ -45,8 +46,8 @@ export async function middleware(request: NextRequest) {
 
   // Secours transitoire : cle partagee (a retirer une fois le compte admin confirme actif)
   const keyParam = request.nextUrl.searchParams.get('key')
-  const hasCookie = request.cookies.get('ping_admin')?.value === FALLBACK_KEY
-  if (keyParam === FALLBACK_KEY) {
+  const hasCookie = !!FALLBACK_KEY && request.cookies.get('ping_admin')?.value === FALLBACK_KEY
+  if (FALLBACK_KEY && keyParam === FALLBACK_KEY) {
     response.cookies.set('ping_admin', FALLBACK_KEY, { maxAge: 60 * 60 * 24 * 30, httpOnly: true, sameSite: 'lax' })
     return response
   }
