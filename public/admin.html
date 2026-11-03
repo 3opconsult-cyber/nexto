@@ -391,6 +391,16 @@ textarea.minput{min-height:120px;resize:vertical}
 @media (max-width:480px){
   .grid.k4,.grid.k3{grid-template-columns:1fr}
 }
+/* Rendu application une fois installee sur l'ecran d'accueil (sans barre de navigateur) */
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:none}
+@media (max-width:860px){
+  .top{padding-top:calc(12px + env(safe-area-inset-top))}
+  .side{height:100dvh;padding-top:env(safe-area-inset-top)}
+  .content{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
+  input,select,textarea{font-size:16px!important}
+  .btn,.tab,.navitem{min-height:40px}
+}
 </style>
 
 <div class="app" id="app">
