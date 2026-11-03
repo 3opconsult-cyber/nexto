@@ -38,6 +38,8 @@ export default function ProOnboarding() {
   const [geocodeError, setGeocodeError] = useState('')
   const [phone, setPhone] = useState('')
   const [phoneTouched, setPhoneTouched] = useState(false)
+  const [prefilled, setPrefilled] = useState(false)   // infos reprises du compte : a confirmer
+  const [confirmedInfo, setConfirmedInfo] = useState(false)
   const [bio, setBio] = useState('')
   const [website, setWebsite] = useState('')
   // CGV prestataires + contrat de commission : case obligatoire à la dernière étape (déjà cochée si la
@@ -114,6 +116,7 @@ export default function ProOnboarding() {
       if (prof) {
         if (prof.address) setAddress(prof.address)
         if (prof.phone_enc) setPhone(prof.phone_enc)
+        if (prof.address || prof.phone_enc) setPrefilled(true)
       }
     })
   }, [])
@@ -353,8 +356,8 @@ export default function ProOnboarding() {
       <OnboardingStep step={stepIndex} total={visibleSteps.length}
         title="Où intervenez-vous ?"
         subtitle="Pour apparaître au bon endroit sur la carte."
-        onBack={back} onCta={() => { setPhoneTouched(true); if (phoneValid(phone)) next() }}
-        ctaDisabled={(!coords && !address.trim()) || (phoneTouched && !phoneValid(phone))}>
+        onBack={back} onCta={() => { setPhoneTouched(true); if (phoneValid(phone) && (!prefilled || confirmedInfo)) next() }}
+        ctaDisabled={(!coords && !address.trim()) || (phoneTouched && !phoneValid(phone)) || (prefilled && !confirmedInfo)}>
         <button onClick={useMyLocation} disabled={locating}
           style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: coords ? 'rgba(18,179,156,.1)' : '#123644', color: coords ? '#0C8F7E' : '#fff', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>
           {locating ? 'Localisation…' : coords ? '✓ Position enregistrée' : 'Utiliser ma position actuelle'}
@@ -370,6 +373,11 @@ export default function ProOnboarding() {
           </button>
         )}
         {geocodeError && <p style={{ fontSize: 12, color: '#c0503a', marginTop: 10, lineHeight: 1.5 }}>{geocodeError}</p>}
+        {prefilled && (
+          <p style={{ fontSize: 12.5, color: '#8A5A00', background: '#FFF4DD', borderRadius: 12, padding: 10, marginTop: 14, lineHeight: 1.5 }}>
+            Ces informations viennent de votre compte. Relisez-les, corrigez-les si besoin, puis confirmez-les pour votre profil prestataire.
+          </p>
+        )}
         <label style={{ display: 'block', marginTop: 16 }}>
           <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Téléphone</span>
           <input value={phone} onChange={e => setPhone(e.target.value)} onBlur={() => phone.trim() && setPhoneTouched(true)}
@@ -379,6 +387,12 @@ export default function ProOnboarding() {
             ? <span style={{ display: 'block', fontSize: 11.5, color: '#c0503a', marginTop: 5, fontWeight: 600 }}>Numéro invalide : saisissez 10 chiffres commençant par 0, ou un numéro en +33.</span>
             : <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 5 }}>Obligatoire. Visible uniquement par PING, jamais publié.</span>}
         </label>
+        {prefilled && (
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, fontSize: 13.5, color: '#123644', fontWeight: 600 }}>
+            <input type="checkbox" checked={confirmedInfo} onChange={e => setConfirmedInfo(e.target.checked)} style={{ width: 20, height: 20, marginTop: 1 }} />
+            <span>Je confirme que mon adresse et mon téléphone sont exacts.</span>
+          </label>
+        )}
         <label style={{ display: 'block', marginTop: 16 }}>
           <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Site internet (facultatif)</span>
           <input value={website} onChange={e => setWebsite(e.target.value)} inputMode="url" style={{ ...inputStyle, marginTop: 6 }} />

@@ -74,6 +74,13 @@ export default function LoginPage() {
       // Voir lib/auth-session.ts pour le mécanisme (le SDK Supabase ne permet pas
       // de raccourcir la durée du cookie de session depuis le client).
       rememberThisTabOnly(rememberMe)
+      // Journal de connexion : date et heure de chaque connexion (table login_log).
+      try {
+        const { data: { user: u } } = await supabase.auth.getUser()
+        let m: string | null = null
+        try { m = localStorage.getItem('ping_mode') } catch { }
+        if (u) await supabase.from('login_log').insert({ user_id: u.id, kind: 'login', mode: m, user_agent: navigator.userAgent.slice(0, 200) })
+      } catch { }
       await flushReferral() // parrainage laissé en attente à l'inscription (e-mail à confirmer)
       // Redirection selon le profil reel (is_admin / is_pro, plus de colonne role)
       const next = nextPath()

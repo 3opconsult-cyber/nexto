@@ -120,6 +120,9 @@ function SignupForm() {
       // en attente et sera enregistré à la première connexion ou première visite de /map.
       rememberReferral(params.get('ref'))
       if (data.session) await flushReferral()
+      if (data.session && data.user) {
+        try { await supabase.from('login_log').insert({ user_id: data.user.id, kind: 'signup', mode: role === 'pro' ? 'pro' : 'particulier', user_agent: navigator.userAgent.slice(0, 200) }) } catch { }
+      }
 
       if (!data.session) { setCheckMail(true); setLoading(false); return }
       if (role === 'pro') { router.push('/pro/onboarding'); return }
