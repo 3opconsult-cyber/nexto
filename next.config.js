@@ -20,6 +20,9 @@ const nextConfig = {
       // avec sa propre navigation limitee (elle ne bouge jamais l'URL, ce qui la
       // fait passer pour un bug de la vraie app). Direction sans ambiguite vers /map.
       { source: '/', destination: '/map', permanent: false },
+      // L'ancienne vidéo enchaînait client puis prestataire : chaque rôle a désormais sa vidéo.
+      { source: '/animation-ping', has: [{ type: 'query', key: 'role', value: 'pro' }], destination: '/animation-prestataire?role=pro', permanent: false },
+      { source: '/animation-ping', destination: '/animation-client', permanent: false },
     ]
   },
   async rewrites() {
