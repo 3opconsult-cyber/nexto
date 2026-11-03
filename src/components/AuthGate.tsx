@@ -9,6 +9,10 @@ import { createClient } from '@/lib/supabase/client'
 const PROTECTED = ['/map', '/messages', '/agenda', '/client', '/pro', '/mission', '/documents', '/litiges', '/aide', '/scan']
 const OPEN = ['/pro/onboarding'] // gère déjà lui-même l'absence de compte
 
+// Espace prestataire : réservé aux comptes dont le profil prestataire est créé (fin de /pro/onboarding).
+// Sinon retour au parcours d'inscription prestataire.
+const PRO_ONLY = /^\/pro\/(carte|dashboard|documents|tarifs|revenus|disponibilites|paiements|annonce)(\/|$)/
+
 export default function AuthGate() {
   const path = usePathname() || ''
   const router = useRouter()
@@ -20,7 +24,19 @@ export default function AuthGate() {
     let off = false
     const supabase = createClient()
     supabase.auth.getSession().then(({ data }) => {
-      if (off || data.session) return
+      if (off) return
+      if (data.session) {
+        if (!PRO_ONLY.test(path)) return
+        const uid = data.session.user.id
+        setAnon(true) // voile le temps de verifier
+        supabase.from('provider_profiles').select('id').eq('id', uid).maybeSingle().then(({ data: pp }) => {
+          if (off) return
+          if (pp) { setAnon(false); return }
+          try { localStorage.setItem('ping_mode', 'particulier') } catch { }
+          router.replace('/pro/onboarding')
+        })
+        return
+      }
       setAnon(true)
       router.replace(`/auth/signup?next=${encodeURIComponent(path)}`)
     })
