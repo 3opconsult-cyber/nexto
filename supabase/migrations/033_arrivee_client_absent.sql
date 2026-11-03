@@ -167,11 +167,11 @@ language plpgsql security definer set search_path = public as $$
 declare uid uuid := auth.uid();
 begin
   if uid is null then raise exception 'Connexion requise.'; end if;
-  if not exists (select 1 from public.transactions where id = p_transaction and buyer_id = uid) then
+  if not exists (select 1 from public.transactions t where t.id = p_transaction and t.buyer_id = uid) then
     raise exception 'Réservé au client de la mission.';
   end if;
-  update public.arrival_codes set code_clair = null
-    where transaction_id = p_transaction and code_clair is not null and (used_at is not null or expires_at <= now());
+  update public.arrival_codes ac set code_clair = null
+    where ac.transaction_id = p_transaction and ac.code_clair is not null and (ac.used_at is not null or ac.expires_at <= now());
   return query select c.code_clair, c.expires_at, c.geo_status, c.distance_m
     from public.arrival_codes c
     where c.transaction_id = p_transaction and c.code_clair is not null and c.used_at is null and c.expires_at > now();

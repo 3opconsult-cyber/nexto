@@ -111,11 +111,15 @@ try {
   const rdv = cp.locator('text=Fixez le rendez-vous')
   log('carte Fixez le rendez-vous', await rdv.count())
   if (await rdv.count()) {
+    // Adresse : saisie si le profil n'en a pas, sinon confirmation de l'adresse du profil (AddressChoice).
     const inputs = cp.locator('input[autocomplete="street-address"]')
-    await inputs.fill('12 promenade des Anglais, 06000 Nice')
-    const dt = new Date(Date.now() + 2 * 86400000); dt.setHours(9, 0, 0, 0)
-    const pad = n => String(n).padStart(2, '0')
-    await cp.locator('input[type=datetime-local]').fill(`${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T09:00`)
+    if (await inputs.count()) await inputs.first().fill('12 promenade des Anglais, 06000 Nice')
+    else await cp.locator('label:has-text("Je confirme") input[type=checkbox]').check()
+    // Date et heure : DayTimePicker (boutons jour puis boutons horaires « 9 h 00 »).
+    const days = cp.locator('button:has(span), button').filter({ hasText: /\d/ })
+    const timeBtns = cp.locator('button:not([disabled])').filter({ hasText: /^\s*\d{1,2} h \d{2}\s*$/ })
+    if (!(await timeBtns.count())) { const dayBtn = cp.locator('button[type=button]').filter({ hasText: /^(lun|mar|mer|jeu|ven|sam|dim)/i }).nth(2); if (await dayBtn.count()) await dayBtn.click() }
+    await timeBtns.first().click()
     await cp.locator('button:has-text("Confirmer le rendez-vous")').click(); await cp.waitForTimeout(4000)
   }
   await cp.screenshot({ path: 'shots/s5-client-rdv.jpg', quality: 55, type: 'jpeg' })
