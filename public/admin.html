@@ -477,7 +477,9 @@ body{overscroll-behavior-y:none}
             <li><b>iPhone (Safari)</b> : Partager, puis « Sur l'écran d'accueil », puis « Ajouter ».</li>
             <li><b>Android (Chrome)</b> : menu (trois points), puis « Installer l'application ».</li>
           </ul>
+          <button class="btn" style="margin-top:12px" onclick="try{localStorage.setItem('ping_admin_install_ok','1')}catch(e){};document.getElementById('installCard').style.display='none'">C'est déjà installé, masquer cette carte</button>
         </div>
+        <script>try{if(localStorage.getItem('ping_admin_install_ok')||matchMedia('(display-mode: standalone)').matches||navigator.standalone)document.getElementById('installCard').style.display='none'}catch(e){}</script>
       </section>
 
       <!-- LIVE (donnees reelles Supabase, ajoute session 13/08) -->

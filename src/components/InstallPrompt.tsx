@@ -66,6 +66,7 @@ export default function InstallPrompt() {
           <button onClick={install} style={{ width: '100%', padding: 13, border: 0, borderRadius: 14, background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 8 }}>Installer</button>
         )}
         <button onClick={close} style={{ width: '100%', padding: 12, border: '1.5px solid #E7EDEB', borderRadius: 14, background: '#fff', color: '#123644', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Plus tard</button>
+        <button onClick={close} style={{ width: '100%', padding: 10, marginTop: 6, border: 0, background: 'transparent', color: '#4E6470', fontWeight: 600, fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}>C’est déjà installé, ne plus afficher</button>
       </div>
     </div>
     </>
