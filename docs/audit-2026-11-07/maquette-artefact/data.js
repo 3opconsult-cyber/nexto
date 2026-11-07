@@ -1,4 +1,6 @@
 AUDIT.push(
+ ['Catalogue des services (admin)','admin','a_catalog','absent','P0','Les métiers sont codés en dur. Catalogue en données : ajouter, tarifer, activer un service.'],
+ ['Inscription complète (e-mail, accueil, position)','public','mailck','incomplet','P1','Étapes peu guidées. Vérification de l\'e-mail, accueil en 3 écrans, explication de la position.'],
  ['Accueil et choix du rôle','public','welcome','incomplet','P1','Plusieurs entrées sans accueil unique. Trois boutons, un par intention.'],
  ['Inscription','public','signup','incomplet','P0','13 appuis (client), 30 (prestataire), formulaire effacé par les CGV. Un écran, profil progressif.'],
  ['Création de l\'activité prestataire','pro','pwiz','incomplet','P0','Onboarding perdu si le compte n\'existe pas. Compte d\'abord, 4 étapes, brouillon.'],
@@ -23,6 +25,11 @@ AUDIT.push(
  ['Page introuvable','public','notfound','absent','P1','Le prototype s\'affiche pour toute adresse inconnue. Vraie page d\'erreur.']
 );
 QC.push(
+ ['Romain 07/11 soir','Carte','La carte n\'était pas navigable.','On glisse la carte, on zoome (pincer, molette, boutons), on recentre ; quartiers nommés.','client','map','P0',''],
+ ['Romain 07/11 soir','Prestataires sur la carte','Design des prestataires trop pauvre.','Pastille avec initiale, prix, note, « vérifié » et point vert si disponible ; aperçu au toucher avec avis, services, vérifications, Profil et Réserver, précédent / suivant.','client','map','P0',''],
+ ['Romain 07/11 soir','Inscription','Parcours d\'inscription incomplet et non visible.','Client : compte, vérification de l\'e-mail, accueil en 3 écrans, position, carte. Prestataire : compte, e-mail, activité en 4 étapes, profil envoyé.','public','signup','P0',''],
+ ['Romain 07/11 soir','Boutons','Des boutons sans effet réel.','Balayage automatique : 0 bouton sans effet ; les rangées qui n\'affichaient qu\'un message ouvrent un vrai écran (aide en vidéo, PDF, photos du litige, virement annoncé, reçu).','client','help','P0',''],
+ ['Romain 07/11 soir','Services extensibles','Ajouter un service doit rester simple.','Catalogue des services côté admin : chaque service a ses manières de tarifer (forfait, heure, panier, fenêtre, m², devis) et ses pièces ; activer en un geste ; « Mes services » suit le catalogue.','admin','a_catalog','P0',''],
  ['Audit v3','Mission','Le prestataire réservé n\'était pas repris : toujours « Amélie R., 66 € ».','La mission, le suivi, la conversation et la facture reprennent le prestataire et la prestation choisis.','client','procard','P0',''],
  ['Audit v3','Factures','Toutes les factures ouvraient la même.','Chaque ligne ouvre sa facture ; la mission terminée ajoute la sienne.','client','missions:fact','P0',''],
  ['Audit v3','Saisies','Les champs s\'effaçaient au moindre toucher (CGV, étoiles, pastilles, messages temporaires).','Valeurs gardées à chaque redessin ; messages temporaires hors de l\'écran.','client','reqnew','P0',''],
