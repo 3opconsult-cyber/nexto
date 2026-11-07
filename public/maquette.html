@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
 <style>
-:root{--teal:#12B39C;--tealD:#0C8F7E;--navy:#123644;--gold:#F2A93B;--orange:#E8743B;--paper:#F3F6F5;--card:#fff;--ink:#123644;--slate:#4E6470;--line:#DCE5E3;--land:#EAF1EC;--water:#BFE3F0;--bg:#EEF3F2;--ok:#1a8f4c;--red:#c0503a}
-:root[data-theme=dark]{--paper:#0F232C;--card:#17323D;--ink:#EAF4F2;--slate:#A9BEC6;--line:#2A4753;--land:#1B3540;--water:#1E4B63;--bg:#0A171D;--navy:#EAF4F2}
+:root{--teal:#12B39C;--tealD:#0C8F7E;--navy:#123644;--gold:#F2A93B;--orange:#E8743B;--paper:#F3F6F5;--card:#fff;--ink:#123644;--slate:#4E6470;--line:#DCE5E3;--land:#EAF1EC;--water:#BFE3F0;--bg:#EEF3F2;--road:#fff;--park:#CFE6D2;--ok:#1a8f4c;--red:#c0503a}
+:root[data-theme=dark]{--paper:#0F232C;--card:#17323D;--ink:#EAF4F2;--slate:#A9BEC6;--line:#2A4753;--land:#1B3540;--water:#1E4B63;--bg:#0A171D;--road:#2E4E5A;--park:#21483F;--navy:#EAF4F2}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
@@ -267,9 +267,9 @@ const toggle=(on,a)=>`<button class="tg ${on?'on':''}" data-a="${a}" role="switc
 function mapSvg(){return `<svg width="390" height="700" viewBox="0 0 390 700" style="position:absolute;inset:0" aria-hidden="true">
 <rect width="390" height="700" fill="var(--land)"/><rect y="520" width="390" height="180" fill="var(--water)"/>
 <path d="M0 520 Q100 490 200 515 T390 505 V520 Z" fill="var(--water)"/>
-<path d="M20 90 L170 70 L190 160 L40 175Z" fill="#CFE6D2"/><path d="M250 380 L370 360 L380 450 L270 470Z" fill="#CFE6D2"/>
-<g stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"><path d="M-10 300 Q120 270 230 300 T400 260"/><path d="M130 -10 Q150 160 120 300 T180 520"/><path d="M270 -10 Q250 200 285 330 T250 520"/></g>
-<g stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"><path d="M-10 190 L400 170"/><path d="M-10 420 Q200 400 400 430"/><path d="M60 -10 L90 520"/><path d="M340 -10 L330 520"/></g>
+<path d="M20 90 L170 70 L190 160 L40 175Z" fill="var(--park)"/><path d="M250 380 L370 360 L380 450 L270 470Z" fill="var(--park)"/>
+<g stroke="var(--road)" stroke-width="9" fill="none" stroke-linecap="round"><path d="M-10 300 Q120 270 230 300 T400 260"/><path d="M130 -10 Q150 160 120 300 T180 520"/><path d="M270 -10 Q250 200 285 330 T250 520"/></g>
+<g stroke="var(--road)" stroke-width="5" fill="none" stroke-linecap="round"><path d="M-10 190 L400 170"/><path d="M-10 420 Q200 400 400 430"/><path d="M60 -10 L90 520"/><path d="M340 -10 L330 520"/></g>
 <path d="M-10 480 Q190 450 400 470" stroke="#F4C57A" stroke-width="10" fill="none" stroke-linecap="round"/></svg>`}
 
 /* ---------- écrans ---------- */
@@ -371,7 +371,7 @@ SC.profile=()=>{const d=S.idState==='sent';return `<div class="page"><div class=
  ${S.dbl?`<button class="btn gold" data-a="role:pro">${ic('swap')} Passer en mode prestataire</button>`:`<button class="btn ghost" data-a="role:pro">Devenir prestataire</button>`}</div></div>`};
 /* --- prestataire --- */
 SC.pmap=()=>{const pins=REQS.map(r=>`<button class="pin" style="left:${r.x}px;top:${r.y}px" data-a="req:${r.id}" aria-label="${r.t}"><span class="p">${r.b.split(' –')[0]} €</span><span class="a" style="background:${r.u?'var(--orange)':'var(--gold)'}">${ic('pin')}</span></button>`).join('');
- const list=REQS.map(r=>`<button class="row" data-a="req:${r.id}"><span class="grow"><b>${r.u?'<span class="tag warn">URGENT</span> ':''}${r.t}</b><small>à ${r.d} · ${r.b} €</small></span>${ic('chev')}</button>`).join('');
+ const list=REQS.map(r=>`<button class="row" data-a="req:${r.id}"><span class="grow"><b>${r.u?'<span class="tag warn">URGENT</span> ':''}${r.t}</b><small>à ${r.d} · ${r.b}</small></span>${ic('chev')}</button>`).join('');
  return `<div class="page" style="padding:0;animation:none"><div class="map"><div class="maplayer" id="ml" style="transform:scale(${S.zoom})">${mapSvg()}${pins}<span class="me" style="left:195px;top:300px"></span></div></div>
  <div class="mapui"><div class="search" data-a="zonesheet" role="button" tabindex="0">${ic('loc')}<span style="flex:1">Zone : ${S.zone} km${S.city?' autour de '+S.city:' autour de moi'}</span><b style="color:var(--gold)">Modifier</b></div><div class="chips"><button class="chip ${S.avail?'on':''}" data-a="avail">${ic('bolt')} ${S.avail?'Visible : disponible':'Hors ligne'}</button><button class="chip" data-a="role:client">${ic('swap')} Passer en particulier</button></div>${missionBanner()}</div>
  <div class="fabs" style="bottom:${SH[S.sheet]+14}px"><button data-a="zoom:+" aria-label="Zoom avant">+</button><button data-a="zoom:-" aria-label="Zoom arrière">−</button><button data-a="zoom:0" aria-label="Recentrer">${ic('loc')}</button></div>
