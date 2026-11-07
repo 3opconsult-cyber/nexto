@@ -25,6 +25,21 @@ AUDIT.push(
  ['Page introuvable','public','notfound','absent','P1','Le prototype s\'affiche pour toute adresse inconnue. Vraie page d\'erreur.']
 );
 QC.push(
+ ['Non-régression','Conversation','Pas de vraie négociation (3 modes, refuser, contre-offre) ni « Vous percevez ».','Tarif en forfait, à l\'heure ou forfait + heures sup ; accepter, refuser, contre-proposer ; « Vous percevez X € » côté prestataire.','client','offer','P0',''],
+ ['Non-régression','Rendez-vous','Carte « Fixez le rendez-vous » absente : un contact n\'aboutissait pas à une mission datée.','Après accord sur le prix : date et adresse dans la conversation.','client','chat','P0',''],
+ ['Non-régression','Adresse à valider','Le prestataire ne validait pas une autre adresse.','Adresse masquée (sans numéro), Accepter ou Refuser côté prestataire.','pro','chat','P0',''],
+ ['Non-régression','Agenda','Agenda jour / semaine / mois absent.','Onglet Agenda dans Missions, trois vues.','client','missions:agenda','P0',''],
+ ['Non-régression','Disponibilités','Créneaux du prestataire absents.','Écran Mes disponibilités, répétition ; la réservation propose ses créneaux.','pro','dispo','P0',''],
+ ['Non-régression','Annonce détaillée','Surface, pièces, linge, fréquence, adresse, CESU absents.','Ajoutés au dépôt de demande et visibles côté prestataire.','client','reqnew','P0',''],
+ ['Non-régression','Réponse à une demande','Le prestataire envoyait un prix sans échange.','« Contacter le client » ouvre la conversation, comme l\'app ; tarif direct en option.','pro','preq','P1',''],
+ ['Non-régression','Annulation','Annulation et frais tardifs absents.','Gratuite avant le départ, 15 % si en route, impossible après l\'arrivée.','client','cancel','P1',''],
+ ['Non-régression','Client absent','Seulement une phrase.','Code à 6 chiffres, photo et position avec accord, QR sur place.','pro','absent','P1',''],
+ ['Non-régression','Heure entamée','Durée réelle et heures facturées absentes.','Affichées au scan de fin.','client','mission','P1',''],
+ ['Non-régression','Virement','IBAN, référence et statut du virement absents ; commissions du prestataire absentes.','Bloc virement sur la facture ; commissions à régler côté prestataire.','client','invoice','P1',''],
+ ['Non-régression','Retours des testeurs','Bulle de commentaire absente.','« Laisser un commentaire » dans les profils ; arrive dans l\'admin.','client','feedback','P1',''],
+ ['Non-régression','Avis complet','Ni critères, ni recommandation, ni pourboire ; pas d\'avis sur le client.','Critères, je recommande, pourboire ; avis du prestataire sur le client avec note privée.','client','review','P1',''],
+ ['Non-régression','Revenus et exports','Revenus, DAC7, SAP, relevé annuel, CSV absents.','Écran Mes revenus, relevé annuel, export CSV.','pro','revenus','P1',''],
+ ['Non-régression','Version ordinateur','Barre latérale de l\'app non reprise.','À faire : la maquette montre le téléphone.','client','map','P2','prod'],
  ['Romain 07/11 soir','Carte','La carte n\'était pas navigable.','On glisse la carte, on zoome (pincer, molette, boutons), on recentre ; quartiers nommés.','client','map','P0',''],
  ['Romain 07/11 soir','Prestataires sur la carte','Design des prestataires trop pauvre.','Pastille avec initiale, prix, note, « vérifié » et point vert si disponible ; aperçu au toucher avec avis, services, vérifications, Profil et Réserver, précédent / suivant.','client','map','P0',''],
  ['Romain 07/11 soir','Inscription','Parcours d\'inscription incomplet et non visible.','Client : compte, vérification de l\'e-mail, accueil en 3 écrans, position, carte. Prestataire : compte, e-mail, activité en 4 étapes, profil envoyé.','public','signup','P0',''],
