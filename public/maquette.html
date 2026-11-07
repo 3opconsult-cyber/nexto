@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>PING — maquette navigable v2</title>
+<meta name="theme-color" content="#123644">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#12B39C;--tealD:#0C8F7E;--navy:#123644;--gold:#F2A93B;--orange:#E8743B;--paper:#F3F6F5;--card:#fff;--ink:#123644;--slate:#4E6470;--line:#DCE5E3;--land:#EAF1EC;--water:#BFE3F0;--bg:#EEF3F2;--ok:#1a8f4c;--red:#c0503a}
+:root[data-theme=dark]{--paper:#0F232C;--card:#17323D;--ink:#EAF4F2;--slate:#A9BEC6;--line:#2A4753;--land:#1B3540;--water:#1E4B63;--bg:#0A171D;--navy:#EAF4F2}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.top{position:sticky;top:0;z-index:50;background:#123644;color:#fff;padding:10px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.top h1{font:700 16px Quicksand,sans-serif;margin-right:auto}
+.seg{display:flex;background:rgba(255,255,255,.12);border-radius:999px;padding:3px;gap:2px}
+.seg button{padding:7px 14px;border-radius:999px;font-weight:600;font-size:13px;color:#cfe3e8;min-height:36px}
+.seg button.on{background:#fff;color:#123644}
+.tabs{display:flex;gap:6px;padding:10px 14px 0;overflow-x:auto}
+.tabs button{padding:9px 14px;border-radius:12px 12px 0 0;font-weight:600;color:var(--slate);background:transparent;white-space:nowrap}
+.tabs button.on{background:var(--card);color:var(--ink)}
+.banner{background:#FFF4DD;color:#8A5A00;text-align:center;font-size:12.5px;padding:6px 10px;font-weight:600}
+.wrap{display:flex;gap:22px;padding:18px 14px 40px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.side{width:360px;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.side h2{font:700 17px Quicksand,sans-serif;margin-bottom:4px}
+.side h3{font:700 13px Quicksand,sans-serif;margin:14px 0 6px;color:var(--slate);text-transform:uppercase;letter-spacing:.04em}
+.side p,.side li{font-size:13px;color:var(--slate)}
+.side ul{padding-left:18px}
+.goto{display:flex;flex-wrap:wrap;gap:6px}
+.goto button{border:1px solid var(--line);border-radius:999px;padding:7px 11px;font-size:12.5px;font-weight:600;background:var(--paper);min-height:34px}
+.goto button.on{background:var(--navy);color:var(--paper)}
+.phonewrap{width:390px;height:844px;flex:0 0 auto}
+.phone{width:390px;height:844px;border-radius:44px;background:#000;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.35);transform-origin:top left}
+.screen{position:relative;width:100%;height:100%;border-radius:34px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column}
+.status{height:26px;flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;font-weight:600;color:var(--ink)}
+.view{flex:1;position:relative;overflow:hidden}
+.page{position:absolute;inset:0;overflow-y:auto;padding:0 0 84px;animation:in .18s ease-out}
+@keyframes in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.page{animation:none}}
+.tabbar{flex:0 0 auto;height:64px;background:var(--card);border-top:1px solid var(--line);display:flex}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:700;color:var(--slate);min-height:48px}
+.tabbar button.on{color:var(--teal)}
+.tabbar.pro button.on{color:var(--gold)}
+.tabbar svg{width:22px;height:22px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.hd{display:flex;align-items:center;gap:10px;padding:8px 14px;min-height:52px}
+.hd h2{font:700 18px Quicksand,sans-serif;flex:1}
+.ib{width:44px;height:44px;border-radius:14px;background:var(--card);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center}
+.pad{padding:0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:999px;background:var(--teal);color:#fff;font-weight:700;font-size:15px;padding:0 18px}
+.btn.gold{background:var(--gold);color:#3a2600}
+.btn.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+.btn.small{min-height:44px;width:auto;font-size:14px}
+.btn.red{background:#fff;color:var(--red);border:1.5px solid var(--red)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:600;font-size:13px;min-height:40px}
+.chip.on{background:var(--navy);color:var(--paper);border-color:var(--navy)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 14px 6px}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:#E3F6F2;color:#0C6F61;font-weight:700;font-size:11.5px}
+.tag.warn{background:#FFF1D6;color:#8A5A00}.tag.red{background:#FBE5DF;color:#9b3a26}.tag.gray{background:var(--paper);color:var(--slate)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);min-height:56px;width:100%;text-align:left}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row b{display:block;font-weight:600}
+.row small{color:var(--slate);font-size:12.5px}
+.av{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font:700 16px Quicksand,sans-serif;flex:0 0 auto}
+.h1{font:700 22px Quicksand,sans-serif;padding:6px 14px 2px}
+.sub{color:var(--slate);padding:0 14px 10px;font-size:13.5px}
+.stars{color:var(--gold);letter-spacing:1px;font-size:14px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.kpi b{font:700 22px Quicksand,sans-serif;display:block}
+.kpi small{color:var(--slate);font-size:12px}
+/* carte */
+.map{position:absolute;inset:0;overflow:hidden;background:var(--land)}
+.maplayer{position:absolute;inset:0;transform-origin:50% 40%;transition:transform .25s}
+.pin{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px;min-height:44px;justify-content:flex-end}
+.pin .p{background:var(--navy);color:var(--paper);font:700 12px Quicksand,sans-serif;padding:4px 9px;border-radius:999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(18,54,68,.3);white-space:nowrap}
+.pin .a{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 3px 8px rgba(18,54,68,.35);display:flex;align-items:center;justify-content:center;color:#fff;font:700 13px Quicksand,sans-serif;position:relative}
+.pin .a.live::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--teal);animation:echo 2s ease-out infinite}
+@keyframes echo{from{transform:scale(.8);opacity:.7}to{transform:scale(1.6);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pin .a.live::after{animation:none}}
+.me{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--teal);border:4px solid #fff;box-shadow:0 0 0 7px rgba(18,179,156,.28);transform:translate(-50%,-50%)}
+.mapui{position:absolute;left:0;right:0;top:0;padding:6px 0 0;pointer-events:none}
+.mapui>*{pointer-events:auto}
+.search{margin:0 14px 8px;background:var(--card);border-radius:16px;box-shadow:0 8px 22px rgba(20,50,60,.18);display:flex;align-items:center;gap:10px;padding:0 14px;min-height:50px;color:var(--slate);font-weight:500;width:calc(100% - 28px)}
+.fabs{position:absolute;right:12px;display:flex;flex-direction:column;gap:8px;transition:bottom .25s}
+.fabs button{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid var(--line);box-shadow:0 4px 12px rgba(20,50,60,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;box-shadow:0 -14px 36px rgba(20,50,60,.22);display:flex;flex-direction:column;transition:height .25s;z-index:5}
+.sheet .grab{height:30px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab}
+.sheet .grab i{width:44px;height:5px;border-radius:3px;background:#C5D3D0}
+.sheet .in{flex:1;overflow-y:auto;padding:0 14px 14px}
+.mbanner{margin:6px 14px;background:var(--navy);color:var(--paper);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:13px;min-height:52px}
+.mbanner span{flex:1}
+.mbanner button{background:var(--teal);color:#fff;border-radius:999px;padding:0 14px;min-height:36px;font-weight:700;font-size:13px}
+/* frise */
+.steps{display:flex;flex-direction:column;gap:0;padding:4px 0}
+.step{display:flex;gap:12px;align-items:flex-start;min-height:54px}
+.step .d{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#fff;position:relative}
+.step:not(:last-child) .d::after{content:"";position:absolute;left:10px;top:26px;width:2px;height:28px;background:var(--line)}
+.step.done .d{background:var(--teal);border-color:var(--teal)}
+.step.done:not(:last-child) .d::after{background:var(--teal)}
+.step.now .d{border-color:var(--teal);box-shadow:0 0 0 5px rgba(18,179,156,.2)}
+.step b{font-weight:600}.step small{display:block;color:var(--slate);font-size:12.5px}
+.qr{width:200px;height:200px;margin:8px auto;background:#fff;padding:10px;border-radius:14px;border:1px solid var(--line)}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-weight:600;font-size:13px;margin-bottom:5px;color:var(--slate)}
+.field input,.field textarea,.field select{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font:inherit;font-size:16px;background:var(--card);color:var(--ink);min-height:48px}
+.field input:focus,.field textarea:focus,.field select:focus,button:focus-visible{outline:3px solid rgba(18,179,156,.5);outline-offset:2px}
+.prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.prog i{display:block;height:100%;background:var(--teal);border-radius:99px;transition:width .3s}
+.tg{width:50px;height:30px;border-radius:99px;background:#C5D3D0;position:relative;flex:0 0 auto}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tg.on{background:var(--teal)}.tg.on::after{left:23px}
+.toast{position:absolute;left:14px;right:14px;bottom:76px;background:var(--navy);color:var(--paper);border-radius:14px;padding:12px 14px;font-weight:600;z-index:30;animation:in .18s}
+.cam{margin:8px 14px;height:230px;border-radius:18px;background:#0e1d24;position:relative;display:flex;align-items:center;justify-content:center;color:#cfe3e8;font-weight:600;text-align:center}
+.cam .fr{position:absolute;inset:26px 24px;border:3px dashed rgba(255,255,255,.6);border-radius:14px}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th,table.t td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.t th{color:var(--slate);font-weight:600;background:var(--paper);position:sticky;top:0}
+.pane{max-width:1100px;margin:0 auto;padding:18px 14px 50px}
+.pane h2{font:700 20px Quicksand,sans-serif;margin:6px 0 10px}
+.pane .tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.sev{font-weight:700;font-size:12px;padding:3px 8px;border-radius:99px;display:inline-block}
+.sev.p0{background:#FBE5DF;color:#9b3a26}.sev.p1{background:#FFF1D6;color:#8A5A00}.sev.p2{background:#E3F6F2;color:#0C6F61}
+.st-present{color:var(--ok);font-weight:700}.st-incomplet{color:#B07400;font-weight:700}.st-absent{color:var(--red);font-weight:700}
+.link{color:var(--tealD);font-weight:700;text-decoration:underline;min-height:36px}
+[hidden]{display:none!important}
+@media (max-width:820px){.phonewrap{width:100%!important;height:auto!important}.phone{width:100%;height:calc(100dvh - 120px);min-height:560px;padding:0;border-radius:0;box-shadow:none;background:none;transform:none!important}.screen{border-radius:0}.status{display:none}.wrap{padding:0 0 30px;gap:12px}.side{margin:0 12px}.top{padding:8px 10px}.seg button{padding:7px 10px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>PING — maquette navigable v2</h1>
+  <div class="seg" id="roles" role="tablist" aria-label="Profil">
+    <button data-role="public">Site public</button><button data-role="client" class="on">Client</button><button data-role="pro">Prestataire</button><button data-role="admin">Admin</button>
+  </div>
+  <button class="seg" id="theme" style="padding:3px" aria-label="Thème clair ou sombre"><span style="padding:7px 12px;color:#fff;font-weight:600;font-size:13px" id="themeTxt">Thème sombre</span></button>
+</div>
+<div class="banner">Démo : maquette de travail, données fictives. Aucune donnée n'est enregistrée.</div>
+<div class="tabs" id="tabs">
+  <button data-tab="mock" class="on">Maquette</button><button data-tab="audit">Audit des manques</button><button data-tab="qc">Contrôle qualité</button>
+</div>
+
+<div id="p_mock" class="wrap">
+  <div class="phonewrap" id="pw"><div class="phone" id="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>PING</span></div>
+    <div class="view" id="view"></div>
+    <div class="tabbar" id="tabbar"></div>
+  </div></div></div>
+  <aside class="side">
+    <h2 id="sname">Écran</h2>
+    <p id="swhat"></p>
+    <h3>Ce qui change par rapport à l'app actuelle</h3>
+    <ul id="schange"></ul>
+    <h3>Règles reprises dans la maquette</h3>
+    <ul id="srules"></ul>
+    <h3>Aller directement à un écran</h3>
+    <div class="goto" id="goto"></div>
+  </aside>
+</div>
+
+<div id="p_audit" class="pane" hidden></div>
+<div id="p_qc" class="pane" hidden></div>
+
+<script>
+'use strict';
+/* ---------- données fictives ---------- */
+const I={
+ map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>',
+ list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+ chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>',
+ shield:'<path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>',
+ star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+ check:'<path d="M5 12l4 4 10-10"/>',
+ cam:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+ qr:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7M14 20h3"/>',
+ back:'<path d="M15 6l-6 6 6 6"/>',close:'<path d="M6 6l12 12M18 6L6 18"/>',plus:'<path d="M12 5v14M5 12h14"/>',
+ home:'<path d="M3 11l9-8 9 8v10H3z"/>',doc:'<path d="M6 2h9l3 3v17H6z"/><path d="M9 12h6M9 16h6"/>',
+ euro:'<circle cx="12" cy="12" r="9"/><path d="M15 9a4 4 0 1 0 0 6M8 11h5M8 13h5"/>',
+ bell:'<path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',chev:'<path d="M9 6l6 6-6 6"/>',
+ loc:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+ warn:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M3 21a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 21a5 5 0 0 1 5.5-4.9"/>',
+ bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+ pin:'<path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+ more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+ pencil:'<path d="M4 20l1-5L17 3l4 4L9 19z"/>',
+ swap:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>'
+};
+const ic=(n,c='')=>`<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true">${I[n]}</svg>`;
+const HUES=['#12B39C','#F2A93B','#6C7FD8','#E8743B','#2D8CB0','#8E6BBF'];
+const PROS=[
+ {id:0,n:'Amélie R.',t:'Ménage',r:4.9,c:42,price:'24 €/h',from:'À partir de 24 €/h',live:true,x:150,y:250,city:'Nice, Libération',bio:'Ménage régulier et grand ménage. Produits fournis sur demande.',com:['Ponctuelle et très soigneuse.','Appartement impeccable, je recommande.','Arrivée à l\'heure, travail rapide.']},
+ {id:1,n:'Karim B.',t:'Repassage',r:4.8,c:27,price:'18 €/h',from:'À partir de 18 €/h',live:true,x:245,y:330,city:'Nice, Centre',bio:'Repassage à domicile ou récupération du linge.',com:['Chemises parfaites.','Très arrangeant sur les horaires.','Rien à redire.']},
+ {id:2,n:'Sophie L.',t:'Nettoyage',r:4.7,c:19,price:'35 €',from:'Forfait dès 35 €',live:false,x:85,y:360,city:'Cagnes-sur-Mer',bio:'Nettoyage de vitres et de fin de chantier.',com:['Vitres nickel.','Sérieuse, matériel pro.','Un peu de retard mais rattrapé.']},
+ {id:3,n:'Julien M.',t:'Ménage',r:5,c:8,price:'22 €/h',from:'À partir de 22 €/h',live:true,x:290,y:215,city:'Nice, Fabron',bio:'Nouveau sur PING, disponible en soirée.',com:['Excellent premier échange.','Très poli.','Efficace.']},
+ {id:4,n:'Inès D.',t:'Repassage',r:4.6,c:33,price:'20 €/h',from:'À partir de 20 €/h',live:false,x:200,y:430,city:'Saint-Laurent-du-Var',bio:'Panier de repassage hebdomadaire.',com:['Régulière.','Bon rapport qualité-prix.','Linge bien plié.']}
+];
+const REQS=[
+ {id:0,t:'Ménage complet après déménagement',b:'80 – 120 €',d:'7,3 km',u:true,x:150,y:240},
+ {id:1,t:'Repassage chaque semaine (2 paniers)',b:'30 – 45 €',d:'4,9 km',u:false,x:255,y:320},
+ {id:2,t:'Nettoyage de vitres, maison 120 m²',b:'90 – 150 €',d:'11 km',u:false,x:90,y:380},
+ {id:3,t:'Ménage de bureaux 60 m²',b:'60 – 90 €',d:'2,9 km',u:true,x:290,y:210}
+];
+const CATALOG={
+ 'Ménage':[['Ménage 3 h',66,'forfait',true],['Grand ménage',120,'forfait',false],['Ménage à l\'heure',22,'horaire',true]],
+ 'Repassage':[['Panier de repassage',25,'forfait',true],['Repassage à l\'heure',18,'horaire',false]],
+ 'Nettoyage':[['Vitres maison',90,'forfait',false],['Nettoyage fin de chantier',0,'devis',false]]
+};
+const FEED=[['Il y a 3 min','Premier message de Marie (Nice) : « Super l\'app, mais je n\'ai pas trouvé où voir mes factures. »'],['Il y a 1 h','Paul (Cannes) : « Le bouton de recentrage est caché. »'],['Hier','Léa (Antibes) : « J\'ai adoré le suivi de la mission. »'],['Hier','Anonyme : « Je voudrais choisir la photo de profil plus tôt. »']];
+const PEOPLE=[['Marie D.','Particulier','Nice',1,0,2,'il y a 2 h'],['Hugo P.','Prestataire','Cannes',0,1,0,'il y a 5 h'],['Nadia K.','Particulier','Antibes',2,0,0,'hier'],['Théo V.','Prestataire','Nice',0,0,3,'il y a 6 j'],['Lina F.','Particulier','Vence',0,0,0,'il y a 12 j']];
+
+/* ---------- état ---------- */
+const S={role:'client',stack:[],tab:'map',sheet:'half',zoom:1,proIdx:0,reqIdx:0,filter:'Tous',avail:false,
+ mission:{step:0,hourly:false},rating:0,idState:'none',insState:'none',siret:'',zone:15,city:'',pdone:{id:false,ins:false,qual:false},
+ cat:JSON.parse(JSON.stringify(CATALOG)),quals:['Produits fournis'],aflt:'Tous',draftSaved:false,newReq:{svc:'Ménage',when:'Aujourd\'hui',urgent:false},pwiz:0,toast:''};
+const $=s=>document.querySelector(s);
+const view=$('#view'),tabbar=$('#tabbar');
+
+/* ---------- méta par écran (panneau latéral) ---------- */
+const META={
+ welcome:['Accueil du site public','Un seul message, un seul choix : qui êtes-vous ?',['3 boutons au lieu d\'un menu : chacun correspond à une intention','Pas de page de connexion à traverser pour découvrir'],['Pas visitable sans compte : « Voir » mène à l\'inscription','Slogan et logo conservés']],
+ signup:['Inscription en un écran','E-mail et mot de passe. Le reste vient plus tard.',['13 appuis (particulier) et 30 (prestataire) deviennent 4','Rôle déjà choisi avant : pas de question de plus','Téléphone, adresse et pièce demandés quand ils servent'],['Les CGV s\'ouvrent dans un volet : le formulaire n\'est jamais effacé']],
+ map:['Carte du client','La carte est l\'écran principal. Le volet du bas a 3 positions.',['Volet unique replié, à mi-hauteur ou plein : il se ferme toujours (poignée ou glisser)','Pastilles avec initiale, prix et écho radar « disponible maintenant »','Boutons de recentrage et zoom jamais recouverts'],['Mono-produit : ménage, repassage, nettoyage','Pas de GPS en continu : seulement la position déclarée']],
+ procard:['Fiche prestataire','Tout ce qui rassure en un écran, et on passe au suivant en glissant.',['Étoiles, avis, éléments validés et tarifs sur un seul écran','Glisser à gauche ou à droite pour changer de prestataire','Bouton « Réserver » collant en bas'],['« Profil vérifié par PING » seulement si les pièces sont validées','Vocabulaire déclaratif : pièces fournies, assurance renseignée']],
+ book:['Réservation','Choisir la prestation, le créneau, confirmer l\'adresse.',['Prix figé dès la confirmation','Adresse du profil préremplie : on la confirme au lieu de la ressaisir'],['Règle suprême du tarif : pas de renégociation après acceptation','Adresse visible du prestataire seulement quand la mission est confirmée et payée']],
+ reqnew:['Déposer une demande','Un seul écran, quatre choix.',['Service, moment, urgence et budget sur un même écran'],['Pas de téléphone ni d\'e-mail dans le texte']],
+ missions:['Missions','Toutes vos missions au même endroit : ce qui était dispersé entre messages, agenda, litiges et factures.',['Une mission = une carte, avec son statut','Remplace trois entrées du menu'],['Séparation particulier / prestataire par mode']],
+ mission:['Suivi de mission','La frise dit où vous en êtes. Une seule action à la fois.',['Frise : Confirmée, En route, Sur place, Terminée, Facturée','Le bandeau « Mission en cours » reste visible partout','Chat, QR, facture, avis et litige dans la même fiche'],['Seul le prestataire pose l\'arrivée','Heure entamée, heure due (seuil réglable)']],
+ qr:['QR de la mission','Un grand QR, une phrase.',['Accessible depuis le bandeau, sans chercher dans le chat'],['Arrivée et fin : deux QR distincts']],
+ invoice:['Facture','La facture de la prestation est à l\'en-tête du prestataire.',['Le logo PING n\'apparaît plus sur la facture de la prestation','Les frais de service PING sont un document séparé'],['Chaque partie voit seulement sa commission et la prestation']],
+ review:['Avis','Étoiles et commentaire, deux appuis.',['S\'ouvre à la demande, jamais seul quand un litige est ouvert'],['Avis publié = étoiles et commentaire visibles sur la fiche']],
+ profile:['Mon profil (client)','Une jauge de complétude et quatre rubriques.',['Jauge « profil 2/4 » au lieu de pages séparées','Pièce d\'identité en tête de liste'],['Rubriques identiques côté client et prestataire']],
+ id:['Pièce d\'identité','Un geste : on prend la pièce en photo.',['L\'appareil photo s\'ouvre directement','Même écran pour client et prestataire','Statut visible : « en cours de contrôle (sous 24 h) »'],['Contrôle par un administrateur PING','Gratuit : champ photo natif']],
+ pmap:['Carte du prestataire','Les demandes autour de soi, avec la zone choisie.',['Zone en une pastille : rayon et ville dans un volet','Épingles toujours cadrées sur les demandes','Bascule en mode particulier en un appui'],['Un compte ne répond pas à sa propre annonce']],
+ preq:['Demande','Le détail et une réponse en un appui.',['« Répondre » ouvre le devis, prix figé à l\'acceptation'],['Adresse exacte jamais montrée avant confirmation']],
+ pprofile:['Mon profil (prestataire)','Une liste de contrôle : identité, assurance, qualification, photo, zone.',['Cinq lignes avec statut au lieu de pages éparpillées','« Voir ma fiche publique » en un appui'],['« Assurance renseignée » : déclaratif']],
+ catalog:['Catalogue de prix','Modèles par métier : on active, on change le prix.',['Un écran pour tous les tarifs','Forfait, horaire ou sur devis par sélecteur'],['3 modes de prix : forfait, horaire, sur devis']],
+ siret:['Entreprise','Le SIRET remplit tout.',['Annuaire public des entreprises (gratuit) : raison sociale et adresse automatiques'],['Pro « particulier » : pas d\'étape entreprise']],
+ pwiz:['Création de l\'activité','Quatre étapes courtes, un brouillon conservé.',['Le compte existe avant : rien n\'est perdu','Barre de progression et bouton « Continuer » toujours au même endroit'],['Téléphone obligatoire, jamais publié']],
+ a_home:['Admin : accueil','Ce qui demande une action, puis les chiffres.',['Chiffres réels séparés des données fictives','Retours des testeurs accessibles dès l\'accueil'],['Commission : taux réglables en admin']],
+ a_ann:['Admin : annonces en cours','Qui cherche quoi, et qui répond.',['Noms des correspondants visibles','Budget et commissions potentielles estimés'],['Estimation, pas encaissement']],
+ a_ppl:['Admin : personnes','Filtrer par activité, voir la dernière connexion.',['Filtres : annonces en cours, en cours de travail, achevées, connectés'],['Journal de connexion enregistré']],
+ a_docs:['Admin : pièces à valider','Voir la pièce, puis valider ou refuser avec confirmation.',['Visionneuse intégrée','Confirmation avant de valider'],['Pièce validée = « profil vérifié par PING »']],
+ a_disp:['Admin : litiges','Liste puis dossier.',['Les litiges ouverts sont cliquables depuis l\'accueil'],['Versement bloqué tant qu\'un litige est ouvert']],
+ a_fb:['Admin : retours des testeurs','Les commentaires de la bulle verte, lisibles.',['Une entrée de menu, une liste courte'],[]],
+ notfound:['Page introuvable','Une vraie page d\'erreur en français.',['Remplace le prototype de démonstration affiché pour toute adresse inconnue'],[]]
+};
+const GOTO={public:[['welcome','Accueil'],['signup','Inscription'],['notfound','Page introuvable']],
+ client:[['map','Carte'],['procard','Fiche prestataire'],['book','Réservation'],['reqnew','Déposer une demande'],['missions','Missions'],['mission','Suivi de mission'],['qr','QR'],['invoice','Facture'],['review','Avis'],['profile','Mon profil'],['id','Pièce d\'identité']],
+ pro:[['pmap','Carte'],['preq','Demande'],['missions','Missions'],['mission','Suivi de mission'],['pprofile','Mon profil'],['catalog','Catalogue de prix'],['siret','Entreprise'],['id','Pièce d\'identité'],['pwiz','Création de l\'activité']],
+ admin:[['a_home','Accueil'],['a_ann','Annonces'],['a_ppl','Personnes'],['a_docs','Pièces'],['a_disp','Litiges'],['a_fb','Retours']]};
+
+/* ---------- composants ---------- */
+const hd=(t,back=true,right='')=>`<div class="hd">${back?`<button class="ib" data-a="back" aria-label="Retour">${ic('back')}</button>`:''}<h2>${t}</h2>${right}</div>`;
+const av=(p)=>`<span class="av" style="background:${HUES[p.id%6]}">${p.n[0]}</span>`;
+const stars=r=>`<span class="stars" aria-label="${r} sur 5">${'★'.repeat(Math.round(r))}${'☆'.repeat(5-Math.round(r))}</span>`;
+const badge=(k)=>({id:'<span class="tag">'+ic('shield')+' Identité vérifiée par PING</span>',ins:'<span class="tag">'+ic('shield')+' Assurance renseignée</span>',siret:'<span class="tag gray">SIRET renseigné</span>'}[k]);
+const toggle=(on,a)=>`<button class="tg ${on?'on':''}" data-a="${a}" role="switch" aria-checked="${on}"></button>`;
+function mapSvg(){return `<svg width="390" height="700" viewBox="0 0 390 700" style="position:absolute;inset:0" aria-hidden="true">
+<rect width="390" height="700" fill="var(--land)"/><rect y="520" width="390" height="180" fill="var(--water)"/>
+<path d="M0 520 Q100 490 200 515 T390 505 V520 Z" fill="var(--water)"/>
+<path d="M20 90 L170 70 L190 160 L40 175Z" fill="#CFE6D2"/><path d="M250 380 L370 360 L380 450 L270 470Z" fill="#CFE6D2"/>
+<g stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"><path d="M-10 300 Q120 270 230 300 T400 260"/><path d="M130 -10 Q150 160 120 300 T180 520"/><path d="M270 -10 Q250 200 285 330 T250 520"/></g>
+<g stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"><path d="M-10 190 L400 170"/><path d="M-10 420 Q200 400 400 430"/><path d="M60 -10 L90 520"/><path d="M340 -10 L330 520"/></g>
+<path d="M-10 480 Q190 450 400 470" stroke="#F4C57A" stroke-width="10" fill="none" stroke-linecap="round"/></svg>`}
+
+/* ---------- écrans ---------- */
+const SC={};
+SC.welcome=()=>`<div class="page"><div style="padding:30px 18px 0;text-align:center">
+<div style="width:74px;height:74px;margin:0 auto 14px;border-radius:50%;border:3px solid rgba(18,179,156,.35);display:flex;align-items:center;justify-content:center"><div style="width:44px;height:44px;border-radius:50%;border:3px solid var(--teal);display:flex;align-items:center;justify-content:center"><i style="width:14px;height:14px;border-radius:50%;background:var(--teal);display:block"></i></div></div>
+<div style="font:700 34px Quicksand,sans-serif">ping</div>
+<p style="color:var(--slate);margin:6px 0 28px">L'application de rencontre client-prestataire, en proximité · Côte d'Azur</p></div>
+<div class="pad"><button class="btn" data-a="signup:client" style="margin-bottom:10px">Je cherche un prestataire</button>
+<button class="btn gold" data-a="signup:pro" style="margin-bottom:10px">Je suis prestataire</button>
+<button class="btn ghost" data-a="role:client">J'ai déjà un compte</button>
+<p style="text-align:center;color:var(--slate);font-size:12.5px;margin-top:16px">Ménage, repassage, nettoyage, près de chez vous.</p></div></div>`;
+SC.signup=(p)=>{const pro=p==='pro';return `<div class="page">${hd(pro?'Créer mon compte prestataire':'Créer mon compte')}
+<div class="pad"><div class="prog" style="margin:4px 0 16px"><i style="width:${S.sg?100:33}%"></i></div>
+<label class="field"><span>E-mail</span><input type="email" inputmode="email" autocomplete="username" placeholder="vous@exemple.fr" aria-label="E-mail"></label>
+<label class="field"><span>Mot de passe</span><input type="password" autocomplete="new-password" placeholder="8 caractères minimum" aria-label="Mot de passe"></label>
+<p style="font-size:12.5px;color:var(--slate);margin-bottom:14px">En continuant, vous acceptez les <button class="link" data-a="toast:Les CGV s'ouvrent ici, sans effacer le formulaire">conditions générales</button>.</p>
+<button class="btn ${pro?'gold':''}" data-a="${pro?'signupgo:pro':'signupgo:client'}">Créer mon compte</button>
+<p style="text-align:center;color:var(--slate);font-size:12.5px;margin-top:14px">${pro?'Ensuite : votre activité en 4 étapes courtes, brouillon enregistré.':'Ensuite : la carte. Téléphone et adresse seulement quand vous réservez.'}</p></div></div>`};
+SC.notfound=()=>`<div class="page" style="text-align:center;padding-top:80px"><div style="font:700 60px Quicksand,sans-serif;color:var(--teal)">404</div><div class="h1" style="text-align:center">Cette page n'existe pas</div><p class="sub">Retournez à la carte ou à l'accueil.</p><div class="pad"><button class="btn" data-a="role:public">Retour à l'accueil</button></div></div>`;
+
+const missionBanner=()=>{const s=S.mission.step;if(s!==1&&s!==2)return '';const lab=S.role==='pro'?(s===1?'Scanner à l\'arrivée':'Scanner à la fin'):'Voir le QR';return `<div class="mbanner" role="status">${ic('bolt')}<span>${s===1?'Mission en cours : prestataire en route':'Mission en cours : sur place'}</span><button data-a="go:mission">${lab}</button></div>`};
+const filters=()=>['Tous','Disponible maintenant','Ménage','Repassage','Nettoyage'].map(f=>`<button class="chip ${S.filter===f?'on':''}" data-a="flt:${f}">${f==='Disponible maintenant'?ic('bolt'):''}${f}</button>`).join('');
+const visPros=()=>PROS.filter(p=>S.filter==='Tous'||(S.filter==='Disponible maintenant'?p.live:p.t===S.filter));
+const SH={peek:150,half:380,full:600};
+function sheetHtml(inner){return `<div class="sheet" id="sheet" style="height:${SH[S.sheet]}px"><div class="grab" id="grab" data-a="sheet" role="button" aria-label="Agrandir ou réduire le volet" tabindex="0"><i></i></div><div class="in">${inner}</div></div>`}
+SC.map=()=>{const L=visPros();
+ const pins=L.map(p=>`<button class="pin" style="left:${p.x}px;top:${p.y}px" data-a="pro:${p.id}" aria-label="${p.n}, ${p.price}"><span class="p">${p.price}</span><span class="a ${p.live?'live':''}" style="background:${HUES[p.id%6]}">${p.n[0]}</span></button>`).join('');
+ const list=L.length?L.map(p=>`<button class="row" data-a="pro:${p.id}">${av(p)}<span class="grow"><b>${p.n} ${p.live?'<span class="tag">Disponible</span>':''}</b><small>${p.t} · ${stars(p.r)} ${p.r} (${p.c}) · ${p.price}</small></span>${ic('chev')}</button>`).join(''):'<p class="sub">Aucun prestataire pour ce filtre.</p>';
+ return `<div class="page" style="padding:0;animation:none"><div class="map"><div class="maplayer" id="ml" style="transform:scale(${S.zoom})">${mapSvg()}${pins}<span class="me" style="left:195px;top:300px"></span></div></div>
+ <div class="mapui"><div class="search">${ic('search')}<span>Qui cherchez-vous, près de vous ?</span></div><div class="chips">${filters()}</div>${missionBanner()}</div>
+ <div class="fabs" style="bottom:${SH[S.sheet]+14}px"><button data-a="zoom:+" aria-label="Zoom avant">+</button><button data-a="zoom:-" aria-label="Zoom arrière">−</button><button data-a="zoom:0" aria-label="Recentrer sur ma position">${ic('loc')}</button></div>
+ ${sheetHtml(`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b style="font:700 16px Quicksand,sans-serif">${L.length} prestataires près de vous</b><button class="btn small" style="min-height:40px" data-a="go:reqnew">${ic('plus')} Demande</button></div>${list}`)}</div>`};
+SC.procard=()=>{const p=PROS[S.proIdx];const n=PROS.length;
+ return `<div class="page" id="swp">${hd('Prestataire',true,`<span style="color:var(--slate);font-weight:600;font-size:13px">${S.proIdx+1}/${n}</span>`)}
+ <div class="pad"><div class="card" style="text-align:center;padding:18px 14px"><span class="av" style="width:76px;height:76px;font-size:30px;background:${HUES[p.id%6]}">${p.n[0]}</span>
+ <div class="h1" style="padding-bottom:0">${p.n}</div><p style="color:var(--slate)">${p.t} · ${p.city}</p>
+ <p style="margin:6px 0">${stars(p.r)} <b>${p.r}</b> <span style="color:var(--slate)">(${p.c} avis)</span></p>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">${badge('id')}${badge('ins')}${p.id%2?'':badge('siret')}</div></div>
+ <div class="card"><b>À propos</b><p style="color:var(--slate);margin-top:4px">${p.bio}</p></div>
+ <div class="card"><b>Tarifs</b><p style="color:var(--slate);margin-top:4px">${p.from}. Prix figé à la confirmation.</p></div>
+ <div class="card"><b>Derniers avis</b>${p.com.map(c=>`<p style="margin-top:8px;color:var(--slate)">${stars(5)} « ${c} »</p>`).join('')}</div>
+ <div style="display:flex;gap:10px;justify-content:center;margin:4px 0 10px"><button class="btn ghost small" data-a="prev" aria-label="Prestataire précédent">${ic('back')} Précédent</button><button class="btn ghost small" data-a="next" aria-label="Prestataire suivant">Suivant ${ic('chev')}</button></div>
+ <p style="text-align:center;color:var(--slate);font-size:12px">Glissez à gauche ou à droite pour changer de prestataire.</p></div>
+ <div style="position:fixed"></div></div>
+ <div style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:var(--card);border-top:1px solid var(--line);display:flex;gap:10px;z-index:4"><button class="btn ghost" style="width:96px" data-a="toast:Message envoyé : la conversation s'ouvre dans Missions">Écrire</button><button class="btn" data-a="go:book">Réserver</button></div>`};
+SC.book=()=>{const p=PROS[S.proIdx];return `<div class="page">${hd('Réserver '+p.n)}<div class="pad">
+ <div class="card"><b>1. Prestation</b>${(CATALOG[p.t]||[]).filter(x=>x[2]!=='devis').map((c,i)=>`<button class="row" data-a="pick:${i}"><span class="grow"><b>${c[0]}</b><small>${c[2]==='forfait'?'Forfait':'À l\'heure'}</small></span><b>${c[1]} €${c[2]==='horaire'?'/h':''}</b></button>`).join('')}</div>
+ <div class="card"><b>2. Quand ?</b><div class="chips" style="padding:8px 0 0"><button class="chip on">Demain 10 h</button><button class="chip">Demain 14 h</button><button class="chip">Jeudi 9 h</button></div></div>
+ <div class="card"><b>3. Adresse</b><p style="color:var(--slate);margin:4px 0 8px">12 rue de la Paix, 06000 Nice (profil)</p><button class="chip on">${ic('check')} Je confirme cette adresse</button></div>
+ <div class="card" style="background:#E3F6F2"><b>Prix figé : 66 €</b><p style="font-size:12.5px;color:var(--slate)">Dont frais de service 8 %. Plus de renégociation après la confirmation.</p></div>
+ <button class="btn" data-a="book">Confirmer la réservation</button></div></div>`};
+SC.reqnew=()=>{const r=S.newReq;return `<div class="page">${hd('Déposer une demande')}<div class="pad">
+ <div class="card"><b>De quoi avez-vous besoin ?</b><div class="chips" style="padding:8px 0 0;flex-wrap:wrap">${['Ménage','Repassage','Nettoyage'].map(s=>`<button class="chip ${r.svc===s?'on':''}" data-a="nr:svc:${s}">${s}</button>`).join('')}</div></div>
+ <div class="card"><b>Pour quand ?</b><div class="chips" style="padding:8px 0 0;flex-wrap:wrap">${['Aujourd\'hui','Demain','Cette semaine'].map(s=>`<button class="chip ${r.when===s?'on':''}" data-a="nr:when:${s}">${s}</button>`).join('')}</div></div>
+ <div class="card row" style="min-height:64px"><span class="grow"><b>C'est urgent</b><small>Votre demande passe en tête, en orange</small></span>${toggle(r.urgent,'nr:urgent')}</div>
+ <label class="field"><span>Budget indicatif</span><select aria-label="Budget"><option>30 – 60 €</option><option>60 – 120 €</option><option>Plus de 120 €</option></select></label>
+ <button class="btn" data-a="reqgo">Publier l'annonce</button></div></div>`};
+const MS=['Confirmée','En route','Sur place','Terminée','Facturée'];
+const missionList=()=>`<div class="page">${missionBanner()}<div class="h1">Missions</div><p class="sub">Tout au même endroit : statut, chat, QR, facture, avis.</p><div class="pad">
+ <button class="card" style="width:100%;text-align:left" data-a="go:mission"><div style="display:flex;justify-content:space-between;align-items:center"><b>${S.role==='pro'?'Ménage chez Marie D.':'Ménage avec Amélie R.'}</b><span class="tag ${S.mission.step>=3?'gray':''}">${MS[S.mission.step]}</span></div><p style="color:var(--slate);margin-top:4px">Demain 10 h · Nice · 66 €</p><div class="prog" style="margin-top:10px"><i style="width:${(S.mission.step+1)*20}%"></i></div></button>
+ <div class="card row" style="min-height:64px"><span class="grow"><b>Repassage avec Karim B.</b><small>Terminée · Facture et avis disponibles</small></span><span class="tag gray">Terminée</span></div>
+ <div class="card row" style="min-height:64px"><span class="grow"><b>Un litige est ouvert</b><small>Vitres, 12 oct. · Réponse sous 48 h</small></span><span class="tag red">Litige</span></div></div></div>`;
+SC.missions=missionList;
+function primary(){const s=S.mission.step,pro=S.role==='pro';
+ if(pro)return [['Je pars','adv'],['Scanner le QR à l\'arrivée','go:qr'],['Scanner le QR de fin','go:qr'],['Voir ma facture','go:invoice'],['Voir la facture','go:invoice']][s];
+ return [['Voir le QR d\'arrivée','go:qr'],['Le prestataire est en route','adv'],['Montrer le QR de fin','go:qr'],['Voir la facture et noter','go:invoice'],['Laisser un avis','go:review']][s]}
+SC.mission=()=>{const s=S.mission.step,pr=primary();const who=S.role==='pro'?'Marie D. · Nice':'Amélie R. · Nice';
+ return `<div class="page">${hd('Suivi de mission')}<div class="pad"><div class="card"><b>Ménage 3 h · demain 10 h</b><p style="color:var(--slate)">${who}</p>
+ <div class="steps" style="margin-top:10px">${MS.map((m,i)=>`<div class="step ${i<s?'done':''} ${i===s?'now':''}"><span class="d">${i<s?ic('check'):''}</span><span><b>${m}</b><small>${['Prix figé 66 €, adresse confirmée','Le prestataire a annoncé son départ','Arrivée validée par QR','Fin validée par QR, durée calculée','Facture à l\'en-tête du prestataire'][i]}</small></span></div>`).join('')}</div></div>
+ <button class="btn ${S.role==='pro'?'gold':''}" data-a="${pr[1]}" style="margin-bottom:10px">${pr[0]}</button>
+ <div style="display:flex;gap:10px"><button class="btn ghost" data-a="toast:La conversation de la mission s'ouvre ici">${ic('chat')} Écrire</button><button class="btn ghost" data-a="toast:Signalement : ouvre le dossier de litige">${ic('warn')} Signaler</button></div>
+ ${s>=2?'':'<p style="color:var(--slate);font-size:12.5px;margin-top:12px">Le tarif est figé. Seul un litige peut le rouvrir.</p>'}</div></div>`};
+SC.qr=()=>{const s=S.mission.step;const cells=[];for(let i=0;i<121;i++){const x=i%11,y=Math.floor(i/11);const v=((x*7+y*13+x*y)%5<2)||((x<3&&y<3)||(x>7&&y<3)||(x<3&&y>7));cells.push(v?`<rect x="${x*17+4}" y="${y*17+4}" width="15" height="15"/>`:'')}
+ const pro=S.role==='pro';
+ return `<div class="page">${hd(s<2?'QR d\'arrivée':'QR de fin')}<div class="pad" style="text-align:center"><p class="sub" style="padding-top:0">${pro?'Scannez le QR du client pour valider '+(s<2?'votre arrivée.':'la fin de la mission.'):'Montrez ce QR au prestataire '+(s<2?'à son arrivée.':'à la fin de la mission.')}</p>
+ <div class="qr"><svg viewBox="0 0 195 195" width="180" height="180" fill="#123644" aria-label="Code QR de démonstration">${cells.join('')}</svg></div>
+ <p style="color:var(--slate);margin:6px 0 14px">Client absent ? Un code à 6 chiffres existe en secours.</p>
+ <button class="btn ${pro?'gold':''}" data-a="qrdone">${pro?'J\'ai scanné le QR':'Le prestataire a scanné'}</button></div></div>`};
+SC.invoice=()=>`<div class="page">${hd('Facture')}<div class="pad"><div class="card"><div style="display:flex;justify-content:space-between"><b>Amélie R. — entrepreneur individuel</b><span class="tag gray">FACT-2026-0042</span></div><p style="color:var(--slate);margin:4px 0 10px">SIRET 123 456 789 00012 · Nice</p>
+ <div class="row"><span class="grow">Ménage 3 h</span><b>66,00 €</b></div><div class="row"><span class="grow"><b>Total prestation</b></span><b>66,00 €</b></div></div>
+ <div class="card"><b>Frais de service PING</b><p style="color:var(--slate);margin-top:4px">Document séparé : 5,28 €. Vous ne voyez que vos propres frais.</p></div>
+ <button class="btn" data-a="go:review" style="margin-bottom:10px">Laisser un avis</button><button class="btn ghost" data-a="toast:PDF de démonstration : téléchargement simulé">Télécharger en PDF</button></div></div>`;
+SC.review=()=>`<div class="page">${hd('Votre avis')}<div class="pad"><div class="card" style="text-align:center"><b>Comment s'est passée la mission ?</b>
+ <div style="display:flex;justify-content:center;gap:6px;margin:12px 0">${[1,2,3,4,5].map(n=>`<button data-a="rate:${n}" aria-label="${n} étoiles" style="width:48px;height:48px;font-size:30px;color:${n<=S.rating?'var(--gold)':'var(--line)'}">★</button>`).join('')}</div>
+ <label class="field" style="text-align:left"><span>Un commentaire (facultatif)</span><textarea rows="3" placeholder="Ponctuelle, soigneuse…" aria-label="Commentaire"></textarea></label></div>
+ <button class="btn" data-a="reviewgo">Publier mon avis</button></div></div>`;
+SC.id=()=>{const st=S.idState;return `<div class="page">${hd('Pièce d\'identité')}<div class="pad">
+ ${st==='none'?`<p class="sub" style="padding:0 0 8px">Prenez votre pièce d'identité en photo. Elle n'est jamais affichée publiquement.</p><div class="cam"><div class="fr"></div><span>${ic('cam')}<br>Cadrez le recto de la pièce</span></div><button class="btn" data-a="idshoot">${ic('cam')} Prendre en photo</button><button class="btn ghost" style="margin-top:10px" data-a="idshoot">Choisir dans mes photos</button>`:''}
+ ${st==='shot'?`<div class="cam" style="background:#dbe8e5;color:var(--ink)"><span>Aperçu de la photo<br><small>Texte lisible, 4 coins visibles ?</small></span></div><button class="btn" data-a="idsend">Envoyer pour contrôle</button><button class="btn ghost" style="margin-top:10px" data-a="idretake">Reprendre la photo</button>`:''}
+ ${st==='sent'?`<div class="card" style="text-align:center"><span class="tag warn">En cours de contrôle</span><p style="margin-top:10px">Réponse sous 24 h. Vous pouvez continuer à utiliser PING.</p></div><button class="btn" data-a="idok">Retour au profil</button>`:''}</div></div>`};
+const PPROF=()=>S.pdone;
+SC.profile=()=>{const d=S.idState==='sent';return `<div class="page"><div class="h1">Mon profil</div><div class="pad"><div class="card"><div style="display:flex;justify-content:space-between"><b>Profil à ${d?'75':'50'} %</b><span style="color:var(--slate)">${d?'3/4':'2/4'}</span></div><div class="prog" style="margin:8px 0"><i style="width:${d?75:50}%"></i></div><p style="color:var(--slate);font-size:12.5px">Pièce d'identité pour réserver en confiance.</p></div>
+ <div class="card"><button class="row" data-a="go:id">${ic('shield')}<span class="grow"><b>Pièce d'identité</b><small>${d?'En cours de contrôle':'À ajouter, 1 minute'}</small></span>${ic('chev')}</button>
+ <button class="row" data-a="go:missions">${ic('list')}<span class="grow"><b>Mes missions et demandes</b><small>Suivi, factures, avis</small></span>${ic('chev')}</button>
+ <button class="row" data-a="toast:Paiements : virement sur facture">${ic('euro')}<span class="grow"><b>Paiements</b><small>Virement sur facture</small></span>${ic('chev')}</button>
+ <button class="row" data-a="toast:Mon compte : coordonnées, mot de passe">${ic('user')}<span class="grow"><b>Mon compte</b><small>Coordonnées et sécurité</small></span>${ic('chev')}</button>
+ <button class="row" data-a="toast:Aide : comment ça marche, en vidéo courte">${ic('doc')}<span class="grow"><b>Aide</b><small>Comment ça marche</small></span>${ic('chev')}</button></div>
+ ${S.dbl?`<button class="btn gold" data-a="role:pro">${ic('swap')} Passer en mode prestataire</button>`:`<button class="btn ghost" data-a="role:pro">Devenir prestataire</button>`}</div></div>`};
+/* --- prestataire --- */
+SC.pmap=()=>{const pins=REQS.map(r=>`<button class="pin" style="left:${r.x}px;top:${r.y}px" data-a="req:${r.id}" aria-label="${r.t}"><span class="p">${r.b.split(' –')[0]} €</span><span class="a" style="background:${r.u?'var(--orange)':'var(--gold)'}">${ic('pin')}</span></button>`).join('');
+ const list=REQS.map(r=>`<button class="row" data-a="req:${r.id}"><span class="grow"><b>${r.u?'<span class="tag warn">URGENT</span> ':''}${r.t}</b><small>à ${r.d} · ${r.b} €</small></span>${ic('chev')}</button>`).join('');
+ return `<div class="page" style="padding:0;animation:none"><div class="map"><div class="maplayer" id="ml" style="transform:scale(${S.zoom})">${mapSvg()}${pins}<span class="me" style="left:195px;top:300px"></span></div></div>
+ <div class="mapui"><div class="search" data-a="zonesheet" role="button" tabindex="0">${ic('loc')}<span style="flex:1">Zone : ${S.zone} km${S.city?' autour de '+S.city:' autour de moi'}</span><b style="color:var(--gold)">Modifier</b></div><div class="chips"><button class="chip ${S.avail?'on':''}" data-a="avail">${ic('bolt')} ${S.avail?'Visible : disponible':'Hors ligne'}</button><button class="chip" data-a="role:client">${ic('swap')} Passer en particulier</button></div>${missionBanner()}</div>
+ <div class="fabs" style="bottom:${SH[S.sheet]+14}px"><button data-a="zoom:+" aria-label="Zoom avant">+</button><button data-a="zoom:-" aria-label="Zoom arrière">−</button><button data-a="zoom:0" aria-label="Recentrer">${ic('loc')}</button></div>
+ ${sheetHtml(S.zonePanel?`<b style="font:700 16px Quicksand,sans-serif">Zone couverte</b><div class="chips" style="padding:10px 0">${[5,10,15,25,50].map(k=>`<button class="chip ${S.zone===k?'on':''}" data-a="zone:${k}">${k} km</button>`).join('')}</div><label class="field"><span>Ou une ville</span><input placeholder="Ex. Cannes" aria-label="Ville" data-city value="${S.city}"></label><button class="btn gold" data-a="zonedone">Valider la zone</button>`:`<b style="font:700 16px Quicksand,sans-serif">${REQS.length} demandes autour de vous</b>${list}`)}</div>`};
+SC.preq=()=>{const r=REQS[S.reqIdx];return `<div class="page">${hd('Demande')}<div class="pad"><div class="card"><b>${r.u?'<span class="tag warn">URGENT</span> ':''}${r.t}</b><p style="color:var(--slate);margin:6px 0">à ${r.d} · budget ${r.b} €</p><p style="color:var(--slate);font-size:12.5px">L'adresse exacte vous sera communiquée quand la mission sera confirmée et payée.</p></div>
+ <button class="btn gold" data-a="preqgo">Répondre avec mon tarif</button></div></div>`};
+const checklist=()=>[['id','Pièce d\'identité',S.idState==='sent'?'En cours de contrôle':'À ajouter',S.idState==='sent'],['ins','Assurance',S.insState==='sent'?'Renseignée, en contrôle':'Attestation à ajouter',S.insState==='sent'],['qual','Qualification (facultatif)','Diplôme ou formation',S.pdone.qual],['photo','Photo de profil','Ajoutée',true],['zone','Zone d\'intervention',S.zone+' km',true]];
+SC.pprofile=()=>{const L=checklist();const n=L.filter(x=>x[3]).length;return `<div class="page"><div class="h1">Mon profil</div><div class="pad"><div class="card"><div style="display:flex;justify-content:space-between"><b>Profil complet ${n}/5</b><span class="tag ${n===5?'':'warn'}">${n===5?'Visible en premier':'À compléter'}</span></div><div class="prog" style="margin:8px 0"><i style="width:${n*20}%;background:var(--gold)"></i></div></div>
+ <div class="card">${L.map(x=>`<button class="row" data-a="pp:${x[0]}"><span class="tag ${x[3]?'':'warn'}">${x[3]?ic('check'):'!'}</span><span class="grow"><b>${x[1]}</b><small>${x[2]}</small></span>${ic('chev')}</button>`).join('')}</div>
+ <div class="card"><button class="row" data-a="go:catalog">${ic('euro')}<span class="grow"><b>Mes tarifs et catalogue</b><small>Modèles à activer</small></span>${ic('chev')}</button><button class="row" data-a="go:siret">${ic('doc')}<span class="grow"><b>Mon entreprise</b><small>SIRET, raison sociale</small></span>${ic('chev')}</button><button class="row" data-a="go:procard">${ic('user')}<span class="grow"><b>Voir ma fiche publique</b><small>Comme un client la voit</small></span>${ic('chev')}</button></div></div></div>`};
+SC.catalog=()=>{const trades=Object.keys(S.cat);return `<div class="page">${hd('Mes tarifs')}<p class="sub">Activez les prestations que vous proposez et réglez le prix.</p><div class="pad">
+ ${trades.map(t=>`<div class="card"><b>${t}</b>${S.cat[t].map((c,i)=>`<div class="row"><span class="grow"><b>${c[0]}</b><small>${c[2]==='devis'?'Sur devis':c[2]==='forfait'?'Forfait':'À l\'heure'}</small></span>${c[2]==='devis'?'':`<span style="display:inline-flex;align-items:center;gap:4px"><button class="ib" style="width:40px;height:40px" data-a="price:${t}:${i}:-1" aria-label="Baisser le prix">−</button><b style="min-width:58px;text-align:center">${c[1]} €</b><button class="ib" style="width:40px;height:40px" data-a="price:${t}:${i}:1" aria-label="Augmenter le prix">+</button></span>`}${toggle(c[3],`cat:${t}:${i}`)}</div>`).join('')}</div>`).join('')}
+ <div class="card"><b>Qualités et avantages</b><div class="chips" style="padding:8px 0 0;flex-wrap:wrap">${['Produits fournis','Matériel pro','Éco-responsable','Disponible le week-end','Parle anglais'].map(q=>`<button class="chip ${S.quals.includes(q)?'on':''}" data-a="qual:${q}">${q}</button>`).join('')}</div></div></div></div>`};
+SC.siret=()=>`<div class="page">${hd('Mon entreprise')}<div class="pad"><p class="sub" style="padding:0 0 10px">Entrez votre SIRET : le reste se remplit tout seul.</p>
+ <label class="field"><span>SIRET</span><input inputmode="numeric" placeholder="14 chiffres" value="${S.siret}" data-siret aria-label="SIRET"></label>
+ ${S.siret.replace(/\s/g,'').length>=14?`<div class="card"><span class="tag">Trouvé dans l'annuaire des entreprises</span><p style="margin-top:8px"><b>AMÉLIE R. — entrepreneur individuel</b></p><p style="color:var(--slate)">Activité : services de nettoyage · Nice (06)</p></div><button class="btn gold" data-a="siretok">Confirmer</button>`:`<button class="btn ghost" data-a="siretfill">Utiliser un SIRET d'exemple</button><p style="color:var(--slate);font-size:12.5px;margin-top:10px">Particulier sans entreprise ? Vous pouvez passer cette étape.</p>`}</div></div>`;
+const WZ=['Votre métier','Votre zone','Vos tarifs','Vos pièces'];
+SC.pwiz=()=>{const k=S.pwiz;const body=[
+ `<div class="card"><b>Que proposez-vous ?</b><div class="chips" style="padding:8px 0 0;flex-wrap:wrap">${['Ménage','Repassage','Nettoyage'].map(t=>`<button class="chip ${S.quals.includes('m:'+t)?'on':''}" data-a="qual:m:${t}">${t}</button>`).join('')}</div></div>`,
+ `<div class="card"><b>Où intervenez-vous ?</b><div class="chips" style="padding:8px 0 8px;flex-wrap:wrap">${[5,10,15,25,50].map(k=>`<button class="chip ${S.zone===k?'on':''}" data-a="zone:${k}">${k} km</button>`).join('')}</div><label class="field"><span>Téléphone (jamais publié)</span><input type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" aria-label="Téléphone"></label><button class="chip on">${ic('check')} Je confirme mon adresse : 12 rue de la Paix, Nice</button></div>`,
+ `<div class="card"><b>Vos tarifs</b><p style="color:var(--slate);margin:4px 0 0">Nous préremplissons des modèles : vous les ajusterez dans « Mes tarifs ».</p><div class="row"><span class="grow"><b>Ménage 3 h</b></span><b>66 €</b></div><div class="row"><span class="grow"><b>Ménage à l'heure</b></span><b>22 €/h</b></div></div>`,
+ `<div class="card"><b>Vos pièces</b><p style="color:var(--slate);margin:4px 0 8px">Pièce d'identité maintenant, assurance plus tard : vous pouvez publier dès aujourd'hui.</p><button class="btn ghost" data-a="go:id">${ic('cam')} Prendre ma pièce en photo</button></div>`][k];
+ return `<div class="page">${hd('Mon activité',k>0)}<div class="pad"><div style="display:flex;justify-content:space-between;color:var(--slate);font-weight:600;font-size:13px;margin-bottom:6px"><span>${WZ[k]}</span><span>${k+1}/4</span></div><div class="prog" style="margin-bottom:12px"><i style="width:${(k+1)*25}%;background:var(--gold)"></i></div>
+ <p style="color:var(--slate);font-size:12.5px;margin-bottom:10px">${ic('check')} Brouillon enregistré : vous pouvez fermer et reprendre.</p>${body}<button class="btn gold" data-a="wz">${k<3?'Continuer':'Publier mon profil'}</button></div></div>`};
+/* --- admin --- */
+const aTab=['a_home','a_ann','a_ppl','a_docs','a_disp'];
+SC.a_home=()=>`<div class="page"><div class="h1">Accueil</div><p class="sub">Réel uniquement. <button class="link" data-a="toast:Les données fictives s'affichent ici si on le demande">Inclure les fictifs</button></p>
+ <div class="kpis"><div class="kpi"><b>5</b><small>Annonces en cours</small></div><div class="kpi"><b>2</b><small>Missions en cours</small></div><div class="kpi"><b>≈ 86 €</b><small>Commissions à venir</small></div><div class="kpi"><b>0 €</b><small>Réalisé</small></div></div>
+ <div class="pad"><div class="card"><b>À traiter</b><button class="row" data-a="tab:a_docs">${ic('shield')}<span class="grow"><b>3 pièces à valider</b></span><span class="tag warn">Voir</span></button><button class="row" data-a="tab:a_disp">${ic('warn')}<span class="grow"><b>1 litige ouvert</b></span><span class="tag warn">Voir</span></button><button class="row" data-a="go:a_fb">${ic('chat')}<span class="grow"><b>4 retours de testeurs</b></span><span class="tag warn">Lire</span></button></div></div></div>`;
+SC.a_ann=()=>`<div class="page"><div class="h1">Annonces en cours</div><div class="pad"><div class="card">${[['Ménage après déménagement','Marie D.','Hugo P., Nadia K.'],['Repassage hebdomadaire','Nadia K.','aucun pour l\'instant'],['Vitres maison 120 m²','Lina F.','Théo V.']].map(a=>`<div class="row"><span class="grow"><b>${a[0]}</b><small>Déposée par ${a[1]} · en contact : ${a[2]}</small></span></div>`).join('')}</div></div></div>`;
+SC.a_ppl=()=>{const f=S.aflt;const L=PEOPLE.filter(p=>f==='Tous'||(f==='Annonces en cours'&&p[3]>0)||(f==='En cours de travail'&&p[4]>0)||(f==='Achevées'&&p[5]>0)||(f==='Connectés 7 j'&&/il y a|hier/.test(p[6])&&!/12 j|6 j/.test(p[6])));
+ return `<div class="page"><div class="h1">Personnes</div><div class="chips">${['Tous','Annonces en cours','En cours de travail','Achevées','Connectés 7 j'].map(x=>`<button class="chip ${f===x?'on':''}" data-a="aflt:${x}">${x}</button>`).join('')}</div><div class="pad"><div class="card">${L.map(p=>`<div class="row"><span class="av" style="background:${HUES[p[0].length%6]}">${p[0][0]}</span><span class="grow"><b>${p[0]}</b><small>${p[1]} · ${p[2]} · ${p[6]}</small></span><small>${p[3]}/${p[4]}/${p[5]}</small></div>`).join('')||'<p class="sub">Personne dans cette sélection.</p>'}<p style="font-size:12px;color:var(--slate);margin-top:8px">Colonnes : annonces ouvertes / en cours / achevées.</p></div></div></div>`};
+SC.a_docs=()=>`<div class="page"><div class="h1">Pièces à valider</div><div class="pad">${[['Hugo P.','Pièce d\'identité'],['Théo V.','Assurance'],['Julien M.','Pièce d\'identité']].map((d,i)=>`<div class="card"><b>${d[0]}</b><small style="display:block;color:var(--slate);margin-bottom:8px">${d[1]}</small><div class="cam" style="margin:0 0 10px;height:120px;background:#dbe8e5;color:var(--ink)">Aperçu de la pièce</div><div style="display:flex;gap:10px"><button class="btn small" style="flex:1" data-a="toast:Pièce de ${d[0]} validée (après confirmation)">Valider</button><button class="btn red small" style="flex:1" data-a="toast:Pièce refusée : un motif est demandé">Refuser</button></div></div>`).join('')}</div></div>`;
+SC.a_disp=()=>`<div class="page"><div class="h1">Litiges</div><div class="pad"><button class="card" style="width:100%;text-align:left" data-a="toast:Dossier : échanges, photos, décision de PING"><div style="display:flex;justify-content:space-between"><b>Vitres 12 oct.</b><span class="tag red">Ouvert</span></div><p style="color:var(--slate);margin-top:4px">Marie D. contre Sophie L. · réponse sous 48 h · versement bloqué</p></button></div></div>`;
+SC.a_fb=()=>`<div class="page">${hd('Retours des testeurs')}<div class="pad"><div class="card">${FEED.map(f=>`<div class="row"><span class="grow"><b>${f[1]}</b><small>${f[0]}</small></span></div>`).join('')}</div></div></div>`;
+
+/* ---------- navigation ---------- */
+const TABS={client:[['map','Carte','map'],['missions','Missions','list'],['profile','Profil','user']],
+ pro:[['pmap','Demandes','map'],['missions','Missions','list'],['pprofile','Mon profil','user']],
+ admin:[['a_home','Accueil','home'],['a_ann','Annonces','list'],['a_ppl','Personnes','users'],['a_docs','Pièces','shield'],['a_disp','Litiges','warn']],public:[]};
+const cur=()=>S.stack[S.stack.length-1];
+function setRole(r,screen){S.role=r;S.tab=(TABS[r][0]||[])[0];S.stack=[screen||(r==='public'?'welcome':TABS[r][0][0])];if(r==='pro'&&!screen)S.dbl=true;paint()}
+function go(n,p){S.stack.push(n);S.arg=p;paint()}
+function back(){if(S.stack.length>1)S.stack.pop();paint()}
+function tabTo(t){S.stack=[t];paint()}
+function toast(m){S.toast=m;paint();clearTimeout(toast.t);toast.t=setTimeout(()=>{S.toast='';paint()},2400)}
+function render(n){return (SC[n]||SC.notfound)(S.arg)}
+function paint(){
+ const n=cur();const keep=view.firstElementChild&&view.firstElementChild.dataset.s===n?view.firstElementChild.scrollTop:0;
+ view.innerHTML=render(n)+(S.toast?`<div class="toast" role="status">${S.toast}</div>`:'');
+ const pg=view.firstElementChild;if(pg){pg.dataset.s=n;pg.scrollTop=keep}
+ const T=TABS[S.role];const isPro=S.role==='pro';
+ tabbar.className='tabbar'+(isPro?' pro':'');tabbar.style.display=T.length?'flex':'none';
+ tabbar.innerHTML=T.map(t=>`<button data-a="tab:${t[0]}" class="${S.stack[0]===t[0]||(t[0]==='missions'&&['mission','qr','invoice','review'].includes(n)&&false)?'on':''}" aria-label="${t[1]}">${ic(t[2])}<span>${t[1]}</span></button>`).join('');
+ document.querySelectorAll('#roles button').forEach(b=>b.classList.toggle('on',b.dataset.role===S.role));
+ const m=META[n]||META.notfound;$('#sname').textContent=m[0];$('#swhat').textContent=m[1];
+ $('#schange').innerHTML=m[2].map(x=>`<li>${x}</li>`).join('')||'<li>Écran déjà conforme.</li>';
+ $('#srules').innerHTML=(m[3].length?m[3]:['Aucune règle particulière.']).map(x=>`<li>${x}</li>`).join('');
+ $('#goto').innerHTML=GOTO[S.role].map(g=>`<button data-g="${g[0]}" class="${n===g[0]?'on':''}">${g[1]}</button>`).join('');
+ const gr=$('#grab');if(gr)bindSheet(gr);
+ const sp=$('#swp');if(sp)bindSwipe(sp);
+ const ci=view.querySelector('[data-city]');if(ci)ci.oninput=e=>{S.city=e.target.value};
+ const si=view.querySelector('[data-siret]');if(si)si.oninput=e=>{S.siret=e.target.value;if(e.target.value.replace(/\s/g,'').length>=14)paint(),view.querySelector('[data-siret]').focus()};
+}
+const ACT={
+ back,sheet(){S.sheet={peek:'half',half:'full',full:'peek'}[S.sheet];paint()},
+ signup(p){S.sg=0;S.stack=['signup'];S.arg=p;S.role='public';paint()},
+ signupgo(p){if(p==='pro'){S.role='pro';S.dbl=false;S.stack=['pwiz'];S.pwiz=0;S.tab='pmap';paint()}else setRole('client')},
+ role(r){setRole(r)},tab(t){tabTo(t)},go(n){go(n)},
+ flt(f){S.filter=f;paint()},pro(i){S.proIdx=+i;go('procard')},req(i){S.reqIdx=+i;go('preq')},
+ zoom(z){S.zoom=z==='0'?1:Math.max(1,Math.min(2,S.zoom+(z==='+'?.3:-.3)));paint()},
+ prev(){S.proIdx=(S.proIdx+PROS.length-1)%PROS.length;paint()},next(){S.proIdx=(S.proIdx+1)%PROS.length;paint()},
+ pick(){toast('Prestation choisie : ménage 3 h, 66 €')},book(){S.mission.step=0;S.stack=['missions'];S.tab='missions';S.role='client';paint();toast('Réservation confirmée : prix figé')},
+ nr(k,v){if(k==='urgent')S.newReq.urgent=!S.newReq.urgent;else S.newReq[k]=v;paint()},
+ reqgo(){S.stack=['map'];paint();toast('Annonce en ligne : 3 prestataires proches la voient')},
+ adv(){S.mission.step=Math.min(4,S.mission.step+1);paint()},
+ qrdone(){S.mission.step=Math.min(4,S.mission.step+1);S.stack=['mission'];paint()},
+ rate(n){S.rating=+n;paint()},reviewgo(){S.stack=['missions'];paint();toast('Avis publié : visible sur la fiche du prestataire')},
+ idshoot(){S.idState='shot';paint()},idretake(){S.idState='none';paint()},idsend(){S.idState='sent';paint()},idok(){S.stack=[S.role==='pro'?'pprofile':'profile'];paint()},
+ avail(){S.avail=!S.avail;paint()},zonesheet(){S.zonePanel=true;S.sheet='half';paint()},zone(k){S.zone=+k;paint()},zonedone(){S.zonePanel=false;paint();toast('Zone enregistrée : '+S.zone+' km'+(S.city?' autour de '+S.city:''))},
+ preqgo(){toast('Réponse envoyée : le client la voit dans Missions');S.stack=['pmap']},
+ pp(k){if(k==='id')go('id');else if(k==='ins'){S.insState='sent';paint();toast('Attestation envoyée : en cours de contrôle')}else if(k==='qual'){S.pdone.qual=true;paint()}else toast('Déjà complété')},
+ cat(t,i){S.cat[t][+i][3]=!S.cat[t][+i][3];paint()},price(t,i,d){const c=S.cat[t][+i];c[1]=Math.max(0,c[1]+(+d)*(c[2]==='forfait'?5:1));paint()},
+ qual(q){const i=S.quals.indexOf(q);i<0?S.quals.push(q):S.quals.splice(i,1);paint()},
+ siretfill(){S.siret='123 456 789 00012';paint()},siretok(){toast('Entreprise enregistrée');S.stack=['pprofile'];paint()},
+ wz(){if(S.pwiz<3){S.pwiz++;paint()}else{S.stack=['pprofile'];S.tab='pprofile';paint();toast('Profil publié : vous êtes visible dès la validation de vos pièces')}},
+ aflt(f){S.aflt=f;paint()},toast(m){toast(m)}
+};
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-a]');if(b&&b.closest('.screen')){const parts=b.dataset.a.split(':');const k=parts.shift();if(ACT[k]){if(k==='toast')ACT.toast(parts.join(':'));else if(k==='qual'&&parts[0]==='m')ACT.qual(parts.join(':'));else ACT[k](...parts)}return}
+ const g=e.target.closest('[data-g]');if(g){const n=g.dataset.g;S.stack=[n];if(['mission','qr','invoice','review','procard','book','reqnew','id','catalog','siret','pwiz','preq','a_fb'].includes(n)&&S.role!=='public'){const root=TABS[S.role][0][0];S.stack=[root,n]}S.arg=null;paint();return}
+ const r=e.target.closest('#roles button');if(r){setRole(r.dataset.role)}
+});
+function bindSheet(gr){let y0=null,h0=0;const sh=$('#sheet');
+ gr.addEventListener('pointerdown',e=>{y0=e.clientY;h0=sh.offsetHeight;gr.setPointerCapture(e.pointerId)});
+ gr.addEventListener('pointermove',e=>{if(y0==null)return;sh.style.transition='none';sh.style.height=Math.max(100,Math.min(640,h0+(y0-e.clientY)))+'px'});
+ gr.addEventListener('pointerup',e=>{if(y0==null)return;const moved=Math.abs(y0-e.clientY);const h=sh.offsetHeight;y0=null;sh.style.transition='';if(moved<6)return;const k=Object.keys(SH).reduce((a,b)=>Math.abs(SH[b]-h)<Math.abs(SH[a]-h)?b:a);S.sheet=k;paint()});
+ gr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();ACT.sheet()}})}
+function bindSwipe(el){let x0=null;el.addEventListener('pointerdown',e=>{x0=e.clientX});el.addEventListener('pointerup',e=>{if(x0==null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>60){dx<0?ACT.next():ACT.prev()}})}
+/* ---------- pages ---------- */
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));['mock','audit','qc'].forEach(t=>$('#p_'+t).hidden=t!==b.dataset.tab);if(b.dataset.tab==='audit')auditPane();if(b.dataset.tab==='qc')qcPane()});
+function jump(role,screen){setRole(role,null);if(screen){const root=S.stack[0];S.stack=screen===root?[root]:[root,screen];S.arg=null}paint();document.querySelector('#tabs button[data-tab=mock]').click();window.scrollTo(0,0)}
+window.jump=jump;
+const AUDIT=[
+ ['Accueil du site public','public','welcome','present','P1','Plusieurs entrées (plaquette, liens courts) sans écran d\'accueil unique. 3 choix clairs dans la maquette.'],
+ ['Inscription','public','signup','incomplet','P0','13 appuis (client), 30 (prestataire), données perdues si on quitte pour lire les CGV. Un écran de compte, profil progressif.'],
+ ['Création de l\'activité prestataire','pro','pwiz','incomplet','P0','Onboarding rempli sans compte puis perdu. Compte d\'abord, 4 étapes, brouillon conservé.'],
+ ['Pièce d\'identité','client','id','incomplet','P1','Éparpillée entre Mes pièces et le profil, sans statut clair. Un geste, un statut.'],
+ ['Carte du client','client','map','incomplet','P1','Fiche qui ne se ferme pas, boutons recouverts. Volet à 3 positions.'],
+ ['Fiche prestataire','client','procard','incomplet','P1','Pas de passage au suivant, éléments validés dispersés. Glisser, badges, avis.'],
+ ['Réservation','client','book','present','P2','Adresse à confirmer au lieu de la saisir : plus court.'],
+ ['Déposer une demande','client','reqnew','present','P2','Formulaire long. Quatre choix sur un écran.'],
+ ['Liste des missions','client','missions','absent','P0','Éclatée entre Messages, Agenda, Litiges, Opérations. Une entrée « Missions ».'],
+ ['Suivi de mission en frise','client','mission','absent','P0','Aucune vue qui dit où en est la mission. Frise et action unique.'],
+ ['QR arrivée et fin','client','qr','incomplet','P1','Accessible seulement depuis le chat. Depuis le bandeau « mission en cours ».'],
+ ['Facture','client','invoice','incomplet','P0','Logo PING sur la facture de la prestation : contraire à la règle des 3 factures.'],
+ ['Avis','client','review','present','P2','S\'ouvre seul, même avec un litige ouvert. À la demande.'],
+ ['Profil client','client','profile','incomplet','P2','Rubriques nombreuses. Jauge et 4 rubriques.'],
+ ['Carte du prestataire et zone','pro','pmap','incomplet','P1','Carte sans épingle, zone peu visible. Épingles cadrées, zone en une pastille.'],
+ ['Mon profil prestataire','pro','pprofile','incomplet','P1','Pièces, assurance, tarifs, annonce dans 5 écrans. Une liste de contrôle.'],
+ ['Catalogue de prix','pro','catalog','incomplet','P1','Tarifs un par un. Modèles à activer.'],
+ ['Entreprise (SIRET)','pro','siret','present','P2','Déjà préremplissable : à rendre central pour les entreprises.'],
+ ['Admin : accueil','admin','a_home','incomplet','P0','Chiffres mélangés réel/fictif/démo. Séparés, action en premier.'],
+ ['Admin : annonces en cours','admin','a_ann','present','P2','Nouveau : à garder.'],
+ ['Admin : personnes','admin','a_ppl','present','P1','Recherche et filtres sans effet dans la version actuelle.'],
+ ['Admin : pièces à valider','admin','a_docs','incomplet','P0','Validation sans visionneuse ni confirmation.'],
+ ['Admin : litiges','admin','a_disp','incomplet','P0','Section vide, litiges non cliquables.'],
+ ['Admin : retours des testeurs','admin','a_fb','absent','P1','Dans une page de 24 900 px sans entrée de menu.'],
+ ['Page introuvable','public','notfound','absent','P1','Toute adresse inconnue affiche le prototype de démonstration.']
+];
+function auditPane(){$('#p_audit').innerHTML=`<h2>Audit des manques</h2><p style="color:var(--slate);margin-bottom:10px">Chaque écran de l'app actuelle, son statut, et son écran dans la maquette (cliquez « Voir »). Sources : les 5 audits du 07/11 et les remarques de Romain.</p><div class="tablewrap"><table class="t"><tr><th>Écran</th><th>App en ligne</th><th>Priorité</th><th>Critique et correction</th><th>Maquette</th></tr>${AUDIT.map(a=>`<tr><td><b>${a[0]}</b></td><td class="st-${a[3]}">${{present:'Présent',incomplet:'Incomplet',absent:'Absent'}[a[3]]}</td><td><span class="sev ${a[4].toLowerCase()}">${a[4]}</span></td><td>${a[5]}</td><td><button class="link" onclick="jump('${a[1]}','${a[2]}')">Couvert · Voir</button></td></tr>`).join('')}</table></div>`}
+function qcPane(){
+ const re={certifié:/certifi/i,garanti:/garanti/i,marques:/airbnb|uber|booking|wecasa|taskrabbit|leboncoin|nextdoor/i,bientôt:/bientôt/i,emoji:/[\u{1F300}-\u{1FAFF}\u{2700}-\u{27BF}]/u};
+ const roles=Object.keys(GOTO);const hits={};Object.keys(re).forEach(k=>hits[k]=0);let n=0;
+ const keep=[S.role,S.stack,S.arg];const box=document.createElement('div');
+ roles.forEach(r=>GOTO[r].forEach(g=>{S.role=r;S.stack=[g[0]];n++;try{box.innerHTML=render(g[0]);const t=box.textContent+(META[g[0]]||[]).flat(2).join(' ');Object.keys(re).forEach(k=>{if(re[k].test(t))hits[k]++})}catch(e){}}));
+ [S.role,S.stack,S.arg]=keep;
+ $('#p_qc').innerHTML=`<h2>Contrôle qualité</h2>
+ <div class="card"><b>Mots interdits : recherche automatique sur les ${n} écrans de cette maquette</b>
+ ${Object.keys(re).map(k=>`<div class="row"><span class="grow">« ${k==='emoji'?'emoji colorés':k==='marques'?'noms de marques tierces':k} »</span><span class="tag ${hits[k]?'red':''}">${hits[k]} occurrence${hits[k]>1?'s':''}</span></div>`).join('')}</div>
+ <h2>Incohérences trouvées et correction dans la maquette</h2><div class="tablewrap"><table class="t"><tr><th>Incohérence (audit)</th><th>Correction</th></tr>
+ <tr><td>« Adresse visible » dite de trois façons</td><td>Une phrase unique : « confirmée et payée »</td></tr>
+ <tr><td>Séquestre « Bientôt » sur l'écran des paiements</td><td>Aucune mention « bientôt » : paiement = virement sur facture</td></tr>
+ <tr><td>« Commission retenue » alors que tout passe par virement</td><td>« Frais de service », document séparé</td></tr>
+ <tr><td>Logo PING sur la facture de la prestation</td><td>En-tête du prestataire seulement</td></tr>
+ <tr><td>Deux libellés pour la même action (« Terminer », « Passer et terminer »)</td><td>Un seul bouton par étape</td></tr>
+ <tr><td>Total « sur 5 » puis « sur 6 » en cours d'inscription</td><td>Barre fixe 4 étapes</td></tr></table></div>
+ <h2>Suggestions non réalisées, par impact</h2><div class="tablewrap"><table class="t"><tr><th>Suggestion</th><th>Impact</th></tr>
+ <tr><td>Connexion par lien magique (sans mot de passe)</td><td>Fort : moins d'abandon à l'inscription</td></tr>
+ <tr><td>Carte vectorielle libre aux couleurs PING (MapLibre + tuiles gratuites)</td><td>Fort : look et robustesse, fin de la dépendance aux tuiles publiques</td></tr>
+ <tr><td>Notifications de nouvelle demande près de soi</td><td>Fort : réactivité des prestataires</td></tr>
+ <tr><td>Catalogue de services en base (nouveaux services sans code)</td><td>Fort : extension de l'offre</td></tr>
+ <tr><td>Favoris et « refaire avec le même prestataire »</td><td>Moyen</td></tr></table></div>
+ <h2>Décisions à valider</h2><div class="card"><p>1. Barre du bas à 3 entrées (Carte, Missions, Profil).<br>2. Inscription en un écran et profil progressif.<br>3. Carte vectorielle gratuite (conditions à vérifier avant branchement).<br>4. Catalogue de prix par modèles.<br>5. Ordre de mise en production, paquet par paquet.</p></div>
+ <p style="color:var(--slate);margin-top:10px">Non vérifié : rendu sur vrai iPhone et en application installée ; conditions d'usage de la carte gratuite ; veille concurrentielle chiffrée.</p>`}
+/* thème */
+$('#theme').onclick=()=>{const d=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=d?'':'dark';$('#themeTxt').textContent=d?'Thème sombre':'Thème clair';try{localStorage.setItem('pm_theme',d?'':'dark')}catch(e){}};
+try{if(localStorage.getItem('pm_theme')==='dark'){document.documentElement.dataset.theme='dark';$('#themeTxt').textContent='Thème clair'}}catch(e){}
+/* échelle du téléphone selon la hauteur disponible */
+function fit(){const pw=$('#pw'),ph=$('#phone');if(innerWidth<=820){ph.style.transform='none';pw.style.height='auto';return}const s=Math.min(1,(innerHeight-150)/844);ph.style.transform=`scale(${s})`;pw.style.width=(390*s)+'px';pw.style.height=(844*s)+'px'}
+addEventListener('resize',fit);fit();
+const q=new URLSearchParams(location.search);const r0=q.get('role');
+setRole(['public','client','pro','admin'].includes(r0)?r0:'client');
+</script>
+</body>
+</html>

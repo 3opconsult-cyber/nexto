@@ -3,7 +3,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|plaquettes|animation|animation-pro|animation-inscription|animation-ping|animation-client|animation-prestataire|animation-tuto|animation-tuto-absent|bienvenue|plan-marketing).html',
+        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|plaquettes|animation|animation-pro|animation-inscription|animation-ping|animation-client|animation-prestataire|animation-tuto|animation-tuto-absent|bienvenue|plan-marketing|maquette).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
       {
@@ -49,6 +49,7 @@ const nextConfig = {
         { source: '/animation-tuto-absent', destination: '/animation-tuto-absent.html' },
         { source: '/bienvenue', destination: '/bienvenue.html' },
         { source: '/plan-marketing', destination: '/plan-marketing.html' },
+        { source: '/maquette', destination: '/maquette.html' },
       ],
       // Tout le reste tombe sur le prototype : l'app EST /demo.
       fallback: [
