@@ -1031,7 +1031,7 @@ function paint(){
  const vh=view.clientHeight||700;SH.half=Math.round(Math.min(380,vh*.46));SH.full=Math.max(SH.half+60,vh-70);
  if(S.role==='pro'&&!MEP()&&!['pwiz','idcap'].includes(cur()))S.stack=['pwiz'];
  const n=cur();const key=n+'|'+S.arg+'|'+S.role;const old=view.querySelector('.page');
- if(old&&old.dataset.k===key)view.querySelectorAll('input[id],textarea[id],select[id]').forEach(e=>{if(e.type!=='checkbox')S.f[e.id]=e.value});else S.f={};
+ if(old&&old.dataset.k===key&&!S.fReset)view.querySelectorAll('input[id],textarea[id],select[id]').forEach(e=>{if(e.type!=='checkbox')S.f[e.id]=e.value});else S.f={};S.fReset=false;
  const keep=old&&old.dataset.k===key?old.scrollTop:0;
  const ro=S.asAdmin&&S.role!=='admin';
  view.innerHTML=(ro?`<div class="ro"><span style="flex:1">Lecture seule : vous voyez ce que voit ${S.role==='pro'?'Amélie R. (prestataire)':'Marie D. (cliente)'}</span><button data-a="backadmin">Revenir à l'admin</button></div>`:'')+render(n)+(S.drawer?drawer():'');
@@ -1134,7 +1134,7 @@ const ACT={
  asview(r){S.asAdmin=true;S.hist=[];S.role=r;S.acc=r==='pro'?'amelie':'marie';S.stack=[TABS[r][0][0]];S.sel=null;S.sheet=r==='pro'?'half':'peek';paint()},
  backadmin(){S.asAdmin=false;S.hist=[];S.role='admin';S.stack=['a_home'];paint()},
  rate2(k,d){S[k]=Math.max(0,Math.min(40,S[k]+(+d)));paint()},thr(d){S.thr=Math.max(0,Math.min(30,S.thr+(+d)));paint()},
- ofm(m){S.ofd.p=val('of_p');S.ofd.mode=m;if(m!=='forfait'&&m!=='forfaitplus'||S.ofd.lastMode==='horaire')S.ofd.p='';S.ofd.lastMode=m;paint()},
+ ofm(m){S.ofd.p=val('of_p');S.ofd.mode=m;if(m!=='forfait'&&m!=='forfaitplus'||S.ofd.lastMode==='horaire')S.ofd.p='';S.ofd.lastMode=m;if(S.ofd.p===''){S.fReset=true;S.f={}}paint()},
  ofgo(tid){const t=TH(tid);const o=S.ofd;o.p=num(val('of_p'));if(o.mode==='forfaitplus'){o.h=parseInt(val('of_h'))||0;o.ex=num(val('of_ex'))||0;if(!(o.h>0&&o.ex>0)){S.ofErr='Indiquez les heures incluses et le tarif au-delà.';paint();return}}if(!(o.p>0)){S.ofErr='Indiquez un prix supérieur à 0 €.';paint();return}if(t.offers.some(x=>x.st==='accepte')){S.ofErr='Un tarif est déjà accepté : il est figé.';paint();return}
   t.offers.forEach(x=>{if(x.st==='attente')x.st='remplace'});const off={by:sideKey(),mode:o.mode,p:o.p,h:o.h,ex:o.ex,st:'attente'};t.offers.push(off);const ot=other();t.unread[ot]=(t.unread[ot]||0)+1;t.at='à l\'instant';if(S.role==='pro'&&t.req)sentUp(t,off);S.ofd=null;done(S.role,['messages','chat'],t.id);toast('Proposition envoyée : '+offerTxt(off))},
  oacc(tid,i,fromProps){const t=TH(tid);const o=t.offers[+i];if(!o||o.st!=='attente'||o.by===sideKey())return;o.st='accepte';t.offers.forEach(x=>{if(x.st==='attente')x.st='remplace'});const m=missionFromThread(t,o);pushMsg(t,'sys','Tarif accepté : '+offerTxt(o)+'. Il est figé.');if(fromProps){done('client',['missions','chat'],t.id)}else paint();toast('Tarif accepté : il est figé. '+(S.role==='client'?'Fixez le rendez-vous.':'Le client fixe le rendez-vous.'))},
@@ -1158,7 +1158,7 @@ const ACT={
  svcnew(){S.edit={id:0,n:'',s:skills(MEP())[0]||'menage',mode:'forfait',p:'',vis:true};go('svcedit')},
  svcedit(id){const x=findSvc(id);S.edit=Object.assign({},x);go('svcedit')},
  svcvis(id){const x=findSvc(id);x.vis=!x.vis;S.pfsel=null;paint();toast(x.vis?'« '+x.n+' » est visible':'« '+x.n+' » est masquée aux clients')},
- svctpl(k,i){readEdit();const t=TPL[k][+i];Object.assign(S.edit,{n:t[0],s:k,mode:t[1],p:t[2]||''});S.f={};paint()},
+ svctpl(k,i){readEdit();const t=TPL[k][+i];Object.assign(S.edit,{n:t[0],s:k,mode:t[1],p:t[2]||''});S.f={};S.fReset=true;paint()},
  semet(){readEdit();const c=catOf(S.edit.s);if(!c.modes.concat('devis').includes(S.edit.mode))S.edit.mode=c.modes[0];paint()},
  semode(m){readEdit();S.edit.mode=m;paint()},sevis(){readEdit();S.edit.vis=!S.edit.vis;paint()},
  svcsave(){readEdit();const e=S.edit;const pr=num(e.p);if(!String(e.n).trim()){S.seErr='Donnez un nom à la prestation.';paint();return}if(e.mode!=='devis'&&!(pr>0)){S.seErr='Indiquez un prix supérieur à 0 € (virgule acceptée).';paint();return}e.p=e.mode==='devis'?0:Math.round(pr*100)/100;const p=MEP();if(e.id){Object.assign(findSvc(e.id),e)}else{p.svcs.push(sv(e.n,e.s,e.mode,e.p,e.vis))}S.pfsel=null;S.edit=null;done('pro',['pprofile','services']);toast('Prestation enregistrée : '+e.n+(e.mode==='devis'?' (sur devis)':' · '+modeLabel(e)))},
@@ -1392,6 +1392,52 @@ QC.push(
  ['Admin','Campagnes et QR','Chiffres codés en dur, QR vers un autre domaine.','Liens /l/ réels ou étiquette « exemple ».','admin','a_home','P0','prod'],
  ['Transversal','Accessibilité','Zoom bloqué, contrastes faibles.','Réglages dans le code de l\'app.','client','map','P1','prod'],
  ['Transversal','Droits','Règles d\'accès à vérifier en base (litiges, profils).','Contrôle en base (accès Supabase requis).','admin','a_disp','P1','prod']
+);
+QC.push(
+ ['Design v5','Toute la maquette','Autre système visuel que l\'app : jetons, gris, bouton vert foncé, thème sombre dans le téléphone.','Jetons de l\'app (teal #12B39C, navy, gris #E7EDEB / #EEF2F1 / #6E8592), Quicksand + Inter, téléphone toujours clair.','client','map','P0',''],
+ ['Design v5','En-têtes','Un seul en-tête transparent.','Trois gabarits de l\'app : barre de carte 56 px (menu, logo ping, pastille de mode, cloche), en-tête navy 62 px, barre blanche.','client','messages','P0',''],
+ ['Design v5','Menu','Aucun menu burger.','Menu latéral à 4 entrées + Support PING + carte navy de bascule ; côté pro, interrupteur Disponible.','pro','pmap','P0',''],
+ ['Design v5','Carte','Épingles en pastille blanche avec « vérifié ».','Gouttes 40 px teal (prestataire) / or ou orange (demande), étiquette de prix navy ; recherche, puces, zoom, bouton PING, « Déposer une demande » navy, recentrer.','client','map','P0',''],
+ ['Design v5','Avatars, bulles, devis','Avatars ronds, bulles teal, devis gris.','Avatars carrés arrondis en dégradé, bulles navy, carte de devis bordée teal, barre de saisie de l\'app.','client','chat','P0',''],
+ ['Design v5','Connexion et inscription','Page ordinaire.','Fond navy, carte blanche rayon 24, libellés majuscules, « Étape 1 sur 2 », afficher le mot de passe.','public','login','P0',''],
+ ['Design v5','Listes et titres','Rangées et intitulés différents de l\'app.','Listes Hub (titres de groupe, carrés d\'icône 34 px, chevron ›) ; Agenda, Mon entreprise, Mes tarifs, Profil du pro, Contacter.','pro','pprofile','P1',''],
+ ['Design v5','Police des titres','Quicksand jamais chargée en production (nom littéral, @import supprimé).','À corriger dans l\'app : lien Google Fonts dans layout.tsx et --fh:var(--font-quicksand),\'Quicksand\'.','client','map','P0','prod'],
+ ['Design v5','Admin sur ordinateur','Téléphone de 275 px, texte d\'environ 8 px.','Cadre large avec barre latérale au-delà de 1 100 px ; téléphone jamais sous 85 %.','admin','a_home','P1',''],
+ ['Prestataire v5','Mes tarifs','Modifier un service affichait et enregistrait un autre service.','Saisies vidées à chaque changement d\'écran ; formulaire rempli depuis la prestation.','pro','services','P0',''],
+ ['Prestataire v5','Création de l\'activité','Métiers choisis ignorés ; ni nom ni téléphone contrôlés ; pièce envoyée = sortie de l\'assistant.','Modèles des métiers choisis, nom, SIRET 14 chiffres, téléphone et adresse obligatoires, retour à l\'étape 4.','pro','pwiz','P0',''],
+ ['Prestataire v5','Profil envoyé','« Vérifiée par PING » sur un compte neuf.','« Fait » pour le compte et l\'activité, pièce « À ajouter » ou « En contrôle » ; compte neuf à 0 avis.','pro','attente','P0',''],
+ ['Prestataire v5','Carte client','Service ajouté introuvable ; Hors ligne restait visible.','Métiers tirés des prestations visibles ; Hors ligne retire de la carte.','client','map','P0',''],
+ ['Prestataire v5','Statut particulier','SIRET affiché et facture émise pour un particulier.','Pas de SIRET ; « Récapitulatif » au lieu de facture ; SIRET propre à chaque prestataire.','client','invoice','P0',''],
+ ['Prestataire v5','Réservation','Plantage sans service réservable ; panier/fenêtre/m² vus comme un tarif horaire.','« Travaille sur devis » + Contacter ; quantité demandée et total calculé.','client','book','P0',''],
+ ['Prestataire v5','Tarif horaire','Taux horaire figé comme un forfait ; durée de 3 h inventée.','Mission horaire facturée au scan de fin ; « Vous percevez X € par heure » ; prix vidé au changement de mode.','pro','offer','P0',''],
+ ['Prestataire v5','Heure entamée','« 4 h facturées » sur un forfait ; facture non recalculée.','Forfait jamais ajusté ; horaire et forfait + heures sup recalculés avec le seuil réglable.','pro','mission','P0',''],
+ ['Prestataire v5','Factures et revenus','Factures et revenus d\'un autre prestataire.','Factures filtrées par émetteur ; revenus Facturé / Reçu / Commissions calculés.','pro','revenus','P0',''],
+ ['Prestataire v5','Conversations','Une seule conversation pour tout le monde.','Une conversation par interlocuteur et par demande, avec ses devis et son rendez-vous.','pro','messages','P0',''],
+ ['Prestataire v5','Demande','Même détail pour toutes les demandes.','Surface, pièces, linge, fréquence, foyer, paiement propres à chaque demande.','pro','preq','P0',''],
+ ['Prestataire v5','Suivi de mission','Adresse non validée affichée en entier.','Adresse masquée tant qu\'elle est à valider ; « Valider l\'adresse » remplace « Je pars ».','pro','mission','P0',''],
+ ['Prestataire v5','Annulation','Frais annoncés puis « sans frais » ; mission toujours active.','Frais calculés avant remise à zéro ; statut « Annulée » rangé dans Terminées.','client','cancel','P0',''],
+ ['Prestataire v5','Visibilité d\'un nouveau','Option sans effet sur le vrai prestataire.','Appliquée à tous ; 3e option « visible, réservable après contrôle » par défaut.','client','map','P0',''],
+ ['Prestataire v5','Message temporaire','Bloquait le bouton retour 2,6 s.','En bas de l\'écran, sans capter les appuis.','client','map','P1',''],
+ ['Prestataire v5','Commissions','Taux écrits en dur.','Taux lus dans l\'admin et figés sur la mission à la confirmation.','admin','a_money','P1',''],
+ ['Prestataire v5','Pièces','Motif de refus invisible ; URSSAF absente de la fiche ; dommages-ouvrage proposée.','« Refusée : motif » + renvoyer ; URSSAF validée affichée ; décennale seulement pour le bâtiment, dommages-ouvrage retirée.','pro','pprofile','P1',''],
+ ['Prestataire v5','Créneaux et agenda','Créneaux sans lien avec Mes disponibilités ; agenda sans la vraie date.','Créneaux tirés des disponibilités ; Confirmer bloqué sans créneau ; agenda à la date du rendez-vous, avec l\'interlocuteur.','client','book','P1',''],
+ ['Prestataire v5','Demandes','Demande du client absente chez le prestataire ; pas de trace en mode Contacter ; nom de mission forcé.','Demande publiée visible sur la carte pro ; « Propositions envoyées » ; mission au titre de la demande.','pro','pmap','P1',''],
+ ['Prestataire v5','Ma fiche publique','On pouvait se réserver soi-même et feuilleter les concurrents.','Aperçu seul, sans réservation ni précédent / suivant.','pro','procard','P1',''],
+ ['Prestataire v5','Virement reçu','Le prestataire ne pouvait pas noter « reçu ».','« J\'ai reçu le virement » sur la facture et dans Paiements.','pro','pay','P1',''],
+ ['Prestataire v5','Navigation','Retour vers l\'accueil public après l\'inscription ; Agenda qui ouvrait « Missions ».','Historique vidé à l\'entrée dans l\'espace ; Agenda ouvre sur la mission du jour.','pro','missions','P1',''],
+ ['Prestataire v5','Client absent','Code « 000000 » accepté, photo facultative.','Code comparé à celui de la mission ; photo prise avant de valider ; mode d\'arrivée affiché.','pro','absent','P2',''],
+ ['Client v5','Sélecteur de services','Compteurs faux ; « Ménage + Vitres » se comportait comme un « ou ».','Compteurs sur les profils visibles ; d\'abord ceux qui font tout, puis « Font une partie de vos choix ».','client','map','P0',''],
+ ['Client v5','Fiche et avis','« Écrire » ouvrait la conversation d\'un autre ; 5 étoiles partout.','Conversation du prestataire choisi ; vraie note de chaque avis.','client','procard','P0',''],
+ ['Client v5','Factures','Facture d\'un autre client chez Marie ; avis visant Amélie depuis n\'importe quelle facture.','Factures filtrées par client ; avis rattaché à la mission, sans toucher à son étape.','client','invoice','P0',''],
+ ['Client v5','Propositions','Accepter effaçait toutes les demandes ; propositions sans lien avec la demande.','Propositions de la demande seulement ; accepter ne ferme que celle-ci et ouvre « Fixez le rendez-vous ».','client','props','P0',''],
+ ['Client v5','Litiges','Signaler ouvrait un autre litige ; litige clos toujours « ouvert ».','Dossier créé pour la mission ; statut lu partout (accueil admin, liste, Agenda) ; auteur et heure sur chaque message.','client','dispute','P0',''],
+ ['Client v5','Virements','Statuts faux, frais jamais demandés au client.','Un virement par document (prestation, frais, commission) : à payer, annoncé, reçu, vu par le client, le prestataire et l\'admin.','client','pay','P0',''],
+ ['Client v5','Vocabulaire','« Versement bloqué » (séquestre) ; « Identité vérifiée » et « confirmé par SMS » pour tous.','« La facture reste en attente de règlement » ; « contrôlée par PING » seulement après validation ; « Téléphone renseigné ».','client','onb','P1',''],
+ ['Client v5','Admin','Chiffres et personnes sans rapport avec les espaces ; « Voir comme » qui écrivait.','Annonces, personnes et chiffres calculés sur les mêmes données ; « Voir comme » en lecture seule.','admin','a_home','P1',''],
+ ['Client v5','Bascule de mode','Marie devenait Amélie R.','Un compte sans activité ouvre la création d\'activité.','client','profile','P1',''],
+ ['Client v5','Position et connexion','« Choisir une ville » ne demandait rien ; connexion sans contrôle.','Écran ville vérifié ; e-mail et mot de passe contrôlés, ouverture du dernier espace utilisé.','public','city','P1',''],
+ ['Client v5','Pictogrammes','Crayon pour le ménage, appareil photo pour le repassage.','Seau pour le ménage, fer à repasser pour le repassage.','client','reqnew','P1',''],
+ ['Client v5','Catalogue','Service activé sans prestataire ; phrase d\'accueil figée.','« Visible, 0 prestataire » à l\'activation ; phrase d\'accueil tirée du catalogue.','admin','a_catalog','P1','']
 );
 
 const v0=Object.keys(VIEWS).find(k=>'#'+VIEWS[k]===location.hash)||'client';showView(v0);

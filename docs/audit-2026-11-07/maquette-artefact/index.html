@@ -1031,7 +1031,7 @@ function paint(){
  const vh=view.clientHeight||700;SH.half=Math.round(Math.min(380,vh*.46));SH.full=Math.max(SH.half+60,vh-70);
  if(S.role==='pro'&&!MEP()&&!['pwiz','idcap'].includes(cur()))S.stack=['pwiz'];
  const n=cur();const key=n+'|'+S.arg+'|'+S.role;const old=view.querySelector('.page');
- if(old&&old.dataset.k===key)view.querySelectorAll('input[id],textarea[id],select[id]').forEach(e=>{if(e.type!=='checkbox')S.f[e.id]=e.value});else S.f={};
+ if(old&&old.dataset.k===key&&!S.fReset)view.querySelectorAll('input[id],textarea[id],select[id]').forEach(e=>{if(e.type!=='checkbox')S.f[e.id]=e.value});else S.f={};S.fReset=false;
  const keep=old&&old.dataset.k===key?old.scrollTop:0;
  const ro=S.asAdmin&&S.role!=='admin';
  view.innerHTML=(ro?`<div class="ro"><span style="flex:1">Lecture seule : vous voyez ce que voit ${S.role==='pro'?'Amélie R. (prestataire)':'Marie D. (cliente)'}</span><button data-a="backadmin">Revenir à l'admin</button></div>`:'')+render(n)+(S.drawer?drawer():'');
@@ -1134,7 +1134,7 @@ const ACT={
  asview(r){S.asAdmin=true;S.hist=[];S.role=r;S.acc=r==='pro'?'amelie':'marie';S.stack=[TABS[r][0][0]];S.sel=null;S.sheet=r==='pro'?'half':'peek';paint()},
  backadmin(){S.asAdmin=false;S.hist=[];S.role='admin';S.stack=['a_home'];paint()},
  rate2(k,d){S[k]=Math.max(0,Math.min(40,S[k]+(+d)));paint()},thr(d){S.thr=Math.max(0,Math.min(30,S.thr+(+d)));paint()},
- ofm(m){S.ofd.p=val('of_p');S.ofd.mode=m;if(m!=='forfait'&&m!=='forfaitplus'||S.ofd.lastMode==='horaire')S.ofd.p='';S.ofd.lastMode=m;paint()},
+ ofm(m){S.ofd.p=val('of_p');S.ofd.mode=m;if(m!=='forfait'&&m!=='forfaitplus'||S.ofd.lastMode==='horaire')S.ofd.p='';S.ofd.lastMode=m;if(S.ofd.p===''){S.fReset=true;S.f={}}paint()},
  ofgo(tid){const t=TH(tid);const o=S.ofd;o.p=num(val('of_p'));if(o.mode==='forfaitplus'){o.h=parseInt(val('of_h'))||0;o.ex=num(val('of_ex'))||0;if(!(o.h>0&&o.ex>0)){S.ofErr='Indiquez les heures incluses et le tarif au-delà.';paint();return}}if(!(o.p>0)){S.ofErr='Indiquez un prix supérieur à 0 €.';paint();return}if(t.offers.some(x=>x.st==='accepte')){S.ofErr='Un tarif est déjà accepté : il est figé.';paint();return}
   t.offers.forEach(x=>{if(x.st==='attente')x.st='remplace'});const off={by:sideKey(),mode:o.mode,p:o.p,h:o.h,ex:o.ex,st:'attente'};t.offers.push(off);const ot=other();t.unread[ot]=(t.unread[ot]||0)+1;t.at='à l\'instant';if(S.role==='pro'&&t.req)sentUp(t,off);S.ofd=null;done(S.role,['messages','chat'],t.id);toast('Proposition envoyée : '+offerTxt(off))},
  oacc(tid,i,fromProps){const t=TH(tid);const o=t.offers[+i];if(!o||o.st!=='attente'||o.by===sideKey())return;o.st='accepte';t.offers.forEach(x=>{if(x.st==='attente')x.st='remplace'});const m=missionFromThread(t,o);pushMsg(t,'sys','Tarif accepté : '+offerTxt(o)+'. Il est figé.');if(fromProps){done('client',['missions','chat'],t.id)}else paint();toast('Tarif accepté : il est figé. '+(S.role==='client'?'Fixez le rendez-vous.':'Le client fixe le rendez-vous.'))},
@@ -1158,7 +1158,7 @@ const ACT={
  svcnew(){S.edit={id:0,n:'',s:skills(MEP())[0]||'menage',mode:'forfait',p:'',vis:true};go('svcedit')},
  svcedit(id){const x=findSvc(id);S.edit=Object.assign({},x);go('svcedit')},
  svcvis(id){const x=findSvc(id);x.vis=!x.vis;S.pfsel=null;paint();toast(x.vis?'« '+x.n+' » est visible':'« '+x.n+' » est masquée aux clients')},
- svctpl(k,i){readEdit();const t=TPL[k][+i];Object.assign(S.edit,{n:t[0],s:k,mode:t[1],p:t[2]||''});S.f={};paint()},
+ svctpl(k,i){readEdit();const t=TPL[k][+i];Object.assign(S.edit,{n:t[0],s:k,mode:t[1],p:t[2]||''});S.f={};S.fReset=true;paint()},
  semet(){readEdit();const c=catOf(S.edit.s);if(!c.modes.concat('devis').includes(S.edit.mode))S.edit.mode=c.modes[0];paint()},
  semode(m){readEdit();S.edit.mode=m;paint()},sevis(){readEdit();S.edit.vis=!S.edit.vis;paint()},
  svcsave(){readEdit();const e=S.edit;const pr=num(e.p);if(!String(e.n).trim()){S.seErr='Donnez un nom à la prestation.';paint();return}if(e.mode!=='devis'&&!(pr>0)){S.seErr='Indiquez un prix supérieur à 0 € (virgule acceptée).';paint();return}e.p=e.mode==='devis'?0:Math.round(pr*100)/100;const p=MEP();if(e.id){Object.assign(findSvc(e.id),e)}else{p.svcs.push(sv(e.n,e.s,e.mode,e.p,e.vis))}S.pfsel=null;S.edit=null;done('pro',['pprofile','services']);toast('Prestation enregistrée : '+e.n+(e.mode==='devis'?' (sur devis)':' · '+modeLabel(e)))},
