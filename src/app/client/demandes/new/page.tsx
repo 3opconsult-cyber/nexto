@@ -275,7 +275,7 @@ export default function NewOpenRequestPage() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {PAYMENTS.map(p => <button key={p.key} type="button" onClick={() => setPayment(p.key)} style={chip(payment === p.key)}>{p.label}</button>)}
           </div>
-          <p style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8 }}>Le paiement en CESU dépend du prestataire : il l’indique dans sa proposition.</p>
+          <p style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8 }}>Le paiement en CESU préfinancé (titres remis par un employeur ou un comité d’entreprise) dépend du prestataire : il l’indique dans sa proposition.</p>
         </Section>
 
         <Section title="Adresse d’intervention" hint="Communiquée au prestataire seulement une fois la mission confirmée. Les prestataires voient seulement la distance.">

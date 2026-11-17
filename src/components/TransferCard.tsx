@@ -95,7 +95,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
         {iban ? <Line label="IBAN" value={formatIban(iban)} copy /> : (
           <p style={{ fontSize: 12, color: '#8A6520', background: 'rgba(242,169,59,.12)', borderRadius: 9, padding: '8px 10px', margin: '4px 0', lineHeight: 1.5 }}>
             {toPro
-              ? 'Le prestataire n’a pas encore renseigné son IBAN. Demandez-le-lui dans la conversation, ou réglez-le directement (CESU, espèces) : il le notera reçu.'
+              ? 'Le prestataire n’a pas encore renseigné son IBAN. Demandez-le-lui dans la conversation, ou réglez-le directement (chèque, CESU préfinancé s’il l’accepte) : il le notera reçu. Un paiement en espèces n’ouvre pas droit au crédit d’impôt.'
               : 'Les coordonnées bancaires de PING vous seront communiquées très prochainement.'}
           </p>
         )}
@@ -146,7 +146,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
               <div style={{ fontSize: 11.5, color: C.slate, margin: '4px 0 8px', lineHeight: 1.5 }}>
                 {t.status === 'recu' ? `Noté reçu le ${dateFr(t.received_at || t.created_at)}.`
                   : t.status === 'declare_paye' ? `Le client a annoncé son virement le ${dateFr(t.declared_at || t.created_at)}. Notez-le reçu dès qu’il apparaît sur votre compte.`
-                  : 'Le client règle par virement sur votre IBAN (Mon entreprise, Paiements), ou directement (CESU, espèces).'}
+                  : 'Le client règle par virement sur votre IBAN (Mon entreprise, Paiements), ou directement (chèque, CESU préfinancé si vous l’acceptez).'}
               </div>
               {t.status !== 'recu' && (
                 <button type="button" disabled={busy === t.id} onClick={() => setStatus(t, 'recu')} style={{ ...btn(true), opacity: busy === t.id ? .6 : 1 }}>Je l’ai reçu</button>

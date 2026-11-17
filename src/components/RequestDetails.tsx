@@ -26,7 +26,7 @@ export const LINEN_TYPES = [
 ]
 export const LINEN_LABEL: Record<string, string> = Object.fromEntries(LINEN_TYPES.map(l => [l.key, l.label]))
 export const PAYMENTS = [
-  { key: 'cesu', label: 'CESU' }, { key: 'direct', label: 'Paiement direct' }, { key: 'indifferent', label: 'Indifférent' },
+  { key: 'cesu', label: 'CESU préfinancé' }, { key: 'direct', label: 'Paiement direct' }, { key: 'indifferent', label: 'Indifférent' },
 ]
 export const PAYMENT_LABEL: Record<string, string> = Object.fromEntries(PAYMENTS.map(p => [p.key, p.label]))
 
