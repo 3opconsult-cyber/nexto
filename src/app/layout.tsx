@@ -53,6 +53,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
+      <head>
+        {/* Familles littérales 'Quicksand' / 'Inter' utilisées par ping-ui.css et les styles en ligne
+            (next/font les expose sous un nom interne, et l'@import de ping-ui.css est retiré au build). */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+        />
+      </head>
       <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`} style={{ background: '#DCE5E3' }}>
         <PageViewTracker />
         <ChunkReload />
