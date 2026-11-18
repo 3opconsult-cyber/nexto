@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, hasServiceRole } from '@/lib/supabase/admin'
 import { isConfigured, rechercherDemandes, transmettreDemande, UrssafError } from '@/lib/urssaf/avanceImmediate'
 import { isEligible, partClientCents } from '@/lib/creditImpot'
 
 export const dynamic = 'force-dynamic'
 
 const day = (iso: string) => iso.slice(0, 10)
+
+// Écriture du statut (migration 046) : seul le serveur (clé service) ou un admin écrit dans
+// avance_immediate_demandes. Les droits du prestataire ont déjà été vérifiés avec SA session (RLS)
+// avant d'arriver ici. Sans clé service, on garde la session (ne marche plus qu'avant la 046).
+function writer(fallback: Awaited<ReturnType<typeof createClient>>) {
+  return hasServiceRole() ? createAdminClient() : fallback
+}
 
 // POST { transactionId } : le prestataire transmet à l'Urssaf la demande de paiement d'une mission
 // terminée. L'Urssaf demande ensuite au client de la valider (48 h) puis prélève sa part.
@@ -45,7 +53,7 @@ export async function POST(req: Request) {
       unite: hourly ? 'HEURE' : 'FORFAIT',
       montantTtcCents: total,
     })
-    await supabase.from('avance_immediate_demandes').upsert({
+    await writer(supabase).from('avance_immediate_demandes').upsert({
       transaction_id: tx.id, id_demande_paiement: r.idDemandePaiement, statut: r.statut || 'transmise',
       montant_cents: total, part_client_cents: partClientCents(total), message: null, updated_at: new Date().toISOString(),
     })
@@ -67,7 +75,7 @@ export async function GET(req: Request) {
     const res = await rechercherDemandes([row.id_demande_paiement]) as { infoDemandePaiements?: Array<{ statut?: { code?: string } }> }
     const statut = res?.infoDemandePaiements?.[0]?.statut?.code
     if (statut && statut !== row.statut) {
-      await supabase.from('avance_immediate_demandes').update({ statut, updated_at: new Date().toISOString() }).eq('transaction_id', id)
+      await writer(supabase).from('avance_immediate_demandes').update({ statut, updated_at: new Date().toISOString() }).eq('transaction_id', id)
       row.statut = statut
     }
   } catch { /* on renvoie le dernier statut connu */ }

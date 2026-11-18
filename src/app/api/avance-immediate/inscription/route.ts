@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, hasServiceRole } from '@/lib/supabase/admin'
 import { inscrireParticulier, isConfigured, UrssafError, type Particulier } from '@/lib/urssaf/avanceImmediate'
 
 export const dynamic = 'force-dynamic'
@@ -19,16 +20,19 @@ export async function POST(req: Request) {
   const missing = body ? REQUIRED.filter(k => !body[k]) : REQUIRED
   if (missing.length) return NextResponse.json({ error: 'Champs manquants.', champs: missing }, { status: 400 })
 
+  // Statut d'inscription (migration 046) : écrit par le serveur seul (clé service), jamais par le client.
+  // Sans clé service, on garde la session (ne marche plus qu'avant la 046).
+  const db = hasServiceRole() ? createAdminClient() : supabase
   try {
     const { idClient } = await inscrireParticulier(body!)
-    await supabase.from('avance_immediate_clients').upsert({
+    await db.from('avance_immediate_clients').upsert({
       user_id: user.id, urssaf_id_client: idClient, date_naissance: body!.dateNaissance,
       statut: 'inscrit', message: null, updated_at: new Date().toISOString(),
     })
     return NextResponse.json({ statut: 'inscrit' })
   } catch (e) {
     const err = e as UrssafError
-    await supabase.from('avance_immediate_clients').upsert({
+    await db.from('avance_immediate_clients').upsert({
       user_id: user.id, statut: 'refuse', message: err.message, updated_at: new Date().toISOString(),
     })
     return NextResponse.json({ error: err.message, details: err.details ?? null }, { status: err.status && err.status < 500 ? 422 : 502 })

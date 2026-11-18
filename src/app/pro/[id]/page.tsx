@@ -30,8 +30,9 @@ export default function ProDetailPage() {
   const [uid, setUid] = useState<string | null>(null)
   const [fav, setFav] = useState(false)
   const [favBusy, setFavBusy] = useState(false)
-  // Pièces contrôlées par PING (RPC de la migration 039) : undefined tant qu'elle n'est pas appliquée.
+  // Pièces contrôlées par PING (RPC des migrations 039 / 042) : undefined tant qu'elles ne sont pas appliquées.
   const [docsChecked, setDocsChecked] = useState<boolean | undefined>(undefined)
+  const [rcproChecked, setRcproChecked] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
     let cancelled = false
@@ -39,7 +40,7 @@ export default function ProDetailPage() {
       if (cancelled) return
       setPro(pro); setReviews(reviews); setLoading(false)
     })
-    fetchProviderFlags([proId]).then(f => { if (!cancelled) setDocsChecked(f[proId]?.checked) }).catch(() => { })
+    fetchProviderFlags([proId]).then(f => { if (!cancelled) { setDocsChecked(f[proId]?.checked); setRcproChecked(f[proId]?.rcproChecked) } }).catch(() => { })
     const supabase = createClient()
     // Prestations visibles seulement (les masquées restent dans « Mes tarifs » du prestataire).
     fetchPrestations(supabase, proId, { visibleOnly: true })
@@ -171,6 +172,11 @@ export default function ProDetailPage() {
         </div>
 
         <div style={{ padding: '2px 16px 14px' }}>
+          {/* Lot 21 : « Profil vérifié par PING » seulement si un admin a validé la pièce d'identité
+              (et qu'elle n'est pas expirée, migration 042) — exception de langage du 03/11. */}
+          {docsChecked === true && (
+            <div className="mq-tags"><span className="mq-tag"><Ic name="shield" size={12} />Profil vérifié par PING</span></div>
+          )}
           {docsChecked === false && (
             <div className="mq-tags"><span className="mq-tag warn">Nouveau · pièces en cours de contrôle</span></div>
           )}
@@ -224,7 +230,10 @@ export default function ProDetailPage() {
           {docsChecked !== true && pro.has_identity && (
             <div className={`mq-vr ${docsChecked === false ? 'w' : 'ok'}`}><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d&apos;identité</b><small>{docsChecked === false ? 'Envoyée, en contrôle par PING' : 'Déposée sur PING par le pro'}</small></span><span className="vs">{docsChecked === false ? 'En contrôle' : <><Ic name="check" size={11} />Fournie</>}</span></div>
           )}
-          {pro.has_rcpro && (
+          {rcproChecked === true && (
+            <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Attestation contrôlée par PING · transmise sur demande</small></span><span className="vs"><Ic name="check" size={11} />Validée</span></div>
+          )}
+          {rcproChecked !== true && pro.has_rcpro && (
             <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Renseignée par le pro (casse, dommage) · Attestation transmise sur demande</small></span><span className="vs"><Ic name="check" size={11} />Renseignée</span></div>
           )}
           {pro.sap_number && (

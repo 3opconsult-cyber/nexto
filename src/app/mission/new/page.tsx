@@ -202,39 +202,65 @@ function MissionForm() {
 
     // Coordonnées de l'adresse : servent au contrôle de vraisemblance du départ et au scan.
     const pos = await geocodeAddress(address.trim()).catch(() => null)
-    const { data: req, error: reqErr } = await supabase.from('requests').insert({
-      // description est NOT NULL en base : le champ est facultatif a l'ecran,
-      // "|| null" faisait donc echouer la reservation des que le client ne
-      // remplissait pas la description (jamais declenche par les tests, ou
-      // elle etait toujours remplie a la main).
-      requester_id: user.id, category: serviceTrade || pro.trade,
-      description: description.trim() || (article ? prestationName(article) : ''),
-      address: address.trim(), budget_cents: totalTtc, status: 'matched',
-      ...(payCesu && cesuOk ? { payment_pref: 'cesu' } : {}),
-      ...(pos ? { lat: pos.lat, lng: pos.lng } : {}),
-    }).select().single()
-    if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
-    if (chosenAddr.saveToProfile) await supabase.from('profiles').update({ address }).eq('id', user.id)
+    const desc = description.trim() || (article ? prestationName(article) : '')
+    // Réservation calculée en base (migration 045) : prix, frais et commission recalculés côté serveur
+    // depuis la fiche de prix et les taux de app_settings. Repli sur l'ancien chemin si la fonction manque.
+    let tx: { id: string } | null = null
+    const { data: booked, error: bookErr } = await supabase.rpc('book_service', {
+      p_provider: pro.id,
+      p_service: serviceId,
+      p_mode: mode,
+      p_estimated_hours: mode === 'horaire' && !hasOvertime ? Number(estimatedHours || 0) : null,
+      p_address: address.trim(),
+      p_address_status: chosenAddr.status,
+      p_scheduled_at: !needsSlot && wantedAt ? new Date(wantedAt).toISOString() : null,
+      p_description: desc,
+      p_lat: pos?.lat ?? null,
+      p_lng: pos?.lng ?? null,
+      p_payment_pref: payCesu && cesuOk ? 'cesu' : null,
+    })
+    if (!bookErr && booked && (booked as any).transaction_id) {
+      tx = { id: (booked as any).transaction_id as string }
+    } else if (bookErr && !missingRpc(bookErr)) {
+      // Refus explicite de la base (prestation masquée, sur devis, adresse…) : message en français.
+      setError(bookErr.message || 'Impossible de créer la réservation.'); setCreating(false); return
+    } else {
+      const { data: req, error: reqErr } = await supabase.from('requests').insert({
+        // description est NOT NULL en base : le champ est facultatif a l'ecran,
+        // "|| null" faisait donc echouer la reservation des que le client ne
+        // remplissait pas la description (jamais declenche par les tests, ou
+        // elle etait toujours remplie a la main).
+        requester_id: user.id, category: serviceTrade || pro.trade,
+        description: description.trim() || (article ? prestationName(article) : ''),
+        address: address.trim(), budget_cents: totalTtc, status: 'matched',
+        ...(payCesu && cesuOk ? { payment_pref: 'cesu' } : {}),
+        ...(pos ? { lat: pos.lat, lng: pos.lng } : {}),
+      }).select().single()
+      if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
 
-    // Relit les taux à l'instant T (pas le state React, qui peut dater de
-    // l'affichage initial) : la source de vérité au moment de l'écriture.
-    const liveRates = await getRates()
-    const liveBuyerFee = Math.round(subtotalCents * liveRates.buyer)
-    const sellerFee = Math.round(subtotalCents * liveRates.seller)
-    const liveTotalTtc = subtotalCents + liveBuyerFee
-    const { data: tx, error: txErr } = await supabase.from('transactions').insert({
-      kind: 'service', buyer_id: user.id, seller_id: pro.id, request_id: req.id,
-      subtotal_cents: subtotalCents, buyer_fee_cents: liveBuyerFee, seller_fee_cents: sellerFee,
-      total_charged_cents: liveTotalTtc, payout_cents: subtotalCents - sellerFee,
-      hourly_rate_cents: hasOvertime ? pricing.hourly_rate_cents : (mode === 'horaire' ? pricing.hourly_rate_cents : null),
-      included_hours: hasOvertime ? pricing.included_hours : null,
-      base_forfait_cents: hasOvertime ? pricing.base_price_cents : null,
-      status: 'pending',
-      price_confirmed: true,
-      address_status: chosenAddr.status,
-      ...(!needsSlot && wantedAt ? { scheduled_at: new Date(wantedAt).toISOString() } : {}),
-    }).select().single()
-    if (txErr || !tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
+      // Relit les taux à l'instant T (pas le state React, qui peut dater de
+      // l'affichage initial) : la source de vérité au moment de l'écriture.
+      const liveRates = await getRates()
+      const liveBuyerFee = Math.round(subtotalCents * liveRates.buyer)
+      const sellerFee = Math.round(subtotalCents * liveRates.seller)
+      const liveTotalTtc = subtotalCents + liveBuyerFee
+      const { data: txRow, error: txErr } = await supabase.from('transactions').insert({
+        kind: 'service', buyer_id: user.id, seller_id: pro.id, request_id: req.id,
+        subtotal_cents: subtotalCents, buyer_fee_cents: liveBuyerFee, seller_fee_cents: sellerFee,
+        total_charged_cents: liveTotalTtc, payout_cents: subtotalCents - sellerFee,
+        hourly_rate_cents: hasOvertime ? pricing.hourly_rate_cents : (mode === 'horaire' ? pricing.hourly_rate_cents : null),
+        included_hours: hasOvertime ? pricing.included_hours : null,
+        base_forfait_cents: hasOvertime ? pricing.base_price_cents : null,
+        status: 'pending',
+        price_confirmed: true,
+        address_status: chosenAddr.status,
+        ...(!needsSlot && wantedAt ? { scheduled_at: new Date(wantedAt).toISOString() } : {}),
+      }).select().single()
+      if (txErr || !txRow) { setError('Impossible de créer la réservation.'); setCreating(false); return }
+      tx = txRow
+    }
+    if (!tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
+    if (chosenAddr.saveToProfile) await supabase.from('profiles').update({ address }).eq('id', user.id)
 
     // Sans ça, le chat s'ouvrait totalement vide malgré un prix déjà validé
     // (règle suprême du tarif) — rien ne rappelait ce qui avait été réservé.
@@ -260,7 +286,12 @@ function MissionForm() {
         : `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
     })
 
-    // Conversations encore en négociation avec ce prestataire (« Contacter », devis en attente) :
+    // Fonction serveur absente (migration 045 pas encore collée) : PostgREST répond PGRST202, Postgres 42883.
+function missingRpc(e: { code?: string; message?: string } | null) {
+  return !!e && (e.code === 'PGRST202' || e.code === '42883' || /Could not find the function|function .* does not exist/i.test(e.message || ''))
+}
+
+// Conversations encore en négociation avec ce prestataire (« Contacter », devis en attente) :
     // la réservation à prix figé les remplace. Sans ça, un ancien devis restait « Accepter »
     // et l'accepter créait une deuxième mission confirmée chez le même pro (lot 1, constat n° 2).
     // Le client a le droit de refuser une proposition (comme declineOffer dans le chat).

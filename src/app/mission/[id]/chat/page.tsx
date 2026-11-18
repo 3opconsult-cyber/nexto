@@ -24,6 +24,7 @@ import { isTodayMission } from '@/lib/todayMission'
 import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import { INSURANCE_REQUEST_BODY, INSURANCE_SENT_PREFIX, INSURANCE_LINK_DAYS, isInsuranceRequest, isInsuranceSent, insuranceLink, signMyInsurance } from '@/lib/insurance'
 import { mentionsPrice } from '@/lib/priceMention'
+import { REPORT_CATEGORIES, reportsAvailable, createReport } from '@/lib/reports'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -88,6 +89,29 @@ export default function ChatPage() {
   useEffect(() => { getRates().then(setRates).catch(() => {}) }, [])
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({})
   const [reporting, setReporting] = useState(false)
+  // Lot 24 : « Signaler l'échange à PING » (privé, table reports, migration 043) distinct du litige.
+  // 'choix' tant que le signalement existe en base ; sinon on ouvre directement le litige, comme avant.
+  const [reportKind, setReportKind] = useState<'choix' | 'litige' | 'signalement'>('litige')
+  const [reportsOn, setReportsOn] = useState(false)
+  useEffect(() => { reportsAvailable(createClient()).then(setReportsOn).catch(() => {}) }, [])
+  const [sigCat, setSigCat] = useState('')
+  const [sigBody, setSigBody] = useState('')
+  const [sigBusy, setSigBusy] = useState(false)
+  const [sigErr, setSigErr] = useState('')
+  const [sigSent, setSigSent] = useState(false)
+  function openReporting() {
+    setReportKind(reportsOn ? 'choix' : 'litige'); setSigSent(false); setSigErr(''); setReporting(true)
+  }
+  async function submitSignalement() {
+    if (sigBusy) return
+    if (!sigCat) { setSigErr('Choisissez un motif.'); return }
+    if (!sigBody.trim()) { setSigErr('Décrivez ce qui s’est passé.'); return }
+    setSigBusy(true); setSigErr('')
+    const r = await createReport(createClient(), { transactionId, category: sigCat, body: sigBody })
+    setSigBusy(false)
+    if ('error' in r) { setSigErr(r.error); return }
+    setSigSent(true); setSigCat(''); setSigBody('')
+  }
   const [reportReason, setReportReason] = useState('')
   const [reportSent, setReportSent] = useState(false)
   const [askReview, setAskReview] = useState(false)
@@ -124,7 +148,7 @@ export default function ChatPage() {
     if (shortcutDone.current || !tx || !userId) return
     shortcutDone.current = true
     const q = new URLSearchParams(window.location.search)
-    if (q.has('signaler')) setReporting(true)
+    if (q.has('signaler')) { setReportKind('litige'); setReporting(true) }
     if (q.has('avis') && userId === tx.buyer_id && tx.completed_at) setAskReview(true)
     // ?devis=<prestation> (« Demander un devis » sur la fiche ou à la réservation) : message prérempli,
     // envoyé par le client lui-même, tant que le tarif n'est pas validé.
@@ -579,7 +603,7 @@ export default function ChatPage() {
             {EUR(tx.subtotal_cents)}{tx.price_confirmed ? '' : ' · à valider'}
           </span>
         )}
-        <button onClick={() => setReporting(true)} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0, cursor: 'pointer' }}>
+        <button onClick={openReporting} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0, cursor: 'pointer' }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
         </button>
       </div>
@@ -752,7 +776,47 @@ export default function ChatPage() {
       {reporting && (
         <div onClick={() => setReporting(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20, maxHeight: '92vh', overflowY: 'auto' }}>
-            {reportSent ? (
+            {reportKind === 'choix' ? (
+              <>
+                <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler</h3>
+                <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Que souhaitez-vous faire ?</p>
+                <button type="button" onClick={() => setReportKind('signalement')} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: 14, border: '1px solid #DCE5E3', background: '#fff', marginBottom: 10, cursor: 'pointer' }}>
+                  <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 14.5, color: '#123644' }}>Signaler l&apos;échange à PING</b>
+                  <span style={{ display: 'block', fontSize: 12.5, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>Propos déplacés, coordonnées partagées, demande suspecte. Privé : seul PING le lit, l&apos;autre personne n&apos;est pas prévenue.</span>
+                </button>
+                <button type="button" onClick={() => setReportKind('litige')} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: 14, border: '1px solid #DCE5E3', background: '#fff', marginBottom: 6, cursor: 'pointer' }}>
+                  <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 14.5, color: '#123644' }}>Ouvrir un litige sur la prestation</b>
+                  <span style={{ display: 'block', fontSize: 12.5, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>Prestation non réalisée, qualité, retard, montant. Visible des deux parties, qui ont 48 h pour répondre.</span>
+                </button>
+              </>
+            ) : reportKind === 'signalement' ? (
+              sigSent ? (
+                <>
+                  <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 6 }}>Signalement transmis</h3>
+                  <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14, lineHeight: 1.5 }}>Merci. L&apos;équipe PING l&apos;examine ; l&apos;autre personne n&apos;en est pas informée. Si la prestation elle-même pose problème, vous pouvez aussi ouvrir un litige.</p>
+                  <button onClick={() => { setReporting(false); setSigSent(false) }} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Fermer</button>
+                </>
+              ) : (
+                <>
+                  <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler l&apos;échange à PING</h3>
+                  <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 12 }}>Privé : seul PING lit ce signalement.</p>
+                  <label htmlFor="sig-cat" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Motif</label>
+                  <select id="sig-cat" value={sigCat} onChange={e => { setSigCat(e.target.value); setSigErr('') }}
+                    style={{ width: '100%', padding: '12px 12px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, background: '#fff', fontFamily: 'inherit' }}>
+                    <option value="">Choisir…</option>
+                    {REPORT_CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                  </select>
+                  <label htmlFor="sig-body" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Ce qui s&apos;est passé</label>
+                  <textarea id="sig-body" value={sigBody} onChange={e => { setSigBody(e.target.value); setSigErr('') }} rows={4} maxLength={2000}
+                    style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 12, fontFamily: 'inherit' }} />
+                  {sigErr && <p role="alert" style={{ color: '#c0503a', fontSize: 12, margin: '-4px 0 10px' }}>{sigErr}</p>}
+                  <button onClick={submitSignalement} disabled={sigBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: sigBusy ? .6 : 1 }}>
+                    {sigBusy ? 'Envoi…' : 'Envoyer à PING'}
+                  </button>
+                  <button type="button" onClick={() => setReportKind('choix')} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Retour</button>
+                </>
+              )
+            ) : reportSent ? (
               <>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 6 }}>Litige ouvert</h3>
                 <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>C'est publié dans la conversation et visible dans "Litiges" pour les deux parties.</p>
@@ -769,6 +833,9 @@ export default function ChatPage() {
                 <button onClick={submitReport} disabled={reportBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: reportBusy ? .6 : 1 }}>
                   {reportBusy ? 'Envoi…' : 'Ouvrir le litige'}
                 </button>
+                {reportsOn && (
+                  <button type="button" onClick={() => setReportKind('choix')} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Retour</button>
+                )}
               </>
             )}
           </div>

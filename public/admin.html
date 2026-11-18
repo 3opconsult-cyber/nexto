@@ -953,14 +953,14 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
             <tr><td>Justificatif de domicile</td><td>Recommandé &lt; 3 mois à la soumission</td><td>Fraîcheur du document</td></tr>
             <tr><td>RIB</td><td>Pas d'expiration</td><td>Recontrôlé uniquement si changement de compte</td></tr>
           </table>
-          <p class="note">Durées indicatives — à confirmer avec un juriste avant mise en production. Seuls l'assurance RC et l'assurance complémentaire ont une échéance calculable dans ce prototype (`insExpiry` par entité) ; les autres nécessitent un champ de date saisi à l'upload, prévu au lot L7.</p>
+          <p class="note">Durées indicatives — à confirmer avec un juriste avant mise en production. L'échéance de chaque pièce est saisie par PING à la validation (date écrite sur la pièce, migration 042) : le prestataire est alerté dans Mes pièces et Mon entreprise, et la liste ci-dessous se remplit 45 jours avant.</p>
         </div>
 
         <div class="card mt" id="expiryAlertsCard"><h3>À renouveler bientôt <span class="muted" id="expiryCount"></span></h3>
           <table class="tbl"><tr><th>Prestataire</th><th>Document</th><th>Échéance</th><th>Délai</th><th></th></tr>
             <tbody id="expiryRows"></tbody>
           </table>
-          <p class="note">Alimentée par les dates d'expiration d'assurance renseignées par les prestataires, quand elles existent.</p>
+          <p class="note">Alimentée par les dates d'expiration saisies à la validation des pièces. Cliquer une ligne rouvre la pièce ; « Relancer » écrit au prestataire dans sa messagerie Support PING.</p>
         </div>
 
         <div class="card mt" id="docsQueueCard"><h3>Pièces à valider <span class="muted" id="docsQueueN"></span></h3>
@@ -995,13 +995,20 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
 
       <section class="section" id="s_signalements">
         <div class="grid k3">
-          <div class="kpi"><div class="l">Signalements ouverts</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
-          <div class="kpi"><div class="l">Examinés sous délai</div><div class="v">—</div><div class="d">objectif interne : 5 j</div></div>
-          <div class="kpi"><div class="l">Mesures prises (30 j)</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
+          <div class="kpi"><div class="l">Signalements à traiter</div><div class="v" id="repOpen">—</div><div class="d" id="repOpenD">nouveaux, pas encore classés</div></div>
+          <div class="kpi"><div class="l">Examinés sous délai</div><div class="v" id="repOnTime">—</div><div class="d">objectif interne : 5 j</div></div>
+          <div class="kpi"><div class="l">Mesures prises (30 j)</div><div class="v" id="repMeasures">—</div><div class="d">avertissements et blocages</div></div>
         </div>
 
-        <div class="card mt"><h3>Fil des signalements <span class="muted">sur signalement uniquement — pas de modération préalable</span></h3>
-          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
+        <div class="card mt"><h3>Fil des signalements <span class="muted" id="repN">sur signalement uniquement — pas de modération préalable</span></h3>
+          <div class="seg2" id="repChips" style="flex-wrap:wrap;margin-bottom:10px">
+            <div class="on" data-f="nouveau" onclick="window.repFilter('nouveau')">À traiter</div>
+            <div data-f="done" onclick="window.repFilter('done')">Traités</div>
+            <div data-f="all" onclick="window.repFilter('all')">Tous</div>
+          </div>
+          <table class="tbl"><thead><tr><th>Reçu le</th><th>Auteur</th><th>Personne signalée</th><th>Motif</th><th>Statut</th></tr></thead><tbody id="repBody"></tbody></table>
+          <p class="muted" id="repEmpty" style="padding:18px 0;text-align:center;display:none">Aucun signalement.</p>
+          <p class="note">Un signalement porte sur le comportement dans un échange (propos, coordonnées partagées, sollicitation). Il est privé : l'autre partie n'en est pas informée. Un problème sur la prestation elle-même passe par un litige.</p>
         </div>
 
         <div class="lawbox mt">PING n'exerce <b>aucune modération éditoriale préalable</b> des échanges (CGU art. 1.5). Ce registre existe uniquement parce qu'un utilisateur a déposé un signalement sur une conversation précise — les autres échanges ne sont jamais consultés. Mesures possibles : aucune suite, avertissement, suspension temporaire, suspension définitive, transmission aux autorités compétentes si l'infraction pénale est caractérisée. PING n'est ni juge ni enquêteur.</div>
@@ -4270,6 +4277,22 @@ window.setFictif = function (on) {
 /* ---------- Données communes (une lecture partagée par tous les écrans) ---------- */
 let CORE = null, CORE_AT = 0, CORE_P = null
 function coreDirty() { CORE = null; CORE_AT = 0 }
+/* Pièces : motif de refus et échéance (migration 042). Sans elle, on relit sans ces colonnes. */
+let DOCS_EXT = false
+async function loadDocRows() {
+  const cols = 'id, kind, status, created_at, owner_id, storage_path'
+  const r = await supabaseLive.from('documents').select(cols + ', valid_until, rejection_reason, reviewed_at').order('created_at', { ascending: true })
+  if (!r.error) { DOCS_EXT = true; return r }
+  DOCS_EXT = false
+  return supabaseLive.from('documents').select(cols).order('created_at', { ascending: true })
+}
+const EXPIRY_DAYS = 45
+function docExpiry(d) {
+  if (!d || !d.valid_until || (d.status !== 'valid' && d.status !== 'expired')) return null
+  const end = new Date(String(d.valid_until) + 'T23:59:59')
+  if (isNaN(end.getTime())) return null
+  return Math.ceil((end.getTime() - Date.now()) / 86400000)
+}
 async function loadCore(force) {
   if (!force && CORE && Date.now() - CORE_AT < 20000) return CORE
   if (CORE_P) return CORE_P
@@ -4281,7 +4304,7 @@ async function loadCore(force) {
       supabaseLive.from('profiles').select('*'),
       supabaseLive.from('provider_profiles').select('id, is_active, trade, company_name, created_at'),
       supabaseLive.from('disputes').select('*').order('created_at', { ascending: false }),
-      supabaseLive.from('documents').select('id, kind, status, created_at, owner_id, storage_path').order('created_at', { ascending: true }),
+      loadDocRows(),
       supabaseLive.rpc('admin_pipeline', { p_fictif: true }),
     ])
     const c = {
@@ -4393,6 +4416,7 @@ window.loadOverviewStats = async function () {
     const em = document.getElementById('ovSignupsEmpty'); if (em) em.style.display = list.length ? 'none' : 'block'
   }
   window.loadFeedbackCount && window.loadFeedbackCount()
+  window.loadExpiryAlerts && window.loadExpiryAlerts(c)
 }
 
 window.loadActOverview = async function () {
@@ -4518,6 +4542,38 @@ window.loadDocsQueue = async function () {
     '<tr class="click" onclick="window.reviewDoc(' + jsArg(d.id) + ')"><td>' + esc(c.name(d.owner_id)) + fxTag(c.userFx(d.owner_id)) + '</td><td>' + esc(DOC_LABELS_LIVE[d.kind] || d.kind) + '</td><td class="mono" data-sort="' + esc(d.created_at) + '">' + esc(dateTimeY(d.created_at)) + '</td><td><span class="tag wait">À examiner</span></td><td><button class="btn" style="font-size:11px;padding:5px 10px" type="button">Examiner</button></td></tr>').join('')
   setTxt('docsQueueN', pl(v.docsPending.length, 'pièce en attente', 'pièces en attente') + ' · ' + scopeTxt())
   const em = document.getElementById('docsQueueEmpty'); if (em) em.style.display = v.docsPending.length ? 'none' : 'block'
+  window.loadExpiryAlerts(c)
+}
+
+/* ---------- À renouveler bientôt : pièces validées qui expirent sous 45 jours (ou expirées) ---------- */
+window.loadExpiryAlerts = async function (core) {
+  const c = core || await loadCore(); if (!c) return
+  const v = view(c)
+  const tb = document.getElementById('expiryRows')
+  const list = c.docs.filter(d => v.keepU(d.owner_id)).map(d => ({ d, days: docExpiry(d) }))
+    .filter(x => x.days != null && x.days <= EXPIRY_DAYS).sort((a, b) => a.days - b.days)
+  if (tb) {
+    tb.innerHTML = !DOCS_EXT
+      ? '<tr><td class="muted" colspan="5">Échéances disponibles après la migration 042 (date d’expiration saisie à la validation).</td></tr>'
+      : list.length ? list.map(x => {
+        const urgent = x.days <= 14
+        const delai = x.days < 0 ? 'Expirée depuis ' + pl(-x.days, 'jour') : x.days === 0 ? 'Aujourd’hui' : pl(x.days, 'jour')
+        return '<tr class="click" onclick="window.reviewDoc(' + jsArg(x.d.id) + ')"><td>' + esc(c.name(x.d.owner_id)) + fxTag(c.userFx(x.d.owner_id)) + '</td><td>' + esc(DOC_LABELS_LIVE[x.d.kind] || x.d.kind) + '</td><td class="mono" data-sort="' + esc(x.d.valid_until) + '">' + esc(dateFr(x.d.valid_until + 'T12:00:00')) + '</td><td><span class="tag ' + (urgent ? 'dn' : 'wait') + '">' + esc(delai) + '</span></td><td><span class="link" onclick="event.stopPropagation();window.askDocRenewal(' + jsArg(x.d.id) + ')">Relancer</span></td></tr>'
+      }).join('') : '<tr><td class="muted" colspan="5">Aucune pièce à renouveler sous 45 jours.</td></tr>'
+  }
+  setTxt('expiryCount', DOCS_EXT ? pl(list.length, 'pièce') + ' · ' + scopeTxt() : '')
+  const ov = document.getElementById('overviewExpiryAlert')
+  if (ov) ov.style.display = list.length ? 'flex' : 'none'
+  setTxt('overviewExpiryL', pl(list.length, 'pièce à renouveler', 'pièces à renouveler') + ' sous 45 j')
+}
+window.askDocRenewal = async function (docId) {
+  const c = await loadCore(); if (!c) return
+  const d = c.docs.find(x => x.id === docId); if (!d) return
+  const label = DOC_LABELS_LIVE[d.kind] || d.kind
+  const days = docExpiry(d)
+  const quand = days == null ? '' : days < 0 ? ' a expiré le ' + dateFr(d.valid_until + 'T12:00:00') : ' expire le ' + dateFr(d.valid_until + 'T12:00:00')
+  const ok = await sendSupportText(d.owner_id, 'Bonjour, votre pièce « ' + label + ' »' + quand + '. Merci de déposer la nouvelle version depuis Mon entreprise, rubrique Mes pièces.')
+  toast(ok ? 'Relance envoyée dans la messagerie Support PING' : 'La relance n’a pas pu être envoyée')
 }
 
 async function sendSupportText(userId, body) {
@@ -4552,7 +4608,9 @@ window.reviewDoc = async function (docId) {
   const label = DOC_LABELS_LIVE[d.kind] || d.kind
   const who = c.name(d.owner_id)
   m.innerHTML = '<div class="mbox cfbox"><h3><span>' + esc(label) + '</span><span class="x" data-close aria-label="Fermer">✕</span></h3>' +
-    '<p class="muted" style="font-size:12.5px;margin:-4px 0 10px">Compte : <b style="color:var(--ink)">' + esc(who) + '</b>' + fxTag(c.userFx(d.owner_id)) + ' · déposée le ' + esc(dateTimeY(d.created_at)) + ' · statut : ' + esc(d.status === 'pending' ? 'à examiner' : d.status === 'valid' ? 'validée' : d.status === 'rejected' ? 'refusée' : d.status) + '</p>' +
+    '<p class="muted" style="font-size:12.5px;margin:-4px 0 10px">Compte : <b style="color:var(--ink)">' + esc(who) + '</b>' + fxTag(c.userFx(d.owner_id)) + ' · déposée le ' + esc(dateTimeY(d.created_at)) + ' · statut : ' + esc(d.status === 'pending' ? 'à examiner' : d.status === 'valid' ? 'validée' : d.status === 'rejected' ? 'refusée' : d.status) +
+    (d.valid_until ? ' · expire le ' + esc(dateFr(d.valid_until + 'T12:00:00')) : '') +
+    (d.status === 'rejected' && d.rejection_reason ? '<br>Motif du refus : ' + esc(d.rejection_reason) : '') + '</p>' +
     '<div class="pv" id="drPv"><span class="muted">Chargement de la pièce…</span></div>' +
     '<div id="drStep"></div></div>'
   m.classList.add('on')
@@ -4594,15 +4652,34 @@ window.reviewDoc = async function (docId) {
   }
   const base = () => {
     step.innerHTML = '<div class="acts"><button type="button" class="btn ghost" data-a="close">Fermer</button>' +
-      (d.status === 'pending' ? '<button type="button" class="btn red" data-a="askko">Refuser</button><button type="button" class="btn" data-a="askok"' + (shown ? '' : ' disabled title="Ouvrez d’abord une pièce lisible"') + '>Valider</button>' : '') + '</div>'
+      (d.status === 'pending' ? '<button type="button" class="btn red" data-a="askko">Refuser</button><button type="button" class="btn" data-a="askok"' + (shown ? '' : ' disabled title="Ouvrez d’abord une pièce lisible"') + '>Valider</button>' : '') +
+      (d.status === 'valid' && DOCS_EXT ? '<button type="button" class="btn ghost" data-a="askexp">Modifier l’échéance</button>' : '') + '</div>'
   }
   step.onclick = async e => {
     const b = e.target.closest('[data-a]'); if (!b || b.disabled) return
     const a = b.getAttribute('data-a')
     if (a === 'close' || a === 'back') { if (a === 'close') m.classList.remove('on'); else base(); return }
     if (a === 'askok') {
+      const needExp = d.kind === 'rcpro'
       step.innerHTML = '<p style="font-size:13px;line-height:1.5;margin-bottom:12px"><b>Valider cette pièce ?</b> Vérifiez que le nom écrit sur la pièce est bien celui du compte : <b>' + esc(who) + '</b>. Une fois validée, la fiche du prestataire pourra afficher « profil vérifié par PING ».</p>' +
+        (DOCS_EXT ? '<label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:6px" for="drExp">Date d’expiration écrite sur la pièce' + (needExp ? '' : ' (facultatif)') + '</label>' +
+          '<input class="minput" type="date" id="drExp" min="' + new Date().toISOString().slice(0, 10) + '" value="' + esc(d.valid_until || '') + '">' +
+          '<p class="muted" style="font-size:11.5px;margin:-4px 0 10px">Le prestataire et la Conformité sont alertés 45 jours avant.' + (needExp ? ' Obligatoire pour une assurance.' : '') + '</p>' : '') +
         '<div class="acts"><button type="button" class="btn ghost" data-a="back">Annuler</button><button type="button" class="btn" data-a="ok">Oui, valider</button></div>'
+      return
+    }
+    if (a === 'askexp') {
+      step.innerHTML = '<label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:6px" for="drExp">Date d’expiration écrite sur la pièce</label>' +
+        '<input class="minput" type="date" id="drExp" value="' + esc(d.valid_until || '') + '">' +
+        '<div class="acts"><button type="button" class="btn ghost" data-a="back">Annuler</button><button type="button" class="btn" data-a="saveexp">Enregistrer</button></div>'
+      return
+    }
+    if (a === 'saveexp') {
+      const exp = ((m.querySelector('#drExp') || {}).value || '').trim()
+      b.disabled = true
+      const { error } = await supabaseLive.from('documents').update({ valid_until: exp || null }).eq('id', d.id)
+      if (error) { b.disabled = false; toast('Enregistrement refusé : ' + esc(error.message)); return }
+      done(d.status, 'Échéance enregistrée')
       return
     }
     if (a === 'askko') {
@@ -4615,17 +4692,105 @@ window.reviewDoc = async function (docId) {
     if (a === 'ok' || a === 'ko') {
       b.disabled = true
       const status = a === 'ok' ? 'valid' : 'rejected'
-      const { error } = await supabaseLive.from('documents').update({ status }).eq('id', d.id)
-      if (error) { b.disabled = false; toast('Enregistrement refusé : ' + esc(error.message)); return }
-      if (a === 'ok') { done(status, 'Pièce validée'); return }
       const motif = (m.querySelector('#drMotif') || {}).value || 'Autre'
       const prec = ((m.querySelector('#drPrec') || {}).value || '').trim()
+      const patch = { status }
+      if (DOCS_EXT && a === 'ok') {
+        const exp = ((m.querySelector('#drExp') || {}).value || '').trim()
+        if (!exp && d.kind === 'rcpro') { b.disabled = false; toast('Indiquez la date d’expiration de l’assurance'); return }
+        patch.valid_until = exp || null
+      }
+      if (DOCS_EXT && a === 'ko') patch.rejection_reason = (motif + (prec ? ' : ' + prec : '')).slice(0, 500)
+      const { error } = await supabaseLive.from('documents').update(patch).eq('id', d.id)
+      if (error) { b.disabled = false; toast('Enregistrement refusé : ' + esc(error.message)); return }
+      if (a === 'ok') { done(status, 'Pièce validée'); return }
       const txt = 'Bonjour, votre pièce « ' + label + ' » n’a pas pu être validée. Motif : ' + motif + '.' + (prec ? ' ' + prec : '') + ' Vous pouvez en déposer une nouvelle depuis Mon entreprise, rubrique Mes pièces.'
       const sent = await sendSupportText(d.owner_id, txt)
       done(status, sent ? 'Pièce refusée · motif envoyé au prestataire (Support PING)' : 'Pièce refusée · le motif n’a pas pu être envoyé, écrivez-lui depuis sa fiche')
     }
   }
   base()
+}
+
+/* ---------- Signalements (table reports, migration 043) ---------- */
+const REPORT_CAT = { propos: 'Propos déplacés ou insultants', coordonnees: 'Coordonnées partagées pour contourner PING', sollicitation: 'Sollicitation suspecte', comportement: 'Comportement inapproprié', autre: 'Autre' }
+const REPORT_STATUS = { nouveau: 'À traiter', classe: 'Classé sans suite', averti: 'Avertissement', bloque: 'Bloqué' }
+let REP = null, REP_F = 'nouveau'
+window.repFilter = function (k) {
+  REP_F = k
+  document.querySelectorAll('#repChips > div').forEach(d => d.classList.toggle('on', d.getAttribute('data-f') === k))
+  renderReports()
+}
+window.loadReports = async function () {
+  const c = await loadCore(); if (!c) return
+  const r = await supabaseLive.from('reports').select('*').order('created_at', { ascending: false }).limit(500)
+  REP = { rows: r.data || [], error: r.error ? r.error.message : null, missing: !!r.error }
+  renderReports()
+}
+async function renderReports() {
+  const body = document.getElementById('repBody'); if (!body || !REP) return
+  const c = await loadCore(); if (!c) return
+  const keep = x => FICTIF || !(c.userFx(x.reporter_id) || (x.reported_user_id && c.userFx(x.reported_user_id)))
+  const all = REP.rows.filter(keep)
+  const list = all.filter(x => REP_F === 'all' ? true : REP_F === 'nouveau' ? x.status === 'nouveau' : x.status !== 'nouveau')
+  body.innerHTML = list.map(x => {
+    const st = '<span class="tag ' + (x.status === 'nouveau' ? 'wait' : x.status === 'bloque' ? 'dn' : x.status === 'averti' ? 'ink' : 'ok') + '">' + esc(REPORT_STATUS[x.status] || x.status) + '</span>'
+    return '<tr class="click" onclick="window.openReport(' + jsArg(x.id) + ')"><td class="mono" data-sort="' + esc(x.created_at) + '">' + esc(dateTimeY(x.created_at)) + '</td><td>' + esc(c.name(x.reporter_id)) + fxTag(c.userFx(x.reporter_id)) + '</td><td>' + (x.reported_user_id ? esc(c.name(x.reported_user_id)) : '—') + '</td><td>' + esc(REPORT_CAT[x.category] || x.category) + '</td><td>' + st + '</td></tr>'
+  }).join('')
+  const em = document.getElementById('repEmpty')
+  if (em) { em.style.display = list.length ? 'none' : 'block'; em.textContent = REP.missing ? 'Signalements disponibles après la migration 043 (table reports).' : 'Rien dans cette sélection.' }
+  const open = all.filter(x => x.status === 'nouveau')
+  const handled = all.filter(x => x.handled_at)
+  const onTime = handled.filter(x => new Date(x.handled_at) - new Date(x.created_at) <= 5 * 86400000)
+  const since = Date.now() - 30 * 86400000
+  setTxt('repOpen', REP.missing ? '—' : String(open.length))
+  setTxt('repOpenD', REP.missing ? 'migration 043 à coller' : scopeTxt())
+  setTxt('repOnTime', REP.missing || !handled.length ? '—' : Math.round(100 * onTime.length / handled.length) + ' %')
+  setTxt('repMeasures', REP.missing ? '—' : String(all.filter(x => (x.status === 'averti' || x.status === 'bloque') && x.handled_at && new Date(x.handled_at).getTime() >= since).length))
+  setTxt('repN', REP.missing ? 'migration 043 à coller' : pl(open.length, 'à traiter') + ' · ' + pl(all.length, 'signalement') + ' · ' + scopeTxt())
+}
+window.openReport = async function (id) {
+  const c = await loadCore(); if (!c || !REP) return
+  const x = REP.rows.find(r => r.id === id); if (!x) return
+  const m = docModal()
+  const tx = x.transaction_id ? c.txById[x.transaction_id] : null
+  m.innerHTML = '<div class="mbox cfbox"><h3><span>Signalement</span><span class="x" data-close aria-label="Fermer">✕</span></h3>' +
+    '<p class="muted" style="font-size:12.5px;margin:-4px 0 10px">Reçu le ' + esc(dateTimeY(x.created_at)) + ' · de <b style="color:var(--ink)">' + esc(c.name(x.reporter_id)) + '</b>' +
+    (x.reported_user_id ? ' · sur <b style="color:var(--ink)">' + esc(c.name(x.reported_user_id)) + '</b>' : '') + ' · statut : ' + esc(REPORT_STATUS[x.status] || x.status) + '</p>' +
+    '<p style="font-size:12.5px;font-weight:700;margin-bottom:4px">' + esc(REPORT_CAT[x.category] || x.category) + '</p>' +
+    '<p style="font-size:13px;line-height:1.5;white-space:pre-wrap;background:var(--paper,#F3F6F5);border-radius:10px;padding:10px 12px;margin-bottom:10px">' + esc(x.body) + '</p>' +
+    (x.admin_note ? '<p class="muted" style="font-size:12px;margin-bottom:10px">Note PING : ' + esc(x.admin_note) + (x.handled_at ? ' · ' + esc(dateTimeY(x.handled_at)) : '') + '</p>' : '') +
+    (tx ? '<p style="font-size:12.5px;margin-bottom:10px"><span class="link" data-a="tx">Ouvrir la mission (' + esc(String(tx.id).slice(0, 8)) + ')</span> · <a class="link" href="/mission/' + encodeURIComponent(tx.id) + '/chat" target="_blank" rel="noopener">voir la conversation</a></p>' : '') +
+    '<label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:6px" for="repNote">Note interne (facultatif)</label>' +
+    '<textarea class="minput" id="repNote" style="min-height:60px" placeholder="Ce qui a été constaté, la mesure prise"></textarea>' +
+    '<div class="acts" id="repActs"><button type="button" class="btn ghost" data-a="classe">Classer sans suite</button><button type="button" class="btn" data-a="averti">Avertir</button><button type="button" class="btn red" data-a="bloque">Bloquer</button></div>' +
+    '<p class="muted" style="font-size:11.5px;margin-top:8px">« Avertir » envoie un message à la personne signalée dans sa messagerie Support PING. « Bloquer » la retire de la carte si c’est un prestataire (réversible depuis sa fiche) ; pour un particulier, suspendez le compte depuis Supabase.</p></div>'
+  m.classList.add('on')
+  m.querySelector('[data-close]').onclick = () => m.classList.remove('on')
+  m.querySelector('.mbox').onclick = async e => {
+    const b = e.target.closest('[data-a]'); if (!b || b.disabled) return
+    const a = b.getAttribute('data-a')
+    if (a === 'tx') { m.classList.remove('on'); window.openTxDetail && window.openTxDetail(tx.id); return }
+    if (!['classe', 'averti', 'bloque'].includes(a)) return
+    if (a === 'bloque' && !confirm('Bloquer ' + c.name(x.reported_user_id) + ' ?')) return
+    b.disabled = true
+    const note = ((m.querySelector('#repNote') || {}).value || '').trim().slice(0, 2000)
+    const { error } = await supabaseLive.from('reports').update({ status: a, admin_note: note || null }).eq('id', x.id)
+    if (error) { b.disabled = false; toast('Enregistrement refusé : ' + esc(error.message)); return }
+    let extra = ''
+    if (a === 'averti' && x.reported_user_id) {
+      const sent = await sendSupportText(x.reported_user_id, 'Bonjour, un échange sur PING nous a été signalé. Nous vous rappelons que les échanges restent courtois et que les coordonnées et paiements passent par PING (conditions générales). En cas de nouveau signalement, votre compte pourra être suspendu.')
+      extra = sent ? ' · message envoyé' : ' · le message n’a pas pu être envoyé'
+    }
+    if (a === 'bloque' && x.reported_user_id && c.pro[x.reported_user_id]) {
+      const r2 = await supabaseLive.from('provider_profiles').update({ is_active: false }).eq('id', x.reported_user_id)
+      extra = r2.error ? ' · le retrait de la carte a échoué' : ' · retiré de la carte'
+      coreDirty()
+    }
+    m.classList.remove('on')
+    toast(esc(REPORT_STATUS[a] + extra))
+    window.loadReports()
+  }
 }
 
 /* ---------- Retours des testeurs (bulle verte, events feedback_note) ---------- */
@@ -4749,6 +4914,7 @@ window.nav = function (s) {
   _navLots(s)
   if (s === 'litiges') window.loadLitiges()
   if (s === 'conformite') window.loadDocsQueue()
+  if (s === 'signalements') window.loadReports()
   if (s === 'retours') window.loadRetours()
 }
 if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOverviewStats(); window.loadActOverview() }
