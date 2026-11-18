@@ -10,12 +10,36 @@ import { TRADE_LIST as SERVICES, TRADES } from '@/lib/trades'
 import PricingEditor from '@/components/PricingEditor'
 import { CGV_VERSION } from '@/lib/cgv'
 import { type PricingDraft, draftFromColumns, emptyDraft, toColumns, validateDraft } from '@/lib/servicePricing'
+import { writeMode } from '@/lib/mode'
 
 type Status = 'particulier' | 'professionnel' | null
 
 // Numéro français : 10 chiffres commençant par 0, ou +33 / 0033 suivi de 9 chiffres (espaces, points, tirets tolérés).
 function cleanPhone(v: string) { return v.replace(/[\s.\-()]/g, '') }
 function phoneValid(v: string) { return /^(0\d{9}|\+33\d{9}|0033\d{9})$/.test(cleanPhone(v)) }
+
+// Brouillon de l'assistant (lot 5, 18/11/2026) : seulement à la création d'une activité (jamais quand un
+// prestataire modifie un profil existant, qui se recharge depuis la base). Lié au compte (uid), repris à la
+// même étape ; « Plus tard » ou un retour par « Passer en pro » ne perdent rien. Effacé à « Terminer ».
+const DRAFT_KEY = 'ping_pro_draft'
+type ProDraft = {
+  v: 1; uid: string | null; stepKey: string
+  services: string[]; pricing: Record<string, PricingDraft>; status: Status
+  companyQuery: string; selectedCompany: CompanyMatch | null; manualEntry: boolean
+  siret: string; sapNumber: string; address: string; coords: { lat: number; lng: number } | null
+  phone: string; confirmedInfo: boolean; bio: string; website: string
+}
+function readDraft(): ProDraft | null {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null')
+    return d && d.v === 1 && Array.isArray(d.services) ? d as ProDraft : null
+  } catch { return null }
+}
+function stepsFor(status: Status) {
+  return status === 'professionnel'
+    ? ['service', 'tarif', 'statut', 'entreprise', 'adresse', 'bio']
+    : ['service', 'tarif', 'statut', 'adresse', 'bio']
+}
 
 export default function ProOnboarding() {
   const router = useRouter()
@@ -52,14 +76,13 @@ export default function ProOnboarding() {
   // renseignés, et on ne recrée pas les services déjà présents.
   const [existing, setExisting] = useState<{ isActive: boolean; legalStatus: string | null; hasCompany: boolean; serviceIds: Record<string, string> } | null>(null)
 
+  // Brouillon actif (création d'activité, compte connu) : sauvegarde à chaque saisie.
+  const [draftOn, setDraftOn] = useState(false)
+  const uidRef = useRef<string | null>(null)
+
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const visibleSteps = useMemo(
-    () => status === 'professionnel'
-      ? ['service', 'tarif', 'statut', 'entreprise', 'adresse', 'bio']
-      : ['service', 'tarif', 'statut', 'adresse', 'bio'],
-    [status]
-  )
+  const visibleSteps = useMemo(() => stepsFor(status), [status])
   const [stepIndex, setStepIndex] = useState(0)
   const stepKey = visibleSteps[stepIndex]
 
@@ -118,8 +141,48 @@ export default function ProOnboarding() {
         if (prof.phone_enc) setPhone(prof.phone_enc)
         if (prof.address || prof.phone_enc) setPrefilled(true)
       }
+      if (pp) return
+      // Création : reprise du brouillon de ce compte (ou d'une saisie faite juste avant l'inscription).
+      const d = readDraft()
+      if (d && (d.uid === null || d.uid === user.id)) {
+        setServices(d.services)
+        setPricing(d.pricing || {})
+        setStatus(d.status ?? null)
+        setCompanyQuery(d.companyQuery || '')
+        setSelectedCompany(d.selectedCompany ?? null)
+        setManualEntry(!!d.manualEntry)
+        setSiret(d.siret || '')
+        setSapNumber(d.sapNumber || '')
+        if (d.address) setAddress(d.address)
+        if (d.coords) setCoords(d.coords)
+        if (d.phone) setPhone(d.phone)
+        setConfirmedInfo(!!d.confirmedInfo)
+        setBio(d.bio || '')
+        setWebsite(d.website || '')
+        const i = stepsFor(d.status ?? null).indexOf(d.stepKey)
+        // Une étape n'est reprise que si les précédentes sont remplies (au moins un service choisi).
+        if (i > 0 && d.services.length > 0) setStepIndex(i)
+      }
+      uidRef.current = user.id
+      setDraftOn(true)
     })
   }, [])
+
+  useEffect(() => {
+    if (!draftOn) return
+    const d: ProDraft = {
+      v: 1, uid: uidRef.current, stepKey, services, pricing, status, companyQuery, selectedCompany, manualEntry,
+      siret, sapNumber, address, coords, phone, confirmedInfo, bio, website,
+    }
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) } catch { }
+  }, [draftOn, stepKey, services, pricing, status, companyQuery, selectedCompany, manualEntry, siret, sapNumber, address, coords, phone, confirmedInfo, bio, website])
+
+  // « Plus tard » : retour à l'espace particulier, le brouillon reste (repris par « Passer en pro »).
+  function later() {
+    writeMode('particulier')
+    router.push('/map')
+  }
+  const laterProps = draftOn ? { onLater: later, laterNote: 'Brouillon enregistré' } : {}
 
   function pickCompany(c: CompanyMatch) {
     setSelectedCompany(c)
@@ -162,7 +225,16 @@ export default function ProOnboarding() {
     setLoading(true); setError('')
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/auth/signup?role=pro'); return }
+    if (!user) {
+      // Session perdue en cours de route : la saisie reste dans le brouillon, reprise après l'inscription
+      // ou la connexion (lien « Se connecter » de l'inscription, qui garde ?next=).
+      if (draftOn) {
+        const d = readDraft()
+        if (d) { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...d, uid: null })) } catch { } }
+      }
+      router.push(`/auth/signup?role=pro&next=${encodeURIComponent('/pro/onboarding')}`)
+      return
+    }
 
     const primaryCols = toColumns(pricing[services[0]] ?? emptyDraft())
     const legalStatus = status === 'particulier'
@@ -217,6 +289,8 @@ export default function ProOnboarding() {
       if (svcErr) { setError(`Votre profil est enregistré, mais le tarif « ${TRADES[k] || k} » n'a pas pu l'être. Corrigez-le dans « Mes tarifs ».`); setLoading(false); return }
     }
 
+    try { localStorage.removeItem(DRAFT_KEY) } catch { }
+    setDraftOn(false)
     trackEvent('pro_onboarding_completed', { services, pricing: services.map(k => pricing[k]?.mode), status })
     router.push('/pro/onboarding/documents')
   }
@@ -234,7 +308,7 @@ export default function ProOnboarding() {
 
   if (stepKey === 'service') {
     return (
-      <OnboardingStep step={stepIndex} total={visibleSteps.length}
+      <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
         title="Quel service proposez-vous ?"
         subtitle="Vous pourrez en ajouter d'autres plus tard."
         onCta={next} ctaDisabled={services.length === 0}>
@@ -252,7 +326,7 @@ export default function ProOnboarding() {
     const draftFor = (k: string) => pricing[k] ?? emptyDraft()
     const allValid = services.every(k => !validateDraft(draftFor(k)))
     return (
-      <OnboardingStep step={stepIndex} total={visibleSteps.length}
+      <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
         title={services.length > 1 ? 'Vos tarifs' : 'Votre tarif'}
         subtitle={services.length > 1 ? 'Un prix pour chaque service : forfait, à l’heure, ou forfait avec heures supplémentaires.' : 'Forfait, à l’heure, ou forfait avec heures supplémentaires.'}
         onBack={back}
@@ -292,7 +366,7 @@ export default function ProOnboarding() {
 
   if (stepKey === 'statut') {
     return (
-      <OnboardingStep step={stepIndex} total={visibleSteps.length}
+      <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
         title="Vous êtes…"
         onBack={back} onCta={next} ctaDisabled={!status}>
         <button onClick={() => setStatus('particulier')} style={bigChoiceStyle(status === 'particulier')}>
@@ -309,7 +383,7 @@ export default function ProOnboarding() {
 
   if (stepKey === 'entreprise') {
     return (
-      <OnboardingStep step={stepIndex} total={visibleSteps.length}
+      <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
         title="Votre entreprise"
         subtitle="Tapez son nom, on retrouve le SIRET et l'adresse pour vous."
         onBack={back} onCta={next} ctaDisabled={!manualEntry && !selectedCompany && !existing?.hasCompany}>
@@ -353,7 +427,7 @@ export default function ProOnboarding() {
 
   if (stepKey === 'adresse') {
     return (
-      <OnboardingStep step={stepIndex} total={visibleSteps.length}
+      <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
         title="Où intervenez-vous ?"
         subtitle="Pour apparaître au bon endroit sur la carte."
         onBack={back} onCta={() => { setPhoneTouched(true); if (phoneValid(phone) && (!prefilled || confirmedInfo)) next() }}
@@ -403,7 +477,7 @@ export default function ProOnboarding() {
 
   // bio — dernière étape
   return (
-    <OnboardingStep step={stepIndex} total={visibleSteps.length}
+    <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
       title="Un mot pour vous présenter"
       subtitle="Une phrase suffit. Vous pourrez la modifier plus tard."
       onBack={back} onSkip={finish} skipLabel="Passer et terminer"

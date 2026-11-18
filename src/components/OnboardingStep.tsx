@@ -5,6 +5,7 @@ export default function OnboardingStep({
   step, total, title, subtitle, children,
   onBack, onSkip, skipLabel = 'Passer cette étape',
   ctaLabel = 'Continuer', onCta, ctaDisabled = false, ctaLoading = false,
+  onLater, laterNote,
 }: {
   step: number
   total: number
@@ -18,6 +19,10 @@ export default function OnboardingStep({
   onCta: () => void
   ctaDisabled?: boolean
   ctaLoading?: boolean
+  /** « Plus tard » en haut à droite : sortir de l'assistant sans rien perdre (brouillon gardé). */
+  onLater?: () => void
+  /** Courte mention sous le compteur d'étapes (ex. « Brouillon enregistré »). */
+  laterNote?: string
 }) {
   // Sens de la glisse "carrousel" : déduit de la comparaison avec l'étape
   // précédente, pas d'un choix explicite de l'appelant (les pages n'ont pas
@@ -54,8 +59,14 @@ export default function OnboardingStep({
               <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= step ? '#12B39C' : 'rgba(255,255,255,.15)', transition: 'background .2s' }} />
             ))}
           </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.8)' }}>Étape {step + 1} sur {total}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.8)' }}>Étape {step + 1} sur {total}{laterNote ? ` · ${laterNote}` : ''}</div>
         </div>
+        {onLater && (
+          <button type="button" onClick={onLater}
+            style={{ flexShrink: 0, minHeight: 44, padding: '0 4px', border: 'none', background: 'none', color: '#fff', fontSize: 13, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+            Plus tard
+          </button>
+        )}
       </div>
 
       <div
