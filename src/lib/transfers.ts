@@ -13,7 +13,16 @@ export type Transfer = {
   payer_id: string; payee_id: string | null
   reference: string; amount_cents: number; status: TransferStatus
   due_at: string; declared_at: string | null; received_at: string | null; created_at: string
+  /** Arrangement à l'amiable (migration 040) : avoir sur la prestation. Absent tant que 040 n'est pas appliquée. */
+  credit_cents?: number | null
+  /** 'deduit' : retiré du montant à virer ; 'a_rembourser' : déjà payé, le prestataire rembourse le client. */
+  credit_mode?: 'deduit' | 'a_rembourser' | null
+  credit_refunded_at?: string | null
 }
+
+/** Montant réellement à virer, avoir déduit (un avoir sur une facture déjà payée ne change pas le virement). */
+export const transferDue = (t: Transfer) =>
+  t.credit_mode === 'deduit' ? Math.max(0, t.amount_cents - (t.credit_cents ?? 0)) : t.amount_cents
 
 export const TRANSFER_STATUS: Record<TransferStatus, { t: string; fg: string; bg: string }> = {
   a_payer: { t: 'À régler', fg: '#8A6520', bg: 'rgba(242,169,59,.15)' },

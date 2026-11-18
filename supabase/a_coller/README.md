@@ -7,6 +7,12 @@ arrivée et départ validés uniquement avec une preuve du client. Déployer l'a
 (l'application détecte la migration et retombe sur l'ancien fonctionnement tant qu'elle est absente).
 Idempotente, sans DROP. Vérification après coup : `select proname from pg_proc where proname in ('validate_presence', 'client_confirm_presence', 'presence_state');`
 
+**À coller (arrangement à l'amiable, 18/11/2026)** : `040_arrangement_amiable.sql` (copie exacte de `supabase/migrations/040_…`) —
+bouton « Arrangement à l'amiable » dans un litige (proposition d'un montant, acceptation par l'autre partie, litige clos,
+avoir sur la facture de la prestation, virement ajusté). L'application masque le bouton tant que la migration est absente.
+Idempotente, sans DROP (remplace `guard_transfer_payment` de 025 à l'identique + une ligne). Vérification après coup :
+`select proname from pg_proc where proname in ('propose_settlement', 'accept_settlement', 'decline_settlement', 'mark_settlement_refunded');`
+
 **Plus rien d'autre à coller** : 014, 015, 016 et 017 sont en prod (vérifié / appliqué le 30/10/2026).
 
 Le jour où les données fictives ne servent plus : coller `nettoyage_donnees_fictives.sql`

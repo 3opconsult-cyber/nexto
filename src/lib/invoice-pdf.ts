@@ -47,7 +47,19 @@ export type Invoice = {
   client_snapshot: Record<string, any>
   lines: Array<Record<string, any>>
   legal: Record<string, any>
+  /** Avoir (arrangement à l'amiable, migration 040), porté par la facture de la prestation qu'il corrige. */
+  credit_cents?: number | null
+  credit_number?: string | null
+  credit_issued_at?: string | null
+  credit_reason?: string | null
 }
+
+/** Avoir émis sur ce document (null sans avoir, ou avant la migration 040). */
+export const invoiceCredit = (inv: Invoice) =>
+  inv.kind === 'prestation' && (inv.credit_cents ?? 0) > 0
+    ? { cents: inv.credit_cents as number, number: inv.credit_number || '', date: inv.credit_issued_at || null,
+        reason: inv.credit_reason || 'Arrangement à l\'amiable', net: Math.max(0, inv.net_cents - (inv.credit_cents as number)) }
+    : null
 
 export const EUR = (c: number) =>
   (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
@@ -273,6 +285,18 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
   right(EUR(inv.net_cents), W - M, y, 16, bold, INK)
   y -= 17
   if (inv.legal?.franchise_tva) { txt(inv.legal.franchise_tva, M, y, 8.5, reg, SLATE); y -= 13 }
+  const av = invoiceCredit(inv)
+  if (av) {
+    y -= 8
+    const when = av.date ? ` du ${new Date(av.date).toLocaleDateString('fr-FR')}` : ''
+    txt(`Avoir${av.number ? ` n° ${av.number}` : ''}${when}`, M, y, 10.5, bold)
+    right(`- ${EUR(av.cents)}`, W - M, y, 10.5, bold)
+    y -= 12
+    txt(av.reason, M, y, 8.5, reg, SLATE); y -= 16
+    txt(inv.template === 'recapitulatif' ? 'Montant perçu après avoir' : 'Net à payer après avoir', M, y, 12, bold)
+    right(EUR(av.net), W - M, y, 14, bold, INK)
+    y -= 15
+  }
 
   y -= 14; rule(y); y -= 20
 
