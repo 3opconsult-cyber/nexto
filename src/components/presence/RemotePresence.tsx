@@ -114,7 +114,7 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
           Votre position sera relevée une seule fois, uniquement pour {phase === 'arrivee' ? 'votre arrivée' : 'la fin de mission'} en l&apos;absence du client
           (pas de suivi). Elle est enregistrée avec la mission et consultable en cas de litige.
           <div style={{ display: 'flex', gap: 8, marginTop: 9 }}>
-            <button onClick={send} style={{ ...ghost, background: '#12B39C', color: '#fff', border: 'none' }}>J&apos;accepte</button>
+            <button onClick={send} style={{ ...ghost, background: '#0C8F7E', color: '#fff', border: 'none' }}>J&apos;accepte</button>
             <button onClick={() => setConsent(false)} style={ghost}>Annuler</button>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
               inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" aria-label="Code du client"
               style={{ flex: 1, minWidth: 0, borderRadius: 10, border: '1.5px solid #DCE5E3', padding: '9px 10px', fontSize: 17, letterSpacing: 4, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
             <button onClick={submitCode} disabled={busy || code.length !== 6} style={{
-              border: 'none', borderRadius: 999, padding: '9px 16px', background: '#12B39C', color: '#fff', fontWeight: 700,
+              border: 'none', borderRadius: 999, padding: '9px 16px', background: '#0C8F7E', color: '#fff', fontWeight: 700,
               opacity: code.length === 6 && !busy ? 1 : .6, cursor: 'pointer',
             }}>Valider</button>
           </div>

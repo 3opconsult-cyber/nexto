@@ -219,7 +219,7 @@ export default function Disponibilites() {
               ))}
             </div>
 
-            <button onClick={save} disabled={busy} style={{ marginTop: 16, width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
+            <button onClick={save} disabled={busy} style={{ marginTop: 16, width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
               {busy ? 'Enregistrement…' : 'Enregistrer'}
             </button>
             <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', margin: '10px 0 0' }}>Un créneau déjà réservé par un client n&apos;est jamais retiré.</p>

@@ -482,7 +482,7 @@ export default function ProCartePage() {
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <input value={zoneCity} onChange={e => setZoneCity(e.target.value)} placeholder="Ou une ville (ex. Cannes)" autoComplete="off" style={{ flex: 1, padding: '9px 12px', borderRadius: 12, border: '1.5px solid var(--line)', fontSize: 16 }} />
-                <div onClick={chooseCity} style={{ padding: '9px 14px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: 'var(--teal)', color: '#fff' }}>OK</div>
+                <div onClick={chooseCity} style={{ padding: '9px 14px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: 'var(--tealD)', color: '#fff' }}>OK</div>
               </div>
               {zoneErr && <p style={{ color: '#c0503a', fontSize: 12, marginTop: 6 }}>{zoneErr}</p>}
             </div>

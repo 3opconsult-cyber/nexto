@@ -170,7 +170,7 @@ export default function AvanceImmediate() {
               <label style={lbl}>Titulaire du compte<input style={field} value={f.titulaire} onChange={e => set('titulaire', e.target.value)} /></label>
 
               {err && <p style={{ fontSize: 12.5, color: '#c0503a' }}>{err}</p>}
-              <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
+              <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
                 {busy ? 'Envoi à l’Urssaf…' : "M'inscrire à l'avance immédiate"}
               </button>
             </div>

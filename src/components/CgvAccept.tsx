@@ -27,7 +27,7 @@ export default function CgvAccept() {
   if (state === 'done') return <p style={{ fontSize: 13, fontWeight: 700, color: '#0C8F7E', margin: '10px 0 0' }}>Vous avez accepté ces conditions.</p>
   return (
     <div style={{ marginTop: 12 }}>
-      <button onClick={accept} style={{ border: 'none', borderRadius: 999, padding: '11px 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+      <button onClick={accept} style={{ border: 'none', borderRadius: 999, padding: '11px 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
         J&apos;accepte les CGV prestataires et le contrat de commission
       </button>
       {state === 'error' && <p style={{ color: '#c0503a', fontSize: 12.5, margin: '8px 0 0' }}>L&apos;acceptation n&apos;a pas pu être enregistrée. Réessayez.</p>}

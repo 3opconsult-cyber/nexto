@@ -87,7 +87,7 @@ export default function SupportPage() {
               maxWidth: '75%', padding: '10px 14px', borderRadius: 16, fontSize: 13.5, fontWeight: 500,
               ...(m.sender_is_admin
                 ? { background: '#fff', color: '#123644', borderBottomLeftRadius: 4, border: '1px solid #E7EDEB' }
-                : { background: '#12B39C', color: '#fff', borderBottomRightRadius: 4 }),
+                : { background: '#0C8F7E', color: '#fff', borderBottomRightRadius: 4 }),
             }}>
               {m.body}
             </div>
@@ -102,7 +102,7 @@ export default function SupportPage() {
           style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send}
-          style={{ width: 42, height: 42, borderRadius: '50%', border: 'none', background: '#12B39C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0C8F7E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" /></svg>
         </button>
       </div>

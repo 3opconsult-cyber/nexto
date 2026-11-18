@@ -156,7 +156,7 @@ export default function DocumentsPage() {
             <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '8px 0 12px' }}>{annual.note}</p>
             <div style={{ display: 'flex', gap: 8 }}>
               <button type="button" disabled={annualBusy} onClick={() => downloadAnnual('pdf')}
-                style={{ flex: 1.4, padding: 11, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: annualBusy ? .6 : 1 }}>
+                style={{ flex: 1.4, padding: 11, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: annualBusy ? .6 : 1 }}>
                 Télécharger le relevé annuel
               </button>
               <button type="button" disabled={annualBusy} onClick={() => downloadAnnual('csv')}

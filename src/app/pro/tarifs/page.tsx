@@ -192,7 +192,7 @@ export default function ProTarifsPage() {
               </button>
             ))}
             <button onClick={() => openSheet({ kind: 'new' })}
-              style={{ display: 'block', width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+              style={{ display: 'block', width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
               + Ajouter une prestation
             </button>
           </>
@@ -254,7 +254,7 @@ export default function ProTarifsPage() {
               <button type="button" onClick={close}
                 style={{ flex: 1, padding: 12, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
               <button type="button" onClick={save} disabled={saving}
-                style={{ flex: 1.4, padding: 12, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
+                style={{ flex: 1.4, padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </div>

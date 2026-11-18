@@ -71,7 +71,7 @@ export default function EssaiAvis() {
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,.8)', marginTop: 10, maxWidth: 300, lineHeight: 1.5 }}>
           Votre avis est enregistré. Si vous n'avez pas encore invité de proches à tester, c'est le bon moment.
         </p>
-        <a href="/essai" style={{ marginTop: 24, padding: '14px 28px', borderRadius: 999, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+        <a href="/essai" style={{ marginTop: 24, padding: '14px 28px', borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
           Revenir à l'écran de partage
         </a>
       </div>

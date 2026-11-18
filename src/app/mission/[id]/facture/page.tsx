@@ -334,7 +334,7 @@ export default function FacturePage() {
         <div className="no-print" style={{ maxWidth: 620, margin: '16px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button onClick={download} disabled={busy} style={{
             width: '100%', border: 'none', padding: 14, borderRadius: 999, cursor: 'pointer',
-            background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif',
+            background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif',
             fontWeight: 700, fontSize: 14.5, boxShadow: '0 8px 18px rgba(18,179,156,.28)',
             opacity: busy ? .6 : 1,
           }}>{busy ? 'Génération…' : 'Télécharger le PDF'}</button>

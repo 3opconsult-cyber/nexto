@@ -217,7 +217,7 @@ export default function LitigePage() {
             <textarea value={decision} onChange={e => setDecision(e.target.value)} rows={2} aria-label="Décision de PING"
               style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 13 }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button onClick={() => close('resolved')} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
+              <button onClick={() => close('resolved')} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
               <button onClick={() => close('rejected')} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function LitigePage() {
               aria-label={admin ? 'Message de PING aux deux parties' : 'Votre message sur ce litige'}
               style={{ flex: 1, padding: '12px 14px', borderRadius: 999, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', background: '#F3F6F5' }} />
             <button onClick={() => send(admin ? 'mediation' : 'text')} disabled={sending || !input.trim()}
-              style={{ padding: '0 18px', borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
+              style={{ padding: '0 18px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
           </div>
         ) : (
           <div style={{ textAlign: 'center', fontSize: 12.5, color: '#4E6470' }}>Litige clos : le fil reste consultable.</div>

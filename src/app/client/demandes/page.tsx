@@ -145,7 +145,7 @@ export default function MesDemandesPage() {
           Comme une annonce : service, heures ou kilos de linge, fréquence, foyer, paiement. Les prestataires à proximité vous font une proposition chiffrée.
         </p>
         <button onClick={() => router.push('/client/demandes/new')}
-          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
+          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
           + Déposer une demande
         </button>
 
@@ -230,7 +230,7 @@ export default function MesDemandesPage() {
                                 </button>
                                 {t.hasPendingOffer && (
                                   <button onClick={() => router.push(`/mission/${t.id}/chat`)}
-                                    style={{ flex: 1, padding: '9px 10px', borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                    style={{ flex: 1, padding: '9px 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                     Accepter ce prestataire
                                   </button>
                                 )}

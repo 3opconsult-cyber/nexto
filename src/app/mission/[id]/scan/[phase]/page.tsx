@@ -146,7 +146,7 @@ export default function ScanQR() {
         {status !== 'checking' && (
           <>
             <button onClick={() => router.push(done ? `/mission/${params.id}/facture` : `/mission/${params.id}/jour`)}
-              style={{ width: '100%', marginTop: 18, padding: 13, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+              style={{ width: '100%', marginTop: 18, padding: 13, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
               {done ? 'Voir la facture' : 'Mission du jour'}
             </button>
             <button onClick={() => router.push(`/mission/${params.id}/chat`)}

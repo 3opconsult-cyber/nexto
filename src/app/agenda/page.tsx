@@ -10,10 +10,25 @@ import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 import { UPCOMING, DONE, txDate, durationMinutes } from '@/lib/agenda'
 import { isTodayMission } from '@/lib/todayMission'
+import { MissionSuivi } from '@/components/presence/MissionTimeline'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
 function eur(c?: number | null) { return c != null ? `${(c / 100).toFixed(2).replace('.', ',')} €` : '' }
+
+// Lot 28 (validé par Romain le 18/11/2026, maquette « Agenda ») : la mission n'est plus éclatée entre
+// plusieurs menus. Quatre onglets, dans les deux espaces (séparation par mode conservée) ; le litige
+// reste en tête, au-dessus des onglets. Messages et Litiges restent accessibles par ailleurs.
+type Tab = 'cours' | 'calendrier' | 'terminees' | 'factures'
+const TABS: [Tab, string][] = [['cours', 'En cours'], ['calendrier', 'Calendrier'], ['terminees', 'Terminées'], ['factures', 'Factures']]
+
+// Factures du mode courant (même règle que /documents) : en particulier, la facture reçue et SES frais
+// de service ; en prestataire, la facture émise et SA commission. Jamais la commission de l'autre partie.
+const MODE_KINDS = { particulier: ['prestation', 'commission_client'], pro: ['prestation', 'commission_pro'] }
+const INV_TITLE: Record<string, string> = { recapitulatif: "Récapitulatif d'intervention", facture: 'Facture', commission: 'Frais de mise en relation' }
+const INV_KIND: Record<string, string> = { prestation: 'Prestation', commission_client: 'Frais de service', commission_pro: 'Commission PING' }
+
+const sectionTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }
 
 export default function AgendaPage() {
   const router = useRouter()
@@ -21,10 +36,26 @@ export default function AgendaPage() {
   const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [disputes, setDisputes] = useState<any[]>([])
+  const [invoices, setInvoices] = useState<any[]>([])
   const [freeSlots, setFreeSlots] = useState<Slot[] | null>(null)
   const [isPro, setIsPro] = useState<boolean | null>(null)
   const [uid, setUid] = useState('')
-  const [mode, setMode] = useMode(isPro)
+  const [mode] = useMode(isPro)
+  const [tab, setTab] = useState<Tab>('cours')
+
+  // Onglet demandé par l'URL (?onglet=terminees, ex. depuis « Historique »), sinon le dernier ouvert.
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search).get('onglet') as Tab | null
+      const saved = sessionStorage.getItem('ping_agenda_tab') as Tab | null
+      const want = q || saved
+      if (want && TABS.some(([k]) => k === want)) setTab(want)
+    } catch { /* stockage indisponible : onglet par défaut */ }
+  }, [])
+  function pickTab(t: Tab) {
+    setTab(t)
+    try { sessionStorage.setItem('ping_agenda_tab', t) } catch { /* rien */ }
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -50,16 +81,24 @@ export default function AgendaPage() {
       // demo, "Sofia M. · Menage") : l'adresse ne s'affiche jamais ici, meme
       // une fois confirmee — inutile de l'exposer dans une liste d'apercu.
       if (data?.length) {
-        const { data: rows } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: data.map((t: any) => t.id) })
+        const ids = data.map((t: any) => t.id)
+        const [{ data: rows }, { data: ds }, { data: inv }] = await Promise.all([
+          supabase.rpc('transaction_counterparts', { p_transaction_ids: ids }),
+          supabase.from('disputes')
+            .select('id, transaction_id, reason, status, created_at')
+            .in('transaction_id', ids)
+            .eq('status', 'open')
+            .order('created_at', { ascending: false }),
+          supabase.from('invoices')
+            .select('id, transaction_id, kind, template, number, issued_at, net_cents, issuer_id, client_id')
+            .in('transaction_id', ids)
+            .order('issued_at', { ascending: false }),
+        ])
         const map: Record<string, string> = {}
         ;(rows ?? []).forEach((r: any) => { if (r.full_name) map[r.transaction_id] = r.full_name })
         setNames(map)
-        const { data: ds } = await supabase.from('disputes')
-          .select('id, transaction_id, reason, status, created_at')
-          .in('transaction_id', data.map((t: any) => t.id))
-          .eq('status', 'open')
-          .order('created_at', { ascending: false })
         setDisputes(ds ?? [])
+        setInvoices(inv ?? [])
       }
       setLoading(false)
     }
@@ -76,16 +115,22 @@ export default function AgendaPage() {
   const pendingTalks = mine.filter(t => UPCOMING.includes(t.status) && !t.price_confirmed).length
   const upcoming = mine.filter(t => UPCOMING.includes(t.status) && t.price_confirmed)
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
-  const done = mine.filter(t => DONE.includes(t.status))
+  // Terminées : effectuées, et réservations annulées (comme la maquette), de la plus récente à la plus ancienne.
+  const done = mine.filter(t => DONE.includes(t.status) || (t.status === 'cancelled' && t.price_confirmed))
+    .sort((a, b) => txDate(b).getTime() - txDate(a).getTime())
   // « Aujourd'hui » : missions en cours ou du jour, avec un bouton vers l'écran « Mission du jour ».
   const todayList = upcoming.filter(t => isTodayMission(t))
   const later = upcoming.filter(t => !isTodayMission(t))
+  const mineById = new Map(mine.map(t => [t.id, t]))
+  const shownInvoices = mode ? invoices.filter(r => mineById.has(r.transaction_id) && MODE_KINDS[mode].includes(r.kind)) : []
+  const invoicedIds = new Set(invoices.map(r => r.transaction_id))
 
   // Comme la démo (v_agenda) : un statut qui dit où en est la mission, pas juste « à venir ».
   function badge(t: any): { label: string; bg: string; fg: string } {
+    if (t.status === 'cancelled') return { label: 'Annulée', bg: '#EEF2F1', fg: '#4E6470' }
     if (DONE.includes(t.status)) return { label: 'Effectuée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (t.status === 'arrived') return { label: 'En cours', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
-    if (t.en_route_at) return { label: 'En route', bg: 'rgba(47,208,110,.15)', fg: '#1a8f4c' }
+    if (t.en_route_at) return { label: 'En route', bg: 'rgba(47,208,110,.15)', fg: '#1a7a43' }
     if (t.price_confirmed) return { label: 'Confirmé', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     return { label: 'Tarif à valider', bg: '#FFF7ED', fg: '#8a6520' }
   }
@@ -112,46 +157,57 @@ export default function AgendaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mine, names, freeSlots, mode, disputedIds])
 
-  const card = (t: any) => (
-    <div key={t.id} onClick={() => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
-          {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
+  const open = (t: any) => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)
+
+  const card = (t: any, withSuivi = false) => (
+    <div key={t.id} role="link" tabIndex={0} onClick={() => open(t)}
+      onKeyDown={e => { if (e.key === 'Enter' && e.target === e.currentTarget) open(t) }}
+      style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
+            {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
+          </div>
+          <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
+          <div style={{ fontSize: 11, color: t.scheduled_at && UPCOMING.includes(t.status) ? '#0C8F7E' : '#4E6470', fontWeight: t.scheduled_at && UPCOMING.includes(t.status) ? 700 : 400, marginTop: 3 }}>
+            {t.scheduled_at && UPCOMING.includes(t.status)
+              ? `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`
+              : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+            {t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}
+          </div>
         </div>
-        <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
-        <div style={{ fontSize: 11, color: t.scheduled_at && !DONE.includes(t.status) ? '#0C8F7E' : '#6E8592', fontWeight: t.scheduled_at && !DONE.includes(t.status) ? 700 : 400, marginTop: 3 }}>
-          {t.scheduled_at && !DONE.includes(t.status)
-            ? `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`
-            : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
-          {t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: badge(t).bg, color: badge(t).fg }}>
+            {badge(t).label}
+          </span>
+          {isTodayMission(t) && (
+            <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
+              border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+            }}>Mission du jour</button>
+          )}
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: badge(t).bg, color: badge(t).fg }}>
-          {badge(t).label}
-        </span>
-        {isTodayMission(t) && (
-          <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
-            border: 'none', borderRadius: 999, padding: '7px 12px', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
-          }}>Mission du jour</button>
-        )}
-      </div>
+      {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
+      {withSuivi && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
     </div>
   )
+
+  const empty = (text: string) => <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 20 }}>{text}</p>
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
         <NavDrawer />
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>Agenda</span>
+        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', margin: 0 }}>Agenda</h1>
       </div>
 
       <div style={{ padding: 16, maxWidth: 980, margin: '0 auto' }}>
         {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} />}
 
+        {/* Litige en tête, quel que soit l'onglet. */}
         {shownDisputes.map(d => (
-          <div key={d.id} onClick={() => router.push(`/mission/${d.transaction_id}/chat`)}
+          <div key={d.id} role="link" tabIndex={0} onClick={() => router.push(`/mission/${d.transaction_id}/chat`)}
+            onKeyDown={e => { if (e.key === 'Enter') router.push(`/mission/${d.transaction_id}/chat`) }}
             style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer' }}>
             <div style={{ width: 36, height: 36, borderRadius: 11, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
@@ -168,52 +224,95 @@ export default function AgendaPage() {
           </div>
         ))}
 
-        {/* Calendrier */}
-        <div style={{ marginBottom: 20 }}>
-          <Calendar events={events}
-            emptyHint={mode === 'pro' ? 'Aucun rendez-vous ni créneau pour l\u2019instant. Publiez vos disponibilités pour être réservé en un clic.' : 'Aucun rendez-vous pour l\u2019instant.'} />
+        <div className="ping-tabs" role="tablist" aria-label="Agenda">
+          {TABS.map(([k, label]) => (
+            <button key={k} role="tab" id={`ag-tab-${k}`} aria-selected={tab === k} aria-controls={`ag-panel-${k}`} onClick={() => pickTab(k)}>
+              {label}
+              {k === 'cours' && todayList.length > 0 ? ` (${todayList.length})` : ''}
+            </button>
+          ))}
         </div>
 
-        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
-
-        {!loading && (
-          <>
-            {todayList.length > 0 && (
-              <>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>Aujourd&apos;hui</div>
-                {todayList.map(card)}
-                <div style={{ height: 10 }} />
-              </>
-            )}
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>À venir</div>
-            {later.length ? later.map(card) : <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 20 }}>{todayList.length ? 'Rien d\u2019autre de prévu.' : 'Rien de prévu pour l\u2019instant.'}</p>}
-            {pendingTalks > 0 && (
-              <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#4E6470', cursor: 'pointer' }}>
-                {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
-              </button>
-            )}
-
-            {isPro && mode === 'pro' && freeSlots !== null && (
-              <>
-                <div style={{ display: 'flex', alignItems: 'baseline', margin: '22px 0 10px' }}>
-                  <div style={{ flex: 1, fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em' }}>Mes créneaux libres</div>
-                  <span onClick={() => router.push('/pro/disponibilites')} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer' }}>Gérer</span>
-                </div>
-                {freeSlots.filter(x => new Date(x.starts_at) > new Date()).length ? freeSlots.filter(x => new Date(x.starts_at) > new Date()).slice(0, 3).map(x => (
-                  <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px dashed #B8C9C5', borderRadius: 13, padding: '10px 14px', marginBottom: 8 }}>
-                    <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, color: '#4E6470', width: 46 }}>{hhmm(x.starts_at)}</b>
-                    <span style={{ fontSize: 12, color: '#6E8592' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
+        <div role="tabpanel" id={`ag-panel-${tab}`} aria-labelledby={`ag-tab-${tab}`}>
+          {tab === 'calendrier' && (
+            <>
+              <div style={{ marginBottom: 20 }}>
+                <Calendar events={events}
+                  emptyHint={mode === 'pro' ? 'Aucun rendez-vous ni créneau pour l’instant. Publiez vos disponibilités pour être réservé en un clic.' : 'Aucun rendez-vous pour l’instant.'} />
+              </div>
+              {isPro && mode === 'pro' && freeSlots !== null && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', margin: '22px 0 6px' }}>
+                    <div style={{ ...sectionTitle, flex: 1, marginBottom: 0 }}>Mes créneaux libres</div>
+                    <button onClick={() => router.push('/pro/disponibilites')} style={{ border: 'none', background: 'none', minHeight: 44, padding: '0 4px', fontSize: 12.5, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer' }}>Gérer</button>
                   </div>
-                )) : (
-                  <p onClick={() => router.push('/pro/disponibilites')} style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600, cursor: 'pointer' }}>Publiez vos disponibilités pour être réservé en un clic.</p>
-                )}
-              </>
-            )}
+                  {freeSlots.filter(x => new Date(x.starts_at) > new Date()).length ? freeSlots.filter(x => new Date(x.starts_at) > new Date()).slice(0, 3).map(x => (
+                    <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px dashed #B8C9C5', borderRadius: 13, padding: '10px 14px', marginBottom: 8 }}>
+                      <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, color: '#4E6470', width: 46 }}>{hhmm(x.starts_at)}</b>
+                      <span style={{ fontSize: 12, color: '#4E6470' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
+                    </div>
+                  )) : (
+                    <button onClick={() => router.push('/pro/disponibilites')} style={{ border: 'none', background: 'none', padding: 0, minHeight: 44, textAlign: 'left', fontSize: 12.5, color: '#0C8F7E', fontWeight: 600, cursor: 'pointer' }}>Publiez vos disponibilités pour être réservé en un clic.</button>
+                  )}
+                </>
+              )}
+            </>
+          )}
 
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '22px 0 10px' }}>Effectuées</div>
-            {done.length ? done.map(card) : <p style={{ fontSize: 12.5, color: '#6E8592' }}>Aucune prestation terminée pour l&apos;instant.</p>}
-          </>
-        )}
+          {tab !== 'calendrier' && loading && <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+
+          {tab === 'cours' && !loading && (
+            <>
+              {todayList.length > 0 && (
+                <>
+                  <div style={{ ...sectionTitle, color: '#0C8F7E' }}>Aujourd&apos;hui</div>
+                  {todayList.map(t => card(t, true))}
+                  <div style={{ height: 10 }} />
+                </>
+              )}
+              <div style={sectionTitle}>À venir</div>
+              {later.length ? later.map(t => card(t, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
+              {pendingTalks > 0 && (
+                <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', minHeight: 44, textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#4E6470', cursor: 'pointer' }}>
+                  {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
+                </button>
+              )}
+            </>
+          )}
+
+          {tab === 'terminees' && !loading && (
+            done.length ? done.map(t => card(t)) : empty('Aucune prestation terminée pour l’instant.')
+          )}
+
+          {tab === 'factures' && !loading && (
+            <>
+              {shownInvoices.length ? (
+                <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, overflow: 'hidden', marginBottom: 14 }}>
+                  {shownInvoices.map((r, i) => (
+                    <button key={r.id} onClick={() => router.push(`/mission/${r.transaction_id}/facture`)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', border: 'none', borderTop: i ? '1px solid #EEF2F1' : 'none', background: '#fff', padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <span aria-hidden style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(18,179,156,.12)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></svg>
+                      </span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, color: '#123644' }}>
+                          {INV_TITLE[r.template] || 'Document'} · {eur(r.net_cents)}
+                        </b>
+                        <small style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {[r.number, new Date(r.issued_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }), INV_KIND[r.kind], r.kind === 'prestation' ? names[r.transaction_id] : null, mode === 'pro' && r.kind === 'prestation' && r.issuer_id === uid ? 'émise à votre en-tête' : null].filter(Boolean).join(' · ')}
+                        </small>
+                      </span>
+                      <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
+                    </button>
+                  ))}
+                </div>
+              ) : empty('Aucune facture pour l’instant. Elles apparaissent ici à la fin de chaque mission.')}
+              <button onClick={() => router.push('/documents')} style={{ display: 'block', width: '100%', minHeight: 44, border: '1px solid #DCE5E3', background: '#fff', borderRadius: 999, padding: '0 16px', fontWeight: 700, fontSize: 13, color: '#123644', cursor: 'pointer' }}>
+                Relevé annuel, export et partage
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

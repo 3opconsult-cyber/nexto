@@ -41,7 +41,7 @@ export default function AvanceImmediateCard({ transactionId, isSeller }: { trans
         : isSeller
           ? <>
               <p style={{ fontSize: 12, color: '#4E6470', margin: '6px 0 10px', lineHeight: 1.5 }}>Transmettez cette facture à l&apos;Urssaf : votre client ne paiera que 50 %.</p>
-              <button onClick={send} disabled={busy} style={{ border: 'none', borderRadius: 999, padding: '10px 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
+              <button onClick={send} disabled={busy} style={{ border: 'none', borderRadius: 999, padding: '10px 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
                 {busy ? 'Transmission…' : "Transmettre à l'Urssaf"}
               </button>
             </>
