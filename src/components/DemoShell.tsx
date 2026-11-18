@@ -10,6 +10,8 @@ import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from './MapShe
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
 import { useUnreadTotal } from '@/lib/unread'
 import { Ic, Stars, r1, svcIconKey } from './PingIcons'
+import LocationAsk from './LocationAsk'
+import { useInitialPosition } from '@/lib/location'
 
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
@@ -50,7 +52,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [acts, setActs] = useState<Record<string, string[]>>({})
   // CESU préfinancé accepté, pièces contrôlées (migration 039 ; vide tant qu'elle n'est pas appliquée).
   const [flags, setFlags] = useState<Record<string, ProviderFlags>>({})
-  const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
+  // Position : expliquée avant la fenêtre du navigateur (LocationAsk), repli Grasse.
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 })
   const [recenterTick, setRecenterTick] = useState(0)
   // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
   const [pvId, setPvId] = useState<string | null>(null)
@@ -69,14 +72,6 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const go = useCallback((v: string) => { setPrevView(view); setViewState(v) }, [view])
   const back = useCallback((v: string) => { setViewState(v) }, [])
 
-  // Position de l'utilisateur : géoloc réelle, repli Grasse.
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        p => setUserPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        () => { }, { timeout: 5000 })
-    }
-  }, [])
 
   // Chargement réel des prestataires (providers_nearby renvoie lat/lng réels).
   const loadPros = useCallback(() => {
@@ -289,6 +284,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
 
   return (
     <div className="stage" id="stage">
+      {askLoc && <LocationAsk onChoose={chooseLoc} onClose={dismissLoc} />}
       <div className="device">
         <div className="frame"><div className="screen" id="screen">
 

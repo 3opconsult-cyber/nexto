@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { TRADE_LIST, cesuEligible } from '@/lib/trades'
 import { geocodeAddress } from '@/lib/geocode'
+import LocationAsk from '@/components/LocationAsk'
+import type { Point } from '@/lib/location'
 import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
 import { FREQUENCIES, HOUSEHOLD, LINEN_TYPES, PAYMENTS } from '@/components/RequestDetails'
 
@@ -78,14 +80,10 @@ export default function NewOpenRequestPage() {
   }, [])
   const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
-  function getPosition(): Promise<GeolocationPosition> {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) { reject(new Error('unsupported')); return }
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
-    })
-  }
+  // Adresse non reconnue : on explique avant de demander la position (qc-production B2), puis on reprend l'envoi.
+  const [askPos, setAskPos] = useState(false)
 
-  async function submit() {
+  async function submit(fallbackPoint?: Point) {
     if (!title.trim()) { setError('Indiquez un titre pour votre annonce.'); return }
     const chosen = resolveAddress(profileAddress, addr)
     if ('error' in chosen) { setError(chosen.error as string); return }
@@ -99,16 +97,11 @@ export default function NewOpenRequestPage() {
 
     // Position de l'annonce = l'adresse d'intervention (géocodée), pas l'endroit où se trouve le téléphone.
     // La position de l'appareil ne sert qu'en secours si l'adresse n'est pas reconnue.
-    let point = await geocodeAddress(address).catch(() => null)
+    let point = fallbackPoint || await geocodeAddress(address).catch(() => null)
     if (!point) {
-      try {
-        const pos = await getPosition()
-        point = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-      } catch {
-        setError("Adresse non reconnue. Précisez-la (numéro, rue, ville) ou autorisez la localisation.")
-        setCreating(false)
-        return
-      }
+      setCreating(false)
+      setAskPos(true)
+      return
     }
 
     const supabase = createClient()
@@ -288,8 +281,15 @@ export default function NewOpenRequestPage() {
         </Section>
 
         {error && <p style={{ color: '#c0503a', fontSize: 13, fontWeight: 600, margin: '4px 0 12px' }}>{error}</p>}
+        {askPos && (
+          <LocationAsk remember={false} title="Adresse non reconnue"
+            text="Précisez l’adresse (numéro, rue, ville), ou placez votre demande près de vous : PING a besoin de votre position pour la montrer aux prestataires du secteur (relevée une fois, jamais suivie, jamais partagée)."
+            gpsLabel="Utiliser ma position"
+            onClose={() => setAskPos(false)}
+            onChoose={p => { setAskPos(false); submit(p) }} />
+        )}
 
-        <button onClick={submit} disabled={creating} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
+        <button onClick={() => submit()} disabled={creating} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
           {creating ? 'Publication…' : 'Publier mon annonce'}
         </button>
       </div>

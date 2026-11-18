@@ -8,7 +8,11 @@ const FALLBACK_KEY = process.env.ADMIN_FALLBACK_KEY || ''
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
-  if (!path.startsWith('/admin')) return NextResponse.next()
+  // /admin (réécrit vers /admin.html), /admin/* et l'accès direct au fichier statique /admin.html
+  // (qc-production B5 : il s'ouvrait sans session). Les icônes et le manifeste (/admin-icon-*.png,
+  // /admin-manifest.webmanifest) restent publics : ils ne sont pas dans le matcher ci-dessous.
+  const isAdmin = path === '/admin' || path === '/admin.html' || path.startsWith('/admin/')
+  if (!isAdmin) return NextResponse.next()
 
   let response = NextResponse.next({ request })
 
@@ -56,12 +60,12 @@ export async function middleware(request: NextRequest) {
   if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
-    url.search = '?next=' + encodeURIComponent(path)
+    url.search = '?next=' + encodeURIComponent(path === '/admin.html' ? '/admin' : path)
     return NextResponse.redirect(url)
   }
   return new NextResponse('Accès refusé — ce compte n’est pas administrateur. Connectez-vous avec 3op.consult@gmail.com', { status: 401 })
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/admin'],
+  matcher: ['/admin/:path*', '/admin', '/admin.html'],
 }

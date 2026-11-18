@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { geocodeAddress } from '@/lib/geocode'
+import LocationAsk from '@/components/LocationAsk'
+import { useInitialPosition } from '@/lib/location'
 import ModeSwitchPill from '@/components/ModeSwitchPill'
 import NavDrawer from '@/components/NavDrawer'
 import { requestDetailRows } from '@/components/RequestDetails'
@@ -49,7 +51,8 @@ const SLOT_LABELS: Record<string, string> = { matin: 'Matin', 'apres-midi': 'Apr
 export default function ProCartePage() {
   const router = useRouter()
   const unread = useUnreadTotal('pro', 'pro-carte')
-  const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
+  // Position : expliquée avant la fenêtre du navigateur (LocationAsk), repli Grasse.
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 })
   const [allReqs, setAllReqs] = useState<RequestNearby[]>([])
   const [recenterTick, setRecenterTick] = useState(0)
   const [available, setAvailable] = useState(true)
@@ -89,13 +92,6 @@ export default function ProCartePage() {
     setZoneCenter(g); setRecenterTick(t => t + 1); setZoneOpen(false)
   }
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        p => setUserPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        () => { }, { timeout: 5000 })
-    }
-  }, [])
 
   // Le bandeau visible/masque doit refleter (et modifier) le vrai flag qui
   // conditionne l'apparition sur providers_nearby (provider_profiles.is_active),
@@ -429,6 +425,8 @@ export default function ProCartePage() {
 
   return (
     <div className="procarte-screen">
+      {askLoc && <LocationAsk onChoose={chooseLoc} onClose={dismissLoc}
+        text="Pour vous montrer les demandes près de vous, PING a besoin de votre position (jamais suivie, jamais partagée)." />}
       <div className="body full nopad procarte-body">
         <div className="mapwrap" ref={setWrapEl}>
           <div className="topbar procarte-topbar">

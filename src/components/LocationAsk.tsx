@@ -1,0 +1,131 @@
+"use client"
+import { useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
+import { Ic } from './PingIcons'
+import { geocodeAddress } from '@/lib/geocode'
+import { readPositionOnce, saveLocationChoice, type Point } from '@/lib/location'
+
+// Encart affiché AVANT la fenêtre de localisation du navigateur (qc-production B2) :
+// pourquoi PING demande la position, ce qu'il n'en fait pas, et une issue sans GPS (choisir une ville).
+
+const CITIES: { label: string; lat: number; lng: number }[] = [
+  { label: 'Nice', lat: 43.7102, lng: 7.262 },
+  { label: 'Cannes', lat: 43.5528, lng: 7.0174 },
+  { label: 'Antibes', lat: 43.5808, lng: 7.1251 },
+  { label: 'Grasse', lat: 43.6584, lng: 6.9225 },
+  { label: 'Cagnes-sur-Mer', lat: 43.6644, lng: 7.1489 },
+  { label: 'Menton', lat: 43.7747, lng: 7.4975 },
+  { label: 'Fréjus', lat: 43.4331, lng: 6.7370 },
+]
+
+export const LOCATION_WHY = 'Pour vous montrer ce qui est près de vous, PING a besoin de votre position (jamais suivie, jamais partagée).'
+
+export default function LocationAsk({ onChoose, onClose, overlay = true, title = 'Où êtes-vous ?', text = LOCATION_WHY, gpsLabel = 'Utiliser ma position', remember = true }: {
+  onChoose: (p: Point, label?: string) => void
+  onClose?: () => void
+  overlay?: boolean
+  title?: string
+  text?: string
+  gpsLabel?: string
+  /** Retenir le choix sur l'appareil (cartes). Faux pour un usage ponctuel (formulaire). */
+  remember?: boolean
+}) {
+  const [cityMode, setCityMode] = useState(false)
+  const [q, setQ] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function useGps() {
+    setBusy(true); setErr('')
+    try {
+      const p = await readPositionOnce()
+      if (remember) saveLocationChoice({ kind: 'gps' })
+      onChoose(p)
+    } catch (e: any) { setErr(e?.message || 'Position indisponible.'); setCityMode(true) }
+    setBusy(false)
+  }
+  function pick(c: { label: string; lat: number; lng: number }) {
+    if (remember) saveLocationChoice({ kind: 'city', ...c })
+    onChoose({ lat: c.lat, lng: c.lng }, c.label)
+  }
+  async function searchCity() {
+    const label = q.trim()
+    if (label.length < 2) { setErr('Indiquez une ville.'); return }
+    setBusy(true); setErr('')
+    const g = await geocodeAddress(label)
+    setBusy(false)
+    if (!g) { setErr('Ville introuvable. Essayez avec le code postal.'); return }
+    pick({ label, ...g })
+  }
+
+  const card: CSSProperties = {
+    background: '#fff', border: '1px solid var(--line, #E7EDEB)', borderRadius: 18, padding: 18,
+    boxShadow: overlay ? '0 18px 50px rgba(18,54,68,.22)' : 'none', width: '100%', maxWidth: 400,
+    fontFamily: "var(--fb, 'Inter', system-ui, sans-serif)", color: 'var(--ink, #123644)', position: 'relative',
+  }
+  const btn: CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 46,
+    borderRadius: 14, fontFamily: "var(--fh, 'Quicksand', system-ui, sans-serif)", fontWeight: 700, fontSize: 15,
+    cursor: busy ? 'wait' : 'pointer', border: 'none',
+  }
+  const body = (
+    <div style={card} role="dialog" aria-modal={overlay || undefined} aria-labelledby="loc-ask-t">
+      {onClose && (
+        <button type="button" onClick={onClose} aria-label="Fermer"
+          style={{ position: 'absolute', top: 10, right: 10, width: 32, height: 32, border: 'none', background: 'transparent', color: '#4E6470', cursor: 'pointer', fontSize: 18 }}>✕</button>
+      )}
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingRight: onClose ? 26 : 0 }}>
+        <span style={{ flex: '0 0 auto', width: 40, height: 40, borderRadius: 12, background: 'rgba(18,179,156,.12)', color: 'var(--tealD, #0C8F7E)', display: 'grid', placeItems: 'center' }}>
+          <Ic name="loc" size={22} />
+        </span>
+        <div>
+          <div id="loc-ask-t" style={{ fontFamily: "var(--fh, 'Quicksand', system-ui, sans-serif)", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{title}</div>
+          <p style={{ fontSize: 13.5, lineHeight: 1.45, color: '#4E6470', margin: 0 }}>{text}</p>
+        </div>
+      </div>
+
+      {!cityMode ? (
+        <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
+          <button type="button" onClick={useGps} disabled={busy} style={{ ...btn, background: 'var(--btnFill, #0C8F7E)', color: '#fff' }}>
+            <Ic name="loc" size={18} /> {busy ? 'Localisation…' : gpsLabel}
+          </button>
+          <button type="button" onClick={() => { setCityMode(true); setErr('') }} disabled={busy}
+            style={{ ...btn, background: '#fff', color: 'var(--ink, #123644)', border: '1.5px solid var(--line, #E7EDEB)' }}>
+            Choisir une ville
+          </button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 14 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {CITIES.map(c => (
+              <button key={c.label} type="button" onClick={() => pick(c)}
+                style={{ background: '#fff', border: '1px solid var(--line, #E7EDEB)', borderRadius: 999, padding: '8px 13px', fontSize: 13, fontWeight: 600, color: 'var(--ink, #123644)', cursor: 'pointer' }}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <form onSubmit={e => { e.preventDefault(); searchCity() }} style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Autre ville ou code postal" aria-label="Ville ou code postal"
+              style={{ flex: 1, minWidth: 0, minHeight: 44, border: '1.5px solid var(--line, #E7EDEB)', borderRadius: 12, padding: '0 12px', fontSize: 15, color: 'var(--ink, #123644)' }} />
+            <button type="submit" disabled={busy} style={{ ...btn, width: 'auto', padding: '0 16px', background: 'var(--btnFill, #0C8F7E)', color: '#fff' }}>
+              {busy ? '…' : 'OK'}
+            </button>
+          </form>
+          <button type="button" onClick={useGps} disabled={busy}
+            style={{ marginTop: 10, background: 'none', border: 'none', color: 'var(--tealD, #0C8F7E)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', padding: 0 }}>
+            {gpsLabel} plutôt
+          </button>
+        </div>
+      )}
+      {err && <p role="alert" style={{ marginTop: 10, fontSize: 13, color: 'var(--danger, #C0503A)', lineHeight: 1.4 }}>{err}</p>}
+    </div>
+  )
+  if (!overlay) return body
+  // Portail vers <body> : un ancêtre transformé (coque de la carte) casserait position:fixed.
+  return createPortal(
+    <div style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(18,54,68,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      {body}
+    </div>,
+    document.body,
+  )
+}

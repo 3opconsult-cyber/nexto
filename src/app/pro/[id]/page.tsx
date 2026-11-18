@@ -227,13 +227,22 @@ export default function ProDetailPage() {
           {pro.has_rcpro && (
             <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Renseignée par le pro (casse, dommage) · Attestation transmise sur demande</small></span><span className="vs"><Ic name="check" size={11} />Renseignée</span></div>
           )}
+          {/* SIRET : déclaratif (qc-production B6), jamais « vérifié ». Numéro public de l'entreprise. */}
+          {pro.siret && (
+            <div className="mq-vr ok"><span className="vi"><Ic name="ent" size={15} /></span><span><b>SIRET renseigné</b><small>Déclaré par le pro · n° {String(pro.siret).replace(/\D/g, '').replace(/^(\d{3})(\d{3})(\d{3})(\d{5})$/, '$1 $2 $3 $4')}</small></span><span className="vs"><Ic name="check" size={11} />Renseigné</span></div>
+          )}
+          {/* has_urssaf : à renvoyer par provider_trust_stats (migration à écrire, la table documents n'est
+              lisible que par son auteur). Tant qu'elle ne le renvoie pas, la ligne reste masquée. */}
+          {pro.has_urssaf && (
+            <div className="mq-vr ok"><span className="vi"><Ic name="doc" size={15} /></span><span><b>Attestation URSSAF</b><small>Attestation de vigilance déposée sur PING par le pro</small></span><span className="vs"><Ic name="check" size={11} />Fournie</span></div>
+          )}
           {pro.sap_number && (
             <div className="mq-vr ok"><span className="vi"><Ic name="doc" size={15} /></span><span><b>Attestation crédit d&apos;impôt</b><small>Peut établir la déclaration fiscale</small></span><span className="vs"><Ic name="check" size={11} />Possible</span></div>
           )}
           {pro.accepts_cesu_prefinance === true && (
             <div className="mq-vr ok"><span className="vi"><Ic name="card" size={15} /></span><span><b>Accepte le CESU préfinancé</b><small>Titres employeur ou comité d&apos;entreprise</small></span><span className="vs"><Ic name="check" size={11} />Oui</span></div>
           )}
-          {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && !pro.accepts_cesu_prefinance && docsChecked !== true && (
+          {!pro.has_identity && !pro.has_rcpro && !pro.siret && !pro.has_urssaf && !pro.sap_number && !pro.accepts_cesu_prefinance && docsChecked !== true && (
             <p className="ping-sub">Aucune information encore renseignée par le prestataire.</p>
           )}
           <p className="mq-muted">PING contrôle les pièces marquées « Validée ». Les autres informations sont déclarées par le prestataire.</p>

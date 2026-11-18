@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
@@ -25,8 +25,10 @@ const RUBRIQUES: Rubrique[] = [
     types: [{ key: 'cni-recto', label: 'Carte d’identité — recto' }, { key: 'cni-verso', label: 'Carte d’identité — verso' }, { key: 'passeport', label: 'Passeport' }] },
   { kind: 'rcpro', title: 'Assurances', help: 'Attestations en cours de validité.',
     types: [{ key: 'rcpro', label: 'Responsabilité civile professionnelle' }, { key: 'decennale', label: 'Garantie décennale' }, { key: 'autre', label: 'Autre attestation' }] },
-  { kind: 'kbis', title: 'Statut de l’entreprise', help: 'Kbis, avis de situation Insee ou attestation SIRET.',
-    types: [{ key: 'kbis', label: 'Kbis' }, { key: 'insee', label: 'Avis de situation Insee / SIRET' }] },
+  // L'attestation URSSAF est rangée ici (type `urssaf`) : l'enum doc_kind ne connaît que identite, rcpro, kbis,
+  // diplome, sap et rib. Une rubrique à part demanderait ALTER TYPE … ADD VALUE (migration séparée).
+  { kind: 'kbis', title: 'Statut de l’entreprise et URSSAF', help: 'Kbis, avis de situation Insee ou attestation SIRET, et attestation de vigilance URSSAF (moins de 6 mois).',
+    types: [{ key: 'kbis', label: 'Kbis' }, { key: 'insee', label: 'Avis de situation Insee / SIRET' }, { key: 'urssaf', label: 'Attestation de vigilance URSSAF' }] },
   { kind: 'diplome', title: 'Diplômes et qualifications', help: 'Facultatif : un vrai plus pour rassurer les clients.', optional: true,
     types: [{ key: 'diplome', label: 'Diplôme' }, { key: 'qualification', label: 'Qualification / formation' }, { key: 'certificat', label: 'Attestation de formation' }] },
   { kind: 'sap', title: 'Services à la personne (SAP)', help: 'Récépissé de déclaration NOVA : vos clients peuvent ne payer que 50 % grâce au crédit d’impôt.', optional: true,
@@ -61,12 +63,22 @@ function parse(name: string): { kind: Kind; type: string | null; at: number } | 
 }
 const isImage = (p: string) => /\.(jpe?g|png|gif|webp|heic)$/i.test(p)
 
+function StatusLine({ label, ok, okText, missing }: { label: string; ok: boolean; okText: string; missing: ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontSize: 12, lineHeight: 1.45 }}>
+      <span style={{ fontWeight: 700, color: '#123644', minWidth: 128 }}>{label}</span>
+      <span style={{ color: ok ? '#0C8F7E' : '#4E6470', fontWeight: ok ? 700 : 500 }}>{ok ? <>✓ {okText}</> : missing}</span>
+    </div>
+  )
+}
+
 export default function ProDocumentsPage() {
   const router = useRouter()
   const [uid, setUid] = useState<string | null>(null)
   const [pieces, setPieces] = useState<Piece[]>([])
   const [rows, setRows] = useState<Partial<Record<Kind, DocRow>>>({})
   const [ready, setReady] = useState(false)
+  const [siret, setSiret] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [adding, setAdding] = useState<{ kind: Kind; type: string } | null>(null)
@@ -83,6 +95,8 @@ export default function ProDocumentsPage() {
       supabase.storage.from('documents').list(user.id, { limit: 200, sortBy: { column: 'name', order: 'desc' } }),
       supabase.from('documents').select('kind, status, storage_path').eq('owner_id', user.id),
     ])
+    const { data: pp } = await supabase.from('provider_profiles').select('siret').eq('id', user.id).maybeSingle()
+    setSiret(((pp as any)?.siret || '').trim() || null)
     const list: Piece[] = []
     ;(files ?? []).forEach(f => { const p = parse(f.name); if (p) list.push({ path: `${user.id}/${f.name}`, ...p }) })
     list.sort((a, b) => b.at - a.at)
@@ -190,6 +204,15 @@ export default function ProDocumentsPage() {
                   <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>
                 </div>
               </div>
+
+              {/* Statut par ligne (qc-production B6) : SIRET déclaré, et chaque type de pièce déposé ou non. */}
+              {r.kind === 'kbis' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
+                  <StatusLine label="SIRET" ok={!!siret} okText={siret ? `Renseigné · ${siret.replace(/\D/g, '').replace(/^(\d{3})(\d{3})(\d{3})(\d{5})$/, '$1 $2 $3 $4')}` : ''}
+                    missing={<>Non renseigné · <a href="/pro/onboarding" style={{ color: '#0C8F7E', fontWeight: 700 }}>compléter</a> (facultatif pour un particulier)</>} />
+                  <StatusLine label="Attestation URSSAF" ok={mine.some(p => p.type === 'urssaf')} okText="Déposée" missing="À déposer ci-dessous" />
+                </div>
+              )}
 
               {mine.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>

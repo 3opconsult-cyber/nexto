@@ -6,6 +6,7 @@ import { trackEvent } from '@/lib/tracking'
 import { searchCompany, guessLegalStatus, CompanyMatch } from '@/lib/legalLookup'
 import { geocodeAddress } from '@/lib/geocode'
 import OnboardingStep from '@/components/OnboardingStep'
+import LocationAsk from '@/components/LocationAsk'
 import { TRADE_LIST as SERVICES, TRADES, cesuEligible } from '@/lib/trades'
 import { LEGAL_FORMS, type LegalForm, type VatStatus, VAT_FRANCHISE_MENTION, guessLegalForm, legalStatusFor, cleanVat, vatNumberValid, isMissingColumnError, PRO_STATUS_COLUMNS } from '@/lib/proStatus'
 import PricingEditor from '@/components/PricingEditor'
@@ -66,7 +67,6 @@ export default function ProOnboarding() {
   const [acceptsCesu, setAcceptsCesu] = useState(false)
   const [address, setAddress] = useState('')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
-  const [locating, setLocating] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
   const [geocodeError, setGeocodeError] = useState('')
   const [phone, setPhone] = useState('')
@@ -214,17 +214,6 @@ export default function ProOnboarding() {
     if (c.lat != null && c.lng != null) setCoords({ lat: c.lat, lng: c.lng })
     const g = guessLegalForm(c.natureJuridique)
     if (g) setLegalForm(g)
-  }
-
-  function useMyLocation() {
-    if (!navigator.geolocation) { setGeocodeError('Géolocalisation indisponible sur cet appareil — saisissez votre adresse ci-dessous.'); return }
-    setLocating(true)
-    setGeocodeError('')
-    navigator.geolocation.getCurrentPosition(
-      p => { setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }); setLocating(false) },
-      () => { setLocating(false); setGeocodeError('Position refusée ou indisponible — saisissez votre adresse ci-dessous, on la retrouve pour vous.') },
-      { timeout: 8000 }
-    )
   }
 
   // Repli quand la geolocalisation echoue/est refusee (poste fixe, permission
@@ -522,10 +511,20 @@ export default function ProOnboarding() {
         subtitle="Pour apparaître au bon endroit sur la carte."
         onBack={back} onCta={() => { setPhoneTouched(true); if (phoneValid(phone) && (!prefilled || confirmedInfo)) next() }}
         ctaDisabled={(!coords && !address.trim()) || (phoneTouched && !phoneValid(phone)) || (prefilled && !confirmedInfo)}>
-        <button onClick={useMyLocation} disabled={locating}
-          style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: coords ? 'rgba(18,179,156,.1)' : '#123644', color: coords ? '#0C8F7E' : '#fff', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>
-          {locating ? 'Localisation…' : coords ? '✓ Position enregistrée' : 'Utiliser ma position actuelle'}
-        </button>
+        {/* Position expliquée avant la fenêtre du navigateur (qc-production B2). */}
+        {coords ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>
+            <span style={{ flex: 1 }}>✓ Position enregistrée</span>
+            <button type="button" onClick={() => { setCoords(null); setGeocodeError('') }}
+              style={{ background: 'none', border: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>Modifier</button>
+          </div>
+        ) : (
+          <div style={{ marginBottom: 14 }}>
+            <LocationAsk overlay={false} remember={false} title="Votre position"
+              text="Pour vous montrer aux clients près de chez vous, PING a besoin de votre position (relevée une fois, jamais suivie, jamais partagée)."
+              onChoose={(p, label) => { setCoords(p); setGeocodeError(''); if (label && !address.trim()) setAddress(label) }} />
+          </div>
+        )}
         <label>
           <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Adresse {coords ? '(affichée sur votre profil)' : '— sert aussi à vous localiser si la géolocalisation ne fonctionne pas'}</span>
           <input value={address} onChange={e => setAddress(e.target.value)} style={{ ...inputStyle, marginTop: 6 }} />
