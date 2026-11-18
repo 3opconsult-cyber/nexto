@@ -238,21 +238,32 @@ export async function respondToRequest(requestId: string): Promise<{ missionId: 
   return { missionId: data as string }
 }
 
-// Indicateurs de confiance et de paiement d'un ensemble de prestataires (18/11/2026, migration 039) :
+// Indicateurs de confiance et de paiement d'un ensemble de prestataires (18/11/2026, migrations 039 et 042) :
 //   cesu    — le prestataire a indiqué accepter le CESU préfinancé (provider_profiles.accepts_cesu_prefinance)
-//   checked — sa pièce d'identité a été validée par un admin PING (RPC provider_docs_checked)
-// Avant la migration, colonne et RPC n'existent pas : on renvoie undefined, rien ne s'affiche.
-export type ProviderFlags = { cesu?: boolean; checked?: boolean }
+//   checked — sa pièce d'identité a été validée par un admin PING et n'est pas expirée
+//             (RPC provider_docs_status de la 042, sinon provider_docs_checked de la 039)
+//   rcproChecked — son attestation d'assurance RC a été contrôlée par PING (042 seulement)
+// Avant les migrations, colonne et RPC n'existent pas : on renvoie undefined, rien ne s'affiche.
+export type ProviderFlags = { cesu?: boolean; checked?: boolean; rcproChecked?: boolean }
 export async function fetchProviderFlags(ids: string[]): Promise<Record<string, ProviderFlags>> {
   const out: Record<string, ProviderFlags> = {}
   const uniq = Array.from(new Set(ids)).filter(Boolean)
   if (!uniq.length) return out
   const supabase = createClient()
-  const [cesu, docs] = await Promise.all([
+  const [cesu, status] = await Promise.all([
     supabase.from('provider_profiles').select('id, accepts_cesu_prefinance').in('id', uniq),
-    supabase.rpc('provider_docs_checked', { p_ids: uniq }),
+    supabase.rpc('provider_docs_status', { p_ids: uniq }),
   ])
   if (!cesu.error) for (const r of (cesu.data ?? []) as any[]) (out[r.id] ||= {}).cesu = !!r.accepts_cesu_prefinance
+  if (!status.error) {
+    for (const r of (status.data ?? []) as any[]) {
+      const f = (out[r.provider_id] ||= {})
+      f.checked = !!r.identity_checked
+      f.rcproChecked = !!r.rcpro_checked
+    }
+    return out
+  }
+  const docs = await supabase.rpc('provider_docs_checked', { p_ids: uniq })
   if (!docs.error) for (const r of (docs.data ?? []) as any[]) (out[r.provider_id] ||= {}).checked = !!r.docs_checked
   return out
 }

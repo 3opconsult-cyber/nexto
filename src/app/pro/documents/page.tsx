@@ -8,6 +8,7 @@ import RetourLink from '@/components/RetourLink'
 import Modal from '@/components/Modal'
 import { useCatalog, docsForServices } from '@/lib/catalog'
 import { fetchProviderActivities } from '@/lib/services'
+import { fetchMyDocuments, expiryOf, expiryText } from '@/lib/pieces'
 
 /**
  * Mes pièces — rangées par rubrique, plusieurs pièces par rubrique (demande Romain 30/10) :
@@ -49,10 +50,11 @@ const ICON: Record<Kind, JSX.Element> = {
 }
 
 type Piece = { path: string; kind: Kind; type: string | null; at: number }
-type DocRow = { kind: Kind; status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null }
+type DocRow = { kind: Kind; status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; valid_until?: string | null; rejection_reason?: string | null }
 
 const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
-  valid: { label: 'Fourni', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
+  // « Contrôlé par PING » : la pièce a été validée par un admin (exception de langage du 03/11).
+  valid: { label: 'Contrôlé par PING', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
   pending: { label: 'Reçu — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#8A6520' },
   rejected: { label: 'Refusé — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
   expired: { label: 'Expiré — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
@@ -101,9 +103,10 @@ export default function ProDocumentsPage() {
       const acts = await fetchProviderActivities([{ id: user.id, trade: pp?.trade || '' }])
       setMyTrades(acts[user.id] ?? [])
     }, () => {})
-    const [{ data: files }, { data: docs }] = await Promise.all([
+    // Motif de refus et échéance (migration 042) : relus sans ces colonnes tant qu'elle n'est pas appliquée.
+    const [{ data: files }, { rows: docs }] = await Promise.all([
       supabase.storage.from('documents').list(user.id, { limit: 200, sortBy: { column: 'name', order: 'desc' } }),
-      supabase.from('documents').select('kind, status, storage_path').eq('owner_id', user.id),
+      fetchMyDocuments(supabase, user.id),
     ])
     const { data: pp } = await supabase.from('provider_profiles').select('siret').eq('id', user.id).maybeSingle()
     setSiret(((pp as any)?.siret || '').trim() || null)
@@ -229,7 +232,8 @@ export default function ProDocumentsPage() {
         {rubriques.map(r => {
           const mine = pieces.filter(p => p.kind === r.kind)
           const row = rows[r.kind]
-          const st = row ? STATUS[row.status] : null
+          const exp = expiryOf(row)
+          const st = row ? (exp?.expired ? STATUS.expired : STATUS[row.status]) : null
           return (
             <div key={r.kind} style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -244,6 +248,19 @@ export default function ProDocumentsPage() {
                       : <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592' }}>{r.optional ? 'Facultatif' : 'À fournir'}</span>}
                   </div>
                   <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>
+                  {row?.status === 'rejected' && (
+                    <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(255,122,102,.1)', color: '#A8432F', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>
+                      Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Déposez une nouvelle pièce ci-dessous : elle repart en contrôle.
+                    </div>
+                  )}
+                  {exp && row?.status !== 'rejected' && (
+                    <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: exp.expired || exp.days <= 14 ? 'rgba(255,122,102,.1)' : 'rgba(242,169,59,.14)', color: exp.expired || exp.days <= 14 ? '#A8432F' : '#7A5717', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>
+                      {expiryText(exp)}.
+                    </div>
+                  )}
+                  {row?.status === 'valid' && row.valid_until && !exp && (
+                    <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4 }}>Valable jusqu&apos;au {new Date(`${row.valid_until}T12:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                  )}
                 </div>
               </div>
 

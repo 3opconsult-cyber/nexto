@@ -11,6 +11,7 @@ import { CGV_VERSION } from '@/lib/cgv'
 import { legalFormLabel } from '@/lib/proStatus'
 import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
+import { fetchMyDocuments, documentAlerts, type DocRowFull } from '@/lib/pieces'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import ProMonthBlock from '@/components/ProMonthBlock'
 import { paymentsActive } from '@/lib/paymentsClient'
@@ -50,6 +51,8 @@ export default function ProDashboard() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'hub' | 'missions'>('hub')
   const [docs, setDocs] = useState<Record<string, { status: string }>>({})
+  // Pièces refusées, expirées ou à renouveler sous 45 jours (migration 042 ; vide avant).
+  const [docRowsFull, setDocRowsFull] = useState<DocRowFull[]>([])
   const [city, setCity] = useState('')
   // « Mon annonce » : complétude (même calcul que /pro/annonce).
   const [listingPct, setListingPct] = useState<number | null>(null)
@@ -75,10 +78,11 @@ export default function ProDashboard() {
       const { data: tx } = await supabase.from('transactions').select('*, requests(category)').eq('seller_id', pp.id).order('created_at', { ascending: false })
       setTransactions(tx ?? [])
 
-      const { data: docRows } = await supabase.from('documents').select('kind, status').eq('owner_id', user.id)
+      const { rows: docRows } = await fetchMyDocuments(supabase, user.id)
       const docMap: Record<string, { status: string }> = {}
       ;(docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
       setDocs(docMap)
+      setDocRowsFull(docRows)
       loadListingFacts(supabase, user.id, pp).then(r => setListingPct(listingScore(listingChecks(r.facts)))).catch(() => {})
 
       const { data: priv } = await supabase.from('provider_private').select('tax_id, iban').eq('id', user.id).maybeSingle()
@@ -133,6 +137,7 @@ export default function ProDashboard() {
   const rcOk = docs.rcpro?.status === 'valid' || docs.rcpro?.status === 'pending'
   const diplomeOk = docs.diplome?.status === 'valid' || docs.diplome?.status === 'pending'
   const TAB_TITLES: Record<string, string> = { missions: 'Historique des missions' }
+  const docAlerts = documentAlerts(docRowsFull)
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
@@ -246,6 +251,16 @@ export default function ProDashboard() {
               </div>
             </div>
 
+            {docAlerts.length > 0 && (
+              <div role="status" style={{ margin: '0 0 12px', padding: '12px 14px', borderRadius: 14, background: '#fff', border: `1px solid ${docAlerts.some(a => a.urgent) ? 'rgba(255,122,102,.45)' : 'rgba(242,169,59,.5)'}` }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginBottom: 6 }}>Mes pièces : à mettre à jour</div>
+                {docAlerts.map(a => (
+                  <div key={a.kind} style={{ fontSize: 12.5, color: a.urgent ? '#A8432F' : '#7A5717', fontWeight: 600, lineHeight: 1.5 }}>{a.text}</div>
+                ))}
+                <button type="button" onClick={() => router.push('/pro/documents')} style={{ marginTop: 8, border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline' }}>Ouvrir Mes pièces</button>
+              </div>
+            )}
+
             <ProMonthBlock pro={pro} transactions={transactions} />
 
             {/* Tout ce qui sortait du menu latéral est rangé ici, par rubrique (même présentation que
@@ -282,7 +297,7 @@ export default function ProDashboard() {
             <HubGroup title="Mon entreprise">
               <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
               <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
-                badge={idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
+                badge={docAlerts.length ? { text: 'à mettre à jour', tone: 'todo' } : idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
                 onClick={() => router.push('/pro/documents')} />
               <HubRow icon={HUB_ICONS.eye} label="Mon annonce" sub="Photos, présentation, points forts, mise en ligne"
                 badge={listingPct === 100 ? { text: 'complète', tone: 'ok' } : listingPct != null ? { text: `${listingPct} %`, tone: 'todo' } : undefined}

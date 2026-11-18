@@ -31,7 +31,7 @@ type Pro = {
   acts: string[]; hits: number
   // Présentation de la maquette : services, note, distance, CESU, pièces contrôlées par PING
   // (true : pièce d'identité validée par un admin ; false : en cours de contrôle ; undefined : inconnu).
-  svc: string; distTxt: string; cesu: boolean; checked?: boolean
+  svc: string; distTxt: string; cesu: boolean; checked?: boolean; rcproChecked?: boolean
 }
 
 const HUES: Record<string, string> = {
@@ -109,7 +109,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     if (x.has_rcpro) chips.push('Assurance RC renseignée')
     if (flags[x.id]?.cesu) chips.push('Accepte le CESU préfinancé')
     return {
-      svc: actsOf(x).map(lab).join(', '), distTxt, cesu: !!flags[x.id]?.cesu, checked: flags[x.id]?.checked,
+      svc: actsOf(x).map(lab).join(', '), distTxt, cesu: !!flags[x.id]?.cesu, checked: flags[x.id]?.checked, rcproChecked: flags[x.id]?.rcproChecked,
       id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
       m: `${actsOf(x).map(lab).join(', ')} · ${rateTxt} · à ${distTxt}`, p: price,
       d: x.is_active ? 'Disponible' : 'Hors ligne pour le moment', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
@@ -425,7 +425,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                         {pv.checked !== true && pv.identity && (
                           <div className={`mq-vr ${pv.checked === false ? 'w' : 'ok'}`}><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d’identité</b><small>{pv.checked === false ? 'Envoyée, en contrôle par PING' : 'Fournie par le prestataire'}</small></span><span className="vs">{pv.checked === false ? 'En contrôle' : <><Ic name="check" size={11} />Fournie</>}</span></div>
                         )}
-                        {pv.rcpro && (
+                        {pv.rcproChecked === true && (
+                          <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Attestation contrôlée par PING</small></span><span className="vs"><Ic name="check" size={11} />Validée</span></div>
+                        )}
+                        {pv.rcproChecked !== true && pv.rcpro && (
                           <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Renseignée par le prestataire</small></span><span className="vs"><Ic name="check" size={11} />Renseignée</span></div>
                         )}
                         {pv.cesu && (

@@ -49,6 +49,8 @@ Ces lots sont déjà en ligne côté app et fonctionnent avant comme après la m
 | C7 | Avance immédiate (Urssaf) | **Faille** : le pro peut marquer une demande « payée ». À fermer avant toute activation. | `src/app/api/avance-immediate/*`, trigger sur `avance_immediate_demandes` | oui | S |
 | C8 | Litige (admin) | **Geste commercial de PING** avec avoir, en dehors de l'arrangement amiable : lot 33. La 040 ne couvre que l'accord des deux parties. | `src/app/litiges/[id]/page.tsx`, `public/admin.html`, `/api/payments/refund` | oui (même colonnes d'avoir que 040, à étendre) | M, plus une décision R |
 
+**Préparé le 18/11 (non appliqué)** : C1 (042, sans DROP : la RPC `provider_docs_status` remplace l'idée de modifier `providers_nearby`), C2 (042), C3 (043), C4 (044, rapport `docs/droits-base-2026-11-18.md`), C7 (046), plus la réservation calculée en base (045) et le réglage `commission_on_credit` (047, désactivé). Ordre de collage : `supabase/a_coller/README.md`.
+
 ## D. En cours ailleurs, ou à vérifier par Romain
 
 - **Connexion par lien magique.** Un autre agent s'en charge. Le bouton « Recevoir un lien de connexion par e-mail » est visible sur `/auth/login` (38b498c). Il reste à vérifier de bout en bout : e-mail reçu, puis `/auth/callback`, puis le bon espace.
