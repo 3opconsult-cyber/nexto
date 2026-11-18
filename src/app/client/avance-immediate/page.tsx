@@ -129,8 +129,8 @@ export default function AvanceImmediate() {
               <label style={lbl}>Nom d&apos;usage (facultatif)<input style={field} value={f.nomUsage} onChange={e => set('nomUsage', e.target.value)} /></label>
               <label style={lbl}>Prénoms<input style={field} value={f.prenoms} onChange={e => set('prenoms', e.target.value)} /></label>
               <label style={lbl}>Date de naissance<input type="date" style={field} value={f.dateNaissance} onChange={e => set('dateNaissance', e.target.value)} /></label>
-              <label style={{ ...lbl, display: 'flex', gap: 8, alignItems: 'center', color: '#123644' }}>
-                <input type="checkbox" checked={f.etranger} onChange={e => set('etranger', e.target.checked)} /> Né(e) à l&apos;étranger
+              <label style={{ ...lbl, display: 'flex', gap: 8, alignItems: 'center', color: '#123644', minHeight: 44, cursor: 'pointer' }}>
+                <input type="checkbox" checked={f.etranger} onChange={e => set('etranger', e.target.checked)} style={{ width: 24, height: 24, margin: 0, accentColor: '#12B39C' }} /> Né(e) à l&apos;étranger
               </label>
               {f.etranger
                 ? <label style={lbl}>Code pays INSEE (ex. 99134 pour l&apos;Espagne)<input style={field} value={f.paysNaissance} onChange={e => set('paysNaissance', e.target.value)} /></label>

@@ -244,7 +244,7 @@ export default function ProDocumentsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, color: '#123644' }}>{r.title}</span>
                     {st
-                      ? <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: st.bg, color: st.fg }}>{st.label}</span>
+                      ? <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: st.bg, color: st.fg, whiteSpace: 'nowrap', maxWidth: '100%' }}>{st.label}</span>
                       : <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592' }}>{r.optional ? 'Facultatif' : 'À fournir'}</span>}
                   </div>
                   <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>
@@ -276,7 +276,7 @@ export default function ProDocumentsPage() {
               {mine.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
                   {mine.map(p => (
-                    <div key={p.path} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', borderRadius: 11, background: '#F7F9F8' }}>
+                    <div key={p.path} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 11px', borderRadius: 11, background: '#F7F9F8' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={2} style={{ flexShrink: 0 }}>
                         {isImage(p.path) ? <><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="11" r="2" /><path d="M21 17l-5-5-9 9" /></> : <><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /></>}
                       </svg>
@@ -284,9 +284,9 @@ export default function ProDocumentsPage() {
                         <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{typeLabel(r, p)}</div>
                         {p.at > 0 && <div style={{ fontSize: 11, color: '#6E8592' }}>Déposée le {new Date(p.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
                       </div>
-                      <button onClick={() => open(p)} style={{ border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Voir</button>
-                      <button onClick={() => remove(p)} aria-label="Supprimer" style={{ border: 'none', background: 'none', color: '#6E8592', cursor: 'pointer', padding: 2, display: 'flex' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
+                      <button onClick={() => open(p)} style={{ minWidth: 56, minHeight: 44, padding: '0 10px', border: 'none', borderRadius: 10, background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Voir</button>
+                      <button onClick={() => remove(p)} aria-label={`Supprimer ${typeLabel(r, p)}`} style={{ width: 44, height: 44, border: 'none', borderRadius: 10, background: 'none', color: '#4E6470', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
                       </button>
                     </div>
                   ))}
@@ -301,13 +301,13 @@ export default function ProDocumentsPage() {
                     <div key={t.key} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ flex: '1 1 160px', fontSize: 12.5, color: '#123644', fontWeight: 600 }}>{t.label}</span>
                       <button disabled={busy === r.kind} onClick={() => choose(r.kind, t.key, 'photo')}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', borderRadius: 999, padding: '7px 12px', background: '#123644', color: '#fff', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', borderRadius: 999, minHeight: 44, padding: '0 16px', background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
                         Photo
                       </button>
                       <button disabled={busy === r.kind} onClick={() => choose(r.kind, t.key, 'file')}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #DCE5E3', borderRadius: 999, padding: '6px 12px', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #DCE5E3', borderRadius: 999, minHeight: 44, padding: '0 16px', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
                         Fichier
                       </button>
                     </div>

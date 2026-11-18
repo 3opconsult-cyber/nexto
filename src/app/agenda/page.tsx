@@ -42,6 +42,12 @@ export default function AgendaPage() {
   const [uid, setUid] = useState('')
   const [mode] = useMode(isPro)
   const [tab, setTab] = useState<Tab>('cours')
+  // Accès direct à « Mes demandes » (audit ergonomie 18/11, amélioration 7) : demandes publiées
+  // ouvertes et propositions de tarif reçues en attente (pastille).
+  const [openRequests, setOpenRequests] = useState(0)
+  const [offersWaiting, setOffersWaiting] = useState(0)
+  // Missions terminées déjà notées par soi (client : reviews ; prestataire : client_reviews).
+  const [rated, setRated] = useState<Set<string>>(() => new Set())
 
   // Onglet demandé par l'URL (?onglet=terminees, ex. depuis « Historique »), sinon le dernier ouvert.
   useEffect(() => {
@@ -99,7 +105,23 @@ export default function AgendaPage() {
         setNames(map)
         setDisputes(ds ?? [])
         setInvoices(inv ?? [])
+
+        // Propositions reçues en attente, sur les conversations où l'on est client, au tarif pas encore validé.
+        const buyerOpen = data.filter((t: any) => t.buyer_id === user.id && t.seller_id !== user.id && t.status === 'pending' && !t.price_confirmed)
+        const sellerOf = new Map(buyerOpen.map((t: any) => [t.id, t.seller_id]))
+        const doneIds = data.filter((t: any) => DONE.includes(t.status)).map((t: any) => t.id)
+        const [{ data: offers }, { data: revs }, { data: crevs }] = await Promise.all([
+          buyerOpen.length
+            ? supabase.from('messages').select('transaction_id, sender_id').eq('kind', 'offer').eq('offer_status', 'pending').in('transaction_id', buyerOpen.map((t: any) => t.id))
+            : Promise.resolve({ data: [] as any[] }),
+          doneIds.length ? supabase.from('reviews').select('transaction_id').eq('rater_id', user.id).in('transaction_id', doneIds) : Promise.resolve({ data: [] as any[] }),
+          doneIds.length ? supabase.from('client_reviews').select('transaction_id').eq('rater_id', user.id).in('transaction_id', doneIds) : Promise.resolve({ data: [] as any[] }),
+        ])
+        setOffersWaiting(new Set((offers ?? []).filter((o: any) => o.sender_id && o.sender_id === sellerOf.get(o.transaction_id)).map((o: any) => o.transaction_id)).size)
+        setRated(new Set([...(revs ?? []), ...(crevs ?? [])].map((r: any) => r.transaction_id)))
       }
+      const { count } = await supabase.from('requests').select('id', { count: 'exact', head: true }).eq('requester_id', user.id).eq('status', 'open')
+      setOpenRequests(count || 0)
       setLoading(false)
     }
     load()
@@ -159,8 +181,8 @@ export default function AgendaPage() {
 
   const open = (t: any) => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)
 
-  const card = (t: any, withSuivi = false) => (
-    <div key={t.id} role="link" tabIndex={0} onClick={() => open(t)}
+  const card = (t: any, withSuivi = false, withActions = false) => (
+    <div key={t.id} role="link" tabIndex={0} onClick={() => open(t)} aria-label={`${names[t.id] || 'Mission'}, ${badge(t).label}`}
       onKeyDown={e => { if (e.key === 'Enter' && e.target === e.currentTarget) open(t) }}
       style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -189,6 +211,21 @@ export default function AgendaPage() {
       </div>
       {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
       {withSuivi && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
+      {/* Terminées (audit ergonomie 18/11, amélioration 8) : avis et litige en un appui. */}
+      {withActions && DONE.includes(t.status) && (
+        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+          {!rated.has(t.id) && (
+            <button type="button" onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat?avis`) }}
+              style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              {mode === 'pro' ? 'Noter le client' : 'Noter'}
+            </button>
+          )}
+          <button type="button" onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat?signaler`) }}
+            style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            Signaler un problème
+          </button>
+        </div>
+      )}
     </div>
   )
 
@@ -229,6 +266,12 @@ export default function AgendaPage() {
             <button key={k} role="tab" id={`ag-tab-${k}`} aria-selected={tab === k} aria-controls={`ag-panel-${k}`} onClick={() => pickTab(k)}>
               {label}
               {k === 'cours' && todayList.length > 0 ? ` (${todayList.length})` : ''}
+              {k === 'cours' && mode === 'particulier' && offersWaiting > 0 && (
+                <span aria-label={`${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} reçue${offersWaiting > 1 ? 's' : ''}`}
+                  style={{ display: 'inline-block', minWidth: 18, height: 18, lineHeight: '18px', padding: '0 5px', marginLeft: 6, borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 11, fontWeight: 700, textAlign: 'center', verticalAlign: 1 }}>
+                  {offersWaiting > 9 ? '9+' : offersWaiting}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -263,6 +306,24 @@ export default function AgendaPage() {
 
           {tab === 'cours' && !loading && (
             <>
+              {/* Mes demandes sans passer par Profil (espace client seulement). */}
+              {mode === 'particulier' && (
+                <button type="button" onClick={() => router.push('/client/demandes')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', background: offersWaiting ? '#FFF7ED' : '#fff', border: offersWaiting ? '1.5px solid #F2A93B' : '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px', marginBottom: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes demandes</span>
+                    <span style={{ display: 'block', fontSize: 12, color: offersWaiting ? '#8a6520' : '#4E6470', fontWeight: offersWaiting ? 700 : 400, marginTop: 2 }}>
+                      {offersWaiting
+                        ? `${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} de tarif à examiner`
+                        : openRequests ? `${openRequests} demande${openRequests > 1 ? 's' : ''} publiée${openRequests > 1 ? 's' : ''}, en attente de propositions` : 'Vos annonces et les propositions reçues'}
+                    </span>
+                  </span>
+                  {offersWaiting > 0 && (
+                    <span aria-hidden="true" style={{ minWidth: 22, height: 22, lineHeight: '22px', padding: '0 6px', borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 12, fontWeight: 700, textAlign: 'center' }}>{offersWaiting > 9 ? '9+' : offersWaiting}</span>
+                  )}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0 }} aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                </button>
+              )}
               {todayList.length > 0 && (
                 <>
                   <div style={{ ...sectionTitle, color: '#0C8F7E' }}>Aujourd&apos;hui</div>
@@ -281,7 +342,7 @@ export default function AgendaPage() {
           )}
 
           {tab === 'terminees' && !loading && (
-            done.length ? done.map(t => card(t)) : empty('Aucune prestation terminée pour l’instant.')
+            done.length ? done.map(t => card(t, false, true)) : empty('Aucune prestation terminée pour l’instant.')
           )}
 
           {tab === 'factures' && !loading && (

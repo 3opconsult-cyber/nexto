@@ -20,10 +20,16 @@ const CITIES: { label: string; lat: number; lng: number }[] = [
 
 export const LOCATION_WHY = 'Pour vous montrer ce qui est près de vous, PING a besoin de votre position (jamais suivie, jamais partagée).'
 
-export default function LocationAsk({ onChoose, onClose, overlay = true, title = 'Où êtes-vous ?', text = LOCATION_WHY, gpsLabel = 'Utiliser ma position', remember = true }: {
+export default function LocationAsk({ onChoose, onClose, overlay = true, modal = false, allowCity = true, title = 'Où êtes-vous ?', text = LOCATION_WHY, gpsLabel = 'Utiliser ma position', remember = true }: {
   onChoose: (p: Point, label?: string) => void
   onClose?: () => void
   overlay?: boolean
+  /** Fenêtre bloquante (fond grisé). Par défaut, encart flottant non bloquant en haut de l'écran
+   *  (audit ergonomie 18/11) : la carte et « Déposer une demande », en bas, restent utilisables. */
+  modal?: boolean
+  /** « Choisir une ville » : faux quand la position sert à placer une annonce (une ville ne doit
+   *  jamais déplacer l'annonce du client, seulement le centre d'une carte). */
+  allowCity?: boolean
   title?: string
   text?: string
   gpsLabel?: string
@@ -60,7 +66,7 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, title =
 
   const card: CSSProperties = {
     background: '#fff', border: '1px solid var(--line, #E7EDEB)', borderRadius: 18, padding: 18,
-    boxShadow: overlay ? '0 18px 50px rgba(18,54,68,.22)' : 'none', width: '100%', maxWidth: 400,
+    boxShadow: overlay ? '0 18px 50px rgba(18,54,68,.22)' : 'none', width: '100%', maxWidth: 400, pointerEvents: 'auto',
     fontFamily: "var(--fb, 'Inter', system-ui, sans-serif)", color: 'var(--ink, #123644)', position: 'relative',
   }
   const btn: CSSProperties = {
@@ -69,12 +75,12 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, title =
     cursor: busy ? 'wait' : 'pointer', border: 'none',
   }
   const body = (
-    <div style={card} role="dialog" aria-modal={overlay || undefined} aria-labelledby="loc-ask-t">
+    <div style={card} role={modal ? 'dialog' : 'region'} aria-modal={(overlay && modal) || undefined} aria-labelledby="loc-ask-t">
       {onClose && (
-        <button type="button" onClick={onClose} aria-label="Fermer"
-          style={{ position: 'absolute', top: 10, right: 10, width: 32, height: 32, border: 'none', background: 'transparent', color: '#4E6470', cursor: 'pointer', fontSize: 18 }}>✕</button>
+        <button type="button" onClick={onClose} aria-label={modal ? 'Fermer' : 'Plus tard'}
+          style={{ position: 'absolute', top: 4, right: 4, width: 44, height: 44, border: 'none', background: 'transparent', color: '#4E6470', cursor: 'pointer', fontSize: 18 }}>✕</button>
       )}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingRight: onClose ? 26 : 0 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingRight: onClose ? 34 : 0 }}>
         <span style={{ flex: '0 0 auto', width: 40, height: 40, borderRadius: 12, background: 'rgba(18,179,156,.12)', color: 'var(--tealD, #0C8F7E)', display: 'grid', placeItems: 'center' }}>
           <Ic name="loc" size={22} />
         </span>
@@ -84,22 +90,29 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, title =
         </div>
       </div>
 
-      {!cityMode ? (
+      {!cityMode || !allowCity ? (
         <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
           <button type="button" onClick={useGps} disabled={busy} style={{ ...btn, background: 'var(--btnFill, #0C8F7E)', color: '#fff' }}>
             <Ic name="loc" size={18} /> {busy ? 'Localisation…' : gpsLabel}
           </button>
-          <button type="button" onClick={() => { setCityMode(true); setErr('') }} disabled={busy}
-            style={{ ...btn, background: '#fff', color: 'var(--ink, #123644)', border: '1.5px solid var(--line, #E7EDEB)' }}>
-            Choisir une ville
-          </button>
+          {allowCity ? (
+            <button type="button" onClick={() => { setCityMode(true); setErr('') }} disabled={busy}
+              style={{ ...btn, background: '#fff', color: 'var(--ink, #123644)', border: '1.5px solid var(--line, #E7EDEB)' }}>
+              Choisir une ville
+            </button>
+          ) : onClose && (
+            <button type="button" onClick={onClose} disabled={busy}
+              style={{ ...btn, background: '#fff', color: 'var(--ink, #123644)', border: '1.5px solid var(--line, #E7EDEB)' }}>
+              Corriger l&apos;adresse
+            </button>
+          )}
         </div>
       ) : (
         <div style={{ marginTop: 14 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {CITIES.map(c => (
               <button key={c.label} type="button" onClick={() => pick(c)}
-                style={{ background: '#fff', border: '1px solid var(--line, #E7EDEB)', borderRadius: 999, padding: '8px 13px', fontSize: 13, fontWeight: 600, color: 'var(--ink, #123644)', cursor: 'pointer' }}>
+                style={{ background: '#fff', border: '1px solid var(--line, #E7EDEB)', borderRadius: 999, padding: '0 14px', minHeight: 40, fontSize: 13, fontWeight: 600, color: 'var(--ink, #123644)', cursor: 'pointer' }}>
                 {c.label}
               </button>
             ))}
@@ -112,7 +125,7 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, title =
             </button>
           </form>
           <button type="button" onClick={useGps} disabled={busy}
-            style={{ marginTop: 10, background: 'none', border: 'none', color: 'var(--tealD, #0C8F7E)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', padding: 0 }}>
+            style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--tealD, #0C8F7E)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', padding: 0, minHeight: 44 }}>
             {gpsLabel} plutôt
           </button>
         </div>
@@ -122,8 +135,16 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, title =
   )
   if (!overlay) return body
   // Portail vers <body> : un ancêtre transformé (coque de la carte) casserait position:fixed.
-  return createPortal(
+  if (modal) return createPortal(
     <div style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(18,54,68,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      {body}
+    </div>,
+    document.body,
+  )
+  // Encart non bloquant, posé sous la barre du haut et les puces de la carte : pas de fond, le reste
+  // de l'écran (carte, volet, « Déposer une demande » en bas) reste touchable.
+  return createPortal(
+    <div style={{ position: 'fixed', left: 0, right: 0, top: 'calc(env(safe-area-inset-top, 0px) + 176px)', zIndex: 1300, display: 'flex', justifyContent: 'center', padding: '0 12px', pointerEvents: 'none' }}>
       {body}
     </div>,
     document.body,

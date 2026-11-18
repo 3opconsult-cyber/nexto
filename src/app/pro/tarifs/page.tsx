@@ -359,8 +359,8 @@ export default function ProTarifsPage() {
             )}
 
             {editing.kind !== 'primary' && trade && ext && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, cursor: 'pointer' }}>
-                <input type="checkbox" checked={hidden} onChange={e => setHidden(e.target.checked)} style={{ width: 18, height: 18, accentColor: '#12B39C' }} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, minHeight: 44, cursor: 'pointer' }}>
+                <input type="checkbox" checked={hidden} onChange={e => setHidden(e.target.checked)} style={{ width: 24, height: 24, margin: 0, flexShrink: 0, accentColor: '#12B39C' }} />
                 <span style={{ fontSize: 13, color: '#123644' }}>Masquer de ma fiche <span style={{ color: '#6E8592', fontSize: 12 }}>(gardée ici, non réservable)</span></span>
               </label>
             )}

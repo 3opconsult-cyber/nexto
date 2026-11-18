@@ -457,7 +457,7 @@ export default function ProOnboarding() {
         </label>
         {services.some(cesuEligible) && (
           <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: acceptsCesu ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: acceptsCesu ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
-            <input type="checkbox" checked={acceptsCesu} onChange={e => setAcceptsCesu(e.target.checked)} style={{ marginTop: 2, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+            <input type="checkbox" checked={acceptsCesu} onChange={e => setAcceptsCesu(e.target.checked)} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
             <span style={{ fontSize: 13, color: '#123644', lineHeight: 1.5 }}>
               <b>J&apos;accepte le CESU préfinancé</b>
               <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>Titres remis au client par son employeur ou son comité d&apos;entreprise. Il faut être déclaré services à la personne et affilié au CRCESU. Affiché « Accepte le CESU préfinancé » sur votre profil.</span>
@@ -557,8 +557,8 @@ export default function ProOnboarding() {
             : <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 5 }}>Obligatoire. Visible uniquement par PING, jamais publié.</span>}
         </label>
         {prefilled && (
-          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, fontSize: 13.5, color: '#123644', fontWeight: 600 }}>
-            <input type="checkbox" checked={confirmedInfo} onChange={e => setConfirmedInfo(e.target.checked)} style={{ width: 20, height: 20, marginTop: 1 }} />
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: '10px 0', minHeight: 44, fontSize: 13.5, color: '#123644', fontWeight: 600, cursor: 'pointer' }}>
+            <input type="checkbox" checked={confirmedInfo} onChange={e => setConfirmedInfo(e.target.checked)} style={{ width: 24, height: 24, margin: 0, flexShrink: 0, accentColor: '#12B39C' }} />
             <span>Je confirme que mon adresse et mon téléphone sont exacts.</span>
           </label>
         )}
@@ -584,7 +584,7 @@ export default function ProOnboarding() {
         les échanges et paiements passent par PING.
       </p>
       <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: cgvOk ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: cgvOk ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
-        <input type="checkbox" checked={cgvOk} onChange={e => { setCgvOk(e.target.checked); setError('') }} style={{ marginTop: 2, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+        <input type="checkbox" checked={cgvOk} onChange={e => { setCgvOk(e.target.checked); setError('') }} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
         <span style={{ fontSize: 12.5, color: '#123644', lineHeight: 1.5 }}>
           J&apos;accepte les <a href="/cgu#prestataires" target="_blank" rel="noreferrer" style={{ color: '#0C8F7E', fontWeight: 700 }}>CGV prestataires et le contrat de commission</a> :
           commission PING retenue sur mes versements, prélèvement SEPA des commissions non retenues, suspension en cas d&apos;impayé.

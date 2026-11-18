@@ -57,8 +57,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [acts, setActs] = useState<Record<string, string[]>>({})
   // CESU préfinancé accepté, pièces contrôlées (migration 039 ; vide tant qu'elle n'est pas appliquée).
   const [flags, setFlags] = useState<Record<string, ProviderFlags>>({})
-  // Position : expliquée avant la fenêtre du navigateur (LocationAsk), repli Grasse.
-  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 })
+  // Position : centrée sur l'adresse du profil si possible, sinon encart non bloquant (LocationAsk)
+  // avant la fenêtre du navigateur ; repli Grasse.
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 }, 'client')
   const [recenterTick, setRecenterTick] = useState(0)
   // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
   const [pvId, setPvId] = useState<string | null>(null)

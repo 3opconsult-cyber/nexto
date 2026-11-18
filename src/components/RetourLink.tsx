@@ -13,7 +13,7 @@ export default function RetourLink({ label }: { label?: string }) {
   }, [])
   if (!href) return null
   return (
-    <a href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '12px 20px 0', fontSize: 13, fontWeight: 700, color: '#0E8F7D', textDecoration: 'none' }}>
+    <a href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, margin: '4px 20px 0', fontSize: 13, fontWeight: 700, color: '#0E8F7D', textDecoration: 'none' }}>
       <span aria-hidden>←</span> {label ?? (href.startsWith('/mission/') ? 'Retour à la conversation' : 'Retour à mon annonce')}
     </a>
   )

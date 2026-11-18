@@ -2,13 +2,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { hasFirstAction, FIRST_ACTION_EVENT } from '@/lib/firstAction'
 
 const KEY = 'ping_install_dismissed'
-const PAGES = ['/map', '/client', '/pro/carte', '/pro/dashboard', '/agenda', '/messages']
+// Écrans d'accueil seulement : jamais par-dessus une fiche, un formulaire ni Mes demandes.
+const PAGES = ['/map', '/client/profil', '/pro/carte', '/pro/dashboard', '/agenda', '/messages']
 
 type BIP = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
-// Fenêtre « Installer le raccourci PING » : montrée aux utilisateurs connectés, une fois (fermable).
+// Fenêtre « Installer le raccourci PING » : montrée aux utilisateurs connectés, une fois (fermable),
+// et seulement après une première action réussie (src/lib/firstAction.ts), jamais au premier écran.
 export default function InstallPrompt() {
   const path = usePathname()
   const [show, setShow] = useState(false)
@@ -29,8 +32,17 @@ export default function InstallPrompt() {
     return () => window.removeEventListener('beforeinstallprompt', onBip)
   }, [])
 
+  // Première action réussie faite pendant la visite : le bandeau peut apparaître sur l'écran suivant.
+  const [acted, setActed] = useState(false)
   useEffect(() => {
-    if (!PAGES.some(p => path === p || path.startsWith(p + '/'))) { setShow(false); return }
+    setActed(hasFirstAction())
+    const on = () => setActed(true)
+    window.addEventListener(FIRST_ACTION_EVENT, on)
+    return () => window.removeEventListener(FIRST_ACTION_EVENT, on)
+  }, [])
+
+  useEffect(() => {
+    if (!acted || !PAGES.some(p => path === p || path.startsWith(p + '/'))) { setShow(false); return }
     try {
       if (localStorage.getItem(KEY)) return
       // Application deja installee (ouverte depuis sa vignette) : jamais d'invite.
@@ -41,7 +53,7 @@ export default function InstallPrompt() {
       if (!off && data.session) setTimeout(() => !off && setShow(true), 1500)
     })
     return () => { off = true }
-  }, [path])
+  }, [path, acted])
 
   // Hauteur du bandeau publiée en --ping-install-lift : les cartes posent leur volet et leurs
   // boutons au-dessus, la bulle verte aussi (rien n'est recouvert tant qu'il est affiché).
@@ -86,14 +98,14 @@ export default function InstallPrompt() {
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, lineHeight: 1.25 }}>Installer le raccourci PING</div>
-            <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 0, background: 'transparent', padding: 0, color: '#0C8F7E', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
+            <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 0, background: 'transparent', padding: '4px 0', minHeight: 32, color: '#0C8F7E', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
               {open ? 'Masquer les étapes' : 'Comment faire'}
             </button>
           </div>
           {canInstall && (
-            <button onClick={install} style={{ flexShrink: 0, padding: '8px 13px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Installer</button>
+            <button onClick={install} style={{ flexShrink: 0, minHeight: 44, padding: '0 14px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Installer</button>
           )}
-          <button onClick={close} aria-label="Plus tard" title="Plus tard" style={{ flexShrink: 0, width: 34, height: 34, border: 0, borderRadius: '50%', background: '#F3F6F5', color: '#4E6470', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={close} aria-label="Plus tard" title="Plus tard" style={{ flexShrink: 0, width: 44, height: 44, border: 0, borderRadius: '50%', background: '#F3F6F5', color: '#4E6470', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
           </button>
         </div>
@@ -102,7 +114,7 @@ export default function InstallPrompt() {
             {steps.map(s => <li key={s}>{s}</li>)}
           </ol>
         )}
-        <button onClick={close} style={{ display: 'block', padding: '4px 0 0', border: 0, background: 'transparent', color: '#4E6470', fontWeight: 600, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>C’est déjà installé, ne plus afficher</button>
+        <button onClick={close} style={{ display: 'block', padding: '4px 0 0', minHeight: 32, border: 0, background: 'transparent', color: '#4E6470', fontWeight: 600, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>C’est déjà installé, ne plus afficher</button>
       </div>
     </div>
     </>

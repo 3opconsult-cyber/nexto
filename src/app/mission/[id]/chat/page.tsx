@@ -25,6 +25,8 @@ import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import { INSURANCE_REQUEST_BODY, INSURANCE_SENT_PREFIX, INSURANCE_LINK_DAYS, isInsuranceRequest, isInsuranceSent, insuranceLink, signMyInsurance } from '@/lib/insurance'
 import { mentionsPrice } from '@/lib/priceMention'
 import { REPORT_CATEGORIES, reportsAvailable, createReport } from '@/lib/reports'
+import { acceptOfferMessage } from '@/lib/offers'
+import { markFirstAction } from '@/lib/firstAction'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -84,6 +86,8 @@ export default function ChatPage() {
   const [sendingOffer, setSendingOffer] = useState(false)
   const [offerErr, setOfferErr] = useState('')
   const [lastOfferCents, setLastOfferCents] = useState<number | null>(null)
+  // Prix de départ du prestataire (sa fiche), dernière suggestion du formulaire de tarif.
+  const [myBaseCents, setMyBaseCents] = useState<number | null>(null)
   // Taux de commission du réglage (app_settings), pour le récapitulatif « Vous percevez » avant l'envoi.
   const [rates, setRates] = useState<{ buyer: number; seller: number } | null>(null)
   useEffect(() => { getRates().then(setRates).catch(() => {}) }, [])
@@ -150,6 +154,11 @@ export default function ChatPage() {
     const q = new URLSearchParams(window.location.search)
     if (q.has('signaler')) { setReportKind('litige'); setReporting(true) }
     if (q.has('avis') && userId === tx.buyer_id && tx.completed_at) setAskReview(true)
+    // Prestataire : « Noter » depuis l'onglet Terminées de l'agenda ouvre l'avis sur le client.
+    if (q.has('avis') && userId === tx.seller_id && ['completed', 'released'].includes(tx.status)) {
+      try { localStorage.removeItem(`ping_client_review_later_${tx.id}`) } catch { }
+      setAskClientReview(true)
+    }
     // ?devis=<prestation> (« Demander un devis » sur la fiche ou à la réservation) : message prérempli,
     // envoyé par le client lui-même, tant que le tarif n'est pas validé.
     const devis = q.get('devis')
@@ -202,6 +211,8 @@ export default function ChatPage() {
           else setAskReview(true)
         }
         if (user.id === t.seller_id && t.buyer_id !== t.seller_id) {
+          supabase.from('provider_profiles').select('base_price_cents').eq('id', user.id).maybeSingle()
+            .then(({ data: pp }) => { if (pp?.base_price_cents > 0) setMyBaseCents(pp.base_price_cents) })
           // Note publique du client (avis des autres prestataires), pour se faire une idée.
           const { data: pub, error: crErr } = await supabase.from('client_reviews').select('stars').eq('client_id', t.buyer_id).eq('is_public', true)
           if (!crErr && pub?.length) setClientRating({ avg: pub.reduce((a: number, r: any) => a + r.stars, 0) / pub.length, n: pub.length })
@@ -262,6 +273,7 @@ export default function ChatPage() {
     })
     if (error) { setWarning('Message non envoyé — vérifiez votre connexion et réessayez.'); setTimeout(() => setWarning(''), 4000); return }
     notifyOther(transactionId, 'message')
+    markFirstAction('message')
     setInput('')
   }
 
@@ -342,6 +354,7 @@ export default function ChatPage() {
     }
 
     notifyOther(transactionId, 'offer')
+    markFirstAction('offre')
     setEditingPrice(false)
     setNewAmount('')
     setNewHourly('')
@@ -358,47 +371,34 @@ export default function ChatPage() {
     if (tx?.subtotal_cents > 0) return { cents: tx.subtotal_cents, label: 'le prix de départ' }
     return null
   }
+  // Montant prérempli (audit ergonomie 18/11, amélioration 4) : le budget du client, sinon le prix de
+  // départ de la mission, sinon celui de la fiche du prestataire. Simple suggestion : le champ reste
+  // modifiable et son contenu est sélectionné au toucher (une frappe le remplace, jamais « 3030 € »).
+  function offerSuggestion(): { cents: number; label: string } | null {
+    const ref = offerReference()
+    if (ref) return ref
+    if (myBaseCents && myBaseCents > 0) return { cents: myBaseCents, label: 'votre prix de départ' }
+    return null
+  }
   function openOfferForm() {
     setLastOfferCents(null)
-    setNewAmount(''); setNewHourly(''); setNewIncludedHours(''); setNewAmountReason(''); setNewAmountPhoto(null); setOfferErr('')
+    const sug = userId && tx && userId === tx.seller_id ? offerSuggestion() : null
+    setNewAmount(sug ? String(Math.round(sug.cents) / 100) : ''); setNewHourly(''); setNewIncludedHours(''); setNewAmountReason(''); setNewAmountPhoto(null); setOfferErr('')
     setEditingPrice(true)
   }
 
+  // Même logique que « Accepter ce prestataire » de Mes demandes (src/lib/offers.ts) : prix figé,
+  // commissions figées au taux du réglage, règle suprême du tarif.
   async function acceptOffer(m: Msg) {
     if (!m.offer_cents) return
     if (tx?.price_confirmed) return
-    const cents = m.offer_cents
-    const rates = await getRates()
-    const buyerFee = Math.round(cents * rates.buyer)
-    const sellerFee = Math.round(cents * rates.seller)
-    // Forfait + depassement si la proposition porte un tarif de depassement ;
-    // sinon prix sec, comme avant (efface toute structure de depassement
-    // heritee d'une proposition precedente).
-    const hasOvertime = m.offer_hourly_cents != null && m.offer_included_hours != null
-    // Tarif horaire seul (sans heures incluses) : le montant est une estimation, la facture suit
-    // les heures réellement passées au scan de fin.
-    const hourlyOnly = m.offer_hourly_cents != null && m.offer_included_hours == null
-    const supabase = createClient()
-    const { data: updated, error } = await supabase.from('transactions').update({
-      subtotal_cents: cents,
-      buyer_fee_cents: buyerFee,
-      seller_fee_cents: sellerFee,
-      total_charged_cents: cents + buyerFee,
-      payout_cents: cents - sellerFee,
-      price_confirmed: true,
-      hourly_rate_cents: (hasOvertime || hourlyOnly) ? m.offer_hourly_cents : null,
-      included_hours: hasOvertime ? m.offer_included_hours : null,
-      base_forfait_cents: hasOvertime ? cents : null,
-    }).eq('id', transactionId).select().single()
-    if (error || !updated) {
-      setWarning('Acceptation non enregistrée — réessayez.'); setTimeout(() => setWarning(''), 4000)
+    const r = await acceptOfferMessage(createClient(), transactionId, m as any)
+    if ('error' in r) {
+      setWarning(r.error); setTimeout(() => setWarning(''), 4000)
       return
     }
-    {
-      setTx(updated)
-      await supabase.from('messages').update({ offer_status: 'accepted' }).eq('id', m.id)
-      setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'accepted' } : x))
-    }
+    setTx(r.tx)
+    setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'accepted' } : x))
   }
 
   async function declineOffer(m: Msg) {
@@ -546,6 +546,8 @@ export default function ChatPage() {
 
   // Mission au prix déjà fixé (devis accepté ou réservation directe) : aucune offre ne s'accepte plus.
   const priceLocked = !!tx?.price_confirmed
+  // Dernière proposition de tarif encore en attente (en-tête du chat).
+  const pendingOffer = (() => { for (let i = msgs.length - 1; i >= 0; i--) { const m = msgs[i]; if (m.kind === 'offer' && m.offer_status === 'pending') return m } return null })()
   // Devis refusé automatiquement par une réservation directe (mission/new) chez le même prestataire.
   const replacedAfter = (m: Msg) => msgs.some(x => isSystemMessage(x) && x.body?.startsWith('Proposition remplacée') && x.created_at >= m.created_at)
   const budgetHint = (() => {
@@ -591,20 +593,24 @@ export default function ChatPage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       {/* Header — style /demo v_chat */}
       <div className="ping-chatbar">
-        <div className="ic" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', cursor: 'pointer' }} onClick={() => router.back()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
-        </div>
+        <button type="button" className="ic" aria-label="Retour" style={{ width: 44, height: 44, minWidth: 44, borderRadius: 12, display: 'grid', placeItems: 'center', cursor: 'pointer', border: 'none', background: 'transparent', padding: 0, marginLeft: -6 }} onClick={() => router.back()}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
         <b style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {counterpart}
           {clientRating && <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginLeft: 8 }}>★ {clientRating.avg.toFixed(1).replace('.', ',')} ({clientRating.n})</span>}
         </b>
-        {tx && tx.subtotal_cents > 0 && (
+        {/* Montant affiché : le prix validé, sinon l'offre en attente (et non un ancien prix de départ). */}
+        {tx && (tx.price_confirmed ? tx.subtotal_cents > 0 : (pendingOffer?.offer_cents || tx.subtotal_cents > 0)) && (
           <span style={{ padding: '6px 11px', borderRadius: 999, background: 'var(--paper)', color: 'var(--slate)', fontSize: 11.5, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap' }}>
-            {EUR(tx.subtotal_cents)}{tx.price_confirmed ? '' : ' · à valider'}
+            {tx.price_confirmed ? EUR(tx.subtotal_cents)
+              : pendingOffer?.offer_cents ? `${EUR(pendingOffer.offer_cents)} · offre en attente`
+                : `${EUR(tx.subtotal_cents)} · à valider`}
           </span>
         )}
-        <button onClick={openReporting} title="Signaler cet échange" style={{ border: 'none', background: 'none', padding: 4, display: 'flex', flexShrink: 0, cursor: 'pointer' }}>
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
+        <button type="button" onClick={openReporting} aria-label="Signaler un problème" style={{ border: 'none', background: 'none', minHeight: 44, padding: '0 4px 0 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, flexShrink: 0, cursor: 'pointer', color: '#4E6470' }}>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2" aria-hidden="true"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
+          <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1 }}>Signaler</span>
         </button>
       </div>
 
@@ -845,12 +851,17 @@ export default function ChatPage() {
       {editingPrice && (
         <div onClick={() => setEditingPrice(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
-            <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Proposer un nouveau tarif</h3>
+            <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>{lastOfferCents ? 'Faire une contre-proposition' : 'Proposer un tarif'}</h3>
             <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Montant (€)</label>
             <input type="number" inputMode="decimal" value={newAmount} onChange={e => { setNewAmount(e.target.value); setOfferErr('') }} min="0" step="0.5"
-              placeholder={amountPlaceholder}
-              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 10 }} />
+              placeholder={amountPlaceholder} onFocus={e => e.currentTarget.select()} aria-describedby="offer-amount-hint"
+              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 4 }} />
+            <p id="offer-amount-hint" style={{ fontSize: 11.5, color: '#6E8592', margin: '0 0 10px' }}>
+              {!(Number(newAmount) > 0) ? 'Indiquez un montant pour envoyer la proposition.'
+                : (() => { const sug = !lastOfferCents && userId === tx?.seller_id ? offerSuggestion() : null
+                  return sug && Math.round(Number(newAmount) * 100) === sug.cents ? `Suggestion : ${sug.label}. Modifiable.` : (budgetHint || 'Montant libre.') })()}
+            </p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Heures incluses</label>
@@ -1128,7 +1139,7 @@ export default function ChatPage() {
           onKeyDown={e => e.key === 'Enter' && send()}
           style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
-        <button onClick={send}
+        <button onClick={send} aria-label="Envoyer le message"
           style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0C8F7E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" /></svg>
         </button>

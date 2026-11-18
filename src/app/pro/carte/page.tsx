@@ -12,7 +12,8 @@ import { Ic, svcIconKey } from '@/components/PingIcons'
 import { useUnreadTotal } from '@/lib/unread'
 import { addressUsable, maskAddress } from '@/lib/address'
 import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib/services'
-import { TRADES, tradeOfServiceName } from '@/lib/trades'
+import { TRADES } from '@/lib/trades'
+import { fetchProTrades, proRadiusKm, proRequestMatches } from '@/lib/proNearby'
 import { createClient } from '@/lib/supabase/client'
 import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from '@/components/MapSheet'
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
@@ -52,7 +53,8 @@ export default function ProCartePage() {
   const router = useRouter()
   const unread = useUnreadTotal('pro', 'pro-carte')
   // Position : expliquée avant la fenêtre du navigateur (LocationAsk), repli Grasse.
-  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 })
+  // Position déclarée du prestataire (onboarding) avant toute fenêtre ; encart non bloquant sinon.
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 }, 'pro')
   const [allReqs, setAllReqs] = useState<RequestNearby[]>([])
   const [recenterTick, setRecenterTick] = useState(0)
   const [available, setAvailable] = useState(true)
@@ -105,14 +107,9 @@ export default function ProCartePage() {
       supabase.from('provider_profiles').select('is_active, service_radius_km, trade').eq('id', user.id).single()
         .then(async ({ data }) => {
           if (!data) return
-          setAvailable(!!data.is_active); if (data.service_radius_km) setRadiusKm(Math.min(50, data.service_radius_km))
-          const t: string[] = data.trade ? [data.trade] : []
-          const { data: svc } = await supabase.from('services').select('name').eq('provider_id', user.id)
-          for (const r of (svc ?? []) as { name: string }[]) {
-            const k = tradeOfServiceName(r.name)
-            if (k && !t.includes(k)) t.push(k)
-          }
-          setMyTrades(t)
+          // Même rayon et mêmes métiers que le compteur du tableau de bord (src/lib/proNearby.ts).
+          setAvailable(!!data.is_active); setRadiusKm(proRadiusKm(data.service_radius_km))
+          setMyTrades(await fetchProTrades(supabase, user.id, data.trade))
         })
     })
   }, [])
@@ -168,8 +165,7 @@ export default function ProCartePage() {
   const [fresh, setFresh] = useState<RequestNearby | null>(null)
   // Filtre par métier : ses propres annonces toujours visibles ; sans métier connu, tout est montré.
   const activeTrades = tradeSel ?? myTrades
-  const matches = (r: RequestNearby) => !!r.mine || myTrades.length === 0
-    || activeTrades.includes(r.category) || (showOthers && !myTrades.includes(r.category))
+  const matches = (r: RequestNearby) => proRequestMatches(r, myTrades, activeTrades, showOthers)
   const matchRef = useRef(matches)
   matchRef.current = matches
   const reqs = allReqs.filter(matches)
@@ -243,7 +239,12 @@ export default function ProCartePage() {
         {selected.description?.trim() && <div className="mq-dl" style={{ alignItems: 'flex-start' }}><span>Précisions</span><b style={{ fontWeight: 600, maxWidth: '68%' }}>{selected.description}</b></div>}
         <p style={{ color: 'var(--slate)', fontSize: 12, marginTop: 8, lineHeight: 1.45 }}>L&apos;adresse exacte vous est donnée quand le tarif est validé et le rendez-vous fixé. Position floutée à 500 m.</p>
       </div>
-
+    </>
+  )
+  // Boutons de la demande : sur mobile, posés en pied du volet (toujours visibles dès la
+  // mi-hauteur, sans « Agrandir ») ; sur ordinateur, sous la carte de la demande.
+  const requestActions = selected && (
+    <>
       {sendError && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{sendError}</p>}
       {!selected.mine && sentByRequest[selected.id] ? (
         <>
@@ -258,11 +259,14 @@ export default function ProCartePage() {
         <div className="mq-card"><b style={{ color: 'var(--ink)' }}>C&apos;est votre propre demande</b><p style={{ color: 'var(--slate)', fontSize: 13 }}>Un compte ne répond pas à sa propre annonce.</p></div>
       ) : (
         <>
-          <div className="btn" role="button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10, opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected)}>
-            <Ic name="msg" />{sending ? 'Envoi…' : 'Contacter le client'}
-          </div>
-          <div className="btn ghost" role="button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected, true)}>
-            <Ic name="tag" />Proposer mon tarif
+          {/* Côte à côte : la paire tient en pied de volet sans réduire la liste. */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div className="btn" role="button" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected, true)}>
+              <Ic name="tag" />Proposer mon tarif
+            </div>
+            <div className="btn ghost" role="button" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected)}>
+              <Ic name="msg" />{sending ? 'Envoi…' : 'Contacter'}
+            </div>
           </div>
         </>
       )}
@@ -390,6 +394,7 @@ export default function ProCartePage() {
     </>
   )
   const sidePanel = view === 'interventions' ? missionsPanel : (selected ? requestDetail : activityPanel)
+  const sideActions = view !== 'interventions' && selected ? requestActions : null
   const mapPins = view === 'interventions'
     ? missions.filter(m => m.requests?.lat != null && m.requests?.lng != null && addressUsable(m.address_status)).map(m => ({
         id: m.id, lat: m.requests.lat, lng: m.requests.lng, color: '#12B39C',
@@ -528,7 +533,7 @@ export default function ProCartePage() {
 
           {/* Mobile : volet à 3 positions. Desktop : caché (.app-shell .map-sheet),
               remplacé par le panneau permanent ci-dessous. */}
-          <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}>
+          <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle} footer={sideActions}>
             {sidePanel}
           </MapSheet>
 
@@ -542,6 +547,7 @@ export default function ProCartePage() {
             )}
             <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>
               {sidePanel}
+              {sideActions && <div style={{ marginTop: 12 }}>{sideActions}</div>}
             </div>
           </div>
         </div>

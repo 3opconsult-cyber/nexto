@@ -19,8 +19,9 @@ export function HubRow({ icon, label, sub, badge, onClick }: {
   onClick?: () => void
 }) {
   return (
-    <div onClick={onClick} role={onClick ? 'button' : undefined}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderTop: '1px solid #EEF2F1', cursor: onClick ? 'pointer' : 'default', marginTop: -1 }}>
+    <div onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, boxSizing: 'border-box', padding: '11px 14px', borderTop: '1px solid #EEF2F1', cursor: onClick ? 'pointer' : 'default', marginTop: -1 }}>
       <div style={{ width: 34, height: 34, borderRadius: 10, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
       </div>

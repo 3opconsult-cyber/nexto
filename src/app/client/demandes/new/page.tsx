@@ -8,6 +8,7 @@ import { cesuEligible } from '@/lib/trades'
 import { useCatalog, type RequestField } from '@/lib/catalog'
 import { geocodeAddress } from '@/lib/geocode'
 import LocationAsk from '@/components/LocationAsk'
+import { markFirstAction } from '@/lib/firstAction'
 import type { Point } from '@/lib/location'
 import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
 import { FREQUENCIES, HOUSEHOLD, LINEN_TYPES, PAYMENTS } from '@/components/RequestDetails'
@@ -108,6 +109,9 @@ export default function NewOpenRequestPage() {
     // Position de l'annonce = l'adresse d'intervention (géocodée), pas l'endroit où se trouve le téléphone.
     // La position de l'appareil ne sert qu'en secours si l'adresse n'est pas reconnue.
     let point = fallbackPoint || await geocodeAddress(address).catch(() => null)
+    // Adresse complète non reconnue : on réessaie avec le code postal et la ville de CETTE adresse
+    // (jamais une ville choisie ailleurs : l'annonce reste dans la commune du client).
+    if (!point) point = await geocodeAddress(addressLocality(address)).catch(() => null)
     if (!point) {
       setCreating(false)
       setAskPos(true)
@@ -146,13 +150,14 @@ export default function NewOpenRequestPage() {
     }
     if (reqErr) { setError('Impossible de publier l’annonce. Réessayez dans un instant.'); setCreating(false); return }
 
+    markFirstAction('demande')
     router.push('/client/demandes')
   }
 
   const fieldStyle: CSSProperties = { display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, background: '#fff', boxSizing: 'border-box' }
   const labelStyle: CSSProperties = { fontSize: 12.5, color: '#4E6470', fontWeight: 600 }
   const chip = (on: boolean): CSSProperties => ({
-    padding: '9px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#123644',
+    minHeight: 40, padding: '0 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#123644',
     border: on ? '2px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.08)' : '#fff',
   })
 
@@ -307,8 +312,8 @@ export default function NewOpenRequestPage() {
 
         {error && <p style={{ color: '#c0503a', fontSize: 13, fontWeight: 600, margin: '4px 0 12px' }}>{error}</p>}
         {askPos && (
-          <LocationAsk remember={false} title="Adresse non reconnue"
-            text="Précisez l’adresse (numéro, rue, ville), ou placez votre demande près de vous : PING a besoin de votre position pour la montrer aux prestataires du secteur (relevée une fois, jamais suivie, jamais partagée)."
+          <LocationAsk remember={false} modal allowCity={false} title="Adresse non reconnue"
+            text="Précisez l’adresse (numéro, rue, code postal, ville), ou placez votre demande là où vous êtes : PING a besoin de sa position pour la montrer aux prestataires du secteur (relevée une fois, jamais suivie, jamais partagée)."
             gpsLabel="Utiliser ma position"
             onClose={() => setAskPos(false)}
             onChoose={p => { setAskPos(false); submit(p) }} />
@@ -320,4 +325,12 @@ export default function NewOpenRequestPage() {
       </div>
     </div>
   )
+}
+
+// « 12 chemin X, 06130 Grasse » → « 06130 Grasse » ; sans code postal, la dernière partie après une virgule.
+function addressLocality(address: string) {
+  const m = address.match(/\b\d{5}\b[^,]*/)
+  if (m) return m[0].trim()
+  const parts = address.split(',').map(x => x.trim()).filter(Boolean)
+  return parts.length > 1 ? parts[parts.length - 1] : ''
 }

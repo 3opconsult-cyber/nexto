@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
+import { acceptOfferMessage, type OfferMsg } from '@/lib/offers'
+import { notifyOther } from '@/lib/notify'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 const DONE = ['completed', 'released']
@@ -14,7 +16,8 @@ type Tx = {
   id: string; status: string; counterpart: string
   subtotal_cents: number | null; price_confirmed: boolean
   providerId: string | null
-  hasPendingOffer: boolean // un devis du prestataire attend la réponse du client (acceptation dans le chat)
+  hasPendingOffer: boolean // un devis du prestataire attend la réponse du client
+  offer: (OfferMsg & { created_at: string }) | null // la dernière proposition en attente, acceptable d'ici
 }
 type ProInfo = { rating: number | null; reviews_count: number; lat: number | null; lng: number | null; bio: string | null; has_identity: boolean; has_rcpro: boolean }
 
@@ -60,14 +63,16 @@ export default function MesDemandesPage() {
         : { data: [] }
       const nameById: Record<string, string> = {}
       ;(names ?? []).forEach((n: any) => { if (n.full_name) nameById[n.transaction_id] = n.full_name })
-      // Devis du prestataire en attente de réponse (lecture seule : l'acceptation se fait dans le chat).
-      const pendingOffer = new Set<string>()
+      // Devis du prestataire en attente de réponse : la dernière proposition de chaque conversation,
+      // acceptée d'ici par « Accepter ce prestataire » (même logique que le chat, src/lib/offers.ts).
+      const pendingOffer = new Map<string, OfferMsg & { created_at: string }>()
       if (txs?.length) {
-        const { data: offers } = await supabase.from('messages').select('transaction_id, sender_id')
+        const { data: offers } = await supabase.from('messages').select('id, transaction_id, sender_id, offer_cents, offer_hourly_cents, offer_included_hours, created_at')
           .eq('kind', 'offer').eq('offer_status', 'pending').in('transaction_id', txs.map((t: any) => t.id))
+          .order('created_at', { ascending: true })
         const sellerOf: Record<string, string> = {}
         txs.forEach((t: any) => { sellerOf[t.id] = t.seller_id })
-        ;(offers ?? []).forEach((o: any) => { if (o.sender_id && o.sender_id === sellerOf[o.transaction_id]) pendingOffer.add(o.transaction_id) })
+        ;(offers ?? []).forEach((o: any) => { if (o.sender_id && o.sender_id === sellerOf[o.transaction_id]) pendingOffer.set(o.transaction_id, o) })
       }
       const grouped: Record<string, Tx[]> = {}
       ;(txs ?? []).forEach((t: any) => {
@@ -75,10 +80,13 @@ export default function MesDemandesPage() {
         ;(grouped[t.request_id] ||= []).push({
           id: t.id, status: t.status, counterpart: nameById[t.id] || 'Prestataire',
           subtotal_cents: t.subtotal_cents ?? null, price_confirmed: !!t.price_confirmed,
-          providerId: t.seller_id ?? null, hasPendingOffer: pendingOffer.has(t.id),
+          providerId: t.seller_id ?? null, hasPendingOffer: pendingOffer.has(t.id), offer: pendingOffer.get(t.id) ?? null,
         })
       })
       setTxByRequest(grouped)
+      // Une proposition attend une réponse : sa demande s'ouvre d'office (un appui de moins).
+      const withOffer = list.find((r: any) => (grouped[r.id] || []).some(t => t.hasPendingOffer && !t.price_confirmed && t.status !== 'cancelled'))
+      if (withOffer) setExpanded(e => e ?? withOffer.id)
 
       // Note, position, présentation et pièces déclarées des prestataires qui ont répondu.
       const proIds = Array.from(new Set((txs ?? []).map((t: any) => t.seller_id).filter(Boolean))) as string[]
@@ -107,6 +115,23 @@ export default function MesDemandesPage() {
     if (group.length > 0) return { label: `${group.length} proposition${group.length > 1 ? 's' : ''}`, bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (r.status === 'open') return { label: 'En attente', bg: '#FFF7ED', fg: '#8a6520' }
     return { label: STATUS[r.status] || 'En cours', bg: '#F3F6F5', fg: '#4E6470' }
+  }
+
+  // « Accepter ce prestataire » : accepte vraiment sa proposition (prix et commissions figés, règle
+  // suprême du tarif) après confirmation, puis ouvre la conversation pour fixer le rendez-vous.
+  const [acceptErr, setAcceptErr] = useState<Record<string, string>>({})
+  async function acceptPro(t: Tx) {
+    if (!t.offer?.offer_cents || t.price_confirmed) { router.push(`/mission/${t.id}/chat`); return }
+    const shape = t.offer.offer_hourly_cents && t.offer.offer_included_hours != null
+      ? ` (${t.offer.offer_included_hours} h incluses, puis ${euroFr(t.offer.offer_hourly_cents)}/h)`
+      : t.offer.offer_hourly_cents ? ` (estimation, ${euroFr(t.offer.offer_hourly_cents)}/h selon le temps réel)` : ''
+    if (!confirm(`Accepter la proposition de ${t.counterpart} à ${euroFr(t.offer.offer_cents)}${shape} ? Le tarif sera fixé : seul un litige pourra le rouvrir.`)) return
+    setBusy(t.id); setAcceptErr(e => ({ ...e, [t.id]: '' }))
+    const r = await acceptOfferMessage(createClient(), t.id, t.offer)
+    setBusy('')
+    if ('error' in r) { setAcceptErr(e => ({ ...e, [t.id]: r.error })); return }
+    notifyOther(t.id, 'offer')
+    router.push(`/mission/${t.id}/chat`)
   }
 
   async function cancel(r: any) {
@@ -203,7 +228,12 @@ export default function MesDemandesPage() {
                                 </div>
                               </div>
                               <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                {t.subtotal_cents && t.subtotal_cents > 0 ? (
+                                {!t.price_confirmed && t.offer?.offer_cents ? (
+                                  <>
+                                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17, fontWeight: 700, color: '#123644' }}>{euroFr(t.offer.offer_cents)}</div>
+                                    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#8a6520' }}>proposition à accepter</div>
+                                  </>
+                                ) : t.subtotal_cents && t.subtotal_cents > 0 ? (
                                   <>
                                     <div style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17, fontWeight: 700, color: '#123644' }}>{euroFr(t.subtotal_cents)}</div>
                                     {!t.price_confirmed && <div style={{ fontSize: 10.5, fontWeight: 700, color: '#8a6520' }}>à valider</div>}
@@ -225,19 +255,20 @@ export default function MesDemandesPage() {
                             ) : (
                               <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                                 <button onClick={() => router.push(`/mission/${t.id}/chat`)}
-                                  style={{ flex: 1, padding: '9px 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                  style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                   Voir la discussion
                                 </button>
-                                {t.hasPendingOffer && (
-                                  <button onClick={() => router.push(`/mission/${t.id}/chat`)}
-                                    style={{ flex: 1, padding: '9px 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
-                                    Accepter ce prestataire
+                                {t.hasPendingOffer && !t.price_confirmed && (
+                                  <button onClick={() => acceptPro(t)} disabled={busy === t.id}
+                                    style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', opacity: busy === t.id ? .6 : 1 }}>
+                                    {busy === t.id ? 'Acceptation…' : 'Accepter ce prestataire'}
                                   </button>
                                 )}
                               </div>
                             )}
-                            {!cancelled && t.hasPendingOffer && (
-                              <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 6 }}>Vous confirmez le devis dans la discussion.</div>
+                            {acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
+                            {!cancelled && t.hasPendingOffer && !t.price_confirmed && (
+                              <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 6 }}>En acceptant, le tarif est fixé ; vous choisissez ensuite le rendez-vous dans la discussion.</div>
                             )}
                           </div>
                         )
@@ -246,8 +277,8 @@ export default function MesDemandesPage() {
                   )}
 
                   <div style={{ display: 'flex', gap: 14, marginTop: 10, paddingTop: 10, borderTop: '1px solid #F1F5F4' }}>
-                    {canCancel && <span onClick={() => cancel(r)} style={{ fontSize: 12, fontWeight: 700, color: '#8a6520', cursor: 'pointer' }}>Annuler</span>}
-                    <span onClick={() => remove(r)} style={{ fontSize: 12, fontWeight: 700, color: '#c0503a', cursor: 'pointer', marginLeft: 'auto' }}>Supprimer</span>
+                    {canCancel && <button type="button" onClick={() => cancel(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#8a6520', cursor: 'pointer' }}>Annuler</button>}
+                    <button type="button" onClick={() => remove(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#c0503a', cursor: 'pointer', marginLeft: 'auto' }}>Supprimer</button>
                   </div>
                 </div>
               )

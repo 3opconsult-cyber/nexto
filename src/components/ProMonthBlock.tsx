@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { fetchRequestsNearby } from '@/lib/services'
+import { countProNearby } from '@/lib/proNearby'
 import { EUR } from '@/lib/invoice-pdf'
 
 // « Mon activité du mois » (écran p_dash de la démo) : chiffres du mois, prochains rendez-vous,
@@ -13,7 +13,7 @@ const DONE = ['completed', 'released']
 const UPCOMING = ['pending', 'held', 'arrived']
 
 type Props = {
-  pro: { id: string; rating?: number | null; reviews_count?: number | null; lat?: number | null; lng?: number | null }
+  pro: { id: string; rating?: number | null; reviews_count?: number | null; lat?: number | null; lng?: number | null; trade?: string | null; service_radius_km?: number | null }
   transactions: any[] // missions vendues par ce pro (déjà chargées par la page)
 }
 
@@ -68,11 +68,11 @@ export default function ProMonthBlock({ pro, transactions }: Props) {
 
   useEffect(() => {
     let alive = true
-    if (pro.lat != null && pro.lng != null) {
-      fetchRequestsNearby(pro.lat, pro.lng).then(r => { if (alive) setNearby(r.length) }).catch(() => {})
-    }
+    // Même centre, même rayon et mêmes métiers que la carte « Demandes autour de moi ».
+    countProNearby(pro).then(n => { if (alive) setNearby(n) }).catch(() => {})
     return () => { alive = false }
-  }, [pro.lat, pro.lng])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pro.id, pro.lat, pro.lng, pro.trade, pro.service_radius_km])
 
   const reviews = pro.reviews_count || 0
   const card: React.CSSProperties = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 13 }

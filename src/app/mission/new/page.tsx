@@ -21,6 +21,7 @@ import { notifyOther } from '@/lib/notify'
 import { fetchPrestations, prestationName, prestationPhotoUrl, type Prestation } from '@/lib/prestations'
 import { openConversation } from '@/lib/services'
 import { pricingShort, pricingSummary } from '@/lib/servicePricing'
+import { markFirstAction } from '@/lib/firstAction'
 
 // Passe à « Remplacé » (offer_status declined + message système) les devis en attente des
 // conversations non confirmées entre ce client et ce prestataire, autres que la réservation
@@ -61,7 +62,7 @@ function MissionForm() {
   const serviceId = article ? article.id as string : null
   // Adresse d'intervention : celle du profil par défaut, confirmée par le client (Romain 31/10).
   const [profileAddress, setProfileAddress] = useState<string | null>(null)
-  const [addr, setAddr] = useState<AddressValue>({ mode: 'profil', other: '', confirmed: false })
+  const [addr, setAddr] = useState<AddressValue>({ mode: 'profil', other: '', confirmed: true })
   useEffect(() => {
     const sb = createClient()
     sb.auth.getUser().then(async ({ data: { user } }) => {
@@ -76,6 +77,9 @@ function MissionForm() {
   const [estimatedHours, setEstimatedHours] = useState('2')
   const [mode, setMode] = useState<'forfait' | 'horaire' | null>(null)
   const [error, setError] = useState('')
+  // Erreur rattachée à un champ (adresse, date, créneau, durée) : affichée à côté de lui, AVANT
+  // d'ouvrir la fenêtre de paiement (audit ergonomie 18/11, amélioration 5).
+  const [fieldErr, setFieldErr] = useState<{ field: 'addr' | 'date' | 'slot' | 'hours'; msg: string } | null>(null)
   // « Payer en CESU préfinancé » : service éligible ET prestataire qui l'accepte (colonne de la migration 039 ;
   // absente = undefined = option masquée). Phase 1 : le client règle le pro avec ses titres, PING n'encaisse rien.
   const [payCesu, setPayCesu] = useState(false)
@@ -175,14 +179,34 @@ function MissionForm() {
   // Paiement en ligne actif : on saute la simulation et on envoie le client vers la vraie page de paiement.
   const paymentsOn = usePaymentsActive()
 
-  async function submit() {
+  // Contrôle complet du formulaire, sans rien envoyer : l'erreur va à côté du champ et l'écran y défile.
+  function validate(): boolean {
     const chosenAddr = resolveAddress(profileAddress, addr)
-    if ('error' in chosenAddr) { setError(chosenAddr.error as string); return }
+    const fe: { field: 'addr' | 'date' | 'slot' | 'hours'; msg: string } | null =
+      'error' in chosenAddr ? { field: 'addr', msg: chosenAddr.error as string }
+        : needsSlot && !chosen ? { field: 'slot', msg: 'Choisissez un créneau.' }
+          : !needsSlot && !wantedAt ? { field: 'date', msg: 'Indiquez la date et l\u2019heure souhaitées.' }
+            : !needsSlot && new Date(wantedAt).getTime() < Date.now() ? { field: 'date', msg: 'Choisissez une date à venir.' }
+              : !(subtotalCents > 0) ? { field: 'hours', msg: 'Indiquez une durée estimée.' }
+                : null
+    setFieldErr(fe)
+    if (fe) {
+      setError('')
+      try { document.getElementById(`mn-${fe.field}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }) } catch { /* rien */ }
+      return false
+    }
+    return true
+  }
+  function onConfirmClick() {
+    if (!validate()) return
+    if (paymentsOn) submit(); else setConfirming(true)
+  }
+
+  async function submit() {
+    if (!validate()) return
+    const chosenAddr = resolveAddress(profileAddress, addr)
+    if ('error' in chosenAddr) return
     const address = chosenAddr.address
-    if (needsSlot && !chosen) { setError('Choisissez un créneau.'); return }
-    if (!needsSlot && !wantedAt) { setError('Indiquez la date et l\u2019heure souhaitées.'); return }
-    if (!needsSlot && new Date(wantedAt).getTime() < Date.now()) { setError('Choisissez une date à venir.'); return }
-    if (!(subtotalCents > 0)) { setError('Indiquez une durée estimée.'); return }
     if (!pro || !mode || isDevis || missingService) return
     setError('')
     setCreating(true)
@@ -298,6 +322,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
     await replacePendingOffers(supabase, user.id, pro.id, tx.id, `${label}${when}`)
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
+    markFirstAction('reservation')
     notifyOther(tx.id, 'booking')
     if (paymentsOn) {
       // Si le prestataire n'a pas encore de compte de paiement, la mission reste réservée et le
@@ -313,7 +338,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
       <div style={{ padding: '28px 20px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <NavDrawer />
-          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700 }}>← Retour</button>
+          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700, minHeight: 44, padding: '0 8px' }}>← Retour</button>
         </div>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 22, color: '#fff' }}>Réserver</h1>
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>
@@ -375,14 +400,16 @@ function missingRpc(e: { code?: string; message?: string } | null) {
             </button>
           </div>
         ) : (<>
-        <div style={{ marginBottom: 16 }}>
-          <AddressChoice profileAddress={profileAddress} value={addr} onChange={setAddr} />
+        <div id="mn-addr" style={{ marginBottom: 16 }}>
+          <AddressChoice profileAddress={profileAddress} value={addr} onChange={v => { setAddr(v); if (fieldErr?.field === 'addr') setFieldErr(null) }}
+            error={fieldErr?.field === 'addr' ? fieldErr.msg : undefined} />
         </div>
 
         {!needsSlot && (
-          <div style={{ marginBottom: 16 }}>
+          <div id="mn-date" style={{ marginBottom: 16 }}>
             <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Date et heure souhaitées</span>
-            <div style={{ marginTop: 6 }}><DayTimePicker value={wantedAt} onChange={setWantedAt} /></div>
+            <div style={{ marginTop: 6 }}><DayTimePicker value={wantedAt} onChange={v => { setWantedAt(v); if (fieldErr?.field === 'date') setFieldErr(null) }} /></div>
+            {fieldErr?.field === 'date' && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
           </div>
         )}
 
@@ -411,15 +438,16 @@ function missingRpc(e: { code?: string; message?: string } | null) {
         )}
 
         {mode === 'horaire' && !hasOvertime && (
-          <label style={{ display: 'block', marginBottom: 16 }}>
+          <label id="mn-hours" style={{ display: 'block', marginBottom: 16 }}>
             <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
-            <input type="number" value={estimatedHours} onChange={e => setEstimatedHours(e.target.value)} min="0.5" step="0.5"
+            <input type="number" value={estimatedHours} onChange={e => { setEstimatedHours(e.target.value); if (fieldErr?.field === 'hours') setFieldErr(null) }} min="0.5" step="0.5"
               style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14 }} />
+            {fieldErr?.field === 'hours' && <span role="alert" style={{ display: 'block', color: '#c0503a', fontSize: 12.5, fontWeight: 600, marginTop: 6 }}>{fieldErr.msg}</span>}
           </label>
         )}
 
         {needsSlot && (
-          <div style={{ marginBottom: 18 }}>
+          <div id="mn-slot" style={{ marginBottom: 18 }}>
             <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Choisir un créneau</span>
             <div style={{ marginTop: 8 }}>
               <Calendar events={slotEvents} views={['week', 'day']} defaultView="week"
@@ -428,6 +456,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
             <div style={{ fontSize: 11.5, color: chosen ? '#0C8F7E' : '#6E8592', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
               {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
             </div>
+            {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
           </div>
         )}
 
@@ -452,7 +481,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
 
         {cesuOk && (
           <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 14px', borderRadius: 12, border: payCesu ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: payCesu ? 'rgba(18,179,156,.06)' : '#fff', marginBottom: 14, cursor: 'pointer' }}>
-            <input type="checkbox" checked={payCesu} onChange={e => setPayCesu(e.target.checked)} style={{ marginTop: 2, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+            <input type="checkbox" checked={payCesu} onChange={e => setPayCesu(e.target.checked)} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
             <span style={{ fontSize: 13, color: '#123644', lineHeight: 1.5 }}>
               <b>Payer en CESU préfinancé</b>
               <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>Ce prestataire accepte les titres CESU remis par votre employeur ou votre comité d&apos;entreprise : vous les lui remettez directement après l&apos;intervention. Vous gérez vous-même votre crédit d&apos;impôt.</span>
@@ -469,13 +498,13 @@ function missingRpc(e: { code?: string; message?: string } | null) {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.07)', marginBottom: 14 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
           <span style={{ fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
-            Annulation gratuite tant que le prestataire n'est pas en route — des frais s'appliquent au-delà, comme chez Uber. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
+            Annulation gratuite tant que le prestataire n'est pas en route — des frais s'appliquent au-delà. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
           </span>
         </div>
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
-        <button onClick={() => paymentsOn ? submit() : setConfirming(true)} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
+        <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
           {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
         <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>

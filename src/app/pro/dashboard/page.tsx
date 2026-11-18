@@ -147,15 +147,15 @@ export default function ProDashboard() {
         <div style={{ padding: '20px 20px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>Mon entreprise</div>
           <button onClick={toggleAvailable}
-            style={{ padding: '9px 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
+            style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
             {available ? '● Visible sur la carte' : '○ Masqué'}
           </button>
         </div>
       ) : (
         <div style={{ padding: '20px 20px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div onClick={() => setTab('hub')} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
-          </div>
+          <button type="button" aria-label="Retour à Mon entreprise" onClick={() => setTab('hub')} style={{ width: 44, height: 44, borderRadius: 12, border: 'none', background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
+          </button>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff' }}>{TAB_TITLES[tab]}</div>
         </div>
       )}
@@ -198,8 +198,8 @@ export default function ProDashboard() {
               }}>
                 <input id="cover-input" type="file" accept="image/*" style={{ display: 'none' }}
                   onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('cover', f) }} />
-                <label htmlFor="cover-input" style={{
-                  position: 'absolute', right: 10, top: 10, width: 32, height: 32, borderRadius: '50%',
+                <label htmlFor="cover-input" aria-label="Changer la photo de couverture" style={{
+                  position: 'absolute', right: 8, top: 8, width: 44, height: 44, borderRadius: '50%',
                   background: 'rgba(18,54,68,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                 }}>
                   {uploading === 'cover'
@@ -219,8 +219,8 @@ export default function ProDashboard() {
                   </div>
                   <input id="logo-input" type="file" accept="image/*" style={{ display: 'none' }}
                     onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('logo', f) }} />
-                  <label htmlFor="logo-input" style={{
-                    position: 'absolute', right: -4, bottom: -4, width: 24, height: 24, borderRadius: '50%',
+                  <label htmlFor="logo-input" aria-label="Changer le logo" style={{
+                    position: 'absolute', right: -10, bottom: -10, width: 36, height: 36, borderRadius: '50%',
                     background: '#12B39C', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                   }}>
                     {uploading === 'logo'
@@ -247,7 +247,7 @@ export default function ProDashboard() {
                     <Ic name="tag" size={18} />Mes tarifs
                   </button>
                 </div>
-                <span onClick={() => router.push('/pro/onboarding')} role="button" style={{ display: 'inline-block', marginTop: 10, fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', textDecoration: 'underline' }}>Modifier mes informations</span>
+                <button type="button" onClick={() => router.push('/pro/onboarding')} className="btn ghost" style={{ width: '100%', minHeight: 44, marginTop: 10, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>Modifier mes informations</button>
               </div>
             </div>
 
@@ -257,7 +257,7 @@ export default function ProDashboard() {
                 {docAlerts.map(a => (
                   <div key={a.kind} style={{ fontSize: 12.5, color: a.urgent ? '#A8432F' : '#7A5717', fontWeight: 600, lineHeight: 1.5 }}>{a.text}</div>
                 ))}
-                <button type="button" onClick={() => router.push('/pro/documents')} style={{ marginTop: 8, border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline' }}>Ouvrir Mes pièces</button>
+                <button type="button" onClick={() => router.push('/pro/documents')} style={{ marginTop: 8, minHeight: 44, width: '100%', border: '1.5px solid #12B39C', borderRadius: 999, background: '#fff', padding: '0 14px', color: '#0C8F7E', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Ouvrir Mes pièces</button>
               </div>
             )}
 
@@ -311,10 +311,10 @@ export default function ProDashboard() {
               <HubRow icon={HUB_ICONS.swap} label="Espace client" onClick={() => { writeMode('particulier'); router.push('/map') }} />
             </HubGroup>
 
-            <div onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
-              style={{ textAlign: 'center', marginTop: 16, color: '#6E8592', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+            <button type="button" onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
+              style={{ alignSelf: 'center', minHeight: 44, padding: '0 16px', marginTop: 12, border: 'none', background: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
               Se déconnecter
-            </div>
+            </button>
           </div>
         )}
 

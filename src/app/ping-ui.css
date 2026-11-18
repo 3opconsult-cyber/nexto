@@ -435,7 +435,7 @@ svg{display:block}
 .tbell .mq-nb,.mq-nb{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:999px;background:#E5484D;color:#fff;font:700 10px var(--fb);padding:0 4px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 .searchbar .chv{margin-left:auto;color:var(--slate);display:inline-flex;flex:0 0 auto}
 .searchbar .tx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chips .chip{min-height:35px;display:inline-flex;align-items:center;gap:6px}
+.chips .chip{min-height:40px;display:inline-flex;align-items:center;gap:6px}
 /* Zoom de la carte à droite, sous les puces (maquette) ; décalé à gauche du panneau sur ordinateur. */
 .mapscene .leaflet-top.leaflet-left{left:auto;right:0;top:176px}
 .mapscene .leaflet-top.leaflet-left .leaflet-control{margin-left:0;margin-right:14px}

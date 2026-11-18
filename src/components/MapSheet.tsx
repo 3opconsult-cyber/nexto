@@ -32,12 +32,14 @@ export function sheetPx(snap: SheetSnap, h: number) {
   return Math.max(PEEK_PX, h - 64 - liftPx())
 }
 
-export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)', children }: {
+export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)', children, footer }: {
   snap: SheetSnap
   onSnap: (s: SheetSnap) => void
   title: ReactNode
   accent?: string
   children: ReactNode
+  /** Boutons d'action toujours visibles en bas du volet (hors défilement), dès la mi-hauteur. */
+  footer?: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ y0: number; h0: number; moved: number } | null>(null)
@@ -95,6 +97,11 @@ export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)',
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '4px 16px 16px' }}>
         {children}
       </div>
+      {footer && snap !== 'peek' && (
+        <div style={{ flex: '0 0 auto', padding: '10px 16px 12px', borderTop: '1px solid var(--line, #E7EDEB)', background: '#fff' }}>
+          {footer}
+        </div>
+      )}
     </div>
   )
 }

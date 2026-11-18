@@ -290,7 +290,7 @@ function SignupForm() {
                   </div>
                 </div>
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 13, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
-                  <input type="checkbox" required checked={cguOk} onChange={e => setCguOk(e.target.checked)} style={{ marginTop: 2, width: 16, height: 16, accentColor: '#12B39C', flexShrink: 0 }} />
+                  <input type="checkbox" required checked={cguOk} onChange={e => setCguOk(e.target.checked)} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
                   <span style={{ fontSize: 11.5, fontWeight: 600, color: '#0C8F7E', lineHeight: 1.4 }}>
                     J&apos;accepte les <a href="/cgu" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Conditions Générales</a> et la{' '}
                     <a href="/confidentialite" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Politique de confidentialité</a> de PING

@@ -132,8 +132,8 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
       <textarea value={comment} onChange={e => setComment(e.target.value)} rows={3}
         style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
 
-      <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 4 }}>
-        <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 4, minHeight: 44 }}>
+        <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} style={{ margin: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
         <span style={{ fontSize: 13.5, fontWeight: 700, color: '#123644' }}>Publier ce commentaire</span>
       </label>
       <p style={{ fontSize: 11.5, color: '#4E6470', margin: '0 0 16px 28px', lineHeight: 1.5 }}>

@@ -1,5 +1,7 @@
 "use client"
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { geocodeAddress } from '@/lib/geocode'
 
 // Position de l'utilisateur, demandée APRÈS une explication (qc-production B2) :
 // on n'ouvre jamais la fenêtre du navigateur sans avoir dit pourquoi. Un seul relevé,
@@ -48,10 +50,43 @@ export function readPositionOnce(timeout = 8000): Promise<Point> {
 }
 
 /**
- * Position de départ d'une carte. Sans choix connu ni autorisation déjà donnée,
- * `ask` passe à true : la page affiche <LocationAsk> au lieu d'ouvrir la fenêtre du navigateur.
+ * Centre déduit du profil (audit ergonomie 18/11, amélioration 1) : l'adresse du profil client
+ * (géocodée, mise en cache sur l'appareil) ou la position déclarée du prestataire
+ * (provider_profiles.lat/lng, posée à l'onboarding). Sert seulement à CENTRER la carte : rien
+ * n'est enregistré comme choix de position, et une annonce n'est jamais déplacée par ce centre.
  */
-export function useInitialPosition(fallback: Point) {
+export async function fetchProfileCenter(kind: 'client' | 'pro'): Promise<{ point: Point; label: string } | null> {
+  try {
+    const sb = createClient()
+    const { data: { user } } = await sb.auth.getUser()
+    if (!user) return null
+    if (kind === 'pro') {
+      const { data } = await sb.from('provider_profiles').select('lat, lng').eq('id', user.id).maybeSingle()
+      const lat = Number(data?.lat), lng = Number(data?.lng)
+      if (data && Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng)) return { point: { lat, lng }, label: 'votre adresse' }
+    }
+    const { data: pr } = await sb.from('profiles').select('address').eq('id', user.id).maybeSingle()
+    const addr = (pr?.address || '').trim()
+    if (addr.length < 3) return null
+    try {
+      const c = JSON.parse(localStorage.getItem(KEY + '_profile') || 'null')
+      if (c?.addr === addr && Number.isFinite(c.lat) && Number.isFinite(c.lng)) return { point: { lat: c.lat, lng: c.lng }, label: 'votre adresse' }
+    } catch { }
+    const g = await geocodeAddress(addr)
+    if (!g) return null
+    try { localStorage.setItem(KEY + '_profile', JSON.stringify({ addr, ...g })) } catch { }
+    return { point: g, label: 'votre adresse' }
+  } catch { return null }
+}
+
+/**
+ * Position de départ d'une carte. Sans choix connu ni autorisation déjà donnée,
+ * la carte se centre sur l'adresse du profil si `profile` est donné (aucune fenêtre) ; sinon
+ * `ask` passe à true : la page affiche <LocationAsk> (encart non bloquant) au lieu d'ouvrir la
+ * fenêtre du navigateur.
+ */
+export function useInitialPosition(fallback: Point, profile?: 'client' | 'pro') {
+  const profileRef = useRef(profile)
   const [pos, setPos] = useState<Point>(fallback)
   const [ask, setAsk] = useState(false)
   const [city, setCity] = useState('')
@@ -61,12 +96,18 @@ export function useInitialPosition(fallback: Point) {
     if (saved?.kind === 'city') { setPos({ lat: saved.lat, lng: saved.lng }); setCity(saved.label); return }
     let dismissed = false
     try { dismissed = sessionStorage.getItem(KEY + '_later') === '1' } catch { }
+    // Sans position connue : centre du profil s'il existe, sinon l'encart (sauf « Plus tard »).
+    const fromProfile = async (orAsk: boolean) => {
+      const c = profileRef.current ? await fetchProfileCenter(profileRef.current) : null
+      if (off) return
+      if (c) { setPos(c.point); setCity(c.label); return }
+      if (orAsk) setAsk(true)
+    }
     geoPermission().then(state => {
       if (off) return
-      if (dismissed && state !== 'granted') return
       if (state === 'granted' || (saved?.kind === 'gps' && state !== 'denied')) {
-        readPositionOnce(5000).then(p => { if (!off) setPos(p) }).catch(() => { if (!off) setAsk(true) })
-      } else setAsk(true)
+        readPositionOnce(5000).then(p => { if (!off) setPos(p) }).catch(() => { fromProfile(!dismissed) })
+      } else fromProfile(!dismissed)
     })
     return () => { off = true }
   }, [])

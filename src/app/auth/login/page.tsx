@@ -148,9 +148,9 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', minHeight: 44 }}>
               <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
-                style={{ width: 16, height: 16, accentColor: '#12B39C' }} />
+                style={{ width: 24, height: 24, accentColor: '#12B39C' }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#4E6470' }}>Rester connecté</span>
             </label>
             <button type="button" onClick={resetPassword}
