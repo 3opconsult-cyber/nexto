@@ -1,6 +1,6 @@
 "use client"
-import { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet'
+import { useEffect, useRef, useState } from 'react'
+import { MapContainer, TileLayer, Marker, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -120,20 +120,72 @@ function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B') {
   return pinIcon(color, label ?? null, i)
 }
 
-function FitAll({ userPos, pros, pts: extra, recenterTick }: { userPos: { lat: number; lng: number }; pros: ProviderNearby[]; pts?: { lat: number; lng: number }[]; recenterTick?: number }) {
+type FitPad = { top: number; right: number; bottom: number; left: number }
+function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad }: {
+  userPos: { lat: number; lng: number }; pts: { lat: number; lng: number }[]; recenterTick?: number
+  fit?: boolean; fitKey?: string; fitPad?: FitPad
+}) {
   const map = useMap()
-  // La carte pointe directement sur la position de l'utilisateur (zoom de quartier), sans dezoomer
-  // sur tous les prestataires ; elle ne bouge plus quand la liste se rafraichit.
+  // Par défaut (carte client) : la carte pointe sur la position de l'utilisateur (zoom de quartier),
+  // sans dézoomer sur tous les prestataires ; elle ne bouge plus quand la liste se rafraîchit.
+  // Mode `fit` (carte pro) : la position ET les épingles tiennent dans le champ, zoom plafonné au
+  // quartier, en laissant la place de la barre du haut et du volet (`fitPad`). Recalé à
+  // l'ouverture (premières épingles), au recentrage et quand `fitKey` change (filtre, zone) —
+  // jamais à la simple relecture périodique de la liste.
+  const live = useRef({ userPos, pts, fitPad })
+  live.current = { userPos, pts, fitPad }
+  const fittedKey = useRef<string | null>(null)
+  function place() {
+    const { userPos: u, pts: p, fitPad: pad } = live.current
+    const valid = p.filter(x => x.lat != null && x.lng != null)
+    if (fit && valid.length) {
+      // Leaflet ignore tout changement de vue pendant une animation de zoom (celle du
+      // positionnement initial, par exemple) : on recadre à la fin de l'animation.
+      if ((map as unknown as { _animatingZoom?: boolean })._animatingZoom) { map.once('zoomend', place); return true }
+      // Taille réelle du conteneur d'abord : au montage, Leaflet peut encore la croire nulle,
+      // et un cadrage calculé sur une taille nulle part au zoom maximal.
+      map.invalidateSize({ pan: false })
+      const size = map.getSize()
+      const b = L.latLngBounds([[u.lat, u.lng], ...valid.map(x => [x.lat, x.lng] as [number, number])])
+      const pd = pad || { top: 24, right: 24, bottom: 24, left: 24 }
+      // Marges ramenées à la taille de la carte (petit écran, fenêtre basse) : il reste toujours
+      // au moins 20 % de la carte pour les épingles.
+      const k = (avail: number, a: number, c: number) => (a + c > avail * 0.8 ? (avail * 0.8) / (a + c) : 1)
+      const kx = k(size.x, pd.left, pd.right), ky = k(size.y, pd.top, pd.bottom)
+      map.fitBounds(b, {
+        paddingTopLeft: [pd.left * kx, pd.top * ky], paddingBottomRight: [pd.right * kx, pd.bottom * ky], maxZoom: 15, animate: false,
+      })
+      return true
+    }
+    // Carte pro : positionnement sans animation, pour qu'un recadrage qui suit de près ne soit pas perdu.
+    map.setView([u.lat, u.lng], 15, fit ? { animate: false } : undefined)
+    return false
+  }
   useEffect(() => {
-    map.setView([userPos.lat, userPos.lng], 15)
-    setTimeout(() => map.invalidateSize(), 100)
+    if (place()) fittedKey.current = fitKey ?? ''
+    const t = setTimeout(() => { map.invalidateSize(); if (fit) place() }, 100)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPos.lat, userPos.lng, map, recenterTick])
+  useEffect(() => {
+    if (!fit || !pts.length || fittedKey.current === (fitKey ?? '')) return
+    if (place()) fittedKey.current = fitKey ?? ''
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fit, fitKey, pts.length])
+  return null
+}
+
+// Toucher le fond de carte (pas une épingle : Leaflet ne fait pas remonter leur clic) ; un
+// glisser ou un pincement n'est jamais compté comme un toucher.
+function MapClick({ onClick }: { onClick?: () => void }) {
+  useMapEvents({ click: () => onClick?.() })
   return null
 }
 
 type ReqPin = { id: string; lat: number; lng: number; label?: string | null; color?: string }
 export default function LiveMap({
   userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici', echo = false,
+  onMapClick, fit = false, fitKey, fitPad,
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
@@ -143,6 +195,10 @@ export default function LiveMap({
   onSelectRequest?: (id: string) => void
   youLabel?: string
   echo?: boolean
+  onMapClick?: () => void
+  fit?: boolean
+  fitKey?: string
+  fitPad?: FitPad
 }) {
   return (
     <>
@@ -169,7 +225,8 @@ export default function LiveMap({
       >
         <AttributionPrefix />
         <PingBaseLayer />
-        <FitAll userPos={userPos} pros={pros} pts={requests} recenterTick={recenterTick} />
+        <FitAll userPos={userPos} pts={requests} recenterTick={recenterTick} fit={fit} fitKey={fitKey} fitPad={fitPad} />
+        <MapClick onClick={onMapClick} />
         <Marker position={[userPos.lat, userPos.lng]} icon={userIcon(echo)}>
           <Tooltip permanent direction="bottom" offset={[0, 8]} className="you-tip">{youLabel}</Tooltip>
         </Marker>

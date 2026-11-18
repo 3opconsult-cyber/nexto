@@ -57,9 +57,11 @@ export default function FeedbackBubble() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} aria-label="Laisser un avis"
+      <button onClick={() => setOpen(true)} aria-label="Laisser un avis" className="ping-fb"
         style={{
-          position: 'fixed', right: 16, bottom: 'calc(132px + env(safe-area-inset-bottom, 0px))', zIndex: 3000,
+          // Les écrans de carte rangent la bulle au-dessus de leurs boutons (--ping-fb-bottom,
+          // src/lib/mapChrome.ts) ; le bandeau d'installation la remonte d'autant (--ping-install-lift).
+          position: 'fixed', right: 'var(--ping-fb-right, 16px)', bottom: 'calc(var(--ping-fb-bottom, 132px) + var(--ping-install-lift, 0px) + env(safe-area-inset-bottom, 0px))', zIndex: 3000,
           height: 52, minWidth: 52, borderRadius: 999, border: 'none',
           background: '#12B39C', color: '#fff', boxShadow: '0 8px 20px rgba(18,54,68,.35)',
           display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer',

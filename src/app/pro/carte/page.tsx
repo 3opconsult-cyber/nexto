@@ -8,8 +8,10 @@ import NavDrawer from '@/components/NavDrawer'
 import RequestDetails from '@/components/RequestDetails'
 import { addressUsable, maskAddress } from '@/lib/address'
 import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib/services'
-import { TRADES } from '@/lib/trades'
+import { TRADES, tradeOfServiceName } from '@/lib/trades'
 import { createClient } from '@/lib/supabase/client'
+import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from '@/components/MapSheet'
+import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
 
 const LiveMap = dynamic(() => import('@/components/LiveMap'), { ssr: false })
 
@@ -43,7 +45,7 @@ const SLOT_LABELS: Record<string, string> = { matin: 'Matin', 'apres-midi': 'Apr
 export default function ProCartePage() {
   const router = useRouter()
   const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
-  const [reqs, setReqs] = useState<RequestNearby[]>([])
+  const [allReqs, setAllReqs] = useState<RequestNearby[]>([])
   const [recenterTick, setRecenterTick] = useState(0)
   const [available, setAvailable] = useState(true)
   const [proId, setProId] = useState<string | null>(null)
@@ -59,7 +61,16 @@ export default function ProCartePage() {
   const [zoneCenter, setZoneCenter] = useState<{ lat: number; lng: number } | null>(null)
   const [zoneCity, setZoneCity] = useState('')
   const [zoneOpen, setZoneOpen] = useState(false)
-  const [sheetOpen, setSheetOpen] = useState(true) // fiche du bas repliable (mobile)
+  // Volet du bas (mobile) : replié, mi-hauteur (par défaut, comme la maquette) ou plein.
+  const [sheet, setSheet] = useState<SheetSnap>('half')
+  const isDesk = useIsDesktop()
+  const [wrapEl, setWrapEl] = useState<HTMLDivElement | null>(null)
+  const wrapH = useElementHeight(wrapEl)
+  // Métiers du pro (métier principal + prestations de /pro/tarifs) : la carte ne montre par
+  // défaut que les demandes de ses métiers ; « Autres métiers » élargit à la demande.
+  const [myTrades, setMyTrades] = useState<string[]>([])
+  const [tradeSel, setTradeSel] = useState<string[] | null>(null) // null = tous mes métiers
+  const [showOthers, setShowOthers] = useState(false)
   const [zoneErr, setZoneErr] = useState('')
   const center = zoneCenter || userPos
   async function chooseRadius(km: number) {
@@ -90,8 +101,18 @@ export default function ProCartePage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
       setProId(user.id)
-      supabase.from('provider_profiles').select('is_active, service_radius_km').eq('id', user.id).single()
-        .then(({ data }) => { if (data) { setAvailable(!!data.is_active); if (data.service_radius_km) setRadiusKm(Math.min(50, data.service_radius_km)) } })
+      supabase.from('provider_profiles').select('is_active, service_radius_km, trade').eq('id', user.id).single()
+        .then(async ({ data }) => {
+          if (!data) return
+          setAvailable(!!data.is_active); if (data.service_radius_km) setRadiusKm(Math.min(50, data.service_radius_km))
+          const t: string[] = data.trade ? [data.trade] : []
+          const { data: svc } = await supabase.from('services').select('name').eq('provider_id', user.id)
+          for (const r of (svc ?? []) as { name: string }[]) {
+            const k = tradeOfServiceName(r.name)
+            if (k && !t.includes(k)) t.push(k)
+          }
+          setMyTrades(t)
+        })
     })
   }, [])
 
@@ -144,20 +165,39 @@ export default function ProCartePage() {
   // l'animation /animation. Relecture toutes les 60 s ; la première lecture ne déclenche rien.
   const seen = useRef<Set<string> | null>(null)
   const [fresh, setFresh] = useState<RequestNearby | null>(null)
-  const load = useCallback(() => {
+  // Filtre par métier : ses propres annonces toujours visibles ; sans métier connu, tout est montré.
+  const activeTrades = tradeSel ?? myTrades
+  const matches = (r: RequestNearby) => !!r.mine || myTrades.length === 0
+    || activeTrades.includes(r.category) || (showOthers && !myTrades.includes(r.category))
+  const matchRef = useRef(matches)
+  matchRef.current = matches
+  const reqs = allReqs.filter(matches)
+  const othersCount = allReqs.filter(r => !r.mine && myTrades.length > 0 && !myTrades.includes(r.category)).length
+  function toggleTrade(k: string) {
+    const cur = tradeSel ?? myTrades
+    const next = cur.includes(k) ? cur.filter(x => x !== k) : [...cur, k]
+    if (!next.length) return // au moins un métier reste affiché
+    setTradeSel(next.length === myTrades.length && myTrades.every(x => next.includes(x)) ? null : next)
+    setSelectedId(null)
+  }
+  // zoneGen : numéro de la dernière lecture faite pour une nouvelle zone (ouverture, rayon, ville,
+  // position) ; la carte se recadre sur ces lectures-là, pas sur la relecture périodique.
+  const [zoneGen, setZoneGen] = useState(0)
+  const load = useCallback((newZone = false) => {
     fetchRequestsNearby(center.lat, center.lng, radiusKm * 1000).then(list => {
-      setReqs(list)
+      setAllReqs(list)
+      if (newZone) setZoneGen(g => g + 1)
       if (seen.current) {
-        const nouveau = list.find(r => !seen.current!.has(r.id))
+        const nouveau = list.find(r => !seen.current!.has(r.id) && matchRef.current(r))
         if (nouveau) setFresh(nouveau)
       }
       seen.current = new Set(list.map(r => r.id))
     })
   }, [center.lat, center.lng, radiusKm])
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(true) }, [load])
   useEffect(() => {
     if (!available) return
-    const t = setInterval(load, 60000)
+    const t = setInterval(() => load(false), 60000)
     return () => clearInterval(t)
   }, [load, available])
   useEffect(() => {
@@ -250,7 +290,7 @@ export default function ProCartePage() {
           <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, color: 'var(--ink)' }}>{available ? 'Disponible maintenant' : 'Hors ligne'}</div>
           <div style={{ fontSize: 12, color: 'var(--slate)' }}>{available ? 'Vous apparaissez sur la carte des clients autour de vous' : 'Les clients ne vous voient plus sur la carte'}</div>
         </div>
-        <div onClick={toggleAvailable} style={{ width: 44, height: 26, borderRadius: 999, background: available ? 'var(--gold)' : '#cdd6d3', position: 'relative', cursor: 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
+        <div onClick={toggleAvailable} role="switch" aria-checked={available} aria-label="Disponible maintenant" style={{ width: 44, height: 26, borderRadius: 999, background: available ? 'var(--gold)' : '#cdd6d3', position: 'relative', cursor: 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
           <span style={{ position: 'absolute', top: 3, left: available ? 21 : 3, width: 20, height: 20, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
         </div>
       </div>
@@ -267,10 +307,27 @@ export default function ProCartePage() {
         </div>
       )}
 
+      {myTrades.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }} role="group" aria-label="Métiers affichés">
+          <div className={`chip ${tradeSel == null ? 'on' : ''}`} role="button" aria-pressed={tradeSel == null} onClick={() => { setTradeSel(null); setSelectedId(null) }}>Tous mes métiers</div>
+          {myTrades.map(k => (
+            <div key={k} className={`chip ${activeTrades.includes(k) ? 'on' : ''}`} role="button" aria-pressed={activeTrades.includes(k)} onClick={() => toggleTrade(k)}>{TRADES[k] || k}</div>
+          ))}
+          {othersCount > 0 && (
+            <div className={`chip ${showOthers ? 'on' : ''}`} role="button" aria-pressed={showOthers} onClick={() => { setShowOthers(o => !o); setSelectedId(null) }}>Autres métiers ({othersCount})</div>
+          )}
+        </div>
+      )}
+      {reqs.length === 0 && (
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', margin: '2px 0 6px' }}>
+          {allReqs.length > 0 ? 'Aucune demande pour ces métiers dans votre zone.' : 'Aucune demande ouverte dans votre zone pour le moment. Élargissez la zone pour en voir davantage.'}
+        </p>
+      )}
+
       {reqs.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
           {reqs.map(r => (
-            <div key={r.id} onClick={() => setSelectedId(r.id)}
+            <div key={r.id} onClick={() => selectRequest(r.id)}
               style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                 <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{r.urgent && <UrgentTag />}{r.title || TRADES[r.category] || r.category}</b>
@@ -357,10 +414,35 @@ export default function ProCartePage() {
       }))
     : reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, color: r.urgent ? '#E8743B' : undefined, label: b ? `${Math.round(b / 100)} €` : (r.urgent ? 'Urgent' : null) } })
 
+  // Les demandes dans le champ dès l'ouverture : la carte cadre la position ET les épingles
+  // (zoom plafonné au quartier), en laissant la place de la barre du haut et des puces (~155 px, plus la hauteur d’une épingle et de son prix), du volet
+  // à mi-hauteur sur mobile et du panneau de détail sur ordinateur. Recadrée quand le filtre,
+  // la zone ou la vue changent, pas à la relecture des demandes toutes les 60 s.
+  const fitKey = `${view}|${activeTrades.join(',')}|${showOthers}|${zoneGen}`
+  const fitPad = isDesk
+    ? { top: 215, right: 420, bottom: 40, left: 40 }
+    : { top: 215, right: 48, bottom: (wrapH ? sheetPx('half', wrapH) : 300) + 24, left: 48 }
+  function selectRequest(id: string) {
+    setSelectedId(id)
+    if (sheet === 'peek') setSheet('half')
+  }
+  // Recentrer : posé au-dessus du volet (et du bandeau d'installation), caché quand il est plein.
+  const locHidden = !isDesk && sheet === 'full'
+  const locBottom = isDesk ? `calc(${SHEET_LIFT} + 24px)` : `calc(${SHEET_H[sheet]} + ${SHEET_LIFT} + 12px)`
+  const locRight = isDesk ? 418 : 22
+  const wrapBottomGap = typeof window !== 'undefined' && wrapEl ? Math.max(0, window.innerHeight - wrapEl.getBoundingClientRect().bottom) : 64
+  // Bulle verte au-dessus de Recentrer ; sur ordinateur, à gauche du panneau permanent (pas dessus).
+  useFeedbackBubbleSlot(wrapH ? wrapBottomGap + (isDesk ? 24 : sheetPx(sheet, wrapH) + 12) + 40 + 12 : null, !isDesk && sheet === 'full', isDesk ? 412 : null)
+  const reqWord = `demande${reqs.length > 1 ? 's' : ''}`
+  const sheetTitle = view === 'interventions'
+    ? `${missions.length} intervention${missions.length > 1 ? 's' : ''} à venir`
+    : selected ? (selected.title || TRADES[selected.category] || 'Demande')
+      : available ? `${reqs.length} ${reqWord} autour de vous` : `Hors ligne · ${reqs.length} ${reqWord}`
+
   return (
     <div className="procarte-screen">
       <div className="body full nopad procarte-body">
-        <div className="mapwrap">
+        <div className="mapwrap" ref={setWrapEl}>
           <div className="topbar procarte-topbar">
             <span className="mobile-only"><NavDrawer dark={false} /></span>
             <div className="pinglogo">
@@ -419,15 +501,18 @@ export default function ProCartePage() {
               pros={[]}
               onSelect={() => { }}
               requests={mapPins}
-              onSelectRequest={(id: string) => view === 'interventions' ? router.push(`/mission/${id}/chat`) : setSelectedId(id)}
+              onSelectRequest={(id: string) => view === 'interventions' ? router.push(`/mission/${id}/chat`) : selectRequest(id)}
               recenterTick={recenterTick}
               youLabel="Vous êtes ici"
               echo={available}
+              fit
+              fitKey={fitKey}
+              fitPad={fitPad}
             />
           </div>
 
           {fresh && (
-            <div role="status" onClick={() => { setView('demandes'); setSelectedId(fresh.id); setFresh(null) }}
+            <div role="status" onClick={() => { setView('demandes'); selectRequest(fresh.id); setFresh(null) }}
               style={{ position: 'absolute', left: 12, right: 12, top: 170, zIndex: 1200, display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: '12px 14px', boxShadow: '0 8px 24px rgba(18,54,68,.18)', cursor: 'pointer', animation: 'pinIn .35s ease-out', maxWidth: 460, margin: '0 auto' }}>
               <span style={{ width: 38, height: 38, borderRadius: 999, background: fresh.urgent ? '#E8743B' : '#12B39C', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
@@ -439,19 +524,15 @@ export default function ProCartePage() {
             </div>
           )}
 
-          <div className="loc" onClick={() => setRecenterTick(t => t + 1)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
+          {!locHidden && (
+            <div className="loc" role="button" aria-label="Recentrer sur ma position et les demandes" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: locBottom, right: locRight }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
+          )}
 
-          {/* Mobile : fiche remontant du bas. Desktop : cachee (.app-shell .preview),
-              remplacee par le panneau permanent ci-dessous. */}
-          <div className="preview show" style={{ padding: 14, paddingBottom: sheetOpen ? 14 : 8, maxHeight: sheetOpen ? '70vh' : 74, overflowY: sheetOpen ? 'auto' : 'hidden', transition: 'max-height .3s ease' }}>
-            <div onClick={() => setSheetOpen(o => !o)} style={{ cursor: 'pointer', margin: '-6px -14px 8px', padding: '4px 14px 8px' }}>
-              <div style={{ width: 44, height: 5, borderRadius: 3, background: '#CBD7D4', margin: '0 auto 6px' }} />
-              <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: 'var(--slate)' }}>
-                {sheetOpen ? 'Réduire' : `${view === 'demandes' ? `${reqs.length} demande${reqs.length > 1 ? 's' : ''}` : `${missions.length} intervention${missions.length > 1 ? 's' : ''}`} · afficher la liste`}
-              </div>
-            </div>
-            {sheetOpen && sidePanel}
-          </div>
+          {/* Mobile : volet à 3 positions. Desktop : caché (.app-shell .map-sheet),
+              remplacé par le panneau permanent ci-dessous. */}
+          <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle} accent="#8A6520">
+            {sidePanel}
+          </MapSheet>
 
           {/* Desktop (>=1000px) : panneau permanent a cote de la carte, cachee sur
               mobile (.detail-panel { display:none } par defaut). */}

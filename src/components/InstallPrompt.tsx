@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -43,6 +43,20 @@ export default function InstallPrompt() {
     return () => { off = true }
   }, [path])
 
+  // Hauteur du bandeau publiée en --ping-install-lift : les cartes posent leur volet et leurs
+  // boutons au-dessus, la bulle verte aussi (rien n'est recouvert tant qu'il est affiché).
+  const boxRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const root = document.documentElement
+    const el = boxRef.current
+    if (!show || !el) { root.style.removeProperty('--ping-install-lift'); return }
+    const on = () => root.style.setProperty('--ping-install-lift', `${Math.ceil(el.offsetHeight) + 16}px`)
+    on()
+    const ro = new ResizeObserver(on)
+    ro.observe(el)
+    return () => { ro.disconnect(); root.style.removeProperty('--ping-install-lift') }
+  }, [show])
+
   function close() { try { localStorage.setItem(KEY, '1') } catch { /* ignore */ } setShow(false) }
   async function install() {
     if (!bip) return
@@ -64,7 +78,7 @@ export default function InstallPrompt() {
     <>
     <style>{`.ping-install{bottom:calc(72px + env(safe-area-inset-bottom,0px))}@media(min-width:1000px){.ping-install{bottom:12px}}`}</style>
     <div role="region" aria-label="Installer le raccourci PING" className="ping-install" style={{ position: 'fixed', left: 0, right: 0, zIndex: 9999, display: 'flex', justifyContent: 'center', padding: '0 10px', pointerEvents: 'none' }}>
-      <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: 440, background: '#fff', borderRadius: 14, padding: '9px 8px 9px 12px', boxShadow: '0 6px 22px rgba(18,54,68,.18)', border: '1px solid #E7EDEB', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
+      <div ref={boxRef} style={{ pointerEvents: 'auto', width: '100%', maxWidth: 440, background: '#fff', borderRadius: 14, padding: '9px 8px 9px 12px', boxShadow: '0 6px 22px rgba(18,54,68,.18)', border: '1px solid #E7EDEB', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
             <rect x="6" y="2.5" width="12" height="19" rx="2.5" stroke="#12B39C" strokeWidth="1.8" />
