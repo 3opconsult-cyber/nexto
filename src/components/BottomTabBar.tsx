@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { readMode, type Mode } from '@/lib/mode'
 import { useUnreadTotal } from '@/lib/unread'
 import UnreadBadge from '@/components/UnreadBadge'
+import { useTodayMission } from '@/lib/todayMission'
 
 // Barre d'onglets mobile. Suit le mode courant (particulier / prestataire, cf. lib/mode.ts) :
 // en mode pro, « Carte » mène aux demandes autour de soi (/pro/carte), jamais à la carte client.
@@ -31,6 +32,9 @@ export default function BottomTabBar() {
   }, [pathname])
 
   const unread = useUnreadTotal(mode, pathname)
+  // Accès rapide « Mission du jour » (audit 18/11) : bouton rond central, seulement quand une mission confirmée
+  // est en cours ou prévue aujourd'hui (à partir de 2 h avant). Pastille rouge : le client doit confirmer.
+  const today = useTodayMission(mode, pathname)
   const isPro = mode === 'pro'
   const accent = isPro ? '#F2A93B' : '#12B39C'
   const tabs = [
@@ -45,9 +49,19 @@ export default function BottomTabBar() {
   return (
     <div className="app-bottom-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: 480, display: 'flex', background: '#fff', borderTop: '1px solid #DCE5E3', boxShadow: '0 -4px 16px rgba(18,54,68,.06)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        {tabs.map(t => {
+        {tabs.map((t, i) => {
+          const missionBtn = i === 2 && today ? (
+            <button key="mission" onClick={() => router.push(`/mission/${today.id}/jour`)} aria-label="Mission du jour"
+              style={{ flex: 1, border: 'none', background: 'none', padding: '0 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: '#123644', cursor: 'pointer' }}>
+              <span style={{ position: 'relative', width: 46, height: 46, marginTop: -16, borderRadius: '50%', background: accent, color: '#fff', display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px rgba(18,54,68,.22)', border: '3px solid #fff' }}>
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" /></svg>
+                {today.urgent && <span aria-label="Action attendue" style={{ position: 'absolute', top: -2, right: -2, width: 13, height: 13, borderRadius: '50%', background: '#E5484D', border: '2px solid #fff' }} />}
+              </span>
+              <span style={{ fontSize: 10.5, fontWeight: 700 }}>Mission</span>
+            </button>
+          ) : null
           const on = pathname === t.path || pathname.startsWith(t.path + '/')
-          return (
+          return [missionBtn, (
             <button key={t.path} onClick={() => router.push(t.path)}
               style={{ flex: 1, border: 'none', background: 'none', padding: '10px 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: on ? accent : '#4E6470', cursor: 'pointer' }}>
               <span style={{ position: 'relative', display: 'inline-flex' }}>
@@ -56,7 +70,7 @@ export default function BottomTabBar() {
               </span>
               <span style={{ fontSize: 10.5, fontWeight: 700 }}>{t.label}</span>
             </button>
-          )
+          )]
         })}
       </div>
     </div>

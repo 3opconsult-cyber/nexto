@@ -3,11 +3,15 @@ import { createClient } from '@/lib/supabase/server'
 import { geocodeAddress } from '@/lib/geocode'
 import { judgeProximity } from '@/lib/arrival'
 import { systemSender } from '@/lib/systemMessage'
+import { isMissingFunction } from '@/lib/presence'
 
 // Voie B « client absent » : le prestataire, sur place, envoie sa position (consentement explicite, un seul
 // relevé) ; on la compare à l'adresse de la mission (lat/lng de la demande, sinon géocodage OSM) puis la RPC
 // request_arrival_code génère un code à 6 chiffres (hash en base, 15 min, 5 essais) que SEUL le client lit
 // dans l'application. Le code n'est jamais renvoyé ici. Les coordonnées de l'adresse ne sortent pas du serveur.
+// Migration 038 : même chose pour la FIN (`phase: 'fin'`), via request_remote_presence, qui exige aussi
+// « Je pars » avant l'arrivée, contrôle l'heure et pose lui-même le message au client (qui peut alors confirmer
+// en un appui). Sans 038 : repli sur request_arrival_code (arrivée seulement).
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const fail = (error: string, message: string, status: number, extra: object = {}) =>
   NextResponse.json({ ok: false, error, message, ...extra }, { status })
@@ -17,6 +21,7 @@ export async function POST(req: Request) {
     let b: any = {}
     try { b = await req.json() } catch { }
     if (b.consent !== true) return fail('consent', 'Le consentement à l’utilisation de votre position est nécessaire.', 400)
+    const phase: 'arrivee' | 'fin' = b.phase === 'fin' ? 'fin' : 'arrivee'
     const lat = Number(b.lat), lng = Number(b.lng)
     const accuracy = b.accuracy == null ? null : Number(b.accuracy)
     if (typeof b.transactionId !== 'string' || !UUID.test(b.transactionId)
@@ -29,10 +34,12 @@ export async function POST(req: Request) {
     if (!user) return fail('auth', 'Connectez-vous avec le compte du prestataire.', 401)
 
     const { data: tx } = await supabase.from('transactions')
-      .select('id, seller_id, status, arrived_at, price_confirmed, address_status, requests(lat, lng, address)')
+      .select('id, seller_id, status, en_route_at, arrived_at, completed_at, price_confirmed, address_status, requests(lat, lng, address)')
       .eq('id', b.transactionId).maybeSingle()
     if (!tx || tx.seller_id !== user.id) return fail('forbidden', 'Réservé au prestataire de la mission.', 403)
-    if (tx.status !== 'pending' || tx.arrived_at) return fail('not_ready', 'Cette mission est déjà commencée ou annulée.', 409)
+    if (phase === 'arrivee' && (tx.status !== 'pending' || tx.arrived_at)) return fail('not_ready', 'Cette mission est déjà commencée ou annulée.', 409)
+    if (phase === 'arrivee' && !tx.en_route_at) return fail('not_ready', 'Annoncez d’abord votre départ (« Je pars »).', 409)
+    if (phase === 'fin' && (!tx.arrived_at || tx.completed_at || tx.status === 'cancelled')) return fail('not_ready', 'La mission n’est pas en cours.', 409)
     // Même condition que l'affichage de l'adresse : rendez-vous confirmé et adresse acceptée.
     if (!tx.price_confirmed || !['profil', 'acceptee'].includes(tx.address_status ?? 'profil')) {
       return fail('not_ready', 'Le rendez-vous ou son adresse n’est pas encore confirmé.', 409)
@@ -50,9 +57,24 @@ export async function POST(req: Request) {
     }
     const geo = verdict.status === 'conforme' ? 'conforme' : 'non_verifiable'
 
+    const distance = verdict.status === 'conforme' ? verdict.distanceM : null
+    const { data: v2, error: e2 } = await supabase.rpc('request_remote_presence', {
+      p_transaction: tx.id, p_phase: phase, p_lat: lat, p_lng: lng, p_distance_m: distance, p_geo_status: geo,
+    })
+    if (!e2) {
+      if (!v2?.ok) {
+        const code = v2?.reason === 'too_many' ? 'too_many' : v2?.reason === 'throttled' ? 'throttled' : (v2?.reason || 'not_ready')
+        return fail(code, v2?.message || 'Demande refusée.', code === 'too_many' || code === 'throttled' ? 429 : 409)
+      }
+      // Le message au client est posé par la base (request_remote_presence).
+      return NextResponse.json({ ok: true, geo, expiresAt: v2.expires_at, confirmUntil: v2.confirm_until })
+    }
+    if (!isMissingFunction(e2)) return fail('server', e2.message, 400)
+    if (phase === 'fin') return fail('unavailable', 'La fin à distance n’est pas encore disponible : utilisez le QR de fin du client.', 409)
+
+    // Repli : migration 038 absente.
     const { data: rpc, error } = await supabase.rpc('request_arrival_code', {
-      p_transaction: tx.id, p_lat: lat, p_lng: lng,
-      p_distance_m: verdict.status === 'conforme' ? verdict.distanceM : null, p_geo_status: geo,
+      p_transaction: tx.id, p_lat: lat, p_lng: lng, p_distance_m: distance, p_geo_status: geo,
     })
     if (error) return fail('server', error.message, 400)
     if (!rpc?.ok) {

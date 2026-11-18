@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import Modal, { Cta } from './Modal'
-import ArrivalProof from './ArrivalProof'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { distanceKm } from '@/lib/geo'
 import { systemSender } from '@/lib/systemMessage'
@@ -16,14 +16,17 @@ import { systemSender } from '@/lib/systemMessage'
  * géolocalisation que la moitié des gens refusent.
  *
  * Deux faces du même composant : le prestataire voit un bouton, le client voit
- * la barre d'approche. L'arrivée reste validée par le code scanné sur place —
- * c'est lui qui fait foi, pas ce compte à rebours.
+ * la barre d'approche. L'arrivée reste validée par la preuve du client (QR, code, ou sa confirmation s'il est
+ * absent) — c'est elle qui fait foi, pas ce compte à rebours. Scanner, « client absent » et fin de mission sont
+ * sur l'écran « Mission du jour » (/mission/[id]/jour) ; les boutons « client absent » n'apparaissent qu'après
+ * « Je pars » (audit 18/11 : l'ancienne voie « photo + GPS » validait l'arrivée sans le client, supprimée).
  */
 const ETAS = [5, 10, 15, 20, 30, 45]
 
 export default function DepartureBar({
   tx, userId, onChange, address, confirmed,
 }: { tx: any; userId: string; onChange: (t: any) => void; address?: string | null; confirmed?: boolean }) {
+  const router = useRouter()
   const [ask, setAsk] = useState(false)
   const [eta, setEta] = useState(15)
   const [busy, setBusy] = useState(false)
@@ -67,7 +70,12 @@ export default function DepartureBar({
     const at = new Date().toISOString()
     const { data, error } = await supabase.from('transactions')
       .update({ en_route_at: at, eta_minutes: eta }).eq('id', tx.id).select().single()
-    if (error || !data) { setBusy(false); setAsk(false); alert('Départ non enregistré — vérifiez votre connexion et réessayez.'); return }
+    if (error || !data) {
+      setBusy(false); setAsk(false)
+      // Migration 038 : « Je pars » refusé avant le jour du rendez-vous (message de la base).
+      alert(error?.message?.includes('jour même') ? error.message : 'Départ non enregistré — vérifiez votre connexion et réessayez.')
+      return
+    }
     {
       onChange(data)
       await supabase.from('messages').insert({
@@ -114,13 +122,15 @@ export default function DepartureBar({
             Le client verra votre heure d'arrivée estimée.
           </div>
           <AddressBlock />
-          <ArrivalProof txId={tx.id} onDone={onChange} />
+          <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: 'rgba(255,255,255,.85)', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
+            Ouvrir la mission du jour
+          </button>
         </div>
 
         <Modal open={ask} onClose={() => setAsk(false)} title="Dans combien de temps arrivez-vous ?">
           <p style={{ fontSize: 13, color: '#4E6470', margin: 0, lineHeight: 1.55 }}>
-            Le client verra un compte à rebours. Ce n'est qu'une estimation : c'est le code scanné
-            sur place qui déclenchera réellement la mission.
+            Le client verra un compte à rebours. Ce n'est qu'une estimation : c'est le QR du client,
+            scanné sur place, qui déclenchera réellement la mission.
           </p>
           {minPlausibleMin != null && minPlausibleMin > ETAS[0] && (
             <p style={{ fontSize: 11.5, color: '#6E8592', margin: '10px 0 0' }}>
@@ -163,7 +173,11 @@ export default function DepartureBar({
         <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2FD06E', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Intervention en cours</div>
-          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)', marginTop: 2 }}>Arrivée scannée à {since} · le scan de fin enregistrera la durée réelle.</div>
+          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)', marginTop: 2 }}>Arrivée validée à {since} · la fin enregistrera la durée réelle.</div>
+          <button onClick={() => router.push(`/mission/${tx.id}/jour${isSeller ? '?scan' : ''}`)} style={{
+            marginTop: 8, border: 'none', borderRadius: 999, padding: '7px 14px', background: '#12B39C', color: '#fff',
+            fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5, cursor: 'pointer',
+          }}>{isSeller ? 'Terminer la mission' : 'Afficher mon QR de fin'}</button>
         </div>
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 19, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
           {h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`}
@@ -182,9 +196,16 @@ export default function DepartureBar({
           <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2FD06E', flexShrink: 0 }} />
           <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Vous êtes en route</span>
         </div>
-        <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>Le client suit votre arrivée. La mission démarrera au scan du code d'arrivée.</div>
+        <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>Le client suit votre arrivée. La mission démarrera au scan de son QR d'arrivée.</div>
         <AddressBlock />
-          <ArrivalProof txId={tx.id} onDone={onChange} />
+        <button onClick={() => router.push(`/mission/${tx.id}/jour?scan`)} style={{
+          width: '100%', marginTop: 10, border: 'none', borderRadius: 999, padding: '11px 0', background: '#12B39C', color: '#fff',
+          fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer',
+        }}>Scanner le QR du client</button>
+        <button onClick={() => router.push(`/mission/${tx.id}/jour?absent`)} style={{
+          width: '100%', marginTop: 7, border: '1px solid rgba(255,255,255,.25)', borderRadius: 999, padding: '9px 0', background: 'transparent', color: '#fff',
+          fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5, cursor: 'pointer',
+        }}>Le client n&apos;est pas là</button>
       </div>
     )
   }
@@ -225,8 +246,12 @@ export default function DepartureBar({
       </div>
 
       <div style={{ fontSize: 11, color: 'rgba(255,255,255,.72)', marginTop: 9, lineHeight: 1.5 }}>
-        Estimation annoncée au départ. La mission démarrera au scan du code d'arrivée.
+        Estimation annoncée au départ. La mission démarrera au scan de votre QR d&apos;arrivée.
       </div>
+      <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{
+        width: '100%', marginTop: 10, border: 'none', borderRadius: 999, padding: '10px 0', background: '#12B39C', color: '#fff',
+        fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+      }}>Afficher mon QR d&apos;arrivée</button>
     </div>
   )
 }

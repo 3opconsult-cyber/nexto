@@ -6,6 +6,7 @@ import { enforceForgottenSession } from '@/lib/auth-session'
 import BottomTabBar from '@/components/BottomTabBar'
 import { useUnreadTotal } from '@/lib/unread'
 import UnreadBadge from '@/components/UnreadBadge'
+import { useTodayMission } from '@/lib/todayMission'
 
 // Routes "app" qui reçoivent la navigation laterale desktop (sidebar).
 // Auth, presentation, hub, demo, admin : pas de sidebar.
@@ -42,6 +43,7 @@ const PRO_NAV2: [string, string][] = [
 function navIcon(label: string) {
   const l = label.toLowerCase()
   const p = (d: string) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>{d.split('|').map((x, i) => <path key={i} d={x} />)}</svg>
+  if (l.includes('mission')) return p('M3 3h7v7H3z|M14 3h7v7h-7z|M3 14h7v7H3z|M14 14h3v3h-3z|M17 20h4v-3')
   if (l.includes('carte')) return p('M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4')
   if (l.includes('demande')) return p('M4 5h16v14H4z|M8 9h8M8 13h5')
   if (l.includes('message')) return p('M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z')
@@ -101,6 +103,8 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
   const onPro = isProRoute || (!isClientRoute && mode === 'pro')
   const accent = onPro ? '#F2A93B' : '#12B39C'
   const unread = useUnreadTotal(onPro ? 'pro' : 'particulier', pathname)
+  // Accès rapide « Mission du jour » : en tête du menu, seulement quand une mission est en cours ou du jour.
+  const today = useTodayMission(onPro ? 'pro' : 'particulier', pathname)
   const nav = onPro ? PRO_NAV : CLIENT_NAV
   const nav2 = onPro ? PRO_NAV2 : CLIENT_NAV2
   function switchMode() {
@@ -130,6 +134,13 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
           <svg viewBox="0 0 26 26" width="26" height="26"><circle cx="13" cy="13" r="11.2" fill="none" stroke={accent} strokeWidth={1.3} opacity=".38" /><circle cx="13" cy="13" r="7" fill="none" stroke={accent} strokeWidth={1.3} opacity=".6" /></svg>
           <span style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)' }}>ping</span>
         </div>
+        {today && (
+          <div className={`dnav-item ${pathname === `/mission/${today.id}/jour` ? 'on' : ''}`} onClick={() => go(`/mission/${today.id}/jour`)}
+            style={{ background: today.urgent ? 'rgba(229,72,77,.08)' : 'rgba(18,179,156,.1)', marginBottom: 4 }}>
+            {navIcon('Mission du jour')}<span>Mission du jour</span>
+            {today.urgent && <span aria-label="Action attendue" style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#E5484D' }} />}
+          </div>
+        )}
         {nav.map(item)}
         <div style={{ height: 1, background: 'var(--line)', margin: '10px 8px' }} />
         {nav2.map(item)}
