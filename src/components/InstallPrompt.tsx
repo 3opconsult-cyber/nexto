@@ -14,6 +14,7 @@ export default function InstallPrompt() {
   const [show, setShow] = useState(false)
   const [bip, setBip] = useState<BIP | null>(null)
   const [platform, setPlatform] = useState<'ios' | 'android' | 'desktop'>('desktop')
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     try {
@@ -53,24 +54,41 @@ export default function InstallPrompt() {
   const steps = platform === 'ios'
     ? ['Ouvrez PING dans Safari.', 'Touchez le bouton Partager (le carré avec une flèche vers le haut).', 'Choisissez « Sur l’écran d’accueil », puis « Ajouter ».']
     : platform === 'android'
-      ? ['Touchez le bouton « Installer » ci-dessous.', 'Si rien ne s’affiche : menu du navigateur (trois points), puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».']
+      ? ['Touchez le bouton « Installer ».', 'Si rien ne s’affiche : menu du navigateur (trois points), puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».']
       : ['Dans la barre d’adresse de Chrome, cliquez sur l’icône d’installation à droite.', 'Ou menu (trois points), « Enregistrer et partager », « Installer PING ».']
+  const canInstall = !!bip && platform !== 'ios'
 
+  // Bandeau compact posé au-dessus de la barre d'onglets : il ne couvre plus l'écran, la page
+  // reste utilisable dessous (pas de fond, pas de modale). Les étapes se déplient à la demande.
   return (
     <>
-    <style>{`.ping-install{bottom:calc(76px + env(safe-area-inset-bottom,0px))}@media(min-width:1000px){.ping-install{bottom:12px}}`}</style>
-    <div role="dialog" aria-label="Installer le raccourci PING" className="ping-install" style={{ position: 'fixed', left: 0, right: 0, zIndex: 9999, display: 'flex', justifyContent: 'center', padding: 12, pointerEvents: 'none' }}>
-      <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: 420, background: '#fff', borderRadius: 20, padding: 18, boxShadow: '0 10px 40px rgba(18,54,68,.25)', border: '1px solid #E7EDEB', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, marginBottom: 6 }}>Installer le raccourci PING sur votre écran</div>
-        <p style={{ fontSize: 14, color: '#4E6470', margin: '0 0 12px' }}>En quelques secondes, plus rapide que le téléchargement d&apos;une application.</p>
-        <ol style={{ fontSize: 14, margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.5 }}>
-          {steps.map(s => <li key={s}>{s}</li>)}
-        </ol>
-        {bip && platform !== 'ios' && (
-          <button onClick={install} style={{ width: '100%', padding: 13, border: 0, borderRadius: 14, background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 8 }}>Installer</button>
+    <style>{`.ping-install{bottom:calc(72px + env(safe-area-inset-bottom,0px))}@media(min-width:1000px){.ping-install{bottom:12px}}`}</style>
+    <div role="region" aria-label="Installer le raccourci PING" className="ping-install" style={{ position: 'fixed', left: 0, right: 0, zIndex: 9999, display: 'flex', justifyContent: 'center', padding: '0 10px', pointerEvents: 'none' }}>
+      <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: 440, background: '#fff', borderRadius: 14, padding: '9px 8px 9px 12px', boxShadow: '0 6px 22px rgba(18,54,68,.18)', border: '1px solid #E7EDEB', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+            <rect x="6" y="2.5" width="12" height="19" rx="2.5" stroke="#12B39C" strokeWidth="1.8" />
+            <path d="M12 7.5v7m0 0-3-3m3 3 3-3" stroke="#12B39C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, lineHeight: 1.25 }}>Installer le raccourci PING</div>
+            <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 0, background: 'transparent', padding: 0, color: '#0C8F7E', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
+              {open ? 'Masquer les étapes' : 'Comment faire'}
+            </button>
+          </div>
+          {canInstall && (
+            <button onClick={install} style={{ flexShrink: 0, padding: '8px 13px', border: 0, borderRadius: 999, background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Installer</button>
+          )}
+          <button onClick={close} aria-label="Plus tard" title="Plus tard" style={{ flexShrink: 0, width: 34, height: 34, border: 0, borderRadius: '50%', background: '#F3F6F5', color: '#4E6470', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          </button>
+        </div>
+        {open && (
+          <ol style={{ fontSize: 13, margin: '8px 4px 2px 0', paddingLeft: 20, lineHeight: 1.45, color: '#4E6470' }}>
+            {steps.map(s => <li key={s}>{s}</li>)}
+          </ol>
         )}
-        <button onClick={close} style={{ width: '100%', padding: 12, border: '1.5px solid #E7EDEB', borderRadius: 14, background: '#fff', color: '#123644', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>Plus tard</button>
-        <button onClick={close} style={{ width: '100%', padding: 10, marginTop: 6, border: 0, background: 'transparent', color: '#4E6470', fontWeight: 600, fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}>C’est déjà installé, ne plus afficher</button>
+        <button onClick={close} style={{ display: 'block', padding: '4px 0 0', border: 0, background: 'transparent', color: '#4E6470', fontWeight: 600, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>C’est déjà installé, ne plus afficher</button>
       </div>
     </div>
     </>

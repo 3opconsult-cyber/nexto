@@ -53,9 +53,9 @@ export default function ClientAvisPage() {
       <div style={{ padding: 16, maxWidth: 640, margin: '0 auto' }}>
         {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
-        {!loading && (
+        {!loading && rows.length > 0 && (
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', marginBottom: 14 }}>
-            Vos {rows.length} avis
+            {rows.length === 1 ? 'Votre avis' : `Vos ${rows.length} avis`}
           </div>
         )}
 

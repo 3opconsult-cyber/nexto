@@ -109,7 +109,12 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
 
   const doc = await PDFDocument.create()
   doc.setTitle(`${docTitle(inv)} ${inv.number}`)
-  doc.setProducer('PING'); doc.setCreator('PING')
+  // Le prestataire facture sous son propre en-tête : PING n'apparaît, ni dans le document ni
+  // dans ses métadonnées, que sur ses propres relevés (frais de service, commission).
+  const isPing = inv.template === 'commission'
+  const issuerName = pdfSafe(inv.issuer_snapshot?.enseigne || inv.issuer_snapshot?.nom || 'Prestataire')
+  if (isPing) { doc.setProducer('PING'); doc.setCreator('PING') }
+  else { doc.setProducer(issuerName); doc.setCreator(issuerName); doc.setAuthor(issuerName) }
 
   const page = doc.addPage([595.28, 841.89])      // A4
   const reg = await doc.embedFont(StandardFonts.Helvetica)
@@ -143,12 +148,20 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
     for (const l of wrap(s, W - M * 2, size)) { txt(l, M, y, size, reg, c); y -= lead }
   }
 
-  // ---------- en-tête commun ----------
-  const cx = M + 11, cy = y - 6
-  page.drawCircle({ x: cx, y: cy, size: 11, borderColor: TEAL, borderWidth: 0.8, opacity: 0 })
-  page.drawCircle({ x: cx, y: cy, size: 7.2, borderColor: TEAL, borderWidth: 1.1, opacity: 0 })
-  page.drawCircle({ x: cx, y: cy, size: 2.8, color: GREEN })
-  txt('ping', M + 28, y - 11, 19, bold, INK)
+  // ---------- en-tête ----------
+  if (isPing) {
+    const cx = M + 11, cy = y - 6
+    page.drawCircle({ x: cx, y: cy, size: 11, borderColor: TEAL, borderWidth: 0.8, opacity: 0 })
+    page.drawCircle({ x: cx, y: cy, size: 7.2, borderColor: TEAL, borderWidth: 1.1, opacity: 0 })
+    page.drawCircle({ x: cx, y: cy, size: 2.8, color: GREEN })
+    txt('ping', M + 28, y - 11, 19, bold, INK)
+  } else {
+    // En-tête du prestataire seul : son nom (ou son enseigne), et son SIRET s'il est immatriculé.
+    const nameLines = wrap(issuerName, (W - M * 2) / 2, 15, bold).slice(0, 2)
+    let hy = y - 9
+    for (const l of nameLines) { txt(l, M, hy, 15, bold, INK); hy -= 17 }
+    if (inv.issuer_snapshot?.siret) txt(`SIRET ${inv.issuer_snapshot.siret}`, M, hy + 3, 8.5, reg, SLATE)
+  }
 
   right(docTitle(inv).toUpperCase(), W - M, y - 4, 8.5, bold, SLATE)
   right(inv.number, W - M, y - 19, 14, bold, INK)

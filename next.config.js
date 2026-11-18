@@ -51,10 +51,9 @@ const nextConfig = {
         { source: '/plan-marketing', destination: '/plan-marketing.html' },
         { source: '/maquette', destination: '/maquette.html' },
       ],
-      // Tout le reste tombe sur le prototype : l'app EST /demo.
-      fallback: [
-        { source: '/:path*', destination: '/client.html' },
-      ],
+      // Plus de fallback vers le prototype client.html : une adresse inconnue
+      // renvoie la vraie page « introuvable » (src/app/not-found.tsx, statut 404).
+      // Le prototype reste servi tel quel sur /client.html.
     }
   },
 }
