@@ -2,12 +2,16 @@
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { captureAttribution } from '@/lib/attribution'
 
 // Décision Romain (03/11/2026) : l'application n'est pas visitable sans compte. L'objectif est l'inscription ;
 // la présentation se fait sur la plaquette (/bienvenue). Un visiteur sans session qui ouvre une page de
 // l'application est renvoyé vers l'inscription, avec retour à la page demandée ensuite (?next=).
 const PROTECTED = ['/map', '/messages', '/agenda', '/client', '/pro', '/mission', '/documents', '/litiges', '/aide', '/scan']
-const OPEN = ['/pro/onboarding'] // gère déjà lui-même l'absence de compte
+// Assistant prestataire (/pro/onboarding, /l/insp) : le compte d'abord (lot 5, refonte 18/11/2026). Avant, un
+// visiteur remplissait tout l'assistant sans compte et perdait sa saisie à « Terminer ». Il passe désormais par
+// l'inscription prestataire, puis revient à l'assistant (brouillon gardé dans localStorage('ping_pro_draft')).
+const PRO_SIGNUP = /^\/pro\/onboarding(\/|$)/
 
 // Espace prestataire : réservé aux comptes dont le profil prestataire est créé (fin de /pro/onboarding).
 // Sinon retour au parcours d'inscription prestataire.
@@ -17,7 +21,7 @@ export default function AuthGate() {
   const path = usePathname() || ''
   const router = useRouter()
   const [anon, setAnon] = useState(false)
-  const guarded = PROTECTED.some(p => path === p || path.startsWith(p + '/')) && !OPEN.some(p => path === p || path.startsWith(p + '/'))
+  const guarded = PROTECTED.some(p => path === p || path.startsWith(p + '/'))
 
   useEffect(() => {
     if (!guarded) { setAnon(false); return }
@@ -38,7 +42,9 @@ export default function AuthGate() {
         return
       }
       setAnon(true)
-      router.replace(`/auth/signup?next=${encodeURIComponent(path)}`)
+      // Les UTM d'un lien court (/l/insp…) sont sur l'URL d'arrivée : on les garde avant de quitter la page.
+      captureAttribution()
+      router.replace(`/auth/signup?${PRO_SIGNUP.test(path) ? 'role=pro&' : ''}next=${encodeURIComponent(path)}`)
     })
     return () => { off = true }
   }, [guarded, path, router])

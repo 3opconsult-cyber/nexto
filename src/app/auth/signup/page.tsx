@@ -29,6 +29,14 @@ function EyeIcon({ off }: { off: boolean }) {
   )
 }
 
+const DRAFT_KEY = 'ping_signup_draft'
+const TEXT_FIELDS = ['email', 'firstName', 'lastName', 'phone', 'birthdate', 'address'] as const
+function pickText(o: Record<string, unknown>) {
+  const out: Record<string, string> = {}
+  for (const k of TEXT_FIELDS) if (typeof o[k] === 'string') out[k] = o[k] as string
+  return out
+}
+
 function SignupForm() {
   const router = useRouter()
   const params = useSearchParams()
@@ -47,8 +55,36 @@ function SignupForm() {
   const [checkMail, setCheckMail] = useState(false)
   // Accueil en 3 écrans, une seule fois, pour un particulier dont le compte est actif tout de suite.
   const [welcome, setWelcome] = useState(false)
+  // Case CGU tenue dans l'état : elle ne se décoche plus quand on revient à l'étape 1 puis à la 2.
+  const [cguOk, setCguOk] = useState(false)
 
   useEffect(() => { captureAttribution(); rememberReferral(params.get('ref')) }, [params])
+
+  // Saisie gardée le temps de l'onglet (sessionStorage, jamais le mot de passe) : un aller-retour vers une
+  // autre page, un rechargement ou la bascule Particulier / Professionnel ne vident plus le formulaire.
+  const restored = useRef(false)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY)
+      if (raw) {
+        const d = JSON.parse(raw)
+        if (d && typeof d === 'object') {
+          if (d.form && typeof d.form === 'object') setForm(f => ({ ...f, ...pickText(d.form), password: '' }))
+          if (!params.get('role') && (d.role === 'client' || d.role === 'pro')) setRole(d.role)
+          if (d.step === 1 || d.step === 2) setStep(d.step)
+        }
+      }
+    } catch { }
+    restored.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  useEffect(() => {
+    if (!restored.current) return
+    try {
+      const { password: _pw, ...rest } = form
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form: rest, role, step }))
+    } catch { }
+  }, [form, role, step])
 
   function update(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
 
@@ -125,6 +161,7 @@ function SignupForm() {
       }
 
       if (!data.session) { setCheckMail(true); setLoading(false); return }
+      try { sessionStorage.removeItem(DRAFT_KEY) } catch { }
       if (role === 'pro') { router.push('/pro/onboarding'); return }
       if (!welcomeSeen()) { setWelcome(true); setLoading(false); return }
       router.push(nextPath() || '/map')
@@ -136,8 +173,18 @@ function SignupForm() {
 
   if (welcome) return <WelcomeCarousel onDone={() => router.push(nextPath() || '/map')} />
 
+  // Après confirmation de l'e-mail, un prestataire revient à son assistant (brouillon gardé).
+  const afterLogin = nextPath() || (role === 'pro' ? '/pro/onboarding' : null)
+
   if (checkMail) return (
-    <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 24px', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 24px', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: 380, marginBottom: 12 }}>
+        {/* Rouvre le formulaire tel qu'il était rempli, sur l'étape de l'e-mail. */}
+        <button type="button" onClick={() => { setCheckMail(false); setStep(2); setError('') }}
+          style={{ border: 'none', background: 'rgba(255,255,255,.1)', color: '#fff', borderRadius: 999, padding: '10px 16px', minHeight: 44, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+          ← Changer d&apos;e-mail
+        </button>
+      </div>
       <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '28px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)', textAlign: 'center' }}>
         <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(18,179,156,.12)', display: 'grid', placeItems: 'center', margin: '0 auto 14px' }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
@@ -147,7 +194,7 @@ function SignupForm() {
           Un lien de confirmation vient d&apos;être envoyé à <b style={{ color: '#123644' }}>{form.email}</b>. Cliquez dessus pour activer
           votre compte, puis connectez-vous. Pensez à regarder dans les spams.
         </p>
-        <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'}
+        <Link href={afterLogin ? `/auth/login?next=${encodeURIComponent(afterLogin)}` : '/auth/login'}
           style={{ display: 'block', marginTop: 20, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
           Aller à la connexion
         </Link>
@@ -243,10 +290,10 @@ function SignupForm() {
                   </div>
                 </div>
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 13, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
-                  <input type="checkbox" required style={{ marginTop: 2, width: 16, height: 16, accentColor: '#12B39C', flexShrink: 0 }} />
+                  <input type="checkbox" required checked={cguOk} onChange={e => setCguOk(e.target.checked)} style={{ marginTop: 2, width: 16, height: 16, accentColor: '#12B39C', flexShrink: 0 }} />
                   <span style={{ fontSize: 11.5, fontWeight: 600, color: '#0C8F7E', lineHeight: 1.4 }}>
-                    J&apos;accepte les <Link href="/cgu" style={{ textDecoration: 'underline' }}>Conditions Générales</Link> et la{' '}
-                    <Link href="/confidentialite" style={{ textDecoration: 'underline' }}>Politique de confidentialité</Link> de PING
+                    J&apos;accepte les <a href="/cgu" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Conditions Générales</a> et la{' '}
+                    <a href="/confidentialite" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Politique de confidentialité</a> de PING
                   </span>
                 </label>
               </>
