@@ -5,7 +5,9 @@ import dynamic from 'next/dynamic'
 import { geocodeAddress } from '@/lib/geocode'
 import ModeSwitchPill from '@/components/ModeSwitchPill'
 import NavDrawer from '@/components/NavDrawer'
-import RequestDetails from '@/components/RequestDetails'
+import { requestDetailRows } from '@/components/RequestDetails'
+import { Ic, svcIconKey } from '@/components/PingIcons'
+import { useUnreadTotal } from '@/lib/unread'
 import { addressUsable, maskAddress } from '@/lib/address'
 import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib/services'
 import { TRADES, tradeOfServiceName } from '@/lib/trades'
@@ -27,7 +29,7 @@ function agoTxt(iso: string) {
   return `il y a ${Math.round(h / 24)} j`
 }
 function UrgentTag() {
-  return <span style={{ display: 'inline-block', marginRight: 6, padding: '1px 7px', borderRadius: 999, background: '#E8743B', color: '#fff', fontFamily: 'Inter,sans-serif', fontSize: 10.5, fontWeight: 800, verticalAlign: 2 }}>URGENT</span>
+  return <span className="mq-tag urg" style={{ marginRight: 6, verticalAlign: 1 }}>Urgent</span>
 }
 function budgetTxt(cents: number | null) {
   return cents ? `${Math.round(cents / 100)} €` : 'Sur devis'
@@ -36,7 +38,9 @@ function budgetRangeTxt(r: RequestNearby) {
   if (r.budget_min_cents || r.budget_max_cents) {
     const min = r.budget_min_cents ? `${Math.round(r.budget_min_cents / 100)} €` : null
     const max = r.budget_max_cents ? `${Math.round(r.budget_max_cents / 100)} €` : null
-    return min && max ? `${min} – ${max}` : (min || max || 'Sur devis')
+    // Fourchette compacte comme la maquette : « 80 – 120 € ».
+    if (min && max) return min === max ? max : `${Math.round(r.budget_min_cents! / 100)} – ${max}`
+    return min || max || 'Sur devis'
   }
   return budgetTxt(r.budget_cents)
 }
@@ -44,6 +48,7 @@ const SLOT_LABELS: Record<string, string> = { matin: 'Matin', 'apres-midi': 'Apr
 
 export default function ProCartePage() {
   const router = useRouter()
+  const unread = useUnreadTotal('pro', 'pro-carte')
   const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
   const [allReqs, setAllReqs] = useState<RequestNearby[]>([])
   const [recenterTick, setRecenterTick] = useState(0)
@@ -187,7 +192,7 @@ export default function ProCartePage() {
     fetchRequestsNearby(center.lat, center.lng, radiusKm * 1000).then(list => {
       setAllReqs(list)
       if (newZone) setZoneGen(g => g + 1)
-      if (seen.current) {
+      if (seen.current && !newZone) {
         const nouveau = list.find(r => !seen.current!.has(r.id) && matchRef.current(r))
         if (nouveau) setFresh(nouveau)
       }
@@ -210,11 +215,13 @@ export default function ProCartePage() {
   const nearest = reqs.length ? Math.round(reqs[0].distance_m) : null
   const nearestTxt = nearest == null ? '—' : distanceTxt(nearest)
 
-  async function respond(r: RequestNearby) {
+  // « Contacter le client » ouvre la conversation ; « Proposer mon tarif » l'ouvre sur le formulaire de
+  // tarif du chat (même mécanisme de devis, ?tarif).
+  async function respond(r: RequestNearby, withOffer = false) {
     setSending(true)
     const { missionId, error } = await respondToRequest(r.id)
     setSending(false)
-    if (missionId) router.push(`/mission/${missionId}/chat`)
+    if (missionId) router.push(`/mission/${missionId}/chat${withOffer ? '?tarif' : ''}`)
     else if (error === 'not_authenticated') router.push('/auth/login?next=/pro/carte')
     else setSendError('Impossible de contacter ce client pour le moment (demande peut-être déjà prise). Réessayez.')
   }
@@ -224,38 +231,22 @@ export default function ProCartePage() {
   // API tant que la mission n'est pas confirmée) — seule la distance l'est.
   const requestDetail = selected && (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <div onClick={() => setSelectedId(null)} style={{ width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'var(--paper)', flex: '0 0 auto' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
-        </div>
-        <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>{selected.urgent && <UrgentTag />}{selected.title || TRADES[selected.category] || selected.category}</b>
-      </div>
-
-      <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 14, padding: 12, marginBottom: 14 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
-          <span style={{ color: 'var(--slate)' }}>Distance</span><b style={{ color: 'var(--ink)' }}>à {distanceTxt(selected.distance_m)}</b>
-        </div>
+      <button type="button" onClick={() => setSelectedId(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 0, background: 'none', padding: '0 0 8px', minHeight: 36, color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
+        <Ic name="back" size={18} />Toutes les demandes
+      </button>
+      {/* Carte de la demande (maquette, écran « Demande ») */}
+      <div className="mq-card">
+        <b style={{ fontFamily: 'var(--fh)', fontSize: 15, color: 'var(--ink)', display: 'block' }}>{selected.urgent && <UrgentTag />}{selected.title || TRADES[selected.category] || selected.category}</b>
+        <p style={{ color: 'var(--slate)', margin: '6px 0', fontSize: 13 }}>
+          {TRADES[selected.category] || selected.category} · à {distanceTxt(selected.distance_m)}{zoneCenter && zoneCity ? ` de ${zoneCity}` : ''} · budget <b style={{ color: '#097A6C' }}>{budgetRangeTxt(selected)}</b> · {agoTxt(selected.created_at)}
+        </p>
         {selected.desired_date && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
-            <span style={{ color: 'var(--slate)' }}>Date souhaitée</span>
-            <b style={{ color: 'var(--ink)' }}>{new Date(selected.desired_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}{selected.desired_slot ? ` · ${SLOT_LABELS[selected.desired_slot] || selected.desired_slot}` : ''}</b>
-          </div>
+          <div className="mq-dl"><span>Pour quand</span><b>{new Date(selected.desired_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}{selected.desired_slot ? ` · ${SLOT_LABELS[selected.desired_slot] || selected.desired_slot}` : ''}</b></div>
         )}
-        <RequestDetails request={selected} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
-          <span style={{ color: 'var(--slate)' }}>Publiée</span><b style={{ color: 'var(--ink)' }}>{agoTxt(selected.created_at)}</b>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
-          <span style={{ color: 'var(--slate)' }}>Budget indicatif</span><b style={{ color: 'var(--ink)' }}>{budgetRangeTxt(selected)}</b>
-        </div>
+        {requestDetailRows(selected).map(([k, v]) => <div key={k} className="mq-dl"><span>{k}</span><b>{v}</b></div>)}
+        {selected.description?.trim() && <div className="mq-dl" style={{ alignItems: 'flex-start' }}><span>Précisions</span><b style={{ fontWeight: 600, maxWidth: '68%' }}>{selected.description}</b></div>}
+        <p style={{ color: 'var(--slate)', fontSize: 12, marginTop: 8, lineHeight: 1.45 }}>L&apos;adresse exacte vous est donnée quand le tarif est validé et le rendez-vous fixé. Position floutée à 500 m.</p>
       </div>
-
-      <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 13, color: 'var(--ink)', marginBottom: 6 }}>Description du client</div>
-      <p style={{ fontSize: 12.5, color: 'var(--slate)', lineHeight: 1.5, marginBottom: 16 }}>{selected.description || '—'}</p>
-
-      <p style={{ fontSize: 10.5, color: '#6E8592', lineHeight: 1.5, marginBottom: 14 }}>
-        L&apos;adresse exacte et les coordonnées du client vous seront communiquées si votre proposition est acceptée.
-      </p>
 
       {sendError && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{sendError}</p>}
       {!selected.mine && sentByRequest[selected.id] ? (
@@ -263,18 +254,21 @@ export default function ProCartePage() {
           <p style={{ fontSize: 12.5, color: 'var(--ink)', background: 'rgba(18,179,156,.08)', borderRadius: 12, padding: 12, lineHeight: 1.5, marginBottom: 10 }}>
             Vous avez déjà contacté ce client pour cette demande.
           </p>
-          <div className="btn" style={{ background: 'var(--teal)' }} onClick={() => router.push(`/mission/${sentByRequest[selected.id]}/chat`)}>
-            Reprendre la conversation
+          <div className="btn" role="button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={() => router.push(`/mission/${sentByRequest[selected.id]}/chat`)}>
+            <Ic name="msg" />Voir la conversation
           </div>
         </>
       ) : selected.mine ? (
-        <p style={{ fontSize: 12.5, color: 'var(--ink)', background: '#FFF4DD', borderRadius: 12, padding: 12, lineHeight: 1.5 }}>
-          C&apos;est votre annonce. Vous la voyez comme les prestataires, mais vous ne pouvez pas y répondre avec ce compte.
-        </p>
+        <div className="mq-card"><b style={{ color: 'var(--ink)' }}>C&apos;est votre propre demande</b><p style={{ color: 'var(--slate)', fontSize: 13 }}>Un compte ne répond pas à sa propre annonce.</p></div>
       ) : (
-      <div className="btn" style={{ background: 'var(--teal)', opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected)}>
-        {sending ? 'Envoi…' : 'Contacter le client'}
-      </div>
+        <>
+          <div className="btn" role="button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10, opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected)}>
+            <Ic name="msg" />{sending ? 'Envoi…' : 'Contacter le client'}
+          </div>
+          <div className="btn ghost" role="button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: sending ? .6 : 1, pointerEvents: sending ? 'none' : 'auto' }} onClick={() => respond(selected, true)}>
+            <Ic name="tag" />Proposer mon tarif
+          </div>
+        </>
       )}
     </>
   )
@@ -282,65 +276,55 @@ export default function ProCartePage() {
   // Contenu partagé entre la fiche mobile (bottom sheet ".preview") et le
   // panneau desktop (".detail-panel", toujours visible a cote de la carte) :
   // meme etat, meme actions, seule la mise en page differe selon l'ecran.
+  const urgentCount = reqs.filter(r => r.urgent).length
+  const toggle = (
+    <div onClick={toggleAvailable} role="switch" aria-checked={available} aria-label="Disponible maintenant" tabIndex={0}
+      onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleAvailable() } }}
+      style={{ width: 52, height: 30, borderRadius: 999, background: available ? 'var(--gold)' : '#cdd6d3', position: 'relative', cursor: 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
+      <span style={{ position: 'absolute', top: 3, left: available ? 25 : 3, width: 24, height: 24, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
+    </div>
+  )
+  // Ligne secondaire (propositions envoyées, interventions) : même forme qu'une ligne de liste.
+  const linkRow = (label: string, sub: string, onClick: () => void, icon: string) => (
+    <button type="button" className="mq-row" onClick={onClick} style={{ padding: '10px 0' }}>
+      <span className="mq-rico"><Ic name={icon} size={16} /></span>
+      <span className="grow"><b>{label}</b><small>{sub}</small></span>
+      <span className="chev"><Ic name="chev" size={18} /></span>
+    </button>
+  )
   const activityPanel = (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-        <span style={{ width: 12, height: 12, borderRadius: 999, background: available ? 'var(--teal)' : '#c0503a', flex: '0 0 auto' }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, color: 'var(--ink)' }}>{available ? 'Disponible maintenant' : 'Hors ligne'}</div>
-          <div style={{ fontSize: 12, color: 'var(--slate)' }}>{available ? 'Vous apparaissez sur la carte des clients autour de vous' : 'Les clients ne vous voient plus sur la carte'}</div>
+      {/* Disponibilité (maquette) : titre, sous-titre, interrupteur doré */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0 8px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <b style={{ display: 'block', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>{available ? 'Disponible maintenant' : 'Hors ligne'}</b>
+          <small style={{ display: 'block', fontSize: 11.5, color: 'var(--slate)', marginTop: 2 }}>{available ? 'Les clients vous voient sur la carte' : 'Les clients ne vous voient plus sur la carte'}</small>
         </div>
-        <div onClick={toggleAvailable} role="switch" aria-checked={available} aria-label="Disponible maintenant" style={{ width: 44, height: 26, borderRadius: 999, background: available ? 'var(--gold)' : '#cdd6d3', position: 'relative', cursor: 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
-          <span style={{ position: 'absolute', top: 3, left: available ? 21 : 3, width: 20, height: 20, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
-        </div>
+        {toggle}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: 'var(--ink)', padding: '4px 0' }}>
-        <span style={{ color: 'var(--slate)' }}>Demandes ouvertes autour de vous</span><b>{reqs.length}</b>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: 'var(--ink)', padding: '4px 0 12px' }}>
-        <span style={{ color: 'var(--slate)' }}>Distance de la plus proche</span><b>{nearestTxt}</b>
-      </div>
-      {sent.length > 0 && (
-        <div onClick={() => { setView('interventions'); setSelectedId(null) }}
-          style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--ink)', padding: '9px 12px', marginBottom: 10, borderRadius: 12, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
-          <span>Propositions envoyées</span><b style={{ color: '#0C8F7E' }}>{sent.length} · voir</b>
-        </div>
-      )}
-
-      {myTrades.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }} role="group" aria-label="Métiers affichés">
-          <div className={`chip ${tradeSel == null ? 'on' : ''}`} role="button" aria-pressed={tradeSel == null} onClick={() => { setTradeSel(null); setSelectedId(null) }}>Tous mes métiers</div>
-          {myTrades.map(k => (
-            <div key={k} className={`chip ${activeTrades.includes(k) ? 'on' : ''}`} role="button" aria-pressed={activeTrades.includes(k)} onClick={() => toggleTrade(k)}>{TRADES[k] || k}</div>
-          ))}
-          {othersCount > 0 && (
-            <div className={`chip ${showOthers ? 'on' : ''}`} role="button" aria-pressed={showOthers} onClick={() => { setShowOthers(o => !o); setSelectedId(null) }}>Autres métiers ({othersCount})</div>
-          )}
-        </div>
-      )}
+      <p style={{ fontSize: 13.5, color: 'var(--ink)', marginBottom: 8 }}>
+        {reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}
+      </p>
       {reqs.length === 0 && (
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', margin: '2px 0 6px' }}>
-          {allReqs.length > 0 ? 'Aucune demande pour ces métiers dans votre zone.' : 'Aucune demande ouverte dans votre zone pour le moment. Élargissez la zone pour en voir davantage.'}
+        <p style={{ fontSize: 12.5, color: 'var(--slate)', margin: '2px 0 10px' }}>
+          {allReqs.length > 0 ? 'Aucune demande pour ces services dans votre zone.' : 'Aucune demande ouverte dans votre zone pour le moment. Élargissez la zone pour en voir davantage.'}
         </p>
       )}
 
-      {reqs.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-          {reqs.map(r => (
-            <div key={r.id} onClick={() => selectRequest(r.id)}
-              style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{r.urgent && <UrgentTag />}{r.title || TRADES[r.category] || r.category}</b>
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', whiteSpace: 'nowrap' }}>{budgetRangeTxt(r)}</span>
-              </div>
-              <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>
-                à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}
-                {sentByRequest[r.id] && <span style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0C8F7E', fontWeight: 700, fontSize: 10.5 }}>Déjà contactée</span>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Cartes de demandes (maquette, .rcard) : urgence et titre, budget, puis service · distance · âge */}
+      {reqs.map(r => (
+        <button type="button" key={r.id} className="mq-rcard" onClick={() => selectRequest(r.id)}>
+          {r.urgent && <UrgentTag />}<b style={{ display: 'inline' }}>{r.title || TRADES[r.category] || r.category}</b>
+          <span className="bud">{budgetRangeTxt(r)}</span>
+          <small>{TRADES[r.category] || r.category} · à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}
+            {sentByRequest[r.id] && <span className="mq-tag" style={{ marginLeft: 6 }}>Déjà contactée</span>}</small>
+        </button>
+      ))}
+
+      <div style={{ marginTop: 6 }}>
+        {sent.length > 0 && linkRow(`Propositions envoyées (${sent.length})`, 'Demandes auxquelles vous avez répondu, tarif pas encore validé', () => { setView('interventions'); setSelectedId(null) }, 'tag')}
+        {linkRow(`Mes interventions (${missions.length + done.length})`, missions.length ? `${missions.length} à venir, avec leur adresse` : 'Missions au tarif validé', () => { setView('interventions'); setSelectedId(null) }, 'ag')}
+      </div>
     </>
   )
 
@@ -365,6 +349,9 @@ export default function ProCartePage() {
 
   const missionsPanel = (
     <>
+      <button type="button" onClick={() => setView('demandes')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 0, background: 'none', padding: '0 0 8px', minHeight: 36, color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
+        <Ic name="back" size={18} />Demandes autour de moi
+      </button>
       {sentBlock}
       <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 4 }}>Mes interventions à venir</div>
       <div style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 12 }}>Missions au tarif validé, avec leur adresse.</div>
@@ -412,7 +399,8 @@ export default function ProCartePage() {
         id: m.id, lat: m.requests.lat, lng: m.requests.lng, color: '#12B39C',
         label: m.scheduled_at ? new Date(m.scheduled_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null,
       }))
-    : reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, color: r.urgent ? '#E8743B' : undefined, label: b ? `${Math.round(b / 100)} €` : (r.urgent ? 'Urgent' : null) } })
+    // Épingle de demande (maquette) : pictogramme du service dans la goutte, fourchette de budget au-dessus.
+    : reqs.map(r => { const b = r.budget_max_cents ?? r.budget_cents ?? r.budget_min_cents; return { id: r.id, lat: r.lat, lng: r.lng, color: r.urgent ? '#E8743B' : undefined, icon: svcIconKey(r.category), label: b ? budgetRangeTxt(r) : (r.urgent ? 'Urgent' : null) } })
 
   // Les demandes dans le champ dès l'ouverture : la carte cadre la position ET les épingles
   // (zoom plafonné au quartier), en laissant la place de la barre du haut et des puces (~155 px, plus la hauteur d’une épingle et de son prix), du volet
@@ -454,18 +442,17 @@ export default function ProCartePage() {
             </div>
             <div className="sp" />
             <ModeSwitchPill to="particulier" />
-            <div className="tbell" onClick={() => router.push('/messages')}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
-              <span className="dot" />
-            </div>
+            <button type="button" className="tbell" onClick={() => router.push('/messages')} aria-label={unread ? `Messages, ${unread} non lu${unread > 1 ? 's' : ''}` : 'Messages'} style={{ color: 'var(--ink)', padding: 0 }}>
+              <Ic name="bell" size={19} />
+              {unread > 0 && <span className="mq-nb">{unread > 9 ? '9+' : unread}</span>}
+            </button>
           </div>
 
-          <div className="searchbar" style={{ background: '#fff', top: 66, padding: '11px 14px', cursor: 'default' }}>
-            <div className="si" style={{ background: 'rgba(242,169,59,.14)' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
-            </div>
-            <span style={{ color: 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{available ? `Visible · demandes à moins de ${radiusKm} km${zoneCenter ? ' de ' + (zoneCity || 'la ville') : ''}` : 'Hors ligne · invisible des clients'}</span>
-            <span onClick={() => setZoneOpen(o => !o)} style={{ marginLeft: 'auto', color: 'var(--gold)', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap', paddingLeft: 8 }}>Zone</span>
+          {/* Barre de zone (maquette, .searchbar.pro) : soleil doré, état et rayon, « Zone » */}
+          <div className="searchbar" role="button" aria-expanded={zoneOpen} onClick={() => setZoneOpen(o => !o)} style={{ background: '#fff', top: 66, padding: '11px 14px', minHeight: 42 }}>
+            <Ic name="sun" size={20} style={{ color: '#F2A93B' }} />
+            <span style={{ flex: 1, minWidth: 0, color: 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{available ? `Visible · demandes à moins de ${radiusKm} km${zoneCenter ? ' de ' + (zoneCity || 'la ville') : ''}` : `Hors ligne · demandes à moins de ${radiusKm} km`}</span>
+            <span style={{ color: '#8A6520', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', paddingLeft: 8 }}>Zone</span>
           </div>
 
           {zoneOpen && (
@@ -488,12 +475,24 @@ export default function ProCartePage() {
             </div>
           )}
 
-          <div className="chips" style={{ top: 122 }}>
-            {([['demandes', `Demandes ouvertes (${reqs.length})`], ['interventions', `Mes interventions (${missions.length + done.length})`]] as const).map(([k, label]) => (
-              <div key={k} className={view === k ? 'chip on' : 'chip'} onClick={() => { setView(k); setSelectedId(null) }}
-                style={view === k ? { background: 'var(--ink)', color: '#fff', cursor: 'pointer' } : { cursor: 'pointer' }}>{label}</div>
-            ))}
-          </div>
+          {/* Puces de métiers sur la carte (maquette) : tous mes métiers, chacun, puis les autres. */}
+          {view === 'demandes' && myTrades.length > 0 && (
+            <div className="chips noscroll" style={{ top: 116 }} role="group" aria-label="Métiers affichés">
+              <div className={`chip ${tradeSel == null ? 'on' : ''}`} role="button" aria-pressed={tradeSel == null} onClick={() => { setTradeSel(null); setSelectedId(null) }}>Tous mes métiers</div>
+              {myTrades.map(k => (
+                <div key={k} className={`chip ${activeTrades.includes(k) ? 'on' : ''}`} role="button" aria-pressed={activeTrades.includes(k)} onClick={() => toggleTrade(k)}>{TRADES[k] || k}</div>
+              ))}
+              {othersCount > 0 && (
+                <div className={`chip ${showOthers ? 'on' : ''}`} role="button" aria-pressed={showOthers} onClick={() => { setShowOthers(o => !o); setSelectedId(null) }}>Autres métiers ({othersCount})</div>
+              )}
+            </div>
+          )}
+          {view === 'interventions' && (
+            <div className="chips noscroll" style={{ top: 116 }}>
+              <div className="chip" role="button" onClick={() => { setView('demandes'); setSelectedId(null) }}><Ic name="back" size={15} />Demandes autour de moi</div>
+              <div className="chip on" role="button" aria-pressed="true">Mes interventions ({missions.length + done.length})</div>
+            </div>
+          )}
 
           <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
             <LiveMap
@@ -505,6 +504,7 @@ export default function ProCartePage() {
               recenterTick={recenterTick}
               youLabel="Vous êtes ici"
               echo={available}
+              selectedId={selectedId}
               fit
               fitKey={fitKey}
               fitPad={fitPad}
@@ -525,21 +525,21 @@ export default function ProCartePage() {
           )}
 
           {!locHidden && (
-            <div className="loc" role="button" aria-label="Recentrer sur ma position et les demandes" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: locBottom, right: locRight }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
+            <div className="loc" role="button" aria-label="Recentrer sur ma position et les demandes" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: locBottom, right: locRight, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>
           )}
 
           {/* Mobile : volet à 3 positions. Desktop : caché (.app-shell .map-sheet),
               remplacé par le panneau permanent ci-dessous. */}
-          <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle} accent="#8A6520">
+          <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}>
             {sidePanel}
           </MapSheet>
 
           {/* Desktop (>=1000px) : panneau permanent a cote de la carte, cachee sur
               mobile (.detail-panel { display:none } par defaut). */}
           <div className="detail-panel">
-            {!selected && view === 'demandes' && (
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
-                <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)' }}>Votre activité</b>
+            {!selected && (
+              <div style={{ padding: '14px 16px 4px' }}>
+                <b style={{ fontFamily: 'var(--fh)', fontSize: 16, color: 'var(--ink)' }}>{sheetTitle}</b>
               </div>
             )}
             <div style={{ padding: 16, overflowY: 'auto', flex: 1 }}>

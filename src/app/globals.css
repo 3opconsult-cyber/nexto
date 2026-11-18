@@ -58,7 +58,7 @@ body {
 html[data-fb-hide] .ping-fb { display: none !important; }
 .dnav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 14.5px; color: #123644; cursor: pointer; }
 .dnav-item:hover { background: #F3F6F5; }
-.dnav-item.on { background: rgba(18,179,156,.1); color: #0C8F7E; }
+.dnav-item.on { background: #F3F6F5; color: var(--nav-acc, #0B8374); }
 
 /* /pro/carte : ecran plein sans le mockup "telephone" (.stage/.device/.frame/
    .screen), pour eviter le double logo "ping" et la carte riquiqui en

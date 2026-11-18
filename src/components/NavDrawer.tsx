@@ -108,7 +108,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
     { label: 'Support PING', path: '/support', icon: 'msg' },
   ]
   const proLinks = [
-    { label: 'Demandes autour de moi', path: '/pro/carte', icon: 'off' },
+    { label: 'Demandes autour de moi', path: '/pro/carte', icon: 'map' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
     { label: 'Agenda', path: '/agenda', icon: 'ag' },
     { label: 'Mon entreprise', path: '/pro/dashboard', icon: 'ent' },
@@ -121,7 +121,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
 
   return (
     <>
-      <button className="app-burger" onClick={() => setOpen(true)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: dark ? 'rgba(255,255,255,.1)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+      <button className="app-burger" aria-label="Menu" onClick={() => setOpen(true)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: dark ? 'rgba(255,255,255,.1)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={dark ? '#fff' : '#123644'} strokeWidth="2.2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
       </button>
 
@@ -156,11 +156,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                 padding: '12px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
                 background: available ? 'rgba(18,179,156,.1)' : '#F3F6F5',
               }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: available ? '#12B39C' : '#6E8592', flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#123644' }}>{available ? 'Disponible — visible sur la carte' : 'Masqué — hors ligne'}</span>
-                </span>
-                <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#12B39C' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: '#123644', textAlign: 'left' }}>{available ? 'Disponible, visible sur la carte' : 'Hors ligne, invisible des clients'}</span>
+                <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#F2A93B' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
                   <span style={{ position: 'absolute', top: 2, left: available ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
                 </span>
               </button>
@@ -192,8 +189,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
               <button onClick={switchMode}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 14px', borderRadius: 14, border: 'none', background: '#123644', cursor: 'pointer' }}>
                 <span style={{ textAlign: 'left' }}>
-                  <span style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: '#fff' }}>{onProSide ? 'Revenir en mode particulier' : (isPro ? 'Passer en mode pro' : 'Devenir prestataire')}</span>
-                  <span style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,.72)', marginTop: 1 }}>{onProSide ? 'Chercher un service près de moi' : 'Proposer mes services'}</span>
+                  <span style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: '#fff' }}>{onProSide ? 'Espace client' : (isPro ? 'Espace prestataire' : 'Devenir prestataire')}</span>
+                  <span style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,.72)', marginTop: 1 }}>{onProSide ? 'Chercher un service près de moi' : (isPro ? 'Mes demandes, mes missions, mon entreprise' : 'Créer mon activité de prestataire')}</span>
                 </span>
                 <span style={{ width: 38, height: 22, borderRadius: 999, background: onProSide ? '#12B39C' : 'rgba(255,255,255,.18)', position: 'relative', flexShrink: 0 }}>
                   <span style={{ position: 'absolute', top: 2, left: onProSide ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />

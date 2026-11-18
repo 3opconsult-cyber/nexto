@@ -6,6 +6,16 @@ import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import { pricingLabel, pricingShort } from '@/lib/servicePricing'
 import ListingExtras from '@/components/ListingExtras'
+import { Ic, Stars, r1 } from '@/components/PingIcons'
+import { legalFormLabel, VAT_FRANCHISE_MENTION } from '@/lib/proStatus'
+
+// Unité d'une prestation, comme la maquette (« Ménage · Forfait », « Par heure », « Sur devis »).
+function unitTxt(a: { pricing_type?: string | null; included_hours?: number | null; hourly_rate_cents?: number | null; base_price_cents?: number | null }) {
+  if (a.pricing_type === 'devis') return 'Sur devis'
+  if ((a.base_price_cents ?? 0) > 0 && a.included_hours && a.hourly_rate_cents) return `Forfait ${String(a.included_hours).replace('.', ',')} h, puis à l’heure`
+  if (a.pricing_type === 'horaire' || (!(a.base_price_cents ?? 0) && a.hourly_rate_cents)) return 'Par heure'
+  return 'Forfait'
+}
 
 export default function ProDetailPage() {
   const params = useParams()
@@ -119,117 +129,111 @@ export default function ProDetailPage() {
     ...extraServices,
   ]
 
+  // Statut et paiement (migration 039) : rien d'affiché pour une colonne absente.
+  const statut = [
+    pro.legal_status === 'particulier' ? 'Particulier (récapitulatif, sans facture)' : legalFormLabel(pro.legal_form),
+    pro.legal_status === 'particulier' ? null : pro.vat_status === 'assujetti' ? 'assujetti à la TVA' : pro.vat_status === 'franchise' ? VAT_FRANCHISE_MENTION : null,
+    'virement sur facture',
+  ].filter(Boolean).join(' · ')
+
   return (
     <div className="ping-screen" style={{ paddingBottom: 0 }}>
       <div className="ping-appbar">
-        <div className="ic" onClick={() => router.push('/map')}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
-        </div>
-        <b style={{ flex: 1 }}>Profil du pro</b>
+        <button type="button" className="ic" onClick={() => router.push('/map')} aria-label="Retour à la carte" style={{ border: 0, background: 'none' }}>
+          <Ic name="back" />
+        </button>
+        <b style={{ flex: 1 }}>{uid === proId ? 'Ma fiche publique' : 'Profil du pro'}</b>
         {uid !== proId && (
           <button onClick={toggleFav} disabled={favBusy} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={fav}
-            style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: 'none', display: 'grid', placeItems: 'center', cursor: 'pointer', opacity: favBusy ? 0.6 : 1 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill={fav ? '#12B39C' : 'none'} stroke={fav ? '#12B39C' : '#123644'} strokeWidth="2" strokeLinejoin="round"><path d="M12 21s-7-4.5-9-9a4.5 4.5 0 0 1 9-2 4.5 4.5 0 0 1 9 2c-2 4.5-9 9-9 9z" /></svg>
+            style={{ width: 44, height: 44, borderRadius: 10, border: 'none', background: 'none', display: 'grid', placeItems: 'center', cursor: 'pointer', opacity: favBusy ? 0.6 : 1, color: fav ? '#E5484D' : 'var(--ink)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={fav ? '#E5484D' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>
           </button>
         )}
       </div>
 
       <div className="ping-body nopad" style={{ paddingBottom: 150 }}>
-        <div className="ping-hero" style={pro.photo_url ? { backgroundImage: `linear-gradient(160deg, rgba(18,54,68,.35), rgba(18,54,68,.55)), url(${pro.photo_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-          <div className="big" style={pro.logo_url ? { backgroundImage: `url(${pro.logo_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
-            {!pro.logo_url && initial}
+        {uid === proId && <div style={{ background: 'rgba(18,179,156,.1)', color: '#097A6C', font: '600 11.5px var(--fb)', textAlign: 'center', padding: '8px 16px' }}>Aperçu : ce que voient les clients</div>}
+        {/* En-tête de la fiche (maquette, .hero) : avatar, nom, note et distance, disponibilité. */}
+        <div className="mq-hero" style={pro.photo_url ? { backgroundImage: `linear-gradient(160deg, rgba(11,131,116,.82), rgba(8,105,93,.9)), url(${pro.photo_url})` } : undefined}>
+          <span className="mq-av" style={pro.logo_url ? { backgroundImage: `url(${pro.logo_url})` } : undefined}>{!pro.logo_url && initial}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <b className="nm">{name}</b>
+            <div style={{ fontSize: 12 }}>{pro.rating > 0 ? `★ ${r1(pro.rating)} (${pro.reviews_count} avis)` : 'Nouveau sur PING'}{dist ? ` · à ${dist}` : ''}</div>
+            <div style={{ fontSize: 12, fontWeight: 700 }}>{pro.is_active === false ? '○ Hors ligne pour le moment' : '● Disponible'}</div>
           </div>
-          <h2>{name}</h2>
-          <div className="meta">{ratingTxt}{dist ? ` · à ${dist}` : ''}</div>
-          {docsChecked === false && (
-            <div style={{ display: 'inline-block', marginTop: 6, fontSize: 11.5, fontWeight: 700, color: '#8A5A00', background: '#FFF4DD', borderRadius: 999, padding: '4px 10px' }}>
-              Nouveau · pièces en cours de contrôle
-            </div>
-          )}
-          <div className="dispo"><span style={{ width: 9, height: 9, borderRadius: '50%', background: pro.is_active === false ? 'rgba(255,255,255,.45)' : '#fff', display: 'inline-block' }} /> {pro.is_active === false ? 'Hors ligne pour le moment' : 'Disponible'}</div>
         </div>
 
-        <div style={{ padding: '14px 16px' }}>
+        <div style={{ padding: '2px 16px 14px' }}>
+          {docsChecked === false && (
+            <div className="mq-tags"><span className="mq-tag warn">Nouveau · pièces en cours de contrôle</span></div>
+          )}
           {/* « Mon annonce » (migration 026) : accroche et points forts, puis photos et zone. */}
           <ListingExtras part="top" headline={pro.headline} highlights={pro.highlights} />
           {pro.bio && (
             <>
-              <div className="ping-h2" style={{ marginTop: 0 }}>À propos</div>
-              <p className="ping-sub" style={{ marginBottom: 4 }}>{pro.bio}</p>
+              <div className="mq-sect">À propos</div>
+              <p style={{ color: 'var(--slate)', fontSize: 13.5, lineHeight: 1.5 }}>{pro.bio}</p>
             </>
           )}
           <ListingExtras part="gallery" gallery={pro.gallery_paths} />
           <ListingExtras part="zone" radiusKm={pro.service_radius_km} />
 
-          <div className="ping-h2" style={pro.bio || pro.gallery_paths?.length ? undefined : { marginTop: 0 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="2.4"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
-              Informations déclarées par le pro
-            </span>
-          </div>
-
-          {pro.has_identity && (
-            <div className="ping-vrow ok">
-              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="12" r="2.2" /></svg></div>
-              <div className="ping-vt"><b>Pièce d'identité fournie</b><small>Déposée sur PING par le pro</small></div>
-              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Fournie</div>
-            </div>
-          )}
-          {pro.has_rcpro && (
-            <div className="ping-vrow ok">
-              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg></div>
-              <div className="ping-vt"><b>Assurance resp. civile</b><small>Renseignée par le pro (casse/dommage)</small></div>
-              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Renseignée</div>
-            </div>
-          )}
-          {pro.sap_number && (
-            <div className="ping-vrow ok">
-              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M4 6h16v13H4z" /><path d="M8 11h8M8 15h5" /></svg></div>
-              <div className="ping-vt"><b>Attestation crédit d'impôt</b><small>Peut établir la déclaration fiscale</small></div>
-              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Possible</div>
-            </div>
-          )}
-          {pro.accepts_cesu_prefinance === true && (
-            <div className="ping-vrow ok">
-              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 15h4" /></svg></div>
-              <div className="ping-vt"><b>Accepte le CESU préfinancé</b><small>Indiqué par le pro · titres employeur ou comité d&apos;entreprise</small></div>
-              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Oui</div>
-            </div>
-          )}
-          {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && !pro.accepts_cesu_prefinance && (
-            <div className="ping-vrow"><div className="ping-vt"><small>Aucune information encore renseignée par le prestataire.</small></div></div>
-          )}
-
-          <p className="ping-sub">Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
-
-          <div className="ping-h2">Prestations proposées</div>
-          {articles.map((a, i) => {
-            const label = articlePriceLabel(a)
+          <div className="mq-sect">Prestations</div>
+          {articles.map(a => {
             const devis = a.pricing_type === 'devis'
+            const px = devis ? 'Sur devis' : (pricingShort(a as any) || articlePriceLabel(a) || '')
             return (
-              <div key={a.id ?? 'primary'} className="ping-rev" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="t"><span className="n">{a.name}</span></div>
-                  {a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
-                  {label && <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 4 }}>{label}</div>}
-                </div>
-                <button className="ping-btn ghost" style={{ width: 'auto', padding: '8px 14px', fontSize: 12.5, flexShrink: 0, whiteSpace: 'nowrap' }}
-                  onClick={() => reserve(a.id ?? undefined, devis)}>
-                  {devis ? 'Devis' : 'Réserver'}
-                </button>
+              <div key={a.id ?? 'primary'} className="mq-prest">
+                <span className="nm">
+                  <b>{a.name}</b>
+                  <small>{unitTxt(a)}{!devis && a.included_hours && a.hourly_rate_cents ? ` · ${articlePriceLabel(a)}` : ''}</small>
+                  {a.description && <small style={{ marginTop: 2 }}>{a.description}</small>}
+                </span>
+                <span className="px">
+                  {px}
+                  <button type="button" onClick={() => reserve(a.id ?? undefined, devis)}>{devis ? 'Demander un devis' : 'Réserver'}</button>
+                </span>
               </div>
             )
           })}
+          <p className="mq-muted" style={{ fontSize: 11.5, marginTop: 4 }}>Le prix est figé à l&apos;accord. Seul un litige peut le rouvrir.</p>
 
-          <div className="ping-h2">Avis <span className="ping-badge-teal">après prestation</span></div>
-          {reviews.length === 0 && <p className="ping-sub">Pas encore d'avis — ils apparaîtront après les premières prestations.</p>}
+          {statut && (<>
+            <div className="mq-sect">Statut et paiement</div>
+            <p style={{ color: 'var(--slate)', fontSize: 13 }}>{statut}{pro.accepts_cesu_prefinance === true && <> · <b style={{ color: '#097A6C' }}>Accepte le CESU préfinancé</b></>}{pro.sap_number ? ' · service à la personne déclaré (n° SAP renseigné)' : ''}</p>
+          </>)}
+
+          {/* Vérifications (maquette) : « Validée » seulement pour une pièce contrôlée par un admin PING. */}
+          <div className="mq-sect">Vérifications</div>
+          {docsChecked === true && (
+            <div className="mq-vr ok"><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d&apos;identité</b><small>Contrôlée par PING</small></span><span className="vs"><Ic name="check" size={11} />Validée</span></div>
+          )}
+          {docsChecked !== true && pro.has_identity && (
+            <div className={`mq-vr ${docsChecked === false ? 'w' : 'ok'}`}><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d&apos;identité</b><small>{docsChecked === false ? 'Envoyée, en contrôle par PING' : 'Déposée sur PING par le pro'}</small></span><span className="vs">{docsChecked === false ? 'En contrôle' : <><Ic name="check" size={11} />Fournie</>}</span></div>
+          )}
+          {pro.has_rcpro && (
+            <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Renseignée par le pro (casse, dommage)</small></span><span className="vs"><Ic name="check" size={11} />Renseignée</span></div>
+          )}
+          {pro.sap_number && (
+            <div className="mq-vr ok"><span className="vi"><Ic name="doc" size={15} /></span><span><b>Attestation crédit d&apos;impôt</b><small>Peut établir la déclaration fiscale</small></span><span className="vs"><Ic name="check" size={11} />Possible</span></div>
+          )}
+          {pro.accepts_cesu_prefinance === true && (
+            <div className="mq-vr ok"><span className="vi"><Ic name="card" size={15} /></span><span><b>Accepte le CESU préfinancé</b><small>Titres employeur ou comité d&apos;entreprise</small></span><span className="vs"><Ic name="check" size={11} />Oui</span></div>
+          )}
+          {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && !pro.accepts_cesu_prefinance && docsChecked !== true && (
+            <p className="ping-sub">Aucune information encore renseignée par le prestataire.</p>
+          )}
+          <p className="mq-muted">PING contrôle les pièces marquées « Validée ». Les autres informations sont déclarées par le prestataire.</p>
+          {uid !== proId && (
+            <p className="mq-muted" style={{ marginTop: 4 }}>{docsChecked === false ? 'Nouveau sur PING : réservable dès maintenant, pièces en cours de contrôle. ' : ''}PING est une plateforme de mise en relation : PING ne garantit ni la solvabilité ni la qualité des prestations ; vous choisissez librement votre prestataire.</p>
+          )}
+
+          <div className="mq-sect">Avis</div>
+          {reviews.length === 0 && <p style={{ color: '#6E8592', fontSize: 13 }}>Nouveau, pas encore d&apos;avis.</p>}
           {reviews.map((r: any, i: number) => (
-            <div key={i} className="ping-rev">
-              <div className="t">
-                <span className="n">{r.profiles?.full_name?.trim() || 'Client'}</span>
-                <span className="ping-stars">{'★'.repeat(Math.round(r.stars || 5))}</span>
-              </div>
-              {r.comment && <p>{r.comment}</p>}
+            <div key={i} style={{ padding: '8px 0', borderTop: '1px solid #EEF2F1' }}>
+              <Stars r={r.stars || 0} size={13} /> <small style={{ color: '#6E8592' }}>{r.profiles?.full_name?.trim() || 'Client'}</small>
+              <p style={{ color: 'var(--slate)', fontSize: 13, marginTop: 2 }}>{r.comment ? `« ${r.comment} »` : 'Sans commentaire'}</p>
             </div>
           ))}
         </div>
