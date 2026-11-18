@@ -97,6 +97,24 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .pvbar button{border:1px solid var(--line,#DCE5E3);background:#fff;color:var(--ink,#123644);border-radius:999px;padding:6px 14px;font:600 12.5px Inter,system-ui,sans-serif;cursor:pointer}
 .pvbar button[aria-pressed="true"]{background:var(--teal,#12B39C);border-color:var(--teal,#12B39C);color:#fff}
 .pvbar button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+/* Accueil « hub » : voir l'app comme chaque profil (Admin · Prestataire · Client) */
+.ashub{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.ashub .asv{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 10px;text-align:center;cursor:pointer;font-family:var(--fb);color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px}
+.ashub .asv:hover{border-color:var(--teal)}
+.ashub .asv:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.ashub .asv[aria-current="page"]{border:2px solid var(--ink);padding:15px 9px;cursor:default}
+.ashub .asv .rico{width:40px;height:40px;border-radius:11px;background:var(--paper);display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px}
+.ashub .asv b{font-family:var(--fh);font-size:14px}
+.ashub .asv small{color:var(--slate);font-size:11.5px;line-height:1.35}
+#s_overview.asview > :not(.ashub):not(#asView):not(script){display:none!important}
+#asView{display:none}
+#s_overview.asview #asView{display:block}
+.asbanner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:rgba(18,179,156,.08);border:1px solid rgba(18,179,156,.3);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.asbanner .t{flex:1;min-width:220px;font-size:12.5px;line-height:1.5;color:var(--ink)}
+.asbanner .t small{display:block;color:var(--slate);font-size:11.5px;margin-top:2px}
+.asbanner .acts{display:flex;gap:8px;flex-wrap:wrap}
+.asbanner .btn{padding:9px 14px;font-size:12.5px}
+@media (max-width:860px){.ashub{gap:8px}.ashub .asv{padding:12px 4px}.ashub .asv[aria-current="page"]{padding:11px 3px}.ashub .asv b{font-size:13px}.ashub .asv small{font-size:10.5px}.asbanner .t{flex:1 1 100%;min-width:0}}
 .pvphone{width:min(100%,426px);margin:0 auto;background:#0B1B22;border-radius:44px;padding:18px 18px 22px;box-sizing:border-box;box-shadow:0 12px 34px rgba(11,27,34,.28);position:relative}
 .pvphone:before{content:"";position:absolute;top:8px;left:50%;width:84px;height:8px;margin-left:-42px;border-radius:4px;background:#1E3440}
 .pvphone .pvscr{width:100%;aspect-ratio:390/780;border-radius:28px;overflow:hidden;background:#fff}
@@ -455,6 +473,19 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
 
       <!-- OVERVIEW -->
       <section class="section on" id="s_overview">
+        <div class="ashub" role="group" aria-label="Voir l'application comme chaque profil">
+          <button type="button" class="asv" data-as="admin" aria-current="page" onclick="asOpen('admin')"><span class="rico" style="color:var(--ink)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg></span><b>Admin</b><small>Vous êtes ici</small></button>
+          <button type="button" class="asv" data-as="pro" onclick="asOpen('pro')"><span class="rico" style="color:var(--gold)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg></span><b>Prestataire</b><small>Voir l'espace prestataire</small></button>
+          <button type="button" class="asv" data-as="client" onclick="asOpen('client')"><span class="rico" style="color:var(--teal)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><b>Client</b><small>Voir l'espace client</small></button>
+        </div>
+        <div id="asView" aria-live="polite">
+          <div class="asbanner">
+            <div class="t"><b id="asWho">Vous voyez l'espace prestataire avec votre compte administrateur. Les actions sont réelles.</b><small id="asNote"></small></div>
+            <div class="acts"><button type="button" class="btn ghost" onclick="asTab()">Ouvrir dans un onglet</button><button type="button" class="btn dark" onclick="asOpen('admin')">Revenir à l'admin</button></div>
+          </div>
+          <div class="pvbar" role="group" aria-label="Format de l’aperçu"><button type="button" data-asmode="phone" aria-pressed="true" onclick="asRender('phone')">Téléphone</button><button type="button" data-asmode="desktop" aria-pressed="false" onclick="asRender('desktop')">Ordinateur</button></div>
+          <div class="pvbody" id="asBody" style="text-align:center"></div>
+        </div>
         <div class="card click" style="margin-bottom:16px" onclick="nav('activite')"><h3>Activité en cours <span class="muted">données réelles · cliquer pour le détail</span></h3>
           <div class="grid k4" id="ovPipeline"><div class="muted">Chargement…</div></div>
         </div>
@@ -3070,6 +3101,47 @@ document.addEventListener('click',function(e){
   box.style.display='block'; btn.textContent='Fermer l’aperçu'; btn.setAttribute('aria-expanded','true');
   pvRender(box,path,'phone');
 });
+// Accueil « hub » (Romain 18/11) : l'admin voit l'app réelle comme un prestataire ou un client.
+// Même origine que l'app : on pose ping_mode (valeurs de src/lib/mode.ts : 'pro' | 'particulier')
+// avant de charger l'iframe. Aucune donnée simulée : c'est le compte administrateur connecté.
+var AS={role:'admin',mode:'phone'};
+var AS_CFG={
+  pro:{path:'/pro/carte',mode:'pro',who:"Vous voyez l'espace prestataire avec votre compte administrateur. Les actions sont réelles.",note:"Si votre compte n'a pas d'activité prestataire, l'application ouvre la création d'activité."},
+  client:{path:'/map',mode:'particulier',who:"Vous voyez l'espace client avec votre compte administrateur. Les actions sont réelles.",note:"Demandes, messages et réservations faits ici sont enregistrés pour de vrai."}
+};
+function asSetMode(m){try{localStorage.setItem('ping_mode',m)}catch(e){};try{window.dispatchEvent(new Event('ping-mode'))}catch(e){}}
+function asOpen(role){
+  var sec=document.getElementById('s_overview'); if(!sec) return;
+  AS.role=role;
+  sec.querySelectorAll('.ashub .asv').forEach(function(b){ if(b.getAttribute('data-as')===role) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  var body=document.getElementById('asBody');
+  if(role==='admin'){ sec.classList.remove('asview'); if(body) body.innerHTML=''; return; }
+  var c=AS_CFG[role]; asSetMode(c.mode);
+  document.getElementById('asWho').textContent=c.who;
+  document.getElementById('asNote').textContent=c.note;
+  sec.classList.add('asview'); window.scrollTo(0,0);
+  asRender(AS.mode);
+}
+function asRender(mode){
+  var c=AS_CFG[AS.role]; if(!c) return; AS.mode=mode;
+  document.querySelectorAll('#asView [data-asmode]').forEach(function(x){ x.setAttribute('aria-pressed',x.getAttribute('data-asmode')===mode?'true':'false'); });
+  asSetMode(c.mode);
+  var body=document.getElementById('asBody'); body.innerHTML='';
+  var f=document.createElement('iframe'); f.src=c.path; f.title='Espace '+(AS.role==='pro'?'prestataire':'client')+' ('+c.path+')';
+  var wrap=document.createElement('div');
+  if(mode==='phone'){
+    wrap.className='pvphone'; var sc=document.createElement('div'); sc.className='pvscr'; sc.appendChild(f); wrap.appendChild(sc); body.appendChild(wrap);
+    var k=sc.clientWidth/390; f.style.transform='scale('+k+')'; sc.style.height=(780*k)+'px';
+  } else {
+    wrap.className='pvwin';
+    var top=document.createElement('div'); top.className='pvtop'; top.innerHTML='<i></i><i></i><i></i><span class="pvurl"></span>'; top.querySelector('.pvurl').textContent=location.host+c.path;
+    var sc2=document.createElement('div'); sc2.className='pvscr'; sc2.appendChild(f); wrap.appendChild(top); wrap.appendChild(sc2); body.appendChild(wrap);
+    var k2=sc2.clientWidth/1280; f.style.transform='scale('+k2+')'; sc2.style.height=(720*k2)+'px';
+  }
+}
+function asTab(){ var c=AS_CFG[AS.role]; if(!c) return; asSetMode(c.mode); window.open(c.path,'_blank','noopener'); }
+// Quitter l'accueil referme l'aperçu (l'iframe ne reste pas chargée en arrière-plan).
+window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='function')return;window.nav=function(k){if(k!=='overview'&&AS.role!=='admin')asOpen('admin');return o.apply(this,arguments)}});
 </script>
 <script type="module">
 /* Aperçu réel — branché sur Supabase (session 13/08). N'affecte aucune autre section du fichier. */
