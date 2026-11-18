@@ -104,11 +104,15 @@ export async function fetchProviderActivities(
   if (!ids.length) return out
   const supabase = createClient()
   // Lecture directe de `services` (déjà utilisée par la fiche publique /pro/[id]).
-  const { data, error } = await supabase.from('services').select('provider_id, name').in('provider_id', ids)
+  // Avec la migration 041 : métier explicite (`trade`) et prestations masquées ignorées ; sans elle,
+  // repli sur le seul nom.
+  let { data, error }: { data: any[] | null; error: any } = await supabase.from('services').select('provider_id, name, trade, hidden').in('provider_id', ids)
+  if (error) ({ data, error } = await supabase.from('services').select('provider_id, name').in('provider_id', ids))
   if (error) return out
-  const rows = (data ?? []) as { provider_id: string; name: string }[]
+  const rows = (data ?? []) as { provider_id: string; name: string; trade?: string | null; hidden?: boolean }[]
   for (const r of rows) {
-    const k = tradeOfServiceName(r.name)
+    if (r.hidden === true) continue
+    const k = r.trade || tradeOfServiceName(r.name)
     const list = out[r.provider_id]
     if (k && list && !list.includes(k)) list.push(k)
   }
@@ -153,7 +157,13 @@ export async function fetchProDetail(proId: string) {
 // le chat (mecanisme d'offre) et se fige au scan de sortie. Reutilise une
 // conversation existante encore en negociation (pending, prix non confirme)
 // pour ne pas empiler une transaction a chaque clic sur "Contacter".
-export async function openConversation(proId: string): Promise<{ missionId: string | null; error?: string }> {
+// `devis` : demande de devis pour une prestation précise du catalogue (« sur devis » sur la fiche ou
+// dans mission/new). La demande porte alors le métier et le nom de la prestation, et la conversation
+// part sans prix (0 €) : c'est le prestataire qui chiffre avec « + Proposer un tarif ».
+export async function openConversation(
+  proId: string,
+  devis?: { name: string; trade?: string | null },
+): Promise<{ missionId: string | null; error?: string }> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { missionId: null, error: 'not_authenticated' }
@@ -184,17 +194,18 @@ export async function openConversation(proId: string): Promise<{ missionId: stri
 
   // Prix indicatif de départ (le vrai se fixe dans le chat) ; base à 0 pour un pro horaire = pas de
   // prix, on prend alors son tarif horaire. Taux de commission : réglage courant (pas 5 %/11 % figés).
-  const subtotal = (pro.base_price_cents ?? 0) > 0 ? pro.base_price_cents : (pro.hourly_rate_cents ?? 0)
+  const subtotal = devis ? 0 : (pro.base_price_cents ?? 0) > 0 ? pro.base_price_cents : (pro.hourly_rate_cents ?? 0)
   const rates = await getRates()
   const buyerFee = Math.round(subtotal * rates.buyer)
   const sellerFee = Math.round(subtotal * rates.seller)
-  const hasOvertime = pro.pricing_type === 'forfait' && pro.included_hours != null && pro.hourly_rate_cents != null
+  const hasOvertime = !devis && pro.pricing_type === 'forfait' && pro.included_hours != null && pro.hourly_rate_cents != null
 
   // description est NOT NULL en base (aucun defaut) : sans elle cet insert
   // echouait silencieusement a chaque "Contacter" depuis la carte/fiche pro —
   // trouve en executant reellement le scenario, pas juste en relisant le code.
   const { data: req, error: reqErr } = await supabase.from('requests').insert({
-    requester_id: user.id, category: pro.trade, description: '', status: 'matched',
+    requester_id: user.id, category: devis?.trade || pro.trade,
+    description: devis ? `Demande de devis : ${devis.name}` : '', status: 'matched',
   }).select().single()
   if (!req) return { missionId: null, error: reqErr?.message || 'request_failed' }
 
@@ -202,7 +213,7 @@ export async function openConversation(proId: string): Promise<{ missionId: stri
     kind: 'service', buyer_id: user.id, seller_id: proId, request_id: req.id,
     subtotal_cents: subtotal, buyer_fee_cents: buyerFee, seller_fee_cents: sellerFee,
     total_charged_cents: subtotal + buyerFee, payout_cents: subtotal - sellerFee,
-    hourly_rate_cents: (pro.pricing_type === 'horaire' || hasOvertime) ? pro.hourly_rate_cents : null,
+    hourly_rate_cents: !devis && (pro.pricing_type === 'horaire' || hasOvertime) ? pro.hourly_rate_cents : null,
     included_hours: hasOvertime ? pro.included_hours : null,
     base_forfait_cents: hasOvertime ? pro.base_price_cents : null,
     status: 'pending',

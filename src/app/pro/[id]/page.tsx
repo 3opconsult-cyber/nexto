@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import { pricingLabel, pricingShort } from '@/lib/servicePricing'
 import ListingExtras from '@/components/ListingExtras'
+import { fetchPrestations, prestationName, prestationPhotoUrl, type Prestation } from '@/lib/prestations'
 
 export default function ProDetailPage() {
   const params = useParams()
@@ -13,7 +14,7 @@ export default function ProDetailPage() {
   const proId = params.id as string
   const [pro, setPro] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
-  const [extraServices, setExtraServices] = useState<any[]>([])
+  const [extraServices, setExtraServices] = useState<Prestation[]>([])
   const [loading, setLoading] = useState(true)
   const [actionErr, setActionErr] = useState('')
   const [uid, setUid] = useState<string | null>(null)
@@ -30,10 +31,9 @@ export default function ProDetailPage() {
     })
     fetchProviderFlags([proId]).then(f => { if (!cancelled) setDocsChecked(f[proId]?.checked) }).catch(() => { })
     const supabase = createClient()
-    supabase.from('services')
-      .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
-      .eq('provider_id', proId)
-      .then(({ data }) => { if (!cancelled) setExtraServices(data ?? []) })
+    // Prestations visibles seulement (les masquées restent dans « Mes tarifs » du prestataire).
+    fetchPrestations(supabase, proId, { visibleOnly: true })
+      .then(({ rows }) => { if (!cancelled) setExtraServices(rows) })
     // Favori : état réel en base pour l'utilisateur connecté.
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (cancelled || !user) return
@@ -44,10 +44,12 @@ export default function ProDetailPage() {
     return () => { cancelled = true }
   }, [proId])
 
-  async function contact() {
+  // `devis` : « Demander un devis » pour une prestation précise — la conversation s'ouvre avec la
+  // demande préremplie (le client l'envoie lui-même), le prestataire chiffre avec « + Proposer un tarif ».
+  async function contact(devis?: { name: string; trade?: string | null }) {
     setActionErr('')
-    const { missionId, error } = await openConversation(proId)
-    if (missionId) { router.push(`/mission/${missionId}/chat`); return }
+    const { missionId, error } = await openConversation(proId, devis)
+    if (missionId) { router.push(`/mission/${missionId}/chat${devis ? `?devis=${encodeURIComponent(devis.name)}` : ''}`); return }
     // Sa propre fiche : on ne se contacte pas soi-même, on renvoie vers son espace pro.
     if (error === 'own_profile') { router.push('/pro/dashboard'); return }
     if (error === 'not_authenticated') { router.push(`/auth/login?next=${encodeURIComponent(`/pro/${proId}`)}`); return }
@@ -74,9 +76,9 @@ export default function ProDetailPage() {
   // ça reste le chat. `serviceId` : réserver un article précis du catalogue
   // (services) plutôt que le métier principal (provider_profiles) — chaque
   // article a sa propre fiche de prix depuis la migration 008.
-  function reserve(serviceId?: string, articleIsDevis?: boolean) {
-    if (articleIsDevis ?? isDevis) { contact(); return }
-    router.push(`/mission/new?pro=${proId}${serviceId ? `&service=${serviceId}` : ''}`)
+  function reserve(a?: { id: string | null; name: string; trade?: string | null; pricing_type?: string | null }) {
+    if (a ? a.pricing_type === 'devis' : (isDevis && !bookable)) { contact({ name: a?.name || articles[0].name, trade: a?.trade ?? pro.trade }); return }
+    router.push(`/mission/new?pro=${proId}${a?.id ? `&service=${a.id}` : ''}`)
   }
 
   // Libellés de prix communs à « Mes tarifs » et à l'inscription (src/lib/servicePricing.ts).
@@ -105,10 +107,12 @@ export default function ProDetailPage() {
   // fiche dès qu'un pro en avait déclaré d'autres. Chaque article de `services` a
   // maintenant sa propre fiche de prix (migration 008) : réservable individuellement,
   // pas juste une étiquette décorative.
-  const articles = [
+  const articles: { id: string | null; name: string; trade: string | null; description: string | null; photo_path: string | null; pricing_type: any; base_price_cents: number; included_hours: number | null; hourly_rate_cents: number | null }[] = [
     {
       id: null as string | null,
       name: TRADES[pro.trade] || pro.trade,
+      trade: pro.trade,
+      photo_path: null,
       // La bio est déjà affichée dans « À propos » : ne pas la répéter sous la 1re prestation (lot 15).
       description: null as string | null,
       pricing_type: (pro as any).pricing_type,
@@ -116,8 +120,11 @@ export default function ProDetailPage() {
       included_hours: (pro as any).included_hours,
       hourly_rate_cents: pro.hourly_rate_cents,
     },
-    ...extraServices,
+    ...extraServices.map(s => ({ ...s, name: prestationName(s) })),
   ]
+  // Au moins une prestation à prix fixe : « Réserver » mène au choix de la prestation (mission/new).
+  const bookable = articles.some(a => a.pricing_type !== 'devis')
+  const photoOf = (path: string | null) => prestationPhotoUrl(path)
 
   return (
     <div className="ping-screen" style={{ paddingBottom: 0 }}>
@@ -203,19 +210,30 @@ export default function ProDetailPage() {
           <p className="ping-sub">Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
 
           <div className="ping-h2">Prestations proposées</div>
-          {articles.map((a, i) => {
+          {articles.map(a => {
             const label = articlePriceLabel(a)
             const devis = a.pricing_type === 'devis'
+            const photo = photoOf(a.photo_path)
             return (
               <div key={a.id ?? 'primary'} className="ping-rev" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                {photo && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photo} alt="" loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                    style={{ width: 64, height: 64, borderRadius: 12, objectFit: 'cover', flexShrink: 0, background: '#F3F6F5' }} />
+                )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="t"><span className="n">{a.name}</span></div>
+                  <div className="t" style={{ flexWrap: 'wrap', gap: 6 }}>
+                    <span className="n">{a.name}</span>
+                    {a.id && a.trade && TRADES[a.trade] && TRADES[a.trade] !== a.name && (
+                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#F3F6F5', color: '#4E6470' }}>{TRADES[a.trade]}</span>
+                    )}
+                  </div>
                   {a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
                   {label && <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 4 }}>{label}</div>}
                 </div>
                 <button className="ping-btn ghost" style={{ width: 'auto', padding: '8px 14px', fontSize: 12.5, flexShrink: 0, whiteSpace: 'nowrap' }}
-                  onClick={() => reserve(a.id ?? undefined, devis)}>
-                  {devis ? 'Devis' : 'Réserver'}
+                  onClick={() => reserve(a)}>
+                  {devis ? 'Demander un devis' : 'Réserver'}
                 </button>
               </div>
             )
@@ -240,8 +258,10 @@ export default function ProDetailPage() {
       <div className="ping-foot pro-foot" style={{ position: 'fixed', bottom: 'var(--tabbar-h, 0px)', left: 0, right: 0, maxWidth: 480, zIndex: 20, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
         {actionErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px', textAlign: 'center' }}>{actionErr}</p>}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="ping-btn ghost" style={{ flex: 1 }} onClick={contact}>Contacter</button>
-          <button className="ping-btn" style={{ flex: 1.4 }} onClick={() => reserve()}>{isDevis ? 'Demander un devis' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}</button>
+          <button className="ping-btn ghost" style={{ flex: 1 }} onClick={() => contact()}>Contacter</button>
+          <button className="ping-btn" style={{ flex: 1.4 }} onClick={() => reserve()}>
+            {!bookable ? 'Demander un devis' : articles.length > 1 ? 'Réserver une prestation' : `Réserver${priceLabel ? ` · ${priceLabel}` : ''}`}
+          </button>
         </div>
       </div>
     </div>

@@ -18,6 +18,9 @@ import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
 import { AVANCE_IMMEDIATE_ACTIVE, isEligible, partClientCents } from '@/lib/creditImpot'
 import { systemSender } from '@/lib/systemMessage'
 import { notifyOther } from '@/lib/notify'
+import { fetchPrestations, prestationName, prestationPhotoUrl, type Prestation } from '@/lib/prestations'
+import { openConversation } from '@/lib/services'
+import { pricingShort, pricingSummary } from '@/lib/servicePricing'
 
 // Passe à « Remplacé » (offer_status declined + message système) les devis en attente des
 // conversations non confirmées entre ce client et ce prestataire, autres que la réservation
@@ -47,9 +50,15 @@ function MissionForm() {
   const router = useRouter()
   const params = useSearchParams()
   const proId = params.get('pro')
-  const serviceId = params.get('service')
+  const serviceParam = params.get('service')
   const [pro, setPro] = useState<any>(null)
-  const [article, setArticle] = useState<any>(null)
+  // Prestations visibles du catalogue (table services) ; `selId` = celle réservée (null = métier
+  // principal, provider_profiles). Le client choisit ici ; ?service= présélectionne depuis la fiche.
+  const [catalog, setCatalog] = useState<Prestation[] | null>(null)
+  const [selId, setSelId] = useState<string | null>(serviceParam)
+  const [devisBusy, setDevisBusy] = useState(false)
+  const article: any = selId ? (catalog?.find(x => x.id === selId) ?? null) : null
+  const serviceId = article ? article.id as string : null
   // Adresse d'intervention : celle du profil par défaut, confirmée par le client (Romain 31/10).
   const [profileAddress, setProfileAddress] = useState<string | null>(null)
   const [addr, setAddr] = useState<AddressValue>({ mode: 'profil', other: '', confirmed: false })
@@ -104,12 +113,41 @@ function MissionForm() {
   const needsSlot = !!slots && slots.length > 0
 
   useEffect(() => {
-    if (!serviceId) { setArticle(null); return }
-    createClient().from('services')
-      .select('id, name, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
-      .eq('id', serviceId).single()
-      .then(({ data }) => setArticle(data))
-  }, [serviceId])
+    if (!proId) return
+    fetchPrestations(createClient(), proId, { visibleOnly: true }).then(({ rows }) => setCatalog(rows))
+  }, [proId])
+
+  // Options de réservation : le métier principal puis chaque prestation visible.
+  const options: { id: string | null; name: string; trade: string | null; photo_path: string | null; cols: any }[] = pro ? [
+    { id: null, name: TRADES[pro.trade] || pro.trade, trade: pro.trade, photo_path: null, cols: pro },
+    ...(catalog ?? []).map(c => ({ id: c.id, name: prestationName(c), trade: c.trade, photo_path: c.photo_path, cols: c })),
+  ] : []
+  // Prestation demandée introuvable (masquée ou retirée entre-temps) : on le dit, plutôt que de
+  // réserver en silence le métier principal à un autre prix.
+  const missingService = !!selId && catalog !== null && !article
+  // Arrivée sans ?service= sur un métier principal « sur devis » : on présélectionne la première
+  // prestation à prix fixe s'il y en a une.
+  useEffect(() => {
+    if (!pro || catalog === null || selId) return
+    if (pro.pricing_type === 'devis') {
+      const first = catalog.find(c => c.pricing_type !== 'devis')
+      if (first) setSelId(first.id)
+    }
+  }, [pro, catalog]) // eslint-disable-line react-hooks/exhaustive-deps
+  const selected = options.find(o => o.id === (article ? article.id : null)) ?? null
+  const isDevis = !missingService && !!pricing && pricing.pricing_type === 'devis'
+  const serviceTrade: string | null = (article?.trade as string | null) ?? pro?.trade ?? null
+
+  async function askQuote() {
+    if (!pro || !selected) return
+    setDevisBusy(true); setError('')
+    const { missionId, error: e } = await openConversation(pro.id, { name: selected.name, trade: selected.trade })
+    setDevisBusy(false)
+    if (missionId) { router.push(`/mission/${missionId}/chat?devis=${encodeURIComponent(selected.name)}`); return }
+    if (e === 'not_authenticated') { router.push(`/auth/login?next=${encodeURIComponent(`/pro/${pro.id}`)}`); return }
+    if (e === 'own_profile') { setError('Vous ne pouvez pas réserver vos propres services.'); return }
+    setError('La conversation n’a pas pu s’ouvrir. Réessayez dans un instant.')
+  }
 
   useEffect(() => {
     if (!pricing) return
@@ -133,7 +171,7 @@ function MissionForm() {
   const totalTtc = subtotalCents + buyerFee
 
   const [creating, setCreating] = useState(false)
-  const cesuOk = cesuEligible(pro?.trade) && pro?.accepts_cesu_prefinance === true
+  const cesuOk = cesuEligible(serviceTrade) && pro?.accepts_cesu_prefinance === true
   // Paiement en ligne actif : on saute la simulation et on envoie le client vers la vraie page de paiement.
   const paymentsOn = usePaymentsActive()
 
@@ -145,7 +183,7 @@ function MissionForm() {
     if (!needsSlot && !wantedAt) { setError('Indiquez la date et l\u2019heure souhaitées.'); return }
     if (!needsSlot && new Date(wantedAt).getTime() < Date.now()) { setError('Choisissez une date à venir.'); return }
     if (!(subtotalCents > 0)) { setError('Indiquez une durée estimée.'); return }
-    if (!pro || !mode) return
+    if (!pro || !mode || isDevis || missingService) return
     setError('')
     setCreating(true)
     const supabase = createClient()
@@ -169,8 +207,8 @@ function MissionForm() {
       // "|| null" faisait donc echouer la reservation des que le client ne
       // remplissait pas la description (jamais declenche par les tests, ou
       // elle etait toujours remplie a la main).
-      requester_id: user.id, category: pro.trade,
-      description: description.trim() || (article ? article.name : ''),
+      requester_id: user.id, category: serviceTrade || pro.trade,
+      description: description.trim() || (article ? prestationName(article) : ''),
       address: address.trim(), budget_cents: totalTtc, status: 'matched',
       ...(payCesu && cesuOk ? { payment_pref: 'cesu' } : {}),
       ...(pos ? { lat: pos.lat, lng: pos.lng } : {}),
@@ -200,7 +238,7 @@ function MissionForm() {
 
     // Sans ça, le chat s'ouvrait totalement vide malgré un prix déjà validé
     // (règle suprême du tarif) — rien ne rappelait ce qui avait été réservé.
-    const label = article ? article.name : (TRADES[pro.trade] || pro.trade)
+    const label = article ? prestationName(article) : (TRADES[pro.trade] || pro.trade)
     const priceLabel = hasOvertime
       ? `${(pricing.base_price_cents / 100).toFixed(0)} € (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}, puis ${(pricing.hourly_rate_cents / 100).toFixed(0)} €/h au-delà)`
       : mode === 'horaire' ? `${(pricing.hourly_rate_cents / 100).toFixed(0)} €/h`
@@ -250,13 +288,62 @@ function MissionForm() {
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>
           {pricing
             ? hasOvertime
-              ? `${article?.name || TRADES[pro.trade] || pro.trade} — ${EUR(pricing.base_price_cents)} (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${EUR(pricing.hourly_rate_cents)}/h au-delà`
-              : `${article?.name || TRADES[pro.trade] || pro.trade} — ${[hasFlat ? EUR(pricing.base_price_cents)+' forfait' : null, hasHourly ? EUR(pricing.hourly_rate_cents)+'/h' : null].filter(Boolean).join(' · ')}`
+              ? `${article ? prestationName(article) : TRADES[pro.trade] || pro.trade} — ${EUR(pricing.base_price_cents)} (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${EUR(pricing.hourly_rate_cents)}/h au-delà`
+              : isDevis ? `${article ? prestationName(article) : TRADES[pro.trade] || pro.trade} — sur devis`
+              : `${article ? prestationName(article) : TRADES[pro.trade] || pro.trade} — ${[hasFlat ? EUR(pricing.base_price_cents)+' forfait' : null, hasHourly ? EUR(pricing.hourly_rate_cents)+'/h' : null].filter(Boolean).join(' · ')}`
             : 'Chargement…'}
         </p>
       </div>
 
       <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '24px 20px', minHeight: 'calc(100vh - 110px)' }}>
+        {/* Choix de la prestation : son prix et sa manière de tarifer sont figés sur la réservation. */}
+        {options.length > 1 && (
+          <div style={{ marginBottom: 18 }}>
+            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Prestation</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+              {options.map(o => {
+                const on = !missingService && (o.id ?? null) === (article ? article.id : null)
+                const photo = prestationPhotoUrl(o.photo_path)
+                return (
+                  <button key={o.id ?? 'primary'} type="button" onClick={() => { setSelId(o.id); setError('') }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 12, cursor: 'pointer', border: on ? '2px solid #12B39C' : '2px solid #E7EDEB', background: on ? 'rgba(18,179,156,.06)' : '#fff' }}>
+                    {photo && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                        style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0, background: '#F3F6F5' }} />
+                    )}
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{o.name}</span>
+                      <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{pricingSummary(o.cols)}</span>
+                    </span>
+                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(o.cols) ?? ''}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {missingService && (
+          <div style={{ padding: 13, borderRadius: 12, background: '#FFF4DD', fontSize: 12.5, color: '#8A5A00', marginBottom: 16, lineHeight: 1.5 }}>
+            Cette prestation n&apos;est plus proposée par ce prestataire.{options.length > 1 ? ' Choisissez-en une autre ci-dessus.' : ''}
+          </div>
+        )}
+
+        {isDevis ? (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ padding: 14, borderRadius: 12, background: '#F3F6F5', fontSize: 13, color: '#123644', lineHeight: 1.55, marginBottom: 14 }}>
+              <b>Prestation sur devis.</b> Pas de prix à l&apos;avance : décrivez votre besoin dans la conversation,
+              le prestataire vous envoie un tarif que vous acceptez ou non. Rien n&apos;est réservé tant que vous
+              n&apos;avez pas accepté son tarif.
+            </div>
+            {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
+            <button onClick={askQuote} disabled={devisBusy}
+              style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: devisBusy ? 0.7 : 1 }}>
+              {devisBusy ? 'Ouverture…' : 'Demander un devis'}
+            </button>
+          </div>
+        ) : (<>
         <div style={{ marginBottom: 16 }}>
           <AddressChoice profileAddress={profileAddress} value={addr} onChange={setAddr} />
         </div>
@@ -357,7 +444,7 @@ function MissionForm() {
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
-        <button onClick={() => paymentsOn ? submit() : setConfirming(true)} disabled={!pro || !mode || creating || paymentsOn === null} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
+        <button onClick={() => paymentsOn ? submit() : setConfirming(true)} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
           {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
         <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>
@@ -374,6 +461,7 @@ function MissionForm() {
           proName={pro?.company_name || 'le prestataire'}
           busy={creating}
         />
+        </>)}
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+import { fetchPrestations } from './prestations'
 // « Mon annonce » du prestataire (migration 026) : accroche, rayon, galerie, points forts, et la jauge
 // de complétude. Une seule source pour la page /pro/annonce, la carte de Mon entreprise et la fiche
 // publique /pro/[id] — ne pas redéfinir ces listes dans un écran.
@@ -81,9 +82,8 @@ export async function loadListingFacts(supabase: any, uid: string, pp: any) {
   const now = new Date()
   const in60 = new Date(now.getTime() + 60 * 86400000)
   const [{ data: services }, { data: slots }, { data: docs }] = await Promise.all([
-    supabase.from('services')
-      .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents, price_cents')
-      .eq('provider_id', uid).order('created_at'),
+    // Prestations visibles seulement (migration 041 : les masquées ne comptent ni ne s'affichent).
+    fetchPrestations(supabase, uid, { visibleOnly: true }).then(r => ({ data: r.rows })),
     supabase.from('provider_slots').select('id, starts_at, duration_minutes, transaction_id')
       .eq('provider_id', uid).is('transaction_id', null)
       .gte('starts_at', now.toISOString()).lt('starts_at', in60.toISOString()).order('starts_at').limit(50),
