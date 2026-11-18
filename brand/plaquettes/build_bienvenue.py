@@ -174,6 +174,17 @@ HTML = r'''<!doctype html>
   var SIGNUP = { particulier: '/l/ins', pro: '/l/insp' };
   var ANIM = { particulier: '/animation-client?role=client', pro: '/animation-prestataire?role=pro' };
   var role = null, stage = 'cover', betaFrom = 'choice';
+  // Attribution des e-mails et liens tracés (/l/<code> -> /bienvenue?utm_...) : les UTM sont gardés pour la
+  // session (setRole efface la query), puis portés directement par « Continuer vers l'inscription ». Sans ça,
+  // /l/ins et /l/insp écrasaient l'origine (source « animation » / « plaquette ») et l'e-mail ne comptait pas.
+  var UTM = '';
+  try {
+    var uq = new URLSearchParams(location.search), keep = new URLSearchParams();
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(function(k){ var v = uq.get(k); if (v) keep.set(k, v.slice(0, 80)); });
+    if (keep.get('utm_source')) { UTM = keep.toString(); sessionStorage.setItem('ping_bv_utm', UTM); }
+    else UTM = sessionStorage.getItem('ping_bv_utm') || '';
+  } catch (x) {}
+  function signupHref(r){ return UTM ? (r === 'pro' ? '/pro/onboarding?' : '/auth/signup?') + UTM : SIGNUP[r]; }
   var ov = document.getElementById('ov'), ovf = document.getElementById('ovf'), lastFocus = null;
   function n(){ return track.children.length; }
   function cur(){ return track.clientWidth ? Math.round(track.scrollLeft / track.clientWidth) : 0; }
@@ -192,7 +203,7 @@ HTML = r'''<!doctype html>
     track.innerHTML = ''; dots.innerHTML = '';
     track.appendChild(tpl(st === 'cover' ? 't-cover' : st === 'choice' ? 't-choice' : st === 'beta' ? 't-beta' : 't-' + role));
     if (st === 'choice') track.querySelector('.who').textContent = WHO[role];
-    if (st === 'beta') document.getElementById('betago').href = SIGNUP[role];
+    if (st === 'beta') document.getElementById('betago').href = signupHref(role);
     if (st === 'slides') for (var i = 0; i < n(); i++) (function(i){
       var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Écran ' + (i + 1));
       b.addEventListener('click', function(){ go(i); }); dots.appendChild(b);
