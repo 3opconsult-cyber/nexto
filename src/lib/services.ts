@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { getRates } from '@/lib/pricing'
+import { tradeOfServiceName } from '@/lib/trades'
 
 export interface ProviderNearby {
   id: string
@@ -87,6 +88,40 @@ export async function fetchProvidersNearby(
   })
   if (error) { console.error('providers_nearby', error); return [] }
   return (data ?? []) as ProviderNearby[]
+}
+
+// Activités d'un ensemble de prestataires = métier principal (trade) + métiers de leurs prestations
+// du catalogue `services` (/pro/tarifs). La RLS de `services` n'est pas décrite dans les migrations du
+// dépôt : on passe d'abord par la RPC `provider_services_public` (SECURITY DEFINER, proposée dans
+// supabase/a_coller/provider_services_public.sql, non appliquée) ; tant qu'elle n'existe pas, lecture
+// directe de `services` (celle qu'utilise déjà la fiche publique /pro/[id]). Si rien n'est lisible,
+// chaque prestataire garde au moins son métier principal.
+let servicesRpcMissing = false
+export async function fetchProviderActivities(
+  pros: { id: string; trade: string }[]
+): Promise<Record<string, string[]>> {
+  const out: Record<string, string[]> = {}
+  for (const p of pros) out[p.id] = p.trade ? [p.trade] : []
+  const ids = pros.map(p => p.id)
+  if (!ids.length) return out
+  const supabase = createClient()
+  let rows: { provider_id: string; name: string }[] | null = null
+  if (!servicesRpcMissing) {
+    const { data, error } = await supabase.rpc('provider_services_public', { p_provider_ids: ids })
+    if (error) servicesRpcMissing = true
+    else rows = (data ?? []) as { provider_id: string; name: string }[]
+  }
+  if (!rows) {
+    const { data, error } = await supabase.from('services').select('provider_id, name').in('provider_id', ids)
+    if (error) return out
+    rows = (data ?? []) as { provider_id: string; name: string }[]
+  }
+  for (const r of rows) {
+    const k = tradeOfServiceName(r.name)
+    const list = out[r.provider_id]
+    if (k && list && !list.includes(k)) list.push(k)
+  }
+  return out
 }
 
 export async function fetchProDetail(proId: string) {

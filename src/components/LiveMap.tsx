@@ -96,6 +96,9 @@ export default function LiveMap({
         center={[userPos.lat, userPos.lng]}
         zoom={13}
         scrollWheelZoom={true}
+        // Zoom au doigt (pincement) explicitement actif sur /map et /pro/carte : aucun CSS de l'app
+        // ne pose de touch-action sur la carte ; Leaflet gère lui-même les gestes (leaflet.css).
+        touchZoom={true}
         style={{ width: '100%', height: '100%' }}
         attributionControl={false}
       >
