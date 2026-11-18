@@ -40,6 +40,25 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .top{position:sticky;top:0;z-index:5;background:rgba(243,246,245,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:14px 26px}
 .top h1{font-family:var(--fh);font-weight:700;font-size:20px}
 .search{margin-left:auto;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 13px;width:280px;color:var(--slate);font-size:13px}
+.search{position:relative}
+.search input{border:0;outline:0;background:transparent;font:inherit;color:var(--ink);flex:1;min-width:0;padding:0}
+.search:focus-within{border-color:var(--teal)}
+.gsres{position:absolute;top:calc(100% + 6px);right:0;width:min(420px,92vw);max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.16);z-index:40;padding:6px}
+.gsres .gh{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);padding:8px 10px 4px}
+.gsres .gi{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 10px;border-radius:9px;cursor:pointer;font:inherit;color:var(--ink);font-size:13px}
+.gsres .gi small{display:block;color:var(--slate);font-size:11.5px;margin-top:2px}
+.gsres .gi:hover,.gsres .gi.on{background:#f2faf8}
+.gsres .ge{padding:12px 10px;color:var(--slate);font-size:12.5px}
+.period input{margin:0;accent-color:var(--teal)}
+.tag.fx{background:rgba(18,54,68,.06);color:var(--slate);font-weight:600}
+.cfbox{max-width:560px;width:100%}
+.cfbox .pv{background:var(--paper);border:1px solid var(--line);border-radius:12px;min-height:160px;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;padding:10px;margin-bottom:12px}
+.cfbox .pv img{max-width:100%;max-height:52vh;border-radius:8px}
+.cfbox .pv iframe{width:100%;height:52vh;border:0;border-radius:8px;background:#fff}
+.cfbox .acts{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
+.btn.red{background:#c0503a}
+.livetop{grid-template-columns:1fr 1fr}
+@media (max-width:860px){.livetop{grid-template-columns:1fr}}
 .period{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer}
 .content{padding:24px 26px 40px;max-width:1180px;margin:0 auto}
 .section{display:none}.section.on{display:block}
@@ -369,7 +388,8 @@ textarea.minput{min-height:120px;resize:vertical}
   .main{width:100%}
   .top{padding:12px 14px;gap:10px;flex-wrap:wrap}
   .top h1{font-size:17px}
-  .search{display:none}
+  .search{order:10;width:100%;margin-left:0}
+  .gsres{left:0;right:auto;width:100%}
   .period{padding:8px 11px;font-size:12px}
   .content{padding:16px 14px 34px;max-width:100%}
 
@@ -445,7 +465,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
   <aside class="side">
     <div class="brand"><div class="lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><div><b>PING</b><small>Super admin</small></div></div>
     <nav class="nav" id="nav">
-      <a data-s="overview" class="on" onclick="nav('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg> Vue d'ensemble <span class="muted" style="font-size:9.5px;margin-left:auto">démo</span></a>
+      <a data-s="overview" class="on" onclick="nav('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg> Vue d'ensemble </a>
       <a data-s="live" onclick="nav('live')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg> Aperçu réel <span style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#2FD06E;display:inline-block"></span></a>
       <div class="sep">Marketplace</div>
       <a data-s="users" onclick="nav('users')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M3 21a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 21a5 5 0 0 1 5.5-4.9"/></svg> Utilisateurs</a>
@@ -463,12 +483,13 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
       <a data-s="conformite" onclick="nav('conformite')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Conformité (KYC)</a>
       <a data-s="litiges" onclick="nav('litiges')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg> Litiges</a>
       <a data-s="signalements" onclick="nav('signalements')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18"/><path d="M5 4h11l-1.5 4L16 12H5"/></svg> Signalements</a>
+      <a data-s="retours" onclick="nav('retours')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/></svg> Retours des testeurs</a>
     </nav>
     <div class="foot"><div class="av">A</div><div><div class="nm">Admin PING</div><div class="rl">Grasse · super admin</div></div></div>
   </aside>
 
   <main class="main">
-    <div class="top"><span class="hamburger" onclick="toggleNav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span class="backarrow" id="backArrow" onclick="navBack()" style="display:none" title="Retour"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></span><h1 id="ttl">Vue d'ensemble</h1><div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher un pro, un client, une transaction…</div><div class="period"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg> Depuis le lancement</div></div>
+    <div class="top"><span class="hamburger" onclick="toggleNav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span class="backarrow" id="backArrow" onclick="navBack()" style="display:none" title="Retour"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></span><h1 id="ttl">Vue d'ensemble</h1><div class="search" id="gsBox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="gsInput" type="search" autocomplete="off" placeholder="Rechercher un pro, un client, une transaction…" aria-label="Rechercher un prestataire, un client, une transaction ou un litige" aria-controls="gsRes" oninput="window.gSearch&&window.gSearch(this.value)" onkeydown="window.gSearchKey&&window.gSearchKey(event)" onfocus="window.gSearch&&this.value&&window.gSearch(this.value)"><div class="gsres" id="gsRes" role="listbox" hidden></div></div><label class="period" title="Les comptes et missions de démonstration (colonne fictif, e-mails @ping-demo.invalid) sont exclus par défaut de tous les chiffres et listes"><input type="checkbox" id="gFictif" onchange="window.setFictif&&window.setFictif(this.checked)"> Inclure les fictifs</label></div>
     <div class="content">
 
       <!-- OVERVIEW -->
@@ -490,9 +511,9 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           <div class="grid k4" id="ovPipeline"><div class="muted">Chargement…</div></div>
         </div>
         <div class="grid k4">
-          <div class="kpi click" onclick="nav('tx')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span> Volume des missions</div><div class="v" id="ovVolume">—</div><div class="d" id="ovVolumeD">cumul depuis le lancement</div></div>
-          <div class="kpi click" onclick="nav('commissions')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg></span> Commissions PING</div><div class="v" id="ovCommission">—</div><div class="d" id="ovCommissionD">cumul depuis le lancement</div></div>
-          <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v" id="ovProviders">—</div><div class="d" id="ovProvidersD">sur le total inscrit</div></div>
+          <div class="kpi click" onclick="nav('tx')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span> Facturé</div><div class="v" id="ovVolume">—</div><div class="d" id="ovVolumeD">prestations des missions terminées</div></div>
+          <div class="kpi click" onclick="nav('commissions')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg></span> Commissions PING</div><div class="v" id="ovCommission">—</div><div class="d" id="ovCommissionD">sur les missions facturées</div></div>
+          <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v" id="ovProviders">—</div><div class="d" id="ovProvidersD">actifs sur le total inscrit</div></div>
           <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#c0503a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Litiges ouverts</div><div class="v" id="ovDisputes">—</div><div class="d" id="ovDisputesD">à traiter</div></div>
         </div>
         <div class="card mt" id="liveMapCard"><h3>Carte des prestataires <span class="muted">position enregistrée à l'inscription</span></h3>
@@ -514,14 +535,19 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
             <p class="muted" style="padding:34px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
           </div>
           <div class="card"><h3>À traiter</h3>
-            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b><span id="ovDocs">—</span> pièce(s) à examiner</b><small>Pièces déposées par les prestataires, en attente d'examen</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b><span id="ovDisputes2">—</span> litige(s) ouvert(s)</b><small>Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
-            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b><span id="overviewExpiryCount">0</span> assurance(s) à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b><small>Pièces déposées par les prestataires : aperçu, puis valider ou refuser</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b><small id="ovDisputes2S">Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av">R</div></div><div class="m"><b id="ovFbL">— retour de testeur à traiter</b><small>Commentaires laissés dans la bulle verte de l'application</small></div><span class="link" onclick="nav('retours')">Voir</span></div>
+            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="overviewExpiryL">0 assurance à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
             <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026</b><small>À brancher avant janvier 2027</small></div><span class="link" onclick="nav('dac7')">Voir</span></div>
           </div>
         </div>
+        <div class="card mt"><h3>Derniers inscrits <span class="muted" id="ovSignupsN">les plus récents d'abord</span><span class="link" onclick="nav('users')">Tous les utilisateurs</span></h3>
+          <table class="tbl" data-noenh="1"><thead><tr><th>Nom</th><th>Rôle</th><th>Inscrit le</th><th>Ville</th><th>Pièces</th></tr></thead><tbody id="ovSignupsBody"></tbody></table>
+          <p class="muted" id="ovSignupsEmpty" style="padding:18px 0;text-align:center;display:none">Aucune inscription pour l'instant.</p>
+        </div>
         <div class="card mt"><h3>Transactions récentes <span class="link" onclick="nav('tx')">Tout voir</span></h3>
-          <table class="tbl"><thead><tr><th>Date / heure</th><th>Statut</th><th>Sous-total</th><th>Commission</th><th>Total client</th></tr></thead><tbody id="ovTxBody"></tbody></table>
+          <table class="tbl" data-noenh="1"><thead><tr><th>Date / heure</th><th>Mission</th><th>Statut</th><th>Sous-total</th><th>Commission</th><th>Total client</th></tr></thead><tbody id="ovTxBody"></tbody></table>
           <p class="muted" id="ovTxEmpty" style="padding:18px 0;text-align:center">Données disponibles au lancement</p>
         </div>
         <div class="card" id="installCard" style="margin-top:16px"><h3>Installer le raccourci <span class="muted">PING Admin comme une application</span></h3>
@@ -545,7 +571,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
         </div>
         <div id="liveStatus" class="muted" style="margin-bottom:14px">Chargement des données réelles…</div>
         <div class="grid k4" id="liveKpis" style="display:none;margin-bottom:16px"></div>
-        <div id="liveTablesTop" style="display:none;grid-template-columns:1fr 1fr;gap:16px">
+        <div id="liveTablesTop" class="livetop" style="display:none;gap:16px">
           <div class="card"><h3>Derniers prestataires inscrits</h3>
             <table class="tbl" id="liveProsTable"><thead><tr><th>Prestataire</th><th>Service</th><th>Tarif</th><th>Statut</th><th></th></tr></thead><tbody></tbody></table>
             <div class="muted" id="liveProsEmpty" style="padding:18px 0;text-align:center;display:none">Aucun prestataire inscrit pour l'instant.</div>
@@ -560,7 +586,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           <div class="muted" id="liveTxEmpty" style="padding:18px 0;text-align:center;display:none">Aucune transaction pour l'instant.</div>
         </div>
         <div class="card mt" id="liveDisputesCard" style="display:none"><h3>Litiges ouverts</h3>
-          <table class="tbl" id="liveDisputesTable"><thead><tr><th>Ouvert le</th><th>Motif</th><th>Statut</th></tr></thead><tbody></tbody></table>
+          <table class="tbl" id="liveDisputesTable"><thead><tr><th>Ouvert le</th><th>Motif</th><th>Statut</th><th></th></tr></thead><tbody></tbody></table>
           <div class="muted" id="liveDisputesEmpty" style="padding:18px 0;text-align:center;display:none">Aucun litige ouvert.</div>
         </div>
       </section>
@@ -593,15 +619,15 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);font-size:13px;margin-bottom:14px" />
         <div class="seg2"><div class="on" onclick="segUsers(this,'pros')">Propose des services</div><div onclick="segUsers(this,'clients')">Réserve des services</div></div>
         <div class="card" id="userPros"><h3>Utilisateurs — propose des services <span class="muted" id="proCountLabel">chargement…</span></h3>
-          <table class="tbl">
-            <tr><th>Utilisateur</th><th>Métier</th><th>Statut</th><th>Ville</th><th>Note</th><th></th></tr>
+          <table class="tbl" data-nosearch="1">
+            <tr><th>Utilisateur</th><th>Métier</th><th>Statut</th><th>Ville</th><th>Note</th><th>Inscrit le</th><th></th></tr>
             <tbody id="liveProsBody"></tbody>
           </table>
           <div id="liveProsEmpty" class="muted" style="padding:16px 0;display:none">Aucun prestataire pour l'instant.</div>
         </div>
         <div class="card" id="userClients" style="display:none"><h3>Utilisateurs — réserve des services <span class="muted" id="clientCountLabel">chargement…</span></h3>
-          <table class="tbl">
-            <tr><th>Client</th><th>Ville</th><th>Membre depuis</th><th></th></tr>
+          <table class="tbl" data-nosearch="1">
+            <tr><th>Particulier</th><th>Ville</th><th>Inscrit le</th><th></th></tr>
             <tbody id="liveClientsBody"></tbody>
           </table>
           <div id="liveClientsEmpty" class="muted" style="padding:16px 0;display:none">Aucun client pour l'instant.</div>
@@ -610,8 +636,8 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
 
       <!-- TRANSACTIONS -->
       <section class="section" id="s_tx">
-        <div class="card"><h3>Transactions <span class="muted">missions réelles, les plus récentes d'abord</span></h3>
-          <table class="tbl"><thead><tr><th>Date / heure</th><th>Statut</th><th>Sous-total</th><th>Frais client</th><th>Commission pro</th><th>Total client</th></tr></thead><tbody id="txAllBody"></tbody></table>
+        <div class="card"><h3>Transactions <span class="muted" id="txAllN">les plus récentes d'abord</span></h3>
+          <table class="tbl"><thead><tr><th>Date / heure</th><th>Mission</th><th>Statut</th><th>Sous-total</th><th>Frais client</th><th>Commission pro</th><th>Total client</th></tr></thead><tbody id="txAllBody"></tbody></table>
           <p class="muted" id="txAllEmpty" style="padding:18px 0;text-align:center">Données disponibles au lancement</p>
           <p class="note">Le séquestre n'est pas actif : le client règle la prestation par virement. Clique une ligne pour ouvrir la mission.</p>
         </div>
@@ -803,11 +829,11 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
       <section class="section" id="s_docs">
         <div class="card"><h3>Documents &amp; factures <span class="muted">horodatés · conservation 10 ans</span></h3>
           <table class="tbl">
-            <tr><th>N°</th><th>Type</th><th>Émetteur</th><th>Client</th><th>Jour / date / heure</th><th>Transaction</th><th>Montant</th></tr>
+            <thead><tr><th>N°</th><th>Type</th><th>Émetteur</th><th>Client</th><th>Émis le</th><th>Transaction</th><th>Montant</th></tr></thead>
             <tbody id="liveInvoicesBody"></tbody>
           </table>
           <div id="liveInvoicesEmpty" class="muted" style="padding:16px 0;display:none">Aucune mission terminée pour l'instant — les factures apparaissent ici automatiquement dès qu'une mission se conclut.</div>
-          <p class="note">Réel — généré à partir des vraies transactions terminées. Les numéros (FACT-/PING-C-/PING-V-) suivent le modèle à trois factures déjà validé. Les factures PDF sont téléchargeables par les parties depuis la page Facturation de chaque mission.</p>
+          <p class="note">Lu dans la table des factures : mêmes numéros que les PDF reçus par les parties (FACT-/RECAP- pour la prestation, PING-C- et PING-V- pour les commissions). Cliquer une ligne ouvre la mission. Les PDF se téléchargent depuis la page Facturation de chaque mission.</p>
           <p class="note">Export comptable de la période et archivage : à brancher.</p>
         </div>
       </section>
@@ -866,9 +892,10 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           <p class="note">Alimentée par les dates d'expiration d'assurance renseignées par les prestataires, quand elles existent.</p>
         </div>
 
-        <div class="card mt"><h3>File de conformité (KYC)</h3>
-          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
-          <p class="note">Les pièces réellement déposées par les prestataires sont dans « Aperçu réel » (Documents en attente). Fichiers masqués : seul le statut (pièce fournie ou non) est visible côté public.</p>
+        <div class="card mt" id="docsQueueCard"><h3>Pièces à valider <span class="muted" id="docsQueueN"></span></h3>
+          <table class="tbl"><thead><tr><th>Prestataire</th><th>Pièce</th><th>Déposée le</th><th>Statut</th><th></th></tr></thead><tbody id="docsQueueBody"></tbody></table>
+          <p class="muted" id="docsQueueEmpty" style="padding:18px 0;text-align:center;display:none">Aucune pièce en attente.</p>
+          <p class="note">Ouvrez la pièce, comparez le nom écrit dessus avec celui du compte, puis validez ou refusez. Une pièce validée permet d'afficher « profil vérifié par PING » sur la fiche du prestataire. En cas de refus, le motif lui est envoyé dans sa messagerie Support PING. Les fichiers ne sont jamais visibles du public.</p>
         </div>
       </section>
 
@@ -876,13 +903,14 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
       <section class="section" id="s_litiges">
         <div class="grid k3">
           <div class="kpi"><div class="l">Litiges ouverts</div><div class="v" id="litOpen">—</div><div class="d">dossiers en attente</div></div>
-          <div class="kpi"><div class="l">Résolus</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
-          <div class="kpi"><div class="l">Montant en jeu</div><div class="v">—</div><div class="d">Données disponibles au lancement</div></div>
+          <div class="kpi"><div class="l">Clos</div><div class="v" id="litClosed">—</div><div class="d" id="litClosedD">résolus ou non retenus</div></div>
+          <div class="kpi"><div class="l">Montant en jeu</div><div class="v" id="litAmount">—</div><div class="d">demandé sur les litiges ouverts</div></div>
         </div>
 
-        <div class="card mt"><h3>Files d'attente <span class="muted">triées par échéance</span></h3>
-          <p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
-          <p class="note">Les litiges réellement ouverts sont listés dans « Aperçu réel » ; chaque dossier se traite dans sa page dédiée (/litiges).</p>
+        <div class="card mt"><h3>Dossiers <span class="muted">ouverts d'abord, échéance la plus proche en tête</span></h3>
+          <table class="tbl"><thead><tr><th>Ouvert le</th><th>Mission</th><th>Motif</th><th>Montant demandé</th><th>Échéance</th><th>Statut</th></tr></thead><tbody id="litBody"></tbody></table>
+          <p class="muted" id="litEmpty" style="padding:18px 0;text-align:center;display:none">Aucun litige.</p>
+          <p class="note">Cliquer une ligne ouvre le dossier (/litiges/…) dans un nouvel onglet : vous y répondez en médiateur et le clôturez.</p>
         </div>
 
         <div class="card mt"><h3>Règles prévues <span class="muted">pas encore automatisées : décision au cas par cas par PING</span></h3>
@@ -906,6 +934,23 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
         </div>
 
         <div class="lawbox mt">PING n'exerce <b>aucune modération éditoriale préalable</b> des échanges (CGU art. 1.5). Ce registre existe uniquement parce qu'un utilisateur a déposé un signalement sur une conversation précise — les autres échanges ne sont jamais consultés. Mesures possibles : aucune suite, avertissement, suspension temporaire, suspension définitive, transmission aux autorités compétentes si l'infraction pénale est caractérisée. PING n'est ni juge ni enquêteur.</div>
+      </section>
+
+      <section class="section" id="s_retours">
+        <div class="card" style="margin-bottom:14px"><h3>Retours des testeurs <span class="muted" id="fbN"></span></h3>
+          <div class="seg2" id="fbChips" style="flex-wrap:wrap">
+            <div class="on" data-f="todo" onclick="window.fbFilter&&window.fbFilter('todo')">À traiter</div>
+            <div data-f="done" onclick="window.fbFilter&&window.fbFilter('done')">Traités</div>
+            <div data-f="ok" onclick="window.fbFilter&&window.fbFilter('ok')">Pages validées en un clic</div>
+            <div data-f="all" onclick="window.fbFilter&&window.fbFilter('all')">Tous</div>
+          </div>
+          <table class="tbl"><thead><tr><th>Reçu le</th><th>Auteur</th><th>Page</th><th>Commentaire</th><th></th></tr></thead><tbody id="fbBody"></tbody></table>
+          <p class="muted" id="fbEmpty" style="padding:18px 0;text-align:center;display:none">Rien dans cette sélection.</p>
+          <p class="note">Commentaires laissés dans la bulle verte « Laisser un commentaire » de l'application. « Marquer traité » est enregistré en base et visible de tous les administrateurs.</p>
+        </div>
+        <div class="card"><h3>Avis du carrousel testeurs <span class="muted" id="fbBetaN"></span><a class="link" style="text-decoration:none" href="/admin/retours" target="_blank" rel="noopener">Ouvrir</a></h3>
+          <p class="note" style="margin-top:0">Notes de simplicité, ergonomie et utilité laissées sur /essai/avis.</p>
+        </div>
       </section>
 
       <section class="section" id="s_dossier_sig"></section>
@@ -1156,7 +1201,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           </div>
           <div class="card mt"><h3>Ressources commerciales <span class="muted">tous les fichiers, un seul endroit</span></h3>
             <div id="resourceRows"></div>
-            <div class="lawbox mt">Chaque ressource se copie en lien ou s'envoie directement par e-mail (Gmail) — pas besoin de joindre un fichier lourd, le destinataire clique et voit la page. URL provisoires (<span class="mono">ping.app</span>) : à remplacer une fois le nom de domaine tranché (alerte A6). Un envoi mérite une ligne dans le <b>Cahier des actions</b>.</div>
+            <div class="lawbox mt">Chaque ressource se copie en lien ou s'envoie directement par e-mail (Gmail) — pas besoin de joindre un fichier lourd, le destinataire clique et voit la page. Les liens pointent vers <span class="mono">https://nexto-eta.vercel.app</span>, l'adresse réelle de l'application. Un envoi mérite une ligne dans le <b>Cahier des actions</b>.</div>
           </div>
         </div>
 
@@ -1164,7 +1209,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           <div class="grid k4">
             <div class="kpi"><div class="l">Supports trackés</div><div class="v" id="campKpiSupports">0</div><div class="d up">tous canaux</div></div>
             <div class="kpi"><div class="l">Actifs</div><div class="v" id="campKpiActifs">0</div></div>
-            <div class="kpi"><div class="l">Leads attribués</div><div class="v" id="campKpiLeads">0</div><div class="d up">cohérent avec Leads entrants</div></div>
+            <div class="kpi"><div class="l">Leads attribués</div><div class="v" id="campKpiLeads">0</div><div class="d">supports créés ici seulement ; les exemples ne comptent pas</div></div>
             <div class="kpi"><div class="l">Génération lien + QR</div><div class="v" style="font-size:16px">Automatique</div><div class="d">à la création du support</div></div>
           </div>
 
@@ -1187,7 +1232,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
             </table></div>
           </div>
 
-          <div class="lawbox mt">Chaque support porte un lien unique avec son <b>utm_source / utm_medium / utm_campaign / utm_content</b> — exactement ce que retrouve l'onglet <b>Leads entrants</b>. Deux destinations possibles : <span class="mono">ping-landing-menage.html</span> (présentation complète) ou <span class="mono">ping-flash-contact.html</span> (formulaire flash, une seule page, pensé pour un scan terrain — le lead créé porte le statut « À valider »). Domaine provisoire (<span class="mono">ping.app</span>) : à remplacer dès que l'alerte A6 est tranchée, sur tous les QR déjà imprimés.</div>
+          <div class="lawbox mt">Chaque support porte un lien unique avec son <b>utm_source / utm_medium / utm_campaign / utm_content</b> — exactement ce que retrouve l'onglet <b>Leads entrants</b>. Deux destinations possibles : la landing du public visé (<span class="mono">/landing-particulier</span> ou <span class="mono">/landing-pro</span>) ou le formulaire flash (<span class="mono">/auth/signup</span>, inscription directe, pensé pour un scan terrain). Tous les liens et QR pointent vers <span class="mono">https://nexto-eta.vercel.app</span>. Les lignes marquées « exemple » sont des supports d'illustration : leurs chiffres de leads ne sont pas réels.</div>
           <p class="note">QR généré côté client (librairie QR embarquée, MIT — Kazuhiko Arase, aucune dépendance externe) : chaque image est un vrai QR scannable, encodé à la volée à partir du lien — jamais une image statique. Clique un QR pour l'agrandir et copier le lien.</p>
         </div>
 
@@ -1235,8 +1280,8 @@ Facebook (particulier, groupe quartier) :
             </div>
             <div style="padding:14px;background:#fff"><div class="grid k2"><div class="an"><div class="v" style="font-size:13px">Inscription pro</div><div class="l">Nom · zone · métier → visible sur la carte</div></div><div class="an"><div class="v" style="font-size:13px">Inscription particulier</div><div class="l">Nom · contact · zone → alerte au lancement</div></div></div></div>
             </div>
-            <div class="mt" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="openLandingPreview()">Voir le déroulé complet</button><button class="btn ghost" onclick="copyLink('https://ping.app/')">Copier le lien</button></div>
-            <p class="note">Landing complète et responsive : fichier « ping-landing-menage.html ». Capture désormais l'UTM (source/campagne/contenu) à l'inscription — voir l'onglet <b>Leads entrants</b>. Reste à câbler : inscription réelle en base, apparition auto sur la carte, édition du contenu et gestion de plusieurs variantes de landing directement depuis l'admin.</p>
+            <div class="mt" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="openLandingPreview()">Voir le déroulé complet</button><button class="btn ghost" onclick="copyLink('https://nexto-eta.vercel.app/landing-particulier')">Copier le lien</button></div>
+            <p class="note">Landing complète et responsive : <span class="mono">/landing-particulier</span> (et <span class="mono">/landing-pro</span> côté prestataires). Capture désormais l'UTM (source/campagne/contenu) à l'inscription — voir l'onglet <b>Leads entrants</b>. Reste à câbler : inscription réelle en base, apparition auto sur la carte, édition du contenu et gestion de plusieurs variantes de landing directement depuis l'admin.</p>
           </div>
         </div>
       </section>
@@ -1304,8 +1349,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 const $=id=>document.getElementById(id);
 /* Argument de fonction JS place dans un attribut onclick="..." : JSON.stringify ferme la chaine
    proprement (apostrophes, antislash), puis l'echappement HTML protege l'attribut. */
+function escT(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function jsArg(v){return JSON.stringify(String(v==null?'':v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-const TITLES={overview:"Vue d'ensemble",live:"Aperçu réel",users:"Utilisateurs",activite:"Activité & annonces",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",pay:"Paiements & séquestre"};
+const TITLES={overview:"Vue d'ensemble",live:"Aperçu réel",users:"Utilisateurs",activite:"Activité & annonces",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",pay:"Paiements & séquestre",retours:"Retours des testeurs"};
 const ICN={invoice:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg>',check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>',quote:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M14 2H6v20l4-2 4 2 4-2V8z"/></svg>',doc:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 4h10l6 6v10H4z"/></svg>',star:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .8-5 4.8 1.3 6.9L12 17.8 5.4 21l1.3-6.9-5-4.8 7-.8z"/></svg>',chat:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>',user:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',mail:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'};
 function etatTag(e){return e==='Libéré'?'ok':e==='Remboursé'?'dn':'wait';}
 
@@ -1506,7 +1552,7 @@ function renderExpiryAlerts(){
  const cnt=document.getElementById('expiryCount'); if(cnt)cnt.textContent='';
  const ov=document.getElementById('overviewExpiryAlert');
  if(ov)ov.style.display=list.length?'flex':'none';
- const ovCount=document.getElementById('overviewExpiryCount'); if(ovCount)ovCount.textContent=list.length;
+ const ovCount=document.getElementById('overviewExpiryL'); if(ovCount)ovCount.textContent=list.length+' assurance'+(list.length>1?'s':'')+' à renouveler sous 45 j';
 }
 function accountStatusTag(s){return{actif:{cls:'ok',label:'Actif · qualifié'},a_verifier:{cls:'wait',label:'À examiner'},radie:{cls:'dn',label:'Radié'}}[s||'actif']||{cls:'ink',label:s};}
 function validerCompte(key){const e=ENT[key]; if(e)e.as='actif'; render(stack[stack.length-1]); toast('Compte validé · qualifié');}
@@ -1577,7 +1623,7 @@ function renderFiche(key){const e=ENT[key];
  <div class="card mt"><h3>Documents <span class="muted">factures &amp; reçus</span></h3><table class="tbl">${e.docs.length?e.docs.map(d=>`<tr class="click" onclick="openDoc('${d[0]}')"><td class="mono">${d[0]}</td><td>${d[1]}</td><td class="mono">${d[2]}</td><td>${d[3]}</td></tr>`).join(''):'<tr><td class="muted">Aucun</td></tr>'}</table></div></div></div>`;
 }
 function renderCrm(key){const e=ENT[key];const items=Object.values(TX).filter(t=>t.clientKey===key||t.proKey===key);
- return`<div class="fhead" style="padding:14px"><div class="av ${e.cl}">${e.av}</div><div><h2>Réservations · ${e.name}</h2><div class="fsub">${items.length} opération(s) · liste CRM · cliquez une ligne pour le détail</div></div></div>
+ return`<div class="fhead" style="padding:14px"><div class="av ${e.cl}">${e.av}</div><div><h2>Réservations · ${e.name}</h2><div class="fsub">${items.length} opération${items.length>1?'s':''} · liste CRM · cliquez une ligne pour le détail</div></div></div>
  <div class="card mt" style="overflow-x:auto"><table class="tbl"><tr><th>N°</th><th>Date</th><th>Parties engagées</th><th>Objet</th><th>Montant</th><th>Début</th><th>Fin</th><th>État</th></tr>
  ${items.map(t=>`<tr class="click" onclick="openTx('${t.id}')"><td class="mono">${t.id}</td><td class="mono">${t.date}</td><td>${t.client} ↔ ${t.pro}</td><td>${t.objet}</td><td>${t.montant}</td><td class="mono">${t.debut}</td><td class="mono">${t.fin}</td><td><span class="tag ${etatTag(t.etat)}">${t.etat}</span></td></tr>`).join('')}</table></div>`;
 }
@@ -2309,79 +2355,114 @@ wireF('#s_conformite',['bruno-menage']);
 
 /* ================= TRI, FILTRE, GROUPEMENT DES TABLEAUX ================= */
 const MOIS={'janv':0,'f\u00e9vr':1,'mars':2,'avr':3,'mai':4,'juin':5,'juil':6,'ao\u00fbt':7,'sept':8,'oct':9,'nov':10,'d\u00e9c':11};
-function parseVal(txt){
- const t=(txt||'').trim();
- const dm=t.match(/(\d{1,2})\s+([a-z\u00e9\u00fb]+)\.?\s*(\d{4})?/i);
+/* Valeur de tri d'une cellule : data-sort (horodatage ISO ou nombre) si le rendu l'a posé,
+   sinon lecture du texte (date « 14 nov. 2026 », montant « 1 234,56 € », ou texte). */
+function parseVal(cell){
+ if(!cell)return '';
+ const ds=cell.getAttribute&&cell.getAttribute('data-sort');
+ if(ds!=null&&ds!==''){const n=Number(ds);if(!isNaN(n))return n;const d=Date.parse(ds);if(!isNaN(d))return d;return ds.toLowerCase();}
+ const t=(cell.textContent||'').trim();
+ const dm=t.match(/(\d{1,2})\s+([a-zéû]+)\.?\s*(\d{4})?/i);
  if(dm&&MOIS[dm[2].toLowerCase()]!==undefined){
-   return new Date(dm[3]?+dm[3]:2026,MOIS[dm[2].toLowerCase()],+dm[1]).getTime();
+   return new Date(dm[3]?+dm[3]:new Date().getFullYear(),MOIS[dm[2].toLowerCase()],+dm[1]).getTime();
  }
- const n=t.replace(/\s/g,'').replace(/\u20ac/g,'').replace(',','.').match(/^-?[\d.]+$/);
+ const n=t.replace(/\s/g,'').replace(/€/g,'').replace(',','.').match(/^-?[\d.]+$/);
  if(n)return parseFloat(n[0]);
  return t.toLowerCase();
 }
-function anneeDe(txt){const m=(txt||'').match(/\b(20\d{2})\b/);return m?m[1]:'2026';}
+/* Année d'une ligne : cellule data-sort datée en priorité, sinon une année écrite dans la ligne. */
+function anneeDe(row){
+ const c=row.querySelector('[data-sort]');
+ if(c){const v=c.getAttribute('data-sort');const d=isNaN(Number(v))?Date.parse(v):NaN;if(!isNaN(d))return String(new Date(d).getFullYear());}
+ const m=(row.textContent||'').match(/\b(20\d{2})\b/);return m?m[1]:'';
+}
 
+/* Recherche, tri, regroupement d'un tableau. Les lignes sont relues à chaque application
+   (les données arrivent APRÈS l'initialisation, et chaque chargement remplace le tbody) ;
+   un MutationObserver réapplique tri et filtre quand le contenu change. */
 function enhanceTable(tbl){
  if(tbl.dataset.enh||tbl.dataset.noenh)return; tbl.dataset.enh='1';
  const head=tbl.querySelector('tr');
  if(!head||!head.querySelector('th'))return;
  const ths=[...head.querySelectorAll('th')];
- const rows=()=>[...tbl.querySelectorAll('tr')].filter(r=>!r.querySelector('th')&&!r.classList.contains('grp'));
- const original=rows().map(r=>r);
+ const rows=()=>[...tbl.querySelectorAll('tr')].filter(r=>!r.querySelector('th')&&!r.classList.contains('grp')&&!r.classList.contains('emptyrow'));
+ let sort=null; /* {i, desc} */
 
- /* barre d'outils */
  const bar=document.createElement('div');bar.className='tbar';
- const search=document.createElement('input');search.placeholder='Filtrer\u2026 (client, r\u00e9f\u00e9rence, montant)';
- const selAn=document.createElement('select');
- const ans=[...new Set(original.map(r=>anneeDe(r.textContent)))].sort().reverse();
- selAn.innerHTML='<option value="">Toutes ann\u00e9es</option>'+ans.map(a=>'<option>'+a+'</option>').join('');
- const selGrp=document.createElement('select');
- selGrp.innerHTML='<option value="">Sans regroupement</option>'+ths.map((t,i)=>'<option value="'+i+'">Grouper par '+t.textContent.trim()+'</option>').join('');
- const lb=document.createElement('span');lb.className='lbl';lb.textContent='';
+ const search=document.createElement('input');search.type='search';search.placeholder='Filtrer… (nom, référence, statut, montant)';search.setAttribute('aria-label','Filtrer ce tableau');
+ const selAn=document.createElement('select');selAn.setAttribute('aria-label','Année');
+ const selGrp=document.createElement('select');selGrp.setAttribute('aria-label','Regrouper');
+ selGrp.innerHTML='<option value="">Sans regroupement</option>'+ths.map((t,i)=>t.textContent.trim()?'<option value="'+i+'">Grouper par '+escT(t.textContent.trim())+'</option>':'').join('');
+ const lb=document.createElement('span');lb.className='lbl';
+ if(tbl.dataset.nosearch)search.style.display='none';
  bar.append(search,selAn,selGrp,lb);
  tbl.parentNode.insertBefore(bar,tbl);
 
+ let obs=null;
+ function years(list){
+  const ans=[...new Set(list.map(anneeDe).filter(Boolean))].sort().reverse();
+  const cur=selAn.value, sig=ans.join(',');
+  if(selAn.dataset.sig!==sig){
+   selAn.dataset.sig=sig;
+   selAn.innerHTML='<option value="">Toutes années</option>'+ans.map(a=>'<option>'+a+'</option>').join('');
+   if(ans.includes(cur))selAn.value=cur;
+  }
+  selAn.style.display=ans.length>1?'':'none';
+  if(ans.length<=1)selAn.value='';
+ }
  function apply(){
-  const q=search.value.toLowerCase().trim(), an=selAn.value, gi=selGrp.value;
+  if(obs)obs.disconnect();
   tbl.querySelectorAll('tr.grp').forEach(r=>r.remove());
+  let list=rows();
+  years(list);
+  if(sort){
+   const {i,desc}=sort;
+   list=list.slice().sort((a,b)=>{
+     const va=parseVal(a.cells[i]), vb=parseVal(b.cells[i]);
+     if(typeof va!==typeof vb)return (typeof va==='number'?-1:1)*(desc?-1:1);
+     if(va<vb)return desc?1:-1; if(va>vb)return desc?-1:1; return 0;
+   });
+   list.forEach(r=>r.parentNode.appendChild(r));
+  }
+  const q=search.value.toLowerCase().trim(), an=selAn.value, gi=selGrp.value;
   let n=0;
-  original.forEach(r=>{
-   const txt=r.textContent.toLowerCase();
-   const okQ=!q||txt.includes(q);
-   const okA=!an||anneeDe(r.textContent)===an;
+  list.forEach(r=>{
+   const okQ=!q||r.textContent.toLowerCase().includes(q);
+   const okA=!an||anneeDe(r)===an;
    r.style.display=(okQ&&okA)?'':'none';
    if(okQ&&okA)n++;
   });
-  lb.textContent=n+' ligne'+(n>1?'s':'');
+  lb.textContent=!list.length?'':(n===list.length?n+' ligne'+(n>1?'s':''):n+' sur '+list.length+' ligne'+(list.length>1?'s':''));
   if(gi!==''){
-   const vis=original.filter(r=>r.style.display!=='none');
+   const vis=list.filter(r=>r.style.display!=='none');
    const groups={};
-   vis.forEach(r=>{const k=(r.cells[+gi]?.textContent||'\u2014').trim();(groups[k]=groups[k]||[]).push(r);});
-   Object.keys(groups).sort().forEach(k=>{
-     const gr=tbl.insertRow(-1);gr.className='grp';
-     const c=gr.insertCell(0);c.colSpan=ths.length;c.textContent=k+'  \u00b7  '+groups[k].length+' \u00e9l\u00e9ment'+(groups[k].length>1?'s':'');
-     groups[k].forEach(r=>tbl.appendChild(r));
+   vis.forEach(r=>{const k=(r.cells[+gi]?.textContent||'').trim()||'—';(groups[k]=groups[k]||[]).push(r);});
+   Object.keys(groups).sort((a,b)=>a.localeCompare(b,'fr')).forEach(k=>{
+     const host=groups[k][0].parentNode;
+     const gr=document.createElement('tr');gr.className='grp';
+     const c=gr.insertCell(0);c.colSpan=ths.length;c.textContent=k+'  ·  '+groups[k].length+' élément'+(groups[k].length>1?'s':'');
+     host.appendChild(gr);
+     groups[k].forEach(r=>host.appendChild(r));
    });
   }
+  if(obs)obs.observe(tbl,{childList:true,subtree:true});
  }
  search.oninput=apply; selAn.onchange=apply; selGrp.onchange=apply;
 
- /* tri par colonne */
  ths.forEach((th,i)=>{
   if(!th.textContent.trim())return;
   th.classList.add('sortable');
-  th.onclick=()=>{
+  th.setAttribute('role','button');th.tabIndex=0;th.title='Trier';
+  const go=()=>{
    const desc=th.classList.contains('asc');
    ths.forEach(x=>x.classList.remove('asc','desc'));
    th.classList.add(desc?'desc':'asc');
-   const vis=original.slice().sort((a,b)=>{
-     const va=parseVal(a.cells[i]?.textContent), vb=parseVal(b.cells[i]?.textContent);
-     if(va<vb)return desc?1:-1; if(va>vb)return desc?-1:1; return 0;
-   });
-   vis.forEach(r=>tbl.appendChild(r));
+   sort={i,desc};
    apply();
   };
+  th.onclick=go; th.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};
  });
+ if(window.MutationObserver)obs=new MutationObserver(()=>apply());
  apply();
 }
 function enhanceAll(){document.querySelectorAll('.section.on .tbl').forEach(enhanceTable);}
@@ -2407,19 +2488,22 @@ function keyOf(txt){
 }
 /* ================= CAMPAGNES & QR — génération 100% côté client ================= */
 const CAMPAGNES=[
- {support:'Flyer PRO · Laverie centre-ville',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'laverie_centre',leads:6,cree:'2 août 2026',texte:'Devenez visible sur la carte, juste à côté de vos clients.'},
- {support:'Flyer PRO · Tabac gare',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'tabac_gare',leads:4,cree:'2 août 2026',texte:'Devenez visible sur la carte, juste à côté de vos clients.'},
- {support:'Flyer PRO · Salle de sport',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'salle_sport',leads:2,cree:'1 août 2026',texte:'Devenez visible sur la carte, juste à côté de vos clients.'},
- {support:'Affiche PARTICULIER · Boulangerie quartier',type:'particulier',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'affiche_boulangerie',leads:2,cree:'1 août 2026',texte:'Le ménage de confiance, juste à côté de vous.'},
- {support:'Story Instagram · Confiance',type:'particulier',dest:'landing',canal:'instagram',medium:'social',campagne:'lancement_grasse',contenu:'story_confiance',leads:7,cree:'30 juil. 2026',texte:"Un ménage de confiance, juste à côté de vous — pièce d'identité fournie, assurance renseignée."},
- {support:'Reel Instagram · Heures creuses',type:'pro',dest:'landing',canal:'instagram',medium:'social',campagne:'lancement_grasse',contenu:'reel_heures_creuses',leads:4,cree:'30 juil. 2026',texte:'Remplissez vos heures creuses : soyez visible sur la carte PING, près de vos prochains clients.'},
- {support:'Google Ads · Search « ménage Grasse »',type:'pro',dest:'landing',canal:'google_ads',medium:'cpc',campagne:'proximite_pro',contenu:'search_menage_grasse',leads:5,cree:'28 juil. 2026',texte:'Ménage à Grasse — trouvez un professionnel disponible juste à côté de vous.'},
- {support:'Google Ads · Display 10 km',type:'particulier',dest:'landing',canal:'google_ads',medium:'display',campagne:'proximite_particulier',contenu:'display_grasse_10km',leads:3,cree:'28 juil. 2026',texte:'Et si votre prochain ménage se trouvait à moins de 10 km ?'},
- {support:'Carrousel commercial · CTA pro',type:'pro',dest:'landing',canal:'carrousel',medium:'demo',campagne:'lancement_grasse',contenu:'cta_pro',leads:2,cree:'6 août 2026',texte:'Et si vos prochains clients se trouvaient juste à côté de vous ?'},
- {support:'Carrousel commercial · CTA particulier',type:'particulier',dest:'landing',canal:'carrousel',medium:'demo',campagne:'lancement_grasse',contenu:'cta_particulier',leads:1,cree:'6 août 2026',texte:'Et si ce que vous cherchez se trouvait juste à côté de vous ?'},
- {support:'Flyer PRO · Ouverture large (tous statuts)',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'ouverture_large',leads:0,cree:"6 août 2026",texte:"Ménage, repassage : entreprise, indépendant·e ou particulier — inscrivez-vous. PING, la proximité."},
+ {exemple:true,support:'Flyer PRO · Laverie centre-ville',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'laverie_centre',leads:6,cree:'2 août 2026',texte:'Devenez visible sur la carte, juste à côté de vos clients.'},
+ {exemple:true,support:'Flyer PRO · Tabac gare',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'tabac_gare',leads:4,cree:'2 août 2026',texte:'Devenez visible sur la carte, juste à côté de vos clients.'},
+ {exemple:true,support:'Flyer PRO · Salle de sport',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'salle_sport',leads:2,cree:'1 août 2026',texte:'Devenez visible sur la carte, juste à côté de vos clients.'},
+ {exemple:true,support:'Affiche PARTICULIER · Boulangerie quartier',type:'particulier',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'affiche_boulangerie',leads:2,cree:'1 août 2026',texte:'Le ménage de confiance, juste à côté de vous.'},
+ {exemple:true,support:'Story Instagram · Confiance',type:'particulier',dest:'landing',canal:'instagram',medium:'social',campagne:'lancement_grasse',contenu:'story_confiance',leads:7,cree:'30 juil. 2026',texte:"Un ménage de confiance, juste à côté de vous — pièce d'identité fournie, assurance renseignée."},
+ {exemple:true,support:'Reel Instagram · Heures creuses',type:'pro',dest:'landing',canal:'instagram',medium:'social',campagne:'lancement_grasse',contenu:'reel_heures_creuses',leads:4,cree:'30 juil. 2026',texte:'Remplissez vos heures creuses : soyez visible sur la carte PING, près de vos prochains clients.'},
+ {exemple:true,support:'Google Ads · Search « ménage Grasse »',type:'pro',dest:'landing',canal:'google_ads',medium:'cpc',campagne:'proximite_pro',contenu:'search_menage_grasse',leads:5,cree:'28 juil. 2026',texte:'Ménage à Grasse — trouvez un professionnel disponible juste à côté de vous.'},
+ {exemple:true,support:'Google Ads · Display 10 km',type:'particulier',dest:'landing',canal:'google_ads',medium:'display',campagne:'proximite_particulier',contenu:'display_grasse_10km',leads:3,cree:'28 juil. 2026',texte:'Et si votre prochain ménage se trouvait à moins de 10 km ?'},
+ {exemple:true,support:'Carrousel commercial · CTA pro',type:'pro',dest:'landing',canal:'carrousel',medium:'demo',campagne:'lancement_grasse',contenu:'cta_pro',leads:2,cree:'6 août 2026',texte:'Et si vos prochains clients se trouvaient juste à côté de vous ?'},
+ {exemple:true,support:'Carrousel commercial · CTA particulier',type:'particulier',dest:'landing',canal:'carrousel',medium:'demo',campagne:'lancement_grasse',contenu:'cta_particulier',leads:1,cree:'6 août 2026',texte:'Et si ce que vous cherchez se trouvait juste à côté de vous ?'},
+ {exemple:true,support:'Flyer PRO · Ouverture large (tous statuts)',type:'pro',dest:'flash',canal:'flyer_qr',medium:'print',campagne:'lancement_grasse',contenu:'ouverture_large',leads:0,cree:"6 août 2026",texte:"Ménage, repassage : entreprise, indépendant·e ou particulier — inscrivez-vous. PING, la proximité."},
 ];
-function campUrl(c){const base=c.dest==='flash'?'https://ping.app/flash':'https://ping.app/';return base+'?utm_source='+encodeURIComponent(c.canal)+'&utm_medium='+encodeURIComponent(c.medium)+'&utm_campaign='+encodeURIComponent(c.campagne)+'&utm_content='+encodeURIComponent(c.contenu)+'#'+(c.type==='pro'?'pro':'particulier');}
+/* Liens de campagne : toujours vers l'application réelle (ping.app n'a jamais été acheté).
+   Formulaire flash = inscription directe ; landing = page de présentation du public visé. */
+const APP_URL='https://nexto-eta.vercel.app';
+function campUrl(c){const base=APP_URL+(c.dest==='flash'?'/auth/signup':(c.type==='pro'?'/landing-pro':'/landing-particulier'));return base+'?utm_source='+encodeURIComponent(c.canal)+'&utm_medium='+encodeURIComponent(c.medium)+'&utm_campaign='+encodeURIComponent(c.campagne)+'&utm_content='+encodeURIComponent(c.contenu)+'#'+(c.type==='pro'?'pro':'particulier');}
 function destTag(c){return c.dest==='flash'?'<span class="tag ok">Formulaire flash</span>':'<span class="tag ink">Landing</span>';}
 function qrSVG(text,size){
  size=size||120;
@@ -2477,15 +2561,15 @@ function renderCampagnes(){
  tb.innerHTML=rows.map((c)=>{
   const i=CAMPAGNES.indexOf(c);
   const url=campUrl(c);
-  return '<tr><td><b class="link" onclick="openCampPreview('+i+')">'+c.support+'</b></td><td>'+(c.type==='pro'?'Pro':'Particulier')+'</td><td>'+destTag(c)+'</td><td class="mono">'+c.canal+'</td><td class="mono">'+c.campagne+'</td><td class="mono">'+c.contenu+'</td>'
+  return '<tr><td><b class="link" onclick="openCampPreview('+i+')">'+escT(c.support)+'</b>'+(c.exemple?' <span class="tag fx">exemple</span>':'')+'</td><td>'+(c.type==='pro'?'Pro':'Particulier')+'</td><td>'+destTag(c)+'</td><td class="mono">'+c.canal+'</td><td class="mono">'+c.campagne+'</td><td class="mono">'+c.contenu+'</td>'
    +'<td><span class="camp-qrthumb" onclick="openQR('+i+')" title="Agrandir le QR">'+qrSVG(url,34)+'</span></td>'
    +'<td><span class="link" onclick="copyLink(&quot;'+url+'&quot;)">Copier le lien</span></td>'
-   +'<td><span class="tag ok">'+c.leads+' lead'+(c.leads>1?'s':'')+'</span></td></tr>';
+   +'<td>'+(c.exemple?'<span class="tag fx" title="Support d\'illustration : chiffre non réel">exemple</span>':'<span class="tag ok">'+c.leads+' lead'+(c.leads>1?'s':'')+'</span>')+'</td></tr>';
  }).join('');
  const el=(id,v)=>{const e=document.getElementById(id); if(e)e.textContent=v;};
  el('campKpiSupports',CAMPAGNES.length);
- el('campKpiActifs',CAMPAGNES.length);
- el('campKpiLeads',CAMPAGNES.reduce((s,c)=>s+c.leads,0));
+ el('campKpiActifs',CAMPAGNES.filter(c=>!c.exemple).length);
+ el('campKpiLeads',CAMPAGNES.filter(c=>!c.exemple).reduce((s,c)=>s+c.leads,0));
  const chip=document.getElementById('campFilterChip');
  if(chip){chip.style.display=campFilter?'inline-flex':'none';if(campFilter)document.getElementById('campFilterLabel').textContent=campFilter.canal?canalLabel(campFilter.canal):'Formulaire flash (terrain)';}
 }
@@ -3007,17 +3091,17 @@ function openCampPreview(i){
  document.getElementById('resPvm').classList.add('on');
 }
 function openLandingPreview(){
- document.getElementById('resPvTitle').textContent='ping-landing-menage.html';
+ document.getElementById('resPvTitle').textContent='Landing particulier';
  const tag=document.getElementById('resPvTag'); tag.textContent='Landing'; tag.className='tag ink';
  document.getElementById('resPvMedia').style.display='none';
  document.getElementById('resPvFrameNote').style.display='none';
  const frame=document.getElementById('resPvFrame');
  frame.style.display='';
  frame.style.height='600px';
- frame.src='ping-landing-menage.html';
+ frame.src=pvSrc('/landing-particulier');
  document.getElementById('resPvNoFrame').style.display='none';
- document.getElementById('resPvSend').onclick=function(){sendResourceGmail('ping-landing-menage.html','https://ping.app/',"Découvrez PING, le ménage de confiance juste à côté de vous.");};
- document.getElementById('resPvCopy').onclick=function(){copyLink('https://ping.app/');};
+ document.getElementById('resPvSend').onclick=function(){sendResourceGmail('Landing particulier','https://nexto-eta.vercel.app/landing-particulier',"Découvrez PING, le ménage de confiance juste à côté de vous.");};
+ document.getElementById('resPvCopy').onclick=function(){copyLink('https://nexto-eta.vercel.app/landing-particulier');};
  document.getElementById('resPvm').classList.add('on');
 }
 function closeResPv(){document.getElementById('resPvm').classList.remove('on');document.getElementById('resPvFrame').style.display='';document.getElementById('resPvFrame').style.height='420px';document.getElementById('resPvFrame').src='about:blank';document.getElementById('resPvFrameNote').style.display='none';document.getElementById('resPvMedia').style.display='none';document.getElementById('resPvNoFrame').style.display='';}
@@ -3186,9 +3270,10 @@ window.loadLiveData = async function () {
     supabaseLive.rpc('admin_stats'),
     supabaseLive.from('provider_profiles').select('id, trade, pricing_type, base_price_cents, hourly_rate_cents, is_active, created_at, profiles!provider_profiles_id_fkey(full_name)').order('created_at', { ascending: false }).limit(8),
     supabaseLive.from('documents').select('id, kind, status, created_at, owner_id, profiles!documents_owner_id_fkey(full_name)').eq('status', 'pending').order('created_at', { ascending: true }).limit(8),
-    supabaseLive.from('transactions').select('id, created_at, status, subtotal_cents, buyer_fee_cents, seller_fee_cents, total_charged_cents').order('created_at', { ascending: false }).limit(8),
-    supabaseLive.from('disputes').select('id, created_at, reason, status').eq('status', 'open').order('created_at', { ascending: false }).limit(8),
+    supabaseLive.from('transactions').select('id, created_at, status, subtotal_cents, buyer_fee_cents, seller_fee_cents, total_charged_cents, fictif, buyer_id, seller_id').order('created_at', { ascending: false }).limit(40),
+    supabaseLive.from('disputes').select('id, created_at, reason, status, transaction_id').eq('status', 'open').order('created_at', { ascending: false }).limit(40),
   ])
+  const core = await loadCore()
 
   if (statsRes.error) {
     statusEl.textContent = 'Erreur de chargement : ' + statsRes.error.message + ' — vérifiez que ce compte a bien is_admin = true.'
@@ -3197,22 +3282,12 @@ window.loadLiveData = async function () {
   }
 
   statusEl.style.display = 'none'
-  const s = statsRes.data
-
   const kpis = document.getElementById('liveKpis')
   kpis.style.display = 'grid'
-  kpis.innerHTML =
-    '<div class="kpi"><div class="l">Prestataires actifs / total</div><div class="v">' + esc(s.active_providers) + ' / ' + esc(s.total_providers) + '</div></div>' +
-    '<div class="kpi"><div class="l">Clients inscrits</div><div class="v">' + esc(s.total_clients) + '</div></div>' +
-    '<div class="kpi"><div class="l">Volume réel</div><div class="v">' + euros(s.total_volume_cents) + '</div></div>' +
-    '<div class="kpi"><div class="l">Commission PING réelle</div><div class="v">' + euros(s.total_commission_cents) + '</div></div>' +
-    '<div class="kpi"><div class="l">Missions</div><div class="v">' + esc(s.total_transactions) + '</div><div class="d">' + esc(s.completed_transactions) + ' terminées</div></div>' +
-    '<div class="kpi"><div class="l">Demandes ouvertes</div><div class="v">' + esc(s.open_requests) + '</div><div class="d">' + esc(s.total_requests) + ' au total</div></div>' +
-    '<div class="kpi"><div class="l">Litiges ouverts</div><div class="v">' + esc(s.open_disputes) + '</div></div>' +
-    '<div class="kpi"><div class="l">Documents en attente</div><div class="v">' + esc(s.pending_documents) + '</div></div>'
+  kpis.innerHTML = core ? liveKpisHtml(core) : ''
 
   // Prestataires
-  const pros = prosRes.data || []
+  const pros = (prosRes.data || []).filter(p => !core || FICTIF || !core.userFx(p.id)).slice(0, 8)
   document.getElementById('liveTablesTop').style.display = 'grid'
   const prosBody = document.querySelector('#liveProsTable tbody')
   prosBody.innerHTML = ''
@@ -3221,7 +3296,7 @@ window.loadLiveData = async function () {
     const tr = document.createElement('tr')
     const price = p.pricing_type === 'horaire' ? euros(p.hourly_rate_cents) + '/h' : euros(p.base_price_cents) + ' forfait'
     const name = (p.profiles && p.profiles.full_name) || '—'
-    tr.innerHTML = '<td>' + esc(name) + '</td><td>' + esc(TRADES_LIVE[p.trade] || p.trade) + '</td><td>' + esc(price) + '</td>' +
+    tr.innerHTML = '<td>' + esc(name) + fxTag(core && core.userFx(p.id)) + '</td><td>' + esc(TRADES_LIVE[p.trade] || p.trade) + '</td><td>' + esc(price) + '</td>' +
       '<td><span class="tag ' + (p.is_active ? 'ok' : 'ink') + '">' + (p.is_active ? 'Actif' : 'Inactif') + '</span></td><td></td>'
     const actionTd = tr.lastElementChild
     const btn = document.createElement('button')
@@ -3231,7 +3306,7 @@ window.loadLiveData = async function () {
     btn.onclick = async () => {
       btn.disabled = true
       const { error } = await supabaseLive.from('provider_profiles').update({ is_active: !p.is_active }).eq('id', p.id)
-      if (!error) window.loadLiveData()
+      if (!error) { coreDirty(); window.loadLiveData() }
       else { btn.disabled = false; alert('Erreur : ' + error.message) }
     }
     actionTd.appendChild(btn)
@@ -3239,45 +3314,36 @@ window.loadLiveData = async function () {
   })
 
   // Documents en attente
-  const docs = docsRes.data || []
+  const docs = (docsRes.data || []).filter(d => !core || FICTIF || !core.userFx(d.owner_id))
   const docsBody = document.querySelector('#liveDocsTable tbody')
   docsBody.innerHTML = ''
   document.getElementById('liveDocsEmpty').style.display = docs.length ? 'none' : 'block'
   docs.forEach(d => {
     const tr = document.createElement('tr')
     const owner = (d.profiles && d.profiles.full_name) || '—'
-    tr.innerHTML = '<td>' + esc(DOC_LABELS_LIVE[d.kind] || d.kind) + '<div class="muted" style="font-size:10.5px">' + esc(owner) + '</div></td>' +
-      '<td>' + esc(dateTimeFr(d.created_at)) + '</td><td></td>'
-    const actionTd = tr.lastElementChild
-    actionTd.style.display = 'flex'; actionTd.style.gap = '6px'
-    const mkBtn = (label, status, ghost) => {
-      const b = document.createElement('button')
-      b.className = 'btn' + (ghost ? ' ghost' : '')
-      b.style.fontSize = '11px'; b.style.padding = '5px 10px'
-      b.textContent = label
-      b.onclick = async () => {
-        b.disabled = true
-        const { error } = await supabaseLive.from('documents').update({ status }).eq('id', d.id)
-        if (!error) window.loadLiveData()
-        else { b.disabled = false; alert('Erreur : ' + error.message) }
-      }
-      return b
-    }
-    actionTd.appendChild(mkBtn('Valider', 'valid', false))
-    actionTd.appendChild(mkBtn('Rejeter', 'rejected', true))
+    tr.innerHTML = '<td>' + esc(DOC_LABELS_LIVE[d.kind] || d.kind) + '<div class="muted" style="font-size:10.5px">' + esc(owner) + fxTag(core && core.userFx(d.owner_id)) + '</div></td>' +
+      '<td data-sort="' + esc(d.created_at) + '">' + esc(dateTimeFr(d.created_at)) + '</td><td></td>'
+    const b = document.createElement('button')
+    b.className = 'btn'
+    b.style.fontSize = '11px'; b.style.padding = '5px 10px'
+    b.textContent = 'Examiner'
+    b.onclick = () => window.reviewDoc(d.id)
+    tr.lastElementChild.appendChild(b)
     docsBody.appendChild(tr)
   })
 
   // Transactions
-  const txs = txRes.data || []
+  const txs = (txRes.data || []).filter(t => FICTIF || !(core ? core.txFx(t) : t.fictif)).slice(0, 8)
   document.getElementById('liveTxCard').style.display = 'block'
   const txBody = document.querySelector('#liveTxTable tbody')
   txBody.innerHTML = ''
   document.getElementById('liveTxEmpty').style.display = txs.length ? 'none' : 'block'
   txs.forEach(t => {
     const tr = document.createElement('tr')
+    tr.className = 'click'
+    tr.onclick = () => window.openTxDetail(t.id)
     const cls = t.status === 'released' ? 'ok' : t.status === 'disputed' ? 'dn' : 'wait'
-    tr.innerHTML = '<td class="mono">' + esc(dateTimeFr(t.created_at)) + '</td>' +
+    tr.innerHTML = '<td class="mono" data-sort="' + esc(t.created_at) + '">' + esc(dateTimeFr(t.created_at)) + fxTag(core ? core.txFx(t) : t.fictif) + '</td>' +
       '<td><span class="tag ' + cls + '">' + esc(TX_STATUS_LIVE[t.status] || t.status) + '</span></td>' +
       '<td>' + euros(t.subtotal_cents) + '</td><td>' + euros((t.buyer_fee_cents || 0) + (t.seller_fee_cents || 0)) + '</td>' +
       '<td>' + euros(t.total_charged_cents) + '</td>'
@@ -3285,14 +3351,16 @@ window.loadLiveData = async function () {
   })
 
   // Litiges ouverts
-  const disputes = disputesRes.data || []
+  const disputes = (disputesRes.data || []).filter(d => FICTIF || !(core && core.dispFx(d))).slice(0, 8)
   document.getElementById('liveDisputesCard').style.display = 'block'
   const dBody = document.querySelector('#liveDisputesTable tbody')
   dBody.innerHTML = ''
   document.getElementById('liveDisputesEmpty').style.display = disputes.length ? 'none' : 'block'
   disputes.forEach(d => {
     const tr = document.createElement('tr')
-    tr.innerHTML = '<td class="mono">' + esc(dateTimeFr(d.created_at)) + '</td><td>' + esc(d.reason || '—') + '</td><td><span class="tag wait">Ouvert</span></td>'
+    tr.className = 'click'
+    tr.onclick = () => window.openLitigeDossier(d.id)
+    tr.innerHTML = '<td class="mono" data-sort="' + esc(d.created_at) + '">' + esc(dateTimeFr(d.created_at)) + fxTag(core && core.dispFx(d)) + '</td><td>' + esc(d.reason || '—') + '</td><td><span class="tag wait">Ouvert</span></td><td><span class="link">Ouvrir le dossier</span></td>'
     dBody.appendChild(tr)
   })
 
@@ -3483,8 +3551,6 @@ window.openTxDetail = async function (txId) {
   ])
 
   const fmtDT = (iso) => iso ? new Date(iso).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : null
-  const seq = txId.slice(0, 8)
-  const year = new Date(t.created_at).getFullYear()
 
   const arrDT = fmtDT(t.arrived_at), depDT = fmtDT(t.completed_at)
   const statusPill = (ok, label) => '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:' + (ok ? '#DCFCE7' : '#FEE2E2') + ';color:' + (ok ? '#15803D' : '#B91C1C') + ';margin-top:6px">' + (ok ? '● Validé' : '● Non validé') + '</span>'
@@ -3507,14 +3573,15 @@ window.openTxDetail = async function (txId) {
   }).join('') || '<div class="muted mt">Aucun message</div>'
 
   const disputeHtml = (disputes && disputes.length)
-    ? disputes.map(d => '<div class="mt" style="background:#FFFBF2;border:1px solid #F5D9A6;border-radius:10px;padding:10px"><b>Litige — ' + esc(d.status) + '</b><div class="muted" style="font-size:12px">' + esc(d.reason) + '</div></div>').join('')
+    ? disputes.map(d => '<div class="mt click" style="background:#FFFBF2;border:1px solid #F5D9A6;border-radius:10px;padding:10px;cursor:pointer" onclick="window.openLitigeDossier(' + jsArg(d.id) + ')"><b>Litige — ' + esc(DISPUTE_STATUS[d.status] || d.status) + '</b> <span class="link">Ouvrir le dossier</span><div class="muted" style="font-size:12px">' + esc(d.reason) + '</div></div>').join('')
     : '<div class="muted mt">Aucun litige</div>'
 
   modal.innerHTML =
     '<div style="background:#fff;border-radius:16px;max-width:820px;width:100%;max-height:88vh;overflow:auto;padding:28px">' +
     '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
     '<div><h3 style="margin:0">' + esc(TRADES_LIVE[t.requests && t.requests.category] || (t.requests && t.requests.category) || 'Mission') + '</h3>' +
-    '<div class="muted" style="margin-top:4px">' + esc(t.requests ? t.requests.address : '') + '</div></div>' +
+    '<div class="muted" style="margin-top:4px">' + esc(t.requests ? t.requests.address : '') + '</div>' +
+    '<div style="margin-top:6px"><span class="tag ink">' + esc(TX_STATUS_LIVE[t.status] || t.status) + '</span>' + fxTag(t.fictif) + '</div></div>' +
     '<button onclick="document.getElementById(\'txDetailModal\').remove()" style="border:none;background:none;font-size:22px;cursor:pointer;color:#9CA3AF;line-height:1">×</button></div>' +
 
     '<div class="grid k2 mt">' +
@@ -3529,14 +3596,17 @@ window.openTxDetail = async function (txId) {
     kpiCard('Sortie (QR)', depDT || 'Non scannée', null, statusPill(!!depDT)) +
     '</div>' +
 
-    '<h3 class="mt">Facture émise</h3>' +
-    '<div style="font-size:12.5px;color:var(--navy)">FACT-' + year + '-' + esc(seq) + ' · ' + euros(t.subtotal_cents) +
-    ' &nbsp;·&nbsp; PING-C-' + esc(seq) + ' · ' + euros(t.buyer_fee_cents) +
-    ' &nbsp;·&nbsp; PING-V-' + esc(seq) + ' · ' + euros(t.seller_fee_cents) + '</div>' +
+    '<h3 class="mt">Factures</h3>' +
+    '<div id="txInvList" style="font-size:12.5px;color:var(--navy)">Chargement…</div>' +
 
     '<h3 class="mt">Litiges</h3>' + disputeHtml +
     '<h3 class="mt">Conversation</h3><div style="max-height:220px;overflow:auto">' + msgRows + '</div>' +
     '</div>'
+  const invEl = document.getElementById('txInvList')
+  const { data: invs, error: invErr } = await supabaseLive.from('invoices').select('number, kind, template, net_cents, issued_at').eq('transaction_id', txId).order('issued_at')
+  if (invEl) invEl.innerHTML = invErr ? esc('Lecture impossible : ' + invErr.message)
+    : (invs && invs.length) ? invs.map(v => esc(v.number) + ' · ' + esc(invKindLabel(v)) + ' · ' + euros(v.net_cents)).join(' &nbsp;·&nbsp; ')
+    : '<span class="muted">Pas encore de facture : elles sont émises automatiquement à la fin de la mission.</span>'
 }
 
 // Fiche personne — ouverte au clic sur un point de la carte (client ou
@@ -3628,17 +3698,20 @@ window.sendSupportMsg = async function (userId) {
 // CRM Utilisateurs — vraie liste de tous les prestataires et particuliers,
 // avec un filtre local (nom, ville, metier) et acces direct a la fiche
 // personne deja construite.
-let __allPros = [], __allClients = []
+let __allPros = [], __allClients = [], __usersCore = null
 window.loadLiveUsers = async function () {
   const { data: { user } } = await supabaseLive.auth.getUser()
   if (!user) return
 
-  const [{ data: pros }, { data: clients }] = await Promise.all([
-    supabaseLive.from('provider_profiles').select('id, trade, legal_status, rating, profiles!provider_profiles_id_fkey(full_name, city)'),
-    supabaseLive.from('profiles').select('id, full_name, city, created_at').eq('is_pro', false),
+  const [{ data: pros }, { data: clients }, core] = await Promise.all([
+    supabaseLive.from('provider_profiles').select('id, trade, legal_status, rating, created_at, profiles!provider_profiles_id_fkey(full_name, city)').order('created_at', { ascending: false }),
+    supabaseLive.from('profiles').select('id, full_name, city, created_at').eq('is_pro', false).order('created_at', { ascending: false }),
+    loadCore(),
   ])
-  __allPros = pros || []
-  __allClients = clients || []
+  const keep = id => FICTIF || !core || !core.userFx(id)
+  __allPros = (pros || []).filter(p => keep(p.id))
+  __allClients = (clients || []).filter(c => keep(c.id))
+  __usersCore = core
   window.renderLiveUsers(__allPros, __allClients)
 }
 
@@ -3649,15 +3722,15 @@ window.loadActivite = async function () {
   const { data: { user } } = await supabaseLive.auth.getUser()
   if (!user) { st.textContent = 'Connectez-vous avec le compte administrateur.'; return }
   st.textContent = 'Chargement…'
-  const { data, error } = await supabaseLive.rpc('admin_pipeline', { p_fictif: !!document.getElementById('actFictif').checked })
+  const { data, error } = await supabaseLive.rpc('admin_pipeline', { p_fictif: FICTIF })
   if (error) { st.textContent = 'Erreur : ' + error.message; return }
-  __act = data; st.textContent = 'À jour · taux courants : ' + Math.round(data.taux_client * 100) + ' % client + ' + Math.round(data.taux_prestataire * 100) + ' % prestataire'
+  __act = data; st.textContent = (FICTIF ? 'Données fictives incluses' : 'Données réelles seulement') + ' · taux courants : ' + Math.round(data.taux_client * 100) + ' % client + ' + Math.round(data.taux_prestataire * 100) + ' % prestataire'
   const k = data.kpis, tt = data.taux_client + data.taux_prestataire
   const kp = (t, v, sub) => '<div class="card kpi"><div class="muted">' + t + '</div><div class="v">' + esc(v) + '</div><div class="muted" style="font-size:11px">' + esc(sub || '') + '</div></div>'
   document.getElementById('actKpis').innerHTML =
     kp('Annonces en cours', k.annonces_ouvertes, 'budget potentiel ≈ ' + eur(k.budget_annonces_cents) + ' · commissions ≈ ' + eur(k.budget_annonces_cents * tt)) +
     kp('Missions en cours', k.en_cours, 'volume ' + eur(k.volume_en_cours_cents) + ' · commissions à venir ≈ ' + eur(k.volume_en_cours_cents * tt)) +
-    kp('Missions achevées', k.terminees, 'volume réalisé ' + eur(k.volume_realise_cents)) +
+    kp('Missions achevées', k.terminees, 'volume facturé ' + eur(k.volume_realise_cents)) +
     kp('Commissions réalisées', eur(k.commissions_realisees_cents), 'sur les missions achevées')
   document.getElementById('actAnnCount').textContent = data.annonces.length
   document.getElementById('actAnnEmpty').style.display = data.annonces.length ? 'none' : 'block'
@@ -3679,18 +3752,18 @@ window.loadActOverview = async function () {
   el.innerHTML = kp('Annonces en cours', k.annonces_ouvertes, 'budget ≈ ' + eur(k.budget_annonces_cents)) +
     kp('Missions en cours', k.en_cours, 'volume ' + eur(k.volume_en_cours_cents)) +
     kp('Commissions à venir', '≈ ' + eur((k.volume_en_cours_cents + k.budget_annonces_cents) * tt), 'annonces + missions en cours') +
-    kp('Réalisé', eur(k.volume_realise_cents), k.terminees + ' missions · commissions ' + eur(k.commissions_realisees_cents))
+    kp('Facturé', eur(k.volume_realise_cents), k.terminees + (k.terminees > 1 ? ' missions' : ' mission') + ' · commissions ' + eur(k.commissions_realisees_cents))
 }
-setTimeout(() => window.loadActOverview && window.loadActOverview(), 1200)
 window.actFilter = function (el, f) { __actF = f; el.parentElement.querySelectorAll('div').forEach(d => d.classList.remove('on')); el.classList.add('on'); window.renderActPeople() }
 window.renderActPeople = function () {
   if (!__act) return
   const wk = Date.now() - 7 * 864e5
   const f = { all: () => true, annonces: p => p.annonces_ouvertes > 0, travail: p => p.en_cours > 0, terminees: p => p.terminees > 0, actifs: p => p.derniere_connexion && new Date(p.derniere_connexion).getTime() > wk }[__actF]
-  const rows = __act.personnes.filter(f)
-  document.getElementById('actPplCount').textContent = rows.length + ' / ' + __act.personnes.length
+  const base = __act.personnes.filter(p => FICTIF || !isFictifEmail(p.email))
+  const rows = base.filter(f)
+  document.getElementById('actPplCount').textContent = rows.length + ' / ' + base.length
   document.getElementById('actPplBody').innerHTML = rows.map(p =>
-    '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail && window.openPersonDetail(\'' + esc(p.id) + '\')"><td><div class="who"><div class="av">' + esc((p.nom || '?').charAt(0).toUpperCase()) + '</div>' + esc(p.nom) + '</div><div class="muted" style="font-size:11px">' + esc(p.email) + '</div></td>' +
+    '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail && window.openPersonDetail(\'' + esc(p.id) + '\')"><td><div class="who"><div class="av">' + esc((p.nom || '?').charAt(0).toUpperCase()) + '</div>' + esc(p.nom) + fxTag(isFictifEmail(p.email)) + '</div><div class="muted" style="font-size:11px">' + esc(p.email) + '</div></td>' +
     '<td>' + (p.est_prestataire ? 'Prestataire' : 'Particulier') + (p.est_prestataire && p.created_at ? '' : '') + '</td><td>' + esc(p.city || '—') + '</td><td>' + esc(p.annonces_ouvertes) + '</td><td>' + esc(p.en_cours) + '</td><td>' + esc(p.terminees) + '</td>' +
     '<td>' + (p.derniere_connexion ? new Date(p.derniere_connexion).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—') + '</td></tr>'
   ).join('') || '<tr><td colspan="7" class="muted" style="padding:14px 0">Personne dans cette sélection.</td></tr>'
@@ -3705,18 +3778,21 @@ window.renderLiveUsers = function (pros, clients) {
   const clientLabel = document.getElementById('clientCountLabel')
   if (!proBody || !clientBody) return
 
-  proLabel.textContent = pros.length + ' actif' + (pros.length > 1 ? 's' : '')
-  clientLabel.textContent = clients.length + ' particulier' + (clients.length > 1 ? 's' : '')
+  const fxNote = FICTIF ? ' · fictifs inclus' : ' · réels'
+  proLabel.textContent = pl(pros.length, 'prestataire') + fxNote
+  clientLabel.textContent = pl(clients.length, 'particulier') + fxNote
+  const ufx = id => !!(__usersCore && __usersCore.userFx(id))
 
   proBody.innerHTML = pros.map(p => {
     const name = (p.profiles && p.profiles.full_name) || '—'
     const initial = (name || '?').charAt(0).toUpperCase()
     return '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail(\'' + esc(p.id) + '\')">' +
-      '<td><div class="who"><div class="av">' + esc(initial) + '</div>' + esc(name) + '</div></td>' +
+      '<td><div class="who"><div class="av">' + esc(initial) + '</div>' + esc(name) + fxTag(ufx(p.id)) + '</div></td>' +
       '<td>' + esc(TRADES_LIVE[p.trade] || p.trade || '—') + '</td>' +
-      '<td>' + esc(p.legal_status || '—') + '</td>' +
+      '<td>' + esc(LEGAL_LIVE[p.legal_status] || p.legal_status || '—') + '</td>' +
       '<td>' + esc((p.profiles && p.profiles.city) || '—') + '</td>' +
-      '<td>' + (p.rating ? esc(p.rating) + ' ★' : '—') + '</td>' +
+      '<td>' + (p.rating ? esc(String(p.rating).replace('.', ',')) + ' ★' : '—') + '</td>' +
+      '<td data-sort="' + esc(p.created_at || '') + '">' + (p.created_at ? esc(dateFr(p.created_at)) : '—') + '</td>' +
       '<td><span class="link">Ouvrir</span></td></tr>'
   }).join('')
   proEmpty.style.display = pros.length ? 'none' : 'block'
@@ -3724,9 +3800,9 @@ window.renderLiveUsers = function (pros, clients) {
   clientBody.innerHTML = clients.map(c => {
     const initial = (c.full_name || '?').charAt(0).toUpperCase()
     return '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail(\'' + esc(c.id) + '\')">' +
-      '<td><div class="who"><div class="av coral">' + esc(initial) + '</div>' + esc(c.full_name || '—') + '</div></td>' +
+      '<td><div class="who"><div class="av coral">' + esc(initial) + '</div>' + esc(c.full_name || '—') + fxTag(ufx(c.id)) + '</div></td>' +
       '<td>' + esc(c.city || '—') + '</td>' +
-      '<td>' + new Date(c.created_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) + '</td>' +
+      '<td data-sort="' + esc(c.created_at || '') + '">' + esc(dateFr(c.created_at)) + '</td>' +
       '<td><span class="link">Ouvrir</span></td></tr>'
   }).join('')
   clientEmpty.style.display = clients.length ? 'none' : 'block'
@@ -4075,7 +4151,534 @@ window.nav = function (s) {
   if (s === 'tx' && window.loadTxList) window.loadTxList()
   if (s === 'commissions' && window.loadCommissionsLive) window.loadCommissionsLive()
 }
-if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOverviewStats() }
+/* (chargement initial de la vue d'ensemble : voir le bloc « Lots 17 à 19 » plus bas) */
 
+/* =====================================================================
+   Lots 17 à 19 (refonte 18/11/2026) : des chiffres vrais, réel et fictif séparés,
+   recherche du haut, litiges / pièces / retours qui ont une suite.
 
+   Réel ou fictif : une mission est fictive si sa colonne `fictif` est vraie (migration 020)
+   ou si l'une des parties a un e-mail de démonstration (@ping-demo.invalid,
+   @ping-fixtures.internal : même règle que la migration 020). Les e-mails viennent de
+   admin_pipeline (personnes). Un seul réglage, « Inclure les fictifs » en haut de page,
+   vaut pour tous les chiffres et toutes les listes ; réel seulement par défaut.
+   Toute donnée de la base insérée en HTML passe par esc() (ou jsArg() dans un onclick).
+   ===================================================================== */
+const FICT_RE = /@(ping-demo\.invalid|ping-fixtures\.internal)$/i
+const isFictifEmail = e => !!e && FICT_RE.test(String(e).trim())
+let FICTIF = false
+try { FICTIF = localStorage.getItem('ping_admin_fictif') === '1' } catch (e) {}
+const pl = (n, one, many) => n + ' ' + (n > 1 ? (many || one + 's') : one)
+const fxTag = on => on ? ' <span class="tag fx" title="Donnée de démonstration">fictif</span>' : ''
+const dateFr = s => s ? new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+const dateTimeY = s => s ? new Date(s).toLocaleString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+const normTxt = v => String(v == null ? '' : v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+const LEGAL_LIVE = { auto_entrepreneur: 'Auto-entrepreneur', micro_entreprise: 'Micro-entreprise', ei: 'Entreprise individuelle', eurl: 'EURL', sasu: 'SASU', sarl: 'SARL', sas: 'SAS', particulier: 'Particulier' }
+const DISPUTE_STATUS = { open: 'Ouvert', resolved: 'Résolu', rejected: 'Non retenu' }
+const DISPUTE_CAT = { non_realisee: 'Prestation non réalisée', qualite: 'Qualité insuffisante', casse: 'Dégât ou casse', retard_absence: 'Retard ou absence', montant: 'Montant contesté', autre: 'Autre' }
+Object.assign(DOC_LABELS_LIVE, { diplome: 'Diplôme ou qualification', sap: 'Récépissé SAP', rib: 'RIB professionnel' })
+const INVOICED = ['completed', 'released']
+const invKindLabel = v => v.kind === 'prestation' ? (v.template === 'recapitulatif' ? "Récapitulatif d'intervention" : 'Facture de prestation') : v.kind === 'commission_client' ? 'Frais de service (client)' : v.kind === 'commission_pro' ? 'Commission PING (prestataire)' : (v.kind || '—')
+const txStatusTag = st => '<span class="tag ' + (st === 'completed' || st === 'released' ? 'ok' : st === 'disputed' || st === 'cancelled' ? 'dn' : st === 'arrived' ? 'ink' : 'wait') + '">' + esc(TX_STATUS_LIVE[st] || st) + '</span>'
+
+const gFictifEl = document.getElementById('gFictif')
+const actFictifEl = document.getElementById('actFictif')
+if (gFictifEl) gFictifEl.checked = FICTIF
+if (actFictifEl) { actFictifEl.checked = FICTIF; actFictifEl.onchange = () => window.setFictif(actFictifEl.checked) }
+
+window.setFictif = function (on) {
+  FICTIF = !!on
+  try { localStorage.setItem('ping_admin_fictif', FICTIF ? '1' : '0') } catch (e) {}
+  if (gFictifEl) gFictifEl.checked = FICTIF
+  if (actFictifEl) actFictifEl.checked = FICTIF
+  const sec = ((document.querySelector('.section.on') || {}).id || '').slice(2)
+  if (sec && TITLES[sec] && typeof window.nav === 'function') window.nav(sec)
+  else if (window.loadOverviewStats) window.loadOverviewStats()
+}
+
+/* ---------- Données communes (une lecture partagée par tous les écrans) ---------- */
+let CORE = null, CORE_AT = 0, CORE_P = null
+function coreDirty() { CORE = null; CORE_AT = 0 }
+async function loadCore(force) {
+  if (!force && CORE && Date.now() - CORE_AT < 20000) return CORE
+  if (CORE_P) return CORE_P
+  CORE_P = (async () => {
+    const { data: { user } } = await supabaseLive.auth.getUser()
+    if (!user) return null
+    const [txR, profR, ppR, disR, docR, pipeR] = await Promise.all([
+      supabaseLive.from('transactions').select('id, created_at, status, subtotal_cents, buyer_fee_cents, seller_fee_cents, total_charged_cents, fictif, buyer_id, seller_id').order('created_at', { ascending: false }),
+      supabaseLive.from('profiles').select('*'),
+      supabaseLive.from('provider_profiles').select('id, is_active, trade, company_name, created_at'),
+      supabaseLive.from('disputes').select('*').order('created_at', { ascending: false }),
+      supabaseLive.from('documents').select('id, kind, status, created_at, owner_id, storage_path').order('created_at', { ascending: true }),
+      supabaseLive.rpc('admin_pipeline', { p_fictif: true }),
+    ])
+    const c = {
+      user,
+      errors: [txR, profR, ppR, disR, docR].map(r => r.error && r.error.message).filter(Boolean),
+      tx: txR.data || [], profiles: profR.data || [], pros: ppR.data || [], disputes: disR.data || [], docs: docR.data || [],
+      pipe: pipeR.error ? null : pipeR.data, emails: {}, prof: {}, pro: {}, txById: {},
+    }
+    ;((c.pipe && c.pipe.personnes) || []).forEach(p => { if (p && p.id) c.emails[p.id] = p.email })
+    c.profiles.forEach(p => { c.prof[p.id] = p })
+    c.pros.forEach(p => { c.pro[p.id] = p })
+    c.tx.forEach(t => { c.txById[t.id] = t })
+    c.userFx = id => isFictifEmail(c.emails[id])
+    c.txFx = t => !!(t && (t.fictif || c.userFx(t.buyer_id) || c.userFx(t.seller_id)))
+    c.dispFx = d => c.txFx(c.txById[d.transaction_id])
+    c.name = id => {
+      const p = c.prof[id]
+      const n = p && ((p.full_name || '').trim() || [p.first_name, p.last_name].filter(Boolean).join(' ').trim())
+      return n || (c.pro[id] && c.pro[id].company_name) || '—'
+    }
+    CORE = c; CORE_AT = Date.now()
+    return c
+  })()
+  try { return await CORE_P } finally { CORE_P = null }
+}
+window.__adminCore = loadCore
+
+/* Chiffres d'un même périmètre (réel, ou réel + fictif) : les tuiles et les listes lisent les mêmes. */
+function view(c) {
+  const keepTx = t => FICTIF || !c.txFx(t)
+  const keepU = id => FICTIF || !c.userFx(id)
+  const tx = c.tx.filter(keepTx)
+  const invoiced = tx.filter(t => INVOICED.includes(t.status))
+  const sum = (l, f) => l.reduce((a, t) => a + (Number(f(t)) || 0), 0)
+  const disputes = c.disputes.filter(d => FICTIF || !c.dispFx(d))
+  const now = Date.now()
+  const open = disputes.filter(d => d.status === 'open')
+  const late = open.filter(d => d.deadline_at && new Date(d.deadline_at).getTime() < now)
+  const pros = c.pros.filter(p => keepU(p.id))
+  const docsPending = c.docs.filter(d => d.status === 'pending' && keepU(d.owner_id))
+  const annonces = ((c.pipe && c.pipe.annonces) || []).filter(a => FICTIF || !a.fictif)
+  return {
+    tx, invoiced, disputes, open, late, pros, docsPending, annonces,
+    billed: sum(invoiced, t => t.subtotal_cents),
+    fees: sum(invoiced, t => (t.buyer_fee_cents || 0) + (t.seller_fee_cents || 0)),
+    feesBuyer: sum(invoiced, t => t.buyer_fee_cents), feesSeller: sum(invoiced, t => t.seller_fee_cents),
+    pending: tx.filter(t => t.status === 'pending'), arrived: tx.filter(t => t.status === 'arrived'),
+    claimed: sum(open, d => d.claimed_cents),
+    activePros: pros.filter(p => p.is_active).length,
+    clients: c.profiles.filter(p => !p.is_pro && keepU(p.id)).length,
+    keepU,
+  }
+}
+const scopeTxt = () => FICTIF ? 'fictifs inclus' : 'données réelles'
+
+function liveKpisHtml(c) {
+  const v = view(c)
+  const k = (l, val, d) => '<div class="kpi"><div class="l">' + esc(l) + '</div><div class="v">' + esc(val) + '</div>' + (d ? '<div class="d">' + esc(d) + '</div>' : '') + '</div>'
+  return k('Prestataires actifs / total', v.activePros + ' / ' + v.pros.length, scopeTxt()) +
+    k('Particuliers inscrits', String(v.clients), scopeTxt()) +
+    k('Facturé', euros(v.billed), pl(v.invoiced.length, 'mission terminée', 'missions terminées')) +
+    k('Commissions PING', euros(v.fees), 'sur les missions facturées') +
+    k('Missions', String(v.tx.length), v.pending.length + ' en attente · ' + v.arrived.length + ' en cours · ' + v.invoiced.length + ' terminée' + (v.invoiced.length > 1 ? 's' : '')) +
+    k('Annonces en cours', String(v.annonces.length), '') +
+    k('Litiges ouverts', String(v.open.length), v.late.length ? pl(v.late.length, 'échéance dépassée', 'échéances dépassées') : '') +
+    k('Pièces à examiner', String(v.docsPending.length), '')
+}
+
+/* ---------- Vue d'ensemble ---------- */
+window.loadOverviewStats = async function () {
+  const c = await loadCore()
+  if (!c) return
+  const v = view(c)
+  setTxt('ovVolume', euros(v.billed))
+  setTxt('ovVolumeD', pl(v.invoiced.length, 'mission terminée', 'missions terminées') + ' · ' + scopeTxt())
+  setTxt('ovCommission', euros(v.fees))
+  setTxt('ovCommissionD', 'sur ' + pl(v.invoiced.length, 'mission facturée', 'missions facturées'))
+  setTxt('ovProviders', v.activePros + ' / ' + v.pros.length)
+  setTxt('ovProvidersD', 'actifs sur le total inscrit · ' + scopeTxt())
+  setTxt('ovDisputes', String(v.open.length))
+  setTxt('ovDisputesD', v.late.length ? 'dont ' + pl(v.late.length, 'échéance dépassée', 'échéances dépassées') : 'à traiter')
+  setTxt('ovDocsL', pl(v.docsPending.length, 'pièce à examiner', 'pièces à examiner'))
+  setTxt('ovDisputes2L', pl(v.open.length, 'litige ouvert', 'litiges ouverts'))
+  setTxt('ovDisputes2S', v.late.length ? pl(v.late.length, 'échéance dépassée', 'échéances dépassées') + ' : à traiter en priorité' : 'Dossiers en attente de médiation')
+  setTxt('litOpen', String(v.open.length))
+
+  const body = document.getElementById('ovTxBody')
+  if (body) {
+    const rows = v.tx.slice(0, 5)
+    body.innerHTML = rows.map(t =>
+      '<tr class="click" onclick="window.openTxDetail(' + jsArg(t.id) + ')"><td class="mono">' + esc(dateTimeY(t.created_at)) + fxTag(c.txFx(t)) + '</td><td>' + esc(c.name(t.buyer_id)) + ' → ' + esc(c.name(t.seller_id)) + '</td><td>' + txStatusTag(t.status) + '</td><td>' + euros(t.subtotal_cents) +
+      '</td><td>' + euros((t.buyer_fee_cents || 0) + (t.seller_fee_cents || 0)) + '</td><td>' + euros(t.total_charged_cents) + '</td></tr>').join('')
+    const em = document.getElementById('ovTxEmpty')
+    if (em) { em.style.display = rows.length ? 'none' : 'block'; em.textContent = 'Aucune mission pour l’instant (' + scopeTxt() + ').' }
+  }
+
+  const sb = document.getElementById('ovSignupsBody')
+  if (sb) {
+    const docsBy = {}
+    c.docs.forEach(d => { const o = docsBy[d.owner_id] = docsBy[d.owner_id] || { valid: 0, pending: 0, rejected: 0 }; if (o[d.status] != null) o[d.status]++ })
+    const list = c.profiles.filter(p => v.keepU(p.id)).slice().sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || ''))).slice(0, 6)
+    sb.innerHTML = list.map(p => {
+      const isPro = !!(p.is_pro || c.pro[p.id])
+      const d = docsBy[p.id]
+      const pieces = !isPro ? '<span class="muted">—</span>' : !d ? '<span class="tag wait">Aucune</span>'
+        : [d.valid ? d.valid + ' validée' + (d.valid > 1 ? 's' : '') : '', d.pending ? d.pending + ' à examiner' : '', d.rejected ? d.rejected + ' refusée' + (d.rejected > 1 ? 's' : '') : ''].filter(Boolean).map(esc).join(' · ')
+      return '<tr class="click" onclick="window.openPersonDetail(' + jsArg(p.id) + ')"><td>' + esc(c.name(p.id)) + fxTag(c.userFx(p.id)) + '</td><td>' + (isPro ? 'Prestataire' : 'Particulier') + '</td><td class="mono">' + esc(dateTimeY(p.created_at)) + '</td><td>' + esc(p.city || '—') + '</td><td>' + pieces + '</td></tr>'
+    }).join('')
+    const em = document.getElementById('ovSignupsEmpty'); if (em) em.style.display = list.length ? 'none' : 'block'
+  }
+  window.loadFeedbackCount && window.loadFeedbackCount()
+}
+
+window.loadActOverview = async function () {
+  const el = document.getElementById('ovPipeline'); if (!el) return
+  const c = await loadCore()
+  if (!c) { el.innerHTML = '<div class="muted">Connectez-vous avec le compte administrateur.</div>'; return }
+  const v = view(c)
+  const tt = c.pipe ? (Number(c.pipe.taux_client) || 0) + (Number(c.pipe.taux_prestataire) || 0) : 0
+  const budget = v.annonces.reduce((a, x) => a + (Number(x.budget_max_cents || x.budget_min_cents || x.budget_cents) || 0), 0)
+  const enCours = v.pending.concat(v.arrived)
+  const volEnCours = enCours.reduce((a, t) => a + (t.subtotal_cents || 0), 0)
+  const kp = (t, val, sub) => '<div class="kpi"><div class="l">' + esc(t) + '</div><div class="v" style="font-size:22px;font-weight:800">' + esc(val) + '</div><div class="muted" style="font-size:11px">' + esc(sub) + '</div></div>'
+  el.innerHTML = kp('Annonces en cours', String(v.annonces.length), 'budget ≈ ' + eur(budget)) +
+    kp('Missions en attente ou en cours', String(enCours.length), v.pending.length + ' en attente · ' + v.arrived.length + ' en cours · ' + eur(volEnCours)) +
+    kp('Commissions à venir', tt ? '≈ ' + eur((volEnCours + budget) * tt) : '—', 'annonces + missions en cours') +
+    kp('Facturé', eur(v.billed), pl(v.invoiced.length, 'mission terminée', 'missions terminées') + ' · commissions ' + eur(v.fees))
+  const head = el.parentElement && el.parentElement.querySelector('h3 .muted')
+  if (head) head.textContent = scopeTxt() + ' · cliquer pour le détail'
+}
+
+/* ---------- Activité : mêmes chiffres que la vue d'ensemble ---------- */
+const _loadActiviteOrig = window.loadActivite
+window.loadActivite = async function () {
+  await _loadActiviteOrig()
+  const c = await loadCore(); if (!c || !__act) return
+  const v = view(c)
+  const tt = (Number(__act.taux_client) || 0) + (Number(__act.taux_prestataire) || 0)
+  const enCours = v.pending.concat(v.arrived)
+  const volEnCours = enCours.reduce((a, t) => a + (t.subtotal_cents || 0), 0)
+  const budget = (__act.annonces || []).reduce((a, x) => a + (Number(x.budget_max_cents || x.budget_min_cents || x.budget_cents) || 0), 0)
+  const kp = (t, val, sub) => '<div class="card kpi"><div class="muted">' + esc(t) + '</div><div class="v">' + esc(val) + '</div><div class="muted" style="font-size:11px">' + esc(sub || '') + '</div></div>'
+  document.getElementById('actKpis').innerHTML =
+    kp('Annonces en cours', String((__act.annonces || []).length), 'budget potentiel ≈ ' + eur(budget) + ' · commissions ≈ ' + eur(budget * tt)) +
+    kp('Missions en attente ou en cours', String(enCours.length), 'volume ' + eur(volEnCours) + ' · commissions à venir ≈ ' + eur(volEnCours * tt)) +
+    kp('Missions terminées', String(v.invoiced.length), 'facturé ' + eur(v.billed)) +
+    kp('Commissions facturées', eur(v.fees), 'sur les missions terminées')
+}
+
+/* ---------- Transactions ---------- */
+window.loadTxList = async function () {
+  const c = await loadCore(); if (!c) return
+  const v = view(c)
+  const body = document.getElementById('txAllBody')
+  if (!body) return
+  body.innerHTML = v.tx.map(t =>
+    '<tr class="click" onclick="window.openTxDetail(' + jsArg(t.id) + ')"><td class="mono" data-sort="' + esc(t.created_at) + '">' + esc(dateTimeY(t.created_at)) + fxTag(c.txFx(t)) + '</td><td>' + esc(c.name(t.buyer_id)) + ' → ' + esc(c.name(t.seller_id)) + '<div class="muted mono" style="font-size:10.5px">' + esc(String(t.id).slice(0, 8)) + '</div></td><td>' + txStatusTag(t.status) + '</td><td>' + euros(t.subtotal_cents) +
+    '</td><td>' + euros(t.buyer_fee_cents) + '</td><td>' + euros(t.seller_fee_cents) + '</td><td>' + euros(t.total_charged_cents) + '</td></tr>').join('')
+  setTxt('txAllN', pl(v.tx.length, 'mission') + ' · ' + scopeTxt() + " · les plus récentes d'abord")
+  const em = document.getElementById('txAllEmpty'); if (em) { em.style.display = v.tx.length ? 'none' : 'block'; em.textContent = 'Aucune mission (' + scopeTxt() + ').' }
+}
+
+/* ---------- Commissions ---------- */
+window.loadCommissionsLive = async function () {
+  const [rates, c] = await Promise.all([loadRatesNote(), loadCore()])
+  if (rates.ok) {
+    setTxt('commRatesNote', 'Taux réglables dans Commission (' + pctFr(rates.b) + ' client + ' + pctFr(rates.v) + ' prestataire, valeurs lues dans le réglage actuel). Une mission garde le taux en vigueur à sa réservation.')
+  }
+  if (!c) return
+  const v = view(c)
+  setTxt('commBuyer', euros(v.feesBuyer)); setTxt('commSeller', euros(v.feesSeller)); setTxt('commTotal', euros(v.fees))
+  const sub = pl(v.invoiced.length, 'mission facturée', 'missions facturées') + ' · ' + scopeTxt()
+  setTxt('commBuyerD', (rates.ok ? 'taux actuel ' + pctFr(rates.b) + ' · ' : '') + sub)
+  setTxt('commSellerD', (rates.ok ? 'taux actuel ' + pctFr(rates.v) + ' · ' : '') + sub)
+}
+
+/* ---------- Documents & factures : la vraie table invoices ---------- */
+window.loadLiveInvoices = async function () {
+  const body = document.getElementById('liveInvoicesBody')
+  if (!body) return
+  const c = await loadCore(); if (!c) return
+  const { data, error } = await supabaseLive.from('invoices')
+    .select('id, number, kind, template, issued_at, net_cents, transaction_id, issuer_snapshot, client_snapshot')
+    .order('issued_at', { ascending: false })
+  const emptyEl = document.getElementById('liveInvoicesEmpty')
+  if (error) { body.innerHTML = ''; if (emptyEl) { emptyEl.style.display = 'block'; emptyEl.textContent = 'Lecture des factures impossible : ' + error.message } return }
+  const list = (data || []).filter(v => FICTIF || !c.txFx(c.txById[v.transaction_id]))
+  if (emptyEl) { emptyEl.style.display = list.length ? 'none' : 'block'; emptyEl.textContent = "Aucune facture (" + scopeTxt() + "). Elles sont émises automatiquement à la fin de chaque mission." }
+  body.innerHTML = list.map(v => {
+    const is = v.issuer_snapshot || {}, cs = v.client_snapshot || {}
+    const tag = v.kind === 'prestation' ? 'ok' : 'wait'
+    return '<tr class="click" onclick="window.openTxDetail(' + jsArg(v.transaction_id) + ')"><td class="mono">' + esc(v.number) + fxTag(c.txFx(c.txById[v.transaction_id])) + '</td><td><span class="tag ' + tag + '">' + esc(invKindLabel(v)) + '</span></td><td>' + esc(is.enseigne || is.nom || 'PING') + '</td><td>' + esc(cs.nom || '—') + '</td><td class="mono" data-sort="' + esc(v.issued_at) + '">' + esc(dateTimeY(v.issued_at)) + '</td><td class="mono">' + esc(String(v.transaction_id || '').slice(0, 8)) + '</td><td>' + euros(v.net_cents) + '</td></tr>'
+  }).join('')
+}
+
+/* ---------- Litiges : liste réelle, ouvre le dossier /litiges/[id] ---------- */
+window.openLitigeDossier = function (id) {
+  if (!id) return
+  window.open('/litiges/' + encodeURIComponent(id), '_blank', 'noopener')
+}
+window.loadLitiges = async function () {
+  const c = await loadCore(); if (!c) return
+  const v = view(c)
+  const now = Date.now()
+  const list = v.disputes.slice().sort((a, b) => {
+    const oa = a.status === 'open' ? 0 : 1, ob = b.status === 'open' ? 0 : 1
+    if (oa !== ob) return oa - ob
+    const da = a.deadline_at ? new Date(a.deadline_at).getTime() : Infinity, db = b.deadline_at ? new Date(b.deadline_at).getTime() : Infinity
+    if (oa === 0 && da !== db) return da - db
+    return String(b.created_at).localeCompare(String(a.created_at))
+  })
+  setTxt('litOpen', String(v.open.length))
+  const closed = v.disputes.filter(d => d.status !== 'open')
+  setTxt('litClosed', String(closed.length))
+  setTxt('litClosedD', closed.filter(d => d.status === 'resolved').length + ' résolu' + (closed.filter(d => d.status === 'resolved').length > 1 ? 's' : '') + ' · ' + closed.filter(d => d.status === 'rejected').length + ' non retenu' + (closed.filter(d => d.status === 'rejected').length > 1 ? 's' : ''))
+  setTxt('litAmount', euros(v.claimed))
+  const body = document.getElementById('litBody'); if (!body) return
+  body.innerHTML = list.map(d => {
+    const t = c.txById[d.transaction_id]
+    const late = d.status === 'open' && d.deadline_at && new Date(d.deadline_at).getTime() < now
+    const st = d.status === 'open' ? (late ? '<span class="tag dn">Échéance dépassée</span>' : '<span class="tag wait">Ouvert</span>') : d.status === 'resolved' ? '<span class="tag ok">Résolu</span>' : '<span class="tag ink">' + esc(DISPUTE_STATUS[d.status] || d.status) + '</span>'
+    const motif = [DISPUTE_CAT[d.category] || '', d.reason || ''].filter(Boolean).join(' · ') || '—'
+    return '<tr class="click" onclick="window.openLitigeDossier(' + jsArg(d.id) + ')" title="Ouvrir le dossier"><td class="mono" data-sort="' + esc(d.created_at) + '">' + esc(dateTimeY(d.created_at)) + fxTag(c.dispFx(d)) + '</td><td>' + (t ? esc(c.name(t.buyer_id)) + ' et ' + esc(c.name(t.seller_id)) : '—') + '</td><td>' + esc(motif.length > 120 ? motif.slice(0, 117) + '…' : motif) + '</td><td>' + (d.claimed_cents != null ? euros(d.claimed_cents) : '—') + '</td><td data-sort="' + esc(d.deadline_at || '') + '">' + (d.deadline_at ? esc(dateTimeY(d.deadline_at)) : '—') + '</td><td>' + st + '</td></tr>'
+  }).join('')
+  const em = document.getElementById('litEmpty'); if (em) { em.style.display = list.length ? 'none' : 'block'; em.textContent = 'Aucun litige (' + scopeTxt() + ').' }
+}
+
+/* ---------- Pièces à valider : aperçu, confirmation, motif de refus ---------- */
+window.loadDocsQueue = async function () {
+  const c = await loadCore(); if (!c) return
+  const v = view(c)
+  const body = document.getElementById('docsQueueBody'); if (!body) return
+  body.innerHTML = v.docsPending.map(d =>
+    '<tr class="click" onclick="window.reviewDoc(' + jsArg(d.id) + ')"><td>' + esc(c.name(d.owner_id)) + fxTag(c.userFx(d.owner_id)) + '</td><td>' + esc(DOC_LABELS_LIVE[d.kind] || d.kind) + '</td><td class="mono" data-sort="' + esc(d.created_at) + '">' + esc(dateTimeY(d.created_at)) + '</td><td><span class="tag wait">À examiner</span></td><td><button class="btn" style="font-size:11px;padding:5px 10px" type="button">Examiner</button></td></tr>').join('')
+  setTxt('docsQueueN', pl(v.docsPending.length, 'pièce en attente', 'pièces en attente') + ' · ' + scopeTxt())
+  const em = document.getElementById('docsQueueEmpty'); if (em) em.style.display = v.docsPending.length ? 'none' : 'block'
+}
+
+async function sendSupportText(userId, body) {
+  let { data: conv } = await supabaseLive.from('admin_conversations').select('id').eq('user_id', userId).maybeSingle()
+  if (!conv) {
+    const r = await supabaseLive.from('admin_conversations').insert({ user_id: userId }).select().single()
+    conv = r.data
+  }
+  if (!conv) return false
+  const { error } = await supabaseLive.from('admin_messages').insert({ conversation_id: conv.id, sender_is_admin: true, body, read_by_admin: true })
+  if (error) return false
+  await supabaseLive.from('admin_conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conv.id)
+  return true
+}
+
+function docModal() {
+  let m = document.getElementById('docReview')
+  if (!m) {
+    m = document.createElement('div')
+    m.id = 'docReview'; m.className = 'modal'
+    m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true')
+    m.onclick = e => { if (e.target === m) m.classList.remove('on') }
+    document.body.appendChild(m)
+  }
+  return m
+}
+window.reviewDoc = async function (docId) {
+  const c = await loadCore(); if (!c) return
+  const d = c.docs.find(x => x.id === docId)
+  const m = docModal()
+  if (!d) { m.innerHTML = '<div class="mbox cfbox"><h3>Pièce introuvable <span class="x" data-close>✕</span></h3></div>'; m.classList.add('on'); m.querySelector('[data-close]').onclick = () => m.classList.remove('on'); return }
+  const label = DOC_LABELS_LIVE[d.kind] || d.kind
+  const who = c.name(d.owner_id)
+  m.innerHTML = '<div class="mbox cfbox"><h3><span>' + esc(label) + '</span><span class="x" data-close aria-label="Fermer">✕</span></h3>' +
+    '<p class="muted" style="font-size:12.5px;margin:-4px 0 10px">Compte : <b style="color:var(--ink)">' + esc(who) + '</b>' + fxTag(c.userFx(d.owner_id)) + ' · déposée le ' + esc(dateTimeY(d.created_at)) + ' · statut : ' + esc(d.status === 'pending' ? 'à examiner' : d.status === 'valid' ? 'validée' : d.status === 'rejected' ? 'refusée' : d.status) + '</p>' +
+    '<div class="pv" id="drPv"><span class="muted">Chargement de la pièce…</span></div>' +
+    '<div id="drStep"></div></div>'
+  m.classList.add('on')
+  m.querySelector('[data-close]').onclick = () => m.classList.remove('on')
+  const pv = m.querySelector('#drPv'), step = m.querySelector('#drStep')
+
+  // Fichiers : la pièce enregistrée, plus les autres fichiers de la même rubrique (recto / verso…).
+  let paths = []
+  if (d.storage_path) paths.push(d.storage_path)
+  const ls = await supabaseLive.storage.from('documents').list(d.owner_id, { limit: 200 })
+  ;((ls && ls.data) || []).forEach(f => { if (f && f.name && f.name.startsWith(d.kind)) { const pth = d.owner_id + '/' + f.name; if (!paths.includes(pth)) paths.push(pth) } })
+  paths = paths.slice(0, 6)
+  pv.innerHTML = ''
+  let shown = 0
+  for (const pth of paths) {
+    const { data: sg } = await supabaseLive.storage.from('documents').createSignedUrl(pth, 300)
+    const url = sg && sg.signedUrl
+    if (!url) continue
+    shown++
+    const isPdf = /\.pdf$/i.test(pth)
+    const el = document.createElement(isPdf ? 'iframe' : 'img')
+    el.src = url
+    if (isPdf) el.title = label; else el.alt = label + ' (fichier ' + shown + ')'
+    pv.appendChild(el)
+    const a = document.createElement('a')
+    a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.className = 'link'; a.textContent = 'Ouvrir en grand' + (paths.length > 1 ? ' (' + shown + ')' : '')
+    pv.appendChild(a)
+  }
+  if (!shown) pv.innerHTML = '<span class="muted">Aucun fichier lisible pour cette pièce. Vous pouvez la refuser (motif « Document illisible ») pour demander un nouvel envoi.</span>'
+
+  const done = async (status, msg) => {
+    coreDirty()
+    m.classList.remove('on')
+    toast(msg)
+    const sec = ((document.querySelector('.section.on') || {}).id || '').slice(2)
+    if (sec === 'live') window.loadLiveData()
+    else if (sec === 'conformite') window.loadDocsQueue()
+    window.loadOverviewStats()
+  }
+  const base = () => {
+    step.innerHTML = '<div class="acts"><button type="button" class="btn ghost" data-a="close">Fermer</button>' +
+      (d.status === 'pending' ? '<button type="button" class="btn red" data-a="askko">Refuser</button><button type="button" class="btn" data-a="askok"' + (shown ? '' : ' disabled title="Ouvrez d’abord une pièce lisible"') + '>Valider</button>' : '') + '</div>'
+  }
+  step.onclick = async e => {
+    const b = e.target.closest('[data-a]'); if (!b || b.disabled) return
+    const a = b.getAttribute('data-a')
+    if (a === 'close' || a === 'back') { if (a === 'close') m.classList.remove('on'); else base(); return }
+    if (a === 'askok') {
+      step.innerHTML = '<p style="font-size:13px;line-height:1.5;margin-bottom:12px"><b>Valider cette pièce ?</b> Vérifiez que le nom écrit sur la pièce est bien celui du compte : <b>' + esc(who) + '</b>. Une fois validée, la fiche du prestataire pourra afficher « profil vérifié par PING ».</p>' +
+        '<div class="acts"><button type="button" class="btn ghost" data-a="back">Annuler</button><button type="button" class="btn" data-a="ok">Oui, valider</button></div>'
+      return
+    }
+    if (a === 'askko') {
+      step.innerHTML = '<label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:6px" for="drMotif">Motif du refus (envoyé au prestataire)</label>' +
+        '<select class="minput" id="drMotif"><option>Document illisible</option><option>Document expiré</option><option>Nom différent de celui du compte</option><option>Ce n’est pas le bon document</option><option>Autre</option></select>' +
+        '<textarea class="minput" id="drPrec" style="min-height:70px" placeholder="Précision (facultatif)"></textarea>' +
+        '<div class="acts"><button type="button" class="btn ghost" data-a="back">Annuler</button><button type="button" class="btn red" data-a="ko">Refuser la pièce</button></div>'
+      return
+    }
+    if (a === 'ok' || a === 'ko') {
+      b.disabled = true
+      const status = a === 'ok' ? 'valid' : 'rejected'
+      const { error } = await supabaseLive.from('documents').update({ status }).eq('id', d.id)
+      if (error) { b.disabled = false; toast('Enregistrement refusé : ' + esc(error.message)); return }
+      if (a === 'ok') { done(status, 'Pièce validée'); return }
+      const motif = (m.querySelector('#drMotif') || {}).value || 'Autre'
+      const prec = ((m.querySelector('#drPrec') || {}).value || '').trim()
+      const txt = 'Bonjour, votre pièce « ' + label + ' » n’a pas pu être validée. Motif : ' + motif + '.' + (prec ? ' ' + prec : '') + ' Vous pouvez en déposer une nouvelle depuis Mon entreprise, rubrique Mes pièces.'
+      const sent = await sendSupportText(d.owner_id, txt)
+      done(status, sent ? 'Pièce refusée · motif envoyé au prestataire (Support PING)' : 'Pièce refusée · le motif n’a pas pu être envoyé, écrivez-lui depuis sa fiche')
+    }
+  }
+  base()
+}
+
+/* ---------- Retours des testeurs (bulle verte, events feedback_note) ---------- */
+let FB = null, FB_F = 'todo'
+function adminSessionId() {
+  let id = null
+  try { id = localStorage.getItem('ping_sid') } catch (e) {}
+  if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())); try { localStorage.setItem('ping_sid', id) } catch (e) {} }
+  return id
+}
+async function loadFeedback() {
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) return null
+  const [ev, tr, beta] = await Promise.all([
+    supabaseLive.from('events').select('id, created_at, user_id, session_id, path, metadata').eq('event_type', 'feedback_note').order('created_at', { ascending: false }).limit(1000),
+    supabaseLive.from('events').select('id, created_at, event_type, metadata').in('event_type', ['feedback_traite', 'feedback_rouvert']).order('created_at', { ascending: true }).limit(2000),
+    supabaseLive.from('beta_feedback').select('id', { count: 'exact', head: true }),
+  ])
+  const state = {}
+  ;(tr.data || []).forEach(e => { const r = e.metadata && e.metadata.ref; if (r) state[r] = e.event_type === 'feedback_traite' })
+  const items = (ev.data || []).map(e => {
+    const md = e.metadata || {}
+    const ok = md.ok === true && (!md.text || md.text === 'Page validée')
+    return { id: e.id, at: e.created_at, user_id: e.user_id, path: e.path, text: md.text || '', ok, done: !!state[e.id] }
+  })
+  FB = { items, error: ev.error && ev.error.message, beta: beta && typeof beta.count === 'number' ? beta.count : null }
+  return FB
+}
+window.loadFeedbackCount = async function () {
+  const f = await loadFeedback(); if (!f) return
+  const n = f.items.filter(i => !i.ok && !i.done).length
+  setTxt('ovFbL', pl(n, 'retour de testeur à traiter', 'retours de testeurs à traiter'))
+}
+window.fbFilter = function (k) {
+  FB_F = k
+  document.querySelectorAll('#fbChips > div').forEach(d => d.classList.toggle('on', d.getAttribute('data-f') === k))
+  renderFeedback()
+}
+async function renderFeedback() {
+  const body = document.getElementById('fbBody'); if (!body || !FB) return
+  const c = await loadCore()
+  const nm = id => id ? (c ? c.name(id) : '—') : 'Visiteur sans compte'
+  const list = FB.items.filter(i => FB_F === 'all' ? true : FB_F === 'ok' ? i.ok : FB_F === 'done' ? (!i.ok && i.done) : (!i.ok && !i.done))
+  body.innerHTML = list.map(i =>
+    '<tr><td class="mono" data-sort="' + esc(i.at) + '">' + esc(dateTimeY(i.at)) + '</td><td>' + esc(nm(i.user_id)) + (c && i.user_id ? fxTag(c.userFx(i.user_id)) : '') + '</td><td class="mono" style="font-size:11.5px">' + esc(i.path || '—') + '</td><td>' + (i.ok ? '<span class="tag ok">Page validée</span>' : esc(i.text)) + '</td><td>' +
+    (i.ok ? '' : '<button type="button" class="btn ' + (i.done ? 'ghost' : '') + '" style="font-size:11px;padding:5px 10px;white-space:nowrap" aria-pressed="' + (i.done ? 'true' : 'false') + '" onclick="window.fbMark(' + jsArg(i.id) + ',' + (i.done ? 'false' : 'true') + ',this)">' + (i.done ? 'Rouvrir' : 'Marquer traité') + '</button>') + '</td></tr>').join('')
+  const todo = FB.items.filter(i => !i.ok && !i.done).length
+  setTxt('fbN', pl(todo, 'à traiter') + ' · ' + pl(FB.items.filter(i => !i.ok).length, 'commentaire') + ' · ' + pl(FB.items.filter(i => i.ok).length, 'page validée', 'pages validées'))
+  setTxt('ovFbL', pl(todo, 'retour de testeur à traiter', 'retours de testeurs à traiter'))
+  setTxt('fbBetaN', FB.beta == null ? '' : pl(FB.beta, 'avis reçu', 'avis reçus'))
+  const em = document.getElementById('fbEmpty'); if (em) { em.style.display = list.length ? 'none' : 'block'; em.textContent = FB.error ? 'Lecture impossible : ' + FB.error : 'Rien dans cette sélection.' }
+}
+window.loadRetours = async function () {
+  const f = await loadFeedback()
+  if (!f) { setTxt('fbN', 'connectez-vous avec le compte administrateur'); return }
+  renderFeedback()
+}
+window.fbMark = async function (id, done, btn) {
+  if (btn) btn.disabled = true
+  const { data: { user } } = await supabaseLive.auth.getUser()
+  if (!user) { toast('Connectez-vous avec le compte administrateur'); if (btn) btn.disabled = false; return }
+  const { error } = await supabaseLive.from('events').insert({
+    session_id: adminSessionId(), user_id: user.id, event_type: done ? 'feedback_traite' : 'feedback_rouvert',
+    path: '/admin', metadata: { ref: id },
+  })
+  if (error) { toast('Enregistrement refusé : ' + esc(error.message)); if (btn) btn.disabled = false; return }
+  const it = FB && FB.items.find(i => i.id === id); if (it) it.done = !!done
+  toast(done ? 'Retour marqué traité' : 'Retour rouvert')
+  renderFeedback()
+}
+
+/* ---------- Recherche du haut : personnes, missions, litiges ---------- */
+let GS_ITEMS = [], GS_IDX = -1, GS_T = null
+const gsBox = document.getElementById('gsRes'), gsInput = document.getElementById('gsInput')
+function gsClose() { if (gsBox) { gsBox.hidden = true; GS_IDX = -1 } if (gsInput) gsInput.setAttribute('aria-expanded', 'false') }
+function gsGo(i) {
+  const it = GS_ITEMS[i]; if (!it) return
+  gsClose()
+  it.go()
+}
+window.gSearch = function (v) { clearTimeout(GS_T); GS_T = setTimeout(() => runSearch(v), 160) }
+window.gSearchKey = function (e) {
+  if (!gsBox || gsBox.hidden) { if (e.key === 'Enter' && gsInput) runSearch(gsInput.value); return }
+  const btns = [...gsBox.querySelectorAll('.gi')]
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (!btns.length) return
+    GS_IDX = (GS_IDX + (e.key === 'ArrowDown' ? 1 : -1) + btns.length) % btns.length
+    btns.forEach((b, i) => b.classList.toggle('on', i === GS_IDX))
+    btns[GS_IDX].scrollIntoView({ block: 'nearest' })
+  } else if (e.key === 'Enter') { e.preventDefault(); gsGo(GS_IDX >= 0 ? GS_IDX : 0) }
+  else if (e.key === 'Escape') { gsClose() }
+}
+document.addEventListener('click', e => { if (gsBox && !gsBox.hidden && !e.target.closest('#gsBox')) gsClose() })
+if (gsBox) gsBox.addEventListener('click', e => { const b = e.target.closest('.gi'); if (b) gsGo(Number(b.getAttribute('data-i'))) })
+async function runSearch(raw) {
+  if (!gsBox) return
+  const q = normTxt(String(raw || '').trim())
+  if (q.length < 2) { gsClose(); return }
+  gsBox.hidden = false
+  if (gsInput) gsInput.setAttribute('aria-expanded', 'true')
+  gsBox.innerHTML = '<div class="ge">Recherche…</div>'
+  const c = await loadCore()
+  if (!c) { gsBox.innerHTML = '<div class="ge">Connectez-vous avec le compte administrateur pour chercher.</div>'; return }
+  if (normTxt(gsInput ? gsInput.value.trim() : raw) !== q) return
+  GS_ITEMS = []; GS_IDX = -1
+  const people = c.profiles.filter(p => normTxt([c.name(p.id), p.city, c.emails[p.id], c.pro[p.id] && c.pro[p.id].company_name, c.pro[p.id] && TRADES_LIVE[c.pro[p.id].trade]].join(' ')).includes(q)).slice(0, 6)
+  const txs = c.tx.filter(t => String(t.id).toLowerCase().startsWith(q) || normTxt([c.name(t.buyer_id), c.name(t.seller_id), TX_STATUS_LIVE[t.status], euros(t.subtotal_cents)].join(' ')).includes(q)).slice(0, 6)
+  const dis = c.disputes.filter(d => { const t = c.txById[d.transaction_id]; return String(d.id).toLowerCase().startsWith(q) || normTxt([d.reason, DISPUTE_CAT[d.category], t && c.name(t.buyer_id), t && c.name(t.seller_id)].join(' ')).includes(q) }).slice(0, 4)
+  let html = ''
+  const add = (title, sub, go) => { const i = GS_ITEMS.length; GS_ITEMS.push({ go }); return '<button type="button" class="gi" role="option" data-i="' + i + '">' + title + '<small>' + sub + '</small></button>' }
+  if (people.length) html += '<div class="gh">Personnes</div>' + people.map(p => add(esc(c.name(p.id)) + fxTag(c.userFx(p.id)), esc([(p.is_pro || c.pro[p.id]) ? 'Prestataire' : 'Particulier', p.city, c.emails[p.id]].filter(Boolean).join(' · ')), () => window.openPersonDetail(p.id))).join('')
+  if (txs.length) html += '<div class="gh">Missions</div>' + txs.map(t => add(esc(c.name(t.buyer_id)) + ' → ' + esc(c.name(t.seller_id)) + fxTag(c.txFx(t)), esc([dateFr(t.created_at), TX_STATUS_LIVE[t.status] || t.status, euros(t.subtotal_cents), String(t.id).slice(0, 8)].join(' · ')), () => window.openTxDetail(t.id))).join('')
+  if (dis.length) html += '<div class="gh">Litiges</div>' + dis.map(d => add(esc(DISPUTE_CAT[d.category] || d.reason || 'Litige') + fxTag(c.dispFx(d)), esc([dateFr(d.created_at), DISPUTE_STATUS[d.status] || d.status].join(' · ')), () => window.openLitigeDossier(d.id))).join('')
+  gsBox.innerHTML = html || '<div class="ge">Aucun résultat pour « ' + esc(String(raw).trim()) + ' ».</div>'
+}
+
+/* ---------- Navigation : chaque section charge ses données ---------- */
+const _navLots = window.nav
+window.nav = function (s) {
+  _navLots(s)
+  if (s === 'litiges') window.loadLitiges()
+  if (s === 'conformite') window.loadDocsQueue()
+  if (s === 'retours') window.loadRetours()
+}
+if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOverviewStats(); window.loadActOverview() }
 </script>
