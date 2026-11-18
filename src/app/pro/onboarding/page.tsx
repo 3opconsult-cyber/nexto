@@ -6,7 +6,8 @@ import { trackEvent } from '@/lib/tracking'
 import { searchCompany, guessLegalStatus, CompanyMatch } from '@/lib/legalLookup'
 import { geocodeAddress } from '@/lib/geocode'
 import OnboardingStep from '@/components/OnboardingStep'
-import { TRADE_LIST as SERVICES, TRADES } from '@/lib/trades'
+import { TRADE_LIST as SERVICES, TRADES, cesuEligible } from '@/lib/trades'
+import { LEGAL_FORMS, type LegalForm, type VatStatus, VAT_FRANCHISE_MENTION, guessLegalForm, legalStatusFor, cleanVat, vatNumberValid, isMissingColumnError, PRO_STATUS_COLUMNS } from '@/lib/proStatus'
 import PricingEditor from '@/components/PricingEditor'
 import { CGV_VERSION } from '@/lib/cgv'
 import { type PricingDraft, draftFromColumns, emptyDraft, toColumns, validateDraft } from '@/lib/servicePricing'
@@ -28,6 +29,8 @@ type ProDraft = {
   companyQuery: string; selectedCompany: CompanyMatch | null; manualEntry: boolean
   siret: string; sapNumber: string; address: string; coords: { lat: number; lng: number } | null
   phone: string; confirmedInfo: boolean; bio: string; website: string
+  // Ajoutés le 18/11/2026 (facultatifs : un brouillon plus ancien se relit sans eux).
+  legalForm?: LegalForm | null; vatStatus?: VatStatus | null; vatNumber?: string; acceptsCesu?: boolean
 }
 function readDraft(): ProDraft | null {
   try {
@@ -37,7 +40,7 @@ function readDraft(): ProDraft | null {
 }
 function stepsFor(status: Status) {
   return status === 'professionnel'
-    ? ['service', 'tarif', 'statut', 'entreprise', 'adresse', 'bio']
+    ? ['service', 'tarif', 'statut', 'entreprise', 'forme', 'adresse', 'bio']
     : ['service', 'tarif', 'statut', 'adresse', 'bio']
 }
 
@@ -55,6 +58,12 @@ export default function ProOnboarding() {
   const [manualEntry, setManualEntry] = useState(false)
   const [siret, setSiret] = useState('')
   const [sapNumber, setSapNumber] = useState('')
+  // Statut juridique et fiscal (18/11/2026, migration 039) : forme juridique, TVA, CESU préfinancé.
+  const [legalForm, setLegalForm] = useState<LegalForm | null>(null)
+  const [vatStatus, setVatStatus] = useState<VatStatus | null>(null)
+  const [vatNumber, setVatNumber] = useState('')
+  const [vatTouched, setVatTouched] = useState(false)
+  const [acceptsCesu, setAcceptsCesu] = useState(false)
   const [address, setAddress] = useState('')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [locating, setLocating] = useState(false)
@@ -129,6 +138,13 @@ export default function ProOnboarding() {
         setStatus(pp.legal_status === 'particulier' ? 'particulier' : 'professionnel')
         setSiret(pp.siret || '')
         setSapNumber(pp.sap_number || '')
+        // Colonnes de la migration 039 : absentes (undefined) tant qu'elle n'est pas appliquée.
+        if (pp.legal_form) setLegalForm(pp.legal_form)
+        else if (pp.legal_status === 'auto_entrepreneur') setLegalForm('micro')
+        else if (['eurl', 'sasu', 'sarl'].includes(pp.legal_status)) setLegalForm(pp.legal_status)
+        if (pp.vat_status) setVatStatus(pp.vat_status)
+        if (pp.vat_number) setVatNumber(pp.vat_number)
+        if (pp.accepts_cesu_prefinance) setAcceptsCesu(true)
         if (pp.company_name) setCompanyQuery(pp.company_name)
         if (pp.lat != null && pp.lng != null) setCoords({ lat: pp.lat, lng: pp.lng })
         setBio(pp.bio || '')
@@ -153,6 +169,10 @@ export default function ProOnboarding() {
         setManualEntry(!!d.manualEntry)
         setSiret(d.siret || '')
         setSapNumber(d.sapNumber || '')
+        setLegalForm(d.legalForm ?? null)
+        setVatStatus(d.vatStatus ?? null)
+        setVatNumber(d.vatNumber || '')
+        setAcceptsCesu(!!d.acceptsCesu)
         if (d.address) setAddress(d.address)
         if (d.coords) setCoords(d.coords)
         if (d.phone) setPhone(d.phone)
@@ -173,9 +193,10 @@ export default function ProOnboarding() {
     const d: ProDraft = {
       v: 1, uid: uidRef.current, stepKey, services, pricing, status, companyQuery, selectedCompany, manualEntry,
       siret, sapNumber, address, coords, phone, confirmedInfo, bio, website,
+      legalForm, vatStatus, vatNumber, acceptsCesu,
     }
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) } catch { }
-  }, [draftOn, stepKey, services, pricing, status, companyQuery, selectedCompany, manualEntry, siret, sapNumber, address, coords, phone, confirmedInfo, bio, website])
+  }, [draftOn, stepKey, services, pricing, status, companyQuery, selectedCompany, manualEntry, siret, sapNumber, address, coords, phone, confirmedInfo, bio, website, legalForm, vatStatus, vatNumber, acceptsCesu])
 
   // « Plus tard » : retour à l'espace particulier, le brouillon reste (repris par « Passer en pro »).
   function later() {
@@ -191,6 +212,8 @@ export default function ProOnboarding() {
     setSiret(c.siret)
     if (c.address) setAddress([c.address, c.postalCode, c.city].filter(Boolean).join(', '))
     if (c.lat != null && c.lng != null) setCoords({ lat: c.lat, lng: c.lng })
+    const g = guessLegalForm(c.natureJuridique)
+    if (g) setLegalForm(g)
   }
 
   function useMyLocation() {
@@ -239,8 +262,17 @@ export default function ProOnboarding() {
     const primaryCols = toColumns(pricing[services[0]] ?? emptyDraft())
     const legalStatus = status === 'particulier'
       ? 'particulier'
-      : (selectedCompany ? guessLegalStatus(selectedCompany.natureJuridique)
+      : legalStatusFor(legalForm, selectedCompany ? guessLegalStatus(selectedCompany.natureJuridique)
         : (existing?.legalStatus && existing.legalStatus !== 'particulier' ? existing.legalStatus : 'auto_entrepreneur'))
+    const isPro = status === 'professionnel'
+    const offersCesu = services.some(cesuEligible)
+    // Champs de la migration 039 : envoyés, puis retirés si la base ne les connaît pas encore.
+    const statusCols: Record<string, any> = {
+      legal_form: isPro ? legalForm : null,
+      vat_status: isPro ? vatStatus : null,
+      vat_number: isPro && vatStatus === 'assujetti' && vatNumber.trim() ? cleanVat(vatNumber) : null,
+      accepts_cesu_prefinance: isPro && offersCesu && acceptsCesu,
+    }
 
     // Adresse saisie sans position : on la géolocalise ici, sinon le profil n'apparaît pas sur la carte.
     let position = coords
@@ -256,7 +288,7 @@ export default function ProOnboarding() {
     }).eq('id', user.id)
     if (profileErr) { setError("L'enregistrement de vos coordonnées a échoué. Vérifiez votre connexion et réessayez."); setLoading(false); return }
 
-    const { error: dbError } = await supabase.from('provider_profiles').upsert({
+    const baseRow = {
       id: user.id,
       trade: services[0],
       pricing_type: primaryCols.pricing_type,
@@ -275,7 +307,14 @@ export default function ProOnboarding() {
       lat: position?.lat ?? null,
       lng: position?.lng ?? null,
       location: position ? `SRID=4326;POINT(${position.lng} ${position.lat})` : null,
-    })
+    }
+    let { error: dbError } = await supabase.from('provider_profiles').upsert({ ...baseRow, ...statusCols })
+    if (dbError && isMissingColumnError(dbError)) {
+      // Migration 039 pas encore appliquée : on enregistre le profil sans le statut détaillé.
+      const row: Record<string, any> = { ...baseRow, ...statusCols }
+      for (const c of PRO_STATUS_COLUMNS) delete row[c]
+      ;({ error: dbError } = await supabase.from('provider_profiles').upsert(row))
+    }
     if (dbError) { setError("L'enregistrement de votre profil a échoué. Vérifiez votre connexion et réessayez."); setLoading(false); return }
 
     // Services supplémentaires : chacun son propre tarif, une ligne par service dans « Mes tarifs ».
@@ -421,6 +460,57 @@ export default function ProOnboarding() {
             style={{ ...inputStyle, marginTop: 6 }} />
           <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 5 }}>Si vous l'avez, vos clients peuvent bénéficier du crédit d'impôt de 50 %. Pas de déclaration ? Vous pouvez continuer sans, et la renseigner plus tard.</span>
         </label>
+        {services.some(cesuEligible) && (
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: acceptsCesu ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: acceptsCesu ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
+            <input type="checkbox" checked={acceptsCesu} onChange={e => setAcceptsCesu(e.target.checked)} style={{ marginTop: 2, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: '#123644', lineHeight: 1.5 }}>
+              <b>J&apos;accepte le CESU préfinancé</b>
+              <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>Titres remis au client par son employeur ou son comité d&apos;entreprise. Il faut être déclaré services à la personne et affilié au CRCESU. Affiché « Accepte le CESU préfinancé » sur votre profil.</span>
+            </span>
+          </label>
+        )}
+      </OnboardingStep>
+    )
+  }
+
+  if (stepKey === 'forme') {
+    const vatOk = vatStatus === 'franchise' || (vatStatus === 'assujetti' && vatNumberValid(vatNumber))
+    return (
+      <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
+        title="Forme juridique et TVA"
+        subtitle="Pour que vos factures portent les bonnes mentions."
+        onBack={back}
+        onCta={() => { setVatTouched(true); if (legalForm && vatOk) next() }}
+        ctaDisabled={!legalForm || !vatStatus || (vatTouched && !vatOk)}>
+        <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Forme juridique</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '8px 0 18px' }}>
+          {LEGAL_FORMS.map(f => (
+            <button key={f.key} type="button" onClick={() => setLegalForm(f.key)}
+              style={{ border: legalForm === f.key ? '2px solid #12B39C' : '2px solid #E7EDEB', background: legalForm === f.key ? 'rgba(18,179,156,.06)' : '#fff', color: '#123644', borderRadius: 999, padding: '9px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>TVA</span>
+        <button type="button" onClick={() => setVatStatus('franchise')} style={{ ...bigChoiceStyle(vatStatus === 'franchise'), marginTop: 8 }}>
+          Je ne facture pas la TVA
+          <div style={{ fontSize: 12, fontWeight: 500, color: '#4E6470', marginTop: 3 }}>Franchise en base : « {VAT_FRANCHISE_MENTION} » sur vos factures</div>
+        </button>
+        <button type="button" onClick={() => setVatStatus('assujetti')} style={bigChoiceStyle(vatStatus === 'assujetti')}>
+          Je suis assujetti à la TVA
+          <div style={{ fontSize: 12, fontWeight: 500, color: '#4E6470', marginTop: 3 }}>Votre numéro de TVA intracommunautaire figure sur vos factures</div>
+        </button>
+        {vatStatus === 'assujetti' && (
+          <label style={{ display: 'block', marginTop: 4 }}>
+            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>N° de TVA intracommunautaire</span>
+            <input value={vatNumber} onChange={e => setVatNumber(e.target.value)} onBlur={() => vatNumber.trim() && setVatTouched(true)}
+              autoCapitalize="characters" aria-invalid={vatTouched && !vatNumberValid(vatNumber)}
+              style={{ ...inputStyle, marginTop: 6, borderColor: vatTouched && !vatNumberValid(vatNumber) ? '#c0503a' : '#DCE5E3' }} />
+            {vatTouched && !vatNumberValid(vatNumber) && (
+              <span style={{ display: 'block', fontSize: 11.5, color: '#c0503a', marginTop: 5, fontWeight: 600 }}>Numéro invalide : FR suivi de 11 caractères (ex. FR 12 345678901).</span>
+            )}
+          </label>
+        )}
       </OnboardingStep>
     )
   }

@@ -35,3 +35,13 @@ export function tradeOfServiceName(name: string | null | undefined): string | nu
   }
   return null
 }
+
+// Services éligibles au paiement en CESU préfinancé (décision Romain du 18/11/2026) : ménage,
+// repassage, vitres et nettoyage du domicile relèvent de « l'entretien de la maison » (services à la
+// personne). Un futur service hors domicile (fin de chantier, nettoyage de bureaux…) ne s'ajoute PAS
+// ici : l'option « Payer en CESU préfinancé » reste alors masquée. Phase 1 : le client gère lui-même
+// son crédit d'impôt, PING n'encaisse rien (voir docs/cesu-ce-qui-manque.md).
+const CESU_ELIGIBLE = ['menage', 'repassage', 'nettoyage', 'vitres']
+export function cesuEligible(trade: string | null | undefined): boolean {
+  return !!trade && CESU_ELIGIBLE.includes(trade)
+}

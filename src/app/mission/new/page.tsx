@@ -11,7 +11,7 @@ import PaymentPendingModal from '@/components/PaymentPendingModal'
 import { geocodeAddress } from '@/lib/geocode'
 import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
 import NavDrawer from '@/components/NavDrawer'
-import { TRADES } from '@/lib/trades'
+import { TRADES, cesuEligible } from '@/lib/trades'
 import { EUR } from '@/lib/invoice-pdf'
 import { fetchSlots, dayLabel, hhmm, slotEnd, type Slot } from '@/lib/slots'
 import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
@@ -67,6 +67,9 @@ function MissionForm() {
   const [estimatedHours, setEstimatedHours] = useState('2')
   const [mode, setMode] = useState<'forfait' | 'horaire' | null>(null)
   const [error, setError] = useState('')
+  // « Payer en CESU préfinancé » : service éligible ET prestataire qui l'accepte (colonne de la migration 039 ;
+  // absente = undefined = option masquée). Phase 1 : le client règle le pro avec ses titres, PING n'encaisse rien.
+  const [payCesu, setPayCesu] = useState(false)
   const [confirming, setConfirming] = useState(false)
   // Créneaux publiés par le pro (migration 012). null = fonctionnalité pas encore en base.
   const [slots, setSlots] = useState<Slot[] | null>(null)
@@ -130,6 +133,7 @@ function MissionForm() {
   const totalTtc = subtotalCents + buyerFee
 
   const [creating, setCreating] = useState(false)
+  const cesuOk = cesuEligible(pro?.trade) && pro?.accepts_cesu_prefinance === true
   // Paiement en ligne actif : on saute la simulation et on envoie le client vers la vraie page de paiement.
   const paymentsOn = usePaymentsActive()
 
@@ -168,6 +172,7 @@ function MissionForm() {
       requester_id: user.id, category: pro.trade,
       description: description.trim() || (article ? article.name : ''),
       address: address.trim(), budget_cents: totalTtc, status: 'matched',
+      ...(payCesu && cesuOk ? { payment_pref: 'cesu' } : {}),
       ...(pos ? { lat: pos.lat, lng: pos.lng } : {}),
     }).select().single()
     if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
@@ -326,6 +331,16 @@ function MissionForm() {
             </div>
           )}
         </div>
+
+        {cesuOk && (
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 14px', borderRadius: 12, border: payCesu ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: payCesu ? 'rgba(18,179,156,.06)' : '#fff', marginBottom: 14, cursor: 'pointer' }}>
+            <input type="checkbox" checked={payCesu} onChange={e => setPayCesu(e.target.checked)} style={{ marginTop: 2, width: 18, height: 18, accentColor: '#12B39C', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: '#123644', lineHeight: 1.5 }}>
+              <b>Payer en CESU préfinancé</b>
+              <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>Ce prestataire accepte les titres CESU remis par votre employeur ou votre comité d&apos;entreprise : vous les lui remettez directement après l&apos;intervention. Vous gérez vous-même votre crédit d&apos;impôt.</span>
+            </span>
+          </label>
+        )}
 
         {/* Argument de confiance discret, façon Airbnb : une ligne, pas un pavé —
             cf. critique "pas d'argumentaire visible" + décision de garder la

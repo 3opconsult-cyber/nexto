@@ -25,7 +25,7 @@ export const HIGHLIGHTS: { key: string; label: string }[] = [
   { key: 'week_end', label: 'Disponible le week-end' },
   { key: 'cles', label: 'Remise des clés possible' },
   { key: 'animaux', label: 'À l’aise avec les animaux' },
-  { key: 'cesu', label: 'Accepte le CESU' },
+  { key: 'cesu', label: 'Accepte le CESU préfinancé' },
   { key: 'anglais', label: 'Parle anglais' },
 ]
 export const highlightLabel = (k: string) => HIGHLIGHTS.find(h => h.key === k)?.label || k

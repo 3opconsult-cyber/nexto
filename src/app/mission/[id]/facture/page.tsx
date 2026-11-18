@@ -7,7 +7,7 @@ import NavDrawer from '@/components/NavDrawer'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import TransferCard from '@/components/TransferCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
-         PLATFORM_PENDING, tauxLabel, prestationSous, type Invoice } from '@/lib/invoice-pdf'
+         PLATFORM_PENDING, tauxLabel, prestationSous, withProTaxStatus, type ProTaxStatus, type Invoice } from '@/lib/invoice-pdf'
 
 /**
  * Facturation — les trois documents d'une mission.
@@ -63,7 +63,15 @@ export default function FacturePage() {
           heures_incluses: l0.heures_incluses ?? t.included_hours ?? null,
         }, ...v.lines.slice(1)] }
       }
-      const list = ((data ?? []) as Invoice[]).map(enrich)
+      // Forme juridique et TVA (migration 039) : pour une facture émise avant, statut actuel du prestataire,
+      // si la base connaît déjà ces colonnes (sinon erreur ignorée, rien ne change).
+      let live: ProTaxStatus | null = null
+      if (t?.seller_id && (data ?? []).some((v: any) => v.template === 'facture' && v.issuer_snapshot?.forme_juridique == null && v.issuer_snapshot?.tva_regime == null)) {
+        const { data: st, error: stErr } = await supabase.from('provider_profiles')
+          .select('legal_form, vat_status, vat_number').eq('id', t.seller_id).maybeSingle()
+        if (!stErr && st) live = st as ProTaxStatus
+      }
+      const list = ((data ?? []) as Invoice[]).map(enrich).map(v => withProTaxStatus(v, live))
         .filter(v => v.kind === 'prestation' || v.kind === mine)
         .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
       if (!tx) setTxInfo({ self: false, completed: false, missing: true })
@@ -227,6 +235,7 @@ export default function FacturePage() {
                     {inv.issuer_snapshot?.ville && <div style={{ color: '#4E6470' }}>{inv.issuer_snapshot.ville}</div>}
                     {inv.issuer_snapshot?.siret && <div style={{ color: '#4E6470' }}>SIRET {inv.issuer_snapshot.siret}</div>}
                     {inv.legal?.forme && <div style={{ color: '#4E6470' }}>{inv.legal.forme}</div>}
+                    {inv.legal?.tva_intracom && <div style={{ color: '#4E6470' }}>TVA intracommunautaire {inv.legal.tva_intracom}</div>}
                     {inv.issuer_snapshot?.sap && <div style={{ color: '#4E6470' }}>Déclaration SAP {inv.issuer_snapshot.sap}</div>}
                     {inv.template === 'recapitulatif' && <div style={{ color: '#4E6470' }}>Particulier — non immatriculé</div>}
                   </>
