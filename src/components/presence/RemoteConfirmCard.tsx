@@ -58,7 +58,7 @@ export default function RemoteConfirmCard({ txId, phase, req, onDone }: {
         </div>
       )}
       <button onClick={confirm} disabled={busy} style={{
-        width: '100%', marginTop: 12, border: 'none', borderRadius: 999, padding: '13px 0', background: '#12B39C', color: '#fff',
+        width: '100%', marginTop: 12, border: 'none', borderRadius: 999, padding: '13px 0', background: '#0C8F7E', color: '#fff',
         fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? .7 : 1,
       }}>
         {busy ? 'Enregistrement…' : phase === 'arrivee' ? 'Oui, je confirme sa présence' : 'Je confirme la fin'}

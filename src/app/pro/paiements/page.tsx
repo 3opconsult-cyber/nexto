@@ -146,7 +146,7 @@ export default function ProPaiementsPage() {
             <label style={label}>BIC (facultatif)</label>
             <input style={input} value={bank.bic} onChange={e => setBank({ ...bank, bic: e.target.value.toUpperCase().replace(/\s/g, '') })} />
             {bankMsg && <p style={{ color: bankMsg.ok ? '#0C8F7E' : '#c0503a', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
-            <button onClick={saveBank} disabled={bankBusy} style={{ width: '100%', marginTop: 14, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: bankBusy ? 0.7 : 1 }}>
+            <button onClick={saveBank} disabled={bankBusy} style={{ width: '100%', marginTop: 14, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: bankBusy ? 0.7 : 1 }}>
               {bankBusy ? 'Enregistrement…' : savedIban ? 'Mettre à jour mon IBAN' : 'Enregistrer mon IBAN'}
             </button>
           </div>
@@ -224,14 +224,14 @@ export default function ProPaiementsPage() {
                     </>
                   )}
                   {error && <p style={{ color: '#c0503a', fontSize: 12, marginTop: 10 }}>{error}</p>}
-                  <button onClick={submit} disabled={busy} style={{ width: '100%', marginTop: 14, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
+                  <button onClick={submit} disabled={busy} style={{ width: '100%', marginTop: 14, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
                     {busy ? 'Envoi…' : c ? 'Enregistrer' : 'Ouvrir mon compte de versement'}
                   </button>
                 </div>
               ) : c?.statut !== 'active' && (
                 <>
                   {error && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{error}</p>}
-                  <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
+                  <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
                     {busy ? 'Ouverture…' : c ? `Compléter chez ${st.prestataire}` : `Ouvrir mon compte chez ${st.prestataire}`}
                   </button>
                   <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, marginTop: 10, textAlign: 'center' }}>

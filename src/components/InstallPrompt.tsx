@@ -91,7 +91,7 @@ export default function InstallPrompt() {
             </button>
           </div>
           {canInstall && (
-            <button onClick={install} style={{ flexShrink: 0, padding: '8px 13px', border: 0, borderRadius: 999, background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Installer</button>
+            <button onClick={install} style={{ flexShrink: 0, padding: '8px 13px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Installer</button>
           )}
           <button onClick={close} aria-label="Plus tard" title="Plus tard" style={{ flexShrink: 0, width: 34, height: 34, border: 0, borderRadius: '50%', background: '#F3F6F5', color: '#4E6470', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>

@@ -7,7 +7,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 :root{--danger:#C0503A;--danger-bg:rgba(192,80,58,.1);--warn-text:#8A6520;--warn-bg:#FFF7ED;--ink:#123644;--paper:#F3F6F5;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;
---teal:#12B39C;--tealD:#0C8F7E;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
+--teal:#12B39C;--tealD:#0C8F7E;--btnFill:#0C8F7E;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
 --fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 /* body vitrine desktop neutralise pendant la bascule (fond sombre + centrage
@@ -79,9 +79,9 @@
 .h1{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:19px}
 .h2{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;margin:16px 0 9px;display:flex;align-items:center;justify-content:space-between}
 .sub{color:var(--slate);font-size:12.5px;margin-top:4px;line-height:1.4}
-.btn{background:var(--teal);color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;text-align:center;padding:14px;border-radius:14px;cursor:pointer}
+.btn{background:var(--btnFill);min-height:44px;color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;text-align:center;padding:14px;border-radius:14px;cursor:pointer}
 .btn.dark{background:var(--ink)}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.gold{background:var(--gold);color:#3a2a06}
-.btn.sm{padding:10px 14px;font-size:13px;border-radius:11px}
+.btn.sm{padding:14px 14px;min-height:44px;font-size:13px;border-radius:11px}
 .foot{position:absolute;bottom:64px;left:0;right:0;padding:12px 16px 14px;background:linear-gradient(180deg,rgba(243,246,245,0),var(--paper) 34%);z-index:15}
 .foot.flush{bottom:0}
 
@@ -127,7 +127,7 @@
 .offer .p .big{font-family:var(--fh);font-weight:700;font-size:18px;color:var(--ink)}
 .inputbar{position:absolute;bottom:64px;left:0;right:0;padding:10px 12px;background:#fff;border-top:1px solid var(--line);display:flex;gap:9px;align-items:center;z-index:12}
 .inputbar .f{flex:1;background:var(--paper);border-radius:999px;padding:11px 15px;color:var(--slate);font-size:13px}
-.inputbar .snd{width:36px;height:36px;border-radius:50%;background:var(--teal);display:grid;place-items:center;flex:0 0 auto}
+.inputbar .snd{width:36px;height:36px;border-radius:50%;background:var(--btnFill);display:grid;place-items:center;flex:0 0 auto}
 
 /* agenda */
 .days{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
@@ -137,7 +137,7 @@
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
 .slot{padding:11px 0;text-align:center;border-radius:12px;border:1px solid var(--line);background:#fff;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px;cursor:pointer}
 .slot.taken{background:var(--paper);color:#B9C4C2;text-decoration:line-through}
-.slot.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.slot.on{background:var(--btnFill);color:#fff;border-color:var(--btnFill)}
 
 /* payment / receipt / qr */
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
@@ -166,7 +166,7 @@
 .notif h4{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;margin:6px 0 2px}
 .notif p{color:var(--slate);font-size:11.5px;line-height:1.4}
 .notif .acts{display:flex;gap:8px;margin-top:10px}.notif .acts>div{flex:1;text-align:center;padding:9px;border-radius:10px;font-family:var(--fh);font-weight:700;font-size:12.5px;cursor:pointer}
-.acc{background:var(--teal);color:#fff}.ref{background:#fff;border:1px solid var(--line);color:var(--slate)}
+.acc{background:var(--btnFill);color:#fff}.ref{background:#fff;border:1px solid var(--line);color:var(--slate)}
 .seg{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:3px;margin-top:8px}
 .seg>div{flex:1;text-align:center;padding:9px;border-radius:9px;font-weight:700;font-size:12.5px;color:var(--slate);cursor:pointer}
 .seg>div.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.06)}
@@ -174,7 +174,7 @@
 .tip{color:#5f7178;font-size:12px;text-align:center;max-width:410px;line-height:1.5}
 .modeToggle{display:flex;gap:8px}
 .mbtn{background:#16262f;color:#DCE7EB;border:1px solid #244049;font-weight:600;font-size:12.5px;padding:9px 16px;border-radius:11px;cursor:pointer}
-.mbtn.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.mbtn.on{background:var(--btnFill);color:#fff;border-color:var(--btnFill)}
 .mapscene{position:absolute;inset:0;transform-origin:50% 50%;transition:transform .25s ease}
 .zoomctl{position:absolute;right:14px;bottom:126px;z-index:32;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 8px 20px rgba(20,50,60,.2)}
 .zoomctl .zb{width:40px;height:40px;background:#fff;display:grid;place-items:center;font-size:22px;font-weight:600;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line);font-family:var(--fh);user-select:none}
@@ -407,3 +407,20 @@ svg{display:block}
 @keyframes obSlideFromLeft  { from { transform:translateX(-28px); opacity:0 } to { transform:translateX(0); opacity:1 } }
 .ob-slide-r{animation:obSlideFromRight .28s cubic-bezier(.2,.8,.2,1)}
 .ob-slide-l{animation:obSlideFromLeft .28s cubic-bezier(.2,.8,.2,1)}
+
+/* ============================================================
+   Accessibilité de base (lot 31, validé par Romain le 18/11/2026)
+   - Boutons pleins : texte blanc sur teal foncé --btnFill (#0C8F7E, 4,9:1, AA) ;
+     le teal #12B39C reste pour les accents (pictogrammes, bordures, jauges).
+   - Focus visible au clavier partout (les « outline: none » en ligne des champs
+     sont outrepassés seulement au focus).
+   - Cibles tactiles d'au moins 44 px sur les boutons principaux (.btn, .btn.sm, .acc).
+   ============================================================ */
+:where(a,button,[role="button"],[role="tab"],[role="link"],input,select,textarea,summary,[tabindex]):focus-visible{
+  outline:3px solid var(--btnFill,#0C8F7E)!important;outline-offset:2px!important;box-shadow:0 0 0 2px #fff}
+.acc{min-height:44px}
+
+/* Onglets segmentés (Agenda : En cours, Calendrier, Terminées, Factures) */
+.ping-tabs{display:flex;background:#E7EDEB;border-radius:12px;padding:3px;gap:2px;margin:0 0 14px}
+.ping-tabs button{flex:1;min-width:0;min-height:44px;border:none;background:transparent;border-radius:9px;font-family:var(--fb);font-weight:700;font-size:12.5px;color:var(--slate);cursor:pointer;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ping-tabs button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(18,54,68,.15)}

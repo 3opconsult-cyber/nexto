@@ -105,7 +105,7 @@ export default function QrScanner({ onResult, onCancel, title, hint, busy }: {
               inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" aria-label="Code à 6 chiffres"
               style={{ flex: 1, minWidth: 0, borderRadius: 10, border: 'none', padding: '10px', fontSize: 18, letterSpacing: 5, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
             <button onClick={() => { if (code.length === 6) { doneRef.current = true; onResult(code) } }} disabled={busy || code.length !== 6}
-              style={{ border: 'none', borderRadius: 999, padding: '10px 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: code.length === 6 && !busy ? 1 : .6, cursor: 'pointer' }}>
+              style={{ border: 'none', borderRadius: 999, padding: '10px 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: code.length === 6 && !busy ? 1 : .6, cursor: 'pointer' }}>
               {busy ? '…' : 'Valider'}
             </button>
           </div>

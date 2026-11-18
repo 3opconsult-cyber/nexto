@@ -135,7 +135,7 @@ export default function ProRevenusPage() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input id="sap-number" value={sap} onChange={e => setSap(e.target.value)}
                     style={{ flex: 1, minWidth: 0, border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif' }} />
-                  <button onClick={saveSap} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                  <button onClick={saveSap} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                     {sapSaved ? 'Enregistré' : 'Enregistrer'}
                   </button>
                 </div>
@@ -158,7 +158,7 @@ export default function ProRevenusPage() {
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input id="tax-id" value={taxId} onChange={e => setTaxId(e.target.value)} inputMode="numeric"
                       style={{ flex: 1, minWidth: 0, border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif' }} />
-                    <button onClick={saveTax} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                    <button onClick={saveTax} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                       {taxSaved ? 'Enregistré' : 'Enregistrer'}
                     </button>
                   </div>

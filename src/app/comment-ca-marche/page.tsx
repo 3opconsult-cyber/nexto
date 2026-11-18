@@ -160,7 +160,7 @@ export default function CommentCaMarche() {
       <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '22px 24px 28px' }}>
         {isLast ? (
           <button onClick={() => router.push(ctaHref)}
-            style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 16, borderRadius: 999, boxShadow: '0 8px 20px rgba(18,179,156,.35)' }}>
+            style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 16, borderRadius: 999, boxShadow: '0 8px 20px rgba(18,179,156,.35)' }}>
             {mode === 'pro' ? 'Proposer mes services' : 'Voir la carte'}
           </button>
         ) : (
@@ -170,7 +170,7 @@ export default function CommentCaMarche() {
               Précédent
             </button>
             <button onClick={() => go(1)}
-              style={{ flex: 1, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 15, borderRadius: 999 }}>
+              style={{ flex: 1, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 15, borderRadius: 999 }}>
               Suivant
             </button>
           </div>

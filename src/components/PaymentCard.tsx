@@ -85,7 +85,7 @@ export default function PaymentCard({ transactionId }: { transactionId: string }
         </div>
       </div>
       {canPay && (
-        <button onClick={pay} disabled={busy} style={{ width: '100%', marginTop: 12, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
+        <button onClick={pay} disabled={busy} style={{ width: '100%', marginTop: 12, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
           {busy ? 'Ouverture du paiement…' : `Payer ${eur(rest)}`}
         </button>
       )}

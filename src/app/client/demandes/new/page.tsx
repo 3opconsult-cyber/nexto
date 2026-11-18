@@ -284,7 +284,7 @@ export default function NewOpenRequestPage() {
 
         {error && <p style={{ color: '#c0503a', fontSize: 13, fontWeight: 600, margin: '4px 0 12px' }}>{error}</p>}
 
-        <button onClick={submit} disabled={creating} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
+        <button onClick={submit} disabled={creating} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
           {creating ? 'Publication…' : 'Publier mon annonce'}
         </button>
       </div>

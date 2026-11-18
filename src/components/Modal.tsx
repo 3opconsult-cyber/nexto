@@ -99,7 +99,7 @@ export function Cta({
   variant?: 'teal' | 'dark' | 'ghost'; disabled?: boolean
 }) {
   const styles = {
-    teal:  { background: '#12B39C', color: '#fff', boxShadow: '0 8px 18px rgba(18,179,156,.28)' },
+    teal:  { background: '#0C8F7E', color: '#fff', boxShadow: '0 8px 18px rgba(18,179,156,.28)' },
     dark:  { background: '#123644', color: '#fff', boxShadow: '0 8px 18px rgba(18,54,68,.22)' },
     ghost: { background: '#fff', color: '#123644', boxShadow: '0 0 0 1px #DCE5E3' },
   }[variant]

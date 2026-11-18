@@ -170,7 +170,7 @@ export default function MissionDuJour() {
   const fProof = st?.completion_proof ?? tx.completion_proof
 
   const primary: React.CSSProperties = {
-    width: '100%', border: 'none', borderRadius: 999, padding: '14px 0', background: '#12B39C', color: '#fff',
+    width: '100%', border: 'none', borderRadius: 999, padding: '14px 0', background: '#0C8F7E', color: '#fff',
     fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, cursor: 'pointer',
   }
   const link: React.CSSProperties = { border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer' }

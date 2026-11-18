@@ -21,6 +21,7 @@ import { TRADES } from '@/lib/trades'
 import { geocodeAddress } from '@/lib/geocode'
 import { systemSender, isSystemMessage } from '@/lib/systemMessage'
 import { isTodayMission } from '@/lib/todayMission'
+import { MissionSuivi } from '@/components/presence/MissionTimeline'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -583,7 +584,7 @@ export default function ChatPage() {
           <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 8px', lineHeight: 1.5 }}>Le client demande une intervention ailleurs qu&apos;à l&apos;adresse de son profil. Le numéro vous est transmis si vous acceptez.</p>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#123644', marginBottom: 10 }}>{maskAddress(reqAddr)}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, padding: 11, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
+            <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, padding: 11, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
             <button onClick={() => answerAddress(false)} disabled={addrBusy} style={{ flex: 1, padding: 11, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
           </div>
         </div>
@@ -608,7 +609,7 @@ export default function ChatPage() {
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Date et heure</label>
               <div style={{ marginTop: 6 }}><DayTimePicker value={rdvAt} onChange={setRdvAt} /></div><div style={{ height: 10 }} />
               {rdvError && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{rdvError}</p>}
-              <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
+              <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
                 {rdvSaving ? 'Enregistrement…' : 'Confirmer le rendez-vous'}
               </button>
               <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>
@@ -621,17 +622,28 @@ export default function ChatPage() {
             </div>
           )
         ) : (
-          <div style={{ margin: '10px 16px 0', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
-            <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>Rendez-vous {rdvLabel(tx.scheduled_at)}</span>
-            {/* Billet de mission : accès rapide à l'écran « Mission du jour » (QR / scanner / client absent / fin). */}
-            {!tx.completed_at && (
-              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ border: 'none', background: '#12B39C', color: '#fff', borderRadius: 999, padding: '7px 13px', fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                {isTodayMission(tx) ? 'Mission du jour' : userId === tx.buyer_id ? 'Mes codes QR' : 'Voir la mission'}
-              </button>
-            )}
+          <div style={{ margin: '10px 16px 0', background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>Rendez-vous {rdvLabel(tx.scheduled_at)}</span>
+              {/* Billet de mission : accès rapide à l'écran « Mission du jour » (QR / scanner / client absent / fin). */}
+              {!tx.completed_at && (
+                <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ border: 'none', background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '0 14px', minHeight: 44, fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                  {isTodayMission(tx) ? 'Mission du jour' : userId === tx.buyer_id ? 'Mes codes QR' : 'Voir la mission'}
+                </button>
+              )}
+            </div>
+            {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
+            <div style={{ marginTop: 8 }}><MissionSuivi tx={tx} compact /></div>
           </div>
         )
+      )}
+
+      {/* Mission terminée : la frise reste visible, toutes étapes cochées (la facture est posée à la fin). */}
+      {tx && tx.price_confirmed && ['completed', 'released'].includes(tx.status) && (
+        <div style={{ margin: '10px 16px 0', background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
+          <MissionSuivi tx={tx} compact />
+        </div>
       )}
 
       {/* Mission terminée : la facture est dans le récapitulatif ci-dessus (bouton « Voir les factures »). */}
@@ -824,7 +836,7 @@ export default function ChatPage() {
                 {m.offer_status === 'pending' && !priceLocked && !mine && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                     <button onClick={() => counterOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
-                    <button onClick={() => acceptOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
+                    <button onClick={() => acceptOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
                   </div>
                 )}
                 {m.offer_status === 'pending' && !priceLocked && mine && (
@@ -920,7 +932,7 @@ export default function ChatPage() {
           style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send}
-          style={{ width: 42, height: 42, borderRadius: '50%', border: 'none', background: '#12B39C', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0C8F7E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" /></svg>
         </button>
       </div>

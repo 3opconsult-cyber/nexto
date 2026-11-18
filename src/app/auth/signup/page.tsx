@@ -195,7 +195,7 @@ function SignupForm() {
           votre compte, puis connectez-vous. Pensez à regarder dans les spams.
         </p>
         <Link href={afterLogin ? `/auth/login?next=${encodeURIComponent(afterLogin)}` : '/auth/login'}
-          style={{ display: 'block', marginTop: 20, background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
+          style={{ display: 'block', marginTop: 20, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
           Aller à la connexion
         </Link>
       </div>
@@ -300,7 +300,7 @@ function SignupForm() {
             )}
             {error && <p style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
             <button type="submit" disabled={loading}
-              style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+              style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
               {loading ? 'Création…' : step === 1 ? 'Continuer →' : 'Créer mon compte'}
             </button>
           </form>

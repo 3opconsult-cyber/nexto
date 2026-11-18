@@ -42,7 +42,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  // Pas de maximumScale : le zoom de la page reste possible (accessibilité, lot 31). Sur les cartes,
+  // le pincement reste à Leaflet (leaflet.css pose touch-action: none sur le conteneur de la carte).
   themeColor: '#12B39C',
 }
 

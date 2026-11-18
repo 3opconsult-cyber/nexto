@@ -342,7 +342,7 @@ function MissionForm() {
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
-        <button onClick={() => paymentsOn ? submit() : setConfirming(true)} disabled={!pro || !mode || creating || paymentsOn === null} style={{ width: '100%', border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
+        <button onClick={() => paymentsOn ? submit() : setConfirming(true)} disabled={!pro || !mode || creating || paymentsOn === null} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
           {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
         </button>
         <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>
