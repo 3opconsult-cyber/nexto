@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
-import { TRANSFER_STATUS, formatIban, pingBank, transfersFor, type PingBank, type Transfer } from '@/lib/transfers'
+import { TRANSFER_STATUS, formatIban, pingBank, transferDue, transfersFor, type PingBank, type Transfer } from '@/lib/transfers'
 
 /**
  * Règlement par virement (migration 025), sous les factures d'une mission terminée.
@@ -39,6 +39,22 @@ function Badge({ t }: { t: Transfer }) {
   return <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: s.bg, color: s.fg, whiteSpace: 'nowrap' }}>{s.t}</span>
 }
 
+/** Avoir d'un arrangement à l'amiable (migration 040) sur le virement de la prestation. */
+function CreditNote({ t, viewerIsPayer }: { t: Transfer; viewerIsPayer: boolean }) {
+  const c = t.credit_cents ?? 0
+  if (!t.credit_mode || c <= 0) return null
+  const text = t.credit_mode === 'deduit'
+    ? `Avoir de ${EUR(c)} (arrangement à l’amiable) déduit de la facture de ${EUR(t.amount_cents)}.${transferDue(t) === 0 ? ' Plus rien à virer.' : ''}`
+    : t.credit_refunded_at
+      ? `Avoir de ${EUR(c)} (arrangement à l’amiable) remboursé au client le ${dateFr(t.credit_refunded_at)}.`
+      : viewerIsPayer
+        ? `Avoir de ${EUR(c)} (arrangement à l’amiable) : la prestation étant déjà réglée, le prestataire vous rembourse ${EUR(c)}.`
+        : `Avoir de ${EUR(c)} (arrangement à l’amiable) : la prestation étant déjà réglée, remboursez ${EUR(c)} au client, puis notez-le ici.`
+  return (
+    <p style={{ fontSize: 12, color: C.tealD, background: 'rgba(18,179,156,.1)', borderRadius: 9, padding: '8px 10px', margin: '6px 0', lineHeight: 1.5, fontWeight: 600 }}>{text}</p>
+  )
+}
+
 const dateFr = (iso: string) => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
 
 export default function TransferCard({ transactionId, userId }: { transactionId: string; userId: string }) {
@@ -67,6 +83,13 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
     await load(); setBusy(null)
   }
 
+  async function markRefunded(t: Transfer) {
+    setBusy(t.id); setErr('')
+    const { error } = await createClient().rpc('mark_settlement_refunded', { p_transfer: t.id })
+    if (error) setErr('Enregistrement impossible : ' + error.message)
+    await load(); setBusy(null)
+  }
+
   if (!rows || !rows.length) return null
   const toPay = rows.filter(t => t.payer_id === userId)
   const toReceive = rows.filter(t => t.payee_id === userId)
@@ -90,7 +113,8 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
           </div>
           <Badge t={t} />
         </div>
-        <Line label="Montant" value={EUR(t.amount_cents)} />
+        <Line label="Montant" value={EUR(transferDue(t))} />
+        <CreditNote t={t} viewerIsPayer />
         <Line label="Bénéficiaire" value={holder} />
         {iban ? <Line label="IBAN" value={formatIban(iban)} copy /> : (
           <p style={{ fontSize: 12, color: '#8A6520', background: 'rgba(242,169,59,.12)', borderRadius: 9, padding: '8px 10px', margin: '4px 0', lineHeight: 1.5 }}>
@@ -102,11 +126,12 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
         {iban && bic && <Line label="BIC" value={bic} copy />}
         <Line label="Référence" value={t.reference} copy />
         <div style={{ fontSize: 11.5, color: C.slate, margin: '2px 0 6px' }}>
-          {t.status === 'recu' ? `Reçu le ${dateFr(t.received_at || t.created_at)}.`
+          {t.status === 'recu' && transferDue(t) === 0 && t.credit_mode === 'deduit' ? 'Soldé par l’avoir.'
+            : t.status === 'recu' ? `Reçu le ${dateFr(t.received_at || t.created_at)}.`
             : t.status === 'declare_paye' ? `Virement annoncé le ${dateFr(t.declared_at || t.created_at)}, en attente de réception.`
             : `À régler avant le ${dateFr(t.due_at)}, avec la référence en libellé du virement.`}
         </div>
-        {(t.status === 'a_payer' || t.status === 'en_retard') && (
+        {(t.status === 'a_payer' || t.status === 'en_retard') && transferDue(t) > 0 && (
           <button type="button" disabled={busy === t.id} onClick={() => setStatus(t, 'declare_paye')} style={{ ...btn(true), opacity: busy === t.id ? .6 : 1 }}>
             J’ai fait le virement
           </button>
@@ -140,9 +165,13 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
           {toReceive.map(t => (
             <div key={t.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 6 }}>
-                <span style={{ fontSize: 13, color: C.navy, fontWeight: 600 }}>{EUR(t.amount_cents)} · {t.reference}</span>
+                <span style={{ fontSize: 13, color: C.navy, fontWeight: 600 }}>{EUR(transferDue(t))} · {t.reference}</span>
                 <Badge t={t} />
               </div>
+              <CreditNote t={t} viewerIsPayer={false} />
+              {t.credit_mode === 'a_rembourser' && !t.credit_refunded_at && (
+                <button type="button" disabled={busy === t.id} onClick={() => markRefunded(t)} style={{ ...btn(false), marginBottom: 8, opacity: busy === t.id ? .6 : 1 }}>J’ai remboursé le client</button>
+              )}
               <div style={{ fontSize: 11.5, color: C.slate, margin: '4px 0 8px', lineHeight: 1.5 }}>
                 {t.status === 'recu' ? `Noté reçu le ${dateFr(t.received_at || t.created_at)}.`
                   : t.status === 'declare_paye' ? `Le client a annoncé son virement le ${dateFr(t.declared_at || t.created_at)}. Notez-le reçu dès qu’il apparaît sur votre compte.`

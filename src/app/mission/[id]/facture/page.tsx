@@ -7,7 +7,7 @@ import NavDrawer from '@/components/NavDrawer'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import TransferCard from '@/components/TransferCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
-         PLATFORM_PENDING, tauxLabel, prestationSous, withProTaxStatus, type ProTaxStatus, type Invoice } from '@/lib/invoice-pdf'
+         PLATFORM_PENDING, tauxLabel, prestationSous, withProTaxStatus, invoiceCredit, type ProTaxStatus, type Invoice } from '@/lib/invoice-pdf'
 
 /**
  * Facturation — les trois documents d'une mission.
@@ -300,6 +300,25 @@ export default function FacturePage() {
           {inv.legal?.franchise_tva && (
             <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>{inv.legal.franchise_tva}</div>
           )}
+          {(() => {
+            const av = invoiceCredit(inv)
+            if (!av) return null
+            return (
+              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 12, background: 'rgba(18,179,156,.08)', border: '1px solid rgba(18,179,156,.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13.5, fontWeight: 700 }}>
+                  <span>Avoir{av.number ? ` n° ${av.number}` : ''}{av.date ? ` du ${new Date(av.date).toLocaleDateString('fr-FR')}` : ''}</span>
+                  <span style={{ whiteSpace: 'nowrap' }}>− {EUR(av.cents)}</span>
+                </div>
+                <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{av.reason}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8 }}>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+                    {inv.template === 'recapitulatif' ? 'Montant perçu après avoir' : 'Net à payer après avoir'}
+                  </span>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18 }}>{EUR(av.net)}</span>
+                </div>
+              </div>
+            )
+          })()}
 
           <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
 

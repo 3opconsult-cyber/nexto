@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
 import { filterMessage } from '@/lib/chatFilter'
 import { categoryLabel } from '@/components/DisputeFields'
+import AmicableSettlement from '@/components/AmicableSettlement'
 
 /**
  * Dossier d'un litige, comme le centre de résolution d'Airbnb (Romain 31/10) : un fil de discussion
@@ -54,7 +55,8 @@ export default function LitigePage() {
       const { data: isAdm } = await supabase.rpc('is_admin')
       setAdmin(!!isAdm)
       const { data } = await supabase.from('disputes')
-        .select('id, reason, status, resolution, created_at, opener_id, category, claimed_cents, photo_paths, deadline_at, transaction_id, transactions(id, buyer_id, seller_id, subtotal_cents, buyer_fee_cents, total_charged_cents, payout_cents, payment_status, payment_provider, scheduled_at, completed_at, requests(title, category))')
+        // « * » : les colonnes de l'arrangement à l'amiable (migration 040) arrivent seules une fois appliquée.
+        .select('*, transactions(id, buyer_id, seller_id, subtotal_cents, buyer_fee_cents, total_charged_cents, payout_cents, payment_status, payment_provider, scheduled_at, completed_at, requests(title, category))')
         .eq('id', id).maybeSingle()
       if (!data) { setMissing(true); return }
       setD(data)
@@ -71,6 +73,13 @@ export default function LitigePage() {
       setPays(p ?? [])
     })()
   }, [id, router, loadMsgs])
+
+  // Après une proposition / réponse d'arrangement : relit le litige (statut, montant) et le fil.
+  async function reloadDispute() {
+    const { data } = await createClient().from('disputes').select('*').eq('id', id).maybeSingle()
+    if (data) setD((prev: any) => ({ ...prev, ...data }))
+    loadMsgs()
+  }
 
   // Le fil se met à jour tout seul tant que la page est ouverte.
   useEffect(() => { const t = setInterval(loadMsgs, 10000); return () => clearInterval(t) }, [loadMsgs])
@@ -174,6 +183,8 @@ export default function LitigePage() {
               </div>
             )}
             {d.resolution && <div style={{ fontSize: 13, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Décision : {d.resolution}</div>}
+            {tx && uid && <AmicableSettlement dispute={d} buyerId={tx.buyer_id} sellerId={tx.seller_id} userId={uid}
+              ceilingCents={tx.subtotal_cents} onChange={reloadDispute} />}
             <div style={{ display: 'flex', gap: 14, marginTop: 10 }}>
               <a href={`/mission/${d.transaction_id}/chat`} style={{ fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>Voir la mission</a>
               <a href={`/mission/${d.transaction_id}/facture`} style={{ fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>Factures</a>
