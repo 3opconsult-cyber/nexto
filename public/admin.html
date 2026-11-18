@@ -471,6 +471,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
       <a data-s="users" onclick="nav('users')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M3 21a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 21a5 5 0 0 1 5.5-4.9"/></svg> Utilisateurs</a>
       <a data-s="activite" onclick="nav('activite')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg> Activité &amp; annonces</a>
       <a data-s="tx" onclick="nav('tx')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16l-3-3M20 17H4l3 3"/></svg> Transactions</a>
+      <a data-s="catalogue" onclick="nav('catalogue')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg> Catalogue des services</a>
       <div class="sep">Communication &amp; commercialisation</div>
       <a data-s="prospects" onclick="nav('prospects')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h18l-7 8v7l-4-2v-5z"/></svg> Prospection</a>
       <a data-s="comm" onclick="nav('comm')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg> Supports &amp; visuels</a>
@@ -1024,6 +1025,18 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
         </div>
       </section>
 
+      <!-- CATALOGUE DES SERVICES (lots 26-27, table service_catalog, migration 050) -->
+      <section class="section" id="s_catalogue">
+        <div class="card" style="margin-bottom:14px"><h3><span>Catalogue des services <span class="muted">une ligne = un service</span></span><button class="btn" type="button" onclick="window.catNew&&window.catNew()">Ajouter un service</button></h3>
+          <p class="muted" style="margin-top:4px">Proposé au choix, un service apparaît dans l'inscription des prestataires, le dépôt de demande et « Mes tarifs » ; affiché, il reste dans les puces de la carte. Ses pièces demandées s'ajoutent à l'inscription et à « Mes pièces » des prestataires qui le proposent. Un service ne se supprime pas : il se masque (les missions passées gardent leur libellé).</p>
+          <div class="lawbox mt" id="catNotice" style="display:none"></div>
+        </div>
+        <div class="card" id="catFormCard" style="display:none;margin-bottom:14px"></div>
+        <div class="card"><div id="catList"><p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Chargement…</p></div>
+          <p class="note">Nouveau service : créé masqué et non proposé. L'ouvrir au public reste une décision de Romain (mono-produit au lancement : ménage, repassage, nettoyage, vitres en base).</p>
+        </div>
+      </section>
+
       <section class="section" id="s_dossier_sig"></section>
 
       <section class="section" id="s_dossier"></section>
@@ -1422,7 +1435,7 @@ const $=id=>document.getElementById(id);
    proprement (apostrophes, antislash), puis l'echappement HTML protege l'attribut. */
 function escT(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function jsArg(v){return JSON.stringify(String(v==null?'':v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-const TITLES={overview:"Vue d'ensemble",live:"Aperçu réel",users:"Utilisateurs",activite:"Activité & annonces",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",pay:"Paiements & séquestre",retours:"Retours des testeurs"};
+const TITLES={overview:"Vue d'ensemble",live:"Aperçu réel",users:"Utilisateurs",activite:"Activité & annonces",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",catalogue:"Catalogue des services",pay:"Paiements & séquestre",retours:"Retours des testeurs"};
 const ICN={invoice:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg>',check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>',quote:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M14 2H6v20l4-2 4 2 4-2V8z"/></svg>',doc:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 4h10l6 6v10H4z"/></svg>',star:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .8-5 4.8 1.3 6.9L12 17.8 5.4 21l1.3-6.9-5-4.8 7-.8z"/></svg>',chat:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>',user:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',mail:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'};
 function etatTag(e){return e==='Libéré'?'ok':e==='Remboursé'?'dn':'wait';}
 
@@ -4743,6 +4756,229 @@ async function runSearch(raw) {
   gsBox.innerHTML = html || '<div class="ge">Aucun résultat pour « ' + esc(String(raw).trim()) + ' ».</div>'
 }
 
+/* ============ Catalogue des services (lots 26-27, migration 050) ============
+   Table service_catalog : lecture publique, écriture admin (is_admin). Ajouter, modifier, masquer
+   (avec l'impact annoncé avant), proposer au choix. Doublons refusés (libellé, casse et accents
+   ignorés ; la base refuse aussi les doublons de casse). Toute donnée de la base passe par esc(). */
+const CAT_MODES = { forfait: 'Forfait', horaire: "À l'heure", forfait_heures: 'Forfait + heures incluses', devis: 'Sur devis' }
+const CAT_FIELDS = { surface_m2: 'Surface (m²)', nombre_pieces: 'Nombre de pièces', hours_wanted: "Nombre d'heures", linen_kg: 'Quantité de linge (kg)', linen_types: 'Types de linge', household_size: 'Foyer' }
+const CAT_RUBRIQUES = { identite: 'Identité', rcpro: 'Assurances', kbis: "Statut de l'entreprise", diplome: 'Diplômes et qualifications', sap: 'Services à la personne (SAP)', rib: 'RIB' }
+const CAT_ICONS = { s_menage: 'Ménage', s_repassage: 'Repassage', s_nettoyage: 'Nettoyage', s_vitres: 'Vitres', s_chantier: 'Bâtiment', s_autre: 'Autre (étiquette)' }
+const CAT_ICON_SVG = {
+  s_menage: '<path d="M5 9h14l-1.6 11H6.6z"/><path d="M8 9a4 4 0 0 1 8 0"/><path d="M9.5 13v3M14.5 13v3"/>',
+  s_repassage: '<path d="M2 18h16a3 3 0 0 0 3-3v-3a5 5 0 0 0-5-5H9a7 7 0 0 0-7 7z"/><path d="M11 7V5h5"/><path d="M6 14h9"/>',
+  s_nettoyage: '<path d="M9 3h5v4H9z"/><path d="M14 4h3l2 2"/><path d="M8 7h7l1 4v9a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-9z"/><path d="M10 13h3"/>',
+  s_vitres: '<rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M12 4v16M4 12h16"/>',
+  s_chantier: '<path d="M4 20h16M6 20V9l6-5 6 5v11"/><path d="M10 20v-5h4v5"/>',
+  s_autre: '<path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+}
+const CAT_DOMAINS = ['Nettoyage', 'Bâtiment', "Garde d'enfants", 'Autre']
+const catNorm = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+const catSlug = t => catNorm(t).replace(/[^a-z0-9]+/g, '_').replace(/^[^a-z]+/, '').replace(/_+$/g, '').slice(0, 32).replace(/_+$/g, '')
+const catTypeSlug = t => catNorm(t).replace(/[^a-z]+/g, '-').replace(/^-+/, '').slice(0, 40).replace(/-+$/g, '')
+const catIcon = k => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (CAT_ICON_SVG[k] || CAT_ICON_SVG.s_autre) + '</svg>'
+let CAT_ROWS = [], CAT_EDIT = null, CAT_DOCS = [], CAT_CONFIRM = null, CAT_MISSING = false
+
+function catNotice(msg, kind) {
+  const el = document.getElementById('catNotice'); if (!el) return
+  if (!msg) { el.style.display = 'none'; el.textContent = ''; return }
+  el.style.display = 'block'; el.textContent = msg
+  el.style.borderColor = kind === 'err' ? 'rgba(192,80,58,.4)' : ''
+  el.style.color = kind === 'err' ? '#c0503a' : ''
+}
+const catState = c => c.hidden ? ['Masqué', 'dn'] : c.active ? ['Proposé au choix', 'ok'] : ['Affiché (carte), non proposé', 'wait']
+
+// Les libellés du catalogue servent aussi aux autres écrans de l'admin (TRADES_LIVE).
+function catApplyLabels() { CAT_ROWS.forEach(c => { TRADES_LIVE[c.key] = c.label }) }
+
+window.loadCatalogue = async function (silent) {
+  const { data, error } = await supabaseLive.from('service_catalog').select('*').order('sort_order').order('label')
+  const list = document.getElementById('catList')
+  if (error) {
+    CAT_ROWS = []
+    CAT_MISSING = /service_catalog|does not exist|schema cache|PGRST205|42P01/i.test((error.code || '') + ' ' + (error.message || ''))
+    if (silent) return
+    catNotice(CAT_MISSING
+      ? "La table service_catalog n'existe pas encore : coller supabase/a_coller/050_catalogue_services.sql dans l'éditeur SQL Supabase. En attendant, l'application utilise la liste de repli de src/lib/trades.ts (ménage, repassage, nettoyage, vitres), sans aucun changement visible."
+      : 'Lecture impossible : ' + error.message, CAT_MISSING ? '' : 'err')
+    if (list) list.innerHTML = '<p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Catalogue indisponible</p>'
+    return
+  }
+  CAT_MISSING = false
+  CAT_ROWS = data || []
+  catApplyLabels()
+  if (silent) return
+  catNotice('')
+  catRenderList()
+}
+
+async function catCount(q) { try { const { count, error } = await q; return error ? null : (count || 0) } catch (e) { return null } }
+async function catImpact(key) {
+  const [pros, svcs, reqs] = await Promise.all([
+    catCount(supabaseLive.from('provider_profiles').select('id', { count: 'exact', head: true }).eq('trade', key)),
+    catCount(supabaseLive.from('services').select('id', { count: 'exact', head: true }).eq('trade', key)),
+    catCount(supabaseLive.from('requests').select('id', { count: 'exact', head: true }).eq('category', key).eq('status', 'open')),
+  ])
+  return { pros, svcs, reqs }
+}
+const catN = (n, one, many) => n == null ? '(nombre non lisible) ' + many : n + ' ' + (n > 1 ? many : one)
+
+function catRenderList() {
+  const list = document.getElementById('catList'); if (!list) return
+  if (!CAT_ROWS.length) { list.innerHTML = '<p class="muted" style="padding:20px 0;text-align:center;font-weight:600">Catalogue vide : l\'application utilise la liste de repli (src/lib/trades.ts).</p>'; return }
+  list.innerHTML = '<div style="overflow-x:auto"><table class="tbl" style="min-width:760px"><tr><th>Service</th><th>Statut</th><th>Tarifs</th><th>CESU</th><th>Pièces demandées</th><th></th></tr>' + CAT_ROWS.map((c, i) => {
+    const st = catState(c)
+    const docs = Array.isArray(c.required_docs) ? c.required_docs : []
+    const conf = CAT_CONFIRM && CAT_CONFIRM.i === i ? CAT_CONFIRM : null
+    return '<tr><td><span style="display:inline-flex;align-items:center;gap:8px">' + catIcon(c.icon) + '<span><b>' + esc(c.label) + '</b><br><small class="muted">' + esc(c.key) + ' · ' + esc(c.domain) + '</small></span></span></td>' +
+      '<td><span class="tag ' + st[1] + '">' + esc(st[0]) + '</span></td>' +
+      '<td><small>' + (c.pricing_modes || []).map(m => esc(CAT_MODES[m] || m)).join(', ') + (c.unit ? ' · unité : ' + esc(c.unit) : '') + '</small></td>' +
+      '<td><small>' + (c.cesu_eligible ? 'Éligible CESU et crédit d\'impôt' : 'Non éligible') + '</small></td>' +
+      '<td><small>' + (docs.length ? docs.map(d => esc(d.label) + (d.required ? '' : ' (facultatif)')).join(', ') : 'Aucune en plus') + '</small></td>' +
+      '<td style="white-space:nowrap"><button class="btn ghost" type="button" data-cat="edit" data-i="' + i + '">Modifier</button> ' +
+      (c.hidden
+        ? '<button class="btn ghost" type="button" data-cat="show" data-i="' + i + '">Réafficher</button>'
+        : '<button class="btn ghost" type="button" data-cat="hide" data-i="' + i + '">Masquer</button>') + ' ' +
+      (c.active
+        ? '<button class="btn ghost" type="button" data-cat="unoffer" data-i="' + i + '">Ne plus proposer</button>'
+        : '<button class="btn ghost" type="button" data-cat="offer" data-i="' + i + '">Proposer au choix</button>') +
+      '</td></tr>' +
+      (conf ? '<tr><td colspan="6"><div class="lawbox" style="border-color:rgba(192,80,58,.4)"><b>' + esc(conf.title) + '</b><p style="margin:6px 0 10px">' + esc(conf.text) + '</p>' +
+        '<button class="btn ghost" type="button" data-cat="cancel">Annuler</button> <button class="btn red" type="button" data-cat="confirm">' + esc(conf.cta) + '</button></div></td></tr>' : '')
+  }).join('') + '</table></div>'
+}
+
+async function catAsk(i, action) {
+  const c = CAT_ROWS[i]; if (!c) return
+  const im = await catImpact(c.key)
+  const who = catN(im.pros, 'prestataire a', 'prestataires ont') + ' ce métier comme métier principal ; ' + catN(im.svcs, 'prestation de « Mes tarifs » y est rattachée', 'prestations de « Mes tarifs » y sont rattachées') + ' ; ' + catN(im.reqs, 'demande ouverte le concerne', 'demandes ouvertes le concernent') + '.'
+  if (action === 'hide') CAT_CONFIRM = { i, action, cta: 'Masquer', title: 'Masquer « ' + c.label + ' » ?',
+    text: who + ' Le service disparaît des puces de la carte, de l\'inscription, du dépôt de demande et de « Mes tarifs ». Les prestataires concernés restent sur la carte (filtre « Tous ») et gardent leurs prix ; les demandes ouvertes restent visibles des prestataires ; les missions passées gardent leur libellé.' }
+  else if (action === 'unoffer') CAT_CONFIRM = { i, action, cta: 'Ne plus proposer', title: 'Ne plus proposer « ' + c.label + ' » au choix ?',
+    text: who + ' Plus aucun prestataire ni client ne pourra le choisir (inscription, dépôt de demande, « Mes tarifs ») ; il reste dans les puces de la carte tant qu\'il n\'est pas masqué.' }
+  else if (action === 'offer') CAT_CONFIRM = { i, action, cta: 'Proposer au choix', title: 'Proposer « ' + c.label + ' » au choix ?',
+    text: 'Le service apparaîtra dans l\'inscription des prestataires, le dépôt de demande des clients, « Mes tarifs » et les puces de la carte. Ouvrir un nouveau service reste une décision de Romain : ne confirmez que si elle est prise.' }
+  catRenderList()
+}
+
+async function catPatch(i, patch, msg) {
+  const c = CAT_ROWS[i]; if (!c) return
+  const { error } = await supabaseLive.from('service_catalog').update(patch).eq('key', c.key)
+  CAT_CONFIRM = null
+  if (error) { catNotice('Enregistrement refusé : ' + error.message, 'err'); catRenderList(); return }
+  toast(esc(msg))
+  await window.loadCatalogue()
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-cat]'); if (!b) return
+  const i = Number(b.getAttribute('data-i')), a = b.getAttribute('data-cat')
+  if (a === 'edit') window.catEdit(i)
+  else if (a === 'hide' || a === 'unoffer' || a === 'offer') catAsk(i, a)
+  else if (a === 'show') catPatch(i, { hidden: false }, 'Service réaffiché')
+  else if (a === 'cancel') { CAT_CONFIRM = null; catRenderList() }
+  else if (a === 'confirm' && CAT_CONFIRM) {
+    const { i: j, action } = CAT_CONFIRM
+    if (action === 'hide') catPatch(j, { hidden: true }, 'Service masqué')
+    else if (action === 'unoffer') catPatch(j, { active: false }, 'Service retiré du choix')
+    else if (action === 'offer') catPatch(j, { active: true, hidden: false }, 'Service proposé au choix')
+  }
+  else if (a === 'doc-add') { catReadDocs(); CAT_DOCS.push({ kind: 'diplome', label: '', required: false }); catRenderDocs() }
+  else if (a === 'doc-del') { catReadDocs(); CAT_DOCS.splice(Number(b.getAttribute('data-d')), 1); catRenderDocs() }
+})
+
+function catReadDocs() {
+  const box = document.getElementById('catDocs'); if (!box) return
+  CAT_DOCS = Array.from(box.querySelectorAll('[data-docrow]')).map(r => ({
+    kind: r.querySelector('select').value, label: r.querySelector('input[type=text]').value,
+    required: r.querySelector('input[type=checkbox]').checked, type: r.getAttribute('data-type') || '',
+  }))
+}
+function catRenderDocs() {
+  const box = document.getElementById('catDocs'); if (!box) return
+  box.innerHTML = CAT_DOCS.map((d, j) => '<div data-docrow data-type="' + esc(d.type || '') + '" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">' +
+    '<select class="minput" style="width:auto;margin:0" aria-label="Rubrique de Mes pièces">' + Object.keys(CAT_RUBRIQUES).map(k => '<option value="' + k + '"' + (d.kind === k ? ' selected' : '') + '>' + esc(CAT_RUBRIQUES[k]) + '</option>').join('') + '</select>' +
+    '<input type="text" class="minput" style="flex:1;min-width:180px;margin:0" maxlength="80" placeholder="Ex. Garantie décennale, CAP AEPE" value="' + esc(d.label) + '" aria-label="Nom de la pièce">' +
+    '<label class="muted" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox"' + (d.required ? ' checked' : '') + '> obligatoire</label>' +
+    '<button class="btn ghost" type="button" data-cat="doc-del" data-d="' + j + '">Retirer</button></div>').join('') ||
+    '<p class="muted" style="margin-bottom:8px">Aucune pièce en plus des pièces de base (identité, assurance, statut).</p>'
+}
+
+function catOpenForm(c) {
+  CAT_EDIT = c ? c.key : null
+  CAT_DOCS = c && Array.isArray(c.required_docs) ? c.required_docs.map(d => ({ ...d })) : []
+  const card = document.getElementById('catFormCard'); if (!card) return
+  const modes = c ? (c.pricing_modes || []) : ['forfait', 'horaire', 'forfait_heures', 'devis']
+  const fields = c ? (c.request_fields || []) : ['household_size']
+  const doms = CAT_DOMAINS.concat(c && c.domain && !CAT_DOMAINS.includes(c.domain) ? [c.domain] : [])
+  const chk = (name, val, label, on) => '<label style="display:inline-flex;gap:6px;align-items:center;margin:0 14px 8px 0;font-size:13px"><input type="checkbox" name="' + name + '" value="' + val + '"' + (on ? ' checked' : '') + '> ' + esc(label) + '</label>'
+  card.innerHTML = '<h3>' + (c ? 'Modifier « ' + esc(c.label) + ' »' : 'Nouveau service') + '</h3>' +
+    '<p class="muted" style="margin-bottom:12px">' + (c ? 'Les prix déjà fixés par les prestataires ne changent pas. Clé technique : ' + esc(c.key) + ' (non modifiable).' : 'Le service est créé masqué et non proposé : rien ne change pour les utilisateurs tant qu\'il n\'est pas proposé au choix.') + '</p>' +
+    '<label class="muted" for="catLabel">Nom du service</label><input id="catLabel" class="minput" maxlength="60" placeholder="Ex. Petits travaux" value="' + esc(c ? c.label : '') + '">' +
+    '<div style="display:flex;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:180px"><label class="muted" for="catIcon">Pictogramme</label><select id="catIcon" class="minput">' + Object.keys(CAT_ICONS).map(k => '<option value="' + k + '"' + ((c ? c.icon : 's_autre') === k ? ' selected' : '') + '>' + esc(CAT_ICONS[k]) + '</option>').join('') + '</select></div>' +
+    '<div style="flex:1;min-width:180px"><label class="muted" for="catDomain">Domaine des qualifications</label><select id="catDomain" class="minput">' + doms.map(d => '<option' + ((c ? c.domain : 'Autre') === d ? ' selected' : '') + '>' + esc(d) + '</option>').join('') + '</select></div>' +
+    '<div style="width:120px"><label class="muted" for="catOrder">Ordre</label><input id="catOrder" type="number" class="minput" value="' + esc(c ? c.sort_order : (CAT_ROWS.reduce((m, x) => Math.max(m, x.sort_order || 0), 0) + 10)) + '"></div></div>' +
+    '<span class="muted">Manières de tarifer</span><div style="margin:6px 0 6px">' + Object.keys(CAT_MODES).map(m => chk('catMode', m, CAT_MODES[m], modes.includes(m))).join('') + '</div>' +
+    '<label class="muted" for="catUnit">Unité d\'un prix unitaire (facultatif, ex. panier, fenêtre, m² ; pas encore utilisée par l\'application)</label><input id="catUnit" class="minput" maxlength="20" value="' + esc(c && c.unit ? c.unit : '') + '">' +
+    '<label style="display:flex;gap:8px;align-items:center;margin:4px 0 12px;font-size:13px"><input type="checkbox" id="catCesu"' + (c && c.cesu_eligible ? ' checked' : '') + '> Éligible au CESU préfinancé et au crédit d\'impôt (service à la personne)</label>' +
+    '<span class="muted">Champs de l\'annonce du client</span><div style="margin:6px 0 6px">' + Object.keys(CAT_FIELDS).map(f => chk('catField', f, CAT_FIELDS[f], fields.includes(f))).join('') + '</div>' +
+    '<span class="muted">Pièces et qualifications demandées aux prestataires de ce service</span><div id="catDocs" style="margin-top:6px"></div>' +
+    '<button class="btn ghost" type="button" data-cat="doc-add" style="margin-bottom:14px">Ajouter une pièce</button>' +
+    '<p id="catErr" role="alert" style="color:#c0503a;font-weight:600;font-size:12.5px;margin-bottom:10px;display:none"></p>' +
+    '<div style="display:flex;gap:10px"><button class="btn ghost" type="button" onclick="window.catCancel()">Annuler</button><button class="btn" type="button" onclick="window.catSave()">' + (c ? 'Enregistrer' : 'Ajouter au catalogue') + '</button></div>'
+  card.style.display = 'block'
+  catRenderDocs()
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+window.catNew = () => { if (CAT_MISSING) { toast('Collez d\'abord la migration 050'); return } catOpenForm(null) }
+window.catEdit = i => { const c = CAT_ROWS[i]; if (c) catOpenForm(c) }
+window.catCancel = () => { CAT_EDIT = null; const card = document.getElementById('catFormCard'); if (card) { card.style.display = 'none'; card.innerHTML = '' } }
+
+window.catSave = async function () {
+  const err = document.getElementById('catErr')
+  const fail = m => { err.textContent = m; err.style.display = 'block' }
+  err.style.display = 'none'
+  catReadDocs()
+  const label = document.getElementById('catLabel').value.replace(/\s+/g, ' ').trim()
+  if (label.length < 2) return fail('Donnez un nom au service (2 caractères au moins).')
+  const dup = CAT_ROWS.find(x => x.key !== CAT_EDIT && catNorm(x.label) === catNorm(label))
+  if (dup) return fail('« ' + label + ' » existe déjà dans le catalogue (« ' + dup.label + ' ») : modifiez la ligne existante.')
+  const modes = Array.from(document.querySelectorAll('input[name=catMode]:checked')).map(x => x.value)
+  if (!modes.length) return fail('Choisissez au moins une manière de tarifer.')
+  const fields = Array.from(document.querySelectorAll('input[name=catField]:checked')).map(x => x.value)
+  const docs = []
+  for (const d of CAT_DOCS) {
+    const l = String(d.label || '').replace(/\s+/g, ' ').trim()
+    if (!l) continue
+    if (l.length < 2) return fail('Nom de pièce trop court : « ' + l + ' ».')
+    const type = d.type || catTypeSlug(l)
+    if (!/^[a-z][a-z-]{0,39}$/.test(type)) return fail('Nom de pièce non utilisable : « ' + l + ' » (il doit commencer par une lettre).')
+    if (docs.some(x => x.kind === d.kind && x.type === type)) return fail('La pièce « ' + l + ' » est demandée deux fois.')
+    docs.push({ kind: d.kind, type, label: l, required: !!d.required })
+  }
+  const order = parseInt(document.getElementById('catOrder').value, 10)
+  const row = {
+    label, icon: document.getElementById('catIcon').value, domain: document.getElementById('catDomain').value,
+    pricing_modes: modes, unit: document.getElementById('catUnit').value.trim() || null,
+    cesu_eligible: document.getElementById('catCesu').checked, request_fields: fields, required_docs: docs,
+    sort_order: Number.isFinite(order) ? order : 100,
+  }
+  let res
+  if (CAT_EDIT) res = await supabaseLive.from('service_catalog').update(row).eq('key', CAT_EDIT)
+  else {
+    const key = catSlug(label)
+    if (!/^[a-z][a-z0-9_]{1,31}$/.test(key)) return fail('Nom non utilisable pour une clé technique : commencez par une lettre.')
+    if (CAT_ROWS.some(x => x.key === key)) return fail('La clé « ' + key + ' » existe déjà : choisissez un autre nom.')
+    res = await supabaseLive.from('service_catalog').insert({ key, ...row, active: false, hidden: true })
+  }
+  if (res.error) return fail(/duplicate|unique/i.test(res.error.message) ? 'Ce service existe déjà dans le catalogue.' : 'Enregistrement refusé : ' + res.error.message)
+  toast(esc(CAT_EDIT ? 'Service modifié : ' + label : '« ' + label + ' » ajouté au catalogue (masqué)'))
+  window.catCancel()
+  await window.loadCatalogue()
+}
+window.loadCatalogue(true)
+
 /* ---------- Navigation : chaque section charge ses données ---------- */
 const _navLots = window.nav
 window.nav = function (s) {
@@ -4750,6 +4986,7 @@ window.nav = function (s) {
   if (s === 'litiges') window.loadLitiges()
   if (s === 'conformite') window.loadDocsQueue()
   if (s === 'retours') window.loadRetours()
+  if (s === 'catalogue') window.loadCatalogue()
 }
 if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOverviewStats(); window.loadActOverview() }
 </script>
