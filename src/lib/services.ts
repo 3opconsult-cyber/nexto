@@ -151,8 +151,8 @@ export async function fetchProDetail(proId: string) {
 // directement dans le chat — pas de devis. Cree une requete + une transaction
 // 'pending' au prix de base du pro ; le prix definitif se negocie ensuite dans
 // le chat (mecanisme d'offre) et se fige au scan de sortie. Reutilise une
-// conversation existante encore ouverte (pending/held) pour ne pas empiler une
-// transaction a chaque clic sur "Contacter".
+// conversation existante encore en negociation (pending, prix non confirme)
+// pour ne pas empiler une transaction a chaque clic sur "Contacter".
 export async function openConversation(proId: string): Promise<{ missionId: string | null; error?: string }> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -160,13 +160,18 @@ export async function openConversation(proId: string): Promise<{ missionId: stri
   // Un compte ne contracte jamais avec lui-même (contrainte transactions_buyer_ne_seller).
   if (user.id === proId) return { missionId: null, error: 'own_profile' }
 
-  // Deja une conversation ouverte avec ce pro ?
+  // Deja une conversation en cours de negociation avec ce pro ? On ne reprend
+  // qu'une conversation NON confirmee : une mission deja reservee / au prix
+  // fige se retrouve par l'Agenda ou Messages, et un nouveau « Contacter »
+  // ouvre une nouvelle conversation pour un nouveau besoin (lot 16 : avant,
+  // « Contacter » rouvrait la mission reservee, voire une mission en cours).
   const { data: existing } = await supabase
     .from('transactions')
     .select('id')
     .eq('buyer_id', user.id)
     .eq('seller_id', proId)
-    .in('status', ['pending', 'held', 'arrived'])
+    .eq('status', 'pending')
+    .eq('price_confirmed', false)
     .order('created_at', { ascending: false })
     .limit(1)
   if (existing && existing.length) return { missionId: existing[0].id }

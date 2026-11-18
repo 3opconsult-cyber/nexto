@@ -106,7 +106,8 @@ export default function ProDetailPage() {
     {
       id: null as string | null,
       name: TRADES[pro.trade] || pro.trade,
-      description: pro.bio || null,
+      // La bio est déjà affichée dans « À propos » : ne pas la répéter sous la 1re prestation (lot 15).
+      description: null as string | null,
       pricing_type: (pro as any).pricing_type,
       base_price_cents: pro.base_price_cents,
       included_hours: (pro as any).included_hours,

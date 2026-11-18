@@ -48,6 +48,8 @@ export default function ClientProfil() {
 
   async function saveEdit() {
     if (!f.first_name.trim() || !f.last_name.trim()) { setEditErr('Le prénom et le nom sont obligatoires.'); return }
+    // Adresse obligatoire (lot 12) : une fois renseignée, elle se modifie mais ne s'efface plus.
+    if (profile?.address?.trim() && !f.address.trim()) { setEditErr('L’adresse est obligatoire : modifiez-la plutôt que de l’effacer.'); return }
     setSaving(true); setEditErr('')
     const patch = {
       first_name: f.first_name.trim(), last_name: f.last_name.trim(),
@@ -139,7 +141,7 @@ export default function ClientProfil() {
         <input style={fieldInput} value={f.last_name} autoComplete="family-name" onChange={e => setF({ ...f, last_name: e.target.value })} />
         <label style={fieldLabel}>Téléphone</label>
         <input style={fieldInput} type="tel" value={f.phone} autoComplete="tel" onChange={e => setF({ ...f, phone: e.target.value })} />
-        <label style={fieldLabel}>Adresse</label>
+        <label style={fieldLabel}>Adresse (obligatoire)</label>
         <input style={fieldInput} value={f.address} autoComplete="street-address" onChange={e => setF({ ...f, address: e.target.value })} />
         <label style={fieldLabel}>Ville</label>
         <input style={fieldInput} value={f.city} autoComplete="address-level2" onChange={e => setF({ ...f, city: e.target.value })} />

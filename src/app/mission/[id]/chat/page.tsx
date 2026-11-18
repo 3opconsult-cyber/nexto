@@ -77,6 +77,11 @@ export default function ChatPage() {
   const [newAmountReason, setNewAmountReason] = useState('')
   const [newAmountPhoto, setNewAmountPhoto] = useState<File | null>(null)
   const [sendingOffer, setSendingOffer] = useState(false)
+  const [offerErr, setOfferErr] = useState('')
+  const [lastOfferCents, setLastOfferCents] = useState<number | null>(null)
+  // Taux de commission du réglage (app_settings), pour le récapitulatif « Vous percevez » avant l'envoi.
+  const [rates, setRates] = useState<{ buyer: number; seller: number } | null>(null)
+  useEffect(() => { getRates().then(setRates).catch(() => {}) }, [])
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({})
   const [reporting, setReporting] = useState(false)
   const [reportReason, setReportReason] = useState('')
@@ -221,6 +226,17 @@ export default function ChatPage() {
   async function proposeOffer() {
     const cents = Math.round(Number(newAmount || 0) * 100)
     if (!cents || cents <= 0 || !userId) return
+    // Règle suprême du tarif : une fois le prix validé, plus de proposition (seul un litige le rouvre).
+    if (tx?.price_confirmed) { setOfferErr('Le tarif est déjà validé : il ne peut plus être modifié.'); return }
+    // Heures incluses sans tarif de dépassement : elles étaient jetées sans prévenir.
+    if (newIncludedHours && !(Number(newHourly) > 0)) {
+      setOfferErr('Indiquez le tarif horaire appliqué au-delà des heures incluses, ou videz « Heures incluses ».')
+      return
+    }
+    // Garde-fou contre une saisie à la suite (ex. « 3030 € ») : nettement au-dessus du budget du client.
+    const ref = offerReference()
+    if (ref && cents > 2 * ref.cents && !confirm(`Vous proposez ${EUR(cents)}, soit plus de 2 fois ${ref.label} (${EUR(ref.cents)}). Envoyer quand même ?`)) return
+    setOfferErr('')
     setSendingOffer(true)
     const supabase = createClient()
 
@@ -262,8 +278,22 @@ export default function ChatPage() {
     setSendingOffer(false)
   }
 
+  // Repère pour le formulaire de tarif : le budget du client s'il en a donné un, sinon le prix de base.
+  function offerReference(): { cents: number; label: string } | null {
+    const max = req?.budget_max_cents || req?.budget_min_cents
+    if (max > 0) return { cents: max, label: 'le budget du client' }
+    if (tx?.subtotal_cents > 0) return { cents: tx.subtotal_cents, label: 'le prix de départ' }
+    return null
+  }
+  function openOfferForm() {
+    setLastOfferCents(null)
+    setNewAmount(''); setNewHourly(''); setNewIncludedHours(''); setNewAmountReason(''); setNewAmountPhoto(null); setOfferErr('')
+    setEditingPrice(true)
+  }
+
   async function acceptOffer(m: Msg) {
     if (!m.offer_cents) return
+    if (tx?.price_confirmed) return
     const cents = m.offer_cents
     const rates = await getRates()
     const buyerFee = Math.round(cents * rates.buyer)
@@ -346,7 +376,11 @@ export default function ChatPage() {
 
   async function counterOffer(m: Msg) {
     await declineOffer(m)
-    setNewAmount(m.offer_cents ? String(m.offer_cents / 100) : '')
+    // Montant vide (une saisie à la suite du prix prérempli donnait « 3030 € ») : la proposition
+    // précédente reste lisible dans le fil et en indication dans le champ.
+    setLastOfferCents(m.offer_cents || null)
+    setOfferErr('')
+    setNewAmount('')
     setNewHourly(m.offer_hourly_cents ? String(m.offer_hourly_cents / 100) : '')
     setNewIncludedHours(m.offer_included_hours != null ? String(m.offer_included_hours) : '')
     setNewAmountReason('')
@@ -436,6 +470,36 @@ export default function ChatPage() {
       </div>
     </div>
   )
+
+  // Mission au prix déjà fixé (devis accepté ou réservation directe) : aucune offre ne s'accepte plus.
+  const priceLocked = !!tx?.price_confirmed
+  // Devis refusé automatiquement par une réservation directe (mission/new) chez le même prestataire.
+  const replacedAfter = (m: Msg) => msgs.some(x => isSystemMessage(x) && x.body?.startsWith('Proposition remplacée') && x.created_at >= m.created_at)
+  const budgetHint = (() => {
+    const lo = req?.budget_min_cents, hi = req?.budget_max_cents
+    const f = (c: number) => (c / 100).toLocaleString('fr-FR', { maximumFractionDigits: 2 })
+    if (lo > 0 && hi > 0 && lo !== hi) return `Budget du client : ${f(lo)}–${f(hi)} €`
+    if (hi > 0 || lo > 0) return `Budget du client : ${f(hi || lo)} €`
+    return ''
+  })()
+  const amountPlaceholder = lastOfferCents
+    ? `Proposition précédente : ${EUR(lastOfferCents)}`
+    : budgetHint || (tx?.subtotal_cents > 0 ? `Prix de départ : ${EUR(tx.subtotal_cents)}` : 'Montant en euros')
+  const hoursWithoutRate = !!newIncludedHours && Number(newIncludedHours) > 0 && !(Number(newHourly) > 0)
+  const offerRecap = (() => {
+    const cents = Math.round(Number(newAmount || 0) * 100)
+    if (!(cents > 0) || !rates || !tx) return ''
+    const hourly = Number(newHourly) > 0 ? Math.round(Number(newHourly) * 100) : null
+    const hours = hourly && Number(newIncludedHours) > 0 ? Number(newIncludedHours) : null
+    const total = cents + Math.round(cents * rates.buyer)
+    const payout = cents - Math.round(cents * rates.seller)
+    const shape = hourly && hours != null
+      ? ` · ${hours} h incluse${hours > 1 ? 's' : ''}, puis ${EUR(hourly)}/h au-delà`
+      : hourly ? ` · estimation, facturé ${EUR(hourly)}/h selon le temps réel` : ''
+    return userId === tx.seller_id
+      ? `Le client paie ${EUR(total)} · Vous percevez ${EUR(payout)} après commission PING${shape}`
+      : `Vous paierez ${EUR(total)}, frais de service inclus${shape}`
+  })()
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
@@ -643,17 +707,18 @@ export default function ChatPage() {
             <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Proposer un nouveau tarif</h3>
             <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Montant (€)</label>
-            <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" step="0.5"
+            <input type="number" inputMode="decimal" value={newAmount} onChange={e => { setNewAmount(e.target.value); setOfferErr('') }} min="0" step="0.5"
+              placeholder={amountPlaceholder}
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 10 }} />
             <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Heures incluses</label>
-                <input type="number" value={newIncludedHours} onChange={e => setNewIncludedHours(e.target.value)} min="0" step="0.5"
+                <input type="number" inputMode="decimal" value={newIncludedHours} onChange={e => { setNewIncludedHours(e.target.value); setOfferErr('') }} min="0" step="0.5"
                   style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Tarif horaire (€/h)</label>
-                <input type="number" value={newHourly} onChange={e => setNewHourly(e.target.value)} min="0" step="0.5"
+                <input type="number" inputMode="decimal" value={newHourly} onChange={e => { setNewHourly(e.target.value); setOfferErr('') }} min="0" step="0.5"
                   style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
               </div>
             </div>
@@ -666,7 +731,16 @@ export default function ChatPage() {
               <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>{newAmountPhoto ? newAmountPhoto.name : 'Ajouter une photo à l\u2019appui (facultatif)'}</span>
               <input type="file" accept="image/*" onChange={e => setNewAmountPhoto(e.target.files?.[0] || null)} style={{ display: 'none' }} />
             </label>
-            <button onClick={proposeOffer} disabled={sendingOffer || !(Number(newAmount) > 0)} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: (sendingOffer || !(Number(newAmount) > 0)) ? '#DCE5E3' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+            {offerRecap && (
+              <div style={{ padding: '10px 14px', borderRadius: 12, background: 'rgba(18,179,156,.08)', color: '#123644', fontSize: 12.5, lineHeight: 1.5, marginBottom: 10 }}>
+                {offerRecap}
+              </div>
+            )}
+            {hoursWithoutRate && (
+              <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 10px' }}>Heures incluses sans tarif horaire : indiquez le tarif appliqué au-delà, ou videz « Heures incluses ».</p>
+            )}
+            {offerErr && !hoursWithoutRate && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 10px' }}>{offerErr}</p>}
+            <button onClick={proposeOffer} disabled={sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: (sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate) ? '#DCE5E3' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
               {sendingOffer ? 'Envoi…' : 'Envoyer la proposition'}
             </button>
           </div>
@@ -742,13 +816,16 @@ export default function ChatPage() {
                     ? <img src={photoUrls[m.id]} alt="Photo à l'appui" style={{ width: '100%', borderRadius: 10, marginTop: 8, display: 'block' }} />
                     : <div style={{ fontSize: 11, color: '#6E8592', marginTop: 8 }}>Photo jointe…</div>
                 )}
-                {m.offer_status === 'pending' && !mine && (
+                {m.offer_status === 'pending' && priceLocked && (
+                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>Tarif déjà validé : proposition sans effet</div>
+                )}
+                {m.offer_status === 'pending' && !priceLocked && !mine && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                     <button onClick={() => counterOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
                     <button onClick={() => acceptOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
                   </div>
                 )}
-                {m.offer_status === 'pending' && mine && (
+                {m.offer_status === 'pending' && !priceLocked && mine && (
                   <div style={{ marginTop: 10 }}>
                     <div style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginBottom: 8 }}>En attente de validation</div>
                     <button onClick={() => counterOffer(m)} style={{ width: '100%', padding: 9, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
@@ -758,7 +835,9 @@ export default function ChatPage() {
                   <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#0C8F7E' }}>✓ Accepté — appliqué à la mission</div>
                 )}
                 {m.offer_status === 'declined' && (
-                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>Refusé</div>
+                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>
+                    {replacedAfter(m) ? 'Remplacé par une réservation' : 'Refusé'}
+                  </div>
                 )}
                 </div>
               </Fragment>
@@ -821,9 +900,11 @@ export default function ChatPage() {
         </div>
       )}
 
-      {tx && userId === tx.seller_id && tx.status === 'pending' && !msgs.some(m => m.kind === 'offer' && (m.offer_status === 'pending' || m.offer_status === 'accepted')) && (
+      {/* Règle suprême du tarif : seulement tant que le prix n'est pas fixé (devis accepté OU
+          réservation directe par mission/new, qui n'a aucun message d'offre). */}
+      {tx && userId === tx.seller_id && tx.status === 'pending' && !tx.price_confirmed && !msgs.some(m => m.kind === 'offer' && (m.offer_status === 'pending' || m.offer_status === 'accepted')) && (
         <div style={{ padding: '0 16px 10px' }}>
-          <button onClick={() => { setNewAmount(tx.subtotal_cents > 0 ? String(tx.subtotal_cents / 100) : ''); setNewAmountReason(''); setNewAmountPhoto(null); setEditingPrice(true) }}
+          <button onClick={openOfferForm}
             style={{ width: '100%', padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
             + Proposer un tarif
           </button>

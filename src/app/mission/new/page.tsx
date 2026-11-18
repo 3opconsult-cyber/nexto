@@ -19,6 +19,30 @@ import { AVANCE_IMMEDIATE_ACTIVE, isEligible, partClientCents } from '@/lib/cred
 import { systemSender } from '@/lib/systemMessage'
 import { notifyOther } from '@/lib/notify'
 
+// Passe à « Remplacé » (offer_status declined + message système) les devis en attente des
+// conversations non confirmées entre ce client et ce prestataire, autres que la réservation
+// qui vient d'être créée. Échec silencieux : la réservation elle-même est déjà enregistrée.
+async function replacePendingOffers(supabase: ReturnType<typeof createClient>, buyerId: string, sellerId: string, newTxId: string, what: string) {
+  try {
+    const { data: open } = await supabase.from('transactions').select('id')
+      .eq('buyer_id', buyerId).eq('seller_id', sellerId)
+      .eq('status', 'pending').eq('price_confirmed', false).neq('id', newTxId)
+    const ids = (open ?? []).map((t: any) => t.id as string)
+    if (!ids.length) return
+    const { data: offers } = await supabase.from('messages').select('id, transaction_id')
+      .in('transaction_id', ids).eq('kind', 'offer').eq('offer_status', 'pending')
+    const list = (offers ?? []) as { id: string; transaction_id: string }[]
+    if (!list.length) return
+    await supabase.from('messages').update({ offer_status: 'declined' }).in('id', list.map(o => o.id))
+    const sender = await systemSender(supabase)
+    const touched = Array.from(new Set(list.map(o => o.transaction_id)))
+    await supabase.from('messages').insert(touched.map(id => ({
+      transaction_id: id, ...sender,
+      body: `Proposition remplacée par la réservation directe (${what}).`,
+    })))
+  } catch { /* la réservation reste valable */ }
+}
+
 function MissionForm() {
   const router = useRouter()
   const params = useSearchParams()
@@ -192,6 +216,12 @@ function MissionForm() {
         ? `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · autre adresse à valider par le prestataire : ${maskAddress(address)}`
         : `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
     })
+
+    // Conversations encore en négociation avec ce prestataire (« Contacter », devis en attente) :
+    // la réservation à prix figé les remplace. Sans ça, un ancien devis restait « Accepter »
+    // et l'accepter créait une deuxième mission confirmée chez le même pro (lot 1, constat n° 2).
+    // Le client a le droit de refuser une proposition (comme declineOffer dans le chat).
+    await replacePendingOffers(supabase, user.id, pro.id, tx.id, `${label}${when}`)
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
     notifyOther(tx.id, 'booking')

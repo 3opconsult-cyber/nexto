@@ -94,8 +94,13 @@ export default function MessagesPage() {
 
 
   // Comme sur Airbnb (voyageur / hôte) : les conversations du mode affiché uniquement ; le support reste visible partout.
-  const visible = mode ? rows.filter(r => r.kind === 'support' || r[roleColumn(mode)] === uid) : []
-  const otherCount = mode ? rows.filter(r => r.kind === 'mission' && r.buyer_id !== r.seller_id && r[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === uid).length : 0
+  // Conversation vide (« Contacter » ou réponse à une demande abandonnés sans rien écrire) : ni message
+  // ni devis (un devis est un message), prix non fixé, encore en attente. Elle n'apparaît pas ici ;
+  // le prestataire la retrouve dans « Propositions envoyées » sur /pro/carte (lot 16).
+  const isEmpty = (r: any) => r.kind === 'mission' && !r.lastMessage && !r.price_confirmed && r.status === 'pending'
+  const listed = rows.filter(r => !isEmpty(r))
+  const visible = mode ? listed.filter(r => r.kind === 'support' || r[roleColumn(mode)] === uid) : []
+  const otherCount = mode ? listed.filter(r => r.kind === 'mission' && r.buyer_id !== r.seller_id && r[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === uid).length : 0
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>

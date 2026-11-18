@@ -111,6 +111,21 @@ export default function ProCartePage() {
       .order('scheduled_at', { ascending: true, nullsFirst: false })
       .then(({ data }) => setMissions(data ?? []))
   }, [proId])
+  // Propositions envoyées (lot 16) : réponses du pro à une demande ouverte, pas encore au tarif
+  // validé. Sans ça, une réponse abandonnée disparaissait et la demande restait listée comme
+  // si de rien n'était. La demande répondue reste « open » (elle est toujours publique) ; une
+  // conversation ouverte par le client (« Contacter ») a une demande « matched » et vit dans Messages.
+  const [sent, setSent] = useState<any[]>([])
+  useEffect(() => {
+    if (!proId) return
+    createClient().from('transactions')
+      .select('id, created_at, request_id, requests(id, title, category, status)')
+      .eq('seller_id', proId).eq('price_confirmed', false).eq('status', 'pending')
+      .order('created_at', { ascending: false }).limit(30)
+      .then(({ data }) => setSent((data ?? []).filter((t: any) => t.request_id && t.requests?.status === 'open')))
+  }, [proId])
+  const sentByRequest: Record<string, string> = {}
+  sent.forEach(t => { if (t.request_id && !sentByRequest[t.request_id]) sentByRequest[t.request_id] = t.id })
   // Missions terminees : gardees dans « Mes interventions », sous les a-venir.
   const [done, setDone] = useState<any[]>([])
   useEffect(() => {
@@ -203,7 +218,16 @@ export default function ProCartePage() {
       </p>
 
       {sendError && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{sendError}</p>}
-      {selected.mine ? (
+      {!selected.mine && sentByRequest[selected.id] ? (
+        <>
+          <p style={{ fontSize: 12.5, color: 'var(--ink)', background: 'rgba(18,179,156,.08)', borderRadius: 12, padding: 12, lineHeight: 1.5, marginBottom: 10 }}>
+            Vous avez déjà contacté ce client pour cette demande.
+          </p>
+          <div className="btn" style={{ background: 'var(--teal)' }} onClick={() => router.push(`/mission/${sentByRequest[selected.id]}/chat`)}>
+            Reprendre la conversation
+          </div>
+        </>
+      ) : selected.mine ? (
         <p style={{ fontSize: 12.5, color: 'var(--ink)', background: '#FFF4DD', borderRadius: 12, padding: 12, lineHeight: 1.5 }}>
           C&apos;est votre annonce. Vous la voyez comme les prestataires, mais vous ne pouvez pas y répondre avec ce compte.
         </p>
@@ -236,6 +260,12 @@ export default function ProCartePage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: 'var(--ink)', padding: '4px 0 12px' }}>
         <span style={{ color: 'var(--slate)' }}>Distance de la plus proche</span><b>{nearestTxt}</b>
       </div>
+      {sent.length > 0 && (
+        <div onClick={() => { setView('interventions'); setSelectedId(null) }}
+          style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--ink)', padding: '9px 12px', marginBottom: 10, borderRadius: 12, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
+          <span>Propositions envoyées</span><b style={{ color: '#0C8F7E' }}>{sent.length} · voir</b>
+        </div>
+      )}
 
       {reqs.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
@@ -246,7 +276,10 @@ export default function ProCartePage() {
                 <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{r.urgent && <UrgentTag />}{r.title || TRADES[r.category] || r.category}</b>
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', whiteSpace: 'nowrap' }}>{budgetRangeTxt(r)}</span>
               </div>
-              <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>
+                à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}
+                {sentByRequest[r.id] && <span style={{ marginLeft: 6, padding: '1px 7px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0C8F7E', fontWeight: 700, fontSize: 10.5 }}>Déjà contactée</span>}
+              </div>
             </div>
           ))}
         </div>
@@ -254,8 +287,28 @@ export default function ProCartePage() {
     </>
   )
 
+  const sentBlock = sent.length > 0 && (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 4 }}>Propositions envoyées ({sent.length})</div>
+      <div style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 10 }}>Demandes auxquelles vous avez répondu, tarif pas encore validé.</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {sent.map(t => (
+          <div key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
+            style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: 11, cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+              <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 13, color: 'var(--ink)' }}>{t.requests?.title || TRADES[t.requests?.category] || 'Demande'}</b>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: '#8a6520', whiteSpace: 'nowrap' }}>En attente</span>
+            </div>
+            <div style={{ fontSize: 11.5, color: 'var(--slate)', marginTop: 3 }}>Contactée {agoTxt(t.created_at)} · ouvrir la conversation</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
   const missionsPanel = (
     <>
+      {sentBlock}
       <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 4 }}>Mes interventions à venir</div>
       <div style={{ fontSize: 12, color: 'var(--slate)', marginBottom: 12 }}>Missions au tarif validé, avec leur adresse.</div>
       {missions.length === 0 ? (
