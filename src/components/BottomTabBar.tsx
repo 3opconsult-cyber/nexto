@@ -36,7 +36,10 @@ export default function BottomTabBar() {
   // est en cours ou prévue aujourd'hui (à partir de 2 h avant). Pastille rouge : le client doit confirmer.
   const today = useTodayMission(mode, pathname)
   const isPro = mode === 'pro'
-  const accent = isPro ? '#F2A93B' : '#12B39C'
+  // Couleurs de la maquette : onglet actif teal foncé (client) ou or foncé (prestataire), contraste AA ;
+  // bouton rond « Mission » en dégradé teal foncé (client) ou or (prestataire).
+  const accent = isPro ? '#8A6520' : '#0B8374'
+  const missionBg = isPro ? '#F2A93B' : 'linear-gradient(160deg,#0B8374,#08695D)'
   const tabs = [
     { label: isPro ? 'Demandes' : 'Carte', path: isPro ? '/pro/carte' : '/map', icon: 'map' },
     { label: 'Messages', path: '/messages', icon: 'msg' },
@@ -53,7 +56,7 @@ export default function BottomTabBar() {
           const missionBtn = i === 2 && today ? (
             <button key="mission" onClick={() => router.push(`/mission/${today.id}/jour`)} aria-label="Mission du jour"
               style={{ flex: 1, border: 'none', background: 'none', padding: '0 0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, color: '#123644', cursor: 'pointer' }}>
-              <span style={{ position: 'relative', width: 46, height: 46, marginTop: -16, borderRadius: '50%', background: accent, color: '#fff', display: 'grid', placeItems: 'center', boxShadow: '0 4px 12px rgba(18,54,68,.22)', border: '3px solid #fff' }}>
+              <span style={{ position: 'relative', width: 46, height: 46, marginTop: -16, borderRadius: '50%', background: missionBg, color: '#fff', display: 'grid', placeItems: 'center', boxShadow: '0 6px 14px rgba(18,179,156,.4)', border: '2.5px solid #fff' }}>
                 <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" /></svg>
                 {today.urgent && <span aria-label="Action attendue" style={{ position: 'absolute', top: -2, right: -2, width: 13, height: 13, borderRadius: '50%', background: '#E5484D', border: '2px solid #fff' }} />}
               </span>

@@ -8,6 +8,8 @@ import NavDrawer from './NavDrawer'
 import ModeSwitchPill from './ModeSwitchPill'
 import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from './MapSheet'
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
+import { useUnreadTotal } from '@/lib/unread'
+import { Ic, Stars, r1, svcIconKey } from './PingIcons'
 
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
@@ -24,11 +26,11 @@ type Pro = {
   dist: number; rate: number; priceN: number
   reviews: number; active: boolean; identity: boolean; rcpro: boolean
   acts: string[]; hits: number
+  // Présentation de la maquette : services, note, distance, CESU, pièces contrôlées par PING
+  // (true : pièce d'identité validée par un admin ; false : en cours de contrôle ; undefined : inconnu).
+  svc: string; distTxt: string; cesu: boolean; checked?: boolean
 }
 
-const CHK = (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={3}><path d="M20 6L9 17l-5-5" /></svg>
-)
 const HUES: Record<string, string> = {
   menage: '#12B39C,#0C8F7E', repassage: '#4E6470,#4c6472', nettoyage: '#F2A93B,#8A6520',
   vitres: '#12B39C,#0e7f70', remise: '#FF7A66,#e05f4b',
@@ -36,8 +38,6 @@ const HUES: Record<string, string> = {
 // Libellés : catalogue unique src/lib/trades.ts (+ « remise » hérité, absent du catalogue).
 const TRAD: Record<string, string> = { remise: 'Remise en état', ...TRADES }
 const lab = (k: string) => TRAD[k] || k
-// Flèches précédent / suivant de l'aperçu : cible tactile de 36 px.
-const NAVBTN: React.CSSProperties = { width: 36, height: 36, border: '1px solid var(--line)', borderRadius: 11, background: '#fff', color: 'var(--ink)', display: 'grid', placeItems: 'center', cursor: 'pointer', padding: 0 }
 
 export default function DemoShell({ initialView = 'v_map' }: { initialView?: string }) {
   const router = useRouter()
@@ -61,6 +61,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const wrapH = useElementHeight(wrapEl)
   const [sortMode, setSortMode] = useState<'near' | 'rated' | 'price'>('near')
   const [flt, setFlt] = useState<Set<string>>(() => new Set())
+  // Puce « CESU préfinancé » de la carte (maquette) : seulement les prestataires qui l'acceptent.
+  const [cesuOnly, setCesuOnly] = useState(false)
+  const unread = useUnreadTotal('particulier', 'map')
   const [contactErr, setContactErr] = useState('')
 
   const go = useCallback((v: string) => { setPrevView(view); setViewState(v) }, [view])
@@ -106,6 +109,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     if (x.has_rcpro) chips.push('Assurance RC renseignée')
     if (flags[x.id]?.cesu) chips.push('Accepte le CESU préfinancé')
     return {
+      svc: actsOf(x).map(lab).join(', '), distTxt, cesu: !!flags[x.id]?.cesu, checked: flags[x.id]?.checked,
       id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
       m: `${actsOf(x).map(lab).join(', ')} · ${rateTxt} · à ${distTxt}`, p: price,
       d: x.is_active ? 'Disponible' : 'Hors ligne pour le moment', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
@@ -124,8 +128,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const pvShow = !!pv
   // Prestataires réels qui font au moins une des activités choisies, passés à la carte Leaflet.
   const rawVisible = useMemo(
-    () => rawPros.filter(p => sel.length === 0 || hitsOf(p) > 0),
-    [rawPros, sel, hitsOf])
+    () => rawPros.filter(p => (sel.length === 0 || hitsOf(p) > 0) && (!cesuOnly || !!flags[p.id]?.cesu)),
+    [rawPros, sel, hitsOf, cesuOnly, flags])
+  // Épingles « Nouveau » : pièces pas encore contrôlées par PING (goutte plus claire, comme la maquette).
+  const newIds = useMemo(() => new Set(pros.filter(p => p.pend).map(p => p.id)), [pros])
   // Nombre de prestataires proches par activité (compteur des puces).
   const countBy = useMemo(() => {
     const c: Record<string, number> = {}
@@ -148,6 +154,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   }
   const searchList = [...pros]
     .filter(p => sel.length === 0 || p.hits > 0)
+    .filter(p => !cesuOnly || p.cesu)
     .filter(p => !flt.has('Disponible') || p.active)
     .filter(p => !flt.has('Pièce d’identité fournie') || p.identity)
     .filter(p => !flt.has('Assurance RC renseignée') || p.rcpro)
@@ -168,16 +175,21 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const sheetList = [...fullList, ...partList]
   const navList = pv && sheetList.some(p => p.id === pv.id)
     ? sheetList
-    : pros.filter(p => sel.length === 0 || p.hits > 0).sort((a, b) => a.dist - b.dist)
+    : pros.filter(p => (sel.length === 0 || p.hits > 0) && (!cesuOnly || p.cesu)).sort((a, b) => a.dist - b.dist)
   const navIdx = pv ? navList.findIndex(p => p.id === pv.id) : -1
   function step(d: number) {
     if (navList.length < 2 || navIdx < 0) return
     setContactErr('')
     setPvId(navList[(navIdx + d + navList.length) % navList.length].id)
   }
+  // Disponibles d'abord, puis « Hors ligne pour le moment » (maquette), dans l'ordre choisi.
+  const onlineFull = fullList.filter(p => p.active)
+  const onlinePart = partList.filter(p => p.active)
+  const offList = [...fullList, ...partList].filter(p => !p.active)
+  const onlineCount = searchList.filter(p => p.active).length
   const sheetTitle = sel.length > 1
-    ? `${fullList.length} font ${selTxt.toLowerCase()}`
-    : `${searchList.length} prestataire${searchList.length > 1 ? 's' : ''} près de vous`
+    ? `${onlineFull.length} font ${selTxt.toLowerCase()}`
+    : `${onlineCount} prestataire${onlineCount > 1 ? 's' : ''} près de vous`
 
   // Boutons de la carte (Déposer une demande, PING, Recentrer) : posés au-dessus du volet et du
   // bandeau d'installation, jamais dessous. Cachés quand le volet est plein ou qu'un aperçu est
@@ -185,11 +197,12 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // du panneau de détail au lieu de passer dessous.
   const ctrlHidden = !isDesk && (sheet === 'full' || pvShow)
   const ctrlBase = isDesk ? `calc(${SHEET_LIFT} + 24px)` : `calc(${SHEET_H[sheet]} + ${SHEET_LIFT} + 12px)`
-  const ctrlRight = isDesk && pvShow ? 410 : 14
+  // Sur ordinateur, le panneau de droite est permanent (liste, ou fiche du prestataire choisi).
+  const ctrlRight = isDesk ? 410 : 14
   // Bulle verte rangée au-dessus de Recentrer (distance au bas de la fenêtre, sans le bandeau).
   const wrapBottomGap = typeof window !== 'undefined' && wrapEl ? Math.max(0, window.innerHeight - wrapEl.getBoundingClientRect().bottom) : 64
   const bubbleBottom = wrapH ? wrapBottomGap + (isDesk ? 24 : sheetPx(sheet, wrapH) + 12) + 68 + 40 + 12 : null
-  useFeedbackBubbleSlot(view === 'v_map' ? bubbleBottom : null, view === 'v_map' && (pvShow || (!isDesk && sheet === 'full')))
+  useFeedbackBubbleSlot(view === 'v_map' ? bubbleBottom : null, view === 'v_map' && !isDesk && (pvShow || sheet === 'full'), isDesk ? 412 : null)
 
   // Aperçu mobile : glisser vers le bas pour fermer, à gauche ou à droite pour passer au suivant.
   const pvRef = useRef<HTMLDivElement>(null)
@@ -215,14 +228,60 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     if (s.dy > 70 && s.dy > Math.abs(s.dx)) closePreview()
     else if (Math.abs(s.dx) > 60 && Math.abs(s.dx) > Math.abs(s.dy)) step(s.dx < 0 ? 1 : -1)
   }
+  // Ligne de liste (maquette, .row) : avatar, nom, « services · prix · distance », puis les étoiles
+  // et le nombre d'avis (ou « Nouveau »), le CESU accepté, et un chevron.
   const row = (p: Pro, onOpen: (p: Pro) => void = q => router.push(`/pro/${q.id}`)) => (
-    <div key={p.id} className="row" onClick={() => onOpen(p)}>
-      <div className="av" style={{ background: `linear-gradient(160deg,${p.g})` }}>{p.av}</div>
-      <div className="m"><div className="nm">{p.n}</div><div className="ds">{p.m}</div>
-        {p.hits < sel.length && <div className="ds" style={{ color: '#8A6520' }}>Ne fait pas : {missingOf(p).map(lab).join(', ').toLowerCase()}</div>}
-      </div>
-      <div className="rt"><b>{p.rate > 0 ? p.rate.toFixed(1) : 'Nouveau'}</b>{p.p}</div>
+    <button type="button" key={p.id} className="mq-row" onClick={() => onOpen(p)} aria-label={`${p.n}, ${p.active ? p.p || 'disponible' : 'hors ligne pour le moment'}`}>
+      <span className="mq-av" style={{ background: p.active ? `linear-gradient(160deg,${p.g})` : '#6E8592' }}>{p.av}</span>
+      <span className="grow">
+        <b>{p.n}</b>
+        <small>{[p.svc, p.active ? p.p : 'hors ligne pour le moment', `à ${p.distTxt}`].filter(Boolean).join(' · ')}</small>
+        <small>{p.reviews > 0
+          ? <><Stars r={p.rate} /> {r1(p.rate)} ({p.reviews} avis)</>
+          : (p.pend ? 'Nouveau · pièces en cours de contrôle' : 'Nouveau')}
+          {p.cesu ? ' · Accepte le CESU préfinancé' : ''}</small>
+        {p.hits < sel.length && <small style={{ color: '#8A6520', fontWeight: 600 }}>Ne fait pas : {missingOf(p).map(lab).join(', ').toLowerCase()}</small>}
+      </span>
+      <span className="chev"><Ic name="chev" size={18} /></span>
+    </button>
+  )
+  // Étiquettes de l'aperçu (maquette) : services faits, puis profil vérifié par PING (pièce d'identité
+  // validée par un admin) ou « Nouveau · pièces en cours de contrôle », puis CESU. Tant que l'état du
+  // contrôle est inconnu (migration absente), on garde le langage déclaratif (pièce fournie, assurance
+  // renseignée), jamais « vérifié ».
+  const tagsOf = (p: Pro) => (
+    <div className="mq-tags">
+      {p.acts.map(k => <span key={k} className="mq-tag"><Ic name="check" size={12} />{lab(k)}</span>)}
+      {p.checked === true && <span className="mq-tag"><Ic name="shield" size={12} />Profil vérifié par PING</span>}
+      {p.checked === false && <span className="mq-tag warn">Nouveau · pièces en cours de contrôle</span>}
+      {p.checked === undefined && p.identity && <span className="mq-tag"><Ic name="id" size={12} />Pièce d’identité fournie</span>}
+      {p.checked === undefined && p.rcpro && <span className="mq-tag"><Ic name="shieldPlain" size={12} />Assurance RC renseignée</span>}
+      {p.cesu && <span className="mq-tag gray">Accepte le CESU préfinancé</span>}
     </div>
+  )
+  const navArrows = navList.length > 1 && navIdx >= 0 && (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 4, flex: '0 0 auto' }}>
+      <button type="button" className="mq-ib" onClick={() => step(-1)} aria-label="Prestataire précédent"><Ic name="back" /></button>
+      <span style={{ fontSize: 12, color: '#6E8592', minWidth: 34, textAlign: 'center' }}>{navIdx + 1} / {navList.length}</span>
+      <button type="button" className="mq-ib" onClick={() => step(1)} aria-label="Prestataire suivant"><Ic name="chev" /></button>
+    </span>
+  )
+  const listBody = (
+    <>
+      {onlineFull.map(p => row(p, q => onSelectPro(q)))}
+      {sel.length > 1 && searchList.length > 0 && fullList.length === 0 && (
+        <p className="sub" style={{ color: 'var(--slate)', padding: '8px 0' }}>Personne ne fait {selTxt.toLowerCase()} à la fois près de vous.</p>
+      )}
+      {onlinePart.length > 0 && (<>
+        <div className="mq-hubt">Font une partie de vos choix</div>
+        {onlinePart.map(p => row(p, q => onSelectPro(q)))}
+      </>)}
+      {offList.length > 0 && (<>
+        <div className="mq-hubt">Hors ligne pour le moment</div>
+        {offList.map(p => row(p, q => onSelectPro(q)))}
+      </>)}
+      {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)', padding: '10px 0' }}>{flt.size ? 'Aucun prestataire ne correspond à vos filtres. Retirez-en un dans la recherche pour élargir.' : 'Aucun prestataire disponible pour ce choix. Déposez une demande : les prestataires proches la verront.'}</p>}
+    </>
   )
   function tglFlt(f: string) {
     setFlt(s => { const n = new Set(s); n.has(f) ? n.delete(f) : n.add(f); return n })
@@ -248,27 +307,29 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   </div>
                   <div className="sp" />
                   <ModeSwitchPill to="pro" />
-                  <div className="tbell" onClick={() => router.push('/messages')}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2}><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
-                  </div>
+                  <button type="button" className="tbell" onClick={() => router.push('/messages')} aria-label={unread ? `Messages, ${unread} non lu${unread > 1 ? 's' : ''}` : 'Messages'} style={{ color: 'var(--ink)', padding: 0 }}>
+                    <Ic name="msg" size={18} />
+                    {unread > 0 && <span className="mq-nb">{unread > 9 ? '9+' : unread}</span>}
+                  </button>
                 </div>
 
                 <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
-                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} />
+                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} />
                 </div>
 
-                <div className="searchbar" style={{ top: 66 }} onClick={() => go('v_search')}>
-                  <div className="lg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.4}><path d="M4 6h16M7 12h10M10 18h4" /></svg></div>
+                <div className="searchbar" role="button" aria-haspopup="dialog" style={{ top: 66 }} onClick={() => go('v_search')}>
+                  <div className="lg" style={{ background: 'var(--btnFill)', color: '#fff' }}><Ic name="filter" size={15} /></div>
                   <div className="tx">{sel.length ? selTxt : 'Filtrer par service, près de vous'}</div>
+                  <span className="chv"><Ic name="down" size={20} /></span>
                 </div>
 
-                <div className="chips" style={{ top: 118 }}>
+                <div className="chips noscroll" style={{ top: 128 }}>
                   <div className={`chip ${sel.length === 0 ? 'on' : ''}`} role="button" aria-pressed={sel.length === 0} onClick={() => setSel([])}>Tous</div>
-                  {ALL_TRADE_KEYS.map(k => (
-                    <div key={k} className={`chip ${sel.includes(k) ? 'on' : ''}`} role="button" aria-pressed={sel.includes(k)} onClick={() => toggleSel(k)}>
-                      {lab(k)}{countBy[k] ? <span style={{ opacity: .7, marginLeft: 5 }}>{countBy[k]}</span> : null}
-                    </div>
+                  {/* Services choisis en tête (maquette). */}
+                  {[...ALL_TRADE_KEYS].sort((a, b) => (sel.includes(b) ? 1 : 0) - (sel.includes(a) ? 1 : 0)).map(k => (
+                    <div key={k} className={`chip ${sel.includes(k) ? 'on' : ''}`} role="button" aria-pressed={sel.includes(k)} onClick={() => toggleSel(k)}>{lab(k)}</div>
                   ))}
+                  <div className={`chip ${cesuOnly ? 'on' : ''}`} role="button" aria-pressed={cesuOnly} onClick={() => { setCesuOnly(c => !c); setPvId(null) }}>CESU préfinancé</div>
                 </div>
 
                 {!ctrlHidden && (<>
@@ -277,25 +338,17 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   {!pvShow && (
                     <button type="button" onClick={() => router.push('/client/demandes/new')}
                       style={{ position: 'absolute', left: 14, bottom: ctrlBase, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                      <Ic name="plus" size={16} />
                       Déposer une demande
                     </button>
                   )}
-                  <div className="loc" role="button" aria-label="Recentrer sur ma position" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: `calc(${ctrlBase} + 68px)`, right: ctrlRight + 8 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
+                  <div className="loc" role="button" aria-label="Recentrer sur ma position" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: `calc(${ctrlBase} + 68px)`, right: ctrlRight + 8, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>
                 </>)}
 
                 {/* Volet de la liste (mobile) : remplacé par l'aperçu quand un prestataire est choisi. */}
                 {!pvShow && (
                   <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}>
-                    {fullList.map(p => row(p, q => onSelectPro(q)))}
-                    {sel.length > 1 && searchList.length > 0 && fullList.length === 0 && (
-                      <p className="sub" style={{ color: 'var(--slate)' }}>Personne ne fait {selTxt.toLowerCase()} à la fois près de vous.</p>
-                    )}
-                    {partList.length > 0 && (<>
-                      <div className="h2">Font une partie de vos choix</div>
-                      {partList.map(p => row(p, q => onSelectPro(q)))}
-                    </>)}
-                    {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)' }}>{flt.size ? 'Aucun prestataire ne correspond à vos filtres. Retirez-en un dans la recherche pour élargir.' : 'Aucun prestataire pour ce choix pour le moment. Déposez une demande : les prestataires proches la verront.'}</p>}
+                    {listBody}
                   </MapSheet>
                 )}
 
@@ -306,94 +359,89 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   <div className="pvh" style={{ touchAction: 'none' }} />
                   {pv && (
                     <>
-                      <div className="pvrow">
-                        <div className="pvav" style={{ background: `linear-gradient(160deg,${pv.g})` }}>{pv.av}</div>
+                      {/* Carte de présentation (maquette, .preview) */}
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        <div className="pvav" style={{ background: pv.active ? `linear-gradient(160deg,${pv.g})` : '#6E8592' }}>{pv.av}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="pvname">{pv.n}</div>
-                          <div className="pvmeta">{pv.m}</div>
-                          <div className="chipset">{pv.c.map((x, i) => <span key={i} className="vchip ok">{CHK}{x}</span>)}
-                            {pv.pend && <span className="vchip" style={{ background: '#FFF4DD', color: '#8A5A00' }}>Nouveau · pièces en cours de contrôle</span>}</div>
+                          <b className="pvname" style={{ display: 'block' }}>{pv.n}</b>
+                          <div className="pvmeta" style={{ fontWeight: 500 }}>{[pv.svc, pv.reviews > 0 ? `${r1(pv.rate)} (${pv.reviews})` : 'Nouveau', `à ${pv.distTxt}`].filter(Boolean).join(' · ')}</div>
                         </div>
-                        <div className="pvprice">{pv.p}</div>
-                        <button type="button" onClick={closePreview} aria-label="Fermer l’aperçu"
-                          style={{ width: 36, height: 36, margin: '-6px -6px 0 2px', border: 0, borderRadius: 11, background: 'var(--paper)', color: 'var(--ink)', display: 'grid', placeItems: 'center', cursor: 'pointer', flex: '0 0 auto', padding: 0 }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-                        </button>
+                        <b style={{ fontFamily: 'var(--fh)', fontSize: 15, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{pv.p}</b>
+                        <button type="button" className="mq-ib box" onClick={closePreview} aria-label="Fermer l’aperçu" style={{ background: 'none', marginTop: -6 }}><Ic name="close" /></button>
                       </div>
-                      {pvMissing.length > 0 && <p style={{ fontSize: 12, color: '#8A6520', fontWeight: 600, margin: '8px 0 0' }}>Ne fait pas : {pvMissing.map(lab).join(', ').toLowerCase()}</p>}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 11 }}>
-                        <div className="dispo" style={{ margin: 0 }}><span className={`livedot ${pv.active ? 'on' : ''}`} /> <span>{pv.d}</span></div>
-                        {navList.length > 1 && navIdx >= 0 && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, flex: '0 0 auto' }}>
-                            <button type="button" onClick={() => step(-1)} aria-label="Prestataire précédent" style={NAVBTN}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
-                            </button>
-                            <span style={{ fontSize: 12, color: 'var(--slate)', fontWeight: 600, minWidth: 34, textAlign: 'center' }}>{navIdx + 1} / {navList.length}</span>
-                            <button type="button" onClick={() => step(1)} aria-label="Prestataire suivant" style={NAVBTN}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
-                            </button>
-                          </span>
-                        )}
+                      {tagsOf(pv)}
+                      {pvMissing.length > 0 && <p style={{ fontSize: 12, color: '#8A6520', fontWeight: 600, margin: '0 0 4px' }}>Ne fait pas : {pvMissing.map(lab).join(', ').toLowerCase()}</p>}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+                        {pv.active
+                          ? <span className="mq-avail">● Disponible</span>
+                          : <span className="mq-off">○ Hors ligne pour le moment : pas de réservation, vous pouvez lui écrire</span>}
+                        {navArrows}
                       </div>
-                      {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '8px 0 0' }}>{contactErr}</p>}
-                      <div style={{ display: 'flex', gap: 9, marginTop: 10 }}>
-                        <div className="btn ghost" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
-                        <div className="btn" style={{ flex: 1.3 }} onClick={() => { closePreview(); router.push(`/pro/${pv.id}`) }}>Voir le profil</div>
+                      {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{contactErr}</p>}
+                      <div style={{ display: 'flex', gap: 9 }}>
+                        <div className="btn ghost" role="button" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
+                        <div className="btn" role="button" style={{ flex: 1.3 }} onClick={() => { closePreview(); router.push(`/pro/${pv.id}`) }}>Voir le profil</div>
                       </div>
                     </>
                   )}
                 </div>
 
-                {/* Panneau de detail desktop : la carte reste visible, on passe d'un pro a l'autre en cliquant les pins */}
+                {/* Panneau ordinateur, permanent comme sur /pro/carte : la liste (titre du volet) tant
+                    qu'aucun prestataire n'est choisi, sinon sa carte de présentation (maquette : en-tête
+                    teal, étiquettes, vérifications, avis). La carte reste visible et cliquable à côté. */}
+                {isDesk && !pv && (
+                  <div className="detail-panel on">
+                    <div style={{ padding: '14px 16px 6px' }}>
+                      <b style={{ fontFamily: 'var(--fh)', fontSize: 16, color: 'var(--ink)' }}>{sheetTitle}</b>
+                    </div>
+                    <div style={{ overflowY: 'auto', flex: 1, padding: '0 16px 14px' }}>{listBody}</div>
+                  </div>
+                )}
                 {pv && pvShow && (
                   <div className="detail-panel on">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
-                      <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)', flex: 1 }}>Profil du prestataire</b>
-                      {navList.length > 1 && navIdx >= 0 && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <button type="button" onClick={() => step(-1)} aria-label="Prestataire précédent" style={NAVBTN}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
-                          </button>
-                          <span style={{ fontSize: 12, color: 'var(--slate)', fontWeight: 600, minWidth: 34, textAlign: 'center' }}>{navIdx + 1} / {navList.length}</span>
-                          <button type="button" onClick={() => step(1)} aria-label="Prestataire suivant" style={NAVBTN}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
-                          </button>
-                        </span>
-                      )}
-                      <div onClick={closePreview} role="button" aria-label="Fermer" style={{ cursor: 'pointer', color: 'var(--slate)', display: 'grid', placeItems: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 8px 8px 16px', borderBottom: '1px solid var(--line)' }}>
+                      <b style={{ fontFamily: 'var(--fh)', fontSize: 16, color: 'var(--ink)', flex: 1 }}>Profil du pro</b>
+                      {navArrows}
+                      <button type="button" className="mq-ib" onClick={closePreview} aria-label="Fermer"><Ic name="close" /></button>
                     </div>
                     <div style={{ overflowY: 'auto', flex: 1 }}>
-                      <div style={{ background: 'linear-gradient(160deg,var(--teal),var(--tealD))', padding: '18px 16px', color: '#fff' }}>
-                        <div className="pvav" style={{ background: `linear-gradient(160deg,${pv.g})`, width: 54, height: 54, fontSize: 20, marginBottom: 10 }}>{pv.av}</div>
-                        <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 20 }}>{pv.n}</div>
-                        <div style={{ fontSize: 13, opacity: .9 }}>{pv.m}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 13, fontWeight: 600 }}><span className={`livedot ${pv.active ? 'on' : ''}`} /> {pv.d}</div>
-                      </div>
-                      <div style={{ padding: 16 }}>
-                        <div className="h2" style={{ marginTop: 0 }}>Informations déclarées par le pro</div>
-                        {pv.c.length ? pv.c.map((x, i) => (
-                          <div key={i} className="vrow ok" style={{ marginBottom: 8 }}>
-                            <div className="vi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M20 6 9 17l-5-5" /></svg></div>
-                            <div className="vt"><b>{x}</b></div>
-                            <div className="vs">✓</div>
-                          </div>
-                        )) : <p className="sub">Aucune information déclarée pour l&apos;instant.</p>}
-                        <p className="sub" style={{ fontSize: 11, color: '#6E8592' }}>Place de marché : informations déclarées par le prestataire et collectées par PING, sans garantie.</p>
-                        <div className="h2">Compétences</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                          {pv.acts.map(k => <span key={k} className={`chip ${!sel.length || sel.includes(k) ? 'on' : ''}`} style={{ display: 'inline-block' }}>{lab(k)}</span>)}
+                      <div className="mq-hero">
+                        <span className="mq-av">{pv.av}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <b className="nm">{pv.n}</b>
+                          <div style={{ fontSize: 12 }}>{pv.reviews > 0 ? `★ ${r1(pv.rate)} (${pv.reviews} avis)` : 'Nouveau sur PING'} · à {pv.distTxt}</div>
+                          <div style={{ fontSize: 12, fontWeight: 700 }}>{pv.active ? '● Disponible' : '○ Hors ligne'}</div>
                         </div>
-                        {pvMissing.length > 0 && <p className="sub" style={{ fontSize: 12, color: '#8A6520', fontWeight: 600 }}>Ne fait pas : {pvMissing.map(lab).join(', ').toLowerCase()}</p>}
-                        <div className="h2">Avis <span className="chip" style={{ fontSize: 10 }}>après prestation</span></div>
+                        <b style={{ fontFamily: 'var(--fh)', fontSize: 15, whiteSpace: 'nowrap' }}>{pv.p}</b>
+                      </div>
+                      <div style={{ padding: '4px 16px 16px' }}>
+                        {tagsOf(pv)}
+                        {pvMissing.length > 0 && <p style={{ fontSize: 12, color: '#8A6520', fontWeight: 600 }}>Ne fait pas : {pvMissing.map(lab).join(', ').toLowerCase()}</p>}
+                        <div className="mq-sect">Vérifications</div>
+                        {pv.checked === true && (
+                          <div className="mq-vr ok"><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d’identité</b><small>Contrôlée par PING</small></span><span className="vs"><Ic name="check" size={11} />Validée</span></div>
+                        )}
+                        {pv.checked !== true && pv.identity && (
+                          <div className={`mq-vr ${pv.checked === false ? 'w' : 'ok'}`}><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d’identité</b><small>{pv.checked === false ? 'Envoyée, en contrôle par PING' : 'Fournie par le prestataire'}</small></span><span className="vs">{pv.checked === false ? 'En contrôle' : <><Ic name="check" size={11} />Fournie</>}</span></div>
+                        )}
+                        {pv.rcpro && (
+                          <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Renseignée par le prestataire</small></span><span className="vs"><Ic name="check" size={11} />Renseignée</span></div>
+                        )}
+                        {pv.cesu && (
+                          <div className="mq-vr ok"><span className="vi"><Ic name="card" size={15} /></span><span><b>CESU préfinancé</b><small>Accepté par le prestataire</small></span><span className="vs"><Ic name="check" size={11} />Oui</span></div>
+                        )}
+                        {!pv.identity && !pv.rcpro && !pv.cesu && pv.checked !== true && <p className="sub">Aucune information renseignée pour l&apos;instant.</p>}
+                        <p className="mq-muted">PING contrôle les pièces marquées « Validée ». Les autres informations sont déclarées par le prestataire. PING est une plateforme de mise en relation : PING ne garantit ni la solvabilité ni la qualité des prestations ; vous choisissez librement votre prestataire.</p>
+                        <div className="mq-sect">Avis</div>
                         {pv.reviews > 0
-                          ? <p className="sub" style={{ color: 'var(--ink)' }}><b>{pv.rate.toFixed(1)} / 5</b> · {pv.reviews} avis — <span style={{ color: 'var(--teal)', cursor: 'pointer', fontWeight: 700 }} onClick={() => router.push(`/pro/${pv.id}`)}>les lire sur le profil</span></p>
-                          : <p className="sub" style={{ color: 'var(--slate)' }}>Pas encore d&apos;avis — ils apparaîtront après les premières prestations.</p>}
+                          ? <p style={{ fontSize: 13, color: 'var(--ink)' }}><Stars r={pv.rate} size={13} /> <b>{r1(pv.rate)}</b> · {pv.reviews} avis · <button type="button" onClick={() => router.push(`/pro/${pv.id}`)} style={{ border: 0, background: 'none', padding: 0, color: '#097A6C', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>les lire sur le profil</button></p>
+                          : <p className="sub" style={{ color: 'var(--slate)' }}>Nouveau, pas encore d&apos;avis.</p>}
                       </div>
                     </div>
                     {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '10px 14px 0' }}>{contactErr}</p>}
                     <div style={{ display: 'flex', gap: 9, padding: 14, borderTop: '1px solid var(--line)' }}>
-                      <div className="btn ghost" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
-                      <div className="btn" style={{ flex: 1.3 }} onClick={() => router.push(`/pro/${pv.id}`)}>Réserver{pv.p ? ` · ${pv.p}` : ''}</div>
+                      <div className="btn ghost" role="button" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
+                      <div className="btn" role="button" style={{ flex: 1.3 }} onClick={() => router.push(`/pro/${pv.id}`)}>Voir le profil</div>
                     </div>
                   </div>
                 )}
@@ -413,11 +461,11 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
               <div className="h2" style={{ marginTop: 0 }}>Que recherchez-vous&nbsp;?<span style={{ fontSize: 11, color: 'var(--slate)', fontWeight: 600 }}>plusieurs choix possibles</span></div>
               <div className="catgrid">
                 <div className={`cat ${sel.length === 0 ? 'on' : ''}`} role="button" aria-pressed={sel.length === 0} onClick={() => setSel([])}>
-                  <div className="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="4" y="4" width="6" height="6" rx="1.5" /><rect x="14" y="4" width="6" height="6" rx="1.5" /><rect x="4" y="14" width="6" height="6" rx="1.5" /><rect x="14" y="14" width="6" height="6" rx="1.5" /></svg></div>Tous
+                  <div className="ci"><Ic name="list" size={17} /></div>Tous
                 </div>
                 {ALL_TRADE_KEYS.map(key => (
                   <div key={key} className={`cat ${sel.includes(key) ? 'on' : ''}`} role="button" aria-pressed={sel.includes(key)} onClick={() => toggleSel(key)}>
-                    <div className="ci"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M19 5l-7 7M3 21l3-1 12-12a2 2 0 0 0-3-3L3 17z" /></svg></div>{lab(key)}
+                    <div className="ci"><Ic name={svcIconKey(key)} size={17} /></div>{lab(key)}{countBy[key] ? <span style={{ opacity: .7, marginLeft: 4, fontWeight: 600 }}>{countBy[key]}</span> : null}
                   </div>
                 ))}
               </div>
@@ -425,8 +473,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
               <div className="h2">Filtres</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {['Disponible', 'Pièce d’identité fournie', 'Assurance RC renseignée', '≤ 1 km', '4★ et +'].map(f => (
-                  <div key={f} className={`chip ${flt.has(f) ? 'on' : ''}`} onClick={() => tglFlt(f)}>{f}</div>
+                  <div key={f} className={`chip ${flt.has(f) ? 'on' : ''}`} role="button" aria-pressed={flt.has(f)} onClick={() => tglFlt(f)}>{f}</div>
                 ))}
+                <div className={`chip ${cesuOnly ? 'on' : ''}`} role="button" aria-pressed={cesuOnly} onClick={() => setCesuOnly(c => !c)}>CESU préfinancé</div>
               </div>
               <div className="seg" id="sortSeg">
                 <div className={sortMode === 'near' ? 'on' : ''} onClick={() => setSortMode('near')}>Plus proches</div>

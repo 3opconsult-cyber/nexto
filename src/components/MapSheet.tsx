@@ -32,7 +32,7 @@ export function sheetPx(snap: SheetSnap, h: number) {
   return Math.max(PEEK_PX, h - 64 - liftPx())
 }
 
-export default function MapSheet({ snap, onSnap, title, accent = 'var(--teal)', children }: {
+export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)', children }: {
   snap: SheetSnap
   onSnap: (s: SheetSnap) => void
   title: ReactNode
@@ -88,7 +88,7 @@ export default function MapSheet({ snap, onSnap, title, accent = 'var(--teal)', 
         style={{ flex: '0 0 auto', width: '100%', border: 0, background: 'transparent', padding: '8px 16px 6px', cursor: 'grab', touchAction: 'none', textAlign: 'left', fontFamily: 'inherit' }}>
         <i style={{ display: 'block', width: 40, height: 5, borderRadius: 3, background: '#CBD7D4', margin: '0 auto 8px' }} />
         <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 28 }}>
-          <b style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 15.5, color: 'var(--ink)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</b>
+          <b style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</b>
           <small style={{ color: accent, fontWeight: 700, fontSize: 12.5, whiteSpace: 'nowrap' }}>{hint}</small>
         </span>
       </button>

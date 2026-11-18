@@ -85,7 +85,7 @@
 .ping-attest { display: flex; align-items: center; gap: 6px; background: rgba(18,179,156,.1); color: var(--tealD); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 
 /* ---------- Boutons ---------- */
-.ping-btn { background: var(--teal); color: #fff; font-family: var(--fh); font-weight: 700; font-size: 15px; text-align: center; padding: 14px; border-radius: 14px; cursor: pointer; border: none; width: 100%; }
+.ping-btn { background: var(--btnFill, #0C8F7E); color: #fff; font-family: var(--fh); font-weight: 700; font-size: 15px; text-align: center; padding: 14px; border-radius: 14px; cursor: pointer; border: none; width: 100%; }
 .ping-btn.ghost { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
 
 /* ---------- Carte prestataire (liste) ---------- */

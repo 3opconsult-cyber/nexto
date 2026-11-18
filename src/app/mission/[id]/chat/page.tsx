@@ -132,6 +132,10 @@ export default function ChatPage() {
     if (devis && userId === tx.buyer_id && !tx.price_confirmed) {
       setInput(`Bonjour, pourriez-vous me faire un devis pour « ${devis.slice(0, 80)} » ? `)
     }
+    // ?tarif (« Proposer mon tarif » depuis une demande, carte prestataire) : ouvre le formulaire de tarif,
+    // seulement tant que le prix n'est pas fixé (règle suprême du tarif).
+    if (q.has('tarif') && userId === tx.seller_id && tx.status === 'pending' && !tx.price_confirmed) openOfferForm()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tx, userId])
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { ProviderNearby } from '@/lib/services'
+import { iconSvg } from './PingIcons'
 import { PING_MAP_STYLE, MAP_ATTRIBUTION, hasWebGL } from '@/lib/mapStyle'
 
 // Fond de carte : vectoriel aux couleurs PING (MapLibre GL + tuiles OpenFreeMap) rendu sous
@@ -92,32 +93,53 @@ function pinPriceLabel(p: { pricing_type: string; base_price_cents: number; hour
   return null
 }
 
-// Épingle commune à toutes les cartes : le prix (ou budget) dans une étiquette AU-DESSUS de la
-// goutte, jamais recouvert par elle, et une goutte pleine avec un point blanc au centre.
-const PIN_W = 84
-function pinIcon(color: string, label: string | null, i = 0) {
+// Épingle commune à toutes les cartes, dessinée comme la maquette (.pind) : le prix (ou budget)
+// dans une étiquette AU-DESSUS de la goutte, jamais recouvert par elle ; dans la goutte, l'initiale
+// du prestataire (carte client) ou le pictogramme du service demandé (carte prestataire).
+// États : sélectionnée (étiquette teal + halo), nouveau (goutte plus claire), hors ligne (gris,
+// étiquette blanche). Les icônes sont mises en cache : une épingle inchangée garde le même objet,
+// Leaflet ne la redessine pas (et ne rejoue pas son animation d'apparition) à chaque rendu.
+const PIN_W = 96
+const PIN_H = 78
+type PinState = 'normal' | 'sel' | 'off'
+const iconCache = new Map<string, L.DivIcon>()
+function pinIcon(color: string, label: string | null, i = 0, inner = '', state: PinState = 'normal') {
+  const key = `${color}|${label}|${inner}|${state}|${Math.min(i, 12)}`
+  const hit = iconCache.get(key)
+  if (hit) return hit
+  const labBg = state === 'sel' ? '#12B39C' : state === 'off' ? '#fff' : '#123644'
+  const labFg = state === 'off' ? '#4E6470' : '#fff'
+  const labBd = state === 'off' ? '#DCE5E3' : '#fff'
   const tag = label
-    ? `<div style="background:#123644;color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3);border:1.5px solid #fff;margin-bottom:4px">${label}</div>`
+    ? `<div style="background:${labBg};color:${labFg};font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3);border:1px solid ${labBd};margin-bottom:6px">${label}</div>`
     : ''
-  return L.divIcon({
+  const ring = state === 'sel' ? '0 0 0 4px rgba(18,179,156,.35),' : ''
+  const icon = L.divIcon({
     className: '',
-    html: `<div style="width:${PIN_W}px;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;animation:pinIn .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(i * 0.12).toFixed(2)}s">
+    html: `<div style="width:${PIN_W}px;height:${PIN_H}px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;animation:pinIn .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(Math.min(i, 12) * 0.08).toFixed(2)}s;opacity:${state === 'off' ? '.9' : '1'}">
       ${tag}
-      <div style="width:28px;height:28px;margin-bottom:9px;flex-shrink:0;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);box-shadow:0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;display:flex;align-items:center;justify-content:center">
-        <div style="width:9px;height:9px;border-radius:50%;background:#fff"></div>
+      <div style="width:40px;height:40px;margin-bottom:6px;flex-shrink:0;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);box-shadow:${ring}0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;box-sizing:border-box;display:flex;align-items:center;justify-content:center">
+        <div style="transform:rotate(45deg);color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center">${inner || '<div style="width:9px;height:9px;border-radius:50%;background:#fff"></div>'}</div>
       </div>
     </div>`,
-    iconSize: [PIN_W, 62],
-    // Pointe de la goutte : centre horizontal, bas du conteneur.
-    iconAnchor: [PIN_W / 2, 57],
+    iconSize: [PIN_W, PIN_H],
+    // Pointe de la goutte : centre horizontal, bas de la goutte.
+    iconAnchor: [PIN_W / 2, PIN_H - 6],
   })
+  iconCache.set(key, icon)
+  return icon
 }
 
-function proIcon(p: { trade: string; is_active: boolean; pricing_type: string; base_price_cents: number; hourly_rate_cents: number | null }, i = 0) {
-  return pinIcon(p.is_active ? '#12B39C' : '#6E8592', pinPriceLabel(p), i)
+const esc = (t: string) => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
+function proIcon(p: ProviderNearby, i = 0, selected = false, isNew = false) {
+  const initial = esc(((p.full_name || '').trim().charAt(0) || '?').toUpperCase())
+  if (!p.is_active) return pinIcon('#6E8592', 'Hors ligne', i, initial, selected ? 'sel' : 'off')
+  const price = pinPriceLabel(p)
+  const label = price ? `${price}${isNew ? ' · Nouveau' : ''}` : (isNew ? 'Nouveau' : null)
+  return pinIcon(isNew ? '#7FA9A1' : '#12B39C', label, i, initial, selected ? 'sel' : 'normal')
 }
-function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B') {
-  return pinIcon(color, label ?? null, i)
+function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B', inner = '', selected = false) {
+  return pinIcon(color, label ?? null, i, inner, selected ? 'sel' : 'normal')
 }
 
 type FitPad = { top: number; right: number; bottom: number; left: number }
@@ -182,10 +204,10 @@ function MapClick({ onClick }: { onClick?: () => void }) {
   return null
 }
 
-type ReqPin = { id: string; lat: number; lng: number; label?: string | null; color?: string }
+type ReqPin = { id: string; lat: number; lng: number; label?: string | null; color?: string; icon?: string }
 export default function LiveMap({
   userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici', echo = false,
-  onMapClick, fit = false, fitKey, fitPad,
+  onMapClick, fit = false, fitKey, fitPad, selectedId = null, newIds,
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
@@ -199,6 +221,10 @@ export default function LiveMap({
   fit?: boolean
   fitKey?: string
   fitPad?: FitPad
+  /** Épingle mise en avant (aperçu ouvert). */
+  selectedId?: string | null
+  /** Prestataires « Nouveau · pièces en cours de contrôle » (goutte plus claire). */
+  newIds?: Set<string>
 }) {
   return (
     <>
@@ -234,7 +260,8 @@ export default function LiveMap({
           <Marker
             key={p.id}
             position={[p.lat, p.lng]}
-            icon={proIcon(p, i)}
+            icon={proIcon(p, i, p.id === selectedId, !!newIds?.has(p.id))}
+            zIndexOffset={p.id === selectedId ? 1000 : p.is_active ? 0 : -500}
             eventHandlers={{ click: () => onSelect(p) }}
           />
         ))}
@@ -242,7 +269,8 @@ export default function LiveMap({
           <Marker
             key={r.id}
             position={[r.lat, r.lng]}
-            icon={reqIcon(r.label, i, r.color)}
+            icon={reqIcon(r.label, i, r.color, r.icon ? iconSvg(r.icon, 18) : '', r.id === selectedId)}
+            zIndexOffset={r.id === selectedId ? 1000 : 0}
             eventHandlers={{ click: () => onSelectRequest?.(r.id) }}
           />
         ))}

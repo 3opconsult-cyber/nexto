@@ -20,21 +20,22 @@ const NO_TABBAR = /^\/(pro\/onboarding|pro\/attente|auth\/)/
 const FULLSCREEN = /^\/(map|pro\/carte)$/
 
 // Même structure dans les deux espaces (comme Airbnb voyageur / hôte) : 4 entrées, le reste est rangé
-// dans « Mon profil » / « Mon entreprise » (rubriques Hub).
+// dans « Mon profil » / « Mon entreprise » (rubriques Hub). Libellés courts de la barre latérale de la
+// maquette (vue ordinateur) : les mêmes que la barre d'onglets du bas.
 const CLIENT_NAV: [string, string][] = [
   ['Carte', '/map'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
-  ['Mon profil', '/client/profil'],
+  ['Profil', '/client/profil'],
 ]
 const CLIENT_NAV2: [string, string][] = [
   ['Support PING', '/support'],
 ]
 const PRO_NAV: [string, string][] = [
-  ['Demandes autour de moi', '/pro/carte'],
+  ['Demandes', '/pro/carte'],
   ['Messages', '/messages'],
   ['Agenda', '/agenda'],
-  ['Mon entreprise', '/pro/dashboard'],
+  ['Entreprise', '/pro/dashboard'],
 ]
 const PRO_NAV2: [string, string][] = [
   ['Support PING', '/support'],
@@ -44,18 +45,19 @@ function navIcon(label: string) {
   const l = label.toLowerCase()
   const p = (d: string) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>{d.split('|').map((x, i) => <path key={i} d={x} />)}</svg>
   if (l.includes('mission')) return p('M3 3h7v7H3z|M14 3h7v7h-7z|M3 14h7v7H3z|M14 14h3v3h-3z|M17 20h4v-3')
-  if (l.includes('carte')) return p('M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4')
+  // Pictogrammes de la maquette (objet I) : carte, messages, agenda, profil, entreprise.
+  if (l.includes('carte') || l === 'demandes') return p('M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z|M9 4v14M15 6v14')
   if (l.includes('demande')) return p('M4 5h16v14H4z|M8 9h8M8 13h5')
-  if (l.includes('message')) return p('M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z')
+  if (l.includes('message') || l.includes('support')) return p('M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z')
   if (l.includes('disponib')) return p('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18|M12 7v5l3.5 2')
-  if (l.includes('agenda')) return p('M3 5h18v16H3z|M3 9h18M8 3v4M16 3v4')
+  if (l.includes('agenda')) return p('M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z|M3 9h18M8 3v4M16 3v4')
   if (l.includes('réclam') || l.includes('litige')) return p('M12 2 2 21h20z|M12 9v5M12 18h.01')
   if (l.includes('entreprise')) return p('M3 21V9l9-6 9 6v12|M9 21v-6h6v6')
   if (l.includes('tarif')) return p('M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z|M7.5 7.5h.01')
   if (l.includes('revenu')) return p('M3 3v18h18|M7 15l4-4 3 3 5-6')
   if (l.includes('tableau')) return p('M4 4h7v7H4z|M13 4h7v4h-7z|M13 12h7v8h-7z|M4 15h7v5H4z')
   if (l.includes('facture') || l.includes('document') || l.includes('pièce')) return p('M6 2h9l5 5v15H6z|M14 2v6h6M9 13h6M9 17h6')
-  if (l.includes('profil')) return p('M20 21a8 8 0 0 0-16 0|M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8')
+  if (l.includes('profil')) return p('M4 21a8 8 0 0 1 16 0|M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8')
   if (l.includes('parrain')) return p('M20 12v9H4v-9|M2 7h20v5H2z|M12 22V7|M12 7S9 2 6.5 3.5 7 7 12 7c5 0 5.5-2 4.5-3.5S12 7 12 7')
   if (l.includes('favori')) return p('M12 21s-7-4.5-9-9a4.5 4.5 0 0 1 9-2 4.5 4.5 0 0 1 9 2c-2 4.5-9 9-9 9z')
   if (l.includes('support')) return p('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20|M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3|M12 17h.01')
@@ -66,7 +68,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
   const pathname = usePathname() || ''
   const router = useRouter()
   const [mode, setModeState] = React.useState<'particulier' | 'pro'>('particulier')
-  // Le compte a-t-il un profil prestataire ? Sinon « Passer en mode pro » mène à l'inscription pro.
+  // Le compte a-t-il un profil prestataire ? Sinon « Devenir prestataire » mène à l'inscription pro.
   const [hasPro, setHasPro] = React.useState<boolean | null>(null)
   React.useEffect(() => {
     const supabase = createClient()
@@ -102,6 +104,8 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
 
   const onPro = isProRoute || (!isClientRoute && mode === 'pro')
   const accent = onPro ? '#F2A93B' : '#12B39C'
+  // Entrée active de la barre latérale (maquette) : teal foncé côté client, or foncé côté prestataire (AA).
+  const navAcc = onPro ? '#8A6520' : '#0B8374'
   const unread = useUnreadTotal(onPro ? 'pro' : 'particulier', pathname)
   // Accès rapide « Mission du jour » : en tête du menu, seulement quand une mission est en cours ou du jour.
   const today = useTodayMission(onPro ? 'pro' : 'particulier', pathname)
@@ -129,7 +133,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
 
   return (
     <div className="app-shell">
-      <aside className="desk-nav">
+      <aside className="desk-nav" style={{ ['--nav-acc' as string]: navAcc } as React.CSSProperties}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 10px 16px' }}>
           <svg viewBox="0 0 26 26" width="26" height="26"><circle cx="13" cy="13" r="11.2" fill="none" stroke={accent} strokeWidth={1.3} opacity=".38" /><circle cx="13" cy="13" r="7" fill="none" stroke={accent} strokeWidth={1.3} opacity=".6" /></svg>
           <span style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)' }}>ping</span>
@@ -145,8 +149,8 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
         <div style={{ height: 1, background: 'var(--line)', margin: '10px 8px' }} />
         {nav2.map(item)}
         <div style={{ flex: 1 }} />
-        <div className="dnav-item" style={{ background: 'var(--ink)', color: '#fff' }} onClick={switchMode}>
-          {onPro ? 'Revenir en mode particulier' : (hasPro === false ? 'Devenir prestataire' : 'Passer en mode pro')}
+        <div className="dnav-item" role="button" style={{ background: 'var(--ink)', color: '#fff' }} onClick={switchMode}>
+          {onPro ? 'Espace client' : (hasPro === false ? 'Devenir prestataire' : 'Espace prestataire')}
         </div>
       </aside>
       <div className={mainClass}>{children}</div>

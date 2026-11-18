@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 import NavDrawer from '@/components/NavDrawer'
+import { Ic, Stars, r1 } from '@/components/PingIcons'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { CGV_VERSION } from '@/lib/cgv'
@@ -162,24 +163,24 @@ export default function ProDashboard() {
             {(() => {
               const live = available && !pro.payments_suspended_at
               return (
+                // Carte « Mon annonce » de la maquette (.annc) : titre, étiquette d'état, jauge, conseil.
                 <button onClick={() => router.push('/pro/annonce')}
-                  style={{ textAlign: 'left', width: '100%', padding: 16, borderRadius: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                    border: `1.5px solid ${live ? 'rgba(18,179,156,.45)' : '#E7EDEB'}`, background: live ? 'rgba(18,179,156,.06)' : '#fff' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ width: 11, height: 11, borderRadius: '50%', flexShrink: 0, background: pro.payments_suspended_at ? '#C0503A' : live ? '#12B39C' : '#A5B3B9' }} />
-                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', flex: 1 }}>
-                      Mon annonce · {pro.payments_suspended_at ? 'Suspendue' : live ? 'En ligne' : 'En pause'}
+                  style={{ textAlign: 'left', width: '100%', padding: 14, borderRadius: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    border: `1px solid ${live ? 'rgba(18,179,156,.45)' : '#E7EDEB'}`, background: live ? 'rgba(18,179,156,.06)' : '#fff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <b style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Mon annonce</b>
+                    <span className={`mq-tag ${live ? '' : 'warn'}`} style={pro.payments_suspended_at ? { background: '#FEE2E2', color: '#C0503A' } : undefined}>
+                      {pro.payments_suspended_at ? 'Suspendue' : live ? 'En ligne, visible sur la carte' : 'Hors ligne'}
                     </span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2.2"><path d="M9 6l6 6-6 6" /></svg>
                   </div>
                   {listingPct != null && (
                     <>
-                      <div style={{ fontSize: 12.5, color: '#4E6470', margin: '8px 0 6px', fontWeight: 600 }}>
-                        Complète à {listingPct} %{listingPct < 100 ? ' · voir ce qui manque' : ''}
-                      </div>
-                      <div style={{ height: 6, borderRadius: 999, background: '#E3EBE9', overflow: 'hidden' }}>
+                      <div style={{ height: 6, borderRadius: 999, background: '#E3EBE9', overflow: 'hidden', margin: '10px 0 4px' }}>
                         <div style={{ width: `${listingPct}%`, height: '100%', background: '#12B39C', borderRadius: 999 }} />
                       </div>
+                      <small style={{ display: 'block', fontSize: 11.5, color: '#4E6470', lineHeight: 1.45 }}>
+                        Complète à {listingPct} %{listingPct < 100 ? ' · voir ce qui manque' : ''} · plus vos pièces sont validées, plus vous apparaissez en tête
+                      </small>
                     </>
                   )}
                 </button>
@@ -229,7 +230,19 @@ export default function ProDashboard() {
                 <div style={{ fontSize: 12.5, color: '#4E6470', marginTop: 3 }}>
                   {firstName ? `${firstName} · ` : ''}{legalLabel(pro.legal_status)}{city ? ` · ${city}` : ''}
                 </div>
-                <span onClick={() => router.push('/pro/onboarding')} style={{ display: 'inline-block', marginTop: 8, fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', textDecoration: 'underline' }}>Modifier</span>
+                {/* Note (maquette) : étoiles au prorata, ou « Nouveau ». */}
+                <p style={{ marginTop: 4, fontSize: 13, color: '#123644' }}>
+                  {pro.rating > 0 ? <><Stars r={pro.rating} size={13} /> <b>{r1(pro.rating)}</b> <span style={{ color: '#4E6470' }}>({pro.reviews_count || 0} avis)</span></> : <span style={{ color: '#4E6470' }}>Nouveau, pas encore d&apos;avis</span>}
+                </p>
+                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                  <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ flex: 1, minHeight: 44, padding: '10px 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                    <Ic name="eye" size={18} />Ma fiche publique
+                  </button>
+                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/tarifs')} style={{ flex: 1, minHeight: 44, padding: '10px 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                    <Ic name="tag" size={18} />Mes tarifs
+                  </button>
+                </div>
+                <span onClick={() => router.push('/pro/onboarding')} role="button" style={{ display: 'inline-block', marginTop: 10, fontSize: 12, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer', textDecoration: 'underline' }}>Modifier mes informations</span>
               </div>
             </div>
 
@@ -280,7 +293,7 @@ export default function ProDashboard() {
               <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez d'autres prestataires" onClick={() => router.push('/client/parrainage')} />
               <HubRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
               <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
-              <HubRow icon={HUB_ICONS.swap} label="Revenir en mode particulier" onClick={() => { writeMode('particulier'); router.push('/map') }} />
+              <HubRow icon={HUB_ICONS.swap} label="Espace client" onClick={() => { writeMode('particulier'); router.push('/map') }} />
             </HubGroup>
 
             <div onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}

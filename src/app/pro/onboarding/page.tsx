@@ -21,7 +21,7 @@ function phoneValid(v: string) { return /^(0\d{9}|\+33\d{9}|0033\d{9})$/.test(cl
 
 // Brouillon de l'assistant (lot 5, 18/11/2026) : seulement à la création d'une activité (jamais quand un
 // prestataire modifie un profil existant, qui se recharge depuis la base). Lié au compte (uid), repris à la
-// même étape ; « Plus tard » ou un retour par « Passer en pro » ne perdent rien. Effacé à « Terminer ».
+// même étape ; « Plus tard » ou un retour par « Espace prestataire » ne perdent rien. Effacé à « Terminer ».
 const DRAFT_KEY = 'ping_pro_draft'
 type ProDraft = {
   v: 1; uid: string | null; stepKey: string
@@ -198,7 +198,7 @@ export default function ProOnboarding() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) } catch { }
   }, [draftOn, stepKey, services, pricing, status, companyQuery, selectedCompany, manualEntry, siret, sapNumber, address, coords, phone, confirmedInfo, bio, website, legalForm, vatStatus, vatNumber, acceptsCesu])
 
-  // « Plus tard » : retour à l'espace particulier, le brouillon reste (repris par « Passer en pro »).
+  // « Plus tard » : retour à l'espace particulier, le brouillon reste (repris par « Devenir prestataire »).
   function later() {
     writeMode('particulier')
     router.push('/map')

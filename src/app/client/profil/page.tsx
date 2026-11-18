@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
+import { writeMode } from '@/lib/mode'
 
 const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '12px 0 5px' }
 const fieldInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1.5px solid #E7EDEB', borderRadius: 12, fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644', outline: 'none', boxSizing: 'border-box' }
@@ -126,7 +127,11 @@ export default function ClientProfil() {
               <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />
               <HubRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
               <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
-              <HubRow icon={HUB_ICONS.swap} label="Proposer mes services" sub="Devenir prestataire : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />
+              {/* Libellés de bascule décidés par Romain : « Espace prestataire » pour un compte qui a déjà une
+                  activité prestataire, « Devenir prestataire » sinon. */}
+              {profile?.is_pro
+                ? <HubRow icon={HUB_ICONS.swap} label="Espace prestataire" sub="Mes demandes, mes missions, mon entreprise" onClick={() => { writeMode('pro'); router.push('/pro/carte') }} />
+                : <HubRow icon={HUB_ICONS.swap} label="Devenir prestataire" sub="Proposer mes services : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />}
             </HubGroup>
 
             <div onClick={logout} style={{ textAlign: 'center', marginTop: 16, color: 'var(--slate)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>Se déconnecter</div>
