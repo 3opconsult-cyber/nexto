@@ -1,9 +1,70 @@
 "use client"
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import type { ProviderNearby } from '@/lib/services'
+import { PING_MAP_STYLE, MAP_ATTRIBUTION, hasWebGL } from '@/lib/mapStyle'
+
+// Fond de carte : vectoriel aux couleurs PING (MapLibre GL + tuiles OpenFreeMap) rendu sous
+// Leaflet via @maplibre/maplibre-gl-leaflet — Leaflet garde la main sur les gestes, les
+// épingles et les clics. Repli automatique sur les tuiles raster OpenStreetMap si WebGL est
+// absent, si le style ou ses tuiles ne chargent pas, ou si le contexte WebGL est perdu.
+const STYLE_TIMEOUT_MS = 10000
+function PingBaseLayer() {
+  const map = useMap()
+  const [fallback, setFallback] = useState(false)
+  useEffect(() => {
+    if (fallback) return
+    if (!hasWebGL()) { setFallback(true); return }
+    let cancelled = false
+    let layer: L.Layer | null = null
+    let loaded = false
+    const fail = () => { if (!cancelled && !loaded) setFallback(true) }
+    const timer = window.setTimeout(fail, STYLE_TIMEOUT_MS)
+    map.attributionControl?.addAttribution(MAP_ATTRIBUTION)
+    ;(async () => {
+      try {
+        await import('maplibre-gl')
+        await import('@maplibre/maplibre-gl-leaflet')
+        if (cancelled) return
+        const gl = L.maplibreGL({ style: PING_MAP_STYLE, attributionControl: false })
+        layer = gl
+        gl.addTo(map)
+        const glMap = gl.getMaplibreMap()
+        glMap.on('load', () => { loaded = true; window.clearTimeout(timer); map.getContainer().dataset.basemap = 'ping' })
+        glMap.on('error', fail)
+        gl.getCanvas()?.addEventListener('webglcontextlost', () => { loaded = false; fail() })
+      } catch {
+        fail()
+      }
+    })()
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+      map.attributionControl?.removeAttribution(MAP_ATTRIBUTION)
+      if (layer) map.removeLayer(layer)
+    }
+  }, [map, fallback])
+  useEffect(() => {
+    if (fallback) map.getContainer().dataset.basemap = 'osm'
+  }, [fallback, map])
+  if (!fallback) return null
+  return (
+    <TileLayer
+      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+      maxZoom={19}
+    />
+  )
+}
+
+function AttributionPrefix() {
+  const map = useMap()
+  useEffect(() => { map.attributionControl?.setPrefix(false) }, [map])
+  return null
+}
 
 // Icônes en divIcon (HTML/CSS inline) : évite le piège classique de Leaflet sous
 // webpack/Next.js où les PNG de marqueurs par défaut ne se résolvent pas et où
@@ -85,7 +146,10 @@ export default function LiveMap({
 }) {
   return (
     <>
-      <style>{`.leaflet-top.leaflet-left{top:158px}.leaflet-control-zoom{z-index:400 !important}
+      <style>{`.leaflet-top.leaflet-left{top:158px}
+        .leaflet-container{background:#E9F1EA}
+        .leaflet-control-attribution{font:9.5px/1.4 Inter,sans-serif !important;color:#6E8592 !important;background:rgba(255,255,255,.55) !important;padding:0 5px !important;border-radius:6px 0 0 0}
+        .leaflet-control-attribution a{color:#6E8592 !important;text-decoration:none}.leaflet-control-zoom{z-index:400 !important}
         @keyframes pinIn{0%{opacity:0;transform:translateY(-14px) scale(.7)}100%{opacity:1;transform:translateY(0) scale(1)}}
         .you-tip{background:#fff;border:none;box-shadow:0 2px 8px rgba(18,54,68,.2);border-radius:999px;padding:3px 10px;font-family:Quicksand,sans-serif;font-weight:700;font-size:11px;color:#123644}
         .you-tip::before{display:none}
@@ -100,13 +164,11 @@ export default function LiveMap({
         // ne pose de touch-action sur la carte ; Leaflet gère lui-même les gestes (leaflet.css).
         touchZoom={true}
         style={{ width: '100%', height: '100%' }}
-        attributionControl={false}
+        maxZoom={19}
+        minZoom={4}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap'
-          maxZoom={19}
-        />
+        <AttributionPrefix />
+        <PingBaseLayer />
         <FitAll userPos={userPos} pros={pros} pts={requests} recenterTick={recenterTick} />
         <Marker position={[userPos.lat, userPos.lng]} icon={userIcon(echo)}>
           <Tooltip permanent direction="bottom" offset={[0, 8]} className="you-tip">{youLabel}</Tooltip>
