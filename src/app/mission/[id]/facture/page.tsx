@@ -149,10 +149,23 @@ export default function FacturePage() {
           boxShadow: '0 1px 2px rgba(18,54,68,.06)', maxWidth: 620, margin: '0 auto',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-              <Sign size={26} />
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>ping</span>
-            </div>
+            {/* Le prestataire facture sous son propre en-tête : PING n'apparaît que sur ses
+                propres relevés de frais et de commission (PING-C, PING-V). */}
+            {inv.template === 'commission' ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <Sign size={26} />
+                <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, letterSpacing: '-.02em' }}>ping</span>
+              </div>
+            ) : (
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', lineHeight: 1.25 }}>
+                  {inv.issuer_snapshot?.enseigne || inv.issuer_snapshot?.nom || 'Prestataire'}
+                </div>
+                {inv.issuer_snapshot?.siret && (
+                  <div style={{ fontSize: 11, color: '#4E6470', marginTop: 2 }}>SIRET {inv.issuer_snapshot.siret}</div>
+                )}
+              </div>
+            )}
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.1em', color: '#4E6470', textTransform: 'uppercase' }}>
                 {docTitle(inv)}

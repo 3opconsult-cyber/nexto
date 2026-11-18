@@ -394,7 +394,7 @@ export default function ProCartePage() {
             <div onClick={() => setSheetOpen(o => !o)} style={{ cursor: 'pointer', margin: '-6px -14px 8px', padding: '4px 14px 8px' }}>
               <div style={{ width: 44, height: 5, borderRadius: 3, background: '#CBD7D4', margin: '0 auto 6px' }} />
               <div style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: 'var(--slate)' }}>
-                {sheetOpen ? 'Réduire' : `${view === 'demandes' ? reqs.length + ' demandes' : missions.length + ' interventions'} · afficher la liste`}
+                {sheetOpen ? 'Réduire' : `${view === 'demandes' ? `${reqs.length} demande${reqs.length > 1 ? 's' : ''}` : `${missions.length} intervention${missions.length > 1 ? 's' : ''}`} · afficher la liste`}
               </div>
             </div>
             {sheetOpen && sidePanel}

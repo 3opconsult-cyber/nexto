@@ -50,8 +50,8 @@ export default function ProDashboard() {
   const [city, setCity] = useState('')
   // « Mon annonce » : complétude (même calcul que /pro/annonce).
   const [listingPct, setListingPct] = useState<number | null>(null)
-  // Encart « Paiements et fiscalité » : état honnête de chaque élément, « bientôt » tant que le
-  // paiement en ligne est éteint (rien n'est débité ni versé par PING aujourd'hui).
+  // Encart « Paiements et fiscalité » : état honnête de chaque élément. Tant que le paiement en
+  // ligne est éteint, tout se règle par virement sur facture (rien n'est débité ni versé par PING).
   const [payOn, setPayOn] = useState(false)
   const [taxId, setTaxId] = useState<string | null>(null)
   const [hasIban, setHasIban] = useState(false)
@@ -250,15 +250,15 @@ export default function ProDashboard() {
             <HubGroup title="Paiements et fiscalité">
               <HubRow icon={HUB_ICONS.card} label="IBAN pour être payé par virement" sub="Vos clients vous paient par virement après l'intervention, sur facture"
                 badge={hasIban ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/paiements')} />
-              <HubRow icon={HUB_ICONS.lock} label="Prélèvement SEPA des commissions" sub="Mandat de prélèvement automatique"
-                badge={!payOn ? { text: 'bientôt', tone: 'todo' }
+              <HubRow icon={HUB_ICONS.lock} label="Prélèvement SEPA des commissions" sub={payOn ? 'Mandat de prélèvement automatique' : 'Non requis : commissions réglées par virement sur facture'}
+                badge={!payOn ? { text: 'non requis', tone: 'ok' }
                   : pro.sepa_mandate_status === 'active' ? { text: 'actif', tone: 'ok' }
                   : ['revoked', 'failed'].includes(pro.sepa_mandate_status) ? { text: 'à régulariser', tone: 'todo' }
                   : { text: 'à signer', tone: 'todo' }}
                 onClick={() => router.push('/pro/paiements#mandat')} />
               <HubRow icon={HUB_ICONS.euro} label="Numéro fiscal (déclaration DAC7)" sub="Transmis à l'administration avec vos revenus annuels"
                 badge={taxId ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/revenus#fiscal')} />
-              <HubRow icon={HUB_ICONS.id} label="Numéro SAP et avance immédiate Urssaf" sub="Crédit d'impôt de 50 % pour vos clients · avance immédiate bientôt"
+              <HubRow icon={HUB_ICONS.id} label="Numéro SAP et avance immédiate Urssaf" sub="Crédit d'impôt de 50 % pour vos clients · avance immédiate pas encore ouverte"
                 badge={pro.sap_number ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/revenus#sap')} />
               <HubRow icon={HUB_ICONS.doc} label="CGV et contrat de commission" sub="Conditions acceptées à l'inscription"
                 badge={pro.cgv_accepted_at ? { text: 'accepté', tone: 'ok' } : { text: 'à accepter', tone: 'todo' }} onClick={() => router.push('/cgu#prestataires')} />

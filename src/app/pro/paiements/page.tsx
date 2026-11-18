@@ -171,13 +171,12 @@ export default function ProPaiementsPage() {
           ) : !st.actif ? (
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Paiement en ligne sous séquestre</div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, background: '#EEF2F1', color: '#4E6470', whiteSpace: 'nowrap' }}>Bientôt</span>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Paiement par virement sur facture</div>
               </div>
               <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
-                Plus tard, le client pourra payer par carte à la réservation ; l&apos;argent restera bloqué chez un partenaire de
-                paiement agréé jusqu&apos;à 24 h après la fin de la mission, puis vous sera versé. En attendant, tout se règle
-                par virement, ci-dessus.
+                À la fin de la mission, la facture est émise à votre en-tête et votre client vous règle par virement,
+                directement sur votre compte (IBAN ci-dessus). Le paiement en ligne n&apos;est pas activé : PING
+                n&apos;encaisse ni ne verse aucun montant.
               </p>
             </div>
           ) : (
@@ -248,15 +247,22 @@ export default function ProPaiementsPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Prélèvement automatique des commissions</div>
                 <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, whiteSpace: 'nowrap', ...(st.actif ? { background: (MANDAT[mandat] || MANDAT.none).bg, color: (MANDAT[mandat] || MANDAT.none).fg } : { background: '#EEF2F1', color: '#4E6470' }) }}>
-                  {st.actif ? (MANDAT[mandat] || MANDAT.none).t : 'Bientôt opérationnel'}
+                  {st.actif ? (MANDAT[mandat] || MANDAT.none).t : 'Non requis'}
                 </span>
               </div>
-              <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
-                Quand le client paie via PING, la commission est retenue directement sur votre versement. Le mandat
-                de prélèvement SEPA sert aux commissions qui ne peuvent pas l&apos;être (par exemple une mission réglée par
-                l&apos;avance immédiate de l&apos;Urssaf, versée directement sur votre compte).{' '}
-                {st.actif ? (MANDAT[mandat] || MANDAT.none).txt : 'Il sera proposé à l’ouverture du paiement en ligne. Conditions : voir les CGV prestataires.'}
-              </p>
+              {st.actif ? (
+                <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
+                  Quand le client paie via PING, la commission est retenue directement sur votre versement. Le mandat
+                  de prélèvement SEPA sert aux commissions qui ne peuvent pas l&apos;être (par exemple une mission réglée par
+                  l&apos;avance immédiate de l&apos;Urssaf, versée directement sur votre compte).{' '}
+                  {(MANDAT[mandat] || MANDAT.none).txt}
+                </p>
+              ) : (
+                <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
+                  Aujourd&apos;hui, la commission PING se règle par virement sur facture (relevé PING-V de chaque mission) :
+                  aucun mandat de prélèvement ne vous est demandé. Conditions : voir les CGV prestataires.
+                </p>
+              )}
               <a href="/cgu#prestataires" style={{ display: 'inline-block', marginTop: 8, fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>CGV prestataires et contrat de commission</a>
             </div>
           )}
