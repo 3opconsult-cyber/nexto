@@ -1,0 +1,25 @@
+Objet : Je vous invite à tester PING en avant-première
+
+Bonjour [Prénom],
+
+Vous cherchez parfois quelqu'un pour le ménage, le repassage ou un nettoyage ? PING montre sur une carte les prestataires disponibles juste à côté de chez vous.
+
+- vous voyez leur profil, leurs tarifs et leurs avis avant de choisir ;
+- vous fixez le prix avec eux dans le chat, avant l'intervention ;
+- l'arrivée et le départ sont validés par QR code, la facture arrive automatiquement ;
+- un souci ? Tout est centralisé dans l'application, avec un service litige.
+
+Nous ouvrons l'application à quelques personnes de [Ville] avant le lancement. Votre avis compte : une bulle verte, dans l'application, vous permet de nous écrire à tout moment.
+
+Découvrir PING : https://nexto-eta.vercel.app/l/ecl
+
+Ou en vidéo : PING pour les particuliers, 35 secondes : https://nexto-eta.vercel.app/animation-client
+
+Version d'avant-première : l'inscription est gratuite, les paiements ne sont pas encore réels.
+
+Bien cordialement,
+[Votre prénom]
+PING · services de proximité · Côte d'Azur
+
+--
+PING, ménage, repassage et nettoyage à proximité, sur la Côte d'Azur. Contact : info@opconsult.co. Vous recevez ce message parce que nous pensons qu'il peut vous intéresser ; pour ne plus rien recevoir, répondez simplement « stop ».

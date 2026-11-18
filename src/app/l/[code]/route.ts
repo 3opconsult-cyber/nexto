@@ -75,6 +75,18 @@ const LINKS: Record<string, Dest> = Object.assign(Object.create(null), {
   // --- avant-première : page d'accueil /bienvenue envoyée aux prospects (liens, SMS, e-mails) ---
   bv:  { path: '/bienvenue', source: 'prospection', medium: 'lien', content: 'bienvenue' },
 
+  // --- modèles d'e-mails (public/brand/emails, générés par brand/emails/build.py ; plan : docs/plan-marketing-outils.md) ---
+  // Un code par modèle : l'admin (Prospection > Performance par canal, /admin/parcours) dit quel e-mail ramène des
+  // inscriptions. ?c=<prospect> reste possible (ex. /l/epr?c=epr_dupont) : il remplace utm_content.
+  // /bienvenue garde ces UTM et les passe à « Continuer vers l'inscription » (brand/plaquettes/build_bienvenue.py).
+  epr:  { path: '/bienvenue#pro', source: 'email', medium: 'prospection', content: 'email_prospection_pro' },
+  epr2: { path: '/pro/onboarding', source: 'email', medium: 'relance', content: 'email_relance_pro' },
+  ecl:  { path: '/bienvenue#particulier', source: 'email', medium: 'invitation', content: 'email_invitation_client' },
+  ecl2: { path: '/auth/signup', source: 'email', medium: 'relance', content: 'email_relance_client' },
+  eap:  { path: '/pro/dashboard', source: 'email', medium: 'accueil', content: 'email_apres_inscription_pro' },
+  eac:  { path: '/map', source: 'email', medium: 'accueil', content: 'email_apres_inscription_client' },
+  eent: { path: '/plaquettes#entreprises', source: 'email', medium: 'b2b', content: 'email_entreprises' },
+
   // --- prospection directe (DM, vignettes de campagne) ---
   // ?c=<nom_du_prospect> est repris tel quel dans utm_content : un lien par prospect
   // sans avoir à créer un code pour chacun.

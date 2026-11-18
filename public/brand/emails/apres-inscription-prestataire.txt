@@ -1,0 +1,24 @@
+Objet : Bienvenue sur PING : trois réglages pour être visible
+
+Bonjour [Prénom],
+
+Merci pour votre inscription. Pour que les clients vous trouvent et vous réservent, trois réglages suffisent :
+
+- Mes tarifs : un prix par service (forfait, à l'heure ou sur devis) — https://nexto-eta.vercel.app/pro/tarifs ;
+- Mes disponibilités : les créneaux où l'on peut vous réserver — https://nexto-eta.vercel.app/pro/disponibilites ;
+- Mes pièces : pièce d'identité, assurance, SIRET si vous en avez un — https://nexto-eta.vercel.app/pro/documents.
+
+Une fois vos pièces contrôlées par l'équipe PING, votre profil affiche « profil vérifié par PING ». Passez ensuite « Disponible » sur la carte : les demandes autour de vous apparaissent.
+
+Ouvrir Mon entreprise : https://nexto-eta.vercel.app/l/eap
+
+Besoin d'un coup de main ? Comment ça marche, en vidéos courtes : https://nexto-eta.vercel.app/aide
+
+Avant-première : les paiements en ligne ne sont pas encore ouverts. Vos remarques sont précieuses : la bulle verte, dans l'application, nous les transmet directement.
+
+Bien cordialement,
+[Votre prénom]
+PING · services de proximité · Côte d'Azur
+
+--
+PING, ménage, repassage et nettoyage à proximité, sur la Côte d'Azur. Contact : info@opconsult.co. Vous recevez ce message parce que nous pensons qu'il peut vous intéresser ; pour ne plus rien recevoir, répondez simplement « stop ».

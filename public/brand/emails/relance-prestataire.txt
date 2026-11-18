@@ -1,0 +1,22 @@
+Objet : PING : votre place à [Ville]
+
+Bonjour [Prénom],
+
+Je me permets une courte relance de mon message de la semaine dernière. Les premiers prestataires inscrits à [Ville] sont les premiers que les clients voient sur la carte.
+
+L'inscription prend environ cinq minutes :
+
+- votre métier et votre zone d'intervention ;
+- vos tarifs, service par service ;
+- vos pièces : pièce d'identité, assurance, et SIRET si vous êtes immatriculé.
+
+Créer mon profil de prestataire : https://nexto-eta.vercel.app/l/epr2
+
+Si ce n'est pas pour vous, répondez simplement « non merci » : je ne vous relancerai pas.
+
+Bien cordialement,
+[Votre prénom]
+PING · services de proximité · Côte d'Azur
+
+--
+PING, ménage, repassage et nettoyage à proximité, sur la Côte d'Azur. Contact : info@opconsult.co. Vous recevez ce message parce que nous pensons qu'il peut vous intéresser ; pour ne plus rien recevoir, répondez simplement « stop ».

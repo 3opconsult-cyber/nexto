@@ -1,0 +1,23 @@
+Objet : Vos équipes visibles auprès des clients de [Ville]
+
+Bonjour [Prénom],
+
+Je lance PING sur la Côte d'Azur, une application qui met en relation les particuliers avec les prestataires de ménage, de repassage et de nettoyage les plus proches.
+
+- chaque salarié actif sur le terrain a son compte et apparaît dans sa zone d'intervention ;
+- votre planning reste le vôtre : PING s'ajoute, sans réorganisation ;
+- arrivée et départ validés par QR code, chaque mission tracée et facturée automatiquement ;
+- inscription gratuite, commission seulement sur les missions réalisées.
+
+Voir la plaquette entreprises : https://nexto-eta.vercel.app/l/eent
+
+Je vous propose un échange de quinze minutes pour voir si cela correspond à votre organisation : répondez à ce message ou écrivez à info@opconsult.co.
+
+PING est en avant-première : les paiements en ligne ne sont pas encore ouverts.
+
+Bien cordialement,
+[Votre prénom]
+PING · services de proximité · Côte d'Azur
+
+--
+PING, ménage, repassage et nettoyage à proximité, sur la Côte d'Azur. Contact : info@opconsult.co. Vous recevez ce message parce que nous pensons qu'il peut vous intéresser ; pour ne plus rien recevoir, répondez simplement « stop ».

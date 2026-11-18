@@ -1,0 +1,23 @@
+Objet : Bienvenue sur PING : votre première demande
+
+Bonjour [Prénom],
+
+Merci pour votre inscription. Deux façons de commencer :
+
+- sur la carte, ouvrez le profil d'un prestataire proche et touchez « Contacter » ;
+- ou déposez une demande (date, durée, budget) : les prestataires autour de vous y répondent — https://nexto-eta.vercel.app/client/demandes/new.
+
+Le prix se fixe dans le chat avant l'intervention. Votre adresse n'est transmise au prestataire qu'une fois le rendez-vous confirmé.
+
+Ouvrir la carte : https://nexto-eta.vercel.app/l/eac
+
+Pour tout comprendre en une minute : Comment ça marche : https://nexto-eta.vercel.app/aide
+
+Avant-première : les paiements ne sont pas encore réels. Dites-nous ce que vous en pensez avec la bulle verte, dans l'application.
+
+Bien cordialement,
+[Votre prénom]
+PING · services de proximité · Côte d'Azur
+
+--
+PING, ménage, repassage et nettoyage à proximité, sur la Côte d'Azur. Contact : info@opconsult.co. Vous recevez ce message parce que nous pensons qu'il peut vous intéresser ; pour ne plus rien recevoir, répondez simplement « stop ».

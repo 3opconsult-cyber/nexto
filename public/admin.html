@@ -686,6 +686,77 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
             <button type="button" class="btn ghost" onclick="copyFrom(this,'invitTxt')">Copier</button>
           </div>
         </div>
+        <div class="card" style="margin-bottom:14px"><h3>Plan marketing et modèles d'e-mails <span class="muted">8 semaines · détail complet dans docs/plan-marketing-outils.md · sources des e-mails dans brand/emails/build.py</span></h3>
+          <p class="note" style="margin-top:0"><b>À trancher avant d'écrire à de vrais prospects :</b> les vidéos /animation-client et /animation-prestataire (ouvertes aussi depuis /bienvenue) montrent le paiement sous séquestre comme actif, alors que l'application règle par virement, sur facture. Les e-mails n'en parlent pas et précisent que les paiements en ligne ne sont pas encore ouverts. Invitation des particuliers : uniquement aux personnes qui ont donné leur accord (RGPD).</p>
+          <table class="tbl" data-noenh="1">
+            <tr><th>Semaine</th><th>Actions</th><th>Objectif</th></tr>
+            <tr><td>S1 · 23/11</td><td>Prestataires : 8 e-mails de prospection par jour ouvré. Clients : 15 proches testeurs.</td><td>40 pros contactés, 10 inscrits</td></tr>
+            <tr><td>S2 · 30/11</td><td>Relances J+4, e-mail d&#x27;accueil à chaque pro inscrit, validation des pièces (Conformité).</td><td>10 profils complets</td></tr>
+            <tr><td>S3 · 07/12</td><td>Terrain pros (flyer /l/fpr, stickers sp1-sp2, DM /l/dm?c=). Entreprises : 10 e-mails, appel J+3.</td><td>30 pros, 2 entreprises en essai</td></tr>
+            <tr><td>S4 · 14/12</td><td>Ouverture du quartier 1 : stickers s1-s4, affiche, chevalet. Relance des profils incomplets.</td><td>Bilan mi-parcours, 30 clients</td></tr>
+            <tr><td>S5 · 21/12</td><td>« Grand ménage avant les fêtes » : posts /l/ig, groupes de quartier (/l/bv), flyer /l/fp. Pros : passer Disponible.</td><td>10 premières demandes</td></tr>
+            <tr><td>S6 · 28/12</td><td>Pause prospection. E-mails d&#x27;accueil et relances clients.</td><td>Taux inscrit → demande</td></tr>
+            <tr><td>S7 · 04/01</td><td>Deuxième vague : 40 pros et quartier 2. Option annonceurs (/plaquettes#annonceurs).</td><td>50 pros, 100 clients</td></tr>
+            <tr><td>S8 · 11/01</td><td>Parrainage via les pros, relance des inactifs.</td><td>Bilan : canaux gardés ou arrêtés</td></tr>
+          </table>
+          <p class="note">Indicateur : Prospection → Performance par canal (inscriptions avec utm_source=email et le contenu de chaque modèle), /admin/parcours (source de chaque inscrit), /admin/visites (e-mails d'accueil). Envoi un par un depuis la boîte de Romain : remplacer [Prénom], [Ville] et [Votre prénom]. Pour un lien par prospect : ajouter ?c=epr_nom au lien tracé.</p>
+          <div class="qrow">
+            <div class="m"><b>Prospection prestataires (premier contact)</b><small class="mono">Objet : Des clients près de chez vous, sans démarchage · J0, 8 par jour ouvré (S1-S3, S7) · lien tracé /l/epr</small>
+              <div class="animPrev" style="display:none"></div></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/l/epr" onclick="copyFrom(this)">Copier le lien</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/brand/emails/prospection-prestataire.html" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/brand/emails/prospection-prestataire.txt" target="_blank" rel="noopener">Texte</a>
+            <a class="link" style="text-decoration:none" href="/brand/emails/prospection-prestataire.html" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Relance prestataires (J+4, une seule fois)</b><small class="mono">Objet : PING : votre place à [Ville] · J+4, une seule fois · lien tracé /l/epr2</small>
+              <div class="animPrev" style="display:none"></div></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/l/epr2" onclick="copyFrom(this)">Copier le lien</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/brand/emails/relance-prestataire.html" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/brand/emails/relance-prestataire.txt" target="_blank" rel="noopener">Texte</a>
+            <a class="link" style="text-decoration:none" href="/brand/emails/relance-prestataire.html" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Invitation clients (avant-première)</b><small class="mono">Objet : Je vous invite à tester PING en avant-première · J0, seulement avec l&#x27;accord de la personne · lien tracé /l/ecl</small>
+              <div class="animPrev" style="display:none"></div></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/l/ecl" onclick="copyFrom(this)">Copier le lien</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/brand/emails/invitation-client.html" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/brand/emails/invitation-client.txt" target="_blank" rel="noopener">Texte</a>
+            <a class="link" style="text-decoration:none" href="/brand/emails/invitation-client.html" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Relance clients (J+5, une seule fois)</b><small class="mono">Objet : Votre accès à PING vous attend · J+5, une seule fois · lien tracé /l/ecl2</small>
+              <div class="animPrev" style="display:none"></div></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/l/ecl2" onclick="copyFrom(this)">Copier le lien</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/brand/emails/relance-client.html" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/brand/emails/relance-client.txt" target="_blank" rel="noopener">Texte</a>
+            <a class="link" style="text-decoration:none" href="/brand/emails/relance-client.html" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Après l&#x27;inscription : prestataire</b><small class="mono">Objet : Bienvenue sur PING : trois réglages pour être visible · J+1 après chaque inscription pro · lien tracé /l/eap</small>
+              <div class="animPrev" style="display:none"></div></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/l/eap" onclick="copyFrom(this)">Copier le lien</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/brand/emails/apres-inscription-prestataire.html" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/brand/emails/apres-inscription-prestataire.txt" target="_blank" rel="noopener">Texte</a>
+            <a class="link" style="text-decoration:none" href="/brand/emails/apres-inscription-prestataire.html" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Après l&#x27;inscription : client</b><small class="mono">Objet : Bienvenue sur PING : votre première demande · J+1 après chaque inscription client · lien tracé /l/eac</small>
+              <div class="animPrev" style="display:none"></div></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/l/eac" onclick="copyFrom(this)">Copier le lien</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/brand/emails/apres-inscription-client.html" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/brand/emails/apres-inscription-client.txt" target="_blank" rel="noopener">Texte</a>
+            <a class="link" style="text-decoration:none" href="/brand/emails/apres-inscription-client.html" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+          <div class="qrow">
+            <div class="m"><b>Entreprises de ménage et nettoyage (B2B)</b><small class="mono">Objet : Vos équipes visibles auprès des clients de [Ville] · S3, puis appel à J+3 · lien tracé /l/eent</small>
+              <div class="animPrev" style="display:none"></div></div>
+            <button type="button" class="btn ghost" data-copy="https://nexto-eta.vercel.app/l/eent" onclick="copyFrom(this)">Copier le lien</button>
+            <button type="button" class="link animBtn" style="background:none;border:none;padding:0" data-src="/brand/emails/entreprises.html" aria-expanded="false">Aperçu</button>
+            <a class="link" style="text-decoration:none" href="/brand/emails/entreprises.txt" target="_blank" rel="noopener">Texte</a>
+            <a class="link" style="text-decoration:none" href="/brand/emails/entreprises.html" target="_blank" rel="noopener">Ouvrir</a>
+          </div>
+        </div>
         <div class="card"><h3>Plaquettes &amp; animation <span class="muted">à partager tel quel · sources dans brand/plaquettes, brand/anim, brand/anim-pro, brand/anim-inscription et brand/anim-presentation</span></h3>
           <div class="qrow">
             <div class="m"><b>Animation explicative · 42 s · format vertical</b><small class="mono">Marc se déplace, l'écho PING le rend visible, les clients autour lui écrivent, chat et tarif, réservation instantanée, agenda, QR d'arrivée puis de départ, écran « En toute confiance », avis + pourboire + facture, signature. Lecteur avec scénario scène par scène. QR de fin → /l/vid.</small>
