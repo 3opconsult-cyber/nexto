@@ -5,6 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import OnboardingStep from '@/components/OnboardingStep'
 import { DOC_TYPES } from '@/lib/documents'
+import { useCatalog, docsForServices } from '@/lib/catalog'
+import { fetchProviderActivities } from '@/lib/services'
+
+// Une étape du tunnel : les pièces de base (DOC_TYPES), puis celles que le catalogue des services
+// demande pour les métiers choisis (lot 27). `id` = clé de l'étape ; `kind` = rubrique de Mes pièces ;
+// `type` = type de pièce dans la rubrique (fichier `<kind>--<type>-…`, comme dans Mes pièces).
+type Step = { id: string; kind: string; type: string | null; question: string; subtitle?: string; label: string }
 
 const ICONS: Record<string, JSX.Element> = {
   identite: (
@@ -30,13 +37,16 @@ export default function ProDocuments() {
   const [particulier, setParticulier] = useState(false)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const catalog = useCatalog()
+  const [myTrades, setMyTrades] = useState<string[]>([])
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { setReady(true); return }
-      const { data: pp } = await supabase.from('provider_profiles').select('legal_status').eq('id', user.id).single()
+      const { data: pp } = await supabase.from('provider_profiles').select('legal_status, trade').eq('id', user.id).single()
       setParticulier(pp?.legal_status === 'particulier')
+      fetchProviderActivities([{ id: user.id, trade: pp?.trade || '' }]).then(a => setMyTrades(a[user.id] ?? []), () => {})
       const { data } = await supabase.from('documents').select('kind, storage_path').eq('owner_id', user.id)
       const map: Record<string, string> = {}
       // Nom lisible du justificatif (jamais le nom technique du fichier stocké).
@@ -47,7 +57,14 @@ export default function ProDocuments() {
   }, [])
 
   // Un particulier n'a pas d'entreprise : jamais de justificatif SIRET / Kbis pour lui.
-  const docTypes = particulier ? DOC_TYPES.filter(t => t.key !== 'kbis') : DOC_TYPES
+  const base: Step[] = (particulier ? DOC_TYPES.filter(t => t.key !== 'kbis') : DOC_TYPES)
+    .map(t => ({ id: t.key, kind: t.key, type: null, question: t.question, subtitle: t.subtitle, label: t.label }))
+  const asked: Step[] = docsForServices(catalog, myTrades).map(a => ({
+    id: `${a.kind}--${a.type}`, kind: a.kind, type: a.type, label: a.label,
+    question: `Avez-vous ce document : ${a.label} ?`,
+    subtitle: `Demandé par PING pour ${a.services.join(', ').toLowerCase()}.${a.required ? '' : ' Facultatif.'}`,
+  }))
+  const docTypes = [...base, ...asked]
   const doc = docTypes[Math.min(stepIndex, docTypes.length - 1)]
   const isLast = stepIndex === docTypes.length - 1
 
@@ -68,16 +85,16 @@ export default function ProDocuments() {
     if (!user) { setUploading(false); setError('Session expirée : reconnectez-vous pour déposer ce document.'); return }
 
     const ext = file.name.split('.').pop()
-    const path = `${user.id}/${doc.key}-${Date.now()}.${ext}`
+    const path = doc.type ? `${user.id}/${doc.kind}--${doc.type}-${Date.now()}.${ext}` : `${user.id}/${doc.kind}-${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('documents').upload(path, file, { upsert: true })
 
     if (upErr) { setError("L'envoi du fichier a échoué. Vérifiez votre connexion et réessayez."); setUploading(false); return }
     const { error: rowErr } = await supabase.from('documents').upsert({
-      owner_id: user.id, kind: doc.key, storage_path: path, status: 'pending',
+      owner_id: user.id, kind: doc.kind, storage_path: path, status: 'pending',
     }, { onConflict: 'owner_id,kind' })
     if (rowErr) { setError("Le fichier est envoyé mais n'a pas pu être enregistré. Réessayez."); setUploading(false); return }
-    setUploaded(u => ({ ...u, [doc.key]: file.name }))
-    trackEvent('document_uploaded', { kind: doc.key })
+    setUploaded(u => ({ ...u, [doc.id]: file.name }))
+    trackEvent('document_uploaded', doc.type ? { kind: doc.kind, type: doc.type } : { kind: doc.kind })
     setUploading(false)
   }
 
@@ -97,13 +114,13 @@ export default function ProDocuments() {
       onSkip={goNext}
       skipLabel="Passer, je le ferai plus tard"
       onCta={goNext}
-      ctaLabel={uploaded[doc.key] ? (isLast ? 'Terminer' : 'Continuer') : 'Continuer sans ce document'}
+      ctaLabel={uploaded[doc.id] ? (isLast ? 'Terminer' : 'Continuer') : 'Continuer sans ce document'}
       ctaLoading={uploading}
     >
       <input ref={inputRef} type="file" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png"
         onChange={e => { if (e.target.files?.[0]) { handleFile(e.target.files[0]); e.target.value = '' } }} />
 
-      {doc.key !== 'diplome' && (
+      {doc.kind !== 'diplome' && (
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: 14, borderRadius: 16, background: 'rgba(18,179,156,.1)', border: '1px solid rgba(18,179,156,.35)', marginBottom: 12 }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
           <div>
@@ -121,15 +138,15 @@ export default function ProDocuments() {
         <div style={{
           width: 92, height: 92, borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 40, marginBottom: 22,
-          background: uploaded[doc.key] ? 'rgba(18,179,156,.12)' : '#F3F6F5',
-          border: uploaded[doc.key] ? '2px solid #12B39C' : '2px solid #E7EDEB',
+          background: uploaded[doc.id] ? 'rgba(18,179,156,.12)' : '#F3F6F5',
+          border: uploaded[doc.id] ? '2px solid #12B39C' : '2px solid #E7EDEB',
         }}>
-          {uploaded[doc.key] ? <span style={{ color: '#12B39C', fontSize: 32 }}>✓</span> : ICONS[doc.key]}
+          {uploaded[doc.id] ? <span style={{ color: '#12B39C', fontSize: 32 }}>✓</span> : ICONS[doc.kind]}
         </div>
 
-        {uploaded[doc.key] ? (
+        {uploaded[doc.id] ? (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: '#123644' }}>{uploaded[doc.key]}</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#123644' }}>{uploaded[doc.id]}</div>
             <div style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 4 }}>Fourni — reçu par PING</div>
             <button onClick={() => inputRef.current?.click()} style={{ marginTop: 14, background: 'none', border: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700, textDecoration: 'underline' }}>
               Remplacer le fichier

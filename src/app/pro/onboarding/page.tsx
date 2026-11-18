@@ -7,7 +7,8 @@ import { searchCompany, guessLegalStatus, CompanyMatch } from '@/lib/legalLookup
 import { geocodeAddress } from '@/lib/geocode'
 import OnboardingStep from '@/components/OnboardingStep'
 import LocationAsk from '@/components/LocationAsk'
-import { TRADE_LIST as SERVICES, TRADES, cesuEligible } from '@/lib/trades'
+import { TRADES, cesuEligible } from '@/lib/trades'
+import { useCatalog, fetchCatalog, catalogView } from '@/lib/catalog'
 import { LEGAL_FORMS, type LegalForm, type VatStatus, VAT_FRANCHISE_MENTION, guessLegalForm, legalStatusFor, cleanVat, vatNumberValid, isMissingColumnError, PRO_STATUS_COLUMNS } from '@/lib/proStatus'
 import PricingEditor from '@/components/PricingEditor'
 import { CGV_VERSION } from '@/lib/cgv'
@@ -47,6 +48,9 @@ function stepsFor(status: Status) {
 
 export default function ProOnboarding() {
   const router = useRouter()
+  // Services proposés au choix : catalogue en base (admin > Catalogue des services), repli trades.ts.
+  const catalog = useCatalog()
+  const SERVICES = catalog.selectable.map(s => ({ key: s.key, label: s.label }))
 
   const [services, setServices] = useState<string[]>([])
   // Un tarif par service (ménage, repassage, nettoyage) : chacun son mode et ses prix.
@@ -119,7 +123,8 @@ export default function ProOnboarding() {
           .eq('provider_id', user.id)
         // Seuls les services du catalogue (ménage, repassage…) reviennent dans la liste des métiers ;
         // les prestations du catalogue « Mes tarifs » restent gérées sur leur propre page.
-        const tradeKey = (n: string) => SERVICES.find(t => t.key === n.toLowerCase() || t.label.toLowerCase() === n.toLowerCase())?.key
+        const known = catalogView(await fetchCatalog()).selectable.map(s => ({ key: s.key, label: s.label }))
+        const tradeKey = (n: string) => known.find(t => t.key === n.toLowerCase() || t.label.toLowerCase() === n.toLowerCase())?.key
         const serviceIds: Record<string, string> = {}
         const drafts: Record<string, PricingDraft> = {}
         for (const row of (extra ?? []) as any[]) {
@@ -363,6 +368,7 @@ export default function ProOnboarding() {
           <div key={k} style={{ border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 12, background: '#fff' }}>
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644', marginBottom: 10 }}>{TRADES[k] || k}</div>
             <PricingEditor value={draftFor(k)} showError={showPricingErrors}
+              allowedModes={catalog.get(k)?.pricing_modes}
               onChange={d => setPricing(p => ({ ...p, [k]: d }))} />
           </div>
         ))}

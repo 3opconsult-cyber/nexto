@@ -1,9 +1,10 @@
-// Catalogue des services PING.
+// Catalogue des services PING — liste de REPLI.
 //
-// Mono-produit verrouille au lancement : ménage, repassage, nettoyage — rien d'autre.
-// La base ne restreint rien (trade/category/name sont de simples colonnes texte,
-// aucun enum Postgres) : ouvrir un nouveau service en v3 se fait ICI, en une ligne,
-// sans migration. Ne jamais redéfinir cette liste localement dans un écran.
+// Depuis le lot 26 (18/11/2026), la source est la table `service_catalog` (admin > Catalogue des
+// services), lue par src/lib/catalog.ts. Cette liste reste le repli tant que la table n'existe pas
+// (ou est vide) : elle doit rester identique aux lignes de départ de la migration 050.
+// Mono-produit au lancement : ménage, repassage, nettoyage (+ vitres en base). Ne jamais redéfinir
+// cette liste localement dans un écran.
 export const TRADES: Record<string, string> = {
   menage: 'Ménage',
   repassage: 'Repassage',
@@ -28,7 +29,9 @@ const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 export function tradeOfServiceName(name: string | null | undefined): string | null {
   if (!name) return null
   const n = norm(name)
-  for (const k of ALL_TRADE_KEYS) {
+  // Object.keys(TRADES) = ALL_TRADE_KEYS tant que le catalogue en base (src/lib/catalog.ts) n'a rien
+  // ajouté ; un service ajouté par l'admin y est reconnu de la même façon.
+  for (const k of Object.keys(TRADES)) {
     const l = norm(TRADES[k])
     if (n === k || n === l) return k
     if (n.startsWith(l + ' ') || n.startsWith(l + '(') || n.startsWith(k + ' ')) return k
@@ -42,6 +45,17 @@ export function tradeOfServiceName(name: string | null | undefined): string | nu
 // ici : l'option « Payer en CESU préfinancé » reste alors masquée. Phase 1 : le client gère lui-même
 // son crédit d'impôt, PING n'encaisse rien (voir docs/cesu-ce-qui-manque.md).
 const CESU_ELIGIBLE = ['menage', 'repassage', 'nettoyage', 'vitres']
+// Remplacé par l'attribut `cesu_eligible` du catalogue en base dès qu'il est chargé (src/lib/catalog.ts).
+let cesuFromCatalog: string[] | null = null
 export function cesuEligible(trade: string | null | undefined): boolean {
-  return !!trade && CESU_ELIGIBLE.includes(trade)
+  return !!trade && (cesuFromCatalog ?? CESU_ELIGIBLE).includes(trade)
+}
+
+// Catalogue des services en base (table service_catalog, migration 050) : src/lib/catalog.ts appelle
+// cette fonction après chargement. Les libellés sont ajoutés ou mis à jour (jamais retirés : une mission
+// ancienne garde son libellé), l'éligibilité CESU suit l'attribut du catalogue. Sans la table, rien
+// n'est appelé : comportement identique à la liste ci-dessus.
+export function applyCatalogToTrades(entries: { key: string; label: string; cesu_eligible: boolean }[]) {
+  for (const e of entries) TRADES[e.key] = e.label
+  cesuFromCatalog = entries.filter(e => e.cesu_eligible).map(e => e.key)
 }

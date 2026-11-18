@@ -4,7 +4,8 @@ import { filterMessage } from '@/lib/chatFilter'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
-import { TRADE_LIST, cesuEligible } from '@/lib/trades'
+import { cesuEligible } from '@/lib/trades'
+import { useCatalog, type RequestField } from '@/lib/catalog'
 import { geocodeAddress } from '@/lib/geocode'
 import LocationAsk from '@/components/LocationAsk'
 import type { Point } from '@/lib/location'
@@ -37,6 +38,8 @@ function Section({ title: t, hint, children }: { title: string; hint?: string; c
 // surface et heures pour le ménage / nettoyage, kilos et types de linge pour le repassage.
 export default function NewOpenRequestPage() {
   const router = useRouter()
+  // Services proposés et champs de l'annonce : catalogue en base (admin > Catalogue), repli trades.ts.
+  const catalog = useCatalog()
   const [category, setCategory] = useState('menage')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -67,7 +70,14 @@ export default function NewOpenRequestPage() {
     })
   }, [router])
 
-  const linenService = category === 'repassage'
+  // Champs de l'annonce du service choisi (catalogue) : linge pour le repassage, logement sinon.
+  const fields = new Set<RequestField>(catalog.get(category)?.request_fields ?? [])
+  const has = (f: RequestField) => fields.has(f)
+  const linenService = has('linen_kg') || has('linen_types')
+  const homeService = has('surface_m2') || has('nombre_pieces') || has('hours_wanted')
+  useEffect(() => {
+    if (catalog.selectable.length && !catalog.selectable.some(s => s.key === category)) setCategory(catalog.selectable[0].key)
+  }, [catalog.selectable, category])
   // « Payer en CESU préfinancé » : seulement pour un service éligible (src/lib/trades.ts, cesuEligible).
   const cesuOk = cesuEligible(category)
   const paymentChoices = PAYMENTS.filter(p => p.key !== 'cesu' || cesuOk)
@@ -118,16 +128,16 @@ export default function NewOpenRequestPage() {
       budget_min_cents: minCents, budget_max_cents: maxCents,
       budget_cents: maxCents ?? minCents,
       desired_date: desiredDate || null, desired_slot: desiredSlot, frequency,
-      hours_wanted: linenService ? null : hours,
-      surface_m2: !linenService && surfaceN && surfaceN > 0 ? surfaceN : null,
-      linen_kg: linenService ? kilos : null,
-      linen_types: linenService && linen.length ? linen : null,
-      household_size: household, payment_pref: payment === 'cesu' && !cesuOk ? 'indifferent' : payment,
+      hours_wanted: has('hours_wanted') ? hours : null,
+      surface_m2: has('surface_m2') && surfaceN && surfaceN > 0 ? surfaceN : null,
+      linen_kg: has('linen_kg') ? kilos : null,
+      linen_types: has('linen_types') && linen.length ? linen : null,
+      household_size: has('household_size') ? household : null, payment_pref: payment === 'cesu' && !cesuOk ? 'indifferent' : payment,
       address,
       lat: point.lat, lng: point.lng,
       status: 'open', urgent,
     }
-    if (!linenService && pieces > 0) row.nombre_pieces = pieces
+    if (has('nombre_pieces') && pieces > 0) row.nombre_pieces = pieces
     let { error: reqErr } = await supabase.from('requests').insert(row)
     // Colonne nombre_pieces pas encore posée (migration 032) : on republie sans ce champ.
     if (reqErr && 'nombre_pieces' in row && /nombre_pieces/i.test(reqErr.message || '')) {
@@ -162,7 +172,7 @@ export default function NewOpenRequestPage() {
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh', maxWidth: 640, margin: '0 auto' }}>
         <Section title="Quel service ?">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {TRADE_LIST.map(t => <button key={t.key} type="button" onClick={() => setCategory(t.key)} style={chip(category === t.key)}>{t.label}</button>)}
+            {catalog.selectable.map(t => <button key={t.key} type="button" onClick={() => setCategory(t.key)} style={chip(category === t.key)}>{t.label}</button>)}
           </div>
         </Section>
 
@@ -178,12 +188,15 @@ export default function NewOpenRequestPage() {
           </label>
         </Section>
 
-        {linenService ? (
+        {linenService && (
           <Section title="Le linge" hint="Une idée de la quantité aide le prestataire à chiffrer.">
+            {has('linen_kg') && <>
             <span style={labelStyle}>Quantité</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0 14px' }}>
               {KILOS.map(k => <button key={k} type="button" onClick={() => setKilos(kilos === k ? null : k)} style={chip(kilos === k)}>{k} kg{k === 15 ? ' et +' : ''}</button>)}
             </div>
+            </>}
+            {has('linen_types') && <>
             <span style={labelStyle}>Types de linge</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
               {LINEN_TYPES.map(l => {
@@ -191,14 +204,20 @@ export default function NewOpenRequestPage() {
                 return <button key={l.key} type="button" aria-pressed={on} onClick={() => setLinen(on ? linen.filter(x => x !== l.key) : [...linen, l.key])} style={chip(on)}>{l.label}</button>
               })}
             </div>
+            </>}
           </Section>
-        ) : (
+        )}
+        {!linenService && homeService && (
           <Section title="Le logement" hint="Surface et durée souhaitée, pour une proposition au plus juste.">
+            {(has('surface_m2') || has('nombre_pieces')) && (
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 14 }}>
+              {has('surface_m2') && (
               <label style={{ display: 'block' }}>
                 <span style={labelStyle}>Surface (m²)</span>
                 <input type="number" inputMode="numeric" min="1" value={surface} onChange={e => setSurface(e.target.value)} style={{ ...fieldStyle, width: 140 }} />
               </label>
+              )}
+              {has('nombre_pieces') && (
               <div>
                 <span style={labelStyle}>Nombre de pièces</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
@@ -209,19 +228,25 @@ export default function NewOpenRequestPage() {
                     style={{ width: 40, height: 40, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces >= 30 ? .45 : 1 }}>+</button>
                 </div>
               </div>
+              )}
             </div>
+            )}
+            {has('hours_wanted') && <>
             <span style={labelStyle}>Nombre d’heures souhaité</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
               {HOURS.map(h => <button key={h} type="button" onClick={() => setHours(hours === h ? null : h)} style={chip(hours === h)}>{String(h).replace('.', ',')} h</button>)}
             </div>
+            </>}
           </Section>
         )}
 
+        {has('household_size') && (
         <Section title="Votre foyer">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {HOUSEHOLD.map(h => <button key={h.key} type="button" onClick={() => setHousehold(household === h.key ? null : h.key)} style={chip(household === h.key)}>{h.label}</button>)}
           </div>
         </Section>
+        )}
 
         <Section title="Quand ?">
           <span style={labelStyle}>Fréquence</span>

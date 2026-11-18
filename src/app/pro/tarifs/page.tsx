@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import PricingEditor from '@/components/PricingEditor'
-import { TRADES, TRADE_LIST, tradeOfServiceName } from '@/lib/trades'
+import { TRADES, tradeOfServiceName } from '@/lib/trades'
+import { useCatalog } from '@/lib/catalog'
 import RetourLink from '@/components/RetourLink'
 import { type PricingDraft, draftFromColumns, emptyDraft, pricingShort, pricingSummary, toColumns, validateDraft } from '@/lib/servicePricing'
 import {
@@ -45,6 +46,9 @@ const OTHER = '__autre'
  */
 export default function ProTarifsPage() {
   const router = useRouter()
+  // Métiers proposés : catalogue en base (admin > Catalogue des services), repli trades.ts.
+  const catalog = useCatalog()
+  const TRADE_LIST = catalog.selectable.map(s => ({ key: s.key, label: s.label }))
   const [uid, setUid] = useState<string | null>(null)
   const [rows, setRows] = useState<Prestation[]>([])
   const [ext, setExt] = useState(false)
@@ -88,6 +92,13 @@ export default function ProTarifsPage() {
   // Métiers sans aucune prestation (ni principal ni ligne) : proposés en raccourci.
   const taken = new Set<string>([...(primary ? [primary.trade] : []), ...rows.map(r => r.trade).filter((k): k is string => !!k)])
   const freeTrades = TRADE_LIST.map(t => t.key).filter(k => !taken.has(k))
+  // Métiers proposés dans la fiche : ceux du catalogue, plus le métier déjà porté par la prestation
+  // s'il n'est plus (ou pas) proposé au choix (ex. vitres), pour ne jamais le perdre à l'édition.
+  const tradeChoices = [
+    ...TRADE_LIST,
+    ...(trade && trade !== OTHER && !TRADE_LIST.some(t => t.key === trade) && TRADES[trade] ? [{ key: trade, label: TRADES[trade] }] : []),
+    { key: OTHER, label: 'Autre' },
+  ]
 
   function setPhoto(file: File | null) {
     if (photoPreview) URL.revokeObjectURL(photoPreview)
@@ -287,7 +298,7 @@ export default function ProTarifsPage() {
                 <div style={{ marginBottom: 14 }}>
                   <span style={label}>Métier</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {[...TRADE_LIST, ...(trade === 'vitres' ? [{ key: 'vitres', label: TRADES.vitres }] : []), { key: OTHER, label: 'Autre' }].map(t => (
+                    {tradeChoices.map(t => (
                       <button key={t.key} type="button" onClick={() => pickTrade(t.key)} style={chip(trade === t.key)}>{t.label}</button>
                     ))}
                   </div>
@@ -342,7 +353,8 @@ export default function ProTarifsPage() {
             {(editing.kind === 'primary' || trade) && (
               <>
                 <span style={label}>Manière de tarifer</span>
-                <PricingEditor value={draft} onChange={setDraft} showError={showErr} allowDevis />
+                <PricingEditor value={draft} onChange={setDraft} showError={showErr} allowDevis
+                  allowedModes={trade && trade !== OTHER ? catalog.get(trade)?.pricing_modes : undefined} />
               </>
             )}
 

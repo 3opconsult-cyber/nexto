@@ -1,20 +1,29 @@
 "use client"
+import { useEffect } from 'react'
 import { MAIN_MODES, type PricingDraft, type PricingMode, pricingLabel, toColumns, validateDraft } from '@/lib/servicePricing'
 
 // Saisie du tarif d'UN service : les trois modes (forfait, à l'heure, forfait + heures sup.), plus
 // « Sur devis » quand l'appelant l'autorise (prestation complémentaire de « Mes tarifs »).
 // Utilisé à l'inscription (une carte par service) et dans « Mes tarifs ».
 export default function PricingEditor({
-  value, onChange, allowDevis = false, showError = false,
+  value, onChange, allowDevis = false, showError = false, allowedModes,
 }: {
   value: PricingDraft
   onChange: (d: PricingDraft) => void
   allowDevis?: boolean
   showError?: boolean
+  /** Manières de tarifer autorisées par le catalogue des services (src/lib/catalog.ts) ; toutes si absent. */
+  allowedModes?: string[]
 }) {
-  const modes = allowDevis
+  const offered = allowDevis
     ? [...MAIN_MODES, { key: 'devis' as PricingMode, label: 'Sur devis', hint: 'Pas de prix à l’avance : vous chiffrez dans la conversation.' }]
     : MAIN_MODES
+  // Filtre du catalogue ; s'il ne laisse rien (ex. service « sur devis » seul à l'inscription), on garde tout.
+  const filtered = allowedModes ? offered.filter(m => allowedModes.includes(m.key)) : offered
+  const modes = filtered.length ? filtered : offered
+  // Mode courant écarté par le catalogue (et seulement par lui) : on bascule sur le premier mode autorisé.
+  const modeOk = !offered.some(m => m.key === value.mode) || modes.some(m => m.key === value.mode)
+  useEffect(() => { if (!modeOk) onChange({ ...value, mode: modes[0].key }) }, [modeOk]) // eslint-disable-line react-hooks/exhaustive-deps
   const current = modes.find(m => m.key === value.mode) ?? modes[0]
   const set = (patch: Partial<PricingDraft>) => onChange({ ...value, ...patch })
   const error = validateDraft(value)

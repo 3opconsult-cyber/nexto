@@ -3,13 +3,14 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { fetchProvidersNearby, fetchProviderActivities, fetchProviderFlags, openConversation, type ProviderNearby, type ProviderFlags } from '@/lib/services'
-import { TRADES, ALL_TRADE_KEYS } from '@/lib/trades'
+import { TRADES } from '@/lib/trades'
+import { useCatalog } from '@/lib/catalog'
 import NavDrawer from './NavDrawer'
 import ModeSwitchPill from './ModeSwitchPill'
 import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from './MapSheet'
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
 import { useUnreadTotal } from '@/lib/unread'
-import { Ic, Stars, r1, svcIconKey } from './PingIcons'
+import { Ic, Stars, r1, svcIconKey, ICON } from './PingIcons'
 import LocationAsk from './LocationAsk'
 import { useInitialPosition } from '@/lib/location'
 
@@ -37,12 +38,16 @@ const HUES: Record<string, string> = {
   menage: '#12B39C,#0C8F7E', repassage: '#4E6470,#4c6472', nettoyage: '#F2A93B,#8A6520',
   vitres: '#12B39C,#0e7f70', remise: '#FF7A66,#e05f4b',
 }
-// Libellés : catalogue unique src/lib/trades.ts (+ « remise » hérité, absent du catalogue).
-const TRAD: Record<string, string> = { remise: 'Remise en état', ...TRADES }
-const lab = (k: string) => TRAD[k] || k
+// Libellés : catalogue des services (src/lib/catalog.ts, mis à jour dans TRADES au chargement ;
+// repli src/lib/trades.ts) + « remise » hérité, absent du catalogue.
+const lab = (k: string) => TRADES[k] || (k === 'remise' ? 'Remise en état' : k)
 
 export default function DemoShell({ initialView = 'v_map' }: { initialView?: string }) {
   const router = useRouter()
+  // Puces et filtres de la carte : services non masqués du catalogue (repli : tous ceux de trades.ts).
+  const catalog = useCatalog()
+  const tradeKeys = catalog.visible.map(s => s.key)
+  const svcIc = (k: string) => { const ic = catalog.get(k)?.icon; return ic && ICON[ic] ? ic : svcIconKey(k) }
   const [view, setViewState] = useState(initialView)
   const [prevView, setPrevView] = useState('v_map')
   // Activités choisies (plusieurs à la fois, ex. ménage + vitres). Vide = « Tous » = aucun filtre.
@@ -93,7 +98,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
 
   // Forme d'affichage (fiche + liste) dérivée des vraies lignes.
   const pros: Pro[] = useMemo(() => rawPros.map(x => {
-    const nm = (x.full_name || TRAD[x.trade] || x.trade || '').trim()
+    const nm = (x.full_name || lab(x.trade) || '').trim()
     const price = x.pricing_type === 'devis' ? 'Sur devis'
       : x.base_price_cents > 0 ? `${(x.base_price_cents / 100).toFixed(0)} €`
         : (x.hourly_rate_cents ? `${(x.hourly_rate_cents / 100).toFixed(0)} €/h` : '')
@@ -322,7 +327,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 <div className="chips noscroll" style={{ top: 128 }}>
                   <div className={`chip ${sel.length === 0 ? 'on' : ''}`} role="button" aria-pressed={sel.length === 0} onClick={() => setSel([])}>Tous</div>
                   {/* Services choisis en tête (maquette). */}
-                  {[...ALL_TRADE_KEYS].sort((a, b) => (sel.includes(b) ? 1 : 0) - (sel.includes(a) ? 1 : 0)).map(k => (
+                  {[...tradeKeys].sort((a, b) => (sel.includes(b) ? 1 : 0) - (sel.includes(a) ? 1 : 0)).map(k => (
                     <div key={k} className={`chip ${sel.includes(k) ? 'on' : ''}`} role="button" aria-pressed={sel.includes(k)} onClick={() => toggleSel(k)}>{lab(k)}</div>
                   ))}
                   <div className={`chip ${cesuOnly ? 'on' : ''}`} role="button" aria-pressed={cesuOnly} onClick={() => { setCesuOnly(c => !c); setPvId(null) }}>CESU préfinancé</div>
@@ -459,9 +464,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 <div className={`cat ${sel.length === 0 ? 'on' : ''}`} role="button" aria-pressed={sel.length === 0} onClick={() => setSel([])}>
                   <div className="ci"><Ic name="list" size={17} /></div>Tous
                 </div>
-                {ALL_TRADE_KEYS.map(key => (
+                {tradeKeys.map(key => (
                   <div key={key} className={`cat ${sel.includes(key) ? 'on' : ''}`} role="button" aria-pressed={sel.includes(key)} onClick={() => toggleSel(key)}>
-                    <div className="ci"><Ic name={svcIconKey(key)} size={17} /></div>{lab(key)}{countBy[key] ? <span style={{ opacity: .7, marginLeft: 4, fontWeight: 600 }}>{countBy[key]}</span> : null}
+                    <div className="ci"><Ic name={svcIc(key)} size={17} /></div>{lab(key)}{countBy[key] ? <span style={{ opacity: .7, marginLeft: 4, fontWeight: 600 }}>{countBy[key]}</span> : null}
                   </div>
                 ))}
               </div>
