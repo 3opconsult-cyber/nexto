@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUnreadTotal } from '@/lib/unread'
+import { useTodayMission } from '@/lib/todayMission'
 import UnreadBadge from '@/components/UnreadBadge'
 
 const ICONS: Record<string, JSX.Element> = {
@@ -15,6 +16,7 @@ const ICONS: Record<string, JSX.Element> = {
   ent: <><path d="M3 21V9l9-6 9 6v12" /><path d="M9 21v-6h6v6" /></>,
   doc: <><path d="M6 2h9l3 3v17H6z" /><path d="M9 9h6M9 13h6M9 17h4" /></>,
   heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />,
+  qr: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3h-3zM17 20h4v-3" /></>,
   gift: <><rect x="3" y="8" width="18" height="13" rx="1" /><path d="M3 12h18M12 8v13" /><path d="M12 8c-1.5-4-6-4-6-1s3 1 6 1zM12 8c1.5-4 6-4 6-1s-3 1-6 1z" /></>,
 }
 
@@ -77,6 +79,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
   const onProSide = isProRoute || (!isClientRoute && mode === 'pro')
   // Pastille « Messages » : lue seulement quand le menu est ouvert.
   const unread = useUnreadTotal(open && loggedIn ? (onProSide ? 'pro' : 'particulier') : null)
+  // Accès rapide « Mission du jour » (seulement quand une mission est en cours ou prévue aujourd'hui).
+  const today = useTodayMission(open && loggedIn ? (onProSide ? 'pro' : 'particulier') : null)
   const memberYear = profile?.created_at ? new Date(profile.created_at).getFullYear() : null
   const initial = (profile?.first_name || '?').charAt(0).toUpperCase()
   const avatarBg = profile?.avatar_hue != null ? `hsl(${profile.avatar_hue}, 55%, 45%)` : '#12B39C'
@@ -163,6 +167,12 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
             )}
 
             <div style={{ padding: '8px 8px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
+              {today && (
+                <button onClick={() => go(`/mission/${today.id}/jour`)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: today.urgent ? 'rgba(229,72,77,.08)' : 'rgba(18,179,156,.1)', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer', marginBottom: 4 }}>
+                  <Icon name="qr" />Mission du jour{today.urgent && <span style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#E5484D' }} aria-label="Action attendue" />}
+                </button>
+              )}
               {links.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>

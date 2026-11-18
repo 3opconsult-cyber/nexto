@@ -4,6 +4,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import QrCode from '@/components/QrCode'
 import PaymentCard from '@/components/PaymentCard'
+import ClientProofCard from '@/components/presence/ClientProofCard'
+import RemoteConfirmCard from '@/components/presence/RemoteConfirmCard'
+import { getPresenceState, presenceAvailable, type PresenceState } from '@/lib/presence'
 
 export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
@@ -24,6 +27,9 @@ export default function MissionQrCodes() {
   const [onsiteBusy, setOnsiteBusy] = useState(false)
   // Voie B : code à 6 chiffres demandé par le prestataire, à lui communiquer s'il est bien sur place.
   const [arrCode, setArrCode] = useState<{ code: string; expires_at: string; geo_status: string | null } | null>(null)
+  // Migration 038 : QR + code à usage unique (get_mission_proof), confirmation à distance en un appui.
+  const [v2, setV2] = useState<boolean | null>(null)
+  const [pst, setPst] = useState<PresenceState | null>(null)
 
   async function makeOnsite(renew = false) {
     setOnsiteBusy(true); setOnsiteErr('')
@@ -35,9 +41,12 @@ export default function MissionQrCodes() {
 
   useEffect(() => {
     const supabase = createClient()
-    function load() {
+    async function load() {
       supabase.from('transactions').select('*').eq('id', params.id).single()
         .then(({ data }) => setTx(data))
+      const ok = await presenceAvailable(supabase)
+      setV2(ok)
+      if (ok) { setPst(await getPresenceState(supabase, params.id)); return }
       supabase.rpc('get_arrival_code', { p_transaction: params.id })
         .then(({ data }) => setArrCode(Array.isArray(data) && data[0] ? data[0] : null), () => setArrCode(null))
     }
@@ -46,7 +55,9 @@ export default function MissionQrCodes() {
     return () => clearInterval(timer.current)
   }, [params.id])
 
-  if (!tx) return (
+  const reload = () => { getPresenceState(createClient(), params.id).then(setPst) }
+
+  if (!tx || v2 === null) return (
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ color: '#4E6470', fontFamily: 'var(--fh)', fontSize: 15 }}>Chargement…</div>
     </div>
@@ -74,7 +85,7 @@ export default function MissionQrCodes() {
         <div className="ic" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', cursor: 'pointer' }} onClick={() => router.back()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </div>
-        <b>{step === 3 ? 'Prestation terminée' : step === 2 ? 'Valider le départ' : "Valider l'arrivée"}</b>
+        <b>{step === 3 ? 'Prestation terminée' : step === 2 ? 'Mon QR de fin' : "Mon QR d'arrivée"}</b>
       </div>
 
       <div className="ping-body pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -88,9 +99,20 @@ export default function MissionQrCodes() {
               Étape {step} sur 2 — {step === 1 ? "enregistre l'heure d'arrivée." : "enregistre l'heure de fin et déclenche la facture."}
             </p>
 
-            <div className="ping-qr">
-              <QrCode data={step === 1 ? arrivalUrl : completeUrl} size={150} />
-            </div>
+            {v2 && pst?.remote?.[step === 1 ? 'arrivee' : 'fin']?.etat === 'en_attente' && (
+              <div style={{ width: '100%', margin: '10px 0' }}>
+                <RemoteConfirmCard txId={tx.id} phase={step === 1 ? 'arrivee' : 'fin'} req={pst.remote[step === 1 ? 'arrivee' : 'fin']!} onDone={reload} />
+              </div>
+            )}
+            {v2 ? (
+              <div style={{ width: '100%', marginTop: 8 }}>
+                <ClientProofCard txId={tx.id} phase={step === 1 ? 'arrivee' : 'fin'} v2 />
+              </div>
+            ) : (
+              <div className="ping-qr">
+                <QrCode data={step === 1 ? arrivalUrl : completeUrl} size={150} />
+              </div>
+            )}
 
             <div className="ping-card" style={{ width: '100%', marginTop: 14 }}>
               <div className="ping-lrow">
@@ -127,7 +149,7 @@ export default function MissionQrCodes() {
               }}>Un problème ? Signaler avant de valider</button>
             )}
 
-            {step === 1 && arrCode && new Date(arrCode.expires_at).getTime() > now && (
+            {!v2 && step === 1 && arrCode && new Date(arrCode.expires_at).getTime() > now && (
               <div style={{ marginTop: 18, width: '100%', background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 14, padding: 14, textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Le prestataire indique être sur place</div>
                 <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 30, letterSpacing: 6, color: '#123644', margin: '8px 0', fontVariantNumeric: 'tabular-nums' }}>{arrCode.code}</div>

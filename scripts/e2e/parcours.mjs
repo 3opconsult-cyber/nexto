@@ -133,12 +133,26 @@ try {
   await cp.waitForTimeout(3000)
   log('client page QR', cp.url().replace(BASE, ''))
   await cp.screenshot({ path: 'shots/s7-client-qr.jpg', quality: 55, type: 'jpeg' })
-  const { data: t } = await sbC.from('transactions').select('qr_arrival_token, qr_complete_token').eq('id', tx).single()
+  // Migration 038 : jetons à usage unique lus par le CLIENT (get_mission_proof), et arrivée refusée avant le jour
+  // du rendez-vous -> on ramène le RDV à maintenant (le client peut modifier scheduled_at). Sans 038 : anciens jetons.
+  const proofOf = async (phase) => {
+    const { data, error } = await sbC.rpc('get_mission_proof', { p_transaction: tx, p_phase: phase })
+    return error ? null : data?.token
+  }
+  let arrivalToken = await proofOf('arrivee'), completeToken = null
+  const v038 = !!arrivalToken
+  log('migration 038', v038)
+  if (v038) await sbC.from('transactions').update({ scheduled_at: new Date().toISOString() }).eq('id', tx)
+  else {
+    const { data: t } = await sbC.from('transactions').select('qr_arrival_token, qr_complete_token').eq('id', tx).single()
+    arrivalToken = t.qr_arrival_token; completeToken = t.qr_complete_token
+  }
   // Pro scanne l'arrivée puis la fin
-  await pp.goto(`${BASE}/mission/${tx}/scan/arrival?token=${t.qr_arrival_token}`, { waitUntil: 'networkidle' }); await pp.waitForTimeout(4000)
+  await pp.goto(`${BASE}/mission/${tx}/scan/arrival?token=${arrivalToken}`, { waitUntil: 'networkidle' }); await pp.waitForTimeout(4000)
   log('scan arrivée', (await pp.locator('body').innerText()).slice(0, 160))
   await pp.screenshot({ path: 'shots/s8-pro-scan-arrivee.jpg', quality: 55, type: 'jpeg' })
-  await pp.goto(`${BASE}/mission/${tx}/scan/complete?token=${t.qr_complete_token}`, { waitUntil: 'networkidle' }); await pp.waitForTimeout(5000)
+  if (v038) completeToken = await proofOf('fin')
+  await pp.goto(`${BASE}/mission/${tx}/scan/complete?token=${completeToken}`, { waitUntil: 'networkidle' }); await pp.waitForTimeout(5000)
   log('scan fin', (await pp.locator('body').innerText()).slice(0, 200))
   await pp.screenshot({ path: 'shots/s9-pro-scan-fin.jpg', quality: 55, type: 'jpeg' })
   // Facture côté client

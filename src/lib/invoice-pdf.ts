@@ -1,3 +1,4 @@
+import { presenceSentence } from './presence'
 /**
  * Les trois documents d'une mission, en PDF.
  *
@@ -86,6 +87,19 @@ export function durationLabel(min?: number | null) {
 }
 
 /** Ce que PING affiche d'elle-même tant qu'elle n'est pas immatriculée. */
+// Ligne de prestation : date, heures et preuve réelle d'arrivée / de fin (migration 038 : `preuve_arrivee`,
+// `preuve_depart`, `forfait_cents`, `heures_incluses` recopiés à l'émission), puis le tarif appliqué.
+export function prestationSous(l: Record<string, any>): string {
+  const tarif = l.forfait_cents != null && l.taux_horaire_cents
+    ? `forfait ${EUR(Number(l.forfait_cents))}${l.heures_incluses != null ? ` (${String(l.heures_incluses).replace('.', ',')} h incluses)` : ''}, puis ${EUR(Number(l.taux_horaire_cents))} de l'heure`
+    : l.taux_horaire_cents ? `${EUR(Number(l.taux_horaire_cents))} de l'heure` : null
+  return [
+    l.date && `Le ${l.date}`,
+    presenceSentence(l.arrivee, l.depart, l.preuve_arrivee, l.preuve_depart),
+    tarif,
+  ].filter(Boolean).join('  ·  ')
+}
+
 export const PLATFORM_PENDING = 'PING — société en cours de constitution'
 
 /**
@@ -233,11 +247,7 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
     right(EUR(Number(l.montant_cents ?? inv.net_cents)), W - M, y, 10.5, bold)
     y -= 14
 
-    const sous = [
-      l.date && `Le ${l.date}`,
-      l.arrivee && l.depart && `${l.arrivee} — ${l.depart}, scannés sur place`,
-      l.taux_horaire_cents && `${EUR(l.taux_horaire_cents)} de l'heure`,
-    ].filter(Boolean).join('  ·  ')
+    const sous = prestationSous(l)
     if (sous) { txt(sous, M, y, 8.5, reg, SLATE); y -= 12 }
     if (l.adresse) { txt(String(l.adresse), M, y, 8.5, reg, SLATE); y -= 12 }
     y -= 6
@@ -269,7 +279,7 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
   }
 
   // ---------- pied ----------
-  const foot = "Les heures d'arrivée et de départ sont horodatées par un code scanné sur place. "
+  const foot = "Les heures d'arrivée et de départ sont horodatées dans l'application à partir d'une preuve fournie par le client (QR, code ou confirmation). "
              + 'Ce relevé fait foi en cas de contestation.'
   let fy = M + 22
   for (const l of wrap(foot, W - M * 2, 7.5)) { txt(l, M, fy, 7.5, reg, SLATE); fy -= 10 }

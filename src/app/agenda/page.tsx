@@ -9,6 +9,7 @@ import { addDays, startOfDay } from '@/components/calendar/dates'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 import { UPCOMING, DONE, txDate, durationMinutes } from '@/lib/agenda'
+import { isTodayMission } from '@/lib/todayMission'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
@@ -76,6 +77,9 @@ export default function AgendaPage() {
   const upcoming = mine.filter(t => UPCOMING.includes(t.status) && t.price_confirmed)
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
   const done = mine.filter(t => DONE.includes(t.status))
+  // « Aujourd'hui » : missions en cours ou du jour, avec un bouton vers l'écran « Mission du jour ».
+  const todayList = upcoming.filter(t => isTodayMission(t))
+  const later = upcoming.filter(t => !isTodayMission(t))
 
   // Comme la démo (v_agenda) : un statut qui dit où en est la mission, pas juste « à venir ».
   function badge(t: any): { label: string; bg: string; fg: string } {
@@ -123,9 +127,16 @@ export default function AgendaPage() {
           {t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}
         </div>
       </div>
-      <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, flexShrink: 0, background: badge(t).bg, color: badge(t).fg }}>
-        {badge(t).label}
-      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: badge(t).bg, color: badge(t).fg }}>
+          {badge(t).label}
+        </span>
+        {isTodayMission(t) && (
+          <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
+            border: 'none', borderRadius: 999, padding: '7px 12px', background: '#12B39C', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>Mission du jour</button>
+        )}
+      </div>
     </div>
   )
 
@@ -167,8 +178,15 @@ export default function AgendaPage() {
 
         {!loading && (
           <>
+            {todayList.length > 0 && (
+              <>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#0C8F7E', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>Aujourd&apos;hui</div>
+                {todayList.map(card)}
+                <div style={{ height: 10 }} />
+              </>
+            )}
             <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }}>À venir</div>
-            {upcoming.length ? upcoming.map(card) : <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 20 }}>Rien de prévu pour l&apos;instant.</p>}
+            {later.length ? later.map(card) : <p style={{ fontSize: 12.5, color: '#6E8592', marginBottom: 20 }}>{todayList.length ? 'Rien d\u2019autre de prévu.' : 'Rien de prévu pour l\u2019instant.'}</p>}
             {pendingTalks > 0 && (
               <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#4E6470', cursor: 'pointer' }}>
                 {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages

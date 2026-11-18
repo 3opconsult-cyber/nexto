@@ -7,7 +7,7 @@ import NavDrawer from '@/components/NavDrawer'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import TransferCard from '@/components/TransferCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
-         PLATFORM_PENDING, tauxLabel, type Invoice } from '@/lib/invoice-pdf'
+         PLATFORM_PENDING, tauxLabel, prestationSous, type Invoice } from '@/lib/invoice-pdf'
 
 /**
  * Facturation — les trois documents d'une mission.
@@ -44,13 +44,26 @@ export default function FacturePage() {
       const { data: { user } } = await supabase.auth.getUser()
       setUserId(user?.id ?? null)
       const { data: tx } = await supabase.from('transactions')
-        .select('buyer_id, seller_id, status, completed_at').eq('id', params.id).single()
+        .select('*').eq('id', params.id).single()
       const { data } = await supabase.from('invoices').select('*').eq('transaction_id', params.id)
       const amBuyer = user && tx ? user.id === (tx as any).buyer_id : true
       // Prestation d'abord, puis UNIQUEMENT la commission qui concerne le viewer
       // (client = frais de service 5 % ; prestataire = commission PING 11 %). Jamais les deux — comme Airbnb.
       const mine = amBuyer ? 'commission_client' : 'commission_pro'
-      const list = ((data ?? []) as Invoice[])
+      // Factures émises avant la migration 038 : la preuve réelle et le forfait sont repris de la mission.
+      const t: any = tx
+      const enrich = (v: Invoice): Invoice => {
+        if (v.kind !== 'prestation' || !t || !Array.isArray(v.lines) || !v.lines[0]) return v
+        const l0 = v.lines[0]
+        return { ...v, lines: [{
+          ...l0,
+          preuve_arrivee: l0.preuve_arrivee ?? t.arrival_proof ?? t.arrival_method ?? null,
+          preuve_depart: l0.preuve_depart ?? t.completion_proof ?? null,
+          forfait_cents: l0.forfait_cents ?? t.base_forfait_cents ?? null,
+          heures_incluses: l0.heures_incluses ?? t.included_hours ?? null,
+        }, ...v.lines.slice(1)] }
+      }
+      const list = ((data ?? []) as Invoice[]).map(enrich)
         .filter(v => v.kind === 'prestation' || v.kind === mine)
         .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
       if (!tx) setTxInfo({ self: false, completed: false, missing: true })
@@ -105,7 +118,7 @@ export default function FacturePage() {
             ? 'Vous êtes à la fois le client et le prestataire de cette mission de test : aucune facture n\u2019est émise. Elle sera supprimée.'
             : txInfo?.completed
               ? 'Cette mission est terminée mais ses documents n\u2019ont pas été émis. Écrivez au support PING : nous les régénérons.'
-              : 'Les documents sont émis automatiquement à la fin de la mission, dès que le code de fin est scanné : c\u2019est ce scan qui fixe la durée réelle, donc le montant.'}
+              : 'Les documents sont émis automatiquement à la fin de la mission, dès que la fin est validée avec le client (QR, code ou confirmation) : c\u2019est elle qui fixe la durée réelle, donc le montant.'}
         </p>
         {txInfo?.missing && (
           <a href="/agenda" style={{ display: 'inline-block', marginTop: 12, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Ouvrir mon agenda</a>
@@ -238,11 +251,7 @@ export default function FacturePage() {
             // Sobre : une ligne, et dessous ce qu'il faut pour refaire le calcul.
             const l = (inv.lines || [])[0] || {}
             const titre = [l.prestation, durationLabel(l.duree_min)].filter(Boolean).join(' — ')
-            const sous = [
-              l.date && `Le ${l.date}`,
-              l.arrivee && l.depart && `${l.arrivee} — ${l.depart}, scannés sur place`,
-              l.taux_horaire_cents && `${EUR(l.taux_horaire_cents)} de l'heure`,
-            ].filter(Boolean).join('  ·  ')
+            const sous = prestationSous(l)
             return (
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14 }}>
                 <div>

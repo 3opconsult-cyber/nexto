@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
+import { proofLabel } from '@/lib/presence'
 import { TRADES } from '@/lib/trades'
 import { CLIENT_TAGS } from './ClientReviewModal'
 import { TRANSFER_STATUS, TRANSFER_LABEL, transfersFor, type Transfer } from '@/lib/transfers'
@@ -135,9 +136,9 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
           </Section>
 
           {(tx.arrived_at || tx.completed_at) && (
-            <Section title="Intervention (codes QR scannés)">
-              {tx.arrived_at && <Row label="Arrivée" value={fmtDate(tx.arrived_at)} />}
-              {tx.completed_at && <Row label="Sortie" value={fmtTime(tx.completed_at)} />}
+            <Section title="Intervention">
+              {tx.arrived_at && <Row label="Arrivée" value={`${fmtDate(tx.arrived_at)}${proofLabel(tx.arrival_proof || tx.arrival_method) ? ` · ${proofLabel(tx.arrival_proof || tx.arrival_method)}` : ''}`} />}
+              {tx.completed_at && <Row label="Fin" value={`${fmtTime(tx.completed_at)}${proofLabel(tx.completion_proof) ? ` · ${proofLabel(tx.completion_proof)}` : ''}`} />}
               {tx.duration_minutes != null && <Row label="Durée sur place" value={fmtDur(tx.duration_minutes)} />}
             </Section>
           )}
@@ -233,11 +234,11 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
                 Voir les factures
               </button>
             )}
-            {/* Les codes QR sont ceux du client : le prestataire les scanne chez lui, il ne doit pas les avoir. */}
-            {isBuyer && tx.status !== 'cancelled' && !tx.completed_at && (
-              <button type="button" onClick={() => router.push(`/mission/${tx.id}/qrcodes`)}
+            {/* Mission du jour : QR et code du client, scanner du prestataire (qui n'a jamais les codes). */}
+            {tx.price_confirmed && tx.status !== 'cancelled' && !tx.completed_at && (
+              <button type="button" onClick={() => router.push(`/mission/${tx.id}/jour`)}
                 style={{ flex: 1, minWidth: 130, padding: '9px 12px', borderRadius: 999, border: `1.5px solid ${C.teal}`, background: '#fff', color: C.tealD, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-                Codes QR
+                {isBuyer ? 'Codes QR' : 'Mission du jour'}
               </button>
             )}
           </div>

@@ -20,6 +20,7 @@ import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { geocodeAddress } from '@/lib/geocode'
 import { systemSender, isSystemMessage } from '@/lib/systemMessage'
+import { isTodayMission } from '@/lib/todayMission'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -546,7 +547,7 @@ export default function ChatPage() {
               <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
                 {rdvSaving ? 'Enregistrement…' : 'Confirmer le rendez-vous'}
               </button>
-              <button onClick={() => router.push(`/mission/${tx.id}/qrcodes`)} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>
+              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>
                 Mes codes QR (arrivée et fin)
               </button>
             </div>
@@ -559,9 +560,10 @@ export default function ChatPage() {
           <div style={{ margin: '10px 16px 0', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
             <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>Rendez-vous {rdvLabel(tx.scheduled_at)}</span>
-            {userId === tx.buyer_id && !tx.completed_at && (
-              <button onClick={() => router.push(`/mission/${tx.id}/qrcodes`)} style={{ border: 'none', background: '#12B39C', color: '#fff', borderRadius: 999, padding: '7px 13px', fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                Mes codes QR
+            {/* Billet de mission : accès rapide à l'écran « Mission du jour » (QR / scanner / client absent / fin). */}
+            {!tx.completed_at && (
+              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ border: 'none', background: '#12B39C', color: '#fff', borderRadius: 999, padding: '7px 13px', fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                {isTodayMission(tx) ? 'Mission du jour' : userId === tx.buyer_id ? 'Mes codes QR' : 'Voir la mission'}
               </button>
             )}
           </div>
