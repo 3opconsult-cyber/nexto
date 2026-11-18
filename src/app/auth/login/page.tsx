@@ -17,6 +17,21 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '.04em', marginBottom: 6,
 }
 
+// Chemin de retour après connexion : interne au site seulement (pas de « //hote »,
+// pas d'antislash, pas de caractère de contrôle), et jamais une page de connexion
+// ou d'inscription (boucle). Renvoie chemin + requête + ancre, ou null.
+function safeNext(raw: string | null): string | null {
+  if (!raw || raw.length > 2000) return null
+  if (!raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\')) return null
+  if (/[\u0000-\u001f\u007f]/.test(raw)) return null
+  try {
+    const u = new URL(raw, window.location.origin)
+    if (u.origin !== window.location.origin) return null
+    if (u.pathname === '/auth/login' || u.pathname === '/auth/signup') return null
+    return u.pathname + u.search + u.hash
+  } catch { return null }
+}
+
 function EyeIcon({ off }: { off: boolean }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -42,8 +57,7 @@ export default function LoginPage() {
   // ?next=/chemin : retour à la page d'origine après connexion (chemins internes uniquement).
   function nextPath(): string | null {
     if (typeof window === 'undefined') return null
-    const n = new URLSearchParams(window.location.search).get('next')
-    return n && n.startsWith('/') && !n.startsWith('//') ? n : null
+    return safeNext(new URLSearchParams(window.location.search).get('next'))
   }
 
   async function resetPassword() {
@@ -52,6 +66,13 @@ export default function LoginPage() {
     const { error } = await createClient().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/reset` })
     if (error) setError('L’envoi du lien a échoué. Réessayez dans un instant.')
     else setInfo('Si un compte existe pour cet email, un lien de réinitialisation vient d’y être envoyé (pensez aux spams).')
+  }
+
+  // /admin (et ses sous-pages) est servi par un rewrite vers public/admin.html, hors du
+  // routeur App Router : navigation complète plutôt que router.push.
+  function go(path: string) {
+    if (path === '/admin' || path.startsWith('/admin/') || path.startsWith('/admin?') || path.startsWith('/admin#')) window.location.assign(path)
+    else router.push(path)
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -75,20 +96,24 @@ export default function LoginPage() {
       // de raccourcir la durée du cookie de session depuis le client).
       rememberThisTabOnly(rememberMe)
       // Journal de connexion : date et heure de chaque connexion (table login_log).
+      const { data: { user: u } } = await supabase.auth.getUser()
       try {
-        const { data: { user: u } } = await supabase.auth.getUser()
         let m: string | null = null
         try { m = localStorage.getItem('ping_mode') } catch { }
         if (u) await supabase.from('login_log').insert({ user_id: u.id, kind: 'login', mode: m, user_agent: navigator.userAgent.slice(0, 200) })
       } catch { }
       await flushReferral() // parrainage laissé en attente à l'inscription (e-mail à confirmer)
-      // Redirection selon le profil reel (is_admin / is_pro, plus de colonne role)
+      // ?next= d'abord (chemin interne vérifié), sinon l'espace qui correspond au profil.
       const next = nextPath()
-      if (next) { router.push(next); return }
-      const { data: profile } = await supabase.from('profiles').select('is_admin, is_pro').single()
-      if (profile?.is_admin) router.push('/admin')
-      else if (profile?.is_pro) router.push('/pro/dashboard')
-      else router.push('/map')
+      if (next) { go(next); return }
+      // Filtre sur l'utilisateur connecté : sans lui, un admin (qui peut lire plusieurs
+      // profils) recevait une erreur de .single() et finissait sur /map.
+      const { data: profile } = u
+        ? await supabase.from('profiles').select('is_admin, is_pro').eq('id', u.id).maybeSingle()
+        : { data: null }
+      if (profile?.is_admin) go('/admin')
+      else if (profile?.is_pro) go('/pro/dashboard')
+      else go('/map')
     } catch {
       setError("Une erreur est survenue, réessayez dans un instant.")
       setLoading(false)
