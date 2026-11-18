@@ -23,7 +23,7 @@ for (const [label, viewport] of [['mobile', { width: 390, height: 844 }], ['ordi
 
   await go('/pro/carte')
   if (label === 'mobile') check(/Demandes/.test(await tabs()) && /Entreprise/.test(await tabs()), `espace prestataire : barre du bas = ${await tabs()}`)
-  else check(/Mon entreprise/.test(await nav()), `espace prestataire : menu = ${await nav()}`)
+  else check(/Entreprise/.test(await nav()), `espace prestataire : menu = ${await nav()}`)
 
   await go('/messages'); let t = await text()
   check(/Audit C/.test(t) && !/Fictif 2/.test(t), 'Messages (prestataire) : seulement les clients, pas l’achat personnel')
@@ -32,10 +32,10 @@ for (const [label, viewport] of [['mobile', { width: 390, height: 844 }], ['ordi
 
   // Bascule par le menu : seul chemin autorisé.
   if (label === 'mobile') { await p.locator('.app-burger').first().click(); await p.waitForTimeout(800) }
-  await p.locator('text=/mode particulier/i >> visible=true').first().click(); await p.waitForTimeout(4500)
+  await p.locator('text=/mode particulier|Espace client/i >> visible=true').first().click(); await p.waitForTimeout(4500)
   check(/\/map/.test(p.url()), `la bascule ouvre l’accueil particulier (${p.url().replace(B, '')})`)
   if (label === 'mobile') check(/Carte/.test(await tabs()) && /Profil/.test(await tabs()) && !/Entreprise/.test(await tabs()), `espace particulier : barre du bas = ${await tabs()}`)
-  else check(/Mon profil/.test(await nav()) && !/Mon entreprise/.test(await nav()), `espace particulier : menu = ${await nav()}`)
+  else check(/Profil/.test(await nav()) && !/Entreprise/.test(await nav()), `espace particulier : menu = ${await nav()}`)
 
   await go('/messages'); t = await text()
   check(/Fictif 2/.test(t) && !/Audit C\./.test(t), 'Messages (particulier) : seulement l’achat personnel')
@@ -48,7 +48,7 @@ for (const [label, viewport] of [['mobile', { width: 390, height: 844 }], ['ordi
   // Une page de l'espace prestataire remet tout l'espace prestataire.
   await go('/pro/dashboard')
   if (label === 'mobile') check(/Entreprise/.test(await tabs()), `ouvrir Mon entreprise remet l’espace prestataire : ${await tabs()}`)
-  else check(/Mon entreprise/.test(await nav()), `ouvrir Mon entreprise remet l’espace prestataire : ${await nav()}`)
+  else check(/Entreprise/.test(await nav()), `ouvrir Mon entreprise remet l’espace prestataire : ${await nav()}`)
   await go('/messages'); t = await text()
   check(/Audit C/.test(t) && !/Fictif 2/.test(t), 'Messages : de nouveau seulement les clients')
   check(errs.length === 0, 'aucune erreur JavaScript' + (errs.length ? ' : ' + errs.join(' | ') : ''))
