@@ -1,4 +1,5 @@
 import { presenceSentence } from './presence'
+import { legalFormInvoiceLabel } from './proStatus'
 /**
  * Les trois documents d'une mission, en PDF.
  *
@@ -98,6 +99,33 @@ export function prestationSous(l: Record<string, any>): string {
     presenceSentence(l.arrivee, l.depart, l.preuve_arrivee, l.preuve_depart),
     tarif,
   ].filter(Boolean).join('  ·  ')
+}
+
+/**
+ * Forme juridique et TVA du prestataire sur une facture de prestation (18/11/2026, migration 039).
+ * Depuis la migration, ces champs sont recopiés en base à l'émission (trigger trg_invoice_pro_tax_status :
+ * `issuer_snapshot.forme_juridique|tva_regime|tva_numero`, `legal.forme`, `legal.tva_intracom`).
+ * Pour une facture émise avant, `live` (le statut actuel du prestataire, s'il est connu) complète ce qui
+ * manque — même principe que les preuves de présence reprises de la mission (migration 038).
+ * Assujetti à la TVA : jamais la mention de franchise, le n° de TVA intracommunautaire à la place.
+ */
+export type ProTaxStatus = { legal_form?: string | null; vat_status?: string | null; vat_number?: string | null }
+export function withProTaxStatus(inv: Invoice, live?: ProTaxStatus | null): Invoice {
+  if (inv.template !== 'facture') return inv
+  const iss = inv.issuer_snapshot || {}
+  const snapHas = iss.forme_juridique != null || iss.tva_regime != null
+  const form = snapHas ? iss.forme_juridique : live?.legal_form
+  const vat = snapHas ? iss.tva_regime : live?.vat_status
+  const vatNo = snapHas ? iss.tva_numero : live?.vat_number
+  if (!form && !vat) return inv
+  const legal: Record<string, any> = { ...(inv.legal || {}) }
+  const forme = legalFormInvoiceLabel(form)
+  if (forme) legal.forme = forme
+  if (vat === 'assujetti') {
+    delete legal.franchise_tva
+    if (vatNo) legal.tva_intracom = vatNo
+  }
+  return { ...inv, legal }
 }
 
 export const PLATFORM_PENDING = 'PING — société en cours de constitution'
@@ -222,6 +250,7 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
     if (iss.ville) issuerLines.push(iss.ville)
     if (iss.siret) issuerLines.push(`SIRET ${iss.siret}`)
     if (inv.legal?.forme) issuerLines.push(inv.legal.forme)
+    if (inv.legal?.tva_intracom) issuerLines.push(`TVA intracommunautaire ${inv.legal.tva_intracom}`)
     if (iss.sap) issuerLines.push(`Déclaration SAP ${iss.sap}`)
     if (inv.template === 'recapitulatif') issuerLines.push('Particulier — non immatriculé')
   }

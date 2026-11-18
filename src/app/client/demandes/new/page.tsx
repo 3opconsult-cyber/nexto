@@ -4,7 +4,7 @@ import { filterMessage } from '@/lib/chatFilter'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
-import { TRADE_LIST } from '@/lib/trades'
+import { TRADE_LIST, cesuEligible } from '@/lib/trades'
 import { geocodeAddress } from '@/lib/geocode'
 import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
 import { FREQUENCIES, HOUSEHOLD, LINEN_TYPES, PAYMENTS } from '@/components/RequestDetails'
@@ -66,6 +66,11 @@ export default function NewOpenRequestPage() {
   }, [router])
 
   const linenService = category === 'repassage'
+  // « Payer en CESU préfinancé » : seulement pour un service éligible (src/lib/trades.ts, cesuEligible).
+  const cesuOk = cesuEligible(category)
+  const paymentChoices = PAYMENTS.filter(p => p.key !== 'cesu' || cesuOk)
+    .map(p => p.key === 'cesu' ? { ...p, label: 'Payer en CESU préfinancé' } : p)
+  useEffect(() => { if (!cesuOk && payment === 'cesu') setPayment('indifferent') }, [cesuOk, payment])
   const days = useMemo(() => {
     const out: Date[] = []; const d0 = new Date(); d0.setHours(0, 0, 0, 0)
     for (let i = 0; i < 14; i++) { const d = new Date(d0); d.setDate(d0.getDate() + i); out.push(d) }
@@ -124,7 +129,7 @@ export default function NewOpenRequestPage() {
       surface_m2: !linenService && surfaceN && surfaceN > 0 ? surfaceN : null,
       linen_kg: linenService ? kilos : null,
       linen_types: linenService && linen.length ? linen : null,
-      household_size: household, payment_pref: payment,
+      household_size: household, payment_pref: payment === 'cesu' && !cesuOk ? 'indifferent' : payment,
       address,
       lat: point.lat, lng: point.lng,
       status: 'open', urgent,
@@ -273,9 +278,9 @@ export default function NewOpenRequestPage() {
           <p style={{ fontSize: 11.5, color: '#4E6470', margin: '6px 0 14px' }}>Indicatif seulement : les propositions reçues peuvent différer, vous restez libre de refuser.</p>
           <span style={labelStyle}>Mode de paiement souhaité</span>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-            {PAYMENTS.map(p => <button key={p.key} type="button" onClick={() => setPayment(p.key)} style={chip(payment === p.key)}>{p.label}</button>)}
+            {paymentChoices.map(p => <button key={p.key} type="button" onClick={() => setPayment(p.key)} style={chip(payment === p.key)}>{p.label}</button>)}
           </div>
-          <p style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8 }}>Le paiement en CESU préfinancé (titres remis par un employeur ou un comité d’entreprise) dépend du prestataire : il l’indique dans sa proposition.</p>
+          {cesuOk && <p style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8 }}>Le CESU préfinancé (titres remis par un employeur ou un comité d’entreprise) n’est possible qu’avec un prestataire qui l’accepte : c’est indiqué sur son profil. Vous gérez vous-même votre crédit d’impôt.</p>}
         </Section>
 
         <Section title="Adresse d’intervention" hint="Communiquée au prestataire seulement une fois la mission confirmée. Les prestataires voient seulement la distance.">

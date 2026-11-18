@@ -226,3 +226,22 @@ export async function respondToRequest(requestId: string): Promise<{ missionId: 
   if (error) return { missionId: null, error: error.message }
   return { missionId: data as string }
 }
+
+// Indicateurs de confiance et de paiement d'un ensemble de prestataires (18/11/2026, migration 039) :
+//   cesu    — le prestataire a indiqué accepter le CESU préfinancé (provider_profiles.accepts_cesu_prefinance)
+//   checked — sa pièce d'identité a été validée par un admin PING (RPC provider_docs_checked)
+// Avant la migration, colonne et RPC n'existent pas : on renvoie undefined, rien ne s'affiche.
+export type ProviderFlags = { cesu?: boolean; checked?: boolean }
+export async function fetchProviderFlags(ids: string[]): Promise<Record<string, ProviderFlags>> {
+  const out: Record<string, ProviderFlags> = {}
+  const uniq = Array.from(new Set(ids)).filter(Boolean)
+  if (!uniq.length) return out
+  const supabase = createClient()
+  const [cesu, docs] = await Promise.all([
+    supabase.from('provider_profiles').select('id, accepts_cesu_prefinance').in('id', uniq),
+    supabase.rpc('provider_docs_checked', { p_ids: uniq }),
+  ])
+  if (!cesu.error) for (const r of (cesu.data ?? []) as any[]) (out[r.id] ||= {}).cesu = !!r.accepts_cesu_prefinance
+  if (!docs.error) for (const r of (docs.data ?? []) as any[]) (out[r.provider_id] ||= {}).checked = !!r.docs_checked
+  return out
+}

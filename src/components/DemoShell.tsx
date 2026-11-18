@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { fetchProvidersNearby, fetchProviderActivities, openConversation, type ProviderNearby } from '@/lib/services'
+import { fetchProvidersNearby, fetchProviderActivities, fetchProviderFlags, openConversation, type ProviderNearby, type ProviderFlags } from '@/lib/services'
 import { TRADES, ALL_TRADE_KEYS } from '@/lib/trades'
 import NavDrawer from './NavDrawer'
 import ModeSwitchPill from './ModeSwitchPill'
@@ -20,7 +20,7 @@ const LiveMap = dynamic(() => import('./LiveMap'), { ssr: false })
 
 type Pro = {
   id: string; av: string; n: string; m: string; p: string;
-  d: string; c: string[]; g: string; cat: string;
+  d: string; c: string[]; g: string; cat: string; pend?: boolean;
   dist: number; rate: number; priceN: number
   reviews: number; active: boolean; identity: boolean; rcpro: boolean
   acts: string[]; hits: number
@@ -48,6 +48,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [sel, setSel] = useState<string[]>([])
   const [rawPros, setRawPros] = useState<ProviderNearby[]>([])
   const [acts, setActs] = useState<Record<string, string[]>>({})
+  // CESU préfinancé accepté, pièces contrôlées (migration 039 ; vide tant qu'elle n'est pas appliquée).
+  const [flags, setFlags] = useState<Record<string, ProviderFlags>>({})
   const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
   const [recenterTick, setRecenterTick] = useState(0)
   // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
@@ -79,6 +81,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
       setRawPros(list)
       // Activités = métier principal + métiers des prestations (table services).
       fetchProviderActivities(list).then(setActs).catch(() => { })
+      fetchProviderFlags(list.map(p => p.id)).then(setFlags).catch(() => { })
     })
   }, [userPos.lat, userPos.lng])
   const actsOf = useCallback((x: { id: string; trade: string }) => acts[x.id] || (x.trade ? [x.trade] : []), [acts])
@@ -101,6 +104,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     const chips: string[] = []
     if (x.has_identity) chips.push('Pièce d’identité fournie')
     if (x.has_rcpro) chips.push('Assurance RC renseignée')
+    if (flags[x.id]?.cesu) chips.push('Accepte le CESU préfinancé')
     return {
       id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
       m: `${actsOf(x).map(lab).join(', ')} · ${rateTxt} · à ${distTxt}`, p: price,
@@ -109,8 +113,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
       priceN: x.base_price_cents > 0 ? x.base_price_cents : (x.hourly_rate_cents ?? 0),
       reviews: x.reviews_count || 0, active: !!x.is_active, identity: !!x.has_identity, rcpro: !!x.has_rcpro,
       acts: actsOf(x), hits: hitsOf(x),
+      // Réservable tout de suite, mais signalé tant qu'un admin PING n'a pas validé ses pièces.
+      pend: flags[x.id]?.checked === false,
     }
-  }), [rawPros, actsOf, hitsOf])
+  }), [rawPros, actsOf, hitsOf, flags])
 
   function closePreview() { setPvId(null) }
 
@@ -305,7 +311,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="pvname">{pv.n}</div>
                           <div className="pvmeta">{pv.m}</div>
-                          <div className="chipset">{pv.c.map((x, i) => <span key={i} className="vchip ok">{CHK}{x}</span>)}</div>
+                          <div className="chipset">{pv.c.map((x, i) => <span key={i} className="vchip ok">{CHK}{x}</span>)}
+                            {pv.pend && <span className="vchip" style={{ background: '#FFF4DD', color: '#8A5A00' }}>Nouveau · pièces en cours de contrôle</span>}</div>
                         </div>
                         <div className="pvprice">{pv.p}</div>
                         <button type="button" onClick={closePreview} aria-label="Fermer l’aperçu"

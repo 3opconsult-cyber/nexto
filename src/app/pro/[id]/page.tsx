@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchProDetail, openConversation } from '@/lib/services'
+import { fetchProDetail, fetchProviderFlags, openConversation } from '@/lib/services'
 import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import { pricingLabel, pricingShort } from '@/lib/servicePricing'
@@ -19,6 +19,8 @@ export default function ProDetailPage() {
   const [uid, setUid] = useState<string | null>(null)
   const [fav, setFav] = useState(false)
   const [favBusy, setFavBusy] = useState(false)
+  // Pièces contrôlées par PING (RPC de la migration 039) : undefined tant qu'elle n'est pas appliquée.
+  const [docsChecked, setDocsChecked] = useState<boolean | undefined>(undefined)
 
   useEffect(() => {
     let cancelled = false
@@ -26,6 +28,7 @@ export default function ProDetailPage() {
       if (cancelled) return
       setPro(pro); setReviews(reviews); setLoading(false)
     })
+    fetchProviderFlags([proId]).then(f => { if (!cancelled) setDocsChecked(f[proId]?.checked) }).catch(() => { })
     const supabase = createClient()
     supabase.from('services')
       .select('id, name, description, pricing_type, base_price_cents, included_hours, hourly_rate_cents')
@@ -138,6 +141,11 @@ export default function ProDetailPage() {
           </div>
           <h2>{name}</h2>
           <div className="meta">{ratingTxt}{dist ? ` · à ${dist}` : ''}</div>
+          {docsChecked === false && (
+            <div style={{ display: 'inline-block', marginTop: 6, fontSize: 11.5, fontWeight: 700, color: '#8A5A00', background: '#FFF4DD', borderRadius: 999, padding: '4px 10px' }}>
+              Nouveau · pièces en cours de contrôle
+            </div>
+          )}
           <div className="dispo"><span style={{ width: 9, height: 9, borderRadius: '50%', background: pro.is_active === false ? 'rgba(255,255,255,.45)' : '#fff', display: 'inline-block' }} /> {pro.is_active === false ? 'Hors ligne pour le moment' : 'Disponible'}</div>
         </div>
 
@@ -181,7 +189,14 @@ export default function ProDetailPage() {
               <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Possible</div>
             </div>
           )}
-          {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && (
+          {pro.accepts_cesu_prefinance === true && (
+            <div className="ping-vrow ok">
+              <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18M7 15h4" /></svg></div>
+              <div className="ping-vt"><b>Accepte le CESU préfinancé</b><small>Indiqué par le pro · titres employeur ou comité d&apos;entreprise</small></div>
+              <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Oui</div>
+            </div>
+          )}
+          {!pro.has_identity && !pro.has_rcpro && !pro.sap_number && !pro.accepts_cesu_prefinance && (
             <div className="ping-vrow"><div className="ping-vt"><small>Aucune information encore renseignée par le prestataire.</small></div></div>
           )}
 

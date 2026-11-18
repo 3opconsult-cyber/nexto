@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
+import { CGV_VERSION } from '@/lib/cgv'
+import { legalFormLabel } from '@/lib/proStatus'
 import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
@@ -261,11 +263,11 @@ export default function ProDashboard() {
               <HubRow icon={HUB_ICONS.id} label="Numéro SAP et avance immédiate Urssaf" sub="Crédit d'impôt de 50 % pour vos clients · avance immédiate pas encore ouverte"
                 badge={pro.sap_number ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/revenus#sap')} />
               <HubRow icon={HUB_ICONS.doc} label="CGV et contrat de commission" sub="Conditions acceptées à l'inscription"
-                badge={pro.cgv_accepted_at ? { text: 'accepté', tone: 'ok' } : { text: 'à accepter', tone: 'todo' }} onClick={() => router.push('/cgu#prestataires')} />
+                badge={pro.cgv_accepted_at && pro.cgv_version === CGV_VERSION ? { text: 'accepté', tone: 'ok' } : pro.cgv_accepted_at ? { text: 'nouvelle version', tone: 'todo' } : { text: 'à accepter', tone: 'todo' }} onClick={() => router.push('/cgu#prestataires')} />
             </HubGroup>
 
             <HubGroup title="Mon entreprise">
-              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
+              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
               <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
                 badge={idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
                 onClick={() => router.push('/pro/documents')} />
