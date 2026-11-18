@@ -23,7 +23,7 @@ rendu se fait maintenant sur la prod, plus sur une preview.
 
 ## Stack
 Next.js 14 (App Router, `src/app`) · React + TS · Supabase (Postgres+Auth+Storage+RLS,
-client `src/lib/supabase/client.ts`) · Leaflet + OSM (`src/components/LiveMap.tsx`) ·
+client `src/lib/supabase/client.ts`) · Leaflet + fond vectoriel PING (MapLibre GL + tuiles OpenFreeMap via `@maplibre/maplibre-gl-leaflet`, style `src/lib/mapStyle.ts`, repli auto sur tuiles OSM si WebGL/réseau absent ; `src/components/LiveMap.tsx`) ·
 design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand+Inter).
 `ping-legacy.css` = ancien style à retirer. Référence UX : `public/app.html` (servi sur
 `/demo`), `public/admin.html` (servi sur `/admin`) — via rewrites `next.config.js`, ne pas casser.
