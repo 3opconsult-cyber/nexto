@@ -244,7 +244,7 @@ export default function ProDashboard() {
             </HubGroup>
 
             <HubGroup title="Prix et revenus">
-              <HubRow icon={HUB_ICONS.tag} label="Mes tarifs" sub="Un prix par service : forfait, à l'heure, ou forfait + heures" onClick={() => router.push('/pro/tarifs')} />
+              <HubRow icon={HUB_ICONS.tag} label="Mes tarifs" sub="Vos prestations : forfait, à l'heure, sur devis, avec photo" onClick={() => router.push('/pro/tarifs')} />
               <HubRow icon={HUB_ICONS.chart} label="Mes revenus" sub="Récapitulatif et déclaration" onClick={() => router.push('/pro/revenus')} />
               <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
             </HubGroup>

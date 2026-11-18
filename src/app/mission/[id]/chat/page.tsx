@@ -120,6 +120,12 @@ export default function ChatPage() {
     const q = new URLSearchParams(window.location.search)
     if (q.has('signaler')) setReporting(true)
     if (q.has('avis') && userId === tx.buyer_id && tx.completed_at) setAskReview(true)
+    // ?devis=<prestation> (« Demander un devis » sur la fiche ou à la réservation) : message prérempli,
+    // envoyé par le client lui-même, tant que le tarif n'est pas validé.
+    const devis = q.get('devis')
+    if (devis && userId === tx.buyer_id && !tx.price_confirmed) {
+      setInput(`Bonjour, pourriez-vous me faire un devis pour « ${devis.slice(0, 80)} » ? `)
+    }
   }, [tx, userId])
 
   useEffect(() => {

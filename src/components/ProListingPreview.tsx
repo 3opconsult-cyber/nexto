@@ -2,11 +2,12 @@
 import ListingExtras from '@/components/ListingExtras'
 import { TRADES } from '@/lib/trades'
 import { pricingLabel } from '@/lib/servicePricing'
+import { prestationPhotoUrl } from '@/lib/prestations'
 
 type Article = {
   id: string | null; name: string; description?: string | null
   pricing_type?: string | null; base_price_cents?: number | null; included_hours?: number | null
-  hourly_rate_cents?: number | null; price_cents?: number | null
+  hourly_rate_cents?: number | null; price_cents?: number | null; photo_path?: string | null
 }
 
 /**
@@ -83,11 +84,19 @@ export default function ProListingPreview({ pro, name, services, hasIdentity, ha
         <div className="ping-h2">Prestations proposées</div>
         {articles.map(a => {
           const label = pricingLabel(a)
+          const photo = prestationPhotoUrl(a.photo_path)
           return (
-            <div key={a.id ?? 'primary'} className="ping-rev">
-              <div className="t"><span className="n">{a.name}</span></div>
-              {a.id && a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
-              <div style={{ fontSize: 12.5, color: label ? '#0C8F7E' : '#8A6520', fontWeight: 700, marginTop: 4 }}>{label || 'Prix à fixer dans Mes tarifs'}</div>
+            <div key={a.id ?? 'primary'} className="ping-rev" style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              {photo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photo} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                  style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', flexShrink: 0, background: '#F3F6F5' }} />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="t"><span className="n">{TRADES[a.name] || a.name}</span></div>
+                {a.id && a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
+                <div style={{ fontSize: 12.5, color: label ? '#0C8F7E' : '#8A6520', fontWeight: 700, marginTop: 4 }}>{label || 'Prix à fixer dans Mes tarifs'}</div>
+              </div>
             </div>
           )
         })}
