@@ -1,11 +1,13 @@
 "use client"
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { fetchProvidersNearby, fetchProviderActivities, openConversation, type ProviderNearby } from '@/lib/services'
 import { TRADES, ALL_TRADE_KEYS } from '@/lib/trades'
 import NavDrawer from './NavDrawer'
 import ModeSwitchPill from './ModeSwitchPill'
+import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from './MapSheet'
+import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
 
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
@@ -34,6 +36,8 @@ const HUES: Record<string, string> = {
 // Libellés : catalogue unique src/lib/trades.ts (+ « remise » hérité, absent du catalogue).
 const TRAD: Record<string, string> = { remise: 'Remise en état', ...TRADES }
 const lab = (k: string) => TRAD[k] || k
+// Flèches précédent / suivant de l'aperçu : cible tactile de 36 px.
+const NAVBTN: React.CSSProperties = { width: 36, height: 36, border: '1px solid var(--line)', borderRadius: 11, background: '#fff', color: 'var(--ink)', display: 'grid', placeItems: 'center', cursor: 'pointer', padding: 0 }
 
 export default function DemoShell({ initialView = 'v_map' }: { initialView?: string }) {
   const router = useRouter()
@@ -46,8 +50,13 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [acts, setActs] = useState<Record<string, string[]>>({})
   const [userPos, setUserPos] = useState({ lat: 43.6584, lng: 6.9225 })
   const [recenterTick, setRecenterTick] = useState(0)
-  const [pvIndex, setPvIndex] = useState(0)
-  const [pvShow, setPvShow] = useState(false)
+  // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
+  const [pvId, setPvId] = useState<string | null>(null)
+  // Volet de la liste (mobile) : replié, mi-hauteur ou plein.
+  const [sheet, setSheet] = useState<SheetSnap>('peek')
+  const isDesk = useIsDesktop()
+  const [wrapEl, setWrapEl] = useState<HTMLDivElement | null>(null)
+  const wrapH = useElementHeight(wrapEl)
   const [sortMode, setSortMode] = useState<'near' | 'rated' | 'price'>('near')
   const [flt, setFlt] = useState<Set<string>>(() => new Set())
   const [contactErr, setContactErr] = useState('')
@@ -103,9 +112,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     }
   }), [rawPros, actsOf, hitsOf])
 
-  function closePreview() { setPvShow(false) }
+  function closePreview() { setPvId(null) }
 
-  const pv = pros[pvIndex]
+  const pv = pvId ? pros.find(q => q.id === pvId) : undefined
+  const pvShow = !!pv
   // Prestataires réels qui font au moins une des activités choisies, passés à la carte Leaflet.
   const rawVisible = useMemo(
     () => rawPros.filter(p => sel.length === 0 || hitsOf(p) > 0),
@@ -117,9 +127,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     return c
   }, [rawPros, actsOf])
   const selTxt = sel.map(lab).join(' + ')
-  function onSelectPro(p: ProviderNearby) {
-    const i = pros.findIndex(q => q.id === p.id)
-    if (i >= 0) { setPvIndex(i); setPvShow(true) }
+  function onSelectPro(p: { id: string }) {
+    if (pros.some(q => q.id === p.id)) { setContactErr(''); setPvId(p.id) }
   }
   // Contacter depuis la carte : pas connecté → connexion puis retour sur la fiche du pro ;
   // toute autre erreur est affichée au lieu d'un renvoi silencieux.
@@ -147,8 +156,61 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const partList = sel.length > 1 ? searchList.filter(p => p.hits < sel.length) : []
   const missingOf = (p: Pro) => sel.filter(k => !p.acts.includes(k))
   const pvMissing = pv ? missingOf(pv) : []
-  const row = (p: Pro) => (
-    <div key={p.id} className="row" onClick={() => router.push(`/pro/${p.id}`)}>
+  // Précédent / suivant dans l'aperçu : on parcourt la liste en cours (même ordre que le volet).
+  // Un prestataire ouvert depuis une épingle hors de cette liste (filtres de recherche) : on
+  // parcourt alors les épingles de la carte, de la plus proche à la plus lointaine.
+  const sheetList = [...fullList, ...partList]
+  const navList = pv && sheetList.some(p => p.id === pv.id)
+    ? sheetList
+    : pros.filter(p => sel.length === 0 || p.hits > 0).sort((a, b) => a.dist - b.dist)
+  const navIdx = pv ? navList.findIndex(p => p.id === pv.id) : -1
+  function step(d: number) {
+    if (navList.length < 2 || navIdx < 0) return
+    setContactErr('')
+    setPvId(navList[(navIdx + d + navList.length) % navList.length].id)
+  }
+  const sheetTitle = sel.length > 1
+    ? `${fullList.length} font ${selTxt.toLowerCase()}`
+    : `${searchList.length} prestataire${searchList.length > 1 ? 's' : ''} près de vous`
+
+  // Boutons de la carte (Déposer une demande, PING, Recentrer) : posés au-dessus du volet et du
+  // bandeau d'installation, jamais dessous. Cachés quand le volet est plein ou qu'un aperçu est
+  // ouvert sur mobile (comme la maquette). Sur ordinateur, PING et Recentrer se décalent à gauche
+  // du panneau de détail au lieu de passer dessous.
+  const ctrlHidden = !isDesk && (sheet === 'full' || pvShow)
+  const ctrlBase = isDesk ? `calc(${SHEET_LIFT} + 24px)` : `calc(${SHEET_H[sheet]} + ${SHEET_LIFT} + 12px)`
+  const ctrlRight = isDesk && pvShow ? 410 : 14
+  // Bulle verte rangée au-dessus de Recentrer (distance au bas de la fenêtre, sans le bandeau).
+  const wrapBottomGap = typeof window !== 'undefined' && wrapEl ? Math.max(0, window.innerHeight - wrapEl.getBoundingClientRect().bottom) : 64
+  const bubbleBottom = wrapH ? wrapBottomGap + (isDesk ? 24 : sheetPx(sheet, wrapH) + 12) + 68 + 40 + 12 : null
+  useFeedbackBubbleSlot(view === 'v_map' ? bubbleBottom : null, view === 'v_map' && (pvShow || (!isDesk && sheet === 'full')))
+
+  // Aperçu mobile : glisser vers le bas pour fermer, à gauche ou à droite pour passer au suivant.
+  const pvRef = useRef<HTMLDivElement>(null)
+  const swipe = useRef<{ x: number; y: number; dx: number; dy: number } | null>(null)
+  const swiped = useRef(false)
+  function pvDown(e: React.PointerEvent) {
+    if ((e.target as HTMLElement).closest('input,textarea')) return
+    swipe.current = { x: e.clientX, y: e.clientY, dx: 0, dy: 0 }
+  }
+  function pvMove(e: React.PointerEvent) {
+    const s = swipe.current, el = pvRef.current
+    if (!s || !el) return
+    s.dx = e.clientX - s.x; s.dy = e.clientY - s.y
+    if (s.dy > 8 && s.dy > Math.abs(s.dx)) { el.style.transition = 'none'; el.style.transform = `translateY(${s.dy}px)` }
+  }
+  function pvUp() {
+    const s = swipe.current, el = pvRef.current
+    swipe.current = null
+    if (!s || !el) return
+    el.style.transition = ''; el.style.transform = ''
+    const moved = Math.abs(s.dx) > 10 || Math.abs(s.dy) > 10
+    if (moved) { swiped.current = true; setTimeout(() => { swiped.current = false }, 300) }
+    if (s.dy > 70 && s.dy > Math.abs(s.dx)) closePreview()
+    else if (Math.abs(s.dx) > 60 && Math.abs(s.dx) > Math.abs(s.dy)) step(s.dx < 0 ? 1 : -1)
+  }
+  const row = (p: Pro, onOpen: (p: Pro) => void = q => router.push(`/pro/${q.id}`)) => (
+    <div key={p.id} className="row" onClick={() => onOpen(p)}>
       <div className="av" style={{ background: `linear-gradient(160deg,${p.g})` }}>{p.av}</div>
       <div className="m"><div className="nm">{p.n}</div><div className="ds">{p.m}</div>
         {p.hits < sel.length && <div className="ds" style={{ color: '#8A6520' }}>Ne fait pas : {missingOf(p).map(lab).join(', ').toLowerCase()}</div>}
@@ -168,7 +230,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
           {/* ===================== v_map ===================== */}
           <section className={`view ${view === 'v_map' ? 'on' : ''}`} id="v_map" data-tab="map">
             <div className="body full nopad">
-              <div className="mapwrap">
+              <div className="mapwrap" ref={setWrapEl}>
                 <div className="topbar">
                   <span className="mobile-only"><NavDrawer dark={false} /></span>
                   <div className="pinglogo">
@@ -186,7 +248,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 </div>
 
                 <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
-                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} />
+                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} />
                 </div>
 
                 <div className="searchbar" style={{ top: 66 }} onClick={() => go('v_search')}>
@@ -203,32 +265,69 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   ))}
                 </div>
 
-                <div className="pingbtn" onClick={() => loadPros()}><span className="halo" /><span className="lbl">PING</span></div>
-                {/* Déposer une annonce (Romain 31/10 : introuvable depuis la carte). Masqué quand une fiche est ouverte. */}
-                {!pvShow && (
-                  <button type="button" onClick={() => router.push('/client/demandes/new')}
-                    style={{ position: 'absolute', left: 14, bottom: 80, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
-                    Déposer une demande
-                  </button>
-                )}
-                <div className="loc" onClick={() => setRecenterTick(t => t + 1)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
+                {!ctrlHidden && (<>
+                  <div className="pingbtn" role="button" aria-label="PING : actualiser les prestataires autour de vous" onClick={() => loadPros()} style={{ bottom: ctrlBase, right: ctrlRight }}><span className="halo" /><span className="lbl">PING</span></div>
+                  {/* Déposer une annonce (Romain 31/10 : introuvable depuis la carte). Masqué quand une fiche est ouverte. */}
+                  {!pvShow && (
+                    <button type="button" onClick={() => router.push('/client/demandes/new')}
+                      style={{ position: 'absolute', left: 14, bottom: ctrlBase, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                      Déposer une demande
+                    </button>
+                  )}
+                  <div className="loc" role="button" aria-label="Recentrer sur ma position" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: `calc(${ctrlBase} + 68px)`, right: ctrlRight + 8 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2}><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg></div>
+                </>)}
 
-                <div className={`preview ${pvShow ? 'show' : ''}`} id="preview">
-                  <div className="pvh" />
+                {/* Volet de la liste (mobile) : remplacé par l'aperçu quand un prestataire est choisi. */}
+                {!pvShow && (
+                  <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}>
+                    {fullList.map(p => row(p, q => onSelectPro(q)))}
+                    {sel.length > 1 && searchList.length > 0 && fullList.length === 0 && (
+                      <p className="sub" style={{ color: 'var(--slate)' }}>Personne ne fait {selTxt.toLowerCase()} à la fois près de vous.</p>
+                    )}
+                    {partList.length > 0 && (<>
+                      <div className="h2">Font une partie de vos choix</div>
+                      {partList.map(p => row(p, q => onSelectPro(q)))}
+                    </>)}
+                    {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)' }}>{flt.size ? 'Aucun prestataire ne correspond à vos filtres. Retirez-en un dans la recherche pour élargir.' : 'Aucun prestataire pour ce choix pour le moment. Déposez une demande : les prestataires proches la verront.'}</p>}
+                  </MapSheet>
+                )}
+
+                <div ref={pvRef} className={`preview ${pvShow ? 'show' : ''}`} id="preview" role="dialog" aria-label={pv ? `Aperçu de ${pv.n}` : 'Aperçu'}
+                  style={{ bottom: SHEET_LIFT, touchAction: 'pan-y' }}
+                  onPointerDown={pvDown} onPointerMove={pvMove} onPointerUp={pvUp} onPointerCancel={pvUp}
+                  onClickCapture={e => { if (swiped.current) { e.stopPropagation(); e.preventDefault(); swiped.current = false } }}>
+                  <div className="pvh" style={{ touchAction: 'none' }} />
                   {pv && (
                     <>
                       <div className="pvrow">
                         <div className="pvav" style={{ background: `linear-gradient(160deg,${pv.g})` }}>{pv.av}</div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="pvname">{pv.n}</div>
                           <div className="pvmeta">{pv.m}</div>
                           <div className="chipset">{pv.c.map((x, i) => <span key={i} className="vchip ok">{CHK}{x}</span>)}</div>
                         </div>
                         <div className="pvprice">{pv.p}</div>
+                        <button type="button" onClick={closePreview} aria-label="Fermer l’aperçu"
+                          style={{ width: 36, height: 36, margin: '-6px -6px 0 2px', border: 0, borderRadius: 11, background: 'var(--paper)', color: 'var(--ink)', display: 'grid', placeItems: 'center', cursor: 'pointer', flex: '0 0 auto', padding: 0 }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                        </button>
                       </div>
                       {pvMissing.length > 0 && <p style={{ fontSize: 12, color: '#8A6520', fontWeight: 600, margin: '8px 0 0' }}>Ne fait pas : {pvMissing.map(lab).join(', ').toLowerCase()}</p>}
-                      <div className="dispo" style={{ marginTop: 11 }}><span className={`livedot ${pv.active ? 'on' : ''}`} /> <span>{pv.d}</span></div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 11 }}>
+                        <div className="dispo" style={{ margin: 0 }}><span className={`livedot ${pv.active ? 'on' : ''}`} /> <span>{pv.d}</span></div>
+                        {navList.length > 1 && navIdx >= 0 && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, flex: '0 0 auto' }}>
+                            <button type="button" onClick={() => step(-1)} aria-label="Prestataire précédent" style={NAVBTN}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
+                            </button>
+                            <span style={{ fontSize: 12, color: 'var(--slate)', fontWeight: 600, minWidth: 34, textAlign: 'center' }}>{navIdx + 1} / {navList.length}</span>
+                            <button type="button" onClick={() => step(1)} aria-label="Prestataire suivant" style={NAVBTN}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
+                            </button>
+                          </span>
+                        )}
+                      </div>
                       {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '8px 0 0' }}>{contactErr}</p>}
                       <div style={{ display: 'flex', gap: 9, marginTop: 10 }}>
                         <div className="btn ghost" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
@@ -243,7 +342,18 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   <div className="detail-panel on">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
                       <b style={{ fontFamily: 'Quicksand,sans-serif', fontSize: 15, color: 'var(--ink)', flex: 1 }}>Profil du prestataire</b>
-                      <div onClick={closePreview} aria-label="Fermer" style={{ cursor: 'pointer', color: 'var(--slate)', display: 'grid', placeItems: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></div>
+                      {navList.length > 1 && navIdx >= 0 && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <button type="button" onClick={() => step(-1)} aria-label="Prestataire précédent" style={NAVBTN}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
+                          </button>
+                          <span style={{ fontSize: 12, color: 'var(--slate)', fontWeight: 600, minWidth: 34, textAlign: 'center' }}>{navIdx + 1} / {navList.length}</span>
+                          <button type="button" onClick={() => step(1)} aria-label="Prestataire suivant" style={NAVBTN}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
+                          </button>
+                        </span>
+                      )}
+                      <div onClick={closePreview} role="button" aria-label="Fermer" style={{ cursor: 'pointer', color: 'var(--slate)', display: 'grid', placeItems: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></div>
                     </div>
                     <div style={{ overflowY: 'auto', flex: 1 }}>
                       <div style={{ background: 'linear-gradient(160deg,var(--teal),var(--tealD))', padding: '18px 16px', color: '#fff' }}>
@@ -317,13 +427,13 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 <div className={sortMode === 'price' ? 'on' : ''} onClick={() => setSortMode('price')}>Prix croissant</div>
               </div>
               <div className="h2">{sel.length > 1 ? `${fullList.length} font ${selTxt.toLowerCase()}` : `${searchList.length} prestataire${searchList.length > 1 ? 's' : ''} à proximité`}<span style={{ fontSize: 11, color: 'var(--slate)', fontWeight: 600, marginLeft: 6 }}>triées par {sortMode === 'rated' ? 'note' : sortMode === 'price' ? 'prix' : 'distance'}</span></div>
-              {fullList.map(row)}
+              {fullList.map(p => row(p))}
               {sel.length > 1 && searchList.length > 0 && fullList.length === 0 && (
                 <p className="sub" style={{ color: 'var(--slate)' }}>Personne ne fait {selTxt.toLowerCase()} à la fois près de vous.</p>
               )}
               {partList.length > 0 && (<>
                 <div className="h2">Font une partie de vos choix</div>
-                {partList.map(row)}
+                {partList.map(p => row(p))}
               </>)}
               {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)' }}>{flt.size ? 'Aucun prestataire ne correspond à ces filtres. Retirez-en un pour élargir.' : 'Aucun prestataire pour ce choix pour le moment. Déposez une demande : les prestataires proches la verront.'}</p>}
             </div>
