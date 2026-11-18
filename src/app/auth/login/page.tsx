@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
 import { rememberThisTabOnly } from '@/lib/auth-session'
 import { flushReferral } from '@/lib/referral'
+import { safeNext, homeFor, isAdminPath, logLogin } from '@/lib/authRedirect'
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '13px 44px 13px 14px', border: '1.5px solid #E7EDEB', borderRadius: 14,
@@ -15,21 +16,6 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase',
   letterSpacing: '.04em', marginBottom: 6,
-}
-
-// Chemin de retour après connexion : interne au site seulement (pas de « //hote »,
-// pas d'antislash, pas de caractère de contrôle), et jamais une page de connexion
-// ou d'inscription (boucle). Renvoie chemin + requête + ancre, ou null.
-function safeNext(raw: string | null): string | null {
-  if (!raw || raw.length > 2000) return null
-  if (!raw.startsWith('/') || raw.startsWith('//') || raw.includes('\\')) return null
-  if (/[\u0000-\u001f\u007f]/.test(raw)) return null
-  try {
-    const u = new URL(raw, window.location.origin)
-    if (u.origin !== window.location.origin) return null
-    if (u.pathname === '/auth/login' || u.pathname === '/auth/signup') return null
-    return u.pathname + u.search + u.hash
-  } catch { return null }
 }
 
 function EyeIcon({ off }: { off: boolean }) {
@@ -68,11 +54,42 @@ export default function LoginPage() {
     else setInfo('Si un compte existe pour cet email, un lien de réinitialisation vient d’y être envoyé (pensez aux spams).')
   }
 
-  // /admin (et ses sous-pages) est servi par un rewrite vers public/admin.html, hors du
-  // routeur App Router : navigation complète plutôt que router.push.
+  // /admin est servi par un rewrite hors App Router : navigation complète (voir isAdminPath).
   function go(path: string) {
-    if (path === '/admin' || path.startsWith('/admin/') || path.startsWith('/admin?') || path.startsWith('/admin#')) window.location.assign(path)
+    if (isAdminPath(path)) window.location.assign(path)
     else router.push(path)
+  }
+
+  // Lien magique : un lien de connexion à usage unique envoyé par e-mail (le mot de passe reste possible).
+  // shouldCreateUser: false — aucun compte n'est créé ainsi, l'inscription reste /auth/signup.
+  // Réponse identique que le compte existe ou non (on ne révèle pas quels e-mails sont inscrits).
+  const [magicBusy, setMagicBusy] = useState(false)
+  async function sendMagicLink() {
+    setError(''); setInfo('')
+    const addr = email.trim()
+    if (!addr || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
+      setError('Indiquez votre email ci-dessus, puis cliquez à nouveau sur « Recevoir un lien de connexion par e-mail ».')
+      return
+    }
+    setMagicBusy(true)
+    const target = nextPath()
+    const emailRedirectTo = `${window.location.origin}/auth/callback${target ? `?next=${encodeURIComponent(target)}` : ''}`
+    const { error } = await createClient().auth.signInWithOtp({ email: addr, options: { shouldCreateUser: false, emailRedirectTo } })
+    setMagicBusy(false)
+    const sent = 'Si un compte existe pour cet email, un lien de connexion vient d’y être envoyé (pensez aux spams). Ouvrez-le sur cet appareil, dans ce navigateur : il n’est valable qu’une fois.'
+    if (!error) { setInfo(sent); return }
+    const msg = (error.message || '').toLowerCase()
+    const code = (error as { code?: string }).code || ''
+    if (error.status === 429 || code.includes('rate_limit') || msg.includes('rate limit') || msg.includes('security purposes')) {
+      const wait = msg.match(/after (\d+) second/)
+      setError(wait
+        ? `Un lien vient déjà d’être demandé. Patientez ${wait[1]} secondes avant d’en redemander un, ou connectez-vous avec votre mot de passe.`
+        : 'Trop de liens de connexion envoyés en peu de temps. Réessayez dans quelques minutes, ou connectez-vous avec votre mot de passe.')
+      return
+    }
+    // Compte inexistant (création refusée par shouldCreateUser: false) : même réponse qu'en cas de succès.
+    if (code === 'otp_disabled' || msg.includes('signups not allowed') || msg.includes('user not found')) { setInfo(sent); return }
+    setError('L’envoi du lien a échoué. Réessayez dans un instant, ou connectez-vous avec votre mot de passe.')
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -97,23 +114,12 @@ export default function LoginPage() {
       rememberThisTabOnly(rememberMe)
       // Journal de connexion : date et heure de chaque connexion (table login_log).
       const { data: { user: u } } = await supabase.auth.getUser()
-      try {
-        let m: string | null = null
-        try { m = localStorage.getItem('ping_mode') } catch { }
-        if (u) await supabase.from('login_log').insert({ user_id: u.id, kind: 'login', mode: m, user_agent: navigator.userAgent.slice(0, 200) })
-      } catch { }
+      if (u) await logLogin(supabase, u.id)
       await flushReferral() // parrainage laissé en attente à l'inscription (e-mail à confirmer)
       // ?next= d'abord (chemin interne vérifié), sinon l'espace qui correspond au profil.
       const next = nextPath()
       if (next) { go(next); return }
-      // Filtre sur l'utilisateur connecté : sans lui, un admin (qui peut lire plusieurs
-      // profils) recevait une erreur de .single() et finissait sur /map.
-      const { data: profile } = u
-        ? await supabase.from('profiles').select('is_admin, is_pro').eq('id', u.id).maybeSingle()
-        : { data: null }
-      if (profile?.is_admin) go('/admin')
-      else if (profile?.is_pro) go('/pro/dashboard')
-      else go('/map')
+      go(await homeFor(supabase, u?.id ?? null))
     } catch {
       setError("Une erreur est survenue, réessayez dans un instant.")
       setLoading(false)
@@ -151,12 +157,20 @@ export default function LoginPage() {
               style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
               Mot de passe oublié ?
             </button>
-            {error && <p style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
-            {info && <p style={{ color: '#0C8F7E', fontSize: 13, fontWeight: 600, margin: 0 }}>{info}</p>}
+            {error && <p role="alert" style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
+            {info && <p role="status" style={{ color: '#0C8F7E', fontSize: 13, fontWeight: 600, margin: 0 }}>{info}</p>}
             <button type="submit" disabled={loading}
               style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#6E8592', fontSize: 12, fontWeight: 600 }}>
+              <span style={{ flex: 1, height: 1, background: '#E7EDEB' }} />ou<span style={{ flex: 1, height: 1, background: '#E7EDEB' }} />
+            </div>
+            <button type="button" onClick={sendMagicLink} disabled={magicBusy}
+              style={{ width: '100%', border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: magicBusy ? .6 : 1 }}>
+              {magicBusy ? 'Envoi du lien…' : 'Recevoir un lien de connexion par e-mail'}
+            </button>
+            <p style={{ fontSize: 11.5, color: '#4E6470', margin: '-6px 0 0', lineHeight: 1.45, textAlign: 'center' }}>Sans mot de passe : saisissez votre email, puis ouvrez le lien reçu.</p>
           </form>
           <p style={{ textAlign: 'center', fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 18 }}>
             Pas encore de compte ?{' '}

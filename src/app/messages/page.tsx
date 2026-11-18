@@ -6,6 +6,7 @@ import NavDrawer from '@/components/NavDrawer'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 import { fetchUnreadByTx } from '@/lib/unread'
+import { isInsuranceSent } from '@/lib/insurance'
 
 // Repères type messagerie (WhatsApp) plutôt qu'une date brute sur chaque ligne :
 // plus lisible dès qu'il y a beaucoup de conversations (demande de Romain, 26/10).
@@ -210,7 +211,7 @@ export default function MessagesPage() {
                         </span>
                       </div>
                       <div style={{ fontSize: 12, color: nUnread > 0 ? '#123644' : '#4E6470', fontWeight: nUnread > 0 ? 700 : 400, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {t.lastMessage?.body || 'Aucun message — ouvrir la conversation'}
+                        {isInsuranceSent(t.lastMessage?.body) ? 'Attestation d’assurance transmise' : (t.lastMessage?.body || 'Aucun message — ouvrir la conversation')}
                       </div>
                     </div>
                   </button>

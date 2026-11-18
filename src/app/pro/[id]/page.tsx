@@ -178,7 +178,7 @@ export default function ProDetailPage() {
           {pro.has_rcpro && (
             <div className="ping-vrow ok">
               <div className="ping-vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg></div>
-              <div className="ping-vt"><b>Assurance resp. civile</b><small>Renseignée par le pro (casse/dommage)</small></div>
+              <div className="ping-vt"><b>Assurance resp. civile</b><small>Renseignée par le pro · Attestation d&apos;assurance transmise sur demande</small></div>
               <div className="ping-vs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg> Renseignée</div>
             </div>
           )}

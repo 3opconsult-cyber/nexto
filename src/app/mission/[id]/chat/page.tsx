@@ -22,6 +22,8 @@ import { geocodeAddress } from '@/lib/geocode'
 import { systemSender, isSystemMessage } from '@/lib/systemMessage'
 import { isTodayMission } from '@/lib/todayMission'
 import { MissionSuivi } from '@/components/presence/MissionTimeline'
+import { INSURANCE_REQUEST_BODY, INSURANCE_SENT_PREFIX, INSURANCE_LINK_DAYS, isInsuranceRequest, isInsuranceSent, insuranceLink, signMyInsurance } from '@/lib/insurance'
+import { mentionsPrice } from '@/lib/priceMention'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -109,6 +111,10 @@ export default function ChatPage() {
   // Paiement en ligne actif : l'adresse du client n'est montrée au prestataire qu'une fois payé.
   const [payOn, setPayOn] = useState(false)
   useEffect(() => { paymentsActive().then(setPayOn) }, [])
+  // Attestation d'assurance transmise sur demande (lien signé 7 jours, jamais publique).
+  const [insuranceBusy, setInsuranceBusy] = useState(false)
+  const [insuranceMissing, setInsuranceMissing] = useState(false)
+  const [insuranceErr, setInsuranceErr] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const meRef = useRef<string | null>(null)
 
@@ -223,6 +229,37 @@ export default function ChatPage() {
     if (error) { setWarning('Message non envoyé — vérifiez votre connexion et réessayez.'); setTimeout(() => setWarning(''), 4000); return }
     notifyOther(transactionId, 'message')
     setInput('')
+  }
+
+  // Client : demande l'attestation d'assurance du prestataire (message dans le fil + e-mail).
+  async function requestInsurance() {
+    if (!tx || !userId || insuranceBusy) return
+    setInsuranceBusy(true); setInsuranceErr('')
+    const supabase = createClient()
+    const { error } = await supabase.from('messages').insert({
+      transaction_id: tx.id, ...(await systemSender(supabase)), body: INSURANCE_REQUEST_BODY,
+    })
+    setInsuranceBusy(false)
+    if (error) { setInsuranceErr('Demande non envoyée — réessayez.'); return }
+    notifyOther(tx.id, 'message')
+  }
+
+  // Prestataire : transmet SA pièce d'assurance par un lien signé de 7 jours (créé par lui, propriétaire).
+  async function transmitInsurance() {
+    if (!tx || !userId || insuranceBusy) return
+    setInsuranceBusy(true); setInsuranceErr(''); setInsuranceMissing(false)
+    const supabase = createClient()
+    const res = await signMyInsurance(supabase, userId)
+    if ('missing' in res) { setInsuranceBusy(false); setInsuranceMissing(true); return }
+    if ('error' in res) { setInsuranceBusy(false); setInsuranceErr(res.error); return }
+    const until = res.until.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+    const { error } = await supabase.from('messages').insert({
+      transaction_id: tx.id, ...(await systemSender(supabase)),
+      body: `${INSURANCE_SENT_PREFIX} (lien valable ${INSURANCE_LINK_DAYS} jours, jusqu’au ${until}) : ${res.url}`,
+    })
+    setInsuranceBusy(false)
+    if (error) { setInsuranceErr('Attestation non transmise — réessayez.'); return }
+    notifyOther(tx.id, 'message')
   }
 
   async function proposeOffer() {
@@ -487,6 +524,19 @@ export default function ChatPage() {
   const amountPlaceholder = lastOfferCents
     ? `Proposition précédente : ${EUR(lastOfferCents)}`
     : budgetHint || (tx?.subtotal_cents > 0 ? `Prix de départ : ${EUR(tx.subtotal_cents)}` : 'Montant en euros')
+  // Demande d'attestation en attente : une demande du client sans transmission postée après elle.
+  const lastInsReq = (() => { for (let i = msgs.length - 1; i >= 0; i--) if (isSystemMessage(msgs[i]) && isInsuranceRequest(msgs[i].body)) return i; return -1 })()
+  const insurancePending = lastInsReq >= 0 && !msgs.slice(lastInsReq + 1).some(m => isSystemMessage(m) && isInsuranceSent(m.body) && m.sender_id === tx?.seller_id)
+  const txOpen = !!tx && tx.status !== 'cancelled'
+  // Prix écrit dans un message alors qu'aucun tarif n'est validé : rappel sous le dernier message concerné.
+  const priceHintId = (() => {
+    if (!tx || tx.price_confirmed || tx.status !== 'pending') return null
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      const m = msgs[i]
+      if (m.kind !== 'offer' && !isSystemMessage(m) && mentionsPrice(m.body)) return m.id
+    }
+    return null
+  })()
   const hoursWithoutRate = !!newIncludedHours && Number(newIncludedHours) > 0 && !(Number(newHourly) > 0)
   const offerRecap = (() => {
     const cents = Math.round(Number(newAmount || 0) * 100)
@@ -766,6 +816,22 @@ export default function ChatPage() {
         Téléphone et e-mail restent masqués : échangez ici, l&apos;adresse s&apos;affiche une fois la mission validée et réglée
       </div>
 
+      {/* Client : demander l'attestation d'assurance du prestataire (transmise dans ce fil, lien de 7 jours). */}
+      {txOpen && userId && userId === tx.buyer_id && tx.buyer_id !== tx.seller_id && (
+        <div style={{ padding: '8px 16px 0', textAlign: 'center' }}>
+          {insurancePending ? (
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>Attestation d&apos;assurance demandée au prestataire</span>
+          ) : (
+            <button onClick={requestInsurance} disabled={insuranceBusy}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>
+              {insuranceBusy ? 'Envoi…' : 'Demander l’attestation d’assurance'}
+            </button>
+          )}
+          {insuranceErr && <div style={{ color: '#C0503A', fontSize: 11.5, fontWeight: 600, marginTop: 4 }}>{insuranceErr}</div>}
+        </div>
+      )}
+
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {msgs.length === 0 && (
@@ -858,12 +924,54 @@ export default function ChatPage() {
             )
           }
           if (isSystemMessage(m)) {
+            // Attestation d'assurance transmise : lien signé (7 jours) du bucket privé, posté par le prestataire.
+            if (isInsuranceSent(m.body) && m.sender_id === tx?.seller_id) {
+              const link = insuranceLink(m.body)
+              const expired = Date.now() - new Date(m.created_at).getTime() > INSURANCE_LINK_DAYS * 24 * 3600 * 1000
+              const until = m.body.match(/\(([^)]*)\)/)?.[1]
+              return (
+                <Fragment key={m.id}>
+                  {datePill}
+                  <div style={{ alignSelf: 'center', maxWidth: '90%', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: '12px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>Attestation d&apos;assurance transmise par le prestataire</div>
+                    <div style={{ fontSize: 11, color: '#4E6470', marginTop: 2 }}>{expired ? 'Lien expiré : demandez-la à nouveau si besoin.' : until ? `Visible des seules parties de cette mission · ${until}` : 'Visible des seules parties de cette mission'}</div>
+                    {link && !expired && (
+                      <a href={link} target="_blank" rel="noopener noreferrer"
+                        style={{ display: 'inline-block', marginTop: 8, background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '8px 16px', fontSize: 12.5, fontWeight: 700, textDecoration: 'none' }}>
+                        Ouvrir l&apos;attestation
+                      </a>
+                    )}
+                  </div>
+                </Fragment>
+              )
+            }
+            const insReq = isInsuranceRequest(m.body) && i === lastInsReq && insurancePending && userId === tx?.seller_id && txOpen
             return (
               <Fragment key={m.id}>
                 {datePill}
                 <div style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>
                   {m.body}
                 </div>
+                {insReq && (
+                  <div style={{ alignSelf: 'center', maxWidth: '90%', textAlign: 'center' }}>
+                    {insuranceMissing ? (
+                      <div style={{ background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 14, padding: '10px 14px' }}>
+                        <div style={{ fontSize: 12.5, color: '#123644', fontWeight: 600, lineHeight: 1.5 }}>Vous n&apos;avez pas encore déposé d&apos;attestation d&apos;assurance (ou elle n&apos;est plus valable).</div>
+                        <button onClick={() => router.push(`/pro/documents?retour=${encodeURIComponent(`/mission/${transactionId}/chat`)}`)}
+                          style={{ marginTop: 8, border: 'none', background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '8px 16px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+                          Déposer mon attestation
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={transmitInsurance} disabled={insuranceBusy}
+                        style={{ border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '8px 16px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
+                        {insuranceBusy ? 'Transmission…' : 'Transmettre mon attestation'}
+                      </button>
+                    )}
+                    {insuranceErr && <div style={{ color: '#C0503A', fontSize: 11.5, fontWeight: 600, marginTop: 4 }}>{insuranceErr}</div>}
+                    <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 4 }}>Lien de {INSURANCE_LINK_DAYS} jours, visible du seul client de cette mission.</div>
+                  </div>
+                )}
               </Fragment>
             )
           }
@@ -874,6 +982,18 @@ export default function ChatPage() {
               <div className={mine ? 'msg me' : 'msg them'}>
                 {m.body}
               </div>
+              {/* Prix écrit dans un message sans tarif validé : rappel discret, jamais bloquant. */}
+              {m.id === priceHintId && (
+                <div style={{ alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '85%', background: 'rgba(242,169,59,.1)', border: '1px solid rgba(242,169,59,.35)', borderRadius: 12, padding: '8px 12px', marginTop: -4 }}>
+                  <div style={{ fontSize: 11.5, color: '#6b4f17', lineHeight: 1.45 }}>
+                    Pour que le prix compte, utilisez Proposer un tarif : seul un tarif validé des deux côtés est facturé (et protégé en cas de litige).
+                  </div>
+                  <button onClick={openOfferForm}
+                    style={{ marginTop: 6, border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
+                    Proposer un tarif
+                  </button>
+                </div>
+              )}
             </Fragment>
           )
         })}

@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 
 // Lien « Retour à mon annonce » : lit ?retour=/chemin (chemin interne uniquement).
-export default function RetourLink({ label = 'Retour à mon annonce' }: { label?: string }) {
+// Retour vers une conversation de mission (ex. attestation d'assurance à déposer) : « Retour à la conversation ».
+export default function RetourLink({ label }: { label?: string }) {
   const [href, setHref] = useState<string | null>(null)
   useEffect(() => {
     try {
@@ -13,7 +14,7 @@ export default function RetourLink({ label = 'Retour à mon annonce' }: { label?
   if (!href) return null
   return (
     <a href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '12px 20px 0', fontSize: 13, fontWeight: 700, color: '#0E8F7D', textDecoration: 'none' }}>
-      <span aria-hidden>←</span> {label}
+      <span aria-hidden>←</span> {label ?? (href.startsWith('/mission/') ? 'Retour à la conversation' : 'Retour à mon annonce')}
     </a>
   )
 }
