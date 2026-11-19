@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { distanceKm } from '@/lib/geo'
 import { systemSender } from '@/lib/systemMessage'
+import { readLastEta, saveLastEta, DEFAULT_ETA } from '@/lib/lastEta'
 
 /**
  * Suivi d'arrivée — volontairement sobre.
@@ -28,7 +29,7 @@ export default function DepartureBar({
 }: { tx: any; userId: string; onChange: (t: any) => void; address?: string | null; confirmed?: boolean }) {
   const router = useRouter()
   const [ask, setAsk] = useState(false)
-  const [eta, setEta] = useState(15)
+  const [eta, setEta] = useState(DEFAULT_ETA)
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   // Distance entre l'adresse déclarée du prestataire et celle du rendez-vous —
@@ -76,6 +77,7 @@ export default function DepartureBar({
       alert(error?.message?.includes('jour même') ? error.message : 'Départ non enregistré — vérifiez votre connexion et réessayez.')
       return
     }
+    saveLastEta(eta)
     {
       onChange(data)
       await supabase.from('messages').insert({
@@ -113,7 +115,12 @@ export default function DepartureBar({
     return (
       <>
         <div style={{ padding: '12px 16px', background: '#123644', color: '#fff' }}>
-          <button onClick={() => setAsk(true)} style={{
+          <button onClick={() => {
+            // Dernière durée choisie présélectionnée (correction 5 du 19/11 ter), relevée si la distance l'exige.
+            const v = readLastEta(ETAS)
+            setEta(minPlausibleMin != null && v < minPlausibleMin ? (ETAS.find(x => x >= minPlausibleMin) ?? ETAS[ETAS.length - 1]) : v)
+            setAsk(true)
+          }} style={{
             width: '100%', border: 'none', borderRadius: 999, padding: '11px 0', cursor: 'pointer',
             background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif',
             fontWeight: 700, fontSize: 13.5,

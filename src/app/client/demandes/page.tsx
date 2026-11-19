@@ -1,6 +1,6 @@
 "use client"
 import RequestDetails from '@/components/RequestDetails'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
@@ -143,6 +143,28 @@ export default function MesDemandesPage() {
   const [acceptErr, setAcceptErr] = useState<Record<string, string>>({})
   const [confirming, setConfirming] = useState<string | null>(null)
   const [rdvAt, setRdvAt] = useState('')
+  // Zone de confirmation ramenée dans la vue au toucher de « Accepter ce prestataire » (correction 1 du
+  // 19/11 ter) : quand la demande n'est pas en haut de la liste, « Confirmer » tombait sous la barre du bas.
+  // block 'end' + scroll-margin-bottom = hauteur de la barre : le bas de la zone s'arrête juste au-dessus.
+  const confirmRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (!confirming) return
+    const id = requestAnimationFrame(() => {
+      const el = confirmRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      // Hauteur réelle de la barre du bas (--tabbar-h est un calc() avec env(), mesuré par une sonde).
+      const probe = document.createElement('div')
+      probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;width:0;height:var(--tabbar-h, 0px)'
+      el.appendChild(probe)
+      const tab = probe.offsetHeight
+      probe.remove()
+      // Déjà entièrement visible au-dessus de la barre : rien ne bouge.
+      if (r.top >= 0 && r.bottom <= window.innerHeight - tab) return
+      el.scrollIntoView({ block: r.height > window.innerHeight - tab ? 'start' : 'end', behavior: 'smooth' })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [confirming])
   function offerShape(t: Tx) {
     if (!t.offer) return ''
     return t.offer.offer_hourly_cents && t.offer.offer_included_hours != null
@@ -322,7 +344,7 @@ export default function MesDemandesPage() {
                               </div>
                             )}
                             {!cancelled && t.hasPendingOffer && !t.price_confirmed && t.offer?.offer_cents && confirming === t.id && (
-                              <div style={{ marginTop: 10, background: '#fff', border: '1.5px solid #12B39C', borderRadius: 12, padding: 12 }}>
+                              <div ref={confirmRef} style={{ marginTop: 10, background: '#fff', border: '1.5px solid #12B39C', borderRadius: 12, padding: 12, scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 12px)', scrollMarginTop: 12 }}>
                                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>
                                   Accepter {t.counterpart} à {euroFr(t.offer.offer_cents)}{offerShape(t)} ?
                                 </div>

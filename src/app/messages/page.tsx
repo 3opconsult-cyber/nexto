@@ -105,7 +105,7 @@ export default function MessagesPage() {
               <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
             </svg>
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher"
-              style={{ width: '100%', boxSizing: 'border-box', padding: '11px 14px 11px 36px', borderRadius: 12, border: '1px solid #E7EDEB', background: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
+              style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '11px 14px 11px 36px', borderRadius: 12, border: '1px solid #E7EDEB', background: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
           </div>
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             {(['date', 'client'] as const).map(m => (

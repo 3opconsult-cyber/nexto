@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { addressUsable } from '@/lib/address'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { systemSender } from '@/lib/systemMessage'
+import { readLastEta, saveLastEta, DEFAULT_ETA } from '@/lib/lastEta'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import {
@@ -48,7 +49,7 @@ export default function MissionDuJour() {
   const [scanKey, setScanKey] = useState(0)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
-  const [eta, setEta] = useState(15)
+  const [eta, setEta] = useState(DEFAULT_ETA)
   const [askEta, setAskEta] = useState(false)
   const [legacyCode, setLegacyCode] = useState<{ code: string; expires_at: string } | null>(null)
   const autoOpened = useRef(false)
@@ -153,6 +154,7 @@ export default function MissionDuJour() {
       .update({ en_route_at: new Date().toISOString(), eta_minutes: eta }).eq('id', tx.id).select().maybeSingle()
     setBusy(false); setAskEta(false)
     if (error || !data) { setMsg({ kind: 'err', text: error?.message?.includes('jour même') ? error.message : 'Départ non enregistré — vérifiez votre connexion et réessayez.' }); return }
+    saveLastEta(eta)
     await supabase.from('messages').insert({ transaction_id: tx.id, ...(await systemSender(supabase)), body: `→ En route — arrivée estimée dans ${eta} min` })
     load()
   }
@@ -240,7 +242,7 @@ export default function MissionDuJour() {
           {!tx.en_route_at && !tx.arrived_at && (
             <div style={block}>
               {!askEta ? (
-                <button style={primary} onClick={() => setAskEta(true)}>Je pars</button>
+                <button style={primary} onClick={() => { setEta(readLastEta(ETAS)); setAskEta(true) }}>Je pars</button>
               ) : (
                 <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Dans combien de temps arrivez-vous ?</div>
