@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { getRates } from '@/lib/pricing'
 import { tradeOfServiceName } from '@/lib/trades'
+import { readScreenCache, writeScreenCache } from '@/lib/screenCache'
 
 export interface ProviderNearby {
   id: string
@@ -126,19 +127,16 @@ export async function fetchProDetail(proId: string) {
   // l'embed renvoyait toujours null et la fiche s'affichait sans nom, en repli
   // sur le libelle du metier. provider_public_name ne sort que le nom affiche
   // et la teinte d'avatar d'un prestataire actif — ni telephone, ni adresse.
-  const [{ data: pro }, { data: pub }, { data: trust }] = await Promise.all([
+  // Fiche, nom, confiance et avis lus ensemble (audit 19/11, correction 3 : les avis attendaient la fin
+  // des trois premières lectures, 1,9-2,9 s mesurées pour la fiche).
+  const [{ data: pro }, { data: pub }, { data: trust }, { data: reviews }] = await Promise.all([
     supabase.from('provider_profiles').select('*').eq('id', proId).single(),
     supabase.rpc('provider_public_name', { provider_id: proId }),
     supabase.rpc('provider_trust_stats', { provider_id: proId }),
+    supabase.from('reviews').select('*').eq('ratee_id', proId).order('created_at', { ascending: false }).limit(20),
   ])
   if (pro && pub && pub.length) (pro as any).profiles = pub[0]
   if (pro && trust && trust.length) Object.assign(pro as any, trust[0])
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('ratee_id', proId)
-    .order('created_at', { ascending: false })
-    .limit(20)
   // Les avis sont publics mais profiles ne l'est pas (RLS self-read) : l'ancien
   // embed profiles!reviews_rater_id_fkey ne renvoyait jamais de nom pour un
   // vrai avis d'un autre utilisateur — repli silencieux sur "Client".
@@ -148,7 +146,19 @@ export async function fetchProDetail(proId: string) {
     ;(names ?? []).forEach((n: any) => { if (n.first_name) byId[n.review_id] = n.first_name })
     reviews.forEach((r: any) => { r.profiles = { full_name: byId[r.id] || null } })
   }
-  return { pro, reviews: reviews ?? [] }
+  const out = { pro, reviews: reviews ?? [] }
+  // Fiche publique : gardée le temps de l'onglet pour un affichage immédiat au prochain passage.
+  if (pro) writeScreenCache(`pro_${proId}`, 'pub', out)
+  return out
+}
+
+// Dernière fiche connue (affichée pendant la relecture) et préchargement depuis l'aperçu de la carte.
+export const readProDetailCache = (proId: string) => readScreenCache<{ pro: any; reviews: any[] }>(`pro_${proId}`, 'pub')
+const prefetching = new Set<string>()
+export function prefetchProDetail(proId: string) {
+  if (!proId || prefetching.has(proId) || readProDetailCache(proId)) return
+  prefetching.add(proId)
+  fetchProDetail(proId).catch(() => { }).finally(() => prefetching.delete(proId))
 }
 
 // Ouvre (ou reutilise) une conversation avec un prestataire pour entrer

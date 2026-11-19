@@ -107,7 +107,7 @@
 
 /* ============ Fiche prestataire (v_provider) ============ */
 .ping-appbar { position: sticky; top: 0; height: 52px; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; padding: 0 14px; }
-.ping-appbar .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+.ping-appbar .ic { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
 .ping-appbar b { font-family: var(--fh); font-weight: 700; font-size: 16px; }
 .ping-hero .big { width: 52px; height: 52px; border-radius: 15px; background: rgba(255,255,255,.18); display: grid; place-items: center; font-family: var(--fh); font-weight: 700; font-size: 21px; border: 2px solid rgba(255,255,255,.5); }
 .ping-hero h2 { font-family: var(--fh); font-weight: 700; font-size: 21px; margin-top: 10px; }

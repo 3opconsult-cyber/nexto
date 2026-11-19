@@ -28,10 +28,10 @@ type Editing =
 const label: React.CSSProperties = { display: 'block', fontSize: 11.5, color: '#4E6470', fontWeight: 700, marginBottom: 5 }
 const input: React.CSSProperties = {
   display: 'block', width: '100%', boxSizing: 'border-box', border: '1.5px solid #E7EDEB', borderRadius: 11,
-  padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none', color: '#123644',
+  minHeight: 44, padding: '10px 12px', fontSize: 16, fontFamily: 'Inter, sans-serif', outline: 'none', color: '#123644',
 }
 const chip = (on: boolean): React.CSSProperties => ({
-  padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 12.5,
+  minHeight: 44, padding: '0 16px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13,
   border: on ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? 'rgba(18,179,156,.08)' : '#fff', color: on ? '#0C8F7E' : '#4E6470',
 })
 const DESC_MAX = 280
@@ -233,7 +233,7 @@ export default function ProTarifsPage() {
       </div>
       {opts.row && ext && (
         <button type="button" onClick={() => toggleHidden(opts.row!)}
-          style={{ marginTop: 8, padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 700, color: opts.row.hidden ? '#0C8F7E' : '#4E6470', cursor: 'pointer' }}>
+          style={{ marginTop: 4, minHeight: 44, padding: '0 4px 0 0', border: 'none', background: 'none', fontSize: 13, fontWeight: 700, color: opts.row.hidden ? '#0C8F7E' : '#4E6470', cursor: 'pointer' }}>
           {opts.row.hidden ? 'Afficher sur ma fiche' : 'Masquer de ma fiche'}
         </button>
       )}
@@ -332,12 +332,12 @@ export default function ProTarifsPage() {
                           )}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <button type="button" onClick={() => fileRef.current?.click()}
-                              style={{ padding: '8px 14px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                              style={{ minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                               {shownPhoto ? 'Changer la photo' : 'Ajouter une photo'}
                             </button>
                             {shownPhoto && (
                               <button type="button" onClick={() => { setPhoto(null); setPhotoRemoved(true) }}
-                                style={{ padding: 0, border: 'none', background: 'none', color: '#c0503a', fontWeight: 700, fontSize: 12, cursor: 'pointer', textAlign: 'left' }}>Retirer la photo</button>
+                                style={{ minHeight: 44, padding: 0, border: 'none', background: 'none', color: '#c0503a', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>Retirer la photo</button>
                             )}
                           </div>
                           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden
@@ -367,15 +367,17 @@ export default function ProTarifsPage() {
 
             {sheetError && <p style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '12px 0 0' }}>{sheetError}</p>}
 
-            <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+            {/* Boutons collants en bas de la fenêtre (audit 19/11, correction 17) : « Enregistrer » toujours
+                visible, sans défiler sous le formulaire de prix. */}
+            <div style={{ display: 'flex', gap: 8, position: 'sticky', bottom: -20, zIndex: 2, margin: '18px -20px -20px', padding: '12px 20px calc(16px + env(safe-area-inset-bottom, 0px))', background: '#fff', borderTop: '1px solid #EEF2F1' }}>
               {editing.kind === 'row' && (
                 <button type="button" onClick={() => remove(editing.id)}
-                  style={{ padding: '12px 16px', borderRadius: 999, border: '1.5px solid #F3D3CC', background: '#fff', color: '#c0503a', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Retirer</button>
+                  style={{ minHeight: 48, padding: '12px 16px', borderRadius: 999, border: '1.5px solid #F3D3CC', background: '#fff', color: '#c0503a', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Retirer</button>
               )}
               <button type="button" onClick={close}
-                style={{ flex: 1, padding: 12, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
+                style={{ flex: 1, minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
               <button type="button" onClick={save} disabled={saving}
-                style={{ flex: 1.4, padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
+                style={{ flex: 1.4, minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </div>

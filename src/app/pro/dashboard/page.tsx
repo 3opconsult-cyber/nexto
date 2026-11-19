@@ -16,6 +16,7 @@ import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import ProMonthBlock from '@/components/ProMonthBlock'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { listingChecks, listingScore, loadListingFacts } from '@/lib/listing'
+import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
   particulier: 'Particulier',
@@ -64,35 +65,54 @@ export default function ProDashboard() {
 
   useEffect(() => {
     const supabase = createClient()
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-
-      const { data: profile } = await supabase.from('profiles').select('first_name, city').eq('id', user.id).single()
-      if (profile) { setFirstName(profile.first_name || ''); setCity(profile.city || '') }
-
-      const { data: pp } = await supabase.from('provider_profiles').select('*').eq('id', user.id).single()
-      if (!pp) { router.push('/pro/onboarding'); return }
-      setPro(pp); setAvailable(pp.is_active)
-
-      const { data: tx } = await supabase.from('transactions').select('*, requests(category)').eq('seller_id', pp.id).order('created_at', { ascending: false })
-      setTransactions(tx ?? [])
-
-      const { rows: docRows } = await fetchMyDocuments(supabase, user.id)
+    let alive = true
+    type Snap = { firstName: string; city: string; pro: any; tx: any[]; docRows: DocRowFull[]; listingPct: number | null; taxId: string | null; hasIban: boolean }
+    const apply = (v: Snap) => {
+      setFirstName(v.firstName); setCity(v.city)
+      setPro(v.pro); setAvailable(v.pro.is_active)
+      setTransactions(v.tx)
       const docMap: Record<string, { status: string }> = {}
-      ;(docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
-      setDocs(docMap)
-      setDocRowsFull(docRows)
-      loadListingFacts(supabase, user.id, pp).then(r => setListingPct(listingScore(listingChecks(r.facts)))).catch(() => {})
-
-      const { data: priv } = await supabase.from('provider_private').select('tax_id, iban').eq('id', user.id).maybeSingle()
-      setTaxId(priv?.tax_id ?? null)
-      setHasIban(!!priv?.iban)
-      paymentsActive().then(setPayOn)
-
+      ;(v.docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
+      setDocs(docMap); setDocRowsFull(v.docRows ?? [])
+      if (v.listingPct != null) setListingPct(v.listingPct)
+      setTaxId(v.taxId); setHasIban(v.hasIban)
       setLoading(false)
     }
-    load()
+    ;(async () => {
+      // Session locale + dernier état connu affiché tout de suite (audit 19/11, correction 3) ; toutes
+      // les lectures partent ensemble (avant : 6 requêtes en chaîne, 2,3-2,8 s mesurées).
+      const id = await sessionUserId(supabase)
+      if (!alive) return
+      if (!id) { router.push('/auth/login'); return }
+      const cached = readScreenCache<Snap>('dashboard', id)
+      if (cached?.pro) apply(cached)
+      paymentsActive().then(v => { if (alive) setPayOn(v) })
+      const [profRes, ppRes, txRes, docsRes, privRes] = await Promise.all([
+        supabase.from('profiles').select('first_name, city').eq('id', id).maybeSingle(),
+        supabase.from('provider_profiles').select('*').eq('id', id).maybeSingle(),
+        supabase.from('transactions').select('*, requests(category)').eq('seller_id', id).order('created_at', { ascending: false }),
+        fetchMyDocuments(supabase, id),
+        supabase.from('provider_private').select('tax_id, iban').eq('id', id).maybeSingle(),
+      ])
+      if (!alive) return
+      const pp = ppRes.data
+      if (!pp) { router.push('/pro/onboarding'); return }
+      const snap: Snap = {
+        firstName: (profRes.data as any)?.first_name || '', city: (profRes.data as any)?.city || '',
+        pro: pp, tx: (txRes.data ?? []) as any[], docRows: docsRes.rows ?? [],
+        listingPct: cached?.listingPct ?? null,
+        taxId: (privRes.data as any)?.tax_id ?? null, hasIban: !!(privRes.data as any)?.iban,
+      }
+      apply(snap)
+      writeScreenCache('dashboard', id, snap)
+      loadListingFacts(supabase, id, pp).then(r => {
+        if (!alive) return
+        const pct = listingScore(listingChecks(r.facts))
+        setListingPct(pct)
+        writeScreenCache('dashboard', id, { ...snap, listingPct: pct })
+      }).catch(() => {})
+    })()
+    return () => { alive = false }
   }, [router])
 
   async function toggleAvailable() {
@@ -138,6 +158,7 @@ export default function ProDashboard() {
   const diplomeOk = docs.diplome?.status === 'valid' || docs.diplome?.status === 'pending'
   const TAB_TITLES: Record<string, string> = { missions: 'Historique des missions' }
   const docAlerts = documentAlerts(docRowsFull)
+  const piecesTodo = docAlerts.length > 0 || !(idOk && rcOk)
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
@@ -239,12 +260,19 @@ export default function ProDashboard() {
                 <p style={{ marginTop: 4, fontSize: 13, color: '#123644' }}>
                   {pro.rating > 0 ? <><Stars r={pro.rating} size={13} /> <b>{r1(pro.rating)}</b> <span style={{ color: '#4E6470' }}>({pro.reviews_count || 0} avis)</span></> : <span style={{ color: '#4E6470' }}>Nouveau, pas encore d&apos;avis</span>}
                 </p>
-                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                  <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ flex: 1, minHeight: 44, padding: '10px 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                {/* Raccourcis (audit 19/11, correction 16) : pièces et revenus sans défiler. */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
+                  <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
                     <Ic name="eye" size={18} />Ma fiche publique
                   </button>
-                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/tarifs')} style={{ flex: 1, minHeight: 44, padding: '10px 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/tarifs')} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
                     <Ic name="tag" size={18} />Mes tarifs
+                  </button>
+                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/documents')} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
+                    <Ic name="id" size={18} />Mes pièces{piecesTodo && <span aria-label="À compléter" style={{ width: 9, height: 9, borderRadius: '50%', background: '#E5484D', position: 'absolute', top: 8, right: 10 }} />}
+                  </button>
+                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/revenus')} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
+                    <Ic name="card" size={18} />Mes revenus
                   </button>
                 </div>
                 <button type="button" onClick={() => router.push('/pro/onboarding')} className="btn ghost" style={{ width: '100%', minHeight: 44, marginTop: 10, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>Modifier mes informations</button>

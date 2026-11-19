@@ -116,7 +116,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
   return (
     <div style={{ margin: '10px 16px 0', background: '#fff', border: `1px solid ${C.line}`, borderRadius: 14, padding: '10px 14px' }}>
       <button type="button" onClick={() => setOpen(!expanded)} aria-expanded={expanded}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', padding: 0, minHeight: 44, cursor: 'pointer', textAlign: 'left' }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.tealD} strokeWidth="2" style={{ flexShrink: 0 }}><path d="M6 2h9l3 3v17H6z" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: C.navy }}>
@@ -168,7 +168,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
                   value={<span style={{ color: TRANSFER_STATUS[t.status].fg }}>{TRANSFER_STATUS[t.status].t}</span>} />
               ))}
               {transfers.some(t => t.status !== 'recu') && (
-                <a href={`/mission/${tx.id}/facture`} style={{ display: 'inline-block', marginTop: 4, fontSize: 13, fontWeight: 700, color: C.tealD }}>
+                <a href={`/mission/${tx.id}/facture`} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 0, fontSize: 13, fontWeight: 700, color: C.tealD }}>
                   {transfers.some(t => t.payer_id === userId && t.status !== 'recu') ? 'Coordonnées bancaires et références' : 'Suivre le paiement'}
                 </a>
               )}
@@ -227,21 +227,21 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
               {dispute.resolution && <p style={{ fontSize: 12.5, color: C.navy, fontWeight: 600, lineHeight: 1.5, margin: '6px 0 0' }}>Décision : {dispute.resolution}</p>}
               <AmicableSettlement dispute={dispute} buyerId={tx.buyer_id} sellerId={tx.seller_id} userId={userId}
                 ceilingCents={tx.subtotal_cents} onChange={() => setSettled(n => n + 1)} />
-              {dispute.id && <a href={`/litiges/${dispute.id}`} style={{ display: 'inline-block', marginTop: 8, fontSize: 13, fontWeight: 700, color: C.tealD }}>Ouvrir le dossier du litige</a>}
+              {dispute.id && <a href={`/litiges/${dispute.id}`} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 4, fontSize: 13, fontWeight: 700, color: C.tealD }}>Ouvrir le dossier du litige</a>}
             </Section>
           )}
 
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             {(done || invoiceCount > 0) && (
               <button type="button" onClick={() => router.push(`/mission/${tx.id}/facture`)}
-                style={{ flex: 1, minWidth: 130, padding: '9px 12px', borderRadius: 999, border: 'none', background: C.teal, color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                style={{ flex: 1, minWidth: 130, minHeight: 44, padding: '9px 12px', borderRadius: 999, border: 'none', background: C.teal, color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 Voir les factures
               </button>
             )}
             {/* Mission du jour : QR et code du client, scanner du prestataire (qui n'a jamais les codes). */}
             {tx.price_confirmed && tx.status !== 'cancelled' && !tx.completed_at && (
               <button type="button" onClick={() => router.push(`/mission/${tx.id}/jour`)}
-                style={{ flex: 1, minWidth: 130, padding: '9px 12px', borderRadius: 999, border: `1.5px solid ${C.teal}`, background: '#fff', color: C.tealD, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                style={{ flex: 1, minWidth: 130, minHeight: 44, padding: '9px 12px', borderRadius: 999, border: `1.5px solid ${C.teal}`, background: '#fff', color: C.tealD, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 {isBuyer ? 'Codes QR' : 'Mission du jour'}
               </button>
             )}

@@ -23,7 +23,12 @@ export async function homeFor(supabase: SupabaseClient, userId: string | null): 
   if (!userId) return '/map'
   const { data: profile } = await supabase.from('profiles').select('is_admin, is_pro').eq('id', userId).maybeSingle()
   if (profile?.is_admin) return '/admin'
-  if (profile?.is_pro) return '/pro/dashboard'
+  // Prestataire : directement les demandes autour de lui (audit 19/11, correction 16), son action
+  // la plus fréquente ; inscription pas terminée (pas de fiche) : la reprise de l'inscription.
+  if (profile?.is_pro) {
+    const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', userId).maybeSingle()
+    return pp ? '/pro/carte' : '/pro/onboarding'
+  }
   return '/map'
 }
 

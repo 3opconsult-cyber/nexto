@@ -426,6 +426,9 @@ export default function ChatPage() {
   }
 
   const [cancelling, setCancelling] = useState(false)
+  // Menu « … » de l'en-tête (audit 19/11, correction 5) : l'annulation n'est plus un lien de 17 px
+  // posé dans le fil, qu'on touchait par erreur.
+  const [moreOpen, setMoreOpen] = useState(false)
   // Annulation façon Uber : gratuite tant que le prestataire n'a pas annoncé
   // son départ ; des frais s'appliquent une fois en route (il a déjà engagé du
   // temps/trajet) ; impossible une fois arrivé (QR scanné) — ça, c'est un
@@ -585,6 +588,10 @@ export default function ChatPage() {
   const lastInsReq = (() => { for (let i = msgs.length - 1; i >= 0; i--) if (isSystemMessage(msgs[i]) && isInsuranceRequest(msgs[i].body)) return i; return -1 })()
   const insurancePending = lastInsReq >= 0 && !msgs.slice(lastInsReq + 1).some(m => isSystemMessage(m) && isInsuranceSent(m.body) && m.sender_id === tx?.seller_id)
   const txOpen = !!tx && tx.status !== 'cancelled'
+  // Annulation façon Uber : gratuite avant le départ du prestataire, payante une fois en route,
+  // impossible une fois arrivé (passe alors par un litige).
+  const canCancel = !!tx && !!userId && !tx.arrived_at && !['cancelled', 'completed', 'released'].includes(tx.status)
+  const cancelLabel = cancelling ? 'Annulation…' : (tx?.en_route_at && userId === tx?.buyer_id) ? 'Annuler (frais applicables)' : tx?.price_confirmed ? 'Annuler cette réservation' : 'Annuler cette demande'
   // Prix écrit dans un message alors qu'aucun tarif n'est validé : rappel sous le dernier message concerné.
   const priceHintId = (() => {
     if (!tx || tx.price_confirmed || tx.status !== 'pending') return null
@@ -633,6 +640,26 @@ export default function ChatPage() {
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2" aria-hidden="true"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
           <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1 }}>Signaler</span>
         </button>
+        {canCancel && (
+          <span style={{ position: 'relative', flexShrink: 0 }}>
+            <button type="button" onClick={() => setMoreOpen(o => !o)} aria-label="Plus d’actions" aria-haspopup="menu" aria-expanded={moreOpen}
+              style={{ width: 44, height: 44, border: 'none', background: 'none', borderRadius: 12, display: 'grid', placeItems: 'center', cursor: 'pointer', color: '#4E6470', marginRight: -6 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+            </button>
+            {moreOpen && (
+              <>
+                <div onClick={() => setMoreOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                <div role="menu" style={{ position: 'absolute', right: -6, top: 48, zIndex: 41, minWidth: 250, background: '#fff', borderRadius: 14, boxShadow: '0 10px 30px rgba(18,54,68,.22)', border: '1px solid #E7EDEB', padding: 6 }}>
+                  <button type="button" role="menuitem" disabled={cancelling} onClick={() => { setMoreOpen(false); cancelMission() }}
+                    style={{ width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', borderRadius: 10, padding: '0 12px', textAlign: 'left', cursor: 'pointer', color: '#C0503A', fontWeight: 700, fontSize: 14 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
+                    {cancelLabel}
+                  </button>
+                </div>
+              </>
+            )}
+          </span>
+        )}
       </div>
 
       {tx && tx.buyer_id === tx.seller_id && (
@@ -695,8 +722,8 @@ export default function ChatPage() {
           <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 8px', lineHeight: 1.5 }}>Le client demande une intervention ailleurs qu&apos;à l&apos;adresse de son profil. Le numéro vous est transmis si vous acceptez.</p>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#123644', marginBottom: 10 }}>{maskAddress(reqAddr)}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, padding: 11, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
-            <button onClick={() => answerAddress(false)} disabled={addrBusy} style={{ flex: 1, padding: 11, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
+            <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
+            <button onClick={() => answerAddress(false)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
           </div>
         </div>
       )}
@@ -720,10 +747,10 @@ export default function ChatPage() {
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Date et heure</label>
               <div style={{ marginTop: 6 }}><DayTimePicker value={rdvAt} onChange={setRdvAt} /></div><div style={{ height: 10 }} />
               {rdvError && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{rdvError}</p>}
-              <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
+              <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
                 {rdvSaving ? 'Enregistrement…' : 'Confirmer le rendez-vous'}
               </button>
-              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}>
+              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ display: 'block', margin: '8px auto 0', minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>
                 Mes codes QR (arrivée et fin)
               </button>
             </div>
@@ -790,13 +817,7 @@ export default function ChatPage() {
           une fois en route, impossible une fois arrivé (QR scanné — passe alors
           par un litige, pas une annulation). Rend réelle la promesse affichée à
           la réservation (mission/new) plutôt que de la laisser sans mécanisme. */}
-      {tx && userId && !tx.arrived_at && !['cancelled', 'completed', 'released'].includes(tx.status) && (
-        <div style={{ padding: '8px 16px', textAlign: 'center' }}>
-          <button onClick={cancelMission} disabled={cancelling} style={{ border: 'none', background: 'none', color: tx.en_route_at ? '#c0503a' : '#6E8592', fontSize: 11.5, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
-            {cancelling ? 'Annulation…' : (tx.en_route_at && userId === tx.buyer_id) ? 'Annuler (frais applicables)' : tx.price_confirmed ? 'Annuler cette réservation' : 'Annuler cette demande'}
-          </button>
-        </div>
-      )}
+      {/* L'annulation est dans le menu « … » de l'en-tête (canCancel). */}
       {tx && tx.status === 'cancelled' && (
         <div style={{ padding: '8px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>
           {tx.price_confirmed ? 'Réservation annulée' : 'Demande annulée'}
@@ -959,7 +980,7 @@ export default function ChatPage() {
             <span style={{ fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>Attestation d&apos;assurance demandée au prestataire</span>
           ) : (
             <button onClick={requestInsurance} disabled={insuranceBusy}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999, padding: '0 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>
               {insuranceBusy ? 'Envoi…' : 'Demander l’attestation d’assurance'}
             </button>
@@ -1073,7 +1094,7 @@ export default function ChatPage() {
                     <div style={{ fontSize: 11, color: '#4E6470', marginTop: 2 }}>{expired ? 'Lien expiré : demandez-la à nouveau si besoin.' : until ? `Visible des seules parties de cette mission · ${until}` : 'Visible des seules parties de cette mission'}</div>
                     {link && !expired && (
                       <a href={link} target="_blank" rel="noopener noreferrer"
-                        style={{ display: 'inline-block', marginTop: 8, background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '8px 16px', fontSize: 12.5, fontWeight: 700, textDecoration: 'none' }}>
+                        style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 8, background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
                         Ouvrir l&apos;attestation
                       </a>
                     )}
@@ -1123,13 +1144,13 @@ export default function ChatPage() {
                       <div style={{ background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 14, padding: '10px 14px' }}>
                         <div style={{ fontSize: 12.5, color: '#123644', fontWeight: 600, lineHeight: 1.5 }}>Vous n&apos;avez pas encore déposé d&apos;attestation d&apos;assurance (ou elle n&apos;est plus valable).</div>
                         <button onClick={() => router.push(`/pro/documents?retour=${encodeURIComponent(`/mission/${transactionId}/chat`)}`)}
-                          style={{ marginTop: 8, border: 'none', background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '8px 16px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+                          style={{ marginTop: 8, minHeight: 44, border: 'none', background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
                           Déposer mon attestation
                         </button>
                       </div>
                     ) : (
                       <button onClick={transmitInsurance} disabled={insuranceBusy}
-                        style={{ border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '8px 16px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
+                        style={{ minHeight: 44, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
                         {insuranceBusy ? 'Transmission…' : 'Transmettre mon attestation'}
                       </button>
                     )}
@@ -1185,7 +1206,7 @@ export default function ChatPage() {
         )}
         {tx && userId === tx.seller_id && !myClientReview && ['completed', 'released'].includes(tx.status) && tx.buyer_id !== tx.seller_id && (
           <button onClick={() => { try { localStorage.removeItem(`ping_client_review_later_${tx.id}`) } catch { } setAskClientReview(true) }}
-            style={{ alignSelf: 'center', border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '9px 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            style={{ alignSelf: 'center', minHeight: 44, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '0 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
             Je note et commente mon client
           </button>
         )}
@@ -1204,7 +1225,7 @@ export default function ChatPage() {
       {tx && userId === tx.seller_id && tx.status === 'pending' && !tx.price_confirmed && !msgs.some(m => m.kind === 'offer' && (m.offer_status === 'pending' || m.offer_status === 'accepted')) && (
         <div style={{ padding: '0 16px 10px' }}>
           <button onClick={openOfferForm}
-            style={{ width: '100%', padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
+            style={{ width: '100%', minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
             + Proposer un tarif
           </button>
         </div>
@@ -1214,7 +1235,7 @@ export default function ChatPage() {
       <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, padding: '12px 16px', background: '#fff', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #E7EDEB' }}>
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
+          style={{ flex: 1, minHeight: 44, boxSizing: 'border-box', padding: '11px 16px', borderRadius: 999, fontSize: 16, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send} aria-label="Envoyer le message"
           style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0C8F7E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

@@ -6,7 +6,7 @@
 //   + SUPABASE_SERVICE_ROLE_KEY (les webhooks et le déblocage automatique n'ont pas de session)
 //   + CRON_SECRET (protège le déblocage automatique appelé par le cron Vercel)
 // Tant qu'une de ces conditions manque, paymentsProvider() renvoie null et l'app garde le parcours
-// actuel (PaymentPendingModal, rien n'est débité).
+// actuel (virement sur facture, rien n’est débité : mention dans le récapitulatif de mission/new).
 //
 // Invariant : transactions.status (pending → arrived → completed) n'est jamais touché ici ; l'argent
 // a son propre statut, transactions.payment_status, posé uniquement par ce module (clé service).

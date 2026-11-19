@@ -1,7 +1,7 @@
 "use client"
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { geocodeAddress } from '@/lib/geocode'
+import { geocodeAddress, addressLocality } from '@/lib/geocode'
 
 // Position de l'utilisateur, demandée APRÈS une explication (qc-production B2) :
 // on n'ouvre jamais la fenêtre du navigateur sans avoir dit pourquoi. Un seul relevé,
@@ -65,16 +65,25 @@ export async function fetchProfileCenter(kind: 'client' | 'pro'): Promise<{ poin
       const lat = Number(data?.lat), lng = Number(data?.lng)
       if (data && Number.isFinite(lat) && Number.isFinite(lng) && (lat || lng)) return { point: { lat, lng }, label: 'votre adresse' }
     }
-    const { data: pr } = await sb.from('profiles').select('address').eq('id', user.id).maybeSingle()
+    const { data: pr } = await sb.from('profiles').select('address, city').eq('id', user.id).maybeSingle()
     const addr = (pr?.address || '').trim()
-    if (addr.length < 3) return null
+    const city = ((pr as { city?: string | null } | null)?.city || '').trim()
+    // Clé du cache : adresse et ville du profil (le centre suit un changement d'adresse).
+    const key = `${addr}|${city}`
+    if (addr.length < 3 && city.length < 2) return null
     try {
       const c = JSON.parse(localStorage.getItem(KEY + '_profile') || 'null')
-      if (c?.addr === addr && Number.isFinite(c.lat) && Number.isFinite(c.lng)) return { point: { lat: c.lat, lng: c.lng }, label: 'votre adresse' }
+      if ((c?.key === key || (c?.addr === addr && !c?.key)) && Number.isFinite(c.lat) && Number.isFinite(c.lng)) return { point: { lat: c.lat, lng: c.lng }, label: 'votre adresse' }
     } catch { }
-    const g = await geocodeAddress(addr)
+    // Comme pour une demande (client/demandes/new) : adresse complète, puis code postal et ville de cette
+    // adresse, puis ville du profil. Sans aucun des trois, l'encart « Où êtes-vous ? » reste le repli
+    // (audit 19/11, correction 9 : il s'affichait alors que l'adresse du profil était exploitable).
+    const loc = addr ? addressLocality(addr) : ''
+    const g = (addr.length >= 3 ? await geocodeAddress(addr) : null)
+      || (loc && loc !== addr ? await geocodeAddress(loc) : null)
+      || (city.length >= 2 ? await geocodeAddress(city) : null)
     if (!g) return null
-    try { localStorage.setItem(KEY + '_profile', JSON.stringify({ addr, ...g })) } catch { }
+    try { localStorage.setItem(KEY + '_profile', JSON.stringify({ key, addr, ...g })) } catch { }
     return { point: g, label: 'votre adresse' }
   } catch { return null }
 }

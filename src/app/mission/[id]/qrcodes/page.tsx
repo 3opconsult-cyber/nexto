@@ -82,7 +82,7 @@ export default function MissionQrCodes() {
   return (
     <div className="ping-screen">
       <div className="ping-appbar">
-        <div className="ic" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', cursor: 'pointer' }} onClick={() => router.back()}>
+        <div className="ic" role="button" aria-label="Retour" style={{ width: 44, height: 44, borderRadius: 10, display: 'grid', placeItems: 'center', cursor: 'pointer' }} onClick={() => router.back()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </div>
         <b>{step === 3 ? 'Prestation terminée' : step === 2 ? 'Mon QR de fin' : "Mon QR d'arrivée"}</b>

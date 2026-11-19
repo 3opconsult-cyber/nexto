@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { cesuEligible } from '@/lib/trades'
 import { useCatalog, type RequestField } from '@/lib/catalog'
-import { geocodeAddress } from '@/lib/geocode'
+import { geocodeAddress, addressLocality } from '@/lib/geocode'
 import LocationAsk from '@/components/LocationAsk'
 import { markFirstAction } from '@/lib/firstAction'
 import type { Point } from '@/lib/location'
@@ -61,6 +61,9 @@ export default function NewOpenRequestPage() {
   const [addr, setAddr] = useState<AddressValue>({ mode: 'profil', other: '', confirmed: false })
   const [error, setError] = useState('')
   const [creating, setCreating] = useState(false)
+  // Sections facultatives (types de linge, foyer, mode de paiement) repliées par défaut (audit 19/11,
+  // correction 18) : le formulaire tient sans défilement obligatoire jusqu'à « Publier ».
+  const [more, setMore] = useState(false)
 
   useEffect(() => {
     const sb = createClient()
@@ -157,7 +160,7 @@ export default function NewOpenRequestPage() {
   const fieldStyle: CSSProperties = { display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, background: '#fff', boxSizing: 'border-box' }
   const labelStyle: CSSProperties = { fontSize: 12.5, color: '#4E6470', fontWeight: 600 }
   const chip = (on: boolean): CSSProperties => ({
-    minHeight: 40, padding: '0 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#123644',
+    minHeight: 44, padding: '0 15px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#123644',
     border: on ? '2px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.08)' : '#fff',
   })
 
@@ -165,7 +168,7 @@ export default function NewOpenRequestPage() {
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
         <NavDrawer />
-        <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700 }}>← Retour</button>
+        <button onClick={() => router.back()} style={{ color: '#fff', background: 'rgba(255,255,255,.1)', border: 'none', borderRadius: 12, minHeight: 44, padding: '0 14px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
       </div>
       <div style={{ padding: '20px 20px 16px' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Déposer une demande</div>
@@ -193,7 +196,7 @@ export default function NewOpenRequestPage() {
           </label>
         </Section>
 
-        {linenService && (
+        {linenService && (has('linen_kg') || more) && (
           <Section title="Le linge" hint="Une idée de la quantité aide le prestataire à chiffrer.">
             {has('linen_kg') && <>
             <span style={labelStyle}>Quantité</span>
@@ -201,7 +204,7 @@ export default function NewOpenRequestPage() {
               {KILOS.map(k => <button key={k} type="button" onClick={() => setKilos(kilos === k ? null : k)} style={chip(kilos === k)}>{k} kg{k === 15 ? ' et +' : ''}</button>)}
             </div>
             </>}
-            {has('linen_types') && <>
+            {has('linen_types') && more && <>
             <span style={labelStyle}>Types de linge</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
               {LINEN_TYPES.map(l => {
@@ -227,10 +230,10 @@ export default function NewOpenRequestPage() {
                 <span style={labelStyle}>Nombre de pièces</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
                   <button type="button" aria-label="Moins de pièces" disabled={pieces <= 0} onClick={() => setPieces(Math.max(0, pieces - 1))}
-                    style={{ width: 40, height: 40, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces <= 0 ? .45 : 1 }}>−</button>
+                    style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces <= 0 ? .45 : 1 }}>−</button>
                   <span aria-live="polite" style={{ minWidth: 28, textAlign: 'center', fontWeight: 700, fontSize: 16, color: '#123644' }}>{pieces || '–'}</span>
                   <button type="button" aria-label="Plus de pièces" disabled={pieces >= 30} onClick={() => setPieces(Math.min(30, pieces + 1))}
-                    style={{ width: 40, height: 40, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces >= 30 ? .45 : 1 }}>+</button>
+                    style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces >= 30 ? .45 : 1 }}>+</button>
                 </div>
               </div>
               )}
@@ -245,7 +248,7 @@ export default function NewOpenRequestPage() {
           </Section>
         )}
 
-        {has('household_size') && (
+        {has('household_size') && more && (
         <Section title="Votre foyer">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {HOUSEHOLD.map(h => <button key={h.key} type="button" onClick={() => setHousehold(household === h.key ? null : h.key)} style={chip(household === h.key)}>{h.label}</button>)}
@@ -287,7 +290,7 @@ export default function NewOpenRequestPage() {
           </button>
         </Section>
 
-        <Section title="Budget et paiement">
+        <Section title={more ? 'Budget et paiement' : 'Budget'}>
           <div style={{ display: 'flex', gap: 8 }}>
             <label style={{ flex: 1 }}>
               <span style={labelStyle}>Budget minimum (€)</span>
@@ -298,19 +301,31 @@ export default function NewOpenRequestPage() {
               <input type="number" value={budgetMax} onChange={e => setBudgetMax(e.target.value)} min="0" step="1" style={fieldStyle} />
             </label>
           </div>
-          <p style={{ fontSize: 11.5, color: '#4E6470', margin: '6px 0 14px' }}>Indicatif seulement : les propositions reçues peuvent différer, vous restez libre de refuser.</p>
+          <p style={{ fontSize: 11.5, color: '#4E6470', margin: '6px 0 0' }}>Indicatif seulement : les propositions reçues peuvent différer, vous restez libre de refuser.</p>
+          {more && <>
+          <div style={{ height: 14 }} />
           <span style={labelStyle}>Mode de paiement souhaité</span>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {paymentChoices.map(p => <button key={p.key} type="button" onClick={() => setPayment(p.key)} style={chip(payment === p.key)}>{p.label}</button>)}
           </div>
           {cesuOk && <p style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8 }}>Le CESU préfinancé (titres remis par un employeur ou un comité d’entreprise) n’est possible qu’avec un prestataire qui l’accepte : c’est indiqué sur son profil. Vous gérez vous-même votre crédit d’impôt.</p>}
+          </>}
         </Section>
+
+        {/* Précisions facultatives repliées (foyer, types de linge, mode de paiement dont CESU). */}
+        <button type="button" onClick={() => setMore(m => !m)} aria-expanded={more}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%', minHeight: 48, marginBottom: 12, padding: '0 16px', borderRadius: 16, border: '1px dashed #B9CBC7', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+          <span>
+            <span style={{ display: 'block', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{more ? 'Masquer les précisions' : 'Ajouter des précisions (facultatif)'}</span>
+            {!more && <span style={{ display: 'block', fontSize: 12, color: '#4E6470' }}>{[linenService && has('linen_types') ? 'types de linge' : null, has('household_size') ? 'foyer' : null, cesuOk ? 'paiement, CESU' : 'mode de paiement'].filter(Boolean).join(', ')}</span>}
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2.2" aria-hidden="true" style={{ transform: more ? 'rotate(180deg)' : 'none', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
+        </button>
 
         <Section title="Adresse d’intervention" hint="Communiquée au prestataire seulement une fois la mission confirmée. Les prestataires voient seulement la distance.">
           <AddressChoice profileAddress={profileAddress} value={addr} onChange={setAddr} />
         </Section>
 
-        {error && <p style={{ color: '#c0503a', fontSize: 13, fontWeight: 600, margin: '4px 0 12px' }}>{error}</p>}
         {askPos && (
           <LocationAsk remember={false} modal allowCity={false} title="Adresse non reconnue"
             text="Précisez l’adresse (numéro, rue, code postal, ville), ou placez votre demande là où vous êtes : PING a besoin de sa position pour la montrer aux prestataires du secteur (relevée une fois, jamais suivie, jamais partagée)."
@@ -319,18 +334,15 @@ export default function NewOpenRequestPage() {
             onChoose={p => { setAskPos(false); submit(p) }} />
         )}
 
-        <button onClick={() => submit()} disabled={creating} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
-          {creating ? 'Publication…' : 'Publier mon annonce'}
-        </button>
+        {/* « Publier » collant au-dessus de la barre du bas (audit 19/11, correction 18). */}
+        <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -16px', padding: '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))', background: '#F3F6F5', borderTop: '1px solid #E7EDEB' }}>
+          {error && <p role="alert" style={{ color: '#c0503a', fontSize: 13, fontWeight: 600, margin: '0 0 8px' }}>{error}</p>}
+          <button onClick={() => submit()} disabled={creating} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
+            {creating ? 'Publication…' : 'Publier mon annonce'}
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
-// « 12 chemin X, 06130 Grasse » → « 06130 Grasse » ; sans code postal, la dernière partie après une virgule.
-function addressLocality(address: string) {
-  const m = address.match(/\b\d{5}\b[^,]*/)
-  if (m) return m[0].trim()
-  const parts = address.split(',').map(x => x.trim()).filter(Boolean)
-  return parts.length > 1 ? parts[parts.length - 1] : ''
-}

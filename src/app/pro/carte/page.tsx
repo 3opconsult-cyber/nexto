@@ -223,7 +223,7 @@ export default function ProCartePage() {
   // API tant que la mission n'est pas confirmée) — seule la distance l'est.
   const requestDetail = selected && (
     <>
-      <button type="button" onClick={() => setSelectedId(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 0, background: 'none', padding: '0 0 8px', minHeight: 36, color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
+      <button type="button" onClick={() => setSelectedId(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 0, background: 'none', padding: '0 8px 4px 0', marginBottom: 4, minHeight: 44, color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
         <Ic name="back" size={18} />Toutes les demandes
       </button>
       {/* Carte de la demande (maquette, écran « Demande ») */}
@@ -349,7 +349,7 @@ export default function ProCartePage() {
 
   const missionsPanel = (
     <>
-      <button type="button" onClick={() => setView('demandes')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 0, background: 'none', padding: '0 0 8px', minHeight: 36, color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
+      <button type="button" onClick={() => setView('demandes')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 0, background: 'none', padding: '0 8px 4px 0', marginBottom: 4, minHeight: 44, color: 'var(--ink)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
         <Ic name="back" size={18} />Demandes autour de moi
       </button>
       {sentBlock}
@@ -452,7 +452,7 @@ export default function ProCartePage() {
           </div>
 
           {/* Barre de zone (maquette, .searchbar.pro) : soleil doré, état et rayon, « Zone » */}
-          <div className="searchbar" role="button" aria-expanded={zoneOpen} onClick={() => setZoneOpen(o => !o)} style={{ background: '#fff', top: 66, padding: '11px 14px', minHeight: 42 }}>
+          <div className="searchbar" role="button" aria-expanded={zoneOpen} onClick={() => setZoneOpen(o => !o)} style={{ background: '#fff', top: 66, padding: '11px 14px', minHeight: 44 }}>
             <Ic name="sun" size={20} style={{ color: '#F2A93B' }} />
             <span style={{ flex: 1, minWidth: 0, color: 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{available ? `Visible · demandes à moins de ${radiusKm} km${zoneCenter ? ' de ' + (zoneCity || 'la ville') : ''}` : `Hors ligne · demandes à moins de ${radiusKm} km`}</span>
             <span style={{ color: '#8A6520', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', paddingLeft: 8 }}>Zone</span>
@@ -463,16 +463,16 @@ export default function ProCartePage() {
               <div style={{ fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 8 }}>Zone couverte</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
                 {[5, 10, 15, 25, 50].map(km => (
-                  <div key={km} onClick={() => chooseRadius(km)} style={{ padding: '7px 12px', borderRadius: 999, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: radiusKm === km ? 'var(--ink)' : 'var(--paper)', color: radiusKm === km ? '#fff' : 'var(--ink)' }}>{km} km</div>
+                  <div key={km} onClick={() => chooseRadius(km)} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 14px', borderRadius: 999, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: radiusKm === km ? 'var(--ink)' : 'var(--paper)', color: radiusKm === km ? '#fff' : 'var(--ink)' }}>{km} km</div>
                 ))}
               </div>
               <div style={{ fontSize: 12.5, color: 'var(--slate)', marginBottom: 6 }}>Centre de la zone</div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                <div onClick={() => { setZoneCenter(null); setZoneCity(''); setRecenterTick(t => t + 1); setZoneOpen(false) }} style={{ padding: '8px 12px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: zoneCenter ? 'var(--paper)' : 'var(--gold)', color: zoneCenter ? 'var(--ink)' : '#fff' }}>Autour de moi</div>
+                <div onClick={() => { setZoneCenter(null); setZoneCity(''); setRecenterTick(t => t + 1); setZoneOpen(false) }} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 14px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: zoneCenter ? 'var(--paper)' : 'var(--gold)', color: zoneCenter ? 'var(--ink)' : '#fff' }}>Autour de moi</div>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
-                <input value={zoneCity} onChange={e => setZoneCity(e.target.value)} placeholder="Ou une ville (ex. Cannes)" autoComplete="off" style={{ flex: 1, padding: '9px 12px', borderRadius: 12, border: '1.5px solid var(--line)', fontSize: 16 }} />
-                <div onClick={chooseCity} style={{ padding: '9px 14px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: 'var(--tealD)', color: '#fff' }}>OK</div>
+                <input value={zoneCity} onChange={e => setZoneCity(e.target.value)} placeholder="Ou une ville (ex. Cannes)" autoComplete="off" style={{ flex: 1, minHeight: 44, boxSizing: 'border-box', padding: '9px 12px', borderRadius: 12, border: '1.5px solid var(--line)', fontSize: 16 }} />
+                <div onClick={chooseCity} role="button" style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 16px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: 'var(--tealD)', color: '#fff' }}>OK</div>
               </div>
               {zoneErr && <p style={{ color: '#c0503a', fontSize: 12, marginTop: 6 }}>{zoneErr}</p>}
             </div>

@@ -9,6 +9,7 @@ import PageViewTracker from '@/components/PageViewTracker'
 import FeedbackBubble from '@/components/FeedbackBubble'
 import InstallPrompt from '@/components/InstallPrompt'
 import AuthGate from '@/components/AuthGate'
+import TabPrefetch from '@/components/TabPrefetch'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -73,6 +74,7 @@ export default function RootLayout({
         <FeedbackBubble />
         <InstallPrompt />
         <AuthGate />
+        <TabPrefetch />
       </body>
     </html>
   )

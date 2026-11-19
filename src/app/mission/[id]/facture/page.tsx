@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
 import NavDrawer from '@/components/NavDrawer'
+import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import TransferCard from '@/components/TransferCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
@@ -40,12 +41,27 @@ export default function FacturePage() {
 
   useEffect(() => {
     const supabase = createClient()
+    let alive = true
+    const cacheKey = `facture_${params.id}`
+    type Snap = { invoices: Invoice[]; isSeller: boolean; isBuyer: boolean; reviewed: boolean; txInfo: { self: boolean; completed: boolean; missing?: boolean } }
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUserId(user?.id ?? null)
-      const { data: tx } = await supabase.from('transactions')
-        .select('*').eq('id', params.id).single()
-      const { data } = await supabase.from('invoices').select('*').eq('transaction_id', params.id)
+      // Session locale (sans aller-retour réseau), dernier état connu tout de suite, puis mission,
+      // factures et avis lus ensemble (audit 19/11, correction 3 : 2,3 s mesurées avant).
+      const uid = await sessionUserId(supabase)
+      if (!alive) return
+      const user = uid ? { id: uid } : null
+      setUserId(uid)
+      const cached = readScreenCache<Snap>(cacheKey, uid)
+      if (cached) {
+        setInvoices(cached.invoices); setIsSeller(cached.isSeller); setIsBuyer(cached.isBuyer)
+        setReviewed(cached.reviewed); setTxInfo(cached.txInfo); setLoading(false)
+      }
+      const [{ data: tx }, { data }, rvRes] = await Promise.all([
+        supabase.from('transactions').select('*').eq('id', params.id).maybeSingle(),
+        supabase.from('invoices').select('*').eq('transaction_id', params.id),
+        uid ? supabase.from('reviews').select('id').eq('transaction_id', params.id).eq('rater_id', uid).limit(1) : Promise.resolve({ data: [] as any[] }),
+      ])
+      if (!alive) return
       const amBuyer = user && tx ? user.id === (tx as any).buyer_id : true
       // Prestation d'abord, puis UNIQUEMENT la commission qui concerne le viewer
       // (client = frais de service 5 % ; prestataire = commission PING 11 %). Jamais les deux — comme Airbnb.
@@ -75,18 +91,18 @@ export default function FacturePage() {
       const list = ((data ?? []) as Invoice[]).map(enrich).map(v => withProTaxStatus(v, live))
         .filter(v => v.kind === 'prestation' || v.kind === mine)
         .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
-      if (!tx) setTxInfo({ self: false, completed: false, missing: true })
-      else setTxInfo({ self: (tx as any).buyer_id === (tx as any).seller_id, completed: !!(tx as any).completed_at || ['completed', 'released'].includes((tx as any).status) })
-      setIsSeller(!!user && !!tx && user.id === (tx as any).seller_id)
+      const info = !tx ? { self: false, completed: false, missing: true }
+        : { self: (tx as any).buyer_id === (tx as any).seller_id, completed: !!(tx as any).completed_at || ['completed', 'released'].includes((tx as any).status) }
+      const seller = !!user && !!tx && user.id === (tx as any).seller_id
       const buyer = !!user && !!tx && user.id === (tx as any).buyer_id
-      setIsBuyer(buyer)
-      if (buyer) {
-        const { data: rv } = await supabase.from('reviews').select('id').eq('transaction_id', params.id).eq('rater_id', user!.id).limit(1)
-        setReviewed(!!rv?.length)
-      }
-      setInvoices(list); setActive(0); setLoading(false)
+      const rv = buyer ? !!(rvRes as any).data?.length : true
+      setTxInfo(info); setIsSeller(seller); setIsBuyer(buyer); setReviewed(rv)
+      // L'onglet choisi est gardé si la liste n'a pas changé de longueur (relecture après le cache).
+      setInvoices(list); setActive(a => (cached && cached.invoices.length === list.length ? a : 0)); setLoading(false)
+      writeScreenCache(cacheKey, uid, { invoices: list, isSeller: seller, isBuyer: buyer, reviewed: rv, txInfo: info })
     }
     load()
+    return () => { alive = false }
   }, [params.id])
 
   const inv = invoices[active]
@@ -103,7 +119,9 @@ export default function FacturePage() {
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
       <div className="no-print" style={{ padding: '28px 16px 14px', background: '#123644', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => router.back()} aria-label="Retour"
-          style={{ background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer' }}>‹</button>
+          style={{ background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', width: 44, height: 44, borderRadius: 12, cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
         <NavDrawer />
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#fff' }}>Facturation</span>
       </div>
@@ -155,7 +173,7 @@ export default function FacturePage() {
         <div className="no-print" style={{ display: 'flex', gap: 7, padding: '13px 16px 0', overflowX: 'auto' }}>
           {invoices.map((v, i) => (
             <button key={v.number} onClick={() => setActive(i)} style={{
-              flexShrink: 0, border: 'none', cursor: 'pointer', padding: '8px 13px', borderRadius: 999,
+              flexShrink: 0, border: 'none', cursor: 'pointer', minHeight: 44, padding: '0 15px', borderRadius: 999,
               fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 12.5,
               background: i === active ? '#123644' : '#fff', color: i === active ? '#fff' : '#123644',
               boxShadow: i === active ? 'none' : '0 0 0 1px #DCE5E3',

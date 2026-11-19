@@ -5,8 +5,10 @@ import { createClient } from '@/lib/supabase/client'
 import { hasFirstAction, FIRST_ACTION_EVENT } from '@/lib/firstAction'
 
 const KEY = 'ping_install_dismissed'
-// Écrans d'accueil seulement : jamais par-dessus une fiche, un formulaire ni Mes demandes.
-const PAGES = ['/map', '/client/profil', '/pro/carte', '/pro/dashboard', '/agenda', '/messages']
+// Écrans d'accueil seulement : jamais par-dessus une fiche, un formulaire ni Mes demandes, et plus
+// jamais sur Messages, Agenda ni Mon entreprise (audit 19/11, correction 8 : il s'y affichait à chaque passage).
+const PAGES = ['/map', '/client/profil', '/pro/carte']
+const isHome = (p: string) => PAGES.includes(p)
 
 type BIP = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }
 
@@ -41,8 +43,17 @@ export default function InstallPrompt() {
     return () => window.removeEventListener(FIRST_ACTION_EVENT, on)
   }, [])
 
+  // Une seule fois : montré sur un écran, il est retenu comme vu dès qu'on change d'écran
+  // (ou qu'on le ferme) et ne revient plus.
+  const shownOn = useRef<string | null>(null)
   useEffect(() => {
-    if (!acted || !PAGES.some(p => path === p || path.startsWith(p + '/'))) { setShow(false); return }
+    if (shownOn.current && shownOn.current !== path) {
+      shownOn.current = null
+      try { localStorage.setItem(KEY, '1') } catch { /* ignore */ }
+      setShow(false)
+      return
+    }
+    if (!acted || !isHome(path)) { setShow(false); return }
     try {
       if (localStorage.getItem(KEY)) return
       // Application deja installee (ouverte depuis sa vignette) : jamais d'invite.
@@ -50,7 +61,7 @@ export default function InstallPrompt() {
     } catch { /* ignore */ }
     let off = false
     createClient().auth.getSession().then(({ data }) => {
-      if (!off && data.session) setTimeout(() => !off && setShow(true), 1500)
+      if (!off && data.session) setTimeout(() => { if (!off) { shownOn.current = path; setShow(true) } }, 1500)
     })
     return () => { off = true }
   }, [path, acted])
@@ -98,7 +109,7 @@ export default function InstallPrompt() {
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, lineHeight: 1.25 }}>Installer le raccourci PING</div>
-            <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 0, background: 'transparent', padding: '4px 0', minHeight: 32, color: '#0C8F7E', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
+            <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 0, background: 'transparent', padding: '0 4px 0 0', minHeight: 44, color: '#0C8F7E', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
               {open ? 'Masquer les étapes' : 'Comment faire'}
             </button>
           </div>
@@ -114,7 +125,7 @@ export default function InstallPrompt() {
             {steps.map(s => <li key={s}>{s}</li>)}
           </ol>
         )}
-        <button onClick={close} style={{ display: 'block', padding: '4px 0 0', minHeight: 32, border: 0, background: 'transparent', color: '#4E6470', fontWeight: 600, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>C’est déjà installé, ne plus afficher</button>
+        <button onClick={close} style={{ display: 'block', padding: 0, minHeight: 44, border: 0, background: 'transparent', color: '#4E6470', fontWeight: 600, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>C’est déjà installé, ne plus afficher</button>
       </div>
     </div>
     </>

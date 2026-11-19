@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
 import { getRates, DEFAULT_BUYER_RATE, DEFAULT_SELLER_RATE } from '@/lib/pricing'
-import PaymentPendingModal from '@/components/PaymentPendingModal'
 import { geocodeAddress } from '@/lib/geocode'
 import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
 import NavDrawer from '@/components/NavDrawer'
@@ -83,7 +82,6 @@ function MissionForm() {
   // « Payer en CESU préfinancé » : service éligible ET prestataire qui l'accepte (colonne de la migration 039 ;
   // absente = undefined = option masquée). Phase 1 : le client règle le pro avec ses titres, PING n'encaisse rien.
   const [payCesu, setPayCesu] = useState(false)
-  const [confirming, setConfirming] = useState(false)
   // Créneaux publiés par le pro (migration 012). null = fonctionnalité pas encore en base.
   const [slots, setSlots] = useState<Slot[] | null>(null)
   const [slotId, setSlotId] = useState<string | null>(null)
@@ -197,9 +195,11 @@ function MissionForm() {
     }
     return true
   }
+  // Plus de fenêtre « Paiement par virement » entre le bouton et la réservation (audit 19/11,
+  // correction 10) : l'information est dans le récapitulatif, juste au-dessus du bouton.
   function onConfirmClick() {
     if (!validate()) return
-    if (paymentsOn) submit(); else setConfirming(true)
+    submit()
   }
 
   async function submit() {
@@ -472,6 +472,12 @@ function missingRpc(e: { code?: string; message?: string } | null) {
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{EUR(totalTtc)}</span>
           </div>
           <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4 }}>Frais de service PING inclus</div>
+          {/* Paiement (ex-fenêtre PaymentPendingModal) : dit AVANT que le client valide, sans fenêtre. */}
+          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
+            {paymentsOn
+              ? 'Paiement sécurisé par carte à l’étape suivante.'
+              : <><b>Rien n&apos;est débité à la réservation.</b> Vous réglez après l&apos;intervention, sur facture, par virement : la prestation directement à {pro?.company_name || 'votre prestataire'}, vos frais de service à PING. Montant recalculé sur la durée réelle, relevée par les codes d&apos;arrivée et de fin.</>}
+          </div>
           {AVANCE_IMMEDIATE_ACTIVE && pro?.sap_number && isEligible(pro?.trade) && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
@@ -505,23 +511,12 @@ function missingRpc(e: { code?: string; message?: string } | null) {
 
         {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
 
-        <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
-          {creating ? 'Confirmation…' : chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}
-        </button>
-        <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>
-          {paymentsOn ? 'Vous serez dirigé vers le paiement sécurisé par carte.' : 'Paiement par virement au prestataire après l’intervention, sur facture. Rien n’est débité à la réservation.'}
-        </p>
-
-        {/* Le paiement en ligne n'existe pas encore : on le dit AVANT que le
-            client valide, pas apres. */}
-        <PaymentPendingModal
-          open={confirming}
-          onClose={() => setConfirming(false)}
-          onConfirm={() => { setConfirming(false); submit() }}
-          totalCents={totalTtc}
-          proName={pro?.company_name || 'le prestataire'}
-          busy={creating}
-        />
+        {/* Bouton collant au-dessus de la barre du bas : jamais sous le pli (audit 19/11, correction 10). */}
+        <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '10px 20px calc(10px + env(safe-area-inset-bottom, 0px))', background: '#fff', borderTop: '1px solid #EEF2F1' }}>
+          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
+            {creating ? 'Confirmation…' : `${chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}${totalTtc > 0 ? ` · ${EUR(totalTtc)}` : ''}`}
+          </button>
+        </div>
         </>)}
       </div>
     </div>

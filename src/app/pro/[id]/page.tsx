@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchProDetail, fetchProviderFlags, openConversation } from '@/lib/services'
+import { fetchProDetail, fetchProviderFlags, openConversation, readProDetailCache } from '@/lib/services'
+import { sessionUserId } from '@/lib/screenCache'
 import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import { pricingLabel, pricingShort } from '@/lib/servicePricing'
@@ -36,6 +37,10 @@ export default function ProDetailPage() {
 
   useEffect(() => {
     let cancelled = false
+    // Fiche déjà lue dans l'onglet (ou préchargée depuis l'aperçu de la carte) : affichée tout de
+    // suite, la relecture la remplace (audit 19/11, correction 3).
+    const cached = readProDetailCache(proId)
+    if (cached?.pro) { setPro(cached.pro); setReviews(cached.reviews); setLoading(false) }
     fetchProDetail(proId).then(({ pro, reviews }) => {
       if (cancelled) return
       setPro(pro); setReviews(reviews); setLoading(false)
@@ -46,10 +51,10 @@ export default function ProDetailPage() {
     fetchPrestations(supabase, proId, { visibleOnly: true })
       .then(({ rows }) => { if (!cancelled) setExtraServices(rows) })
     // Favori : état réel en base pour l'utilisateur connecté.
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (cancelled || !user) return
-      setUid(user.id)
-      const { data } = await supabase.from('favorites').select('provider_id').eq('user_id', user.id).eq('provider_id', proId).maybeSingle()
+    sessionUserId(supabase).then(async id => {
+      if (cancelled || !id) return
+      setUid(id)
+      const { data } = await supabase.from('favorites').select('provider_id').eq('user_id', id).eq('provider_id', proId).maybeSingle()
       if (!cancelled) setFav(!!data)
     })
     return () => { cancelled = true }
@@ -147,7 +152,7 @@ export default function ProDetailPage() {
   return (
     <div className="ping-screen" style={{ paddingBottom: 0 }}>
       <div className="ping-appbar">
-        <button type="button" className="ic" onClick={() => router.push('/map')} aria-label="Retour à la carte" style={{ border: 0, background: 'none' }}>
+        <button type="button" className="ic" onClick={() => router.push('/map')} aria-label="Retour à la carte" style={{ border: 0, background: 'none', width: 44, height: 44, marginLeft: -6 }}>
           <Ic name="back" />
         </button>
         <b style={{ flex: 1 }}>{uid === proId ? 'Ma fiche publique' : 'Profil du pro'}</b>

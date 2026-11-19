@@ -5,7 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
-import { fetchUnreadByTx } from '@/lib/unread'
+import { sessionUserId } from '@/lib/screenCache'
+import { readMessagesCache, refreshMessagesCache, type MessagesData } from '@/lib/messagesList'
+import { TRADES } from '@/lib/trades'
 import { isInsuranceSent } from '@/lib/insurance'
 import { rowHasPresence } from '@/lib/presence'
 import PresenceTag from '@/components/presence/PresenceTag'
@@ -34,6 +36,14 @@ function rowTime(d: Date) {
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
 }
 
+// « Ménage 2 h · ven. 21 nov. » : titre de la demande (ou service), puis date du rendez-vous (ou de la demande).
+function missionLine(t: any) {
+  const what = (t.requests?.title || '').trim() || (t.requests?.category ? (TRADES[t.requests.category] || t.requests.category) : 'Mission')
+  const d = t.scheduled_at ? new Date(t.scheduled_at) : null
+  const when = d ? d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) : 'date à fixer'
+  return `${what} · ${t.status === 'cancelled' ? 'annulée' : when}`
+}
+
 export default function MessagesPage() {
   const router = useRouter()
   const [rows, setRows] = useState<any[]>([])
@@ -47,52 +57,23 @@ export default function MessagesPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-      setUid(user.id)
-      const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
-      setIsPro(!!pp)
-
-      const { data: txs } = await supabase.from('transactions')
-        .select('*')
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .order('created_at', { ascending: false })
-
-      // profiles n'est lisible qu'en libre-service (RLS auth.uid() = id) : le nom
-      // de l'interlocuteur passe par une fonction dediee, pas par un embed.
-      const { data: names } = txs?.length
-        ? await supabase.rpc('transaction_counterparts', { p_transaction_ids: txs.map((t: any) => t.id) })
-        : { data: [] }
-      const nameById: Record<string, string> = {}
-      ;(names ?? []).forEach((n: any) => { if (n.full_name) nameById[n.transaction_id] = n.full_name })
-
-      const withLast = await Promise.all((txs ?? []).map(async (t: any) => {
-        const { data: last } = await supabase.from('messages')
-          .select('body, created_at, sender_id')
-          .eq('transaction_id', t.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
-        const isSeller = t.seller_id === user.id
-        return { ...t, lastMessage: last, isSeller, kind: 'mission' as const, counterpart: nameById[t.id] || (isSeller ? 'Client' : 'Prestataire') }
-      }))
-
-      setUnread(await fetchUnreadByTx(supabase))
-
-      const { data: conv } = await supabase.from('admin_conversations').select('id, last_message_at').eq('user_id', user.id).maybeSingle()
-      let supportRow: any = null
-      if (conv) {
-        const { data: last } = await supabase.from('admin_messages')
-          .select('body, created_at').eq('conversation_id', conv.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
-        supportRow = { id: conv.id, kind: 'support' as const, lastMessage: last, created_at: conv.last_message_at }
-      }
-
-      setRows([...(supportRow ? [supportRow] : []), ...withLast].sort((a, b) => {
-        const ta = a.lastMessage?.created_at || a.created_at
-        const tb = b.lastMessage?.created_at || b.created_at
-        return new Date(tb).getTime() - new Date(ta).getTime()
-      }))
-      setLoading(false)
-    }
-    load()
+    let alive = true
+    const apply = (d: MessagesData) => { setRows(d.rows); setUnread(d.unread); setIsPro(d.isPro); setLoading(false) }
+    ;(async () => {
+      // Session locale (sans aller-retour réseau) : la dernière liste connue s'affiche tout de suite,
+      // la lecture fraîche la remplace dès qu'elle arrive (audit ergonomie 19/11, correction 3).
+      const id = await sessionUserId(supabase)
+      if (!alive) return
+      if (!id) { router.push('/auth/login'); return }
+      setUid(id)
+      const cached = readMessagesCache(id)
+      if (cached) apply(cached)
+      try {
+        const fresh = await refreshMessagesCache(supabase, id)
+        if (alive) apply(fresh)
+      } catch { if (alive) setLoading(false) }
+    })()
+    return () => { alive = false }
   }, [router])
 
 
@@ -129,8 +110,8 @@ export default function MessagesPage() {
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             {(['date', 'client'] as const).map(m => (
               <button key={m} onClick={() => setSortMode(m)} style={{
-                padding: '6px 13px', borderRadius: 999, border: 'none', cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 11.5,
+                minHeight: 44, padding: '0 15px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 12.5,
                 background: sortMode === m ? '#123644' : '#fff', color: sortMode === m ? '#fff' : '#4E6470',
                 boxShadow: sortMode === m ? 'none' : '0 0 0 1px #E7EDEB',
               }}>{m === 'date' ? 'Trier par date' : mode === 'pro' ? 'Trier par client' : 'Trier par prestataire'}</button>
@@ -151,7 +132,7 @@ export default function MessagesPage() {
           const q = query.trim().toLowerCase()
           const filtered = q ? visible.filter(t => {
             const name = t.kind === 'support' ? 'Support PING' : t.counterpart
-            return (name || '').toLowerCase().includes(q) || (t.lastMessage?.body || '').toLowerCase().includes(q)
+            return (name || '').toLowerCase().includes(q) || (t.lastMessage?.body || '').toLowerCase().includes(q) || (t.kind === 'mission' && missionLine(t).toLowerCase().includes(q))
           }) : visible
 
           if (filtered.length === 0) {
@@ -212,6 +193,10 @@ export default function MessagesPage() {
                           {rowTime(new Date(t.lastMessage?.created_at || t.created_at))}
                         </span>
                       </div>
+                      {/* Titre de la mission sous le nom (audit 19/11, correction 15) : plus de liste de « Audit P. » identiques. */}
+                      {t.kind === 'mission' && (
+                        <div style={{ fontSize: 11.5, color: '#0B6F63', fontWeight: 700, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{missionLine(t)}</div>
+                      )}
                       <div style={{ fontSize: 12, color: nUnread > 0 ? '#123644' : '#4E6470', fontWeight: nUnread > 0 ? 700 : 400, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {isInsuranceSent(t.lastMessage?.body) ? 'Attestation d’assurance transmise' : (t.lastMessage?.body || 'Aucun message — ouvrir la conversation')}
                       </div>

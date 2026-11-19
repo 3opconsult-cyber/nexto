@@ -1,10 +1,11 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { EUR } from '@/lib/invoice-pdf'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
+import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
 
 const DONE = ['completed', 'released']
 
@@ -45,16 +46,38 @@ export default function ProRevenusPage() {
   const [rating, setRating] = useState(0)
   const [reviewsCount, setReviewsCount] = useState(0)
 
+  // Un numéro en cours de saisie n'est jamais écrasé par la relecture qui suit l'affichage du cache.
+  const typed = useRef({ sap: false, tax: false })
   useEffect(() => {
     const supabase = createClient()
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/auth/login'); return }
-      const { data } = await supabase.from('transactions')
-        .select('payout_cents, status, completed_at, created_at')
-        .eq('seller_id', user.id)
+    let alive = true
+    type Snap = { m: number; y: number; cy: number; rating: number; reviews: number; sap: string | null; tax: string | null }
+    const apply = (v: Snap) => {
+      setMonthCents(v.m); setYearCents(v.y); setCountYear(v.cy)
+      setRating(v.rating); setReviewsCount(v.reviews)
+      if (v.sap != null) { if (!typed.current.sap) setSap(v.sap); setSapReady(true) }
+      if (v.tax != null) { if (!typed.current.tax) setTaxId(v.tax); setTaxReady(true) }
+      setLoading(false)
+    }
+    ;(async () => {
+      // Session locale + dernier état connu affiché tout de suite ; les 4 lectures partent ensemble
+      // (avant : 5 requêtes en chaîne, 3,1 s mesurées le 19/11).
+      const id = await sessionUserId(supabase)
+      if (!alive) return
+      if (!id) { router.push('/auth/login'); return }
+      setUid(id)
+      const cached = readScreenCache<Snap>('revenus', id)
+      if (cached) apply(cached)
+      const [txRes, ppRes, sapRes, privRes] = await Promise.all([
+        supabase.from('transactions').select('payout_cents, status, completed_at, created_at').eq('seller_id', id),
+        supabase.from('provider_profiles').select('rating, reviews_count').eq('id', id).maybeSingle(),
+        // Numéro SAP (migration 013) : requête séparée pour ne rien casser si la colonne n'existe pas encore.
+        supabase.from('provider_profiles').select('sap_number').eq('id', id).maybeSingle(),
+        supabase.from('provider_private').select('tax_id').eq('id', id).maybeSingle(),
+      ])
+      if (!alive) return
       const now = new Date()
-      const rows = (data ?? []).filter((t: any) => DONE.includes(t.status))
+      const rows = (txRes.data ?? []).filter((t: any) => DONE.includes(t.status))
       let m = 0, y = 0, cy = 0
       rows.forEach((t: any) => {
         const d = new Date(t.completed_at || t.created_at)
@@ -64,21 +87,16 @@ export default function ProRevenusPage() {
           if (d.getMonth() === now.getMonth()) m += t.payout_cents || 0
         }
       })
-      setMonthCents(m); setYearCents(y); setCountYear(cy)
-
-      const { data: pp } = await supabase.from('provider_profiles').select('rating, reviews_count').eq('id', user.id).single()
-      if (pp) { setRating(Number(pp.rating) || 0); setReviewsCount(pp.reviews_count || 0) }
-
-      // Numéro SAP (migration 013) : requête séparée pour ne rien casser si la colonne n'existe pas encore.
-      const { data: sapRow, error: sapErr } = await supabase.from('provider_profiles').select('sap_number').eq('id', user.id).maybeSingle()
-      if (!sapErr) { setSap(sapRow?.sap_number || ''); setSapReady(true) }
-      setUid(user.id)
-      const { data: priv, error: privErr } = await supabase.from('provider_private').select('tax_id').eq('id', user.id).maybeSingle()
-      if (!privErr) { setTaxId(priv?.tax_id || ''); setTaxReady(true) }
-
-      setLoading(false)
-    }
-    load()
+      const pp: any = ppRes.data
+      const snap: Snap = {
+        m, y, cy, rating: Number(pp?.rating) || 0, reviews: pp?.reviews_count || 0,
+        sap: sapRes.error ? null : ((sapRes.data as any)?.sap_number || ''),
+        tax: privRes.error ? null : ((privRes.data as any)?.tax_id || ''),
+      }
+      apply(snap)
+      writeScreenCache('revenus', id, snap)
+    })()
+    return () => { alive = false }
   }, [router])
 
   return (
@@ -133,9 +151,9 @@ export default function ProRevenusPage() {
                 </p>
                 <label htmlFor="sap-number" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Numéro de déclaration SAP</label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <input id="sap-number" value={sap} onChange={e => setSap(e.target.value)}
-                    style={{ flex: 1, minWidth: 0, border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif' }} />
-                  <button onClick={saveSap} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                  <input id="sap-number" value={sap} onChange={e => { typed.current.sap = true; setSap(e.target.value) }}
+                    style={{ flex: 1, minWidth: 0, minHeight: 44, boxSizing: 'border-box', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif' }} />
+                  <button onClick={saveSap} style={{ minHeight: 44, border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                     {sapSaved ? 'Enregistré' : 'Enregistrer'}
                   </button>
                 </div>
@@ -156,9 +174,9 @@ export default function ProRevenusPage() {
                 <>
                   <label htmlFor="tax-id" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '12px 0 5px' }}>Numéro fiscal (13 chiffres)</label>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <input id="tax-id" value={taxId} onChange={e => setTaxId(e.target.value)} inputMode="numeric"
-                      style={{ flex: 1, minWidth: 0, border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif' }} />
-                    <button onClick={saveTax} style={{ border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                    <input id="tax-id" value={taxId} onChange={e => { typed.current.tax = true; setTaxId(e.target.value) }} inputMode="numeric"
+                      style={{ flex: 1, minWidth: 0, minHeight: 44, boxSizing: 'border-box', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif' }} />
+                    <button onClick={saveTax} style={{ minHeight: 44, border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                       {taxSaved ? 'Enregistré' : 'Enregistrer'}
                     </button>
                   </div>

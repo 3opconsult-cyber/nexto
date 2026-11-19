@@ -1,12 +1,15 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { trackEvent } from '@/lib/tracking'
 
 // Pas de sens sur les pages avant l'appli elle-même (recrutement testeurs,
 // connexion/inscription) : Romain l'a précisé, ce sont des pages de
 // présentation, pas des écrans à noter. La bulle vit dans l'application réelle.
-const HIDDEN_PREFIXES = ['/essai', '/auth', '/mission/']
+const HIDDEN_PREFIXES = ['/essai', '/auth', '/mission/', '/client/demandes/new', '/pro/onboarding']
+// Jamais sur une fiche prestataire (sa barre Contacter / Réserver est en bas) ni sur un formulaire
+// (audit ergonomie 19/11, correction 19) : la bulle n'y recouvre plus rien.
+const HIDDEN_RE = /^\/pro\/[0-9a-f]{8}-[0-9a-f]{4}-/i
 
 /**
  * Bulle de feedback permanente, demandée par Romain : un encart en bas à
@@ -22,17 +25,11 @@ const HIDDEN_PREFIXES = ['/essai', '/auth', '/mission/']
 export default function FeedbackBubble() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [labelVisible, setLabelVisible] = useState(true)
   const [text, setText] = useState('')
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
 
-  useEffect(() => {
-    const t = setTimeout(() => setLabelVisible(false), 4000)
-    return () => clearTimeout(t)
-  }, [])
-
-  if (HIDDEN_PREFIXES.some(p => pathname?.startsWith(p))) return null
+  if (HIDDEN_PREFIXES.some(p => pathname?.startsWith(p)) || HIDDEN_RE.test(pathname || '')) return null
 
   function celebrate() {
     setSending(true)
@@ -57,21 +54,21 @@ export default function FeedbackBubble() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} aria-label="Laisser un avis" className="ping-fb"
+      <button onClick={() => setOpen(true)} aria-label="Laisser un commentaire sur cette page" className="ping-fb"
         style={{
           // Les écrans de carte rangent la bulle au-dessus de leurs boutons (--ping-fb-bottom,
           // src/lib/mapChrome.ts) ; le bandeau d'installation la remonte d'autant (--ping-install-lift).
-          position: 'fixed', right: 'var(--ping-fb-right, 16px)', bottom: 'calc(var(--ping-fb-bottom, 132px) + var(--ping-install-lift, 0px) + env(safe-area-inset-bottom, 0px))', zIndex: 3000,
-          height: 52, minWidth: 52, borderRadius: 999, border: 'none',
+          // Toujours repliée (52 × 52, sans libellé qui s'étale sur le contenu) et sous les fenêtres et
+          // volets de l'application (z-index 1400 < barre du bas 1500 < fenêtres 2000+).
+          position: 'fixed', right: 'var(--ping-fb-right, 16px)', bottom: 'calc(var(--ping-fb-bottom, 132px) + var(--ping-install-lift, 0px) + env(safe-area-inset-bottom, 0px))', zIndex: 1400,
+          width: 52, height: 52, borderRadius: 999, border: 'none',
           background: '#0C8F7E', color: '#fff', boxShadow: '0 8px 20px rgba(18,54,68,.35)',
           display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer',
-          padding: labelVisible ? '0 18px 0 15px' : 0, justifyContent: 'center',
-          overflow: 'hidden', whiteSpace: 'nowrap', transition: 'padding .35s ease',
-        }}>
+          padding: 0, justifyContent: 'center', overflow: 'hidden',
+        }} title="Laisser un commentaire">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
         </svg>
-        {labelVisible && <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>Laisser un commentaire</span>}
       </button>
     )
   }

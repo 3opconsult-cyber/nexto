@@ -28,7 +28,7 @@ export default function ModeSwitchPill({ to }: { to: 'pro' | 'particulier' }) {
         window.dispatchEvent(new Event('ping-mode'))
         router.push(pro ? (hasPro ? '/pro/carte' : '/pro/onboarding') : '/map')
       }}
-      style={{ border: 0, borderRadius: 999, minHeight: 38, padding: '9px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', background: pro ? '#F2A93B' : '#12B39C', color: '#123644', marginRight: 8, whiteSpace: 'nowrap' }}
+      style={{ border: 0, borderRadius: 999, minHeight: 44, padding: '0 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', background: pro ? '#F2A93B' : '#12B39C', color: '#123644', marginRight: 8, whiteSpace: 'nowrap' }}
     >
       {label}
     </button>

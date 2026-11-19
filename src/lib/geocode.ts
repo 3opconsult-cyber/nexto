@@ -24,3 +24,12 @@ export async function geocodeAddress(query: string): Promise<{ lat: number; lng:
     return null
   }
 }
+
+// « 12 chemin X, 06130 Grasse » → « 06130 Grasse » ; sans code postal, la dernière partie après une virgule.
+// Repli quand l'adresse complète n'est pas reconnue (rue inconnue de la base, numéro mal saisi).
+export function addressLocality(address: string) {
+  const m = address.match(/\b\d{5}\b[^,]*/)
+  if (m) return m[0].trim()
+  const parts = address.split(',').map(x => x.trim()).filter(Boolean)
+  return parts.length > 1 ? parts[parts.length - 1] : ''
+}

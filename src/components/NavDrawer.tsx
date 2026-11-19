@@ -121,8 +121,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
 
   return (
     <>
-      <button className="app-burger" aria-label="Menu" onClick={() => setOpen(true)} style={{ width: 34, height: 34, borderRadius: 10, border: 'none', background: dark ? 'rgba(255,255,255,.1)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={dark ? '#fff' : '#123644'} strokeWidth="2.2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      <button className="app-burger" aria-label="Menu" onClick={() => setOpen(true)} style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: 'none', background: dark ? 'rgba(255,255,255,.1)' : '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={dark ? '#fff' : '#123644'} strokeWidth="2.2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
       </button>
 
       {/* Portail sur <body> : sinon un en-tête parent (carte pro…) enferme le menu sous la barre du bas. */}
@@ -133,8 +133,8 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
             <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #E7EDEB', display: 'flex', alignItems: 'center', gap: 12 }}>
               {loggedIn === false ? (
                 <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0 }}>
-                  <button onClick={() => go('/auth/login')} style={{ flex: 1, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Se connecter</button>
-                  <button onClick={() => go('/auth/signup')} style={{ flex: 1, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#F3F6F5', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Créer un compte</button>
+                  <button onClick={() => go('/auth/login')} style={{ flex: 1, minHeight: 44, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Se connecter</button>
+                  <button onClick={() => go('/auth/signup')} style={{ flex: 1, minHeight: 44, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#F3F6F5', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Créer un compte</button>
                 </div>
               ) : (
                 <>
@@ -145,7 +145,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                   </div>
                 </>
               )}
-              <button onClick={() => setOpen(false)} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
+              <button onClick={() => setOpen(false)} aria-label="Fermer le menu" style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
             </div>
@@ -153,7 +153,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
             {onProSide && available != null && (
               <button onClick={toggleAvailable} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, margin: '12px 16px 4px',
-                padding: '12px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                minHeight: 48, padding: '12px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
                 background: available ? 'rgba(18,179,156,.1)' : '#F3F6F5',
               }}>
                 <span style={{ fontSize: 13.5, fontWeight: 700, color: '#123644', textAlign: 'left' }}>{available ? 'Disponible, visible sur la carte' : 'Hors ligne, invisible des clients'}</span>
@@ -166,20 +166,20 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
             <div style={{ padding: '8px 8px', flex: 1, overflowY: 'auto', minHeight: 0 }}>
               {today && (
                 <button onClick={() => go(`/mission/${today.id}/jour`)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: today.urgent ? 'rgba(229,72,77,.08)' : 'rgba(18,179,156,.1)', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer', marginBottom: 4 }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', minHeight: 48, padding: '13px 12px', borderRadius: 10, border: 'none', background: today.urgent ? 'rgba(229,72,77,.08)' : 'rgba(18,179,156,.1)', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer', marginBottom: 4 }}>
                   <Icon name="qr" />Mission du jour{today.urgent && <span style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#E5484D' }} aria-label="Action attendue" />}
                 </button>
               )}
               {links.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', minHeight: 48, padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
                   <Icon name={l.icon} />{l.label}{l.path === '/messages' && <UnreadBadge n={unread} />}
                 </button>
               ))}
               <div style={{ height: 1, background: '#E7EDEB', margin: '6px 12px' }} />
               {linksBottom.map(l => (
                 <button key={l.label} onClick={() => go(l.path)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', minHeight: 48, padding: '13px 12px', borderRadius: 10, border: 'none', background: l.path === pathname ? '#F3F6F5' : 'none', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer' }}>
                   <Icon name={l.icon} />{l.label}
                 </button>
               ))}

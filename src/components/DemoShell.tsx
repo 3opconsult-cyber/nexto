@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { fetchProvidersNearby, fetchProviderActivities, fetchProviderFlags, openConversation, type ProviderNearby, type ProviderFlags } from '@/lib/services'
+import { fetchProvidersNearby, fetchProviderActivities, fetchProviderFlags, openConversation, prefetchProDetail, type ProviderNearby, type ProviderFlags } from '@/lib/services'
 import { TRADES } from '@/lib/trades'
 import { useCatalog } from '@/lib/catalog'
 import NavDrawer from './NavDrawer'
@@ -124,6 +124,35 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   }), [rawPros, actsOf, hitsOf, flags])
 
   function closePreview() { setPvId(null) }
+  // Réserver depuis l'aperçu (audit 19/11, correction 11) : directement l'écran de réservation
+  // (mission/new, prix figé), sans passer par la fiche. Prestataire « sur devis » : la conversation.
+  // Hors ligne : pas de réservation (on peut lui écrire). Le prix vient de la fiche du prestataire.
+  function reserve(p: Pro) {
+    const raw = rawPros.find(x => x.id === p.id)
+    if (raw?.pricing_type === 'devis') { contact(p.id); return }
+    closePreview()
+    router.push(`/mission/new?pro=${p.id}`)
+  }
+  const pvActions = (p: Pro, mobile: boolean) => {
+    const raw = rawPros.find(x => x.id === p.id)
+    const devis = raw?.pricing_type === 'devis'
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div className="btn ghost" role="button" style={{ flex: 1, padding: '12px 8px' }} onClick={() => contact(p.id)}>Contacter</div>
+          {p.active && (
+            <div className="btn" role="button" style={{ flex: 1.5, padding: '12px 8px' }} onClick={() => reserve(p)}>
+              {devis ? 'Demander un devis' : `Réserver${p.p ? ` · ${p.p}` : ''}`}
+            </div>
+          )}
+        </div>
+        <button type="button" onClick={() => { if (mobile) closePreview(); router.push(`/pro/${p.id}`) }}
+          style={{ minHeight: 44, border: 0, background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
+          Voir le profil et les avis
+        </button>
+      </div>
+    )
+  }
 
   const pv = pvId ? pros.find(q => q.id === pvId) : undefined
   const pvShow = !!pv
@@ -143,6 +172,12 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   function onSelectPro(p: { id: string }) {
     if (pros.some(q => q.id === p.id)) { setContactErr(''); setPvId(p.id) }
   }
+  // Aperçu ouvert : la fiche et l'écran de réservation sont préchargés (affichage immédiat ensuite).
+  useEffect(() => {
+    if (!pvId) return
+    prefetchProDetail(pvId)
+    try { router.prefetch(`/pro/${pvId}`); router.prefetch('/mission/new') } catch { /* rien */ }
+  }, [pvId, router])
   // Contacter depuis la carte : pas connecté → connexion puis retour sur la fiche du pro ;
   // toute autre erreur est affichée au lieu d'un renvoi silencieux.
   async function contact(proId: string) {
@@ -380,10 +415,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                         {navArrows}
                       </div>
                       {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{contactErr}</p>}
-                      <div style={{ display: 'flex', gap: 9 }}>
-                        <div className="btn ghost" role="button" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
-                        <div className="btn" role="button" style={{ flex: 1.3 }} onClick={() => { closePreview(); router.push(`/pro/${pv.id}`) }}>Voir le profil</div>
-                      </div>
+                      {pvActions(pv, true)}
                     </>
                   )}
                 </div>
@@ -444,10 +476,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                       </div>
                     </div>
                     {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '10px 14px 0' }}>{contactErr}</p>}
-                    <div style={{ display: 'flex', gap: 9, padding: 14, borderTop: '1px solid var(--line)' }}>
-                      <div className="btn ghost" role="button" style={{ flex: 1 }} onClick={() => contact(pv.id)}>Contacter</div>
-                      <div className="btn" role="button" style={{ flex: 1.3 }} onClick={() => router.push(`/pro/${pv.id}`)}>Voir le profil</div>
-                    </div>
+                    <div style={{ padding: 14, borderTop: '1px solid var(--line)' }}>{pvActions(pv, false)}</div>
                   </div>
                 )}
               </div>
