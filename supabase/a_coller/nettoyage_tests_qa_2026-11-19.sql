@@ -9,7 +9,7 @@ update public.transactions t set fictif = true
 
 -- 2. Litiges de test encore ouverts : clos
 update public.disputes set status = 'rejected', closed_at = now()
- where status = 'open' and (id::text like 'ce9d254f%' or id::text like '9ab46fb6%');
+ where status = 'open' and (id::text like 'ce9d254f%' or id::text like '9ab46fb6%' or id::text like '0b11d8c9%');
 
 -- 3. Réponse « absent » posée par erreur sur la mission fictive 452286d0 : remise à vide
 update public.transactions set client_presence = null, client_presence_at = null
