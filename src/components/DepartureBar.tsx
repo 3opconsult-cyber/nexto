@@ -142,7 +142,7 @@ export default function DepartureBar({
               const impossible = minPlausibleMin != null && m < minPlausibleMin
               return (
                 <button key={m} onClick={() => !impossible && setEta(m)} disabled={impossible} aria-pressed={eta === m} style={{
-                  flex: '1 0 28%', padding: '13px 0', borderRadius: 12, border: 'none', cursor: impossible ? 'not-allowed' : 'pointer',
+                  flex: '1 0 28%', minHeight: 44, padding: '13px 0', borderRadius: 12, border: 'none', cursor: impossible ? 'not-allowed' : 'pointer',
                   fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15,
                   background: impossible ? '#F3F6F5' : eta === m ? '#12B39C' : '#fff',
                   color: impossible ? '#DCE5E3' : eta === m ? '#fff' : '#123644',

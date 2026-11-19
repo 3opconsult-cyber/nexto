@@ -5,9 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { EUR } from '@/lib/invoice-pdf'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
-import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
+import { readScreenCache, sessionUserId } from '@/lib/screenCache'
+import { loadRevenusSnap, type RevenusSnap } from '@/lib/screenLoaders'
 
-const DONE = ['completed', 'released']
 
 const eur = EUR
 
@@ -51,7 +51,7 @@ export default function ProRevenusPage() {
   useEffect(() => {
     const supabase = createClient()
     let alive = true
-    type Snap = { m: number; y: number; cy: number; rating: number; reviews: number; sap: string | null; tax: string | null }
+    type Snap = RevenusSnap
     const apply = (v: Snap) => {
       setMonthCents(v.m); setYearCents(v.y); setCountYear(v.cy)
       setRating(v.rating); setReviewsCount(v.reviews)
@@ -68,33 +68,10 @@ export default function ProRevenusPage() {
       setUid(id)
       const cached = readScreenCache<Snap>('revenus', id)
       if (cached) apply(cached)
-      const [txRes, ppRes, sapRes, privRes] = await Promise.all([
-        supabase.from('transactions').select('payout_cents, status, completed_at, created_at').eq('seller_id', id),
-        supabase.from('provider_profiles').select('rating, reviews_count').eq('id', id).maybeSingle(),
-        // Numéro SAP (migration 013) : requête séparée pour ne rien casser si la colonne n'existe pas encore.
-        supabase.from('provider_profiles').select('sap_number').eq('id', id).maybeSingle(),
-        supabase.from('provider_private').select('tax_id').eq('id', id).maybeSingle(),
-      ])
+      // Lectures partagées avec le préchargement (src/lib/screenLoaders.ts), qui remplit ce cache d'avance.
+      const snap = await loadRevenusSnap(supabase, id)
       if (!alive) return
-      const now = new Date()
-      const rows = (txRes.data ?? []).filter((t: any) => DONE.includes(t.status))
-      let m = 0, y = 0, cy = 0
-      rows.forEach((t: any) => {
-        const d = new Date(t.completed_at || t.created_at)
-        if (d.getFullYear() === now.getFullYear()) {
-          y += t.payout_cents || 0
-          cy += 1
-          if (d.getMonth() === now.getMonth()) m += t.payout_cents || 0
-        }
-      })
-      const pp: any = ppRes.data
-      const snap: Snap = {
-        m, y, cy, rating: Number(pp?.rating) || 0, reviews: pp?.reviews_count || 0,
-        sap: sapRes.error ? null : ((sapRes.data as any)?.sap_number || ''),
-        tax: privRes.error ? null : ((privRes.data as any)?.tax_id || ''),
-      }
       apply(snap)
-      writeScreenCache('revenus', id, snap)
     })()
     return () => { alive = false }
   }, [router])

@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { geocodeAddress, addressLocality } from '@/lib/geocode'
+import { sessionUserId } from '@/lib/screenCache'
 
 // Position de l'utilisateur, demandée APRÈS une explication (qc-production B2) :
 // on n'ouvre jamais la fenêtre du navigateur sans avoir dit pourquoi. Un seul relevé,
@@ -58,8 +59,10 @@ export function readPositionOnce(timeout = 8000): Promise<Point> {
 export async function fetchProfileCenter(kind: 'client' | 'pro'): Promise<{ point: Point; label: string } | null> {
   try {
     const sb = createClient()
-    const { data: { user } } = await sb.auth.getUser()
-    if (!user) return null
+    // Session locale (aucun aller-retour) : sert seulement à centrer la carte, la RLS reste la garde.
+    const uid = await sessionUserId(sb)
+    if (!uid) return null
+    const user = { id: uid }
     if (kind === 'pro') {
       const { data } = await sb.from('provider_profiles').select('lat, lng').eq('id', user.id).maybeSingle()
       const lat = Number(data?.lat), lng = Number(data?.lng)
