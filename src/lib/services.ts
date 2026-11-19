@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getRates } from '@/lib/pricing'
 import { tradeOfServiceName } from '@/lib/trades'
 import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
+import { fetchPrestations, type Prestation } from '@/lib/prestations'
 
 export interface ProviderNearby {
   id: string
@@ -132,11 +133,15 @@ export async function fetchProDetail(proId: string) {
   // et la teinte d'avatar d'un prestataire actif — ni telephone, ni adresse.
   // Fiche, nom, confiance et avis lus ensemble (audit 19/11, correction 3 : les avis attendaient la fin
   // des trois premières lectures, 1,9-2,9 s mesurées pour la fiche).
-  const [{ data: pro }, { data: pub }, { data: trust }, { data: reviews }] = await Promise.all([
+  // Correction 4 du 19/11 ter : prestations visibles et pièces contrôlées lues dans la même vague et
+  // gardées avec la fiche, pour qu'une fiche préchargée s'affiche entière, sans seconde attente.
+  const [{ data: pro }, { data: pub }, { data: trust }, { data: reviews }, prest, flags] = await Promise.all([
     supabase.from('provider_profiles').select('*').eq('id', proId).single(),
     supabase.rpc('provider_public_name', { provider_id: proId }),
     supabase.rpc('provider_trust_stats', { provider_id: proId }),
     supabase.from('reviews').select('*').eq('ratee_id', proId).order('created_at', { ascending: false }).limit(20),
+    fetchPrestations(supabase, proId, { visibleOnly: true }).catch(() => null),
+    fetchProviderFlags([proId]).catch(() => null),
   ])
   if (pro && pub && pub.length) (pro as any).profiles = pub[0]
   if (pro && trust && trust.length) Object.assign(pro as any, trust[0])
@@ -149,19 +154,33 @@ export async function fetchProDetail(proId: string) {
     ;(names ?? []).forEach((n: any) => { if (n.first_name) byId[n.review_id] = n.first_name })
     reviews.forEach((r: any) => { r.profiles = { full_name: byId[r.id] || null } })
   }
-  const out = { pro, reviews: reviews ?? [] }
+  const out: ProDetail = {
+    pro, reviews: reviews ?? [],
+    // null : lecture en échec (la fiche garde alors ce qu'elle affichait).
+    services: prest && !prest.error ? prest.rows : null,
+    flags: flags ? (flags[proId] ?? {}) : null,
+  }
   // Fiche publique : gardée le temps de l'onglet pour un affichage immédiat au prochain passage.
   if (pro) writeScreenCache(`pro_${proId}`, 'pub', out)
   return out
 }
+export type ProDetail = { pro: any; reviews: any[]; services: Prestation[] | null; flags: ProviderFlags | null }
 
-// Dernière fiche connue (affichée pendant la relecture) et préchargement depuis l'aperçu de la carte.
-export const readProDetailCache = (proId: string) => readScreenCache<{ pro: any; reviews: any[] }>(`pro_${proId}`, 'pub')
-const prefetching = new Set<string>()
+// Dernière fiche connue (affichée pendant la relecture) et préchargement depuis la carte (aperçu ouvert,
+// ou premières lignes de la liste). Une lecture déjà en cours est partagée : la fiche ouverte pendant un
+// préchargement attend celui-ci au lieu de tout relire.
+export const readProDetailCache = (proId: string) => readScreenCache<ProDetail>(`pro_${proId}`, 'pub')
+const inflight = new Map<string, Promise<ProDetail>>()
+export function loadProDetail(proId: string): Promise<ProDetail> {
+  const cur = inflight.get(proId)
+  if (cur) return cur
+  const p = fetchProDetail(proId).finally(() => inflight.delete(proId))
+  inflight.set(proId, p)
+  return p
+}
 export function prefetchProDetail(proId: string) {
-  if (!proId || prefetching.has(proId) || readProDetailCache(proId)) return
-  prefetching.add(proId)
-  fetchProDetail(proId).catch(() => { }).finally(() => prefetching.delete(proId))
+  if (!proId || inflight.has(proId) || readProDetailCache(proId)) return
+  loadProDetail(proId).catch(() => { })
 }
 
 // Ouvre (ou reutilise) une conversation avec un prestataire pour entrer

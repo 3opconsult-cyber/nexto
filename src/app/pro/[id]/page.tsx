@@ -1,13 +1,13 @@
 "use client"
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchProDetail, fetchProviderFlags, openConversation, readProDetailCache } from '@/lib/services'
+import { loadProDetail, openConversation, readProDetailCache, type ProDetail } from '@/lib/services'
 import { sessionUserId } from '@/lib/screenCache'
 import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import { pricingLabel, pricingShort } from '@/lib/servicePricing'
 import ListingExtras from '@/components/ListingExtras'
-import { fetchPrestations, prestationName, prestationPhotoUrl, type Prestation } from '@/lib/prestations'
+import { prestationName, prestationPhotoUrl, type Prestation } from '@/lib/prestations'
 import { Ic, Stars, r1 } from '@/components/PingIcons'
 import { legalFormLabel, VAT_FRANCHISE_MENTION } from '@/lib/proStatus'
 
@@ -39,17 +39,17 @@ export default function ProDetailPage() {
     let cancelled = false
     // Fiche déjà lue dans l'onglet (ou préchargée depuis l'aperçu de la carte) : affichée tout de
     // suite, la relecture la remplace (audit 19/11, correction 3).
+    // Fiche, prestations visibles (les masquées restent dans « Mes tarifs ») et pièces contrôlées : une
+    // seule lecture, partagée avec le préchargement de la carte (correction 4 du 19/11 ter).
+    const apply = (d: ProDetail) => {
+      setPro(d.pro); setReviews(d.reviews || []); setLoading(false)
+      if (d.services) setExtraServices(d.services)
+      if (d.flags) { setDocsChecked(d.flags.checked); setRcproChecked(d.flags.rcproChecked) }
+    }
     const cached = readProDetailCache(proId)
-    if (cached?.pro) { setPro(cached.pro); setReviews(cached.reviews); setLoading(false) }
-    fetchProDetail(proId).then(({ pro, reviews }) => {
-      if (cancelled) return
-      setPro(pro); setReviews(reviews); setLoading(false)
-    })
-    fetchProviderFlags([proId]).then(f => { if (!cancelled) { setDocsChecked(f[proId]?.checked); setRcproChecked(f[proId]?.rcproChecked) } }).catch(() => { })
+    if (cached?.pro) apply(cached)
+    loadProDetail(proId).then(d => { if (!cancelled) apply(d) }).catch(() => { if (!cancelled) setLoading(false) })
     const supabase = createClient()
-    // Prestations visibles seulement (les masquées restent dans « Mes tarifs » du prestataire).
-    fetchPrestations(supabase, proId, { visibleOnly: true })
-      .then(({ rows }) => { if (!cancelled) setExtraServices(rows) })
     // Favori : état réel en base pour l'utilisateur connecté.
     sessionUserId(supabase).then(async id => {
       if (cancelled || !id) return

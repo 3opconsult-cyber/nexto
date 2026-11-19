@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
-import { fetchSlotsBetween, slotEnd, dayLabel, hhmm, type Slot } from '@/lib/slots'
+import { slotEnd, dayLabel, hhmm, type Slot } from '@/lib/slots'
+import { readScreenCache } from '@/lib/screenCache'
+import { AGENDA_CACHE, loadAgendaSnap, type AgendaCache } from '@/lib/agendaLoader'
 import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
-import { addDays, startOfDay } from '@/components/calendar/dates'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 import { UPCOMING, DONE, txDate, durationMinutes } from '@/lib/agenda'
@@ -30,12 +31,7 @@ const MODE_KINDS = { particulier: ['prestation', 'commission_client'], pro: ['pr
 const INV_TITLE: Record<string, string> = { recapitulatif: "Récapitulatif d'intervention", facture: 'Facture', commission: 'Frais de mise en relation' }
 const INV_KIND: Record<string, string> = { prestation: 'Prestation', commission_client: 'Frais de service', commission_pro: 'Commission PING' }
 
-// Dernier état connu de l'agenda, par compte (sessionStorage), affiché pendant le rechargement.
-const AGENDA_CACHE = 'ping_agenda_cache_v1'
-type AgendaCache = {
-  uid: string; txs: any[]; names: Record<string, string>; disputes: any[]; invoices: any[]
-  freeSlots: Slot[] | null; isPro: boolean; openRequests: number; offersWaiting: number; rated: string[]
-}
+// Dernier état connu de l'agenda, par compte (cache de l'onglet, src/lib/agendaLoader.ts), affiché pendant le rechargement.
 
 const sectionTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }
 
@@ -88,64 +84,15 @@ export default function AgendaPage() {
       const user = session?.user
       if (!user) { router.push('/auth/login'); return }
       setUid(user.id)
+      // Préchargé à la connexion ou par TabPrefetch (correction 3 du 19/11 ter) : affiché tout de suite.
+      const c = readScreenCache<AgendaCache>(AGENDA_CACHE, user.id)
+      if (c) { apply(c); setLoading(false) }
       try {
-        const c = JSON.parse(sessionStorage.getItem(AGENDA_CACHE) || 'null') as AgendaCache | null
-        if (c && c.uid === user.id) { apply(c); setLoading(false) }
-      } catch { /* cache illisible : chargement normal */ }
-
-      const from = addDays(startOfDay(new Date()), -7)
-      const [{ data }, { data: pp }, slots, { data: revs }, { data: crevs }, { count }] = await Promise.all([
-        supabase.from('transactions')
-          .select('*, requests(description, category)')
-          .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-          .order('created_at', { ascending: false }),
-        supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle(),
-        fetchSlotsBetween(supabase, user.id, from, addDays(from, 130)),
-        supabase.from('reviews').select('transaction_id').eq('rater_id', user.id),
-        supabase.from('client_reviews').select('transaction_id').eq('rater_id', user.id),
-        supabase.from('requests').select('id', { count: 'exact', head: true }).eq('requester_id', user.id).eq('status', 'open'),
-      ])
-      if (!alive) return
-      const list = data ?? []
-      const next: AgendaCache = {
-        uid: user.id, txs: list, names: {}, disputes: [], invoices: [],
-        freeSlots: pp && slots ? slots.filter(x => !x.transaction_id) : null, isPro: !!pp,
-        openRequests: count || 0, offersWaiting: 0,
-        rated: [...(revs ?? []), ...(crevs ?? [])].map((r: any) => r.transaction_id),
-      }
-
-      // Le nom de l'interlocuteur remplace l'adresse comme titre (comme la
-      // demo, "Sofia M. · Menage") : l'adresse ne s'affiche jamais ici, meme
-      // une fois confirmee — inutile de l'exposer dans une liste d'apercu.
-      if (list.length) {
-        const ids = list.map((t: any) => t.id)
-        // Propositions reçues en attente, sur les conversations où l'on est client, au tarif pas encore validé.
-        const buyerOpen = list.filter((t: any) => t.buyer_id === user.id && t.seller_id !== user.id && t.status === 'pending' && !t.price_confirmed)
-        const sellerOf = new Map(buyerOpen.map((t: any) => [t.id, t.seller_id]))
-        const [{ data: rows }, { data: ds }, { data: inv }, { data: offers }] = await Promise.all([
-          supabase.rpc('transaction_counterparts', { p_transaction_ids: ids }),
-          supabase.from('disputes')
-            .select('id, transaction_id, reason, status, created_at')
-            .in('transaction_id', ids)
-            .eq('status', 'open')
-            .order('created_at', { ascending: false }),
-          supabase.from('invoices')
-            .select('id, transaction_id, kind, template, number, issued_at, net_cents, issuer_id, client_id')
-            .in('transaction_id', ids)
-            .order('issued_at', { ascending: false }),
-          buyerOpen.length
-            ? supabase.from('messages').select('transaction_id, sender_id').eq('kind', 'offer').eq('offer_status', 'pending').in('transaction_id', buyerOpen.map((t: any) => t.id))
-            : Promise.resolve({ data: [] as any[] }),
-        ])
+        const next = await loadAgendaSnap(supabase, user.id)
         if (!alive) return
-        ;(rows ?? []).forEach((r: any) => { if (r.full_name) next.names[r.transaction_id] = r.full_name })
-        next.disputes = ds ?? []
-        next.invoices = inv ?? []
-        next.offersWaiting = new Set((offers ?? []).filter((o: any) => o.sender_id && o.sender_id === sellerOf.get(o.transaction_id)).map((o: any) => o.transaction_id)).size
-      }
-      apply(next)
-      setLoading(false)
-      try { sessionStorage.setItem(AGENDA_CACHE, JSON.stringify(next)) } catch { /* stockage plein ou indisponible */ }
+        apply(next)
+      } catch { /* réseau : on garde le dernier état connu */ }
+      if (alive) setLoading(false)
     }
     load()
     return () => { alive = false }
