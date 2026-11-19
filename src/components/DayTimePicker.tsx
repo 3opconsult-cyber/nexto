@@ -52,7 +52,7 @@ export default function DayTimePicker({ value, onChange, fromHour = 8, toHour = 
           const disabled = isPast(t); const on = selTime === t && selDay === day
           return (
             <button key={t} type="button" disabled={disabled} onClick={() => onChange(`${day}T${t}`)}
-              style={{ ...chip(on, disabled), padding: '10px 0', fontSize: 13.5 }}>{t.replace(':', ' h ')}</button>
+              style={{ ...chip(on, disabled), padding: '10px 0', minHeight: 44, fontSize: 13.5 }}>{t.replace(':', ' h ')}</button>
           )
         })}
       </div>

@@ -42,8 +42,10 @@ export default function ReviewModal({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  const complete = quality > 0 && service > 0 && recommend !== null
-  const missing = [quality > 0, service > 0, recommend !== null].filter(x => !x).length
+  // Une seule note obligatoire (audit ergonomie 19/11, correction 6) : la note du travail. Le contact et la
+  // recommandation sont facultatifs ; sans 2e note, la note d'ensemble est la première.
+  const complete = quality > 0
+  const overall = service > 0 ? Math.round((quality + service) / 2) : quality
 
   // Ouverture automatique déjà repoussée par « Plus tard » : on la referme sans rien afficher,
   // sauf si l'avis a été demandé explicitement (?avis).
@@ -62,29 +64,30 @@ export default function ReviewModal({
     const supabase = createClient()
     const { error: err } = await supabase.from('reviews').insert({
       transaction_id: transactionId, rater_id: raterId, ratee_id: rateeId,
-      // La note d'ensemble est la moyenne des deux, arrondie : on ne demande
-      // pas au client de noter trois fois la même chose.
-      stars: Math.round((quality + service) / 2),
-      quality_stars: quality, service_stars: service,
+      // La note d'ensemble est la moyenne des deux (arrondie) quand la 2e est donnée, sinon la 1re.
+      stars: overall,
+      quality_stars: quality, service_stars: service > 0 ? service : null,
       recommend, tip_cents: tip, comment: comment.trim() || null,
     })
     setBusy(false)
     if (err) { setError("Votre avis n'a pas pu être enregistré. Réessayez dans un instant."); return }
-    onSubmitted?.({ stars: Math.round((quality + service) / 2), comment: comment.trim() || null })
+    onSubmitted?.({ stars: overall, comment: comment.trim() || null })
     onClose()
   }
 
-  function Stars({ value, onChange, label }: { value: number; onChange: (n: number) => void; label: string }) {
+  function Stars({ value, onChange, label, optional }: { value: number; onChange: (n: number) => void; label: string; optional?: boolean }) {
     return (
       <div style={{ marginTop: 15 }}>
-        <div style={{ fontSize: 13, fontWeight: 600 }}>{label}</div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 7 }} role="radiogroup" aria-label={label}>
+        <div style={{ fontSize: 13, fontWeight: 600 }}>{label}{optional && <span style={{ color: '#4E6470', fontWeight: 400 }}> facultatif</span>}</div>
+        {/* Étoiles à 44×44 (zone tactile), audit ergonomie 19/11. */}
+        <div style={{ display: 'flex', gap: 4, marginTop: 4 }} role="radiogroup" aria-label={label}>
           {[1, 2, 3, 4, 5].map(n => (
-            <button key={n} onClick={() => onChange(n)} role="radio" aria-checked={value === n}
+            <button key={n} type="button" onClick={() => onChange(n)} role="radio" aria-checked={value === n}
               aria-label={`${n} sur 5`}
               style={{
+                width: 44, height: 44, display: 'grid', placeItems: 'center',
                 background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 1,
-                fontSize: 30, color: n <= value ? '#F2A93B' : '#DCE5E3',
+                fontSize: 32, color: n <= value ? '#F2A93B' : '#DCE5E3',
               }}>★</button>
           ))}
         </div>
@@ -93,23 +96,32 @@ export default function ReviewModal({
   }
 
   return (
-    <Modal open={open && !suppressed} onClose={later} title={`Comment s'est passée l'intervention ?`}>
+    // Boutons dans le pied fixe de la fenêtre : « Publier mon avis » visible sans défiler (une étoile, puis Publier).
+    <Modal open={open && !suppressed} onClose={later} title={`Comment s'est passée l'intervention ?`} footer={<>
+      {error && <div role="alert" style={{ padding: 10, borderRadius: 10, background: 'rgba(255,122,102,.12)', color: '#B4402C', fontSize: 12.5, lineHeight: 1.5 }}>{error}</div>}
+      {/* Libellé fixe « Publier mon avis » ; grisé avec l'aide tant que la note manque. */}
+      <Cta onClick={submit} disabled={!complete || busy}>
+        {busy ? 'Enregistrement…' : 'Publier mon avis'}
+      </Cta>
+      {!complete && <div role="status" style={{ fontSize: 12, color: '#4E6470', textAlign: 'center' }}>Il manque : votre note (touchez une étoile).</div>}
+      <Cta variant="ghost" onClick={later}>Plus tard</Cta>
+    </>}>
       <p style={{ fontSize: 13, color: '#4E6470', margin: 0, lineHeight: 1.55 }}>
         Votre avis s'affichera sur la fiche de <b style={{ color: '#123644' }}>{proName.replace(/\.$/, "")}</b>.
         Il compte pour les clients suivants — et pour lui.
       </p>
 
-      <Stars value={quality} onChange={setQuality} label="La qualité du travail rendu" />
-      <Stars value={service} onChange={setService} label="Le contact et le respect des horaires" />
+      <Stars value={quality} onChange={setQuality} label="Votre note : la qualité du travail rendu" />
+      <Stars value={service} onChange={setService} label="Le contact et le respect des horaires" optional />
 
       <div style={{ marginTop: 18 }}>
-        <div style={{ fontSize: 13, fontWeight: 600 }}>Le recommanderiez-vous ?</div>
+        <div style={{ fontSize: 13, fontWeight: 600 }}>Le recommanderiez-vous ? <span style={{ color: '#4E6470', fontWeight: 400 }}>facultatif</span></div>
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
           {[['Oui', true], ['Non', false]].map(([lbl, val]) => (
-            <button key={String(val)} onClick={() => setRecommend(val as boolean)}
+            <button key={String(val)} type="button" onClick={() => setRecommend(recommend === val ? null : val as boolean)}
               aria-pressed={recommend === val}
               style={{
-                flex: 1, padding: '11px 0', borderRadius: 12, cursor: 'pointer',
+                flex: 1, padding: '11px 0', minHeight: 44, borderRadius: 12, cursor: 'pointer',
                 fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14,
                 border: 'none',
                 background: recommend === val ? (val ? '#12B39C' : '#123644') : '#fff',
@@ -141,7 +153,7 @@ export default function ReviewModal({
           {TIPS.map(c => (
             <button key={c} onClick={() => setTip(c)} aria-pressed={tip === c}
               style={{
-                flex: 1, padding: '10px 0', borderRadius: 11, border: 'none', cursor: 'pointer',
+                flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 11, border: 'none', cursor: 'pointer',
                 fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5,
                 background: tip === c ? '#123644' : '#fff', color: tip === c ? '#fff' : '#123644',
                 boxShadow: tip === c ? 'none' : '0 0 0 1px #DCE5E3',
@@ -160,18 +172,6 @@ export default function ReviewModal({
         )}
       </div>
 
-      {error && (
-        <div style={{ marginTop: 13, padding: 11, borderRadius: 10, background: 'rgba(255,122,102,.12)',
-                      color: '#B4402C', fontSize: 12.5, lineHeight: 1.5 }}>{error}</div>
-      )}
-
-      <div style={{ height: 8 }} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 10 }}>
-        <Cta onClick={submit} disabled={!complete || busy}>
-          {busy ? 'Enregistrement…' : complete ? 'Publier mon avis' : `Encore ${missing} réponse${missing > 1 ? 's' : ''} à donner`}
-        </Cta>
-        <Cta variant="ghost" onClick={later}>Plus tard</Cta>
-      </div>
     </Modal>
   )
 }

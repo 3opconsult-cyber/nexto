@@ -39,6 +39,22 @@ const primary: React.CSSProperties = {
 }
 const ghost: React.CSSProperties = { ...primary, background: '#fff', color: '#0C8F7E', border: '1.5px solid #0C8F7E' }
 const p: React.CSSProperties = { fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '3px 0 0' }
+// Bouton d'action principal collant en bas de l'écran, au-dessus de la barre d'onglets (audit ergonomie 19/11,
+// correction 13) : « Envoyer la photo », « Clôturer avec le code de fin »… visibles sans défiler.
+function StickyCta({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
+  return (
+    <>
+      <div aria-hidden style={{ height: 8 }} />
+      <div style={{
+        position: 'fixed', left: 0, right: 0, bottom: 'var(--tabbar-h, 0px)', zIndex: 30, maxWidth: 480, margin: '0 auto',
+        background: '#fff', borderTop: '1px solid #DCE5E3', boxShadow: '0 -6px 16px rgba(18,54,68,.06)',
+        padding: '8px 16px calc(10px + env(safe-area-inset-bottom, 0px))', boxSizing: 'border-box',
+      }}>
+        <button type="button" style={{ ...primary, marginTop: 0, opacity: disabled ? .6 : 1 }} disabled={disabled} onClick={onClick}>{children}</button>
+      </div>
+    </>
+  )
+}
 const link: React.CSSProperties = { display: 'block', margin: '8px auto 0', minHeight: 44, border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }
 
 /**
@@ -126,18 +142,16 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
     onDone()
   }
 
-  const codeBox = (label: string, cta: string) => (
+  // Champ du code en haut de l'étape ; la validation est le bouton collant du bas (StickyCta).
+  const codeBox = (label: string) => (
     <>
       {codeSent && <p role="status" style={{ ...p, background: '#FFF7ED', color: '#8a6520', borderRadius: 10, padding: '8px 10px', fontWeight: 600 }}>{cl} vous a envoyé son code dans la messagerie : saisissez-le.</p>}
-      <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#4E6470', marginTop: 10 }}>
+      <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#4E6470', marginTop: 6 }}>
         {label}
         <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
           inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000"
           style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 5, minHeight: 48, borderRadius: 12, border: '1.5px solid #DCE5E3', padding: '0 12px', fontSize: 20, letterSpacing: 6, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
       </label>
-      <button type="button" style={{ ...primary, opacity: code.length === 6 && !busy ? 1 : .6 }} disabled={!!busy || code.length !== 6} onClick={submitCode}>
-        {busy === 'code' ? 'Vérification…' : cta}
-      </button>
       <button type="button" style={link} onClick={() => router.push(`/mission/${txId}/chat`)}>Voir la conversation</button>
     </>
   )
@@ -164,7 +178,6 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
                 ? <p style={p}>Position relevée (précision ± {Math.round(pos.accuracyM)} m). Elle est comparée à l’adresse à l’envoi.</p>
                 : <>
                   <p style={p}>Seul cas où PING relève votre position : une fois, avec votre accord, comparée à l’adresse. Pas de suivi.</p>
-                  <button type="button" style={primary} disabled={!!busy} onClick={locate}>{busy === 'pos' ? 'Localisation…' : 'J’accepte : partager ma position'}</button>
                 </>}
           </Step>
           <Step n={3} state={s3} title="Prenez une photo">
@@ -174,10 +187,8 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
                 <p style={p}>Devant la porte, ou sur place. Obligatoire.</p>
                 {photoUrl && <img src={photoUrl} alt="Votre photo d’arrivée" style={{ display: 'block', width: '100%', maxHeight: 180, objectFit: 'cover', borderRadius: 12, marginTop: 8 }} />}
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={pick} style={{ display: 'none' }} />
-                {pos && (
-                  <button type="button" style={photo ? ghost : primary} disabled={!!busy} onClick={() => fileRef.current?.click()}>
-                    {photo ? 'Reprendre la photo' : 'Prendre la photo'}
-                  </button>
+                {pos && photo && (
+                  <button type="button" style={ghost} disabled={!!busy} onClick={() => fileRef.current?.click()}>Reprendre la photo</button>
                 )}
               </>}
           </Step>
@@ -186,20 +197,23 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
               ? <p style={p}>Envoyée à {hhmm(sentAt)} avec votre position et l’heure. {cl} est prévenu.</p>
               : <>
                 <p style={p}>Elle part à {cl} avec votre position et l’heure ; une notification le prévient.</p>
-                {pos && photo && <button type="button" style={primary} disabled={!!busy} onClick={sendPhoto}>{busy === 'send' ? 'Envoi…' : `Envoyer la photo à ${cl}`}</button>}
               </>}
           </Step>
           <Step n={5} state={pending ? 'now' : 'off'} title={pending ? `En attente de ${cl}` : `${cl} confirme votre arrivée`}>
             {pending
               ? <>
-                <p style={p}>{codeSent ? '' : `${cl} confirme d’un appui : la mission démarre d’elle-même. Ou ${cl} vous envoie un code de validation.`}</p>
-                {codeBox(`Code de validation envoyé par ${cl}`, 'Valider avec le code')}
+                {codeBox(`Code de validation envoyé par ${cl}`)}
+                {!codeSent && <p style={p}>{`${cl} confirme d’un appui : la mission démarre d’elle-même. Ou ${cl} vous envoie un code de validation.`}</p>}
               </>
               : <p style={p}>{cl} confirme d’un appui, ou vous envoie un code que vous saisissez.</p>}
             {refused && <p style={{ ...p, color: '#B3402F', fontWeight: 600 }}>{cl} a indiqué que ce n’était pas normal. Échangez dans la conversation.</p>}
           </Step>
         </ol>
         {msg}
+        {!pending && !pos && <StickyCta disabled={!!busy} onClick={locate}>{busy === 'pos' ? 'Localisation…' : 'J’accepte : partager ma position'}</StickyCta>}
+        {!pending && pos && !photo && <StickyCta disabled={!!busy} onClick={() => fileRef.current?.click()}>Prendre la photo</StickyCta>}
+        {!pending && pos && photo && <StickyCta disabled={!!busy} onClick={sendPhoto}>{busy === 'send' ? 'Envoi…' : `Envoyer la photo à ${cl}`}</StickyCta>}
+        {pending && (codeSent || code.length > 0) && <StickyCta disabled={!!busy || code.length !== 6} onClick={submitCode}>{busy === 'code' ? 'Vérification…' : 'Valider avec le code'}</StickyCta>}
       </div>
     )
   }
@@ -220,14 +234,13 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
             ? <p style={p}>Demande envoyée à {hhmm(remote?.requested_at)} : notification et message dans la conversation.</p>
             : <>
               <p style={p}>{cl} reçoit la durée et le montant. Aucune position n’est relevée.</p>
-              <button type="button" style={primary} disabled={!!busy} onClick={askEndCode}>{busy === 'send' ? 'Envoi…' : `Demander le code de fin à ${cl}`}</button>
             </>}
         </Step>
         <Step n={3} state={pending ? 'now' : 'off'} title="Saisissez son code de fin">
           {pending
             ? <>
+              {codeBox(`Code de fin envoyé par ${cl}`)}
               <p style={p}>{codeSent ? '' : `${cl} l’envoie depuis son application ; il apparaît aussi dans la messagerie.`} Le code saisi clôture la mission ; la facture suit.</p>
-              {codeBox(`Code de fin envoyé par ${cl}`, 'Clôturer avec le code de fin')}
             </>
             : <p style={p}>Le code saisi clôture la mission ; la facture suit.</p>}
           {refused && <p style={{ ...p, color: '#B3402F', fontWeight: 600 }}>{cl} a contesté la fin annoncée. Échangez dans la conversation.</p>}
@@ -235,6 +248,9 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
       </ol>
       <p style={{ ...p, fontSize: 11.5, color: '#6E8592', marginTop: 8 }}>Sans réponse sous 24 h, la fin reste non confirmée et PING décide.</p>
       {msg}
+      {!pending
+        ? <StickyCta disabled={!!busy} onClick={askEndCode}>{busy === 'send' ? 'Envoi…' : `Demander le code de fin à ${cl}`}</StickyCta>
+        : <StickyCta disabled={!!busy || code.length !== 6} onClick={submitCode}>{busy === 'code' ? 'Vérification…' : 'Clôturer avec le code de fin'}</StickyCta>}
     </div>
   )
 }

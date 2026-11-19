@@ -8,9 +8,11 @@ import { setClientPresence, type ClientPresence } from '@/lib/presence'
  * Client, juste après la commande (migration 048) : « Je serai sur place » / « Je ne serai pas sur place ».
  * Un appui. Modifiable jusqu'à l'arrivée du prestataire, qui voit la réponse sur son billet de mission.
  * `compact` : deux boutons côte à côte (billet du chat) ; sinon deux grandes cartes avec ce qui se passera.
+ * `toggle` (audit ergonomie 19/11, correction 12) : une réponse est déjà donnée ; la réponse courante et un
+ * seul bouton « Changer ma réponse » qui bascule directement sur l'autre choix (1 appui, sans passer par /commande).
  */
-export default function PresenceChoice({ txId, presence, proName, onChange, compact = false }: {
-  txId: string; presence: ClientPresence | null | undefined; proName?: string; onChange: (p: ClientPresence) => void; compact?: boolean
+export default function PresenceChoice({ txId, presence, proName, onChange, compact = false, toggle = false }: {
+  txId: string; presence: ClientPresence | null | undefined; proName?: string; onChange: (p: ClientPresence) => void; compact?: boolean; toggle?: boolean
 }) {
   const [busy, setBusy] = useState<ClientPresence | null>(null)
   const [err, setErr] = useState('')
@@ -30,6 +32,26 @@ export default function PresenceChoice({ txId, presence, proName, onChange, comp
     { v: 'sur_place', t: 'Je serai sur place', s: `${who} scanne votre QR à l’arrivée, puis à la fin.` },
     { v: 'absent', t: 'Je ne serai pas sur place', s: `${who} vous envoie une photo à son arrivée : vous confirmez d’un appui. À la fin, vous envoyez votre code de fin.` },
   ]
+
+  if (toggle && presence) {
+    const next: ClientPresence = presence === 'sur_place' ? 'absent' : 'sur_place'
+    const nextLabel = next === 'sur_place' ? 'je serai sur place' : 'je ne serai pas sur place'
+    return (
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ flex: '1 1 160px', minWidth: 0, fontSize: 13, fontWeight: 600, color: '#123644' }}>
+            {presence === 'sur_place' ? 'Votre réponse : je serai sur place' : 'Votre réponse : je ne serai pas sur place'}
+          </span>
+          <button type="button" onClick={() => choose(next)} disabled={!!busy} aria-label={`Changer ma réponse : ${nextLabel}`} style={{
+            flexShrink: 0, minHeight: 44, borderRadius: 999, padding: '0 16px', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13,
+            border: '1.5px solid #0C8F7E', background: '#fff', color: '#0C8F7E', opacity: busy ? .6 : 1,
+          }}>{busy ? 'Enregistrement…' : 'Changer ma réponse'}</button>
+        </div>
+        <p style={{ fontSize: 11.5, color: '#4E6470', margin: '4px 0 0' }}>Un appui : {nextLabel}. {who} est prévenu.</p>
+        {err && <p role="alert" style={{ color: '#B3402F', fontSize: 12, margin: '6px 0 0' }}>{err}</p>}
+      </div>
+    )
+  }
 
   if (compact) {
     return (

@@ -41,5 +41,25 @@ export async function acceptOfferMessage(supabase: Sb, transactionId: string, m:
   }).eq('id', transactionId).eq('price_confirmed', false).select().maybeSingle()
   if (error || !updated) return { error: 'Acceptation non enregistrée — réessayez.' }
   await supabase.from('messages').update({ offer_status: 'accepted' }).eq('id', m.id)
+  if (updated.request_id) await closeRequest(supabase, updated.request_id, transactionId)
   return { tx: updated }
+}
+
+/**
+ * Une proposition acceptée ferme la demande publiée (audit ergonomie 19/11, correction 1) : sinon elle
+ * restait « open » et visible des pros dans « Demandes autour de vous » (requests_nearby filtre sur
+ * status = 'open') après l'accord, et même après la fin de la mission.
+ * Chemin 1 : l'auteur de la demande (le client) peut modifier sa demande (RLS requests, comme
+ * « Annuler » dans Mes demandes). Chemin 2, quand c'est le prestataire qui accepte une contre-offre
+ * (la RLS lui refuse l'écriture sur requests, 0 ligne sans erreur) : RPC SECURITY DEFINER
+ * `match_request_on_accept` (supabase/a_coller/051_demande_fermee_a_l_accord.sql, qui pose aussi un
+ * trigger sur transactions.price_confirmed). Sans la RPC en base, l'échec est silencieux : rien ne casse.
+ */
+async function closeRequest(supabase: Sb, requestId: string, transactionId: string) {
+  try {
+    const { data } = await supabase.from('requests').update({ status: 'matched' })
+      .eq('id', requestId).eq('status', 'open').select('id')
+    if (data && data.length) return
+    await supabase.rpc('match_request_on_accept', { p_transaction: transactionId })
+  } catch { /* non bloquant : l'accord sur le prix est déjà enregistré */ }
 }

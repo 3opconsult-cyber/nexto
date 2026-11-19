@@ -133,7 +133,7 @@ export default function LitigePage() {
       <div style={{ maxWidth: 480, margin: '40px auto', background: '#fff', borderRadius: 16, padding: 22, textAlign: 'center' }}>
         <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', margin: 0 }}>Litige introuvable</h2>
         <p style={{ fontSize: 13, color: '#4E6470' }}>Ce litige n’existe plus ou ne vous concerne pas.</p>
-        <a href="/litiges" style={{ color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Mes litiges</a>
+        <a href="/litiges" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Mes litiges</a>
       </div>
     </div>
   )
@@ -146,7 +146,9 @@ export default function LitigePage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ background: '#123644', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => router.push('/litiges')} aria-label="Retour" style={{ width: 32, height: 32, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,.1)', color: '#fff', cursor: 'pointer' }}>‹</button>
+        <button onClick={() => router.push('/litiges')} aria-label="Retour" style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: 'none', background: 'rgba(255,255,255,.1)', color: '#fff', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+          <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16 }}>Litige{other ? ` · ${other}` : ''}</div>
           <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)' }}>Dossier suivi par PING · les deux parties et PING voient ce fil</div>
@@ -185,9 +187,10 @@ export default function LitigePage() {
             {d.resolution && <div style={{ fontSize: 13, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Décision : {d.resolution}</div>}
             {tx && uid && <AmicableSettlement dispute={d} buyerId={tx.buyer_id} sellerId={tx.seller_id} userId={uid}
               ceilingCents={tx.subtotal_cents} onChange={reloadDispute} />}
-            <div style={{ display: 'flex', gap: 14, marginTop: 10 }}>
-              <a href={`/mission/${d.transaction_id}/chat`} style={{ fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>Voir la mission</a>
-              <a href={`/mission/${d.transaction_id}/facture`} style={{ fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>Factures</a>
+            {/* Liens en boutons de 44 px (audit ergonomie 19/11, correction 20). */}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <a href={`/mission/${d.transaction_id}/chat`} style={linkBtn}>Voir la mission</a>
+              <a href={`/mission/${d.transaction_id}/facture`} style={linkBtn}>Factures</a>
             </div>
           </div>
         </div>
@@ -228,8 +231,8 @@ export default function LitigePage() {
             <textarea value={decision} onChange={e => setDecision(e.target.value)} rows={2} aria-label="Décision de PING"
               style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 13 }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button onClick={() => close('resolved')} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
-              <button onClick={() => close('rejected')} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
+              <button onClick={() => close('resolved')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
+              <button onClick={() => close('rejected')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
             </div>
           </div>
         </div>
@@ -241,9 +244,9 @@ export default function LitigePage() {
           <div style={{ display: 'flex', gap: 8, maxWidth: 640, margin: '0 auto' }}>
             <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(admin ? 'mediation' : 'text') }}
               aria-label={admin ? 'Message de PING aux deux parties' : 'Votre message sur ce litige'}
-              style={{ flex: 1, padding: '12px 14px', borderRadius: 999, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', background: '#F3F6F5' }} />
+              style={{ flex: 1, minWidth: 0, minHeight: 44, padding: '12px 14px', borderRadius: 999, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', background: '#F3F6F5' }} />
             <button onClick={() => send(admin ? 'mediation' : 'text')} disabled={sending || !input.trim()}
-              style={{ padding: '0 18px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
+              style={{ minHeight: 44, padding: '0 18px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
           </div>
         ) : (
           <div style={{ textAlign: 'center', fontSize: 12.5, color: '#4E6470' }}>Litige clos : le fil reste consultable.</div>
@@ -251,6 +254,11 @@ export default function LitigePage() {
       </div>
     </div>
   )
+}
+
+const linkBtn: React.CSSProperties = {
+  flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 14px', borderRadius: 999,
+  border: '1.5px solid #DCE5E3', background: '#fff', color: '#0C8F7E', fontSize: 13, fontWeight: 700, textDecoration: 'none',
 }
 
 const PAY: Record<string, string> = {

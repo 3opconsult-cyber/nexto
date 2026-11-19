@@ -7,7 +7,11 @@ import { getPresenceState, presenceAvailable } from '@/lib/presence'
 // « Mission du jour » : la mission confirmée du mode courant qui est en cours, ou prévue aujourd'hui à partir
 // de 2 h avant l'heure (ou annoncée « en route »), ou dont l'heure est passée de moins de 12 h sans arrivée.
 // Sert au bouton d'accès rapide (barre du bas, menu, barre latérale) et à l'agenda.
-export type TodayMission = { id: string; status: string; scheduled_at: string | null; en_route_at: string | null; arrived_at: string | null; urgent: boolean }
+export type TodayMission = {
+  id: string; status: string; scheduled_at: string | null; en_route_at: string | null; arrived_at: string | null; urgent: boolean
+  /** Étape qui attend une action (client : photo d'arrivée à confirmer ou code de fin demandé ; prestataire : code reçu). */
+  action?: 'arrivee' | 'fin' | null
+}
 
 const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 
@@ -37,27 +41,34 @@ export async function fetchTodayMission(mode: Mode): Promise<TodayMission | null
   if (!list.length) return null
   const pick: any = list.find((t: any) => t.arrived_at) || list.find((t: any) => t.en_route_at) || list[0]
   let urgent = false
+  let action: 'arrivee' | 'fin' | null = null
   if (await presenceAvailable(supabase)) {
     const st = await getPresenceState(supabase, pick.id)
-    const pending = Object.values(st?.remote || {}).filter(r => r?.etat === 'en_attente')
     // Client : une confirmation ou un code à envoyer. Prestataire (048) : le code du client est arrivé.
-    urgent = mode === 'particulier' ? pending.some(r => !r?.code_sent_at) : pending.some(r => !!r?.code_sent_at)
+    const waits = (r: any) => r?.etat === 'en_attente' && (mode === 'particulier' ? !r?.code_sent_at : !!r?.code_sent_at)
+    action = waits(st?.remote?.fin) ? 'fin' : waits(st?.remote?.arrivee) ? 'arrivee' : null
+    urgent = !!action
   }
-  return { id: pick.id, status: pick.status, scheduled_at: pick.scheduled_at, en_route_at: pick.en_route_at, arrived_at: pick.arrived_at, urgent }
+  return { id: pick.id, status: pick.status, scheduled_at: pick.scheduled_at, en_route_at: pick.en_route_at, arrived_at: pick.arrived_at, urgent, action }
 }
 
-/** Mission du jour du mode courant ; rafraîchie à chaque changement de page et toutes les 60 s. */
+/**
+ * Mission du jour du mode courant ; rafraîchie à chaque changement de page, toutes les 15 s tant qu'une mission
+ * du jour est en route ou en cours (la photo d'arrivée ou la demande de code doit se voir vite, audit 19/11),
+ * sinon toutes les 60 s.
+ */
 export function useTodayMission(mode: Mode | null, refreshKey?: string): TodayMission | null {
   const [m, setM] = useState<TodayMission | null>(null)
+  const live = !!m && !!(m.en_route_at || m.arrived_at)
   useEffect(() => {
     if (!mode) { setM(null); return }
     let alive = true
     const run = () => { fetchTodayMission(mode).then(v => { if (alive) setM(v) }).catch(() => { }) }
     run()
-    const iv = setInterval(run, 60000)
+    const iv = setInterval(run, live ? 15000 : 60000)
     const vis = () => { if (document.visibilityState === 'visible') run() }
     document.addEventListener('visibilitychange', vis)
     return () => { alive = false; clearInterval(iv); document.removeEventListener('visibilitychange', vis) }
-  }, [mode, refreshKey])
+  }, [mode, refreshKey, live])
   return m
 }

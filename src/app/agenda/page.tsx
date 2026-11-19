@@ -30,6 +30,13 @@ const MODE_KINDS = { particulier: ['prestation', 'commission_client'], pro: ['pr
 const INV_TITLE: Record<string, string> = { recapitulatif: "Récapitulatif d'intervention", facture: 'Facture', commission: 'Frais de mise en relation' }
 const INV_KIND: Record<string, string> = { prestation: 'Prestation', commission_client: 'Frais de service', commission_pro: 'Commission PING' }
 
+// Dernier état connu de l'agenda, par compte (sessionStorage), affiché pendant le rechargement.
+const AGENDA_CACHE = 'ping_agenda_cache_v1'
+type AgendaCache = {
+  uid: string; txs: any[]; names: Record<string, string>; disputes: any[]; invoices: any[]
+  freeSlots: Slot[] | null; isPro: boolean; openRequests: number; offersWaiting: number; rated: string[]
+}
+
 const sectionTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }
 
 export default function AgendaPage() {
@@ -65,32 +72,57 @@ export default function AgendaPage() {
     try { sessionStorage.setItem('ping_agenda_tab', t) } catch { /* rien */ }
   }
 
+  // Chargement < 1 s (audit ergonomie 19/11) : le dernier état connu (sessionStorage, même compte) s'affiche
+  // tout de suite pendant le rechargement, et les requêtes partent groupées en deux vagues parallèles au lieu
+  // de six allers-retours en chaîne. La session est lue localement (getSession), sans appel réseau.
+  function apply(c: AgendaCache) {
+    setTxs(c.txs); setNames(c.names); setDisputes(c.disputes); setInvoices(c.invoices)
+    setFreeSlots(c.freeSlots); setIsPro(c.isPro); setOpenRequests(c.openRequests); setOffersWaiting(c.offersWaiting)
+    setRated(new Set(c.rated))
+  }
   useEffect(() => {
     const supabase = createClient()
+    let alive = true
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (!user) { router.push('/auth/login'); return }
       setUid(user.id)
-      const { data } = await supabase.from('transactions')
-        .select('*, requests(description, category)')
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .order('created_at', { ascending: false })
-      setTxs(data ?? [])
+      try {
+        const c = JSON.parse(sessionStorage.getItem(AGENDA_CACHE) || 'null') as AgendaCache | null
+        if (c && c.uid === user.id) { apply(c); setLoading(false) }
+      } catch { /* cache illisible : chargement normal */ }
 
-      const { data: pp } = await supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle()
-      setIsPro(!!pp)
-      if (pp) {
-        const from = addDays(startOfDay(new Date()), -7)
-        const list = await fetchSlotsBetween(supabase, user.id, from, addDays(from, 130))
-        setFreeSlots(list ? list.filter(x => !x.transaction_id) : null)
+      const from = addDays(startOfDay(new Date()), -7)
+      const [{ data }, { data: pp }, slots, { data: revs }, { data: crevs }, { count }] = await Promise.all([
+        supabase.from('transactions')
+          .select('*, requests(description, category)')
+          .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+          .order('created_at', { ascending: false }),
+        supabase.from('provider_profiles').select('id').eq('id', user.id).maybeSingle(),
+        fetchSlotsBetween(supabase, user.id, from, addDays(from, 130)),
+        supabase.from('reviews').select('transaction_id').eq('rater_id', user.id),
+        supabase.from('client_reviews').select('transaction_id').eq('rater_id', user.id),
+        supabase.from('requests').select('id', { count: 'exact', head: true }).eq('requester_id', user.id).eq('status', 'open'),
+      ])
+      if (!alive) return
+      const list = data ?? []
+      const next: AgendaCache = {
+        uid: user.id, txs: list, names: {}, disputes: [], invoices: [],
+        freeSlots: pp && slots ? slots.filter(x => !x.transaction_id) : null, isPro: !!pp,
+        openRequests: count || 0, offersWaiting: 0,
+        rated: [...(revs ?? []), ...(crevs ?? [])].map((r: any) => r.transaction_id),
       }
 
       // Le nom de l'interlocuteur remplace l'adresse comme titre (comme la
       // demo, "Sofia M. · Menage") : l'adresse ne s'affiche jamais ici, meme
       // une fois confirmee — inutile de l'exposer dans une liste d'apercu.
-      if (data?.length) {
-        const ids = data.map((t: any) => t.id)
-        const [{ data: rows }, { data: ds }, { data: inv }] = await Promise.all([
+      if (list.length) {
+        const ids = list.map((t: any) => t.id)
+        // Propositions reçues en attente, sur les conversations où l'on est client, au tarif pas encore validé.
+        const buyerOpen = list.filter((t: any) => t.buyer_id === user.id && t.seller_id !== user.id && t.status === 'pending' && !t.price_confirmed)
+        const sellerOf = new Map(buyerOpen.map((t: any) => [t.id, t.seller_id]))
+        const [{ data: rows }, { data: ds }, { data: inv }, { data: offers }] = await Promise.all([
           supabase.rpc('transaction_counterparts', { p_transaction_ids: ids }),
           supabase.from('disputes')
             .select('id, transaction_id, reason, status, created_at')
@@ -101,32 +133,22 @@ export default function AgendaPage() {
             .select('id, transaction_id, kind, template, number, issued_at, net_cents, issuer_id, client_id')
             .in('transaction_id', ids)
             .order('issued_at', { ascending: false }),
-        ])
-        const map: Record<string, string> = {}
-        ;(rows ?? []).forEach((r: any) => { if (r.full_name) map[r.transaction_id] = r.full_name })
-        setNames(map)
-        setDisputes(ds ?? [])
-        setInvoices(inv ?? [])
-
-        // Propositions reçues en attente, sur les conversations où l'on est client, au tarif pas encore validé.
-        const buyerOpen = data.filter((t: any) => t.buyer_id === user.id && t.seller_id !== user.id && t.status === 'pending' && !t.price_confirmed)
-        const sellerOf = new Map(buyerOpen.map((t: any) => [t.id, t.seller_id]))
-        const doneIds = data.filter((t: any) => DONE.includes(t.status)).map((t: any) => t.id)
-        const [{ data: offers }, { data: revs }, { data: crevs }] = await Promise.all([
           buyerOpen.length
             ? supabase.from('messages').select('transaction_id, sender_id').eq('kind', 'offer').eq('offer_status', 'pending').in('transaction_id', buyerOpen.map((t: any) => t.id))
             : Promise.resolve({ data: [] as any[] }),
-          doneIds.length ? supabase.from('reviews').select('transaction_id').eq('rater_id', user.id).in('transaction_id', doneIds) : Promise.resolve({ data: [] as any[] }),
-          doneIds.length ? supabase.from('client_reviews').select('transaction_id').eq('rater_id', user.id).in('transaction_id', doneIds) : Promise.resolve({ data: [] as any[] }),
         ])
-        setOffersWaiting(new Set((offers ?? []).filter((o: any) => o.sender_id && o.sender_id === sellerOf.get(o.transaction_id)).map((o: any) => o.transaction_id)).size)
-        setRated(new Set([...(revs ?? []), ...(crevs ?? [])].map((r: any) => r.transaction_id)))
+        if (!alive) return
+        ;(rows ?? []).forEach((r: any) => { if (r.full_name) next.names[r.transaction_id] = r.full_name })
+        next.disputes = ds ?? []
+        next.invoices = inv ?? []
+        next.offersWaiting = new Set((offers ?? []).filter((o: any) => o.sender_id && o.sender_id === sellerOf.get(o.transaction_id)).map((o: any) => o.transaction_id)).size
       }
-      const { count } = await supabase.from('requests').select('id', { count: 'exact', head: true }).eq('requester_id', user.id).eq('status', 'open')
-      setOpenRequests(count || 0)
+      apply(next)
       setLoading(false)
+      try { sessionStorage.setItem(AGENDA_CACHE, JSON.stringify(next)) } catch { /* stockage plein ou indisponible */ }
     }
     load()
+    return () => { alive = false }
   }, [router])
 
   // Un seul rôle à la fois : missions achetées en mode particulier, vendues en mode pro.
@@ -139,12 +161,23 @@ export default function AgendaPage() {
   const pendingTalks = mine.filter(t => UPCOMING.includes(t.status) && !t.price_confirmed).length
   const upcoming = mine.filter(t => UPCOMING.includes(t.status) && t.price_confirmed)
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
-  // Terminées : effectuées, et réservations annulées (comme la maquette), de la plus récente à la plus ancienne.
-  const done = mine.filter(t => DONE.includes(t.status) || (t.status === 'cancelled' && t.price_confirmed))
-    .sort((a, b) => txDate(b).getTime() - txDate(a).getTime())
+  // Terminées (audit ergonomie 19/11, correction 7) : missions effectuées d'abord, la plus récemment terminée en
+  // tête (son « Noter » est le premier visible) ; les réservations annulées ensuite, en bas.
+  const doneTime = (t: any) => new Date(t.completed_at || t.scheduled_at || t.created_at).getTime()
+  const done = [
+    ...mine.filter(t => DONE.includes(t.status)).sort((a, b) => doneTime(b) - doneTime(a)),
+    ...mine.filter(t => t.status === 'cancelled' && t.price_confirmed).sort((a, b) => new Date(b.scheduled_at || b.created_at).getTime() - new Date(a.scheduled_at || a.created_at).getTime()),
+  ]
   // « Aujourd'hui » : missions en cours ou du jour, avec un bouton vers l'écran « Mission du jour ».
   const todayList = upcoming.filter(t => isTodayMission(t))
-  const later = upcoming.filter(t => !isTodayMission(t))
+  // En cours (correction 7) : une mission dont l'heure est passée (hors mission du jour) et jamais clôturée
+  // n'est plus « à venir » : reléguée en bas, repliée, sans « Répondre ». « À venir » est trié par date de
+  // rendez-vous, la plus proche en tête.
+  const nowMs = Date.now()
+  const isStale = (t: any) => !isTodayMission(t) && (!!t.arrived_at || (!!t.scheduled_at && new Date(t.scheduled_at).getTime() < nowMs))
+  const later = upcoming.filter(t => !isTodayMission(t) && !isStale(t))
+  const stale = upcoming.filter(t => isStale(t)).sort((a, b) => txDate(b).getTime() - txDate(a).getTime())
+  const [showStale, setShowStale] = useState(false)
   const mineById = new Map(mine.map(t => [t.id, t]))
   const shownInvoices = mode ? invoices.filter(r => mineById.has(r.transaction_id) && MODE_KINDS[mode].includes(r.kind)) : []
   const invoicedIds = new Set(invoices.map(r => r.transaction_id))
@@ -183,10 +216,10 @@ export default function AgendaPage() {
 
   const open = (t: any) => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)
 
-  const card = (t: any, withSuivi = false, withActions = false) => (
+  const card = (t: any, withSuivi = false, withActions = false, muted = false) => (
     <div key={t.id} role="link" tabIndex={0} onClick={() => open(t)} aria-label={`${names[t.id] || 'Mission'}, ${badge(t).label}`}
       onKeyDown={e => { if (e.key === 'Enter' && e.target === e.currentTarget) open(t) }}
-      style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
+      style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer', opacity: muted ? .75 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
@@ -213,7 +246,7 @@ export default function AgendaPage() {
               border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Mission du jour</button>
           )}
-          {!isTodayMission(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
+          {!muted && !isTodayMission(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/commande`) }} style={{
               border: '1.5px solid #0C8F7E', borderRadius: 999, padding: '0 12px', minHeight: 44, background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Répondre</button>
@@ -344,6 +377,16 @@ export default function AgendaPage() {
               )}
               <div style={sectionTitle}>À venir</div>
               {later.length ? later.map(t => card(t, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
+              {stale.length > 0 && (
+                <>
+                  <button type="button" onClick={() => setShowStale(v => !v)} aria-expanded={showStale}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '10px 14px', marginBottom: 10, fontSize: 12.5, fontWeight: 600, color: '#4E6470', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <span style={{ flex: 1 }}>{stale.length} mission{stale.length > 1 ? 's' : ''} passée{stale.length > 1 ? 's' : ''} sans clôture</span>
+                    <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} style={{ transform: showStale ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
+                  </button>
+                  {showStale && stale.map(t => card(t, false, false, true))}
+                </>
+              )}
               {pendingTalks > 0 && (
                 <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', minHeight: 44, textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#4E6470', cursor: 'pointer' }}>
                   {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
