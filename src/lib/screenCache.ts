@@ -18,6 +18,16 @@ export function readScreenCache<T>(key: string, uid: string | null | undefined):
   } catch { return null }
 }
 
+/** Âge (ms) du cache de cet écran pour ce compte, ou null s'il n'y en a pas. Sert à ne pas relire d'avance ce qui vient de l'être. */
+export function screenCacheAge(key: string, uid: string | null | undefined): number | null {
+  if (!uid || typeof window === 'undefined') return null
+  try {
+    const v = JSON.parse(sessionStorage.getItem(PREFIX + key) || 'null')
+    if (v?.uid !== uid || typeof v.at !== 'number') return null
+    return Date.now() - v.at
+  } catch { return null }
+}
+
 export function writeScreenCache(key: string, uid: string | null | undefined, data: unknown) {
   if (!uid || typeof window === 'undefined') return
   try { sessionStorage.setItem(PREFIX + key, JSON.stringify({ uid, at: Date.now(), data })) } catch { /* plein ou bloqué */ }

@@ -16,6 +16,7 @@ import { TRADES } from '@/lib/trades'
 import { fetchProTrades, proRadiusKm, proRequestMatches } from '@/lib/proNearby'
 import { createClient } from '@/lib/supabase/client'
 import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
+import { FALLBACK_POS, PRO_CARTE_CACHE, fetchCarteMissions, fetchCarteSent, fetchCarteDone, type CarteCache } from '@/lib/carteLoaders'
 import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from '@/components/MapSheet'
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
 
@@ -50,13 +51,9 @@ function budgetRangeTxt(r: RequestNearby) {
 }
 const SLOT_LABELS: Record<string, string> = { matin: 'Matin', 'apres-midi': 'Après-midi', soir: 'Soir' }
 // Repli de position (Grasse) ; tant que la carte n'a que ce repli, le centre de la dernière lecture sert.
-const FALLBACK_POS = { lat: 43.6584, lng: 6.9225 }
 // Dernière liste connue (audit ergonomie 19/11 bis, correction 1) : affichée dès l'ouverture, puis
-// remplacée par la lecture fraîche. Cache de l'onglet lié au compte (src/lib/screenCache.ts).
-type CarteCache = {
-  reqs: RequestNearby[]; radiusKm: number; center: { lat: number; lng: number } | null
-  trades: string[]; available: boolean; missions: any[]; sent: any[]; done: any[]
-}
+// remplacée par la lecture fraîche. Cache de l'onglet lié au compte, rempli aussi dès la connexion
+// (19/11 ter, correction 2 : src/lib/carteLoaders.ts).
 
 export default function ProCartePage() {
   const router = useRouter()
@@ -123,7 +120,7 @@ export default function ProCartePage() {
     sessionUserId(supabase).then(uid => {
       if (off) return
       if (!uid) { setBoot(true); return }
-      const c = readScreenCache<CarteCache>('pro_carte', uid)
+      const c = readScreenCache<CarteCache>(PRO_CARTE_CACHE, uid)
       if (c) {
         setAllReqs(c.reqs || []); setRadiusKm(c.radiusKm || 25); setMyTrades(c.trades || []); setAvailable(c.available !== false)
         setMissions(c.missions || []); setSent(c.sent || []); setDone(c.done || [])
@@ -153,11 +150,7 @@ export default function ProCartePage() {
 
   useEffect(() => {
     if (!proId) return
-    createClient().from('transactions')
-      .select('id, status, scheduled_at, created_at, subtotal_cents, address_status, requests(category, title, address, lat, lng)')
-      .eq('seller_id', proId).eq('price_confirmed', true).in('status', ['pending', 'arrived'])
-      .order('scheduled_at', { ascending: true, nullsFirst: false })
-      .then(({ data }) => setMissions(data ?? []))
+    fetchCarteMissions(createClient(), proId).then(setMissions)
   }, [proId])
   // Propositions envoyées (lot 16) : réponses du pro à une demande ouverte, pas encore au tarif
   // validé. Sans ça, une réponse abandonnée disparaissait et la demande restait listée comme
@@ -166,11 +159,7 @@ export default function ProCartePage() {
   const [sent, setSent] = useState<any[]>([])
   useEffect(() => {
     if (!proId) return
-    createClient().from('transactions')
-      .select('id, created_at, request_id, requests(id, title, category, status)')
-      .eq('seller_id', proId).eq('price_confirmed', false).eq('status', 'pending')
-      .order('created_at', { ascending: false }).limit(30)
-      .then(({ data }) => setSent((data ?? []).filter((t: any) => t.request_id && t.requests?.status === 'open')))
+    fetchCarteSent(createClient(), proId).then(setSent)
   }, [proId])
   const sentByRequest: Record<string, string> = {}
   sent.forEach(t => { if (t.request_id && !sentByRequest[t.request_id]) sentByRequest[t.request_id] = t.id })
@@ -178,11 +167,7 @@ export default function ProCartePage() {
   const [done, setDone] = useState<any[]>([])
   useEffect(() => {
     if (!proId) return
-    createClient().from('transactions')
-      .select('id, status, scheduled_at, created_at, completed_at, subtotal_cents, requests(category, title)')
-      .eq('seller_id', proId).eq('status', 'completed')
-      .order('created_at', { ascending: false }).limit(20)
-      .then(({ data }) => setDone(data ?? []))
+    fetchCarteDone(createClient(), proId).then(setDone)
   }, [proId])
   const missionWhen = (m: any) => m.scheduled_at
     ? new Date(m.scheduled_at).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -231,7 +216,7 @@ export default function ProCartePage() {
   // choisie par ville (elle n'est pas gardée à la réouverture).
   useEffect(() => {
     if (!proId || !loaded || zoneCenter) return
-    writeScreenCache('pro_carte', proId, { reqs: allReqs, radiusKm, center: posIsFallback ? cacheCenter : userPos, trades: myTrades, available, missions, sent, done } satisfies CarteCache)
+    writeScreenCache(PRO_CARTE_CACHE, proId, { reqs: allReqs, radiusKm, center: posIsFallback ? cacheCenter : userPos, trades: myTrades, available, missions, sent, done } satisfies CarteCache)
   }, [proId, loaded, zoneCenter, allReqs, radiusKm, posIsFallback, cacheCenter, userPos, myTrades, available, missions, sent, done])
   useEffect(() => {
     if (!available) return

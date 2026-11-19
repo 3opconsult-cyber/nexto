@@ -2,7 +2,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { fetchProvidersNearby, fetchProviderActivities, fetchProviderFlags, openConversation, prefetchProDetail, type ProviderNearby, type ProviderFlags } from '@/lib/services'
+import { openConversation, prefetchProDetail, type ProviderNearby, type ProviderFlags } from '@/lib/services'
+import { FALLBACK_POS, isFallbackPos, loadMapPros, readMapCache, type MapCache } from '@/lib/carteLoaders'
+import { sessionUserId } from '@/lib/screenCache'
+import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
 import { useCatalog } from '@/lib/catalog'
 import NavDrawer from './NavDrawer'
@@ -62,7 +65,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [flags, setFlags] = useState<Record<string, ProviderFlags>>({})
   // Position : centrée sur l'adresse du profil si possible, sinon encart non bloquant (LocationAsk)
   // avant la fenêtre du navigateur ; repli Grasse.
-  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 }, 'client')
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition(FALLBACK_POS, 'client')
   const [recenterTick, setRecenterTick] = useState(0)
   // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
   const [pvId, setPvId] = useState<string | null>(null)
@@ -82,15 +85,35 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const back = useCallback((v: string) => { setViewState(v) }, [])
 
 
-  // Chargement réel des prestataires (providers_nearby renvoie lat/lng réels).
-  const loadPros = useCallback(() => {
-    fetchProvidersNearby(userPos.lat, userPos.lng, 15000).then(list => {
-      setRawPros(list)
-      // Activités = métier principal + métiers des prestations (table services).
-      fetchProviderActivities(list).then(setActs).catch(() => { })
-      fetchProviderFlags(list.map(p => p.id)).then(setFlags).catch(() => { })
+  // Dernière liste connue (audit ergonomie 19/11 ter, correction 2) : lue dès la connexion et gardée dans
+  // le cache de l'onglet (lié au compte), affichée à l'ouverture, puis remplacée par la lecture fraîche.
+  // boot : compte lu dans la session locale (quelques ms) et cache appliqué avant la première lecture.
+  const [boot, setBoot] = useState<{ uid: string | null; center: { lat: number; lng: number } | null } | null>(null)
+  useEffect(() => {
+    let off = false
+    sessionUserId(createClient()).then(uid => {
+      if (off) return
+      const c = uid ? readMapCache(uid) : null
+      if (c) { setRawPros(c.list || []); setActs(c.acts || {}); setFlags(c.flags || {}) }
+      setBoot({ uid, center: c?.center ?? null })
     })
-  }, [userPos.lat, userPos.lng])
+    return () => { off = true }
+  }, [])
+  // Chargement réel des prestataires (providers_nearby renvoie lat/lng réels), avec leurs activités
+  // (métier principal + métiers des prestations, table services) et leurs pièces. Seule la dernière
+  // lecture lancée s'affiche (une réponse plus ancienne, ex. autour du repli, est ignorée).
+  const loadSeq = useRef(0)
+  const loadPros = useCallback(() => {
+    if (!boot) return
+    // Liste en cache lue ailleurs que sur le repli : on attend la vraie position au lieu d'afficher
+    // un instant les prestataires autour de Grasse.
+    if (isFallbackPos(userPos) && boot.center && !isFallbackPos(boot.center)) return
+    const seq = ++loadSeq.current
+    loadMapPros({ lat: userPos.lat, lng: userPos.lng }, boot.uid).then((d: MapCache) => {
+      if (seq !== loadSeq.current) return
+      setRawPros(d.list); setActs(d.acts); setFlags(d.flags)
+    }).catch(() => { })
+  }, [userPos, boot])
   const actsOf = useCallback((x: { id: string; trade: string }) => acts[x.id] || (x.trade ? [x.trade] : []), [acts])
   const hitsOf = useCallback((x: { id: string; trade: string }) => {
     const a = actsOf(x); return sel.filter(k => a.includes(k)).length
@@ -212,6 +235,16 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // Un prestataire ouvert depuis une épingle hors de cette liste (filtres de recherche) : on
   // parcourt alors les épingles de la carte, de la plus proche à la plus lointaine.
   const sheetList = [...fullList, ...partList]
+  // Fiches des premiers prestataires de la liste préchargées pendant un temps mort (correction 4 du
+  // 19/11 ter) : « Voir le profil » s'affiche depuis le cache de l'onglet, sans attente.
+  const firstIds = sheetList.slice(0, 3).map(p => p.id).join(',')
+  useEffect(() => {
+    if (!firstIds) return
+    const w = window as unknown as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (h: number) => void }
+    const run = () => { firstIds.split(',').forEach(id => prefetchProDetail(id)); try { router.prefetch(`/pro/${firstIds.split(',')[0]}`) } catch { /* rien */ } }
+    if (w.requestIdleCallback) { const h = w.requestIdleCallback(run, { timeout: 2000 }); return () => w.cancelIdleCallback?.(h) }
+    const t = setTimeout(run, 800); return () => clearTimeout(t)
+  }, [firstIds, router])
   const navList = pv && sheetList.some(p => p.id === pv.id)
     ? sheetList
     : pros.filter(p => (sel.length === 0 || p.hits > 0) && (!cesuOnly || p.cesu)).sort((a, b) => a.dist - b.dist)

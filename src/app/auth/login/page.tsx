@@ -98,7 +98,7 @@ export default function LoginPage() {
     setError('')
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: signed, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
           setError('Email pas encore confirmé — vérifiez votre boîte mail (et les spams) pour le lien de confirmation.')
@@ -112,6 +112,12 @@ export default function LoginPage() {
       // Voir lib/auth-session.ts pour le mécanisme (le SDK Supabase ne permet pas
       // de raccourcir la durée du cookie de session depuis le client).
       rememberThisTabOnly(rememberMe)
+      // Liste de la carte d'arrivée (et Messages, Agenda, Mes demandes) lue dès maintenant, en parallèle du
+      // reste (audit ergonomie 19/11 ter, corrections 2 et 3) : la carte s'affiche à l'arrivée depuis le cache.
+      const signedId = signed?.user?.id
+      const warm = signedId
+        ? import('@/lib/loginWarm').then(m => m.warmAfterLogin(supabase, signedId)).catch(() => { })
+        : null
       // Journal de connexion : date et heure de chaque connexion (table login_log).
       const { data: { user: u } } = await supabase.auth.getUser()
       if (u) await logLogin(supabase, u.id)
@@ -119,7 +125,10 @@ export default function LoginPage() {
       // ?next= d'abord (chemin interne vérifié), sinon l'espace qui correspond au profil.
       const next = nextPath()
       if (next) { go(next); return }
-      go(await homeFor(supabase, u?.id ?? null))
+      const home = await homeFor(supabase, u?.id ?? null)
+      // Arrivée sur une carte : on laisse à sa liste un instant (1,5 s au plus) pour être déjà là.
+      if (warm && (home === '/pro/carte' || home === '/map')) await Promise.race([warm, new Promise(r => setTimeout(r, 1500))])
+      go(home)
     } catch {
       setError("Une erreur est survenue, réessayez dans un instant.")
       setLoading(false)
