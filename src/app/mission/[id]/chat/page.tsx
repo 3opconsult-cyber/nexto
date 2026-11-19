@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, useRef, Fragment } from 'react'
+import { createPortal } from 'react-dom'
 import DayTimePicker from '@/components/DayTimePicker'
 import RequestDetails from '@/components/RequestDetails'
 import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
@@ -90,6 +91,8 @@ export default function ChatPage() {
   const [newAmountPhoto, setNewAmountPhoto] = useState<File | null>(null)
   const [sendingOffer, setSendingOffer] = useState(false)
   const [offerErr, setOfferErr] = useState('')
+  // Prix > 2x la référence : confirmation en ligne dans le volet (plus de confirm() natif, audit 19/11 bis n° 6).
+  const [offerHighOk, setOfferHighOk] = useState(false)
   const [lastOfferCents, setLastOfferCents] = useState<number | null>(null)
   // Prix de départ du prestataire (sa fiche), dernière suggestion du formulaire de tarif.
   const [myBaseCents, setMyBaseCents] = useState<number | null>(null)
@@ -338,7 +341,12 @@ export default function ChatPage() {
     }
     // Garde-fou contre une saisie à la suite (ex. « 3030 € ») : nettement au-dessus du budget du client.
     const ref = offerReference()
-    if (ref && cents > 2 * ref.cents && !confirm(`Vous proposez ${EUR(cents)}, soit plus de 2 fois ${ref.label} (${EUR(ref.cents)}). Envoyer quand même ?`)) return
+    if (ref && cents > 2 * ref.cents && !offerHighOk) {
+      setOfferErr(`Vous proposez ${EUR(cents)}, soit plus de 2 fois ${ref.label} (${EUR(ref.cents)}). Vérifiez le montant ou envoyez quand même.`)
+      setOfferHighOk(true)
+      return
+    }
+    setOfferHighOk(false)
     setOfferErr('')
     setSendingOffer(true)
     const supabase = createClient()
@@ -401,7 +409,7 @@ export default function ChatPage() {
   function openOfferForm() {
     setLastOfferCents(null)
     const sug = userId && tx && userId === tx.seller_id ? offerSuggestion() : null
-    setNewAmount(sug ? String(Math.round(sug.cents) / 100) : ''); setNewHourly(''); setNewIncludedHours(''); setNewAmountReason(''); setNewAmountPhoto(null); setOfferErr('')
+    setNewAmount(sug ? String(Math.round(sug.cents) / 100) : ''); setNewHourly(''); setNewIncludedHours(''); setNewAmountReason(''); setNewAmountPhoto(null); setOfferErr(''); setOfferHighOk(false)
     setEditingPrice(true)
   }
 
@@ -429,25 +437,31 @@ export default function ChatPage() {
   // Menu « … » de l'en-tête (audit 19/11, correction 5) : l'annulation n'est plus un lien de 17 px
   // posé dans le fil, qu'on touchait par erreur.
   const [moreOpen, setMoreOpen] = useState(false)
+  // Confirmation de l'annulation dans le menu « … » (« Confirmer l'annulation » / « Garder ») au lieu de confirm().
+  const [cancelAsk, setCancelAsk] = useState(false)
   // Annulation façon Uber : gratuite tant que le prestataire n'a pas annoncé
   // son départ ; des frais s'appliquent une fois en route (il a déjà engagé du
   // temps/trajet) ; impossible une fois arrivé (QR scanné) — ça, c'est un
   // litige, pas une annulation. Les frais restent déclaratifs (pas de
   // prélèvement réel tant que Stripe n'est pas branché), comme le reste du
   // séquestre simulé.
+  function cancelInfo() {
+    const isBuyer = !!tx && userId === tx.buyer_id
+    // Les frais d'annulation tardive ne concernent que le client (le prestataire s'est déplacé).
+    const late = !!tx?.en_route_at && isBuyer
+    const feeCents = late ? Math.round((tx?.subtotal_cents || 0) * 0.15) : 0
+    const what = tx?.price_confirmed ? 'cette réservation' : 'cette demande'
+    const confirmMsg = late
+      ? `Le prestataire est déjà en route : des frais d'annulation de ${EUR(feeCents)} s'appliquent.`
+      : isBuyer || !tx?.en_route_at
+        ? `Annuler ${what} ? Cette action est définitive.`
+        : 'Vous avez annoncé votre départ : le client sera prévenu de l\u2019annulation.'
+    return { late, feeCents, confirmMsg }
+  }
+  // Appelée seulement après « Confirmer l'annulation » dans le menu « … ».
   async function cancelMission() {
     if (!tx || !userId) return
-    const isBuyer = userId === tx.buyer_id
-    // Les frais d'annulation tardive ne concernent que le client (le prestataire s'est déplacé).
-    const late = !!tx.en_route_at && isBuyer
-    const feeCents = late ? Math.round((tx.subtotal_cents || 0) * 0.15) : 0
-    const what = tx.price_confirmed ? 'cette réservation' : 'cette demande'
-    const confirmMsg = late
-      ? `Le prestataire est déjà en route : des frais d'annulation de ${EUR(feeCents)} s'appliquent. Annuler quand même ?`
-      : isBuyer || !tx.en_route_at
-        ? `Annuler ${what} ? Cette action est définitive.`
-        : 'Vous avez annoncé votre départ : le client sera prévenu de l\u2019annulation. Annuler quand même ?'
-    if (!confirm(confirmMsg)) return
+    const { late, feeCents } = cancelInfo()
     setCancelling(true)
     const supabase = createClient()
     const { data: updated, error } = await supabase.from('transactions')
@@ -642,19 +656,31 @@ export default function ChatPage() {
         </button>
         {canCancel && (
           <span style={{ position: 'relative', flexShrink: 0 }}>
-            <button type="button" onClick={() => setMoreOpen(o => !o)} aria-label="Plus d’actions" aria-haspopup="menu" aria-expanded={moreOpen}
+            <button type="button" onClick={() => { setMoreOpen(o => !o); setCancelAsk(false) }} aria-label="Plus d’actions" aria-haspopup="menu" aria-expanded={moreOpen}
               style={{ width: 44, height: 44, border: 'none', background: 'none', borderRadius: 12, display: 'grid', placeItems: 'center', cursor: 'pointer', color: '#4E6470', marginRight: -6 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
             </button>
             {moreOpen && (
               <>
-                <div onClick={() => setMoreOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                <div onClick={() => { setMoreOpen(false); setCancelAsk(false) }} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
                 <div role="menu" style={{ position: 'absolute', right: -6, top: 48, zIndex: 41, minWidth: 250, background: '#fff', borderRadius: 14, boxShadow: '0 10px 30px rgba(18,54,68,.22)', border: '1px solid #E7EDEB', padding: 6 }}>
-                  <button type="button" role="menuitem" disabled={cancelling} onClick={() => { setMoreOpen(false); cancelMission() }}
-                    style={{ width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', borderRadius: 10, padding: '0 12px', textAlign: 'left', cursor: 'pointer', color: '#C0503A', fontWeight: 700, fontSize: 14 }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
-                    {cancelLabel}
-                  </button>
+                  {!cancelAsk ? (
+                    <button type="button" role="menuitem" disabled={cancelling} onClick={() => setCancelAsk(true)}
+                      style={{ width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', borderRadius: 10, padding: '0 12px', textAlign: 'left', cursor: 'pointer', color: '#C0503A', fontWeight: 700, fontSize: 14 }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
+                      {cancelLabel}
+                    </button>
+                  ) : (
+                    <div role="alertdialog" aria-label="Confirmer l'annulation" style={{ padding: '8px 6px 4px' }}>
+                      <p style={{ fontSize: 13, color: '#123644', lineHeight: 1.45, margin: '0 6px 10px', fontWeight: 600 }}>{cancelInfo().confirmMsg}</p>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button type="button" onClick={() => { setCancelAsk(false); setMoreOpen(false) }}
+                          style={{ flex: 1, minHeight: 44, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Garder</button>
+                        <button type="button" disabled={cancelling} autoFocus onClick={() => { setCancelAsk(false); setMoreOpen(false); cancelMission() }}
+                          style={{ flex: 1.4, minHeight: 44, borderRadius: 999, border: 'none', background: '#C0503A', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Confirmer l&apos;annulation</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -851,9 +877,11 @@ export default function ChatPage() {
         />
       )}
 
-      {reporting && (
+      {/* Volet rendu dans <body> (portail) : toujours au-dessus de la barre de saisie collante et de la barre
+          du bas, quel que soit le contexte d'empilement de la page (audit 19/11 bis n° 11). */}
+      {reporting && typeof document !== 'undefined' && createPortal(
         <div onClick={() => setReporting(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20, maxHeight: '92vh', overflowY: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: '20px 20px calc(20px + env(safe-area-inset-bottom, 0px))', maxHeight: '92dvh', overflowY: 'auto', overscrollBehavior: 'contain' }}>
             {reportKind === 'choix' ? (
               <>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler</h3>
@@ -891,7 +919,7 @@ export default function ChatPage() {
                   <button onClick={submitSignalement} disabled={sigBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: sigBusy ? .6 : 1 }}>
                     {sigBusy ? 'Envoi…' : 'Envoyer à PING'}
                   </button>
-                  <button type="button" onClick={() => setReportKind('choix')} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Retour</button>
+                  <button type="button" onClick={() => setReportKind('choix')} style={{ display: 'block', minHeight: 44, minWidth: 88, padding: '0 16px', margin: '6px auto 0', border: 'none', background: 'none', borderRadius: 999, color: '#4E6470', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Retour</button>
                 </>
               )
             ) : reportSent ? (
@@ -912,12 +940,13 @@ export default function ChatPage() {
                   {reportBusy ? 'Envoi…' : 'Ouvrir le litige'}
                 </button>
                 {reportsOn && (
-                  <button type="button" onClick={() => setReportKind('choix')} style={{ display: 'block', margin: '10px auto 0', border: 'none', background: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Retour</button>
+                  <button type="button" onClick={() => setReportKind('choix')} style={{ display: 'block', minHeight: 44, minWidth: 88, padding: '0 16px', margin: '6px auto 0', border: 'none', background: 'none', borderRadius: 999, color: '#4E6470', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Retour</button>
                 )}
               </>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {editingPrice && (
@@ -926,7 +955,7 @@ export default function ChatPage() {
             <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>{lastOfferCents ? 'Faire une contre-proposition' : 'Proposer un tarif'}</h3>
             <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Montant (€)</label>
-            <input type="number" inputMode="decimal" value={newAmount} onChange={e => { setNewAmount(e.target.value); setOfferErr('') }} min="0" step="0.5"
+            <input type="number" inputMode="decimal" value={newAmount} onChange={e => { setNewAmount(e.target.value); setOfferErr(''); setOfferHighOk(false) }} min="0" step="0.5"
               placeholder={amountPlaceholder} onFocus={e => e.currentTarget.select()} aria-describedby="offer-amount-hint"
               style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 4 }} />
             <p id="offer-amount-hint" style={{ fontSize: 11.5, color: '#6E8592', margin: '0 0 10px' }}>
@@ -965,7 +994,7 @@ export default function ChatPage() {
             )}
             {offerErr && !hoursWithoutRate && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 10px' }}>{offerErr}</p>}
             <button onClick={proposeOffer} disabled={sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: (sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate) ? '#DCE5E3' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
-              {sendingOffer ? 'Envoi…' : 'Envoyer la proposition'}
+              {sendingOffer ? 'Envoi…' : offerHighOk ? 'Envoyer quand même' : 'Envoyer la proposition'}
             </button>
           </div>
         </div>
@@ -1006,7 +1035,7 @@ export default function ChatPage() {
                 : ['Bonjour, merci pour votre demande.', 'Quelle est la surface à traiter ?', 'Quel jour vous arrangerait ?']
               ).map(t => (
                 <button key={t} type="button" onClick={() => setInput(t)}
-                  style={{ padding: '7px 12px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>{t}</button>
+                  style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>{t}</button>
               ))}
             </div>
           </div>
@@ -1061,14 +1090,14 @@ export default function ChatPage() {
                 )}
                 {m.offer_status === 'pending' && !priceLocked && !mine && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                    <button onClick={() => counterOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
-                    <button onClick={() => acceptOffer(m)} style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
+                    <button onClick={() => counterOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
+                    <button onClick={() => acceptOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
                   </div>
                 )}
                 {m.offer_status === 'pending' && !priceLocked && mine && (
                   <div style={{ marginTop: 10 }}>
                     <div style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginBottom: 8 }}>En attente de validation</div>
-                    <button onClick={() => counterOffer(m)} style={{ width: '100%', padding: 9, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
+                    <button onClick={() => counterOffer(m)} style={{ width: '100%', minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
                   </div>
                 )}
                 {m.offer_status === 'accepted' && (
@@ -1178,7 +1207,7 @@ export default function ChatPage() {
                     Pour que le prix compte, utilisez Proposer un tarif : seul un tarif validé des deux côtés est facturé (et protégé en cas de litige).
                   </div>
                   <button onClick={openOfferForm}
-                    style={{ marginTop: 6, border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
+                    style={{ marginTop: 2, minHeight: 44, border: 'none', background: 'none', padding: '0 2px', color: '#0C8F7E', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
                     Proposer un tarif
                   </button>
                 </div>

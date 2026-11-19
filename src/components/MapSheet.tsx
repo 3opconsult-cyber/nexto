@@ -19,6 +19,10 @@ export const SHEET_H: Record<SheetSnap, string> = {
   full: `calc(100% - 64px - ${LIFT})`,
 }
 export const SHEET_LIFT = LIFT
+/** Hauteur CSS d'une position ; `peek` = hauteur du volet replié (64 px par défaut). */
+export function sheetH(snap: SheetSnap, peek = PEEK_PX) {
+  return snap === 'peek' ? `${peek}px` : SHEET_H[snap]
+}
 const ORDER: SheetSnap[] = ['peek', 'half', 'full']
 const NEXT: Record<SheetSnap, SheetSnap> = { peek: 'half', half: 'full', full: 'peek' }
 
@@ -26,14 +30,16 @@ function liftPx() {
   try { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ping-install-lift')) || 0 } catch { return 0 }
 }
 /** Hauteur en pixels d'une position du volet, pour un conteneur de hauteur `h`. */
-export function sheetPx(snap: SheetSnap, h: number) {
-  if (snap === 'peek') return PEEK_PX
+export function sheetPx(snap: SheetSnap, h: number, peek = PEEK_PX) {
+  if (snap === 'peek') return peek
   if (snap === 'half') return Math.round(h * HALF)
-  return Math.max(PEEK_PX, h - 64 - liftPx())
+  return Math.max(peek, h - 64 - liftPx())
 }
 
-export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)', children, footer }: {
+export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)', children, footer, peek = PEEK_PX }: {
   snap: SheetSnap
+  /** Hauteur du volet replié, en px (défaut 64 : poignée + titre). /map la monte pour laisser voir la 1re ligne. */
+  peek?: number
   onSnap: (s: SheetSnap) => void
   title: ReactNode
   accent?: string
@@ -59,7 +65,7 @@ export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)',
     if (d.moved < 6) return
     const parentH = el.parentElement?.clientHeight || window.innerHeight
     el.style.transition = 'none'
-    el.style.height = `${Math.max(PEEK_PX, Math.min(sheetPx('full', parentH), d.h0 + (d.y0 - e.clientY)))}px`
+    el.style.height = `${Math.max(peek, Math.min(sheetPx('full', parentH, peek), d.h0 + (d.y0 - e.clientY)))}px`
   }
   function up() {
     const d = drag.current, el = ref.current
@@ -74,16 +80,16 @@ export default function MapSheet({ snap, onSnap, title, accent = 'var(--slate)',
     let best: SheetSnap = snap
     let bestD = Infinity
     for (const s of ORDER) {
-      const dd = Math.abs(sheetPx(s, parentH) - h)
+      const dd = Math.abs(sheetPx(s, parentH, peek) - h)
       if (dd < bestD) { bestD = dd; best = s }
     }
-    el.style.height = SHEET_H[best]
+    el.style.height = sheetH(best, peek)
     onSnap(best)
   }
 
   return (
     <div ref={ref} className="map-sheet" data-snap={snap}
-      style={{ position: 'absolute', left: 0, right: 0, bottom: LIFT, height: SHEET_H[snap], zIndex: 40, background: '#fff', borderRadius: '22px 22px 0 0', boxShadow: '0 -14px 36px rgba(20,50,60,.2)', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'height .25s ease' }}>
+      style={{ position: 'absolute', left: 0, right: 0, bottom: LIFT, height: sheetH(snap, peek), zIndex: 40, background: '#fff', borderRadius: '22px 22px 0 0', boxShadow: '0 -14px 36px rgba(20,50,60,.2)', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'height .25s ease' }}>
       <button type="button" aria-expanded={snap !== 'peek'} aria-label={snap === 'peek' ? 'Afficher la liste' : 'Réduire ou agrandir la liste'}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onClick={() => { if (dragged.current) { dragged.current = false; return } onSnap(NEXT[snap]) }}
