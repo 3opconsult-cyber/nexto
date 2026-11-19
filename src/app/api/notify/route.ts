@@ -5,11 +5,11 @@ import { createAdminClient, hasServiceRole } from '@/lib/supabase/admin'
 // Notification par e-mail de l'AUTRE partie d'une mission (message, tarif proposé, réservation, litige).
 // Confidentialité : le corps ne contient jamais le texte du message ni l'adresse, seulement un lien.
 // Tout est éteint (réponse {sent:false, reason:'off'}) tant que RESEND_API_KEY ou la clé service manque.
-const EVENTS = ['message', 'offer', 'booking', 'dispute', 'presence_arrivee', 'presence_fin'] as const
+const EVENTS = ['message', 'offer', 'booking', 'dispute', 'presence_arrivee', 'presence_fin', 'presence_client', 'code_client'] as const
 // Demandes de confirmation de présence : action attendue du client, donc hors de la limite des 10 min des
 // messages ; leur propre limite est de 1 e-mail par mission et par type toutes les 2 min (la base n'accepte
 // déjà qu'une demande par minute, 5 au total). Le code n'est JAMAIS mis dans l'e-mail : il s'affiche dans l'application.
-const URGENT: readonly string[] = ['presence_arrivee', 'presence_fin']
+const URGENT: readonly string[] = ['presence_arrivee', 'presence_fin', 'code_client']
 const URGENT_THROTTLE_MS = 2 * 60 * 1000
 type Ev = typeof EVENTS[number]
 const THROTTLE_MS = 10 * 60 * 1000
@@ -22,7 +22,9 @@ const WHAT: Record<Ev, { subject: string; line: (asSeller: boolean) => string }>
   booking: { subject: 'Nouvelle réservation sur PING', line: s => s ? 'Un client vient de réserver une prestation auprès de vous.' : 'Votre réservation a bien été enregistrée.' },
   dispute: { subject: 'Un litige a été ouvert sur PING', line: () => 'Un litige a été ouvert sur une de vos missions. La discussion continue dans le dossier du litige.' },
   presence_arrivee: { subject: 'Votre prestataire est arrivé : confirmez dans PING', line: () => 'Votre prestataire indique être arrivé chez vous et ne pas vous y trouver. Ouvrez la mission du jour pour confirmer sa présence en un appui (ou signaler un problème).' },
-  presence_fin: { subject: 'Fin de mission à confirmer sur PING', line: () => 'Votre prestataire indique avoir terminé la mission. Ouvrez la mission du jour pour voir la durée et le montant, puis confirmer ou contester.' },
+  presence_fin: { subject: 'Fin de mission : envoyez votre code de fin sur PING', line: () => 'Votre prestataire indique avoir terminé la mission. Ouvrez la mission du jour pour voir la durée et le montant, puis envoyer votre code de fin ou contester.' },
+  presence_client: { subject: 'Votre client a indiqué s’il sera sur place', line: () => 'Votre client a indiqué s’il sera sur place le jour du rendez-vous. Ouvrez la mission pour voir comment valider votre arrivée et la fin.' },
+  code_client: { subject: 'Votre client vous a envoyé son code sur PING', line: () => 'Votre client vous a envoyé son code dans la conversation. Saisissez-le dans la mission du jour.' },
 }
 
 const off = () => NextResponse.json({ sent: false, reason: 'off' })

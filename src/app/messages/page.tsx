@@ -7,6 +7,8 @@ import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 import { fetchUnreadByTx } from '@/lib/unread'
 import { isInsuranceSent } from '@/lib/insurance'
+import { rowHasPresence } from '@/lib/presence'
+import PresenceTag from '@/components/presence/PresenceTag'
 
 // Repères type messagerie (WhatsApp) plutôt qu'une date brute sur chaque ligne :
 // plus lisible dès qu'il y a beaucoup de conversations (demande de Romain, 26/10).
@@ -213,6 +215,10 @@ export default function MessagesPage() {
                       <div style={{ fontSize: 12, color: nUnread > 0 ? '#123644' : '#4E6470', fontWeight: nUnread > 0 ? 700 : 400, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {isInsuranceSent(t.lastMessage?.body) ? 'Attestation d’assurance transmise' : (t.lastMessage?.body || 'Aucun message — ouvrir la conversation')}
                       </div>
+                      {/* Présence annoncée par le client (migration 048), comme sur le billet de mission. */}
+                      {t.kind === 'mission' && rowHasPresence(t) && t.price_confirmed && t.status === 'pending' && !t.arrived_at && t.scheduled_at && (
+                        <div style={{ marginTop: 5 }}><PresenceTag presence={t.client_presence} asSeller={t.isSeller} /></div>
+                      )}
                     </div>
                   </button>
                 )

@@ -8,14 +8,19 @@ import { systemSender } from '@/lib/systemMessage'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import {
-  PRESENCE_WARNING, durLabel, getPresenceState, parseScanned, presenceAvailable, proofLabel, validatePresence,
-  type Phase, type PresenceState,
+  PRESENCE_WARNING, durLabel, getPresenceState, hasProcess, parseScanned, presenceAvailable, proofLabel, setClientPresence, validatePresence,
+  type ClientPresence, type Phase, type PresenceState,
 } from '@/lib/presence'
+import { notifyOther } from '@/lib/notify'
 import MissionTimeline, { stepIndex } from '@/components/presence/MissionTimeline'
 import QrScanner from '@/components/presence/QrScanner'
 import ClientProofCard from '@/components/presence/ClientProofCard'
 import RemoteConfirmCard from '@/components/presence/RemoteConfirmCard'
 import RemotePresence from '@/components/presence/RemotePresence'
+import PresenceTag from '@/components/presence/PresenceTag'
+import PresenceChoice from '@/components/presence/PresenceChoice'
+import AbsentProcess from '@/components/presence/AbsentProcess'
+import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
 
 /**
  * Mission du jour : un seul écran, un seul bouton principal selon l'étape (audit arrivée / départ, 18/11).
@@ -89,12 +94,25 @@ export default function MissionDuJour() {
 
   // Raccourcis depuis le chat : ?scan ouvre le scanner, ?absent la voie « client absent ».
   const [wantAbsent, setWantAbsent] = useState(false)
+  // Migration 048 : démarche « client absent » ouverte à la main (client finalement absent), QR de fin
+  // affiché au client qui avait annoncé son absence, changement d'avis du client.
+  const [absentOpen, setAbsentOpen] = useState(false)
+  const [showQr, setShowQr] = useState(false)
+  const [presBusy, setPresBusy] = useState(false)
+  async function changePresence(p: ClientPresence) {
+    setPresBusy(true); setMsg(null)
+    const r = await setClientPresence(createClient(), txId, p)
+    setPresBusy(false)
+    if (!r.ok) { setMsg({ kind: 'err', text: r.message || 'Réponse non enregistrée.' }); return }
+    if (!r.unchanged) notifyOther(txId, 'presence_client')
+    load()
+  }
   useEffect(() => {
     if (autoOpened.current || !tx || !uid || v2 === null) return
     autoOpened.current = true
     const q = new URLSearchParams(window.location.search)
     if (isSeller && q.has('scan') && !tx.completed_at && (tx.arrived_at || tx.en_route_at)) setScan(tx.arrived_at ? 'fin' : 'arrivee')
-    if (isSeller && q.has('absent')) setWantAbsent(true)
+    if (isSeller && q.has('absent')) { setWantAbsent(true); setAbsentOpen(true) }
   }, [tx, uid, v2, isSeller])
 
   async function handleScan(raw: string) {
@@ -168,6 +186,13 @@ export default function MissionDuJour() {
   const preview = st?.preview_now
   const aProof = st?.arrival_proof ?? (tx.arrival_proof || tx.arrival_method)
   const fProof = st?.completion_proof ?? tx.completion_proof
+  // Process de commande (048) : présence annoncée par le client, démarche client absent en étapes.
+  const v48 = hasProcess(st)
+  const presence = (st?.client_presence ?? null) as ClientPresence | null
+  const absentArr = v48 && (presence === 'absent' || absentOpen || remA?.etat === 'en_attente' || remA?.etat === 'refusee')
+  const absentFin = v48 && (presence === 'absent' || absentOpen || remF?.etat === 'en_attente' || remF?.etat === 'refusee')
+  const pn = name || (isSeller ? 'Le client' : 'Votre prestataire')
+  const rateBuyer = tx.subtotal_cents ? (tx.buyer_fee_cents || 0) / tx.subtotal_cents : null
 
   const primary: React.CSSProperties = {
     width: '100%', border: 'none', borderRadius: 999, padding: '14px 0', background: '#0C8F7E', color: '#fff',
@@ -188,6 +213,9 @@ export default function MissionDuJour() {
           {tx.scheduled_at ? `Rendez-vous ${rdvLabel(tx.scheduled_at)}` : 'Heure du rendez-vous non fixée'}
         </div>
         {address && <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>{address}</div>}
+        {v48 && !done && !cancelled && tx.price_confirmed && (!tx.arrived_at || presence) && (
+          <div style={{ marginTop: 8 }}><PresenceTag presence={presence} asSeller={isSeller} onDark /></div>
+        )}
         {isSeller && address && !tx.arrived_at && (
           <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`} target="_blank" rel="noreferrer"
             style={{ display: 'inline-block', marginTop: 8, color: '#7FE3D3', fontWeight: 700, fontSize: 12.5 }}>Itinéraire</a>
@@ -232,7 +260,12 @@ export default function MissionDuJour() {
                   <button style={{ ...link, display: 'block', margin: '8px auto 0' }} onClick={() => setAskEta(false)}>Annuler</button>
                 </div>
               )}
-              <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 8 }}>Le client voit votre heure d&apos;arrivée estimée. La mission démarre au scan de son QR.</p>
+              <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 8 }}>
+                Le client voit votre heure d&apos;arrivée estimée.{' '}
+                {!v48 || presence === 'sur_place' ? 'La mission démarre au scan de son QR.'
+                  : presence === 'absent' ? `${pn} ne sera pas sur place : démarche client absent (photo, position, code du client).`
+                    : `${pn} n’a pas encore indiqué s’il sera sur place.`}
+              </p>
             </div>
           )}
 
@@ -240,6 +273,22 @@ export default function MissionDuJour() {
             <div style={block}>
               {winA && !winA.ok ? (
                 <p style={{ fontSize: 13, color: '#B3402F', fontWeight: 600 }}>{winA.message}</p>
+              ) : absentArr ? (
+                <>
+                  <AbsentProcess txId={tx.id} uid={uid} phase="arrivee" clientName={name || undefined} remote={remA} onDone={load} />
+                  {remA?.etat !== 'en_attente' && (
+                    <button style={{ ...link, display: 'block', margin: '10px auto 0', minHeight: 44 }} onClick={() => { setMsg(null); setScan('arrivee') }}>
+                      {pn} est là ? Scanner son QR
+                    </button>
+                  )}
+                </>
+              ) : v48 ? (
+                <>
+                  <button style={primary} onClick={() => { setMsg(null); setScan('arrivee') }}>Scanner le QR du client</button>
+                  {winA?.warning && PRESENCE_WARNING[winA.warning] && <p style={{ fontSize: 11.5, color: '#8a6520', textAlign: 'center', marginTop: 6 }}>{PRESENCE_WARNING[winA.warning]}</p>}
+                  <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 6 }}>Aucune position n&apos;est relevée.</p>
+                  <button style={{ ...link, display: 'block', margin: '4px auto 0', minHeight: 44 }} onClick={() => setAbsentOpen(true)}>Le client n&apos;est pas là ? Démarche client absent</button>
+                </>
               ) : (
                 <>
                   <button style={primary} onClick={() => { setMsg(null); setScan('arrivee') }}>Scanner le QR du client</button>
@@ -258,13 +307,28 @@ export default function MissionDuJour() {
                 <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2FD06E' }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Intervention en cours</div>
-                  <div style={{ fontSize: 11.5, color: '#4E6470' }}>Arrivée à {hhmm(tx.arrived_at)}{proofLabel(aProof) ? ` · ${proofLabel(aProof)}` : ''}</div>
+                  <div style={{ fontSize: 11.5, color: '#4E6470' }}>Arrivée à {hhmm(tx.arrived_at)}{proofLabel(aProof, 'arrivee') ? ` · ${proofLabel(aProof, 'arrivee')}` : ''}</div>
                   {preview?.subtotal_cents != null && <div style={{ fontSize: 11.5, color: '#4E6470' }}>Si vous terminez maintenant : prestation {EUR(preview.subtotal_cents)}{preview.recalcule && preview.billed_hours != null ? ` (${String(preview.billed_hours).replace('.', ',')} h facturée${Number(preview.billed_hours) > 1 ? 's' : ''})` : ''}</div>}
                 </div>
                 <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 19, color: '#123644', fontVariantNumeric: 'tabular-nums' }}>{durLabel(onSiteMin)}</b>
               </div>
               {winF && !winF.ok ? (
                 <p style={{ fontSize: 13, color: '#B3402F', fontWeight: 600, marginTop: 10 }}>{winF.message}</p>
+              ) : absentFin ? (
+                <div style={{ marginTop: 12 }}>
+                  <AbsentProcess txId={tx.id} uid={uid} phase="fin" clientName={name || undefined} remote={remF} preview={preview} onDone={load} />
+                  {remF?.etat !== 'en_attente' && (
+                    <button style={{ ...link, display: 'block', margin: '10px auto 0', minHeight: 44 }} onClick={() => { setMsg(null); setScan('fin') }}>
+                      {pn} est là ? Scanner son QR de fin
+                    </button>
+                  )}
+                </div>
+              ) : v48 ? (
+                <>
+                  <button style={{ ...primary, marginTop: 12 }} onClick={() => { setMsg(null); setScan('fin') }}>Terminer la mission</button>
+                  <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 6 }}>Scannez le QR de fin affiché chez le client.</p>
+                  <button style={{ ...link, display: 'block', margin: '4px auto 0', minHeight: 44 }} onClick={() => setAbsentOpen(true)}>Le client n&apos;est pas là ? Fin à distance (code de fin)</button>
+                </>
               ) : (
                 <>
                   <button style={{ ...primary, marginTop: 12 }} onClick={() => { setMsg(null); setScan('fin') }}>Terminer la mission</button>
@@ -301,18 +365,53 @@ export default function MissionDuJour() {
                   })()}
                 </div>
               )}
-              {remA?.etat === 'en_attente' && <div style={{ marginBottom: 12 }}><RemoteConfirmCard txId={tx.id} phase="arrivee" req={remA} onDone={load} /></div>}
-              {!v2 && legacyCode && new Date(legacyCode.expires_at).getTime() > now && (
+              {v48 ? (
+                remA?.etat === 'en_attente' ? (
+                  <ClientAbsentAction txId={tx.id} phase="arrivee" req={remA} proName={name || undefined} onDone={load} />
+                ) : !presence ? (
+                  <div style={{ background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: 14 }}>
+                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#123644', marginBottom: 4 }}>
+                      Serez-vous sur place{tx.scheduled_at ? ` à ${hhmm(tx.scheduled_at)}` : ''} ?
+                    </div>
+                    <p style={{ fontSize: 12.5, color: '#4E6470', margin: '0 0 10px', lineHeight: 1.5 }}>Votre réponse prépare l&apos;arrivée de {pn}.</p>
+                    <PresenceChoice txId={tx.id} presence={presence} proName={name || undefined} onChange={() => load()} />
+                  </div>
+                ) : presence === 'sur_place' ? (
+                  <>
+                    <ClientProofCard txId={tx.id} phase="arrivee" v2={!!v2} legacyToken={tx.qr_arrival_token} />
+                    <div style={{ textAlign: 'center', marginTop: 6 }}>
+                      <button style={{ ...link, minHeight: 44 }} disabled={presBusy} onClick={() => changePresence('absent')}>Finalement, je ne serai pas sur place</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
+                      <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Vous ne serez pas sur place : rien à faire pour l&apos;instant</div>
+                      <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 0', lineHeight: 1.5 }}>
+                        À son arrivée, vous recevrez la photo, la position et l&apos;heure de {pn} dans la messagerie, avec une notification. Vous confirmerez d&apos;un appui.
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center', marginTop: 6 }}>
+                      <button style={{ ...link, minHeight: 44 }} disabled={presBusy} onClick={() => changePresence('sur_place')}>Finalement, je serai sur place</button>
+                    </div>
+                  </>
+                )
+              ) : remA?.etat === 'en_attente' && <div style={{ marginBottom: 12 }}><RemoteConfirmCard txId={tx.id} phase="arrivee" req={remA} onDone={load} /></div>}
+              {!v48 && !v2 && legacyCode && new Date(legacyCode.expires_at).getTime() > now && (
                 <div role="alert" style={{ marginBottom: 12, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 14, padding: 14, textAlign: 'center' }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Le prestataire indique être sur place</div>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 30, letterSpacing: 6, color: '#123644', margin: '8px 0' }}>{legacyCode.code}</div>
                   <p style={{ fontSize: 11.5, color: '#6b4a10', margin: 0 }}>Valable jusqu&apos;à {hhmm(legacyCode.expires_at)}. Ne le communiquez que si le prestataire est bien là.</p>
                 </div>
               )}
-              <ClientProofCard txId={tx.id} phase="arrivee" v2={!!v2} legacyToken={tx.qr_arrival_token} />
-              <div style={{ textAlign: 'center', marginTop: 10 }}>
-                <button style={link} onClick={() => router.push(`/mission/${tx.id}/qrcodes`)}>Je ne serai pas sur place</button>
-              </div>
+              {!v48 && (
+                <>
+                  <ClientProofCard txId={tx.id} phase="arrivee" v2={!!v2} legacyToken={tx.qr_arrival_token} />
+                  <div style={{ textAlign: 'center', marginTop: 10 }}>
+                    <button style={link} onClick={() => router.push(`/mission/${tx.id}/qrcodes`)}>Je ne serai pas sur place</button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -323,11 +422,33 @@ export default function MissionDuJour() {
                 <span style={{ flex: 1, fontSize: 13, color: '#123644' }}>Sur place depuis {hhmm(tx.arrived_at)}</span>
                 <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 17, color: '#123644', fontVariantNumeric: 'tabular-nums' }}>{durLabel(onSiteMin)}</b>
               </div>
-              {remF?.etat === 'en_attente' && <div style={{ marginBottom: 12 }}><RemoteConfirmCard txId={tx.id} phase="fin" req={remF} onDone={load} /></div>}
-              <ClientProofCard txId={tx.id} phase="fin" v2={!!v2} legacyToken={tx.qr_complete_token} />
+              {v48 ? (
+                remF?.etat === 'en_attente' ? (
+                  <ClientAbsentAction txId={tx.id} phase="fin" req={remF} proName={name || undefined} buyerFeeRate={rateBuyer} onDone={load} />
+                ) : presence === 'absent' && !showQr ? (
+                  <>
+                    <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
+                      <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Intervention en cours</div>
+                      <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 0', lineHeight: 1.5 }}>
+                        À la fin, {pn} vous demande votre code de fin : vous l&apos;envoyez d&apos;un appui, {pn} le saisit pour clôturer.
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'center', marginTop: 6 }}>
+                      <button style={{ ...link, minHeight: 44 }} onClick={() => setShowQr(true)}>Je suis là : afficher mon QR de fin</button>
+                    </div>
+                  </>
+                ) : (
+                  <ClientProofCard txId={tx.id} phase="fin" v2={!!v2} legacyToken={tx.qr_complete_token} />
+                )
+              ) : (
+                <>
+                  {remF?.etat === 'en_attente' && <div style={{ marginBottom: 12 }}><RemoteConfirmCard txId={tx.id} phase="fin" req={remF} onDone={load} /></div>}
+                  <ClientProofCard txId={tx.id} phase="fin" v2={!!v2} legacyToken={tx.qr_complete_token} />
+                </>
+              )}
               <button onClick={() => router.push(`/mission/${tx.id}/chat?signaler`)} style={{
                 marginTop: 12, width: '100%', border: '1.5px solid #F2A93B', background: '#FFF7ED', color: '#8a6520',
-                borderRadius: 999, padding: '11px 0', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                borderRadius: 999, padding: '11px 0', minHeight: 44, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer',
               }}>Un problème ? Signaler avant de valider</button>
             </div>
           )}
@@ -345,8 +466,14 @@ export default function MissionDuJour() {
       )}
 
       <div style={{ textAlign: 'center', marginTop: 18 }}>
-        <button style={{ ...link, color: '#4E6470' }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Conversation</button>
+        <button style={{ ...link, color: '#4E6470', minHeight: 44 }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Conversation</button>
         <span style={{ color: '#C5D3CF', margin: '0 10px' }}>·</span>
+        {!done && !cancelled && tx.price_confirmed && (
+          <>
+            <button style={{ ...link, color: '#4E6470', minHeight: 44 }} onClick={() => router.push(`/mission/${tx.id}/commande`)}>{isSeller ? 'Commande reçue' : 'Paiement'}</button>
+            <span style={{ color: '#C5D3CF', margin: '0 10px' }}>·</span>
+          </>
+        )}
         <button style={{ ...link, color: '#4E6470' }} onClick={() => router.push('/aide/apres-commande')}>Comment ça marche</button>
       </div>
 
@@ -383,8 +510,8 @@ function Recap({ tx, seller, aProof, fProof }: { tx: any; seller?: boolean; aPro
   return (
     <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
       <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644', marginBottom: 4 }}>Mission terminée</div>
-      {row('Arrivée', `${hhmm(tx.arrived_at)}${proofLabel(aProof) ? ` · ${proofLabel(aProof)}` : ''}`)}
-      {row('Fin', `${hhmm(tx.completed_at)}${proofLabel(fProof) ? ` · ${proofLabel(fProof)}` : ''}`)}
+      {row('Arrivée', `${hhmm(tx.arrived_at)}${proofLabel(aProof, 'arrivee') ? ` · ${proofLabel(aProof, 'arrivee')}` : ''}`)}
+      {row('Fin', `${hhmm(tx.completed_at)}${proofLabel(fProof, 'fin') ? ` · ${proofLabel(fProof, 'fin')}` : ''}`)}
       {tx.duration_minutes != null && row('Durée sur place', durLabel(tx.duration_minutes))}
       {hourly && tx.base_forfait_cents != null && tx.included_hours != null && row('Tarif', `forfait ${EUR(tx.base_forfait_cents)} (${String(tx.included_hours).replace('.', ',')} h incluses), puis ${EUR(tx.hourly_rate_cents)}/h`)}
       {hourly && tx.base_forfait_cents == null && row('Tarif', `${EUR(tx.hourly_rate_cents)}/h, heure entamée due au-delà du seuil`)}

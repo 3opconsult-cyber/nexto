@@ -33,9 +33,11 @@ export async function fetchTodayMission(mode: Mode): Promise<TodayMission | null
   if (!list.length) return null
   const pick: any = list.find((t: any) => t.arrived_at) || list.find((t: any) => t.en_route_at) || list[0]
   let urgent = false
-  if (mode === 'particulier' && await presenceAvailable(supabase)) {
+  if (await presenceAvailable(supabase)) {
     const st = await getPresenceState(supabase, pick.id)
-    urgent = !!st && Object.values(st.remote || {}).some(r => r?.etat === 'en_attente')
+    const pending = Object.values(st?.remote || {}).filter(r => r?.etat === 'en_attente')
+    // Client : une confirmation ou un code à envoyer. Prestataire (048) : le code du client est arrivé.
+    urgent = mode === 'particulier' ? pending.some(r => !r?.code_sent_at) : pending.some(r => !!r?.code_sent_at)
   }
   return { id: pick.id, status: pick.status, scheduled_at: pick.scheduled_at, en_route_at: pick.en_route_at, arrived_at: pick.arrived_at, urgent }
 }

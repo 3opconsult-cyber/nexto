@@ -330,7 +330,8 @@ function missingRpc(e: { code?: string; message?: string } | null) {
       const pay = await startCheckout(tx.id)
       if (pay.redirectUrl) { window.location.href = pay.redirectUrl; return }
     }
-    router.push(`/mission/${tx.id}/qrcodes`)
+    // « Commande validée » : récapitulatif du paiement, puis « Serez-vous sur place ? » (maquette 18/11).
+    router.push(`/mission/${tx.id}/commande`)
   }
 
   return (

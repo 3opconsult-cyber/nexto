@@ -27,6 +27,11 @@ import { mentionsPrice } from '@/lib/priceMention'
 import { REPORT_CATEGORIES, reportsAvailable, createReport } from '@/lib/reports'
 import { acceptOfferMessage } from '@/lib/offers'
 import { markFirstAction } from '@/lib/firstAction'
+import { getPresenceState, hasProcess, presenceAvailable, PRESENCE_PHOTO_BUCKET, type ClientPresence, type PresenceState } from '@/lib/presence'
+import PresenceTag from '@/components/presence/PresenceTag'
+import PresenceChoice from '@/components/presence/PresenceChoice'
+import OrderSummary from '@/components/presence/OrderSummary'
+import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -92,6 +97,15 @@ export default function ChatPage() {
   const [rates, setRates] = useState<{ buyer: number; seller: number } | null>(null)
   useEffect(() => { getRates().then(setRates).catch(() => {}) }, [])
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({})
+  // Process de commande (migration 048) : présence annoncée par le client, démarche client absent.
+  const [pst, setPst] = useState<PresenceState | null>(null)
+  const [msgTick, setMsgTick] = useState(0)
+  useEffect(() => {
+    let alive = true
+    const supabase = createClient()
+    presenceAvailable(supabase).then(ok => ok ? getPresenceState(supabase, transactionId) : null).then(s => { if (alive) setPst(s) }).catch(() => { })
+    return () => { alive = false }
+  }, [transactionId, msgTick])
   const [reporting, setReporting] = useState(false)
   // Lot 24 : « Signaler l'échange à PING » (privé, table reports, migration 043) distinct du litige.
   // 'choix' tant que le signalement existe en base ; sinon on ouvre directement le litige, comme avant.
@@ -234,7 +248,9 @@ export default function ChatPage() {
     async function resolvePhotoUrls(list: Msg[]) {
       const withPhoto = list.filter(m => m.photo_path)
       for (const m of withPhoto) {
-        const { data } = await supabase.storage.from('offer-photos').createSignedUrl(m.photo_path as string, 3600)
+        // Photo d'arrivée (message système, migration 048) : bucket privé presence-photos.
+        const bucket = (m.kind as string) !== 'offer' && isSystemMessage(m) ? PRESENCE_PHOTO_BUCKET : 'offer-photos'
+        const { data } = await supabase.storage.from(bucket).createSignedUrl(m.photo_path as string, 3600)
         if (data?.signedUrl) setPhotoUrls(prev => ({ ...prev, [m.id]: data.signedUrl }))
       }
     }
@@ -248,6 +264,8 @@ export default function ChatPage() {
           // Conversation ouverte : le message de l'autre est lu à l'instant.
           if (meRef.current && m.sender_id !== meRef.current) markRead(supabase, meRef.current, transactionId, m.created_at)
           if (m.photo_path) resolvePhotoUrls([m])
+          // Présence annoncée, photo d'arrivée, code envoyé : l'état de la mission du jour suit le fil.
+          if (isSystemMessage(m) || /^(Code de validation|Mon code de fin)/.test(m.body || '')) setMsgTick(t => t + 1)
         })
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages', filter: `transaction_id=eq.${transactionId}` },
@@ -561,6 +579,9 @@ export default function ChatPage() {
     ? `Proposition précédente : ${EUR(lastOfferCents)}`
     : budgetHint || (tx?.subtotal_cents > 0 ? `Prix de départ : ${EUR(tx.subtotal_cents)}` : 'Montant en euros')
   // Demande d'attestation en attente : une demande du client sans transmission postée après elle.
+  // Process de commande (048) : où poser l'action du client absent dans le fil.
+  const lastPhotoIdx = (() => { for (let i = msgs.length - 1; i >= 0; i--) if (isSystemMessage(msgs[i]) && msgs[i].photo_path) return i; return -1 })()
+  const lastEndAskIdx = (() => { for (let i = msgs.length - 1; i >= 0; i--) if (isSystemMessage(msgs[i]) && /^Le prestataire indique avoir terminé/.test(msgs[i].body || '')) return i; return -1 })()
   const lastInsReq = (() => { for (let i = msgs.length - 1; i >= 0; i--) if (isSystemMessage(msgs[i]) && isInsuranceRequest(msgs[i].body)) return i; return -1 })()
   const insurancePending = lastInsReq >= 0 && !msgs.slice(lastInsReq + 1).some(m => isSystemMessage(m) && isInsuranceSent(m.body) && m.sender_id === tx?.seller_id)
   const txOpen = !!tx && tx.status !== 'cancelled'
@@ -725,6 +746,33 @@ export default function ChatPage() {
             </div>
             {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
             <div style={{ marginTop: 8 }}><MissionSuivi tx={tx} compact /></div>
+            {/* Commande validée (maquette 18/11) : ce que chacun paie ou perçoit, puis la présence du client (048). */}
+            {!tx.arrived_at && tx.status === 'pending' && (
+              <div style={{ marginTop: 10, borderTop: '1px solid #EEF2F1', paddingTop: 10 }}>
+                {userId === tx.buyer_id && hasProcess(pst) && !pst?.client_presence ? (
+                  <>
+                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Commande validée. Serez-vous sur place ?</div>
+                    <div style={{ margin: '3px 0 10px' }}><OrderSummary tx={tx} asSeller={false} counterpart={counterpart || undefined} payOn={payOn} compact /></div>
+                    <PresenceChoice txId={tx.id} presence={null} proName={counterpart || undefined} compact
+                      onChange={(p: ClientPresence) => { setPst(s => s ? { ...s, client_presence: p } : s); setMsgTick(t => t + 1) }} />
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    {hasProcess(pst) && <PresenceTag presence={pst?.client_presence} asSeller={userId === tx.seller_id} />}
+                    <div style={{ flex: '1 1 180px', minWidth: 0 }}><OrderSummary tx={tx} asSeller={userId === tx.seller_id} counterpart={counterpart || undefined} payOn={payOn} compact /></div>
+                    <button onClick={() => router.push(`/mission/${tx.id}/commande`)} style={{ border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, padding: '0 4px' }}>
+                      {userId === tx.seller_id ? 'Commande reçue' : hasProcess(pst) ? 'Modifier · paiement' : 'Récapitulatif du paiement'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Le client a envoyé son code (048) : le prestataire le saisit dans la mission du jour. */}
+            {userId === tx.seller_id && hasProcess(pst) && (['arrivee', 'fin'] as const).some(ph => pst?.remote?.[ph]?.etat === 'en_attente' && pst?.remote?.[ph]?.code_sent_at) && (
+              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ marginTop: 10, width: '100%', minHeight: 48, border: 'none', borderRadius: 999, background: '#C0503A', color: '#fff', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+                {counterpart || 'Le client'} vous a envoyé son code : le saisir
+              </button>
+            )}
           </div>
         )
       )}
@@ -1033,6 +1081,27 @@ export default function ChatPage() {
                 </Fragment>
               )
             }
+            // Photo d'arrivée du prestataire, client absent (migration 048) : photo, distance et heure.
+            if (m.photo_path) {
+              return (
+                <Fragment key={m.id}>
+                  {datePill}
+                  <div style={{ alignSelf: 'center', width: '90%', maxWidth: 360, background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: 10 }}>
+                    {photoUrls[m.id]
+                      ? <img src={photoUrls[m.id]} alt="Photo d’arrivée du prestataire" style={{ display: 'block', width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 12 }} />
+                      : <div style={{ height: 120, borderRadius: 12, background: '#F3F6F5', display: 'grid', placeItems: 'center', fontSize: 12, color: '#6E8592' }}>Photo d’arrivée</div>}
+                    <div style={{ fontSize: 12, color: '#123644', fontWeight: 600, lineHeight: 1.45, marginTop: 8 }}>{m.body}</div>
+                  </div>
+                  {/* Action du client sous la dernière photo : « Je confirme » en un appui, ou un code. */}
+                  {i === lastPhotoIdx && userId === tx?.buyer_id && pst?.remote?.arrivee?.etat === 'en_attente' && (
+                    <div style={{ alignSelf: 'center', width: '92%', maxWidth: 380 }}>
+                      <ClientAbsentAction txId={transactionId} phase="arrivee" req={pst.remote.arrivee} proName={counterpart || undefined} onDone={() => setMsgTick(t => t + 1)} />
+                    </div>
+                  )}
+                </Fragment>
+              )
+            }
+            const endAsk = i === lastEndAskIdx && userId === tx?.buyer_id && pst?.remote?.fin?.etat === 'en_attente'
             const insReq = isInsuranceRequest(m.body) && i === lastInsReq && insurancePending && userId === tx?.seller_id && txOpen
             return (
               <Fragment key={m.id}>
@@ -1040,6 +1109,13 @@ export default function ChatPage() {
                 <div style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>
                   {m.body}
                 </div>
+                {/* Fin annoncée, client absent (048) : « Envoyer mon code de fin » sous le message. */}
+                {endAsk && pst?.remote?.fin && (
+                  <div style={{ alignSelf: 'center', width: '92%', maxWidth: 380 }}>
+                    <ClientAbsentAction txId={transactionId} phase="fin" req={pst.remote.fin} proName={counterpart || undefined}
+                      buyerFeeRate={tx?.subtotal_cents ? (tx.buyer_fee_cents || 0) / tx.subtotal_cents : null} onDone={() => setMsgTick(t => t + 1)} />
+                  </div>
+                )}
                 {insReq && (
                   <div style={{ alignSelf: 'center', maxWidth: '90%', textAlign: 'center' }}>
                     {insuranceMissing ? (

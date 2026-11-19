@@ -11,6 +11,8 @@ import ModeHint from '@/components/ModeHint'
 import { UPCOMING, DONE, txDate, durationMinutes } from '@/lib/agenda'
 import { isTodayMission } from '@/lib/todayMission'
 import { MissionSuivi } from '@/components/presence/MissionTimeline'
+import PresenceTag from '@/components/presence/PresenceTag'
+import { rowHasPresence } from '@/lib/presence'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
@@ -197,6 +199,10 @@ export default function AgendaPage() {
               : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
             {t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}
           </div>
+          {/* Présence annoncée par le client (migration 048), sur le billet de mission. */}
+          {rowHasPresence(t) && t.price_confirmed && t.status === 'pending' && !t.arrived_at && (
+            <div style={{ marginTop: 6 }}><PresenceTag presence={t.client_presence} asSeller={t.seller_id === uid} /></div>
+          )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
           <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: badge(t).bg, color: badge(t).fg }}>
@@ -206,6 +212,11 @@ export default function AgendaPage() {
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
               border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Mission du jour</button>
+          )}
+          {!isTodayMission(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
+            <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/commande`) }} style={{
+              border: '1.5px solid #0C8F7E', borderRadius: 999, padding: '0 12px', minHeight: 44, background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+            }}>Répondre</button>
           )}
         </div>
       </div>

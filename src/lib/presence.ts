@@ -25,7 +25,11 @@ export type RemoteRequest = {
   requested_at: string; code_expires_at: string; confirm_until: string
   geo_status: 'conforme' | 'non_verifiable' | null; distance_m: number | null
   code: string | null; preview: Amounts | null
+  // Migration 048 : photo d'arrivée (client absent) et code envoyé par le client.
+  photo_path?: string | null; code_sent_at?: string | null
 }
+
+export type ClientPresence = 'sur_place' | 'absent'
 
 export type PresenceState = {
   v: number; role: 'prestataire' | 'client' | 'admin'
@@ -35,7 +39,12 @@ export type PresenceState = {
   remote: Partial<Record<Phase, RemoteRequest>>
   window: { arrivee: { ok: boolean; reason?: string; message?: string; warning?: string } | null; fin: { ok: boolean; reason?: string; message?: string; warning?: string } | null }
   preview_now: Amounts | null
+  // Migration 048 (v >= 48).
+  client_presence?: ClientPresence | null; client_presence_at?: string | null; arrival_photo_path?: string | null
 }
+
+/** Process de commande (migration 048) : présence annoncée, photo d'arrivée, codes envoyés par le client. */
+export const hasProcess = (st: PresenceState | null | undefined): boolean => !!st && Number(st.v) >= 48
 
 export type MissionProof = { phase: Phase; token?: string; code?: string; expires_at?: string; done?: boolean; ready?: boolean }
 
@@ -93,17 +102,20 @@ export async function clientDeclinePresence(supabase: SupabaseClient, txId: stri
 }
 
 export type RemoteRequestResult =
-  | { ok: true; geo: 'conforme' | 'non_verifiable'; expiresAt: string; confirmUntil?: string }
+  | { ok: true; geo: 'conforme' | 'non_verifiable'; expiresAt: string; confirmUntil?: string; distanceM?: number | null }
   | { ok: false; error: string; message: string; distanceM?: number }
 
-/** Client absent : le prestataire (consentement donné) envoie sa position ; /api/arrival compare et prévient le client. */
+/**
+ * Client absent : le prestataire (consentement donné) envoie sa position ; /api/arrival compare et prévient le client.
+ * Migration 048 : `photoPath` (photo prise sur place, obligatoire à l'arrivée) part avec, dans un seul message.
+ */
 export async function requestRemotePresence(
-  txId: string, phase: Phase, pos: { lat: number; lng: number; accuracyM?: number | null },
+  txId: string, phase: Phase, pos: { lat: number; lng: number; accuracyM?: number | null }, photoPath?: string | null,
 ): Promise<RemoteRequestResult> {
   try {
     const r = await fetch('/api/arrival', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transactionId: txId, phase, lat: pos.lat, lng: pos.lng, accuracy: pos.accuracyM ?? null, consent: true }),
+      body: JSON.stringify({ transactionId: txId, phase, lat: pos.lat, lng: pos.lng, accuracy: pos.accuracyM ?? null, consent: true, photoPath: photoPath ?? null }),
     })
     return await r.json()
   } catch {
@@ -123,14 +135,18 @@ export function getPositionOnce(timeoutMs = 10000): Promise<{ lat: number; lng: 
   })
 }
 
-// Libellés (facture, récapitulatif, frise). Ancien arrival_method (033) accepté en repli.
-export function proofLabel(p: string | null | undefined): string | null {
+// Libellés (facture, récapitulatif, frise). Ancien arrival_method (033) accepté en repli. La phase précise le mode
+// réel à distance (048) : photo et position à l'arrivée, code de fin envoyé par le client à la fin.
+export function proofLabel(p: string | null | undefined, phase?: Phase): string | null {
   switch (p) {
     case 'qr': case 'qr_client': return 'QR du client scanné sur place'
     case 'code': return 'code du client saisi sur place'
     case 'qr_sur_place': return 'QR laissé sur place par le client'
-    case 'distance_code': case 'geoloc_code': return 'client absent, code de confirmation du client'
-    case 'distance_confirmation': return 'client absent, confirmé par le client à distance'
+    case 'distance_code': case 'geoloc_code':
+      return phase === 'fin' ? 'client absent, code de fin envoyé par le client et saisi par le prestataire'
+        : 'client absent, code de validation du client'
+    case 'distance_confirmation':
+      return phase === 'fin' ? 'client absent, fin confirmée par le client' : 'client absent, arrivée confirmée par le client'
     case 'admin': return 'heure fixée par PING'
     case 'photo_gps': return 'photo et position du prestataire (ancien mode)'
     default: return null
@@ -138,9 +154,12 @@ export function proofLabel(p: string | null | undefined): string | null {
 }
 
 /** Phrase de la facture : « 10:02 — 12:14, arrivée : QR…, fin : confirmée… ». */
-export function presenceSentence(arrivee?: string | null, depart?: string | null, pa?: string | null, pd?: string | null): string | null {
+export function presenceSentence(arrivee?: string | null, depart?: string | null, pa?: string | null, pd?: string | null, photo?: boolean | null): string | null {
   if (!arrivee || !depart) return null
-  const a = proofLabel(pa), d = proofLabel(pd)
+  let a = proofLabel(pa, 'arrivee')
+  const d = proofLabel(pd, 'fin')
+  // Migration 048 : photo d'arrivée envoyée dans la messagerie (client absent).
+  if (photo && a?.startsWith('client absent, ')) a = a.replace('client absent, ', 'client absent, photo et position envoyées, ')
   if (!a && !d) return `${arrivee} — ${depart}, horodatés dans l'application`
   if (a && d && a === d) return `${arrivee} — ${depart}, ${a}`
   return `${arrivee} — ${depart} (arrivée : ${a || 'horodatée'} ; fin : ${d || 'horodatée'})`
@@ -170,3 +189,54 @@ export function parseScanned(raw: string): { txId?: string; phase?: string; toke
     return { token: s }
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Process de commande (migration 048). Fonction absente : { ok:false, reason:'unavailable' }, l'app garde 038.
+
+export type ProcessResult = PresenceResult & { code?: string; expires_at?: string; presence?: ClientPresence; unchanged?: boolean }
+
+async function rpcResult(p: PromiseLike<{ data: any; error: any }>): Promise<ProcessResult> {
+  const { data, error } = await p
+  if (error) return { ok: false, reason: isMissingFunction(error) ? 'unavailable' : 'error', message: error.message }
+  return (data ?? { ok: false, reason: 'error', message: 'Réponse vide.' }) as ProcessResult
+}
+
+/** Le client annonce « Je serai sur place » / « Je ne serai pas sur place » (modifiable jusqu'à l'arrivée). */
+export const setClientPresence = (supabase: SupabaseClient, txId: string, presence: ClientPresence) =>
+  rpcResult(supabase.rpc('set_client_presence', { p_transaction: txId, p_presence: presence }))
+
+/** Client absent : le client envoie son code (validation d'arrivée ou code de fin), affiché et posté dans le fil. */
+export const clientSendPresenceCode = (supabase: SupabaseClient, txId: string, phase: Phase) =>
+  rpcResult(supabase.rpc('client_send_presence_code', { p_transaction: txId, p_phase: phase }))
+
+/** Client absent, fin : le prestataire demande le code de fin (aucune position). */
+export const requestEndCode = (supabase: SupabaseClient, txId: string) =>
+  rpcResult(supabase.rpc('request_end_code', { p_transaction: txId }))
+
+export const PRESENCE_PHOTO_BUCKET = 'presence-photos'
+
+/** Photo d'arrivée (client absent) : bucket privé, `<uid>/<mission>/<horodatage>.<ext>`. */
+export async function uploadPresencePhoto(supabase: SupabaseClient, uid: string, txId: string, file: File): Promise<{ path?: string; error?: string }> {
+  if (file.size > 10 * 1024 * 1024) return { error: 'Photo trop lourde (10 Mo au plus).' }
+  const ext = ((file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace(/[^a-z0-9]/g, '')) || 'jpg'
+  const path = `${uid}/${txId}/${Date.now()}.${ext}`
+  const { error } = await supabase.storage.from(PRESENCE_PHOTO_BUCKET).upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' })
+  if (error) return { error: 'Photo non envoyée : vérifiez votre connexion et réessayez.' }
+  return { path }
+}
+
+export async function presencePhotoUrl(supabase: SupabaseClient, path: string | null | undefined): Promise<string | null> {
+  if (!path) return null
+  const { data } = await supabase.storage.from(PRESENCE_PHOTO_BUCKET).createSignedUrl(path, 3600)
+  return data?.signedUrl ?? null
+}
+
+/** Pastille de présence : « Client sur place » / « Client absent » côté pro, « Vous serez… » côté client. */
+export function presenceTagLabel(p: ClientPresence | null | undefined, asSeller: boolean): { text: string; warn: boolean; none: boolean } {
+  if (p === 'sur_place') return { text: asSeller ? 'Client sur place' : 'Vous serez sur place', warn: false, none: false }
+  if (p === 'absent') return { text: asSeller ? 'Client absent' : 'Vous serez absent', warn: true, none: false }
+  return { text: asSeller ? 'Présence non indiquée' : 'Serez-vous sur place ?', warn: false, none: true }
+}
+
+/** Colonne présente sur une ligne lue avec `select('*')` : la migration 048 est appliquée. */
+export const rowHasPresence = (tx: any): boolean => !!tx && Object.prototype.hasOwnProperty.call(tx, 'client_presence')

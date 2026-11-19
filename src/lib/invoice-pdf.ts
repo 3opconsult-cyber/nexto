@@ -108,7 +108,7 @@ export function prestationSous(l: Record<string, any>): string {
     : l.taux_horaire_cents ? `${EUR(Number(l.taux_horaire_cents))} de l'heure` : null
   return [
     l.date && `Le ${l.date}`,
-    presenceSentence(l.arrivee, l.depart, l.preuve_arrivee, l.preuve_depart),
+    presenceSentence(l.arrivee, l.depart, l.preuve_arrivee, l.preuve_depart, !!l.photo_arrivee),
     tarif,
   ].filter(Boolean).join('  ·  ')
 }

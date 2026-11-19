@@ -57,17 +57,31 @@ export async function POST(req: Request) {
     }
     const geo = verdict.status === 'conforme' ? 'conforme' : 'non_verifiable'
 
-    const distance = verdict.status === 'conforme' ? verdict.distanceM : null
-    const { data: v2, error: e2 } = await supabase.rpc('request_remote_presence', {
-      p_transaction: tx.id, p_phase: phase, p_lat: lat, p_lng: lng, p_distance_m: distance, p_geo_status: geo,
-    })
+    const distance = verdict.status === 'conforme' ? Math.round(verdict.distanceM) : null
+    // Migration 048 : arrivée avec la photo prise sur place (obligatoire), un seul message avec photo, distance
+    // et heure. Fonction absente : repli sur 038 (sans photo), puis 033.
+    const photoPath = typeof b.photoPath === 'string' && b.photoPath.length < 300 ? b.photoPath : null
+    let v2: any = null
+    let e2: any = null
+    if (phase === 'arrivee' && photoPath) {
+      const r48 = await supabase.rpc('request_absent_arrival', {
+        p_transaction: tx.id, p_lat: lat, p_lng: lng, p_distance_m: distance, p_geo_status: geo, p_photo_path: photoPath,
+      })
+      if (!r48.error || !isMissingFunction(r48.error)) { v2 = r48.data; e2 = r48.error }
+    }
+    if (!v2 && !e2) {
+      const r38 = await supabase.rpc('request_remote_presence', {
+        p_transaction: tx.id, p_phase: phase, p_lat: lat, p_lng: lng, p_distance_m: distance, p_geo_status: geo,
+      })
+      v2 = r38.data; e2 = r38.error
+    }
     if (!e2) {
       if (!v2?.ok) {
         const code = v2?.reason === 'too_many' ? 'too_many' : v2?.reason === 'throttled' ? 'throttled' : (v2?.reason || 'not_ready')
         return fail(code, v2?.message || 'Demande refusée.', code === 'too_many' || code === 'throttled' ? 429 : 409)
       }
       // Le message au client est posé par la base (request_remote_presence).
-      return NextResponse.json({ ok: true, geo, expiresAt: v2.expires_at, confirmUntil: v2.confirm_until })
+      return NextResponse.json({ ok: true, geo, distanceM: distance, expiresAt: v2.expires_at, confirmUntil: v2.confirm_until })
     }
     if (!isMissingFunction(e2)) return fail('server', e2.message, 400)
     if (phase === 'fin') return fail('unavailable', 'La fin à distance n’est pas encore disponible : utilisez le QR de fin du client.', 409)

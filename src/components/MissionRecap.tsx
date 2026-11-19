@@ -139,8 +139,8 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
 
           {(tx.arrived_at || tx.completed_at) && (
             <Section title="Intervention">
-              {tx.arrived_at && <Row label="Arrivée" value={`${fmtDate(tx.arrived_at)}${proofLabel(tx.arrival_proof || tx.arrival_method) ? ` · ${proofLabel(tx.arrival_proof || tx.arrival_method)}` : ''}`} />}
-              {tx.completed_at && <Row label="Fin" value={`${fmtTime(tx.completed_at)}${proofLabel(tx.completion_proof) ? ` · ${proofLabel(tx.completion_proof)}` : ''}`} />}
+              {tx.arrived_at && <Row label="Arrivée" value={`${fmtDate(tx.arrived_at)}${proofLabel(tx.arrival_proof || tx.arrival_method, 'arrivee') ? ` · ${proofLabel(tx.arrival_proof || tx.arrival_method, 'arrivee')}` : ''}`} />}
+              {tx.completed_at && <Row label="Fin" value={`${fmtTime(tx.completed_at)}${proofLabel(tx.completion_proof, 'fin') ? ` · ${proofLabel(tx.completion_proof, 'fin')}` : ''}`} />}
               {tx.duration_minutes != null && <Row label="Durée sur place" value={fmtDur(tx.duration_minutes)} />}
             </Section>
           )}

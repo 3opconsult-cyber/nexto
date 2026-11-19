@@ -2,7 +2,12 @@
 
 Lien direct : https://supabase.com/dashboard/project/wmiawwaxwlvascyflpba/sql/new
 
-## Ordre de collage (mis à jour le 18/11/2026)
+## Ordre de collage (mis à jour le 19/11/2026)
+
+**À coller (process de commande, 19/11/2026)** : `048_process_commande.sql`, juste après `038_arrivee_depart_securise.sql`
+(elle lit ses tables et réécrit `_presence_apply`, `validate_presence`, `request_remote_presence`, `presence_state`,
+`unread_counts`). Testée sur PostgreSQL 16 avec 038 sur un schéma minimal (collée deux fois chacune). Sans 048, l'app garde
+le fonctionnement de 038 (ou de 033 sans 038).
 
 **Règle commune.** Déployer l'application AVANT de coller. Chaque fichier ci-dessous :
 - est une copie exacte de `supabase/migrations/…` (sauf `provider_services_public.sql` et `comptes_qa.sql`, qui n'existent qu'ici) ;
@@ -22,6 +27,7 @@ Idempotente, sans DROP ni DELETE. Vérification après coup :
 | # | Fichier | Ce que ça apporte | Vérification après coup |
 |---|---|---|---|
 | 1 | `038_arrivee_depart_securise.sql` | Arrivée et départ validés uniquement avec une preuve du client. | `select proname from pg_proc where proname in ('validate_presence', 'client_confirm_presence', 'presence_state');` |
+| 1 bis | `048_process_commande.sql` | Process de commande (maquette 18/11) : « Je serai / ne serai pas sur place » posé par le client seul, photo d'arrivée obligatoire quand il est absent (bucket privé `presence-photos`, message avec photo, distance et heure), code de validation et code de fin envoyés par le client puis saisis par le prestataire. Réécrit 5 fonctions de 038 : à coller juste APRÈS 038 (et à recoller si 038 est recollé). | `select proname from pg_proc where proname in ('set_client_presence', 'request_absent_arrival', 'request_end_code', 'client_send_presence_code');` puis `select id, public from storage.buckets where id = 'presence-photos';` |
 | 2 | `039_statut_pro_cesu.sql` | Statut juridique et TVA du pro, CESU préfinancé, `provider_docs_checked`. | `select legal_form, accepts_cesu_prefinance from provider_profiles limit 1;` |
 | 3 | `040_arrangement_amiable.sql` | « Arrangement à l'amiable » dans un litige, avoir, virement ajusté. Les frais et la commission ne changent pas (voir 047). | `select proname from pg_proc where proname in ('propose_settlement', 'accept_settlement', 'decline_settlement', 'mark_settlement_refunded');` |
 | 4 | `041_prestations_photos.sql` | Prestations : métier, photo, « masquée ». | `select trade, photo_path, hidden from services limit 1;` |

@@ -59,6 +59,7 @@ export default function FacturePage() {
           ...l0,
           preuve_arrivee: l0.preuve_arrivee ?? t.arrival_proof ?? t.arrival_method ?? null,
           preuve_depart: l0.preuve_depart ?? t.completion_proof ?? null,
+          photo_arrivee: l0.photo_arrivee ?? (t.arrival_photo_path ? true : null),
           forfait_cents: l0.forfait_cents ?? t.base_forfait_cents ?? null,
           heures_incluses: l0.heures_incluses ?? t.included_hours ?? null,
         }, ...v.lines.slice(1)] }
