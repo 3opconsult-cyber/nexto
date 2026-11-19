@@ -8,7 +8,7 @@ import { systemSender } from '@/lib/systemMessage'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import {
-  PRESENCE_WARNING, durLabel, getPresenceState, hasProcess, parseScanned, presenceAvailable, proofLabel, setClientPresence, validatePresence,
+  PRESENCE_WARNING, billedLabel, durLabel, getPresenceState, hasProcess, parseScanned, presenceAvailable, proofLabel, setClientPresence, validatePresence,
   type ClientPresence, type Phase, type PresenceState,
 } from '@/lib/presence'
 import { notifyOther } from '@/lib/notify'
@@ -192,6 +192,8 @@ export default function MissionDuJour() {
   const absentArr = v48 && (presence === 'absent' || absentOpen || remA?.etat === 'en_attente' || remA?.etat === 'refusee')
   const absentFin = v48 && (presence === 'absent' || absentOpen || remF?.etat === 'en_attente' || remF?.etat === 'refusee')
   const pn = name || (isSeller ? 'Le client' : 'Votre prestataire')
+  // Forfait avec heures incluses : l'aperçu compte les heures au-delà du forfait (billedLabel).
+  const forfaitPlus = tx.base_forfait_cents != null && tx.included_hours != null
   const rateBuyer = tx.subtotal_cents ? (tx.buyer_fee_cents || 0) / tx.subtotal_cents : null
 
   const primary: React.CSSProperties = {
@@ -308,7 +310,7 @@ export default function MissionDuJour() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Intervention en cours</div>
                   <div style={{ fontSize: 11.5, color: '#4E6470' }}>Arrivée à {hhmm(tx.arrived_at)}{proofLabel(aProof, 'arrivee') ? ` · ${proofLabel(aProof, 'arrivee')}` : ''}</div>
-                  {preview?.subtotal_cents != null && <div style={{ fontSize: 11.5, color: '#4E6470' }}>Si vous terminez maintenant : prestation {EUR(preview.subtotal_cents)}{preview.recalcule && preview.billed_hours != null ? ` (${String(preview.billed_hours).replace('.', ',')} h facturée${Number(preview.billed_hours) > 1 ? 's' : ''})` : ''}</div>}
+                  {preview?.subtotal_cents != null && <div style={{ fontSize: 11.5, color: '#4E6470' }}>Si vous terminez maintenant : prestation {EUR(preview.subtotal_cents)}{billedLabel(preview, forfaitPlus)}</div>}
                 </div>
                 <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 19, color: '#123644', fontVariantNumeric: 'tabular-nums' }}>{durLabel(onSiteMin)}</b>
               </div>
@@ -316,7 +318,7 @@ export default function MissionDuJour() {
                 <p style={{ fontSize: 13, color: '#B3402F', fontWeight: 600, marginTop: 10 }}>{winF.message}</p>
               ) : absentFin ? (
                 <div style={{ marginTop: 12 }}>
-                  <AbsentProcess txId={tx.id} uid={uid} phase="fin" clientName={name || undefined} remote={remF} preview={preview} onDone={load} />
+                  <AbsentProcess txId={tx.id} uid={uid} phase="fin" clientName={name || undefined} remote={remF} preview={preview} forfait={forfaitPlus} onDone={load} />
                   {remF?.etat !== 'en_attente' && (
                     <button style={{ ...link, display: 'block', margin: '10px auto 0', minHeight: 44 }} onClick={() => { setMsg(null); setScan('fin') }}>
                       {pn} est là ? Scanner son QR de fin
@@ -357,7 +359,9 @@ export default function MissionDuJour() {
         <>
           {!tx.arrived_at && (
             <div style={block}>
-              {tx.en_route_at && (
+              {/* Compte à rebours masqué dès que le prestataire indique être sur place (photo reçue) : sinon
+                  « arrive dans 10 min » restait affiché au-dessus de « … indique être sur place » (e2e 19/11). */}
+              {tx.en_route_at && remA?.etat !== 'en_attente' && (
                 <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px', marginBottom: 10, fontSize: 13, color: '#123644' }}>
                   {(() => {
                     const left = Math.max(0, (tx.eta_minutes || 15) * 60000 - (now - new Date(tx.en_route_at).getTime()))
@@ -373,7 +377,7 @@ export default function MissionDuJour() {
                     <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#123644', marginBottom: 4 }}>
                       Serez-vous sur place{tx.scheduled_at ? ` à ${hhmm(tx.scheduled_at)}` : ''} ?
                     </div>
-                    <p style={{ fontSize: 12.5, color: '#4E6470', margin: '0 0 10px', lineHeight: 1.5 }}>Votre réponse prépare l&apos;arrivée de {pn}.</p>
+                    <p style={{ fontSize: 12.5, color: '#4E6470', margin: '0 0 10px', lineHeight: 1.5 }}>Votre réponse prépare l&apos;arrivée de {pn.replace(/\.$/, '')}.</p>
                     <PresenceChoice txId={tx.id} presence={presence} proName={name || undefined} onChange={() => load()} />
                   </div>
                 ) : presence === 'sur_place' ? (
@@ -424,7 +428,7 @@ export default function MissionDuJour() {
               </div>
               {v48 ? (
                 remF?.etat === 'en_attente' ? (
-                  <ClientAbsentAction txId={tx.id} phase="fin" req={remF} proName={name || undefined} buyerFeeRate={rateBuyer} onDone={load} />
+                  <ClientAbsentAction txId={tx.id} phase="fin" req={remF} proName={name || undefined} buyerFeeRate={rateBuyer} forfait={forfaitPlus} onDone={load} />
                 ) : presence === 'absent' && !showQr ? (
                   <>
                     <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>

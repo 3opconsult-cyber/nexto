@@ -1113,7 +1113,8 @@ export default function ChatPage() {
                 {endAsk && pst?.remote?.fin && (
                   <div style={{ alignSelf: 'center', width: '92%', maxWidth: 380 }}>
                     <ClientAbsentAction txId={transactionId} phase="fin" req={pst.remote.fin} proName={counterpart || undefined}
-                      buyerFeeRate={tx?.subtotal_cents ? (tx.buyer_fee_cents || 0) / tx.subtotal_cents : null} onDone={() => setMsgTick(t => t + 1)} />
+                      buyerFeeRate={tx?.subtotal_cents ? (tx.buyer_fee_cents || 0) / tx.subtotal_cents : null}
+                      forfait={tx?.base_forfait_cents != null && tx?.included_hours != null} onDone={() => setMsgTick(t => t + 1)} />
                   </div>
                 )}
                 {insReq && (

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { notifyOther } from '@/lib/notify'
 import { EUR } from '@/lib/invoice-pdf'
 import {
-  durLabel, getPositionOnce, requestEndCode, requestRemotePresence, uploadPresencePhoto, validatePresence,
+  billedLabel, durLabel, getPositionOnce, requestEndCode, requestRemotePresence, uploadPresencePhoto, validatePresence,
   type Amounts, type Phase, type RemoteRequest,
 } from '@/lib/presence'
 
@@ -49,8 +49,10 @@ const link: React.CSSProperties = { display: 'block', margin: '8px auto 0', minH
  * Fin : durée et montant · demandez le code de fin · saisissez le code envoyé par le client.
  * Jamais de validation par le prestataire seul.
  */
-export default function AbsentProcess({ txId, uid, phase, clientName, remote, preview, onDone }: {
-  txId: string; uid: string; phase: Phase; clientName?: string; remote?: RemoteRequest; preview?: Amounts | null; onDone: () => void
+export default function AbsentProcess({ txId, uid, phase, clientName, remote, preview, forfait = false, onDone }: {
+  txId: string; uid: string; phase: Phase; clientName?: string; remote?: RemoteRequest; preview?: Amounts | null
+  /** Forfait avec heures incluses : les heures facturées de l'aperçu sont celles au-delà du forfait. */
+  forfait?: boolean; onDone: () => void
 }) {
   const router = useRouter()
   const cl = clientName || 'Le client'
@@ -100,7 +102,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
       return
     }
     notifyOther(txId, 'presence_arrivee')
-    setInfo({ err: false, text: `Photo envoyée à ${cl}.` })
+    setInfo({ err: false, text: `Photo envoyée à ${cl.replace(/\.$/, '')}.` })
     onDone()
   }
 
@@ -204,14 +206,14 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
 
   // Fin, client absent.
   const fp = pending ? remote?.preview : preview
-  const amount = fp ? `${durLabel(fp.duration_minutes)} sur place${fp.recalcule && fp.billed_hours != null ? ` → ${String(fp.billed_hours).replace('.', ',')} h facturée${Number(fp.billed_hours) > 1 ? 's' : ''}` : ''}${fp.subtotal_cents != null ? `, ${EUR(fp.subtotal_cents)}` : ''}` : null
+  const amount = fp ? `${durLabel(fp.duration_minutes)} sur place${billedLabel(fp, forfait)}${fp.subtotal_cents != null ? `, ${EUR(fp.subtotal_cents)}` : ''}` : null
   return (
     <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: '12px 14px' }}>
       <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Fin de mission, client absent</div>
       <p style={p}>La fin se valide avec le code de fin de {cl} : {cl} l’envoie, vous le saisissez. Jamais par vous seul.</p>
       <ol style={{ listStyle: 'none', margin: '6px 0 0', padding: 0 }}>
         <Step n={1} state="ok" title="Durée sur place">
-          <p style={p}>{amount || 'Calculée à l’envoi de la demande.'}{fp && !fp.recalcule ? ' Forfait : prix inchangé.' : ''}</p>
+          <p style={p}>{amount || 'Calculée à l’envoi de la demande.'}{fp && !fp.recalcule && !forfait ? ' Forfait : prix inchangé.' : ''}</p>
         </Step>
         <Step n={2} state={pending ? 'ok' : 'now'} title={`Demandez son code de fin à ${cl}`}>
           {pending

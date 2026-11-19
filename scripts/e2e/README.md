@@ -3,11 +3,16 @@
 `parcours.mjs` rejoue l'app comme un vrai utilisateur, dans un vrai navigateur, sur
 https://nexto-eta.vercel.app, avec les comptes de test `audit.*@ping-demo.invalid` :
 
-1. tour de toutes les pages client et prestataire, en mobile (390 px) et desktop (1280 px) :
-   erreurs réseau/console, débordement horizontal, textes écrasés, valeurs brutes
-   (`undefined`, `NaN`, `Invalid Date`…) + capture de chaque écran dans `shots/` ;
-2. scénario complet : Contacter → devis du pro → accord du client → rendez-vous → codes QR →
-   scan d'arrivée → scan de fin → 3 factures en base.
+Deux scénarios de bout en bout (19/11/2026, process de commande, migrations 038 et 048) :
+- **A, client sur place** : Contacter → devis du pro (forfait 90 € / 3 h / 25 €/h) → accord → rendez-vous
+  (adresse du profil confirmée d'office) → « Commande validée » → « Je serai sur place » → Mission du jour →
+  Je pars → QR d'arrivée (code lu chez le client, saisi dans le scanner du pro) → QR de fin (`get_mission_proof`,
+  écran `/scan/complete`) → 3 factures et montants → mention du mode sur la facture → virement annoncé → avis.
+- **B, client absent** : « Je ne serai pas sur place » sur `/mission/[id]/commande` → Je pars → position simulée
+  près de l'adresse → photo (`setInputFiles`) envoyée dans la messagerie → « Je confirme » du client → code de fin
+  demandé par le pro, envoyé par le client, saisi par le pro → mêmes contrôles.
+Chaque étape s'affiche `OK` / `KO`, avec les erreurs console et réseau ; `TOUR=1` ajoute le tour des pages,
+`SCEN=A` ou `SCEN=B` n'en joue qu'un. Les missions créées ont une demande titrée « QA parcours … ».
 
 À lancer après chaque mise en prod touchant un parcours :
 

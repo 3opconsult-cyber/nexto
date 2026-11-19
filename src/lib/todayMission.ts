@@ -13,7 +13,11 @@ const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.g
 
 export function isTodayMission(t: { status?: string; price_confirmed?: boolean; scheduled_at?: string | null; en_route_at?: string | null; arrived_at?: string | null; completed_at?: string | null }, now = new Date()): boolean {
   if (!t.price_confirmed || t.completed_at || !['pending', 'arrived'].includes(t.status || '')) return false
-  if (t.arrived_at || t.en_route_at) return true
+  // Une arrivée (ou un départ annoncé) ancienne n'est plus « du jour » : au-delà de 24 h après l'arrivée, la fin
+  // est fixée par PING (fenêtre de 038) ; un « en route » de plus de 12 h sans arrivée est abandonné. Sans ces
+  // bornes, une mission restée « arrivée » des semaines plus tôt occupait le bouton Mission à la place de celle du jour.
+  if (t.arrived_at) return now.getTime() - new Date(t.arrived_at).getTime() < 24 * 3600_000
+  if (t.en_route_at && now.getTime() - new Date(t.en_route_at).getTime() < 12 * 3600_000) return true
   if (!t.scheduled_at) return false
   const at = new Date(t.scheduled_at)
   const diff = at.getTime() - now.getTime()

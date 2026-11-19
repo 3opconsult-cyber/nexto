@@ -60,11 +60,12 @@ let available: Promise<boolean> | null = null
 export function presenceAvailable(supabase: SupabaseClient): Promise<boolean> {
   if (available) return available
   available = (async () => {
-    // Appel sans effet : un identifiant nul ne correspond à aucune mission (« Mission introuvable »).
-    const { error } = await supabase.rpc('presence_state', { p_transaction: '00000000-0000-0000-0000-000000000000' })
+    // Colonne posée par la même migration que les fonctions (038). L'ancienne sonde (presence_state sur un
+    // identifiant nul) répondait toujours 400 « Mission introuvable » : une erreur réseau dans la console à
+    // chaque page (barre du bas, chat, agenda), relevée par le parcours e2e du 19/11.
+    const { error } = await supabase.from('transactions').select('completion_proof').limit(1)
     if (!error) return true
-    if (isMissingFunction(error)) return false
-    if (/introuvable|connexion requise/i.test(error.message || '')) return true
+    if (error.code === '42703' || error.code === 'PGRST204' || /column .* does not exist|could not find .* column/i.test(error.message || '')) return false
     available = null
     return false
   })()
@@ -171,6 +172,20 @@ export const PRESENCE_WARNING: Record<string, string> = {
   sans_rdv: 'Aucune heure de rendez-vous n’a été fixée.',
   tres_court: 'Moins de 5 min sur place.',
   tres_long: 'Plus de 12 h sur place.',
+}
+
+/**
+ * Heures facturées d'un aperçu de fin, au bon sens : pour un forfait avec heures incluses, `billed_hours` compte
+ * les heures AU-DELÀ du forfait (le parcours e2e du 19/11 affichait « → 0 h facturée, 90,00 € » pour un forfait).
+ * Renvoie le fragment à placer après la durée (« → 2 h facturées », « forfait, sans dépassement »…), ou ''.
+ */
+export function billedLabel(a: Pick<Amounts, 'recalcule' | 'billed_hours'> | null | undefined, forfait: boolean): string {
+  if (!a) return ''
+  if (!a.recalcule || a.billed_hours == null) return forfait ? ' (forfait, prix inchangé)' : ''
+  const n = Number(a.billed_hours)
+  const h = `${String(a.billed_hours).replace('.', ',')} h`
+  if (forfait) return n > 0 ? ` → forfait + ${h} au-delà des heures incluses` : ' → forfait, sans dépassement'
+  return ` → ${h} facturée${n > 1 ? 's' : ''}`
 }
 
 export const durLabel = (mins: number) => {

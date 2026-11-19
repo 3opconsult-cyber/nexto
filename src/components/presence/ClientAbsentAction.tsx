@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { notifyOther } from '@/lib/notify'
 import { EUR } from '@/lib/invoice-pdf'
 import {
-  clientConfirmPresence, clientDeclinePresence, clientSendPresenceCode, durLabel, presencePhotoUrl,
+  clientConfirmPresence, clientDeclinePresence, billedLabel, clientSendPresenceCode, durLabel, presencePhotoUrl,
   type Phase, type RemoteRequest,
 } from '@/lib/presence'
 
@@ -20,8 +20,10 @@ function ask(q: string) { try { return window.confirm(q) } catch { return true }
  *  - fin : durée et montant → « Envoyer mon code de fin » (affiché ici et dans la messagerie), que le
  *    prestataire saisit pour clôturer ; « Contester ».
  */
-export default function ClientAbsentAction({ txId, phase, req, proName, buyerFeeRate, onDone }: {
-  txId: string; phase: Phase; req: RemoteRequest; proName?: string; buyerFeeRate?: number | null; onDone: () => void
+export default function ClientAbsentAction({ txId, phase, req, proName, buyerFeeRate, forfait = false, onDone }: {
+  txId: string; phase: Phase; req: RemoteRequest; proName?: string; buyerFeeRate?: number | null
+  /** Forfait avec heures incluses : les heures facturées de l'aperçu sont celles au-delà du forfait. */
+  forfait?: boolean; onDone: () => void
 }) {
   const router = useRouter()
   const pn = proName || 'Votre prestataire'
@@ -111,7 +113,7 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
       {pv && (
         <p style={{ fontSize: 13, color: '#123644', margin: '6px 0 0', lineHeight: 1.5 }}>
           Fin annoncée à {hhmm(req.requested_at)} : <b>{durLabel(pv.duration_minutes)} sur place</b>
-          {pv.recalcule && pv.billed_hours != null ? ` → ${String(pv.billed_hours).replace('.', ',')} h facturée${Number(pv.billed_hours) > 1 ? 's' : ''}` : ' (forfait, prix inchangé)'}
+          {billedLabel(pv, forfait || !pv.recalcule)}
           {pv.subtotal_cents != null ? `, ${EUR(pv.subtotal_cents)}` : ''}{fee != null ? ` + frais de service ${EUR(fee)}` : ''}.
         </p>
       )}
