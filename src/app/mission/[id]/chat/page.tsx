@@ -785,10 +785,13 @@ export default function ChatPage() {
                   </>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    {hasProcess(pst) && <PresenceTag presence={pst?.client_presence} asSeller={userId === tx.seller_id} />}
+                    {hasProcess(pst) && (userId === tx.buyer_id && pst?.client_presence
+                      ? <div style={{ flex: '1 1 100%' }}><PresenceChoice txId={tx.id} presence={pst.client_presence} proName={counterpart || undefined} toggle
+                          onChange={(p: ClientPresence) => { setPst(s => s ? { ...s, client_presence: p } : s); setMsgTick(t => t + 1) }} /></div>
+                      : <PresenceTag presence={pst?.client_presence} asSeller={userId === tx.seller_id} />)}
                     <div style={{ flex: '1 1 180px', minWidth: 0 }}><OrderSummary tx={tx} asSeller={userId === tx.seller_id} counterpart={counterpart || undefined} payOn={payOn} compact /></div>
                     <button onClick={() => router.push(`/mission/${tx.id}/commande`)} style={{ border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, padding: '0 4px' }}>
-                      {userId === tx.seller_id ? 'Commande reçue' : hasProcess(pst) ? 'Modifier · paiement' : 'Récapitulatif du paiement'}
+                      {userId === tx.seller_id ? 'Commande reçue' : 'Récapitulatif du paiement'}
                     </button>
                   </div>
                 )}
