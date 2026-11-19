@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import { acceptOfferMessage, type OfferMsg } from '@/lib/offers'
 import { notifyOther } from '@/lib/notify'
+import { systemSender } from '@/lib/systemMessage'
+import DayTimePicker from '@/components/DayTimePicker'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 const DONE = ['completed', 'released']
@@ -30,6 +32,17 @@ function distanceKm(a?: number | null, b?: number | null, c?: number | null, d?:
   return 2 * R * Math.asin(Math.sqrt(h))
 }
 const euroFr = (c: number) => (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' €'
+// Rendez-vous proposé d'office : le jour et le créneau souhaités de la demande (matin 9 h, après-midi
+// 14 h, soir 18 h), s'ils sont encore à venir ; sinon le client choisit dans la grille.
+const SLOT_HOUR: Record<string, string> = { matin: '09:00', 'apres-midi': '14:00', soir: '18:00' }
+function suggestedRdv(r: any): string {
+  if (!r?.desired_date) return ''
+  const v = `${r.desired_date}T${SLOT_HOUR[r.desired_slot] || '09:00'}`
+  const t = new Date(v).getTime()
+  return isFinite(t) && t > Date.now() + 30 * 60000 ? v : ''
+}
+const rdvLabel = (v: string) => new Date(v).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+const hasAddr = (r: any) => !!(r?.address && String(r.address).trim())
 const excerpt = (s: string, n = 110) => { const t = s.replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n).trimEnd() + '…' : t }
 
 export default function MesDemandesPage() {
@@ -112,42 +125,77 @@ export default function MesDemandesPage() {
     const group = txByRequest[r.id] || []
     if (r.status === 'cancelled') return { label: 'Annulée', bg: '#F3F6F5', fg: '#4E6470' }
     if (group.some(t => DONE.includes(t.status))) return { label: 'Terminée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
+    if (group.some(t => t.price_confirmed && t.status !== 'cancelled')) return { label: 'Prestataire choisi', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (group.length > 0) return { label: `${group.length} proposition${group.length > 1 ? 's' : ''}`, bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (r.status === 'open') return { label: 'En attente', bg: '#FFF7ED', fg: '#8a6520' }
     return { label: STATUS[r.status] || 'En cours', bg: '#F3F6F5', fg: '#4E6470' }
   }
 
-  // « Accepter ce prestataire » : accepte vraiment sa proposition (prix et commissions figés, règle
-  // suprême du tarif) après confirmation, puis ouvre la conversation pour fixer le rendez-vous.
+  // « Accepter ce prestataire » (audit ergonomie 19/11, correction 2) : plus de fenêtre native. Le premier
+  // appui ouvre, dans la carte, le récapitulatif du tarif et le choix du rendez-vous (prérempli sur le jour
+  // et le créneau souhaités de la demande) ; « Confirmer » accepte vraiment la proposition (prix et
+  // commissions figés, règle suprême du tarif), fixe l'heure du rendez-vous et ferme la demande (matched).
   const [acceptErr, setAcceptErr] = useState<Record<string, string>>({})
-  async function acceptPro(t: Tx) {
-    if (!t.offer?.offer_cents || t.price_confirmed) { router.push(`/mission/${t.id}/chat`); return }
-    const shape = t.offer.offer_hourly_cents && t.offer.offer_included_hours != null
+  const [confirming, setConfirming] = useState<string | null>(null)
+  const [rdvAt, setRdvAt] = useState('')
+  function offerShape(t: Tx) {
+    if (!t.offer) return ''
+    return t.offer.offer_hourly_cents && t.offer.offer_included_hours != null
       ? ` (${t.offer.offer_included_hours} h incluses, puis ${euroFr(t.offer.offer_hourly_cents)}/h)`
       : t.offer.offer_hourly_cents ? ` (estimation, ${euroFr(t.offer.offer_hourly_cents)}/h selon le temps réel)` : ''
-    if (!confirm(`Accepter la proposition de ${t.counterpart} à ${euroFr(t.offer.offer_cents)}${shape} ? Le tarif sera fixé : seul un litige pourra le rouvrir.`)) return
+  }
+  function askAccept(t: Tx, r: any) {
+    if (!t.offer?.offer_cents || t.price_confirmed) { router.push(`/mission/${t.id}/chat`); return }
+    setAcceptErr(e => ({ ...e, [t.id]: '' }))
+    setRdvAt(suggestedRdv(r))
+    setConfirming(t.id)
+  }
+  async function acceptPro(t: Tx, r: any) {
+    if (!t.offer?.offer_cents || t.price_confirmed) { router.push(`/mission/${t.id}/chat`); return }
+    const when = hasAddr(r) && rdvAt ? new Date(rdvAt) : null
+    if (hasAddr(r) && (!when || isNaN(when.getTime()))) { setAcceptErr(e => ({ ...e, [t.id]: 'Choisissez le jour et l’heure du rendez-vous.' })); return }
     setBusy(t.id); setAcceptErr(e => ({ ...e, [t.id]: '' }))
-    const r = await acceptOfferMessage(createClient(), t.id, t.offer)
-    setBusy('')
-    if ('error' in r) { setAcceptErr(e => ({ ...e, [t.id]: r.error })); return }
+    const supabase = createClient()
+    const res = await acceptOfferMessage(supabase, t.id, t.offer)
+    if ('error' in res) { setBusy(''); setAcceptErr(e => ({ ...e, [t.id]: res.error })); return }
     notifyOther(t.id, 'offer')
-    router.push(`/mission/${t.id}/chat`)
+    // Rendez-vous fixé dans la foulée (le client peut poser scheduled_at sur sa mission). L'adresse est
+    // celle de la demande publiée ; elle n'est transmise qu'au prestataire de cette mission.
+    let scheduled = false
+    if (when) {
+      const { data: upd } = await supabase.from('transactions').update({ scheduled_at: when.toISOString() })
+        .eq('id', t.id).select('scheduled_at').maybeSingle()
+      if (upd?.scheduled_at) {
+        scheduled = true
+        await supabase.from('messages').insert({
+          transaction_id: t.id, ...(await systemSender(supabase)),
+          body: `✓ Rendez-vous fixé : ${rdvLabel(upd.scheduled_at)} — adresse transmise au prestataire`,
+        })
+      }
+    }
+    setBusy('')
+    // Rendez-vous fixé : écran « Commande validée » (sur place ou absent) ; sinon la discussion le demande.
+    router.push(scheduled ? `/mission/${t.id}/commande` : `/mission/${t.id}/chat`)
   }
 
+  const [rowErr, setRowErr] = useState<Record<string, string>>({})
   async function cancel(r: any) {
-    setBusy(r.id)
+    setBusy(r.id); setRowErr(e => ({ ...e, [r.id]: '' }))
     const supabase = createClient()
     const { error } = await supabase.from('requests').update({ status: 'cancelled' }).eq('id', r.id)
-    if (error) alert('L’annulation a échoué. Réessayez dans un instant.')
+    if (error) setRowErr(e => ({ ...e, [r.id]: 'L’annulation a échoué. Réessayez dans un instant.' }))
     else setRows(rs => rs.map(x => x.id === r.id ? { ...x, status: 'cancelled' } : x))
     setBusy('')
   }
+  // Suppression en deux appuis dans la carte (plus de fenêtre native) : « Supprimer » puis « Confirmer la suppression ».
+  const [delAsk, setDelAsk] = useState<string | null>(null)
   async function remove(r: any) {
-    if (!confirm('Supprimer définitivement cette demande ?')) return
+    if (delAsk !== r.id) { setDelAsk(r.id); return }
+    setDelAsk(null)
     setBusy(r.id)
     const supabase = createClient()
     const { error } = await supabase.from('requests').delete().eq('id', r.id)
-    if (error) { alert('Impossible de supprimer : cette demande est liée à une mission. Vous pouvez l’annuler.'); setBusy(''); return }
+    if (error) { setRowErr(e => ({ ...e, [r.id]: 'Impossible de supprimer : cette demande est liée à une mission. Vous pouvez l’annuler.' })); setBusy(''); return }
     setRows(rs => rs.filter(x => x.id !== r.id))
     setBusy('')
   }
@@ -258,17 +306,44 @@ export default function MesDemandesPage() {
                                   style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                   Voir la discussion
                                 </button>
-                                {t.hasPendingOffer && !t.price_confirmed && (
-                                  <button onClick={() => acceptPro(t)} disabled={busy === t.id}
+                                {t.hasPendingOffer && !t.price_confirmed && confirming !== t.id && (
+                                  <button onClick={() => askAccept(t, r)} disabled={busy === t.id}
                                     style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', opacity: busy === t.id ? .6 : 1 }}>
-                                    {busy === t.id ? 'Acceptation…' : 'Accepter ce prestataire'}
+                                    Accepter ce prestataire
                                   </button>
                                 )}
                               </div>
                             )}
-                            {acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
-                            {!cancelled && t.hasPendingOffer && !t.price_confirmed && (
-                              <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 6 }}>En acceptant, le tarif est fixé ; vous choisissez ensuite le rendez-vous dans la discussion.</div>
+                            {!cancelled && t.hasPendingOffer && !t.price_confirmed && t.offer?.offer_cents && confirming === t.id && (
+                              <div style={{ marginTop: 10, background: '#fff', border: '1.5px solid #12B39C', borderRadius: 12, padding: 12 }}>
+                                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>
+                                  Accepter {t.counterpart} à {euroFr(t.offer.offer_cents)}{offerShape(t)} ?
+                                </div>
+                                <p style={{ fontSize: 12, color: '#4E6470', margin: '3px 0 10px', lineHeight: 1.5 }}>Le tarif sera fixé : seul un litige pourra le rouvrir.</p>
+                                {hasAddr(r) ? (
+                                  <>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Rendez-vous</div>
+                                    <DayTimePicker value={rdvAt} onChange={setRdvAt} />
+                                  </>
+                                ) : (
+                                  <p style={{ fontSize: 12, color: '#4E6470', margin: '0 0 6px' }}>Vous indiquerez ensuite l’adresse et l’heure dans la discussion.</p>
+                                )}
+                                {acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
+                                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                  <button type="button" onClick={() => setConfirming(null)} disabled={busy === t.id}
+                                    style={{ flex: '0 0 auto', minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                    Annuler
+                                  </button>
+                                  <button type="button" onClick={() => acceptPro(t, r)} disabled={busy === t.id || (hasAddr(r) && !rdvAt)}
+                                    style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: busy === t.id || (hasAddr(r) && !rdvAt) ? .55 : 1 }}>
+                                    {busy === t.id ? 'Acceptation…' : `Confirmer · ${euroFr(t.offer.offer_cents)}`}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                            {confirming !== t.id && acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
+                            {!cancelled && t.hasPendingOffer && !t.price_confirmed && confirming !== t.id && (
+                              <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 6 }}>En acceptant, le tarif est fixé et vous choisissez le rendez-vous.</div>
                             )}
                           </div>
                         )
@@ -278,8 +353,10 @@ export default function MesDemandesPage() {
 
                   <div style={{ display: 'flex', gap: 14, marginTop: 10, paddingTop: 10, borderTop: '1px solid #F1F5F4' }}>
                     {canCancel && <button type="button" onClick={() => cancel(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#8a6520', cursor: 'pointer' }}>Annuler</button>}
-                    <button type="button" onClick={() => remove(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#c0503a', cursor: 'pointer', marginLeft: 'auto' }}>Supprimer</button>
+                    <button type="button" onClick={() => remove(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#c0503a', cursor: 'pointer', marginLeft: 'auto' }}>{delAsk === r.id ? 'Confirmer la suppression' : 'Supprimer'}</button>
+                    {delAsk === r.id && <button type="button" onClick={() => setDelAsk(null)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#4E6470', cursor: 'pointer' }}>Garder</button>}
                   </div>
+                  {rowErr[r.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 4 }}>{rowErr[r.id]}</div>}
                 </div>
               )
             })}

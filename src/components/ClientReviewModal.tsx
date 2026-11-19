@@ -23,14 +23,15 @@ export const CLIENT_TAGS: { key: string; label: string }[] = [
 
 const laterKey = (tx: string) => `ping_client_review_later_${tx}`
 
-function Stars({ value, onChange, label }: { value: number; onChange: (n: number) => void; label: string }) {
+// Étoiles à 44×44 (zone tactile), audit ergonomie 19/11 (correction 6).
+function Stars({ value, onChange, label, optional }: { value: number; onChange: (n: number) => void; label: string; optional?: boolean }) {
   return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>{label}</div>
-      <div style={{ display: 'flex', gap: 6 }}>
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 2 }}>{label}{optional && <span style={{ color: '#6E8592', fontWeight: 600 }}> facultatif</span>}</div>
+      <div style={{ display: 'flex', gap: 4 }} role="radiogroup" aria-label={label}>
         {[1, 2, 3, 4, 5].map(n => (
-          <button key={n} onClick={() => onChange(n)} aria-label={`${n} sur 5`}
-            style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 30, lineHeight: 1, color: n <= value ? '#F2A93B' : '#DCE5E3' }}>★</button>
+          <button key={n} type="button" onClick={() => onChange(n)} role="radio" aria-checked={value === n} aria-label={`${n} sur 5`}
+            style={{ width: 44, height: 44, display: 'grid', placeItems: 'center', border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 32, lineHeight: 1, color: n <= value ? '#F2A93B' : '#DCE5E3' }}>★</button>
         ))}
       </div>
     </div>
@@ -61,17 +62,18 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
     setSuppressed(!asked && later)
   }, [open, transactionId])
 
-  const missing = [accuracy > 0, welcome > 0].filter(x => !x).length
+  // Une seule note obligatoire ; la 2e (accueil) est facultative. Sans elle, la note d'ensemble est la 1re.
+  const missing = accuracy > 0 ? 0 : 1
 
   function later() { try { localStorage.setItem(laterKey(transactionId), '1') } catch { } onClose() }
 
   async function submit() {
     if (missing) return
     setBusy(true); setError('')
-    const stars = Math.round((accuracy + welcome) / 2)
+    const stars = welcome > 0 ? Math.round((accuracy + welcome) / 2) : accuracy
     const { error: err } = await createClient().from('client_reviews').insert({
       transaction_id: transactionId, rater_id: raterId, client_id: clientId,
-      accuracy_stars: accuracy, welcome_stars: welcome, stars, recommend,
+      accuracy_stars: accuracy, welcome_stars: welcome > 0 ? welcome : null, stars, recommend,
       tags, comment: comment.trim() || null, is_public: isPublic,
     })
     if (err) {
@@ -97,19 +99,30 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
   }
 
   return (
-    <Modal open={open && !suppressed} onClose={later} title="Je note et commente mon client">
+    // Boutons dans le pied fixe de la fenêtre : visibles sans défiler.
+    <Modal open={open && !suppressed} onClose={later} title="Je note et commente mon client" footer={<>
+      {error && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, margin: 0 }}>{error}</p>}
+      <button type="button" onClick={submit} disabled={busy || missing > 0}
+        style={{ width: '100%', minHeight: 48, padding: 14, borderRadius: 999, border: 'none', cursor: missing ? 'default' : 'pointer', background: missing ? '#A9DED5' : '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+        {busy ? 'Enregistrement…' : isPublic ? 'Publier mon avis' : 'Enregistrer mon avis (non publié)'}
+      </button>
+      {missing > 0 && <div role="status" style={{ fontSize: 12, color: '#4E6470', textAlign: 'center' }}>Il manque : votre note (touchez une étoile).</div>}
+      <button type="button" onClick={later} style={{ width: '100%', minHeight: 44, padding: 12, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+        Plus tard
+      </button>
+    </>}>
       <p style={{ fontSize: 13, color: '#4E6470', lineHeight: 1.55, margin: '0 0 14px' }}>
         Notez <b style={{ color: '#123644' }}>{clientName.replace(/\.$/, "")}</b>. Vous choisissez de publier votre commentaire
         (visible des utilisateurs connectés) ou de le garder pour vous.
       </p>
-      <Stars value={accuracy} onChange={setAccuracy} label="La demande correspondait à la réalité" />
-      <Stars value={welcome} onChange={setWelcome} label="Accueil, accès et ponctualité" />
+      <Stars value={accuracy} onChange={setAccuracy} label="Votre note : la demande correspondait à la réalité" />
+      <Stars value={welcome} onChange={setWelcome} label="Accueil, accès et ponctualité" optional />
 
-      <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Retravailleriez-vous pour ce client ?</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Retravailleriez-vous pour ce client ? <span style={{ color: '#6E8592', fontWeight: 600 }}>facultatif</span></div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         {[true, false].map(v => (
           <button key={String(v)} onClick={() => setRecommend(recommend === v ? null : v)} aria-pressed={recommend === v}
-            style={{ flex: 1, padding: 11, borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13.5, border: recommend === v ? 'none' : '1px solid #DCE5E3', background: recommend === v ? (v ? '#12B39C' : '#123644') : '#fff', color: recommend === v ? '#fff' : '#123644' }}>
+            style={{ flex: 1, padding: 11, minHeight: 44, borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13.5, border: recommend === v ? 'none' : '1px solid #DCE5E3', background: recommend === v ? (v ? '#12B39C' : '#123644') : '#fff', color: recommend === v ? '#fff' : '#123644' }}>
             {v ? 'Oui' : 'Non'}
           </button>
         ))}
@@ -121,7 +134,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
           const on = tags.includes(t.key)
           return (
             <button key={t.key} onClick={() => setTags(on ? tags.filter(x => x !== t.key) : [...tags, t.key])} aria-pressed={on}
-              style={{ padding: '7px 11px', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, border: on ? '1.5px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.1)' : '#fff', color: on ? '#0C8F7E' : '#4E6470' }}>
+              style={{ padding: '7px 12px', minHeight: 44, borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, border: on ? '1.5px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.1)' : '#fff', color: on ? '#0C8F7E' : '#4E6470' }}>
               {t.label}
             </button>
           )
@@ -150,14 +163,6 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
         Pense-bête pour vous seul : ni le client ni les autres utilisateurs ne la voient. Elle vous est rappelée lors d&apos;une prochaine mission avec ce client.
       </p>
 
-      {error && <p style={{ color: '#c0503a', fontSize: 12.5, margin: '0 0 10px' }}>{error}</p>}
-      <button onClick={submit} disabled={busy || missing > 0}
-        style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', cursor: missing ? 'default' : 'pointer', background: missing ? '#A9DED5' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
-        {busy ? 'Enregistrement…' : missing ? `Encore ${missing} note${missing > 1 ? 's' : ''} à donner` : isPublic ? 'Publier mon commentaire' : 'Enregistrer ma note'}
-      </button>
-      <button onClick={later} style={{ width: '100%', marginTop: 8, padding: 12, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
-        Plus tard
-      </button>
     </Modal>
   )
 }

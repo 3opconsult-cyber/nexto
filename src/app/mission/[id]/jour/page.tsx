@@ -8,10 +8,9 @@ import { systemSender } from '@/lib/systemMessage'
 import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import {
-  PRESENCE_WARNING, billedLabel, durLabel, getPresenceState, hasProcess, parseScanned, presenceAvailable, proofLabel, setClientPresence, validatePresence,
+  PRESENCE_WARNING, billedLabel, durLabel, getPresenceState, hasProcess, parseScanned, presenceAvailable, proofLabel, validatePresence,
   type ClientPresence, type Phase, type PresenceState,
 } from '@/lib/presence'
-import { notifyOther } from '@/lib/notify'
 import MissionTimeline, { stepIndex } from '@/components/presence/MissionTimeline'
 import QrScanner from '@/components/presence/QrScanner'
 import ClientProofCard from '@/components/presence/ClientProofCard'
@@ -98,15 +97,6 @@ export default function MissionDuJour() {
   // affiché au client qui avait annoncé son absence, changement d'avis du client.
   const [absentOpen, setAbsentOpen] = useState(false)
   const [showQr, setShowQr] = useState(false)
-  const [presBusy, setPresBusy] = useState(false)
-  async function changePresence(p: ClientPresence) {
-    setPresBusy(true); setMsg(null)
-    const r = await setClientPresence(createClient(), txId, p)
-    setPresBusy(false)
-    if (!r.ok) { setMsg({ kind: 'err', text: r.message || 'Réponse non enregistrée.' }); return }
-    if (!r.unchanged) notifyOther(txId, 'presence_client')
-    load()
-  }
   useEffect(() => {
     if (autoOpened.current || !tx || !uid || v2 === null) return
     autoOpened.current = true
@@ -190,7 +180,10 @@ export default function MissionDuJour() {
   const v48 = hasProcess(st)
   const presence = (st?.client_presence ?? null) as ClientPresence | null
   const absentArr = v48 && (presence === 'absent' || absentOpen || remA?.etat === 'en_attente' || remA?.etat === 'refusee')
-  const absentFin = v48 && (presence === 'absent' || absentOpen || remF?.etat === 'en_attente' || remF?.etat === 'refusee')
+  // Client absent à l'arrivée (photo, code à distance, QR laissé sur place) : la fin passe d'office par le code de
+  // fin, sans le détour « Fin à distance » (audit ergonomie 19/11, correction 13).
+  const absentAtArrival = ['distance_code', 'distance_confirmation', 'photo_gps', 'qr_sur_place', 'geoloc_code'].includes(String(aProof || ''))
+  const absentFin = v48 && (presence === 'absent' || absentAtArrival || absentOpen || remF?.etat === 'en_attente' || remF?.etat === 'refusee')
   const pn = name || (isSeller ? 'Le client' : 'Votre prestataire')
   // Forfait avec heures incluses : l'aperçu compte les heures au-delà du forfait (billedLabel).
   const forfaitPlus = tx.base_forfait_cents != null && tx.included_hours != null
@@ -200,7 +193,8 @@ export default function MissionDuJour() {
     width: '100%', border: 'none', borderRadius: 999, padding: '14px 0', background: '#0C8F7E', color: '#fff',
     fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, cursor: 'pointer',
   }
-  const link: React.CSSProperties = { border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer' }
+  // Liens texte à 44 px de haut (Itinéraire, Comment ça marche, Noter le client…), audit ergonomie 19/11.
+  const link: React.CSSProperties = { border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, padding: '0 6px' }
   const block: React.CSSProperties = { marginTop: 12 }
 
   return (
@@ -220,7 +214,7 @@ export default function MissionDuJour() {
         )}
         {isSeller && address && !tx.arrived_at && (
           <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`} target="_blank" rel="noreferrer"
-            style={{ display: 'inline-block', marginTop: 8, color: '#7FE3D3', fontWeight: 700, fontSize: 12.5 }}>Itinéraire</a>
+            style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '0 14px', marginTop: 8, borderRadius: 999, border: '1.5px solid rgba(127,227,211,.6)', color: '#7FE3D3', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>Itinéraire</a>
         )}
         <div style={{ marginTop: 12, background: '#fff', borderRadius: 12, padding: '8px 4px 4px' }}>
           <MissionTimeline current={cancelled ? 0 : step}
@@ -383,9 +377,8 @@ export default function MissionDuJour() {
                 ) : presence === 'sur_place' ? (
                   <>
                     <ClientProofCard txId={tx.id} phase="arrivee" v2={!!v2} legacyToken={tx.qr_arrival_token} />
-                    <div style={{ textAlign: 'center', marginTop: 6 }}>
-                      <button style={{ ...link, minHeight: 44 }} disabled={presBusy} onClick={() => changePresence('absent')}>Finalement, je ne serai pas sur place</button>
-                    </div>
+                    {/* « Changer ma réponse » en un appui (audit ergonomie 19/11, correction 12). */}
+                    <div style={{ marginTop: 10 }}><PresenceChoice txId={tx.id} presence={presence} proName={name || undefined} toggle onChange={() => load()} /></div>
                   </>
                 ) : (
                   <>
@@ -395,9 +388,7 @@ export default function MissionDuJour() {
                         À son arrivée, vous recevrez la photo, la position et l&apos;heure de {pn} dans la messagerie, avec une notification. Vous confirmerez d&apos;un appui.
                       </p>
                     </div>
-                    <div style={{ textAlign: 'center', marginTop: 6 }}>
-                      <button style={{ ...link, minHeight: 44 }} disabled={presBusy} onClick={() => changePresence('sur_place')}>Finalement, je serai sur place</button>
-                    </div>
+                    <div style={{ marginTop: 10 }}><PresenceChoice txId={tx.id} presence={presence} proName={name || undefined} toggle onChange={() => load()} /></div>
                   </>
                 )
               ) : remA?.etat === 'en_attente' && <div style={{ marginBottom: 12 }}><RemoteConfirmCard txId={tx.id} phase="arrivee" req={remA} onDone={load} /></div>}
@@ -478,7 +469,7 @@ export default function MissionDuJour() {
             <span style={{ color: '#C5D3CF', margin: '0 10px' }}>·</span>
           </>
         )}
-        <button style={{ ...link, color: '#4E6470' }} onClick={() => router.push('/aide/apres-commande')}>Comment ça marche</button>
+        <button style={{ ...link, color: '#4E6470', minHeight: 44 }} onClick={() => router.push('/aide/apres-commande')}>Comment ça marche</button>
       </div>
 
       {scan && (
@@ -492,9 +483,9 @@ export default function MissionDuJour() {
 
 function Shell({ title, onBack, children }: { title: string; onBack: () => void; children: React.ReactNode }) {
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 110 }}>
       <div style={{ position: 'sticky', top: 0, zIndex: 20, height: 52, background: '#fff', borderBottom: '1px solid #DCE5E3', display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px' }}>
-        <button onClick={onBack} aria-label="Retour" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', border: 'none', background: 'none', cursor: 'pointer' }}>
+        <button onClick={onBack} aria-label="Retour" style={{ width: 44, height: 44, marginLeft: -6, borderRadius: 12, display: 'grid', placeItems: 'center', border: 'none', background: 'none', cursor: 'pointer' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
         <b style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644' }}>{title}</b>

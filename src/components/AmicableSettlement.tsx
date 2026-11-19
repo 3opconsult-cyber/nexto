@@ -78,11 +78,11 @@ export default function AmicableSettlement({ dispute, buyerId, sellerId, userId,
   }
 
   const btn = (primary: boolean): React.CSSProperties => ({
-    flex: 1, padding: '10px 12px', borderRadius: 999, cursor: busy ? 'default' : 'pointer', opacity: busy ? .6 : 1,
+    flex: 1, minHeight: 44, padding: '10px 12px', borderRadius: 999, cursor: busy ? 'default' : 'pointer', opacity: busy ? .6 : 1,
     border: primary ? 'none' : `1.5px solid ${C.line}`, background: primary ? C.teal : '#fff', color: primary ? '#fff' : C.navy,
     fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5,
   })
-  const link: React.CSSProperties = { border: 'none', background: 'none', padding: 0, color: C.tealD, fontWeight: 700, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }
+  const link: React.CSSProperties = { border: 'none', background: 'none', padding: '0 4px', minHeight: 44, color: C.tealD, fontWeight: 700, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }
   const pendingFromOther = st === 'proposee' && dispute.settlement_by !== userId
   const pendingFromMe = st === 'proposee' && dispute.settlement_by === userId
   const otherLabel = dispute.settlement_by === buyerId ? 'Le client' : 'Le prestataire'
@@ -96,7 +96,7 @@ export default function AmicableSettlement({ dispute, buyerId, sellerId, userId,
         <div style={{ position: 'relative', width: 130, flexShrink: 0 }}>
           <input id={`amiable-${dispute.id}`} value={amount} onChange={e => setAmount(e.target.value)} inputMode="decimal" autoComplete="off" autoFocus
             onKeyDown={e => { if (e.key === 'Enter') send() }}
-            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 28px 10px 12px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'inherit' }} />
+            style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 28px 10px 12px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'inherit' }} />
           <span style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', color: C.slate, fontSize: 14 }}>€</span>
         </div>
         <button type="button" onClick={send} disabled={busy || !amount.trim()} style={{ ...btn(true), opacity: busy || !amount.trim() ? .5 : 1 }}>Envoyer</button>

@@ -83,7 +83,7 @@ export default function DisputeFields({ value, onChange }: { value: DisputeExtra
             const on = value.category === c.key
             return (
               <button key={c.key} type="button" role="radio" aria-checked={on} onClick={() => onChange({ ...value, category: c.key })}
-                style={{ padding: '8px 12px', borderRadius: 999, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                style={{ padding: '8px 14px', minHeight: 44, borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                   border: on ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: on ? 'rgba(18,179,156,.12)' : '#fff', color: on ? '#0C8F7E' : '#123644' }}>
                 {c.label}
               </button>
@@ -95,7 +95,7 @@ export default function DisputeFields({ value, onChange }: { value: DisputeExtra
       <div>
         <label style={label} htmlFor="dispute-amount">Montant réclamé en euros (facultatif)</label>
         <input id="dispute-amount" value={value.amount} onChange={e => onChange({ ...value, amount: e.target.value })} inputMode="decimal" autoComplete="off"
-          style={{ width: 140, padding: '10px 12px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} />
+          style={{ width: 140, minHeight: 44, padding: '10px 12px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} />
       </div>
 
       <div>
@@ -105,13 +105,13 @@ export default function DisputeFields({ value, onChange }: { value: DisputeExtra
             <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 6px 6px 10px', borderRadius: 999, background: '#F3F6F5', fontSize: 12, fontWeight: 600, color: '#123644', maxWidth: 190 }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
               <button type="button" aria-label={`Retirer ${f.name}`} onClick={() => onChange({ ...value, photos: value.photos.filter((_, j) => j !== i) })}
-                style={{ width: 20, height: 20, borderRadius: '50%', border: 'none', background: '#DCE5E3', cursor: 'pointer', display: 'grid', placeItems: 'center', padding: 0 }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                style={{ width: 44, height: 44, margin: '-10px -6px -10px -8px', borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'grid', placeItems: 'center', padding: 0 }}><span aria-hidden style={{ width: 22, height: 22, borderRadius: '50%', background: '#DCE5E3', display: 'grid', placeItems: 'center' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></span>
               </button>
             </span>
           ))}
           {value.photos.length < MAX_PHOTOS && (
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 999, border: '1.5px dashed #12B39C', color: '#0C8F7E', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, boxSizing: 'border-box', padding: '8px 14px', borderRadius: 999, border: '1.5px dashed #12B39C', color: '#0C8F7E', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
               Ajouter une photo
               <input type="file" accept="image/jpeg,image/png,image/webp" multiple style={{ display: 'none' }}

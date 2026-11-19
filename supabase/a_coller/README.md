@@ -9,6 +9,13 @@ Lien direct : https://supabase.com/dashboard/project/wmiawwaxwlvascyflpba/sql/ne
 `unread_counts`). Testée sur PostgreSQL 16 avec 038 sur un schéma minimal (collée deux fois chacune). Sans 048, l'app garde
 le fonctionnement de 038 (ou de 033 sans 038).
 
+**À coller (demande fermée à l'accord, 19/11/2026)** : `051_demande_fermee_a_l_accord.sql` (copie exacte de
+`supabase/migrations/051_…`) — trigger sur `transactions.price_confirmed` + RPC `match_request_on_accept` : une demande
+publiée passe en « matched » dès qu'une proposition est acceptée, quel que soit celui qui accepte, et disparaît des
+« Demandes autour de vous » ; rattrape les demandes déjà acceptées restées « open ». Sans elle, l'application ferme
+déjà la demande quand c'est le client qui accepte. Vérification :
+`select proname from pg_proc where proname in ('match_request_on_accept', '_request_matched_on_price');`
+
 **Règle commune.** Déployer l'application AVANT de coller. Chaque fichier ci-dessous :
 - est une copie exacte de `supabase/migrations/…` (sauf `provider_services_public.sql` et `comptes_qa.sql`, qui n'existent qu'ici) ;
 - est idempotent : on peut le recoller sans risque ;
