@@ -247,7 +247,7 @@ export default function MissionDuJour() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
                     {ETAS.map(m => (
                       <button key={m} onClick={() => setEta(m)} aria-pressed={eta === m} style={{
-                        flex: '1 0 28%', padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                        flex: '1 0 28%', minHeight: 44, padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14,
                         background: eta === m ? '#12B39C' : '#F3F6F5', color: eta === m ? '#fff' : '#123644',
                       }}>{m} min</button>
                     ))}

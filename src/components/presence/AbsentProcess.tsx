@@ -41,15 +41,18 @@ const ghost: React.CSSProperties = { ...primary, background: '#fff', color: '#0C
 const p: React.CSSProperties = { fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '3px 0 0' }
 // Bouton d'action principal collant en bas de l'écran, au-dessus de la barre d'onglets (audit ergonomie 19/11,
 // correction 13) : « Envoyer la photo », « Clôturer avec le code de fin »… visibles sans défiler.
-function StickyCta({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
+// `above` : champ posé dans la zone collante, juste au-dessus du bouton (correction 8 du 19/11 bis : le champ du
+// code de fin passait sous la barre du bas quand on rouvrait l'écran après réception du code).
+function StickyCta({ children, onClick, disabled, above }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; above?: React.ReactNode }) {
   return (
     <>
-      <div aria-hidden style={{ height: 8 }} />
+      <div aria-hidden style={{ height: above ? 96 : 8 }} />
       <div style={{
         position: 'fixed', left: 0, right: 0, bottom: 'var(--tabbar-h, 0px)', zIndex: 30, maxWidth: 480, margin: '0 auto',
         background: '#fff', borderTop: '1px solid #DCE5E3', boxShadow: '0 -6px 16px rgba(18,54,68,.06)',
         padding: '8px 16px calc(10px + env(safe-area-inset-bottom, 0px))', boxSizing: 'border-box',
       }}>
+        {above}
         <button type="button" style={{ ...primary, marginTop: 0, opacity: disabled ? .6 : 1 }} disabled={disabled} onClick={onClick}>{children}</button>
       </div>
     </>
@@ -142,16 +145,20 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
     onDone()
   }
 
-  // Champ du code en haut de l'étape ; la validation est le bouton collant du bas (StickyCta).
-  const codeBox = (label: string) => (
+  // Champ du code : dans la zone collante au-dessus du bouton de validation quand celui-ci est affiché d'office
+  // (fin, ou code d'arrivée reçu), sinon dans l'étape. Jamais sous la barre du bas.
+  const codeInput = (label: string, compact = false) => (
+    <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#4E6470', marginTop: compact ? 0 : 6, marginBottom: compact ? 6 : 0 }}>
+      {label}
+      <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+        inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000"
+        style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: compact ? 3 : 5, minHeight: 48, borderRadius: 12, border: '1.5px solid #DCE5E3', padding: '0 12px', fontSize: 20, letterSpacing: 6, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
+    </label>
+  )
+  const codeBox = (label: string, inSticky: boolean) => (
     <>
-      {codeSent && <p role="status" style={{ ...p, background: '#FFF7ED', color: '#8a6520', borderRadius: 10, padding: '8px 10px', fontWeight: 600 }}>{cl} vous a envoyé son code dans la messagerie : saisissez-le.</p>}
-      <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#4E6470', marginTop: 6 }}>
-        {label}
-        <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-          inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000"
-          style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 5, minHeight: 48, borderRadius: 12, border: '1.5px solid #DCE5E3', padding: '0 12px', fontSize: 20, letterSpacing: 6, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
-      </label>
+      {codeSent && <p role="status" style={{ ...p, background: '#FFF7ED', color: '#8a6520', borderRadius: 10, padding: '8px 10px', fontWeight: 600 }}>{cl} vous a envoyé son code dans la messagerie : {inSticky ? 'saisissez-le en bas de l’écran.' : 'saisissez-le.'}</p>}
+      {!inSticky && codeInput(label)}
       <button type="button" style={link} onClick={() => router.push(`/mission/${txId}/chat`)}>Voir la conversation</button>
     </>
   )
@@ -202,7 +209,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
           <Step n={5} state={pending ? 'now' : 'off'} title={pending ? `En attente de ${cl}` : `${cl} confirme votre arrivée`}>
             {pending
               ? <>
-                {codeBox(`Code de validation envoyé par ${cl}`)}
+                {codeBox(`Code de validation envoyé par ${cl}`, codeSent)}
                 {!codeSent && <p style={p}>{`${cl} confirme d’un appui : la mission démarre d’elle-même. Ou ${cl} vous envoie un code de validation.`}</p>}
               </>
               : <p style={p}>{cl} confirme d’un appui, ou vous envoie un code que vous saisissez.</p>}
@@ -213,7 +220,8 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
         {!pending && !pos && <StickyCta disabled={!!busy} onClick={locate}>{busy === 'pos' ? 'Localisation…' : 'J’accepte : partager ma position'}</StickyCta>}
         {!pending && pos && !photo && <StickyCta disabled={!!busy} onClick={() => fileRef.current?.click()}>Prendre la photo</StickyCta>}
         {!pending && pos && photo && <StickyCta disabled={!!busy} onClick={sendPhoto}>{busy === 'send' ? 'Envoi…' : `Envoyer la photo à ${cl}`}</StickyCta>}
-        {pending && (codeSent || code.length > 0) && <StickyCta disabled={!!busy || code.length !== 6} onClick={submitCode}>{busy === 'code' ? 'Vérification…' : 'Valider avec le code'}</StickyCta>}
+        {pending && (codeSent || code.length > 0) && <StickyCta disabled={!!busy || code.length !== 6} onClick={submitCode}
+          above={codeSent ? codeInput(`Code de validation envoyé par ${cl}`, true) : undefined}>{busy === 'code' ? 'Vérification…' : 'Valider avec le code'}</StickyCta>}
       </div>
     )
   }
@@ -239,7 +247,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
         <Step n={3} state={pending ? 'now' : 'off'} title="Saisissez son code de fin">
           {pending
             ? <>
-              {codeBox(`Code de fin envoyé par ${cl}`)}
+              {codeBox(`Code de fin envoyé par ${cl}`, true)}
               <p style={p}>{codeSent ? '' : `${cl} l’envoie depuis son application ; il apparaît aussi dans la messagerie.`} Le code saisi clôture la mission ; la facture suit.</p>
             </>
             : <p style={p}>Le code saisi clôture la mission ; la facture suit.</p>}
@@ -250,7 +258,8 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
       {msg}
       {!pending
         ? <StickyCta disabled={!!busy} onClick={askEndCode}>{busy === 'send' ? 'Envoi…' : `Demander le code de fin à ${cl}`}</StickyCta>
-        : <StickyCta disabled={!!busy || code.length !== 6} onClick={submitCode}>{busy === 'code' ? 'Vérification…' : 'Clôturer avec le code de fin'}</StickyCta>}
+        : <StickyCta disabled={!!busy || code.length !== 6} onClick={submitCode}
+          above={codeInput(`Code de fin envoyé par ${cl}`, true)}>{busy === 'code' ? 'Vérification…' : 'Clôturer avec le code de fin'}</StickyCta>}
     </div>
   )
 }

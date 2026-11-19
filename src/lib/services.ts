@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { getRates } from '@/lib/pricing'
 import { tradeOfServiceName } from '@/lib/trades'
-import { readScreenCache, writeScreenCache } from '@/lib/screenCache'
+import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
 
 export interface ProviderNearby {
   id: string
@@ -55,27 +55,30 @@ export async function fetchRequestsNearby(
   lat: number, lng: number, radiusM = 15000
 ): Promise<RequestNearby[]> {
   const supabase = createClient()
-  const { data, error } = await supabase.rpc('requests_nearby', {
-    p_lat: lat, p_lng: lng, radius_m: radiusM,
-  })
-  if (error) { console.error('requests_nearby', error); return [] }
-  const list = (data ?? []) as RequestNearby[]
+  // Audit ergonomie 19/11 bis, correction 1 : la demande RPC et la lecture de ses propres annonces
+  // partent ensemble (compte lu dans la session locale, sans aller-retour) au lieu de trois appels
+  // en file. La RLS `requests` reste la garde (auteur seulement pour la seconde lecture).
+  const uid = await sessionUserId(supabase)
+  const [near, own] = await Promise.all([
+    supabase.rpc('requests_nearby', { p_lat: lat, p_lng: lng, radius_m: radiusM }),
+    uid
+      ? supabase.from('requests')
+        .select('id,category,title,description,budget_cents,budget_min_cents,budget_max_cents,desired_date,desired_slot,frequency,urgent,hours_wanted,linen_kg,linen_types,household_size,surface_m2,payment_pref,lat,lng,created_at')
+        .eq('requester_id', uid).eq('status', 'open').not('lat', 'is', null).not('lng', 'is', null)
+      : Promise.resolve({ data: [] as any[], error: null }),
+  ])
+  if (near.error) { console.error('requests_nearby', near.error); return [] }
+  const list = (near.data ?? []) as RequestNearby[]
   // Ses propres annonces ouvertes (lisibles par leur auteur) : montrées, marquees « mine », sans reponse possible.
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: own } = await supabase.from('requests')
-        .select('id,category,title,description,budget_cents,budget_min_cents,budget_max_cents,desired_date,desired_slot,frequency,urgent,hours_wanted,linen_kg,linen_types,household_size,surface_m2,payment_pref,lat,lng,created_at')
-        .eq('requester_id', user.id).eq('status', 'open').not('lat', 'is', null).not('lng', 'is', null)
-      const rad = (x: number) => x * Math.PI / 180
-      for (const r of (own ?? []) as any[]) {
-        const dLat = rad(r.lat - lat), dLng = rad(r.lng - lng)
-        const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat)) * Math.cos(rad(r.lat)) * Math.sin(dLng / 2) ** 2
-        const d = 2 * 6371000 * Math.asin(Math.sqrt(a))
-        if (d <= radiusM) list.push({ ...r, urgent: !!r.urgent, distance_m: d, mine: true } as RequestNearby)
-      }
-      list.sort((x, y) => Number(!!y.urgent) - Number(!!x.urgent) || x.distance_m - y.distance_m)
+    const rad = (x: number) => x * Math.PI / 180
+    for (const r of (own.data ?? []) as any[]) {
+      const dLat = rad(r.lat - lat), dLng = rad(r.lng - lng)
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat)) * Math.cos(rad(r.lat)) * Math.sin(dLng / 2) ** 2
+      const d = 2 * 6371000 * Math.asin(Math.sqrt(a))
+      if (d <= radiusM && !list.some(x => x.id === r.id)) list.push({ ...r, urgent: !!r.urgent, distance_m: d, mine: true } as RequestNearby)
     }
+    list.sort((x, y) => Number(!!y.urgent) - Number(!!x.urgent) || x.distance_m - y.distance_m)
   } catch { }
   return list
 }

@@ -7,7 +7,8 @@ import NavDrawer from '@/components/NavDrawer'
 import { acceptOfferMessage, type OfferMsg } from '@/lib/offers'
 import { notifyOther } from '@/lib/notify'
 import { systemSender } from '@/lib/systemMessage'
-import DayTimePicker from '@/components/DayTimePicker'
+import DayTimePicker, { firstFreeTime } from '@/components/DayTimePicker'
+import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 const DONE = ['completed', 'released']
@@ -54,70 +55,74 @@ export default function MesDemandesPage() {
   const [expanded, setExpanded] = useState<string | null>(null)
   const [pros, setPros] = useState<Record<string, ProInfo>>({})
 
+  // Lecture en deux vagues au lieu de six en file (audit ergonomie 19/11 bis, correction 2) :
+  // demandes et transactions du client ensemble, puis noms, propositions, profils et pièces
+  // ensemble. La dernière liste connue (cache de l'onglet) s'affiche dès l'ouverture.
   async function load() {
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/auth/login'); return }
-    const { data } = await supabase.from('requests')
-      .select('*').eq('requester_id', user.id).order('created_at', { ascending: false })
+    const uid = await sessionUserId(supabase)
+    if (!uid) { router.push('/auth/login'); return }
+    const cached = readScreenCache<{ rows: any[]; tx: Record<string, Tx[]>; pros: Record<string, ProInfo> }>('client_demandes', uid)
+    if (cached) {
+      setRows(cached.rows || []); setTxByRequest(cached.tx || {}); setPros(cached.pros || {}); setLoading(false)
+    }
+    const [{ data, error: reqErr }, { data: allTx }] = await Promise.all([
+      supabase.from('requests').select('*').eq('requester_id', uid).order('created_at', { ascending: false }),
+      // Transactions où le client est acheteur (la RLS les lui ouvre), filtrées ensuite sur ses demandes.
+      supabase.from('transactions').select('id, request_id, status, seller_id, subtotal_cents, price_confirmed').eq('buyer_id', uid).not('request_id', 'is', null),
+    ])
+    if (reqErr) { setLoading(false); return }
     // Seules les demandes publiées (titre saisi dans « Publier une demande », ou encore ouvertes) :
     // les lignes créées automatiquement par « Contacter » ou une réservation directe ne sont pas
     // des demandes du point de vue du client — elles vivent dans Messages et l'Agenda.
     const list = (data ?? []).filter((r: any) => (r.title && r.title.trim()) || r.status === 'open')
     setRows(list)
-    const ids = list.map((r: any) => r.id)
-    if (ids.length) {
-      // Une demande ouverte peut recevoir plusieurs propositions (un pro = une
-      // transaction) : on les groupe toutes par demande, pas seulement la
-      // derniere, sinon les autres propositions disparaissent silencieusement.
-      const { data: txs } = await supabase.from('transactions').select('id, request_id, status, seller_id, subtotal_cents, price_confirmed').in('request_id', ids)
-      const { data: names } = txs?.length
-        ? await supabase.rpc('transaction_counterparts', { p_transaction_ids: txs.map((t: any) => t.id) })
-        : { data: [] }
-      const nameById: Record<string, string> = {}
-      ;(names ?? []).forEach((n: any) => { if (n.full_name) nameById[n.transaction_id] = n.full_name })
+    const ids = new Set(list.map((r: any) => r.id))
+    // Une demande ouverte peut recevoir plusieurs propositions (un pro = une
+    // transaction) : on les groupe toutes par demande, pas seulement la
+    // derniere, sinon les autres propositions disparaissent silencieusement.
+    const txs = (allTx ?? []).filter((t: any) => ids.has(t.request_id))
+    const txIds = txs.map((t: any) => t.id)
+    const proIds = Array.from(new Set(txs.map((t: any) => t.seller_id).filter(Boolean))) as string[]
+    const [{ data: names }, { data: offers }, { data: pps }, trusts] = await Promise.all([
+      txIds.length ? supabase.rpc('transaction_counterparts', { p_transaction_ids: txIds }) : Promise.resolve({ data: [] as any[] }),
       // Devis du prestataire en attente de réponse : la dernière proposition de chaque conversation,
       // acceptée d'ici par « Accepter ce prestataire » (même logique que le chat, src/lib/offers.ts).
-      const pendingOffer = new Map<string, OfferMsg & { created_at: string }>()
-      if (txs?.length) {
-        const { data: offers } = await supabase.from('messages').select('id, transaction_id, sender_id, offer_cents, offer_hourly_cents, offer_included_hours, created_at')
-          .eq('kind', 'offer').eq('offer_status', 'pending').in('transaction_id', txs.map((t: any) => t.id))
-          .order('created_at', { ascending: true })
-        const sellerOf: Record<string, string> = {}
-        txs.forEach((t: any) => { sellerOf[t.id] = t.seller_id })
-        ;(offers ?? []).forEach((o: any) => { if (o.sender_id && o.sender_id === sellerOf[o.transaction_id]) pendingOffer.set(o.transaction_id, o) })
-      }
-      const grouped: Record<string, Tx[]> = {}
-      ;(txs ?? []).forEach((t: any) => {
-        if (!t.request_id) return
-        ;(grouped[t.request_id] ||= []).push({
-          id: t.id, status: t.status, counterpart: nameById[t.id] || 'Prestataire',
-          subtotal_cents: t.subtotal_cents ?? null, price_confirmed: !!t.price_confirmed,
-          providerId: t.seller_id ?? null, hasPendingOffer: pendingOffer.has(t.id), offer: pendingOffer.get(t.id) ?? null,
-        })
-      })
-      setTxByRequest(grouped)
-      // Une proposition attend une réponse : sa demande s'ouvre d'office (un appui de moins).
-      const withOffer = list.find((r: any) => (grouped[r.id] || []).some(t => t.hasPendingOffer && !t.price_confirmed && t.status !== 'cancelled'))
-      if (withOffer) setExpanded(e => e ?? withOffer.id)
-
+      txIds.length
+        ? supabase.from('messages').select('id, transaction_id, sender_id, offer_cents, offer_hourly_cents, offer_included_hours, created_at')
+          .eq('kind', 'offer').eq('offer_status', 'pending').in('transaction_id', txIds).order('created_at', { ascending: true })
+        : Promise.resolve({ data: [] as any[] }),
       // Note, position, présentation et pièces déclarées des prestataires qui ont répondu.
-      const proIds = Array.from(new Set((txs ?? []).map((t: any) => t.seller_id).filter(Boolean))) as string[]
-      if (proIds.length) {
-        const [{ data: pps }, trusts] = await Promise.all([
-          supabase.from('provider_profiles').select('id, rating, reviews_count, lat, lng, bio').in('id', proIds),
-          Promise.all(proIds.map(id => supabase.rpc('provider_trust_stats', { provider_id: id }))),
-        ])
-        const info: Record<string, ProInfo> = {}
-        ;(pps ?? []).forEach((p: any) => { info[p.id] = { rating: p.rating, reviews_count: p.reviews_count || 0, lat: p.lat, lng: p.lng, bio: p.bio, has_identity: false, has_rcpro: false } })
-        proIds.forEach((id, i) => {
-          const tr = trusts[i]?.data?.[0]
-          if (info[id] && tr) { info[id].has_identity = !!tr.has_identity; info[id].has_rcpro = !!tr.has_rcpro }
-        })
-        setPros(info)
-      }
-    }
+      proIds.length ? supabase.from('provider_profiles').select('id, rating, reviews_count, lat, lng, bio').in('id', proIds) : Promise.resolve({ data: [] as any[] }),
+      Promise.all(proIds.map(id => supabase.rpc('provider_trust_stats', { provider_id: id }))),
+    ])
+    const nameById: Record<string, string> = {}
+    ;(names ?? []).forEach((n: any) => { if (n.full_name) nameById[n.transaction_id] = n.full_name })
+    const pendingOffer = new Map<string, OfferMsg & { created_at: string }>()
+    const sellerOf: Record<string, string> = {}
+    txs.forEach((t: any) => { sellerOf[t.id] = t.seller_id })
+    ;(offers ?? []).forEach((o: any) => { if (o.sender_id && o.sender_id === sellerOf[o.transaction_id]) pendingOffer.set(o.transaction_id, o) })
+    const grouped: Record<string, Tx[]> = {}
+    txs.forEach((t: any) => {
+      ;(grouped[t.request_id] ||= []).push({
+        id: t.id, status: t.status, counterpart: nameById[t.id] || 'Prestataire',
+        subtotal_cents: t.subtotal_cents ?? null, price_confirmed: !!t.price_confirmed,
+        providerId: t.seller_id ?? null, hasPendingOffer: pendingOffer.has(t.id), offer: pendingOffer.get(t.id) ?? null,
+      })
+    })
+    setTxByRequest(grouped)
+    // Une proposition attend une réponse : sa demande s'ouvre d'office (un appui de moins).
+    const withOffer = list.find((r: any) => (grouped[r.id] || []).some(t => t.hasPendingOffer && !t.price_confirmed && t.status !== 'cancelled'))
+    if (withOffer) setExpanded(e => e ?? withOffer.id)
+    const info: Record<string, ProInfo> = {}
+    ;(pps ?? []).forEach((p: any) => { info[p.id] = { rating: p.rating, reviews_count: p.reviews_count || 0, lat: p.lat, lng: p.lng, bio: p.bio, has_identity: false, has_rcpro: false } })
+    proIds.forEach((id, i) => {
+      const tr = (trusts[i] as any)?.data?.[0]
+      if (info[id] && tr) { info[id].has_identity = !!tr.has_identity; info[id].has_rcpro = !!tr.has_rcpro }
+    })
+    setPros(info)
     setLoading(false)
+    writeScreenCache('client_demandes', uid, { rows: list, tx: grouped, pros: info })
   }
   useEffect(() => { load() }, []) // eslint-disable-line
 
@@ -147,7 +152,9 @@ export default function MesDemandesPage() {
   function askAccept(t: Tx, r: any) {
     if (!t.offer?.offer_cents || t.price_confirmed) { router.push(`/mission/${t.id}/chat`); return }
     setAcceptErr(e => ({ ...e, [t.id]: '' }))
-    setRdvAt(suggestedRdv(r))
+    // Rendez-vous prérempli (correction 4) : le jour souhaité de la demande, sinon le premier horaire
+    // libre de la grille ; « Confirmer » est actif d'emblée, le client peut toujours changer.
+    setRdvAt(suggestedRdv(r) || firstFreeTime())
     setConfirming(t.id)
   }
   async function acceptPro(t: Tx, r: any) {
@@ -329,7 +336,9 @@ export default function MesDemandesPage() {
                                   <p style={{ fontSize: 12, color: '#4E6470', margin: '0 0 6px' }}>Vous indiquerez ensuite l’adresse et l’heure dans la discussion.</p>
                                 )}
                                 {acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
-                                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                {/* Collant au-dessus de la barre du bas (correction 5) : « Confirmer » reste visible
+                                    pendant le choix du rendez-vous, sans défilement. */}
+                                <div style={{ display: 'flex', gap: 8, position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, background: '#fff', margin: '10px -12px -12px', padding: '10px 12px 12px', borderTop: '1px solid #EEF2F1', borderRadius: '0 0 12px 12px' }}>
                                   <button type="button" onClick={() => setConfirming(null)} disabled={busy === t.id}
                                     style={{ flex: '0 0 auto', minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                     Annuler

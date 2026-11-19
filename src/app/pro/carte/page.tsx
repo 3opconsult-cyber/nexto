@@ -15,6 +15,7 @@ import { fetchRequestsNearby, respondToRequest, type RequestNearby } from '@/lib
 import { TRADES } from '@/lib/trades'
 import { fetchProTrades, proRadiusKm, proRequestMatches } from '@/lib/proNearby'
 import { createClient } from '@/lib/supabase/client'
+import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
 import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from '@/components/MapSheet'
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
 
@@ -48,14 +49,27 @@ function budgetRangeTxt(r: RequestNearby) {
   return budgetTxt(r.budget_cents)
 }
 const SLOT_LABELS: Record<string, string> = { matin: 'Matin', 'apres-midi': 'Après-midi', soir: 'Soir' }
+// Repli de position (Grasse) ; tant que la carte n'a que ce repli, le centre de la dernière lecture sert.
+const FALLBACK_POS = { lat: 43.6584, lng: 6.9225 }
+// Dernière liste connue (audit ergonomie 19/11 bis, correction 1) : affichée dès l'ouverture, puis
+// remplacée par la lecture fraîche. Cache de l'onglet lié au compte (src/lib/screenCache.ts).
+type CarteCache = {
+  reqs: RequestNearby[]; radiusKm: number; center: { lat: number; lng: number } | null
+  trades: string[]; available: boolean; missions: any[]; sent: any[]; done: any[]
+}
 
 export default function ProCartePage() {
   const router = useRouter()
   const unread = useUnreadTotal('pro', 'pro-carte')
   // Position : expliquée avant la fenêtre du navigateur (LocationAsk), repli Grasse.
   // Position déclarée du prestataire (onboarding) avant toute fenêtre ; encart non bloquant sinon.
-  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition({ lat: 43.6584, lng: 6.9225 }, 'pro')
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition(FALLBACK_POS, 'pro')
   const [allReqs, setAllReqs] = useState<RequestNearby[]>([])
+  // boot : compte lu dans la session locale et cache appliqué (quelques ms) ; loaded : une liste
+  // (cache ou lecture) est affichée, « 0 demande » ne s'écrit plus pendant la première lecture.
+  const [boot, setBoot] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+  const [cacheCenter, setCacheCenter] = useState<{ lat: number; lng: number } | null>(null)
   const [recenterTick, setRecenterTick] = useState(0)
   const [available, setAvailable] = useState(true)
   const [proId, setProId] = useState<string | null>(null)
@@ -82,7 +96,8 @@ export default function ProCartePage() {
   const [tradeSel, setTradeSel] = useState<string[] | null>(null) // null = tous mes métiers
   const [showOthers, setShowOthers] = useState(false)
   const [zoneErr, setZoneErr] = useState('')
-  const center = zoneCenter || userPos
+  const posIsFallback = userPos.lat === FALLBACK_POS.lat && userPos.lng === FALLBACK_POS.lng
+  const center = zoneCenter || (posIsFallback && cacheCenter ? cacheCenter : userPos)
   async function chooseRadius(km: number) {
     setRadiusKm(km)
     if (proId) await createClient().from('provider_profiles').update({ service_radius_km: km }).eq('id', proId)
@@ -99,19 +114,33 @@ export default function ProCartePage() {
   // conditionne l'apparition sur providers_nearby (provider_profiles.is_active),
   // pas juste un etat visuel local — sinon un pro se croit masque alors qu'il
   // reste visible des clients (ou l'inverse).
+  // Ouverture (audit 19/11 bis, correction 1) : compte lu dans la session locale, dernière liste
+  // affichée tout de suite, puis la lecture des demandes part en premier (effet `load` dès `boot`),
+  // en parallèle du profil (disponibilité, rayon, métiers) et des interventions (effets sur proId).
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
-      setProId(user.id)
-      supabase.from('provider_profiles').select('is_active, service_radius_km, trade').eq('id', user.id).single()
+    let off = false
+    sessionUserId(supabase).then(uid => {
+      if (off) return
+      if (!uid) { setBoot(true); return }
+      const c = readScreenCache<CarteCache>('pro_carte', uid)
+      if (c) {
+        setAllReqs(c.reqs || []); setRadiusKm(c.radiusKm || 25); setMyTrades(c.trades || []); setAvailable(c.available !== false)
+        setMissions(c.missions || []); setSent(c.sent || []); setDone(c.done || [])
+        if (c.center) setCacheCenter(c.center)
+        setLoaded(true)
+      }
+      setProId(uid); setBoot(true)
+      supabase.from('provider_profiles').select('is_active, service_radius_km, trade').eq('id', uid).single()
         .then(async ({ data }) => {
-          if (!data) return
+          if (off || !data) return
           // Même rayon et mêmes métiers que le compteur du tableau de bord (src/lib/proNearby.ts).
           setAvailable(!!data.is_active); setRadiusKm(proRadiusKm(data.service_radius_km))
-          setMyTrades(await fetchProTrades(supabase, user.id, data.trade))
+          const t = await fetchProTrades(supabase, uid, data.trade)
+          if (!off) setMyTrades(t)
         })
     })
+    return () => { off = true }
   }, [])
 
   async function toggleAvailable() {
@@ -180,9 +209,15 @@ export default function ProCartePage() {
   // zoneGen : numéro de la dernière lecture faite pour une nouvelle zone (ouverture, rayon, ville,
   // position) ; la carte se recadre sur ces lectures-là, pas sur la relecture périodique.
   const [zoneGen, setZoneGen] = useState(0)
+  // Une lecture lancée avant un changement de zone (rayon, ville, position) est ignorée à son
+  // retour : seule la dernière zone s'affiche, même si une réponse plus ancienne arrive après.
+  const zoneSeq = useRef(0)
   const load = useCallback((newZone = false) => {
+    if (newZone) zoneSeq.current += 1
+    const seq = zoneSeq.current
     fetchRequestsNearby(center.lat, center.lng, radiusKm * 1000).then(list => {
-      setAllReqs(list)
+      if (seq !== zoneSeq.current) return
+      setAllReqs(list); setLoaded(true)
       if (newZone) setZoneGen(g => g + 1)
       if (seen.current && !newZone) {
         const nouveau = list.find(r => !seen.current!.has(r.id) && matchRef.current(r))
@@ -191,7 +226,13 @@ export default function ProCartePage() {
       seen.current = new Set(list.map(r => r.id))
     })
   }, [center.lat, center.lng, radiusKm])
-  useEffect(() => { load(true) }, [load])
+  useEffect(() => { if (boot) load(true) }, [load, boot])
+  // Mémorise la dernière liste (et les compteurs) pour la prochaine ouverture ; pas une zone
+  // choisie par ville (elle n'est pas gardée à la réouverture).
+  useEffect(() => {
+    if (!proId || !loaded || zoneCenter) return
+    writeScreenCache('pro_carte', proId, { reqs: allReqs, radiusKm, center: posIsFallback ? cacheCenter : userPos, trades: myTrades, available, missions, sent, done } satisfies CarteCache)
+  }, [proId, loaded, zoneCenter, allReqs, radiusKm, posIsFallback, cacheCenter, userPos, myTrades, available, missions, sent, done])
   useEffect(() => {
     if (!available) return
     const t = setInterval(() => load(false), 60000)
@@ -303,9 +344,9 @@ export default function ProCartePage() {
         {toggle}
       </div>
       <p style={{ fontSize: 13.5, color: 'var(--ink)', marginBottom: 8 }}>
-        {reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}
+        {!loaded ? 'Recherche des demandes autour de vous…' : <>{reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}</>}
       </p>
-      {reqs.length === 0 && (
+      {loaded && reqs.length === 0 && (
         <p style={{ fontSize: 12.5, color: 'var(--slate)', margin: '2px 0 10px' }}>
           {allReqs.length > 0 ? 'Aucune demande pour ces services dans votre zone.' : 'Aucune demande ouverte dans votre zone pour le moment. Élargissez la zone pour en voir davantage.'}
         </p>
@@ -426,6 +467,7 @@ export default function ProCartePage() {
   const sheetTitle = view === 'interventions'
     ? `${missions.length} intervention${missions.length > 1 ? 's' : ''} à venir`
     : selected ? (selected.title || TRADES[selected.category] || 'Demande')
+      : !loaded ? 'Demandes autour de vous'
       : available ? `${reqs.length} ${reqWord} autour de vous` : `Hors ligne · ${reqs.length} ${reqWord}`
 
   return (

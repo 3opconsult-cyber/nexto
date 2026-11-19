@@ -4,11 +4,12 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Sign } from '@/components/Brand'
 import NavDrawer from '@/components/NavDrawer'
-import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
+import { readScreenCache, sessionUserId } from '@/lib/screenCache'
+import { loadFactureSnap, factureCacheKey, type FactureSnap } from '@/lib/screenLoaders'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import TransferCard from '@/components/TransferCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
-         PLATFORM_PENDING, tauxLabel, prestationSous, withProTaxStatus, invoiceCredit, type ProTaxStatus, type Invoice } from '@/lib/invoice-pdf'
+         PLATFORM_PENDING, tauxLabel, prestationSous, invoiceCredit, type Invoice } from '@/lib/invoice-pdf'
 
 /**
  * Facturation — les trois documents d'une mission.
@@ -42,64 +43,24 @@ export default function FacturePage() {
   useEffect(() => {
     const supabase = createClient()
     let alive = true
-    const cacheKey = `facture_${params.id}`
-    type Snap = { invoices: Invoice[]; isSeller: boolean; isBuyer: boolean; reviewed: boolean; txInfo: { self: boolean; completed: boolean; missing?: boolean } }
+    const txId = String(params.id)
     async function load() {
-      // Session locale (sans aller-retour réseau), dernier état connu tout de suite, puis mission,
-      // factures et avis lus ensemble (audit 19/11, correction 3 : 2,3 s mesurées avant).
+      // Session locale (sans aller-retour réseau), dernier état connu tout de suite (rempli aussi par le
+      // préchargement de TabPrefetch, audit 19/11 bis correction 3), puis mission, factures et avis lus
+      // ensemble (src/lib/screenLoaders.ts).
       const uid = await sessionUserId(supabase)
       if (!alive) return
-      const user = uid ? { id: uid } : null
       setUserId(uid)
-      const cached = readScreenCache<Snap>(cacheKey, uid)
+      const cached = readScreenCache<FactureSnap>(factureCacheKey(txId), uid)
       if (cached) {
         setInvoices(cached.invoices); setIsSeller(cached.isSeller); setIsBuyer(cached.isBuyer)
         setReviewed(cached.reviewed); setTxInfo(cached.txInfo); setLoading(false)
       }
-      const [{ data: tx }, { data }, rvRes] = await Promise.all([
-        supabase.from('transactions').select('*').eq('id', params.id).maybeSingle(),
-        supabase.from('invoices').select('*').eq('transaction_id', params.id),
-        uid ? supabase.from('reviews').select('id').eq('transaction_id', params.id).eq('rater_id', uid).limit(1) : Promise.resolve({ data: [] as any[] }),
-      ])
+      const snap = await loadFactureSnap(supabase, uid, txId)
       if (!alive) return
-      const amBuyer = user && tx ? user.id === (tx as any).buyer_id : true
-      // Prestation d'abord, puis UNIQUEMENT la commission qui concerne le viewer
-      // (client = frais de service 5 % ; prestataire = commission PING 11 %). Jamais les deux — comme Airbnb.
-      const mine = amBuyer ? 'commission_client' : 'commission_pro'
-      // Factures émises avant la migration 038 : la preuve réelle et le forfait sont repris de la mission.
-      const t: any = tx
-      const enrich = (v: Invoice): Invoice => {
-        if (v.kind !== 'prestation' || !t || !Array.isArray(v.lines) || !v.lines[0]) return v
-        const l0 = v.lines[0]
-        return { ...v, lines: [{
-          ...l0,
-          preuve_arrivee: l0.preuve_arrivee ?? t.arrival_proof ?? t.arrival_method ?? null,
-          preuve_depart: l0.preuve_depart ?? t.completion_proof ?? null,
-          photo_arrivee: l0.photo_arrivee ?? (t.arrival_photo_path ? true : null),
-          forfait_cents: l0.forfait_cents ?? t.base_forfait_cents ?? null,
-          heures_incluses: l0.heures_incluses ?? t.included_hours ?? null,
-        }, ...v.lines.slice(1)] }
-      }
-      // Forme juridique et TVA (migration 039) : pour une facture émise avant, statut actuel du prestataire,
-      // si la base connaît déjà ces colonnes (sinon erreur ignorée, rien ne change).
-      let live: ProTaxStatus | null = null
-      if (t?.seller_id && (data ?? []).some((v: any) => v.template === 'facture' && v.issuer_snapshot?.forme_juridique == null && v.issuer_snapshot?.tva_regime == null)) {
-        const { data: st, error: stErr } = await supabase.from('provider_profiles')
-          .select('legal_form, vat_status, vat_number').eq('id', t.seller_id).maybeSingle()
-        if (!stErr && st) live = st as ProTaxStatus
-      }
-      const list = ((data ?? []) as Invoice[]).map(enrich).map(v => withProTaxStatus(v, live))
-        .filter(v => v.kind === 'prestation' || v.kind === mine)
-        .sort((a, b) => (a.kind === 'prestation' ? 0 : 1) - (b.kind === 'prestation' ? 0 : 1))
-      const info = !tx ? { self: false, completed: false, missing: true }
-        : { self: (tx as any).buyer_id === (tx as any).seller_id, completed: !!(tx as any).completed_at || ['completed', 'released'].includes((tx as any).status) }
-      const seller = !!user && !!tx && user.id === (tx as any).seller_id
-      const buyer = !!user && !!tx && user.id === (tx as any).buyer_id
-      const rv = buyer ? !!(rvRes as any).data?.length : true
-      setTxInfo(info); setIsSeller(seller); setIsBuyer(buyer); setReviewed(rv)
+      setTxInfo(snap.txInfo); setIsSeller(snap.isSeller); setIsBuyer(snap.isBuyer); setReviewed(snap.reviewed)
       // L'onglet choisi est gardé si la liste n'a pas changé de longueur (relecture après le cache).
-      setInvoices(list); setActive(a => (cached && cached.invoices.length === list.length ? a : 0)); setLoading(false)
-      writeScreenCache(cacheKey, uid, { invoices: list, isSeller: seller, isBuyer: buyer, reviewed: rv, txInfo: info })
+      setInvoices(snap.invoices); setActive(a => (cached && cached.invoices.length === snap.invoices.length ? a : 0)); setLoading(false)
     }
     load()
     return () => { alive = false }

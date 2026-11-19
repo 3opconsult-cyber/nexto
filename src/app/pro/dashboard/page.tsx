@@ -11,12 +11,12 @@ import { CGV_VERSION } from '@/lib/cgv'
 import { legalFormLabel } from '@/lib/proStatus'
 import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
-import { fetchMyDocuments, documentAlerts, type DocRowFull } from '@/lib/pieces'
+import { documentAlerts, type DocRowFull } from '@/lib/pieces'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import ProMonthBlock from '@/components/ProMonthBlock'
 import { paymentsActive } from '@/lib/paymentsClient'
-import { listingChecks, listingScore, loadListingFacts } from '@/lib/listing'
-import { readScreenCache, writeScreenCache, sessionUserId } from '@/lib/screenCache'
+import { readScreenCache, sessionUserId } from '@/lib/screenCache'
+import { loadDashboardSnap, loadDashboardListing, type DashboardSnap } from '@/lib/screenLoaders'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
   particulier: 'Particulier',
@@ -66,7 +66,7 @@ export default function ProDashboard() {
   useEffect(() => {
     const supabase = createClient()
     let alive = true
-    type Snap = { firstName: string; city: string; pro: any; tx: any[]; docRows: DocRowFull[]; listingPct: number | null; taxId: string | null; hasIban: boolean }
+    type Snap = DashboardSnap
     const apply = (v: Snap) => {
       setFirstName(v.firstName); setCity(v.city)
       setPro(v.pro); setAvailable(v.pro.is_active)
@@ -87,30 +87,12 @@ export default function ProDashboard() {
       const cached = readScreenCache<Snap>('dashboard', id)
       if (cached?.pro) apply(cached)
       paymentsActive().then(v => { if (alive) setPayOn(v) })
-      const [profRes, ppRes, txRes, docsRes, privRes] = await Promise.all([
-        supabase.from('profiles').select('first_name, city').eq('id', id).maybeSingle(),
-        supabase.from('provider_profiles').select('*').eq('id', id).maybeSingle(),
-        supabase.from('transactions').select('*, requests(category)').eq('seller_id', id).order('created_at', { ascending: false }),
-        fetchMyDocuments(supabase, id),
-        supabase.from('provider_private').select('tax_id, iban').eq('id', id).maybeSingle(),
-      ])
+      // Lectures partagées avec le préchargement (src/lib/screenLoaders.ts), qui remplit ce cache d'avance.
+      const snap = await loadDashboardSnap(supabase, id, cached?.listingPct ?? null)
       if (!alive) return
-      const pp = ppRes.data
-      if (!pp) { router.push('/pro/onboarding'); return }
-      const snap: Snap = {
-        firstName: (profRes.data as any)?.first_name || '', city: (profRes.data as any)?.city || '',
-        pro: pp, tx: (txRes.data ?? []) as any[], docRows: docsRes.rows ?? [],
-        listingPct: cached?.listingPct ?? null,
-        taxId: (privRes.data as any)?.tax_id ?? null, hasIban: !!(privRes.data as any)?.iban,
-      }
+      if (!snap) { router.push('/pro/onboarding'); return }
       apply(snap)
-      writeScreenCache('dashboard', id, snap)
-      loadListingFacts(supabase, id, pp).then(r => {
-        if (!alive) return
-        const pct = listingScore(listingChecks(r.facts))
-        setListingPct(pct)
-        writeScreenCache('dashboard', id, { ...snap, listingPct: pct })
-      }).catch(() => {})
+      loadDashboardListing(supabase, id, snap).then(pct => { if (alive) setListingPct(pct) }).catch(() => {})
     })()
     return () => { alive = false }
   }, [router])
