@@ -6,6 +6,7 @@ import { useUnreadTotal } from '@/lib/unread'
 import UnreadBadge from '@/components/UnreadBadge'
 import { useTodayMission } from '@/lib/todayMission'
 import { useRatePrompt } from '@/lib/ratePrompt'
+import { usePendingBookings, deadlineLeft } from '@/lib/booking'
 
 // Barre d'onglets mobile. Suit le mode courant (particulier / prestataire, cf. lib/mode.ts) :
 // en mode pro, « Carte » mène aux demandes autour de soi (/pro/carte), jamais à la carte client.
@@ -61,9 +62,13 @@ export default function BottomTabBar() {
       ? today.action === 'fin' ? 'Code de fin reçu : clôturez la mission' : 'Code d’arrivée reçu : validez votre arrivée'
       : today.action === 'fin' ? 'Votre prestataire demande votre code de fin' : 'Votre prestataire est arrivé : confirmez'
     : null
+  // Réservation directe à accepter (migration 052) : « Nouvelle réservation : accepter » en un appui, jusqu'à la
+  // réponse du prestataire, sauf sur la conversation de cette réservation (la carte Accepter / Refuser y est).
+  const bookings = usePendingBookings(isPro, pathname)
+  const nextBooking = !callText ? bookings.find(b => !pathname.startsWith(`/mission/${b.id}`)) ?? null : null
   // Après la fin d'une mission (correction 14) : « Notez … » ouvre l'avis en un appui, une fois par mission.
   const [rate, rateDone] = useRatePrompt(mode, pathname)
-  const rateShown = !callText && !!rate && !pathname.startsWith(`/mission/${rate.id}`)
+  const rateShown = !callText && !nextBooking && !!rate && !pathname.startsWith(`/mission/${rate.id}`)
 
   return (
     <div className="app-bottom-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
@@ -72,6 +77,17 @@ export default function BottomTabBar() {
           style={{ pointerEvents: 'auto', width: 'calc(100% - 24px)', maxWidth: 456, minHeight: 48, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', border: 'none', borderRadius: 14, background: '#C0503A', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textAlign: 'left', cursor: 'pointer', boxShadow: '0 8px 20px rgba(192,80,58,.3)' }}>
           <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
           <span role="status" style={{ flex: 1, minWidth: 0 }}>{callText}</span>
+          <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      )}
+      {nextBooking && (
+        <button type="button" onClick={() => router.push(`/mission/${nextBooking.id}/chat`)}
+          style={{ pointerEvents: 'auto', width: 'calc(100% - 24px)', maxWidth: 456, minHeight: 48, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', border: 'none', borderRadius: 14, background: '#8A6520', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textAlign: 'left', cursor: 'pointer', boxShadow: '0 8px 20px rgba(138,101,32,.3)' }}>
+          <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+          <span role="status" style={{ flex: 1, minWidth: 0 }}>
+            {bookings.length > 1 ? `${bookings.length} nouvelles réservations : accepter` : 'Nouvelle réservation : accepter'}
+            <span style={{ fontWeight: 600, opacity: .9 }}> · encore {deadlineLeft(nextBooking.accept_deadline)}</span>
+          </span>
           <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M9 6l6 6-6 6" /></svg>
         </button>
       )}

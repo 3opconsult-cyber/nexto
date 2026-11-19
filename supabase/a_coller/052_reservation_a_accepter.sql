@@ -1,7 +1,7 @@
 -- 052 — Réservation directe à accepter par le prestataire (décision Romain du 19/11/2026). NON APPLIQUÉE par Claude.
 -- Copie identique dans supabase/a_coller/052_reservation_a_accepter.sql. À coller APRÈS 051 (et après 045, 048 si
--- elles sont collées : 052 réécrit book_service de 045 et unread_counts de 048). Additive et idempotente : aucune
--- instruction DROP ni DELETE, aucune ligne existante modifiée (les réservations déjà enregistrées prennent la valeur
+-- elles sont collées : 052 réécrit book_service de 045 et unread_counts de 048). Additive et idempotente : rien
+-- n'est retiré ni effacé, aucune ligne existante modifiée (les réservations déjà enregistrées prennent la valeur
 -- par défaut « acceptee » de la nouvelle colonne, sans réécriture).
 --
 -- Avant : une réservation directe (mission/new -> book_service) était confirmée d'office.

@@ -33,6 +33,8 @@ import PresenceTag from '@/components/presence/PresenceTag'
 import PresenceChoice from '@/components/presence/PresenceChoice'
 import OrderSummary from '@/components/presence/OrderSummary'
 import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
+import BookingCard from '@/components/BookingCard'
+import { bookingAccepted, bookingPending, bookingEnded, expireBookings } from '@/lib/booking'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
 // conversation sans tout dérouler depuis le haut (demande de Romain, 26/10).
@@ -199,6 +201,8 @@ export default function ChatPage() {
       setMsgs(loaded)
       if (user) markRead(supabase, user.id, transactionId, loaded.length ? loaded[loaded.length - 1].created_at : null)
       resolvePhotoUrls(loaded)
+      // Réservation à accepter (052) : un délai dépassé passe en « expirée » avant l'affichage.
+      await expireBookings(supabase, user?.id)
       const { data: t } = await supabase.from('transactions')
         .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents, frequency, hours_wanted, linen_kg, linen_types, household_size, surface_m2, payment_pref)')
         .eq('id', transactionId).single()
@@ -269,6 +273,12 @@ export default function ChatPage() {
           if (m.photo_path) resolvePhotoUrls([m])
           // Présence annoncée, photo d'arrivée, code envoyé : l'état de la mission du jour suit le fil.
           if (isSystemMessage(m) || /^(Code de validation|Mon code de fin)/.test(m.body || '')) setMsgTick(t => t + 1)
+          // Réservation acceptée / refusée / expirée (052) : l'état de la réservation suit le fil, sans recharger.
+          if (isSystemMessage(m) && /^[✓✕] Réservation (acceptée|refusée|expirée)/.test(m.body || '')) {
+            supabase.from('transactions').select('booking_status, accepted_at, refused_at, expired_at, refusal_reason, status')
+              .eq('id', transactionId).maybeSingle()
+              .then(({ data: b }) => { if (b) setTx((t: any) => t ? { ...t, ...b } : t) })
+          }
         })
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages', filter: `transaction_id=eq.${transactionId}` },
@@ -581,6 +591,9 @@ export default function ChatPage() {
 
   // Mission au prix déjà fixé (devis accepté ou réservation directe) : aucune offre ne s'accepte plus.
   const priceLocked = !!tx?.price_confirmed
+  // Réservation directe acceptée par le prestataire (052 ; toujours vrai avant la migration et pour un devis
+  // accepté). Avant : ni adresse exacte au prestataire, ni rendez-vous à fixer, ni « Je pars », ni QR.
+  const accepted = bookingAccepted(tx)
   // Dernière proposition de tarif encore en attente (en-tête du chat).
   const pendingOffer = (() => { for (let i = msgs.length - 1; i >= 0; i--) { const m = msgs[i]; if (m.kind === 'offer' && m.offer_status === 'pending') return m } return null })()
   // Devis refusé automatiquement par une réservation directe (mission/new) chez le même prestataire.
@@ -712,15 +725,15 @@ export default function ChatPage() {
       {/* Récapitulatif complet (contrat, durée, montants, avis, litige, factures), des deux côtés. */}
       {tx && userId && tx.buyer_id !== tx.seller_id && (
         <MissionRecap tx={tx} userId={userId} counterpart={counterpart}
-          address={userId === tx.buyer_id || ((!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status)) ? reqAddr : null}
+          address={userId === tx.buyer_id || (accepted && (!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status)) ? reqAddr : null}
           refreshKey={`${myReview?.stars ?? ''}-${myClientReview?.stars ?? ''}-${myClientReview?.is_public ?? ''}-${reportSent}`} />
       )}
 
       {/* Le prestataire annonce son depart ; le client suit l'approche. */}
       {tx && userId && (
         <DepartureBar tx={tx} userId={userId} onChange={setTx}
-          address={(userId === tx.buyer_id || ((!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status))) ? reqAddr : null}
-          confirmed={!!tx && !!tx.price_confirmed} />
+          address={(userId === tx.buyer_id || (accepted && (!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status))) ? reqAddr : null}
+          confirmed={!!tx && !!tx.price_confirmed && accepted} />
       )}
 
       {/* Récapitulatif de la demande : ce que le client a demandé, visible des deux côtés. */}
@@ -742,7 +755,7 @@ export default function ChatPage() {
       )}
 
       {/* Autre adresse proposée par le client : le prestataire la voit sans le numéro et l'accepte ou non. */}
-      {tx && userId === tx.seller_id && tx.address_status === 'a_valider' && reqAddr && !['cancelled', 'completed', 'released'].includes(tx.status) && (
+      {tx && userId === tx.seller_id && accepted && tx.address_status === 'a_valider' && reqAddr && !['cancelled', 'completed', 'released'].includes(tx.status) && (
         <div style={{ margin: '10px 16px 0', background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 14, padding: 14 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Adresse d&apos;intervention à valider</div>
           <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 8px', lineHeight: 1.5 }}>Le client demande une intervention ailleurs qu&apos;à l&apos;adresse de son profil. Le numéro vous est transmis si vous acceptez.</p>
@@ -759,8 +772,14 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Réservation directe à accepter (052) : Accepter / Refuser (prestataire), en attente ou refusée (client). */}
+      {tx && userId && (bookingPending(tx) || bookingEnded(tx)) && (
+        <BookingCard tx={tx} userId={userId} counterpart={counterpart} style={{ margin: '10px 16px 0' }}
+          onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} />
+      )}
+
       {/* Rendez-vous : le client complète l'adresse et l'heure dès que le tarif est validé. */}
-      {tx && userId && tx.price_confirmed && !['cancelled', 'completed', 'released'].includes(tx.status) && (
+      {tx && userId && tx.price_confirmed && accepted && !['cancelled', 'completed', 'released'].includes(tx.status) && (
         (!reqAddr || !tx.scheduled_at || tx.address_status === 'refusee') ? (
           userId === tx.buyer_id ? (
             <div style={{ margin: '10px 16px 0', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 14, padding: 14 }}>
@@ -849,7 +868,7 @@ export default function ChatPage() {
       {/* L'annulation est dans le menu « … » de l'en-tête (canCancel). */}
       {tx && tx.status === 'cancelled' && (
         <div style={{ padding: '8px 16px', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>
-          {tx.price_confirmed ? 'Réservation annulée' : 'Demande annulée'}
+          {tx.booking_status === 'refusee' ? 'Réservation refusée par le prestataire' : tx.booking_status === 'expiree' ? 'Réservation expirée' : tx.price_confirmed ? 'Réservation annulée' : 'Demande annulée'}
         </div>
       )}
 
