@@ -135,7 +135,7 @@ export default function Calendar({
       ? `${days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} – ${days[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`
       : cursor.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 
-  const btn: React.CSSProperties = { border: `1px solid ${C.line}`, background: '#fff', color: C.ink, borderRadius: 10, height: 32, minWidth: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '0 10px', fontSize: 12.5, fontWeight: 700, fontFamily: 'Inter, sans-serif' }
+  const btn: React.CSSProperties = { border: `1px solid ${C.line}`, background: '#fff', color: C.ink, borderRadius: 12, height: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '0 10px', fontSize: 12.5, fontWeight: 700, fontFamily: 'Inter, sans-serif' }
 
   return (
     <div ref={root} style={{ background: '#fff', border: `1px solid ${C.line}`, borderRadius: 18, padding: 12, fontFamily: 'Inter, sans-serif', color: C.ink, minWidth: 0 }}>
@@ -151,7 +151,7 @@ export default function Calendar({
           <div style={{ display: 'flex', background: C.paper, borderRadius: 11, padding: 3 }}>
             {views.map(x => (
               <button key={x} type="button" onClick={() => setView(x)} style={{
-                border: 'none', borderRadius: 9, padding: '6px 11px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                border: 'none', borderRadius: 9, minHeight: 44, padding: '0 12px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
                 background: x === v ? '#fff' : 'transparent', color: x === v ? C.ink : C.slate,
                 boxShadow: x === v ? '0 1px 3px rgba(18,54,68,.15)' : 'none',
               }}>{VIEW_LABEL[x]}</button>

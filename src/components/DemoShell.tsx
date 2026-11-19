@@ -7,7 +7,7 @@ import { TRADES } from '@/lib/trades'
 import { useCatalog } from '@/lib/catalog'
 import NavDrawer from './NavDrawer'
 import ModeSwitchPill from './ModeSwitchPill'
-import MapSheet, { SHEET_H, SHEET_LIFT, sheetPx, type SheetSnap } from './MapSheet'
+import MapSheet, { SHEET_LIFT, sheetH, sheetPx, type SheetSnap } from './MapSheet'
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
 import { useUnreadTotal } from '@/lib/unread'
 import { Ic, Stars, r1, svcIconKey, ICON } from './PingIcons'
@@ -17,6 +17,9 @@ import { useInitialPosition } from '@/lib/location'
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
 const LiveMap = dynamic(() => import('./LiveMap'), { ssr: false })
+// Volet replié de /map : poignée + titre + la 1re ligne entière (audit 19/11 bis n° 12), pour qu'elle
+// ne reste pas cachée sous le bas de l'écran. /pro/carte garde le volet replié par défaut (64 px).
+const MAP_PEEK = 148
 
 // ============================================================
 // COQUE /demo — reproduit le mecanisme .view/.view.on d'app.html.
@@ -232,12 +235,12 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // ouvert sur mobile (comme la maquette). Sur ordinateur, PING et Recentrer se décalent à gauche
   // du panneau de détail au lieu de passer dessous.
   const ctrlHidden = !isDesk && (sheet === 'full' || pvShow)
-  const ctrlBase = isDesk ? `calc(${SHEET_LIFT} + 24px)` : `calc(${SHEET_H[sheet]} + ${SHEET_LIFT} + 12px)`
+  const ctrlBase = isDesk ? `calc(${SHEET_LIFT} + 24px)` : `calc(${sheetH(sheet, MAP_PEEK)} + ${SHEET_LIFT} + 12px)`
   // Sur ordinateur, le panneau de droite est permanent (liste, ou fiche du prestataire choisi).
   const ctrlRight = isDesk ? 410 : 14
   // Bulle verte rangée au-dessus de Recentrer (distance au bas de la fenêtre, sans le bandeau).
   const wrapBottomGap = typeof window !== 'undefined' && wrapEl ? Math.max(0, window.innerHeight - wrapEl.getBoundingClientRect().bottom) : 64
-  const bubbleBottom = wrapH ? wrapBottomGap + (isDesk ? 24 : sheetPx(sheet, wrapH) + 12) + 68 + 40 + 12 : null
+  const bubbleBottom = wrapH ? wrapBottomGap + (isDesk ? 24 : sheetPx(sheet, wrapH, MAP_PEEK) + 12) + 68 + 40 + 12 : null
   useFeedbackBubbleSlot(view === 'v_map' ? bubbleBottom : null, view === 'v_map' && !isDesk && (pvShow || sheet === 'full'), isDesk ? 412 : null)
 
   // Aperçu mobile : glisser vers le bas pour fermer, à gauche ou à droite pour passer au suivant.
@@ -331,7 +334,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
 
           {/* ===================== v_map ===================== */}
           <section className={`view ${view === 'v_map' ? 'on' : ''}`} id="v_map" data-tab="map">
-            <div className="body full nopad">
+            <div className="body full nopad" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
               <div className="mapwrap" ref={setWrapEl}>
                 <div className="topbar">
                   <span className="mobile-only"><NavDrawer dark={false} /></span>
@@ -374,7 +377,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   {/* Déposer une annonce (Romain 31/10 : introuvable depuis la carte). Masqué quand une fiche est ouverte. */}
                   {!pvShow && (
                     <button type="button" onClick={() => router.push('/client/demandes/new')}
-                      style={{ position: 'absolute', left: 14, bottom: ctrlBase, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
+                      style={{ position: 'absolute', left: 14, bottom: ctrlBase, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, minHeight: 48, boxSizing: 'border-box', padding: '0 18px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
                       <Ic name="plus" size={16} />
                       Déposer une demande
                     </button>
@@ -384,7 +387,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
 
                 {/* Volet de la liste (mobile) : remplacé par l'aperçu quand un prestataire est choisi. */}
                 {!pvShow && (
-                  <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}>
+                  <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle} peek={MAP_PEEK}>
                     {listBody}
                   </MapSheet>
                 )}
