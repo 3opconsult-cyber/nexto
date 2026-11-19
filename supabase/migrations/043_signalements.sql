@@ -12,14 +12,14 @@
 
 create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
-  reporter_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  reporter_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   transaction_id uuid references public.transactions(id) on delete set null,
-  reported_user_id uuid references auth.users(id) on delete set null,
+  reported_user_id uuid references public.profiles(id) on delete set null,
   category text not null,
   body text not null,
   status text not null default 'nouveau',
   admin_note text,
-  handled_by uuid references auth.users(id) on delete set null,
+  handled_by uuid references public.profiles(id) on delete set null,
   handled_at timestamptz,
   created_at timestamptz not null default now()
 );
