@@ -11,7 +11,7 @@ import {
 /**
  * « Je suis en intervention ici (visible aujourd'hui) » — interrupteur du prestataire (carte pro et Mon entreprise).
  * Le domicile reste visible comme avant ; en plus, un second repère « en intervention près de <secteur> » apparaît sur la
- * carte des clients. Position : une seule lecture de l'appareil, arrondie à ~500 m par la base, 12 h au plus. Rien ne
+ * carte des clients. Position : une seule lecture de l'appareil, arrondie à ~2 km par la base, 12 h au plus. Rien ne
  * s'affiche tant que la migration 058 n'est pas collée.
  */
 export default function LiveZoneCard({ compact = false }: { compact?: boolean }) {
@@ -113,7 +113,7 @@ export default function LiveZoneCard({ compact = false }: { compact?: boolean })
           Vous restez visible à votre domicile. Avec cette option, les clients voient aussi que vous intervenez près de chez eux aujourd’hui.
         </p>
         <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: 13.5, lineHeight: 1.6, color: '#123644' }}>
-          <li><b>Ce qui est partagé</b> : un secteur à environ 500 m près (ville ou quartier). Jamais votre position exacte, jamais l’adresse de votre client.</li>
+          <li><b>Ce qui est partagé</b> : un secteur à environ 2 km près (ville ou quartier). Jamais votre position exacte, jamais l’adresse de votre client.</li>
           <li><b>Combien de temps</b> : {LIVE_ZONE_HOURS} heures au plus, puis cela s’arrête tout seul. Cela s’arrête aussi à la fin de votre mission en cours.</li>
           <li><b>À tout moment</b> : vous coupez l’interrupteur quand vous voulez, ou vous retirez votre consentement.</li>
           <li><b>Une seule lecture</b> : PING lit la position de votre téléphone au moment où vous activez, sans suivi pendant la journée.</li>

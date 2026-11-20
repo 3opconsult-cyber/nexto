@@ -6,7 +6,7 @@
 -- Règle : le prestataire est visible à son domicile (provider_profiles.location, inchangé) ET, s'il le choisit,
 -- à l'endroit où il intervient aujourd'hui. La règle « pas de GPS » est levée pour cette seule option volontaire :
 --   * consentement enregistré (provider_private.live_zone_consent_at) avant toute position ;
---   * la position exacte N'EST JAMAIS enregistrée : set_live_zone() l'arrondit à une grille d'environ 500 m AVANT
+--   * la position exacte N'EST JAMAIS enregistrée : set_live_zone() l'arrondit à une grille d'environ 2 km AVANT
 --     d'écrire (seule la version floutée existe en base) ;
 --   * 12 heures au plus (expires_at = maintenant + 12 h), arrêt à tout moment (clear_live_zone), arrêt automatique à
 --     la fin ou à l'annulation de la mission liée ;
@@ -22,12 +22,12 @@
 
 -- 1. Consentement ---------------------------------------------------------------------------------------------
 alter table public.provider_private add column if not exists live_zone_consent_at timestamptz;
-comment on column public.provider_private.live_zone_consent_at is 'Consentement du prestataire à partager un secteur d''intervention flouté (~500 m, 12 h max). Null = pas de consentement (058).';
+comment on column public.provider_private.live_zone_consent_at is 'Consentement du prestataire à partager un secteur d''intervention flouté (~2 km, 12 h max). Null = pas de consentement (058).';
 
 -- 2. Zone d'intervention du jour ----------------------------------------------------------------------------
 create table if not exists public.provider_live_zone (
   provider_id uuid primary key references auth.users(id),
-  lat double precision not null,         -- déjà arrondie à ~500 m (jamais la position exacte)
+  lat double precision not null,         -- déjà arrondie à ~2 km (jamais la position exacte)
   lng double precision not null,
   label text,                            -- secteur : ville ou quartier, sans chiffre
   started_at timestamptz not null default now(),
@@ -70,7 +70,7 @@ revoke execute on function public.set_live_zone_consent(boolean) from public, an
 grant execute on function public.set_live_zone_consent(boolean) to authenticated;
 
 -- 4. Poser la zone : arrondi côté base, 12 h, consentement obligatoire --------------------------------------------
--- Grille d'environ 550 m : 0,005° de latitude ; en longitude, 0,005° / cos(latitude) pour des cases à peu près carrées.
+-- Grille d'environ 2 km : 0,005° de latitude ; en longitude, 0,005° / cos(latitude) pour des cases à peu près carrées.
 create or replace function public.set_live_zone(
   p_lat double precision, p_lng double precision, p_label text default null,
   p_source text default 'manual', p_transaction_id uuid default null)
@@ -78,7 +78,7 @@ returns table (lat double precision, lng double precision, label text, expires_a
 language plpgsql security definer set search_path = public as $$
 declare
   v_uid uuid := auth.uid();
-  v_step_lat constant double precision := 0.005;
+  v_step_lat constant double precision := 0.018;
   v_step_lng double precision;
   v_lat double precision;
   v_lng double precision;

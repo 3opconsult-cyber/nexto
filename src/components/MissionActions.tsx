@@ -145,7 +145,7 @@ export function CancelSheet({ tx, userId, open, onClose, onDone }: {
           {st!.arrival_pending
             ? 'Le prestataire est arrivé à votre adresse.'
             : (st!.minutes_to_rdv != null && st!.minutes_to_rdv <= 0 ? 'L’heure du rendez-vous est atteinte.' : `Il reste moins de ${st!.free_minutes} minutes avant le rendez-vous et le prestataire est en route.`)}
-          {' '}Si vous annulez maintenant, vous serez facturé la totalité : {fee}. C&apos;est traité comme un abus.
+          {' '}Si vous annulez maintenant, vous serez facturé la totalité : {fee}. C&apos;est traité comme un abus : PING en est informé (contrôle antifraude).
         </div>
         <Row><button type="button" style={btn(C.teal, '#fff')} onClick={stop}>Garder la réservation</button>
           <button type="button" style={btn('#fff', C.danger, C.danger)} onClick={() => setStep('fees2')}>Annuler quand même</button></Row>

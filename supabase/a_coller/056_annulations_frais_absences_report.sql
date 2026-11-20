@@ -15,7 +15,8 @@
 --                      traités comme abus ; refusés tant que p_confirm_fees n'est pas vrai (l'application demande deux
 --                      confirmations) ; documents de facturation émis (FACT/RECAP + PING-C + PING-V, virement à régler) ;
 --                      litige possible 24 h (055 étendu : fenêtre comptée depuis l'annulation).
---     Plus d'annulation une fois l'intervention commencée (arrived_at posé) : garde 014/027 conservée, ici aussi.
+--     Prestataire déjà arrivé (arrived_at posé), mission pas terminée : annulation possible aux FRAIS TOTAUX, avec alerte
+--     antifraude `cancel_after_arrival` pour PING (décision Romain 20/11).
 --  2. Annulation par le PRESTATAIRE : toujours possible (avant l'arrivée), motif de la liste obligatoire (+ texte pour
 --     « autre »), jamais de frais, remboursement 100 % (le serveur le fait si paiement en ligne). Compteur sur 30 jours,
 --     alerte payment_alerts `provider_cancellations` au-delà de `provider_cancel_alert_threshold` (3).
@@ -182,6 +183,20 @@ begin
 end $$;
 revoke all on function public._cx_arrival_pending(uuid) from public, anon, authenticated;
 
+-- 5b. Gardes 014 (guard_payment_status) et 027 (guard_transaction_core) : « plus d'annulation une fois arrivé » est levé
+-- pour la seule RPC cancel_booking (décision Romain 20/11 : annulation possible après l'arrivée, aux frais totaux, avec
+-- alerte antifraude). On réécrit chaque garde à partir de sa définition réelle en base, une seule fois.
+do $$
+declare d text; d2 text;
+begin
+  d := pg_get_functiondef('public.guard_payment_status()'::regprocedure);
+  d2 := replace(d, 'and old.arrived_at is not null then', 'and old.arrived_at is not null and coalesce(current_setting(''ping.cancel_rpc'', true), '''') <> ''1'' then');
+  if d2 <> d then execute d2; end if;
+  d := pg_get_functiondef('public.guard_transaction_core()'::regprocedure);
+  d2 := replace(d, 'if old.arrived_at is not null then', 'if old.arrived_at is not null and coalesce(current_setting(''ping.cancel_rpc'', true), '''') <> ''1'' then');
+  if d2 <> d then execute d2; end if;
+end $$;
+
 -- Palier d'annulation du CLIENT : impossible | commencee | gratuite | motif_grave | frais_totaux.
 create or replace function public._cx_tier(p_tx uuid) returns text
 language plpgsql stable security definer set search_path = public as $$
@@ -189,7 +204,8 @@ declare t record; free_min numeric := public._cx_num('cancel_free_minutes', 15);
 begin
   select status, arrived_at, en_route_at, scheduled_at, price_confirmed into t from public.transactions where id = p_tx;
   if not found or t.status in ('cancelled', 'completed', 'released') then return 'impossible'; end if;
-  if t.arrived_at is not null or t.status = 'arrived' then return 'commencee'; end if;
+  -- Prestataire arrivé et intervention pas terminée : l'annulation reste possible mais coûte les frais totaux (contrôle antifraude).
+  if t.arrived_at is not null or t.status = 'arrived' then return 'frais_totaux'; end if;
   if not coalesce(t.price_confirmed, false) then return 'gratuite'; end if;
   if public._cx_arrival_pending(p_tx) then return 'frais_totaux'; end if;
   if t.en_route_at is null then return 'gratuite'; end if;
@@ -349,10 +365,6 @@ begin
   if t.status in ('completed', 'released') then
     return jsonb_build_object('ok', false, 'reason', 'terminee', 'message', 'Cette mission est terminée.');
   end if;
-  if t.arrived_at is not null or t.status = 'arrived' then
-    return jsonb_build_object('ok', false, 'reason', 'commencee',
-      'message', 'Mission commencée : ouvrez un litige plutôt qu''une annulation.');
-  end if;
   if kind is not null and not (kind = any (case when is_buyer then libre_client else libre_pro end)) then
     return jsonb_build_object('ok', false, 'reason', 'motif_invalide', 'message', 'Motif inconnu : choisissez-en un dans la liste.');
   end if;
@@ -391,6 +403,8 @@ begin
     label := tier;
   end if;
 
+  -- Autorise l'annulation après l'arrivée pour cette seule RPC (gardes 014 / 027 adaptées plus haut).
+  perform set_config('ping.cancel_rpc', '1', true);
   update public.transactions set status = 'cancelled', cancelled_at = now(), cancelled_by = uid,
       cancel_tier = label,
       cancel_reason_kind = kind, cancel_reason_text = why, cancel_fee_cents = case when tier = 'frais_totaux' then fee else 0 end
@@ -420,6 +434,11 @@ begin
 
   if not is_buyer and confirmed then
     perform public._cx_check_threshold(t.seller_id, p_transaction);
+  end if;
+  if t.arrived_at is not null or t.status = 'arrived' then
+    perform public._cx_alert(t.seller_id, 'cancel_after_arrival',
+      jsonb_build_object('transactionId', p_transaction, 'party', case when is_buyer then 'client' else 'prestataire' end,
+                         'feeCents', case when tier = 'frais_totaux' then fee else 0 end, 'controle', 'antifraude'));
   end if;
   if tier = 'frais_totaux' then
     perform public._cx_cancellation_invoices(p_transaction);

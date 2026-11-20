@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/client'
 
 // Position d'intervention « Je suis en intervention ici (visible aujourd'hui) » — décision Romain 20/11/2026, migration 058.
 // Le prestataire reste visible à son domicile ET, s'il le choisit, à l'endroit où il intervient. Règle « pas de GPS » levée
-// pour cette seule option volontaire : consentement enregistré, position arrondie à ~500 m PAR LA BASE (la position
+// pour cette seule option volontaire : consentement enregistré, position arrondie à ~2 km PAR LA BASE (la position
 // exacte n'est jamais stockée), 12 h au plus, arrêt à tout moment ou à la fin de la mission, jamais l'adresse du client.
 // Avant la migration, la table et les RPC n'existent pas : l'option n'apparaît pas et la carte reste inchangée.
 
