@@ -980,16 +980,16 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
         </div>
 
         <div class="card mt"><h3>Dossiers <span class="muted">ouverts d'abord, échéance la plus proche en tête</span></h3>
-          <table class="tbl"><thead><tr><th>Ouvert le</th><th>Mission</th><th>Motif</th><th>Montant demandé</th><th>Échéance</th><th>Statut</th></tr></thead><tbody id="litBody"></tbody></table>
+          <table class="tbl"><thead><tr><th>Ouvert le</th><th>Mission</th><th>Motif</th><th>Montant demandé</th><th>Échéance</th><th>Statut</th><th>Décision PING</th></tr></thead><tbody id="litBody"></tbody></table>
           <p class="muted" id="litEmpty" style="padding:18px 0;text-align:center;display:none">Aucun litige.</p>
-          <p class="note">Cliquer une ligne ouvre le dossier (/litiges/…) dans un nouvel onglet : vous y répondez en médiateur et le clôturez.</p>
+          <p class="note">Cliquer une ligne ouvre le dossier (/litiges/…) dans un nouvel onglet : vous y répondez en médiateur. « Décider » ouvre la Décision PING : montant rendu au client (0 à prix de la prestation), le reste au prestataire, motif ; « Appliquer la décision » clôt le litige, émet l'avoir, ajuste le virement (ou, paiement en ligne : remboursement partiel puis versement du reste) et prévient les deux parties. Les litiges où une partie a demandé l'intervention de PING sont marqués « Intervention demandée ».</p>
         </div>
 
         <div class="card mt"><h3>Règles prévues <span class="muted">pas encore automatisées : décision au cas par cas par PING</span></h3>
           <div class="qrow"><div class="m"><b>Absence de scan d'arrivée</b><small>Créneau dépassé de 2 h &rarr; remboursement intégral, transaction annulée</small></div><span class="tag wait">Prévu</span></div>
           <div class="qrow"><div class="m"><b>Durée sur place &lt; 50 %</b><small>Proposition de remboursement proratisé envoyée au prestataire</small></div><span class="tag wait">Prévu</span></div>
           <div class="qrow"><div class="m"><b>Silence du prestataire &agrave; 48 h</b><small>Remboursement intégral automatique au client</small></div><span class="tag wait">Prévu</span></div>
-          <div class="qrow"><div class="m"><b>Gel du séquestre au signalement</b><small>La libération automatique saute toute transaction en litige</small></div><span class="tag wait">Prévu</span></div>
+          <div class="qrow"><div class="m"><b>Paiement bloqué pendant un litige</b><small>Séquestre : aucun versement tant qu'un litige est ouvert · virement : la prestation passe « suspendue », sans relance de retard (migration 054)</small></div><span class="tag ok">Actif</span></div>
           <div class="qrow"><div class="m"><b>Casse, vol, dégradation</b><small>Jamais de remboursement automatique &rarr; transmission assurance RC du prestataire</small></div><span class="tag ink">Exclu</span></div>
         </div>
       </section>
@@ -4541,9 +4541,68 @@ window.loadLitiges = async function () {
     const late = d.status === 'open' && d.deadline_at && new Date(d.deadline_at).getTime() < now
     const st = d.status === 'open' ? (late ? '<span class="tag dn">Échéance dépassée</span>' : '<span class="tag wait">Ouvert</span>') : d.status === 'resolved' ? '<span class="tag ok">Résolu</span>' : '<span class="tag ink">' + esc(DISPUTE_STATUS[d.status] || d.status) + '</span>'
     const motif = [DISPUTE_CAT[d.category] || '', d.reason || ''].filter(Boolean).join(' · ') || '—'
-    return '<tr class="click" onclick="window.openLitigeDossier(' + jsArg(d.id) + ')" title="Ouvrir le dossier"><td class="mono" data-sort="' + esc(d.created_at) + '">' + esc(dateTimeY(d.created_at)) + fxTag(c.dispFx(d)) + '</td><td>' + (t ? esc(c.name(t.buyer_id)) + ' et ' + esc(c.name(t.seller_id)) : '—') + '</td><td>' + esc(motif.length > 120 ? motif.slice(0, 117) + '…' : motif) + '</td><td>' + (d.claimed_cents != null ? euros(d.claimed_cents) : '—') + '</td><td data-sort="' + esc(d.deadline_at || '') + '">' + (d.deadline_at ? esc(dateTimeY(d.deadline_at)) : '—') + '</td><td>' + st + '</td></tr>'
+    // 054 : intervention demandée par une partie, décision PING en un clic (colonnes absentes avant la migration).
+    const med = d.status === 'open' && d.mediation_requested_at ? ' <span class="tag wait" title="Demandée le ' + esc(dateTimeY(d.mediation_requested_at)) + '">Intervention demandée</span>' : ''
+    const dec = d.status === 'open'
+      ? ('decided_at' in d ? '<button class="btn" type="button" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();window.openDecision(' + jsArg(d.id) + ')">Décider</button>' : '<span class="muted">dans le dossier</span>')
+      : d.decided_at ? esc(euros(d.decision_refund_cents || 0)) + ' au client · ' + esc(euros(d.decision_payout_cents || 0)) + ' au pro' + (d.money_error ? ' <span class="tag dn" title="' + esc(d.money_error) + '">Répartition à reprendre</span>' : '')
+      : d.settlement_status === 'acceptee' ? 'Amiable : ' + esc(euros(d.agreed_cents || 0)) + ' au client' : '—'
+    return '<tr class="click" onclick="window.openLitigeDossier(' + jsArg(d.id) + ')" title="Ouvrir le dossier"><td class="mono" data-sort="' + esc(d.created_at) + '">' + esc(dateTimeY(d.created_at)) + fxTag(c.dispFx(d)) + '</td><td>' + (t ? esc(c.name(t.buyer_id)) + ' et ' + esc(c.name(t.seller_id)) : '—') + '</td><td>' + esc(motif.length > 120 ? motif.slice(0, 117) + '…' : motif) + '</td><td>' + (d.claimed_cents != null ? euros(d.claimed_cents) : '—') + '</td><td data-sort="' + esc(d.deadline_at || '') + '">' + (d.deadline_at ? esc(dateTimeY(d.deadline_at)) : '—') + '</td><td>' + st + med + '</td><td>' + dec + '</td></tr>'
   }).join('')
   const em = document.getElementById('litEmpty'); if (em) { em.style.display = list.length ? 'none' : 'block'; em.textContent = 'Aucun litige (' + scopeTxt() + ').' }
+}
+
+/* ---------- Décision PING (054) : montant rendu au client, reste au prestataire, motif ---------- */
+window.openDecision = async function (disputeId) {
+  const c = await loadCore(); if (!c) return
+  const d = c.disputes.find(x => x.id === disputeId)
+  const m = docModal()
+  const close = () => m.classList.remove('on')
+  if (!d || d.status !== 'open') { m.innerHTML = '<div class="mbox cfbox"><h3>Litige introuvable ou déjà clos <span class="x" data-close>✕</span></h3></div>'; m.classList.add('on'); m.querySelector('[data-close]').onclick = close; return }
+  const t = c.txById[d.transaction_id] || {}
+  const ceiling = t.subtotal_cents || 0
+  const motif = [DISPUTE_CAT[d.category] || '', d.reason || ''].filter(Boolean).join(' · ') || '—'
+  m.innerHTML = '<div class="mbox cfbox"><h3><span>Décision PING</span><span class="x" data-close aria-label="Fermer">✕</span></h3>' +
+    '<p class="muted" style="font-size:12.5px;margin:-4px 0 10px">' + esc(c.name(t.buyer_id)) + ' (client) et ' + esc(c.name(t.seller_id)) + ' (prestataire) · prix de la prestation <b style="color:var(--ink)">' + esc(euros(ceiling)) + '</b>' +
+    (d.claimed_cents != null ? ' · réclamé ' + esc(euros(d.claimed_cents)) : '') + (d.mediation_requested_at ? ' · intervention demandée le ' + esc(dateTimeY(d.mediation_requested_at)) : '') + '<br>Motif du litige : ' + esc(motif) + '</p>' +
+    '<label style="font-size:12px;font-weight:700">Montant rendu au client (€)</label><input class="minput" id="decRefund" inputmode="decimal" autocomplete="off">' +
+    '<div style="display:flex;gap:6px;margin:-4px 0 8px;flex-wrap:wrap">' + [[0, 'Rien'], [.25, '25 %'], [.5, '50 %'], [1, 'Tout']].map(([f, l]) => '<button class="btn ghost" type="button" style="font-size:11px;padding:5px 10px" data-q="' + Math.round(ceiling * f) + '">' + l + '</button>').join('') + '</div>' +
+    '<div style="font-size:13px;margin-bottom:10px">Versé au prestataire : <b id="decPayout">—</b></div>' +
+    '<label style="font-size:12px;font-weight:700">Motif (lu par les deux parties)</label><textarea class="minput" id="decReason" maxlength="1000" style="min-height:80px"></textarea>' +
+    '<p class="note" style="margin:0 0 10px">Litige clos, avoir sur la facture si un montant est rendu, virement ajusté ; paiement en ligne : remboursement partiel puis versement du reste. Frais de service et commission PING inchangés. Les deux parties sont prévenues (fil du litige, conversation, e-mail).</p>' +
+    '<div id="decErr" style="color:#c0503a;font-size:12.5px;margin-bottom:8px"></div>' +
+    '<div style="display:flex;gap:9px;justify-content:flex-end"><button class="btn ghost" type="button" data-close2>Annuler</button><button class="btn" type="button" id="decGo">Appliquer la décision</button></div></div>'
+  m.classList.add('on')
+  m.querySelector('[data-close]').onclick = close
+  m.querySelector('[data-close2]').onclick = close
+  const inp = m.querySelector('#decRefund'), out = m.querySelector('#decPayout'), err = m.querySelector('#decErr'), go = m.querySelector('#decGo')
+  const cents = () => { const v = String(inp.value || '').trim(); if (!v) return null; const n = Math.round(Number(v.replace(',', '.').replace(/\s/g, '')) * 100); return Number.isFinite(n) ? n : NaN }
+  let armed = false
+  const refresh = () => { const x = cents(); out.textContent = x != null && x >= 0 && x <= ceiling ? euros(ceiling - x) : '—'; armed = false; go.textContent = 'Appliquer la décision' }
+  inp.oninput = refresh
+  m.querySelector('#decReason').oninput = () => { armed = false; go.textContent = 'Appliquer la décision' }
+  m.querySelectorAll('[data-q]').forEach(b => { b.onclick = () => { inp.value = (Number(b.getAttribute('data-q')) / 100).toString().replace('.', ','); refresh() } })
+  go.onclick = async () => {
+    const x = cents(), why = String(m.querySelector('#decReason').value || '').trim()
+    err.textContent = ''
+    if (x == null || !Number.isFinite(x) || x < 0 || x > ceiling) { err.textContent = 'Montant entre 0 et ' + euros(ceiling) + '.'; return }
+    if (!why) { err.textContent = 'Écrivez le motif de la décision.'; return }
+    if (!armed) { armed = true; go.textContent = 'Confirmer : ' + euros(x) + ' au client, ' + euros(ceiling - x) + ' au prestataire'; return }
+    go.disabled = true; go.textContent = 'Application…'
+    const r = await supabaseLive.rpc('ping_decide_dispute', { p_dispute: d.id, p_refund_cents: x, p_reason: why })
+    if (r.error) { go.disabled = false; armed = false; go.textContent = 'Appliquer la décision'; err.textContent = r.error.message || 'Décision non appliquée.'; return }
+    let etat = ''
+    try {
+      const { data: { session } } = await supabaseLive.auth.getSession()
+      const res = await fetch('/api/disputes/apply', { method: 'POST', credentials: 'same-origin', headers: Object.assign({ 'Content-Type': 'application/json' }, session ? { Authorization: 'Bearer ' + session.access_token } : {}), body: JSON.stringify({ disputeId: d.id }) })
+      const j = await res.json().catch(() => ({})); etat = (j.argent && j.argent.etat) || ''
+    } catch (e) { /* le cron reprend la répartition */ }
+    close(); coreDirty()
+    toast(etat === 'reparti' ? 'Décision appliquée · remboursement et versement effectués · parties prévenues'
+      : etat === 'erreur' ? 'Décision enregistrée · répartition du paiement à reprendre (retentée automatiquement)'
+      : 'Décision appliquée · avoir émis, virement ajusté · parties prévenues')
+    window.loadLitiges()
+  }
 }
 
 /* ---------- Pièces à valider : aperçu, confirmation, motif de refus ---------- */
