@@ -54,6 +54,11 @@ do $$ begin
 end $$;
 revoke all on public.admin_notifications from anon, authenticated;
 grant select, update on public.admin_notifications to authenticated;   -- filtré par la policy : admin seulement
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'service_role') then
+    grant select, update on public.admin_notifications to service_role;  -- e-mail à PING (route serveur)
+  end if;
+end $$;
 
 -- Libellé lisible d'une rubrique de pièce (même vocabulaire que src/lib/pieces.ts : DOC_TITLES).
 create or replace function public._doc_label(p_kind text) returns text

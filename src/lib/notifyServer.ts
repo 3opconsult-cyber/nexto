@@ -87,3 +87,60 @@ export async function sendMissionEmail(admin: SupabaseClient, input: {
   await admin.from('notification_log').insert({ user_id: recipientId, transaction_id: tx.id, event })
   return { sent: true }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Alerte à PING à chaque dépôt de pièce (migration 057). La base pose une ligne `admin_notifications` (trigger) ;
+// ici le serveur envoie l'e-mail à PING : « Pièce à valider : <type> de <nom> » avec un lien vers /admin, JAMAIS
+// le contenu de la pièce. Au plus 1 e-mail par déposant toutes les 10 min (les alertes en attente partent au
+// passage suivant, dont le cron quotidien). Destinataire : ADMIN_NOTIFY_EMAIL, repli info@opconsult.co.
+// Éteint ({sent:0, reason:'off'}) tant que RESEND_API_KEY ou la clé service manque, ou avant la migration 057.
+export const ADMIN_NOTIFY_FALLBACK = 'info@opconsult.co'
+const escHtml = (t: string) => t.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string))
+
+export async function sendDocumentAlerts(admin: SupabaseClient, opts: { userId?: string } = {}): Promise<{ sent: number; reason?: string }> {
+  const key = process.env.RESEND_API_KEY
+  if (!key || !hasServiceRole()) return { sent: 0, reason: 'off' }
+  let q = admin.from('admin_notifications').select('id, user_id, title').eq('kind', 'document_pending').is('handled_at', null).is('emailed_at', null)
+    .order('created_at', { ascending: true }).limit(200)
+  if (opts.userId) q = q.eq('user_id', opts.userId)
+  const { data, error } = await q
+  if (error) return { sent: 0, reason: 'migration_057_absente' }   // table absente : rien ne casse
+  const byUser = new Map<string, { id: string; title: string }[]>()
+  for (const r of (data ?? []) as { id: string; user_id: string | null; title: string }[]) {
+    const k = r.user_id || 'inconnu'
+    byUser.set(k, [...(byUser.get(k) ?? []), { id: r.id, title: r.title }])
+  }
+  const to = (process.env.ADMIN_NOTIFY_EMAIL || '').trim() || ADMIN_NOTIFY_FALLBACK
+  const since = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+  let sent = 0
+  for (const [userId, rows] of Array.from(byUser.entries())) {
+    // 1 e-mail par déposant toutes les 10 min.
+    const { data: recent } = await admin.from('admin_notifications').select('id').eq('kind', 'document_pending').eq('user_id', userId).gte('emailed_at', since).limit(1)
+    if (recent && recent.length > 0) continue
+    // Comptes de démonstration (.invalid) : l'alerte reste dans l'admin, mais aucun e-mail.
+    let demo = false
+    if (userId !== 'inconnu') {
+      const { data: u } = await admin.auth.admin.getUserById(userId)
+      demo = /\.invalid$/i.test(u?.user?.email || '')
+    }
+    const ids = rows.map(r => r.id)
+    if (!demo) {
+      const link = `${SITE}/admin`
+      const subject = rows.length === 1 ? rows[0].title : `${rows.length} pièces à valider sur PING`
+      const text = `${rows.map(r => r.title).join('\n')}\n\nOuvrir l’administration (Conformité) : ${link}\n\nPour la confidentialité, le contenu des pièces n’est jamais envoyé par e-mail.`
+      const html = `<div style="font-family:Arial,sans-serif;color:#123644;font-size:15px;line-height:1.5">`
+        + rows.map(r => `<p style="margin:0 0 6px"><b>${escHtml(r.title)}</b></p>`).join('')
+        + `<p><a href="${link}" style="display:inline-block;background:#12B39C;color:#ffffff;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:999px">Ouvrir l’administration</a></p>`
+        + `<p style="color:#4E6470;font-size:13px">Pour la confidentialité, le contenu des pièces n’est jamais envoyé par e-mail.</p></div>`
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: process.env.NOTIFY_FROM || 'PING <notifications@ping.invalid>', to: [to], subject, text, html }),
+      })
+      if (!r.ok) continue   // l'alerte reste « non envoyée » : nouvel essai au prochain passage
+      sent++
+    }
+    await admin.from('admin_notifications').update({ emailed_at: new Date().toISOString() }).in('id', ids)
+  }
+  return { sent }
+}

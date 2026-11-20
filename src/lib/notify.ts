@@ -31,3 +31,13 @@ export function settleEndedBooking(transactionId: string) {
     }).catch(() => { })
   } catch { }
 }
+
+/**
+ * Pièce déposée (prestataire ou client) : le serveur prévient PING par e-mail (migration 057, route
+ * /api/admin/document-alert). Jamais le contenu de la pièce. Tire-et-oublie ; le cron quotidien rattrape un appel perdu.
+ */
+export function notifyAdminDocument() {
+  try {
+    fetch('/api/admin/document-alert', { method: 'POST', keepalive: true }).catch(() => { })
+  } catch { }
+}

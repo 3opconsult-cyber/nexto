@@ -1,4 +1,5 @@
 "use client"
+import { notifyAdminDocument } from '@/lib/notify'
 import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -146,6 +147,7 @@ export default function ProDocumentsPage() {
       { owner_id: uid, kind, storage_path: path, status: 'pending' }, { onConflict: 'owner_id,kind' })
     if (rowErr) setError("La pièce est envoyée mais la rubrique n'a pas pu être mise à jour. Réessayez.")
     trackEvent('document_uploaded', { kind, type })
+    if (!rowErr) notifyAdminDocument()
     await load()
     setBusy(null)
   }

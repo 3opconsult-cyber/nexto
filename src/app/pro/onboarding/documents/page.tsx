@@ -1,4 +1,5 @@
 "use client"
+import { notifyAdminDocument } from '@/lib/notify'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -94,6 +95,7 @@ export default function ProDocuments() {
     }, { onConflict: 'owner_id,kind' })
     if (rowErr) { setError("Le fichier est envoyé mais n'a pas pu être enregistré. Réessayez."); setUploading(false); return }
     setUploaded(u => ({ ...u, [doc.id]: file.name }))
+    notifyAdminDocument()
     trackEvent('document_uploaded', doc.type ? { kind: doc.kind, type: doc.type } : { kind: doc.kind })
     setUploading(false)
   }

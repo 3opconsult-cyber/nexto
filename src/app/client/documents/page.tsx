@@ -1,4 +1,5 @@
 "use client"
+import { notifyAdminDocument } from '@/lib/notify'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -48,6 +49,7 @@ export default function ClientDocumentsPage() {
     } else {
       const { error: dbErr } = await supabase.from('documents').upsert({ owner_id: user.id, kind: 'identite', storage_path: path, status: 'pending' }, { onConflict: 'owner_id,kind' })
       if (dbErr) setErr('Le fichier est envoyé mais n’a pas pu être enregistré. Réessayez.')
+      else notifyAdminDocument()
       await load()
     }
     setUploading(false)
