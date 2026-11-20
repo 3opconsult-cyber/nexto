@@ -45,10 +45,10 @@ const ctxPro = await b.newContext({ viewport: { width: 390, height: 844 }, geolo
 const pp = await login(ctxPro, PRO, PWD)
 await pp.goto(B + '/pro/documents'); await pp.waitForTimeout(4000)
 // Rubrique « Assurances » : premier bouton « Fichier » de la rubrique.
-const assur = pp.locator('div', { has: pp.locator('text=Assurances') }).last()
+const assurBtn = pp.locator('text=Responsabilité civile professionnelle').first().locator('xpath=following::button[normalize-space()="Fichier"][1]')
 const [chooser] = await Promise.all([
   pp.waitForEvent('filechooser', { timeout: 8000 }).catch(() => null),
-  assur.locator('button', { hasText: 'Fichier' }).first().click().catch(() => {}),
+  assurBtn.click().catch(() => {}),
 ])
 if (chooser) { await chooser.setFiles(FILE); await pp.waitForTimeout(5000) }
 t = await text(pp)
@@ -100,7 +100,7 @@ if (!(await sw.count())) {
   const modal = pp.locator('[role=dialog]')
   if (await modal.count()) {
     t = await text(pp)
-    check(/500 m/.test(t) && /12 heures/.test(t) && /jamais l.adresse de votre client/i.test(t), 'fenêtre de consentement : secteur ~500 m, 12 h, jamais l\'adresse du client')
+    check(/2 km/.test(t) && /12 heures/.test(t) && /jamais l.adresse de votre client/i.test(t), 'fenêtre de consentement : secteur ~2 km, 12 h, jamais l\'adresse du client')
     check(/à tout moment/i.test(t), 'fenêtre de consentement : arrêt à tout moment')
     await modal.locator('button', { hasText: /J.accepte/ }).click(); await pp.waitForTimeout(6000)
   } else ignore('consentement déjà donné : pas de fenêtre')
