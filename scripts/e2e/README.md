@@ -32,3 +32,11 @@ précédentes). Ne jamais le lancer avec de vrais comptes.
 script sort en erreur ou affiche une ligne qui commence par `ECHEC` (les deux scripts terminent par
 `process.exit(1)` s'il y a au moins un échec). Aucun secret : les comptes `audit.*@ping-demo.invalid`
 et leurs données fictives sont dans les scripts. `parcours.mjs` n'est pas planifié : il crée une mission en base à chaque passage, à lancer à la main.
+
+## Annulations (20/11/2026, migration 056)
+
+`annulations.mjs` joue chaque palier d'annulation (gratuite, motif grave, frais totaux), l'annulation du prestataire, le report,
+le refus d'un report en route, l'absence du prestataire et la clôture sur preuve, par appels de base avec les comptes audit.
+À lancer APRÈS collage de `056_annulations_frais_absences_report.sql` (sans elle, le script s'arrête dès la sonde). Avec
+`SB_SERVICE=<clé service>`, il antidate un rendez-vous pour jouer aussi l'absence réelle du prestataire. Les réservations
+« QA annulations … » créées sont toutes annulées en fin de passage.

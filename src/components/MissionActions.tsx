@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import DayTimePicker, { firstFreeTime } from '@/components/DayTimePicker'
 import {
-  fetchCancellationState, cancelMission, declareProviderNoShow, proposeReschedule, acceptReschedule, declineReschedule, closeOnProof,
+  fetchCancellationState, cancellationAvailable, cancelMission, declareProviderNoShow, proposeReschedule, acceptReschedule, declineReschedule, closeOnProof,
   CLIENT_GRAVE_REASONS, CLIENT_FREE_REASONS, PRO_REASONS, eur, whenLabel, TIER_LABEL, REASON_LABEL,
   type CancellationState, type CancelResult,
 } from '@/lib/cancellation'
@@ -300,6 +300,8 @@ export default function MissionActions({ tx, userId, onChange, compact = false, 
   const [msg, setMsg] = useState('')
   const [ask, setAsk] = useState<'' | 'absence' | 'proof'>('')
   const [compactSt, setCompactSt] = useState<CancellationState | null>(null)
+  const [avail, setAvail] = useState(false)
+  useEffect(() => { if (compact) cancellationAvailable(createClient()).then(setAvail) }, [compact])
 
   const refresh = useCallback(async () => {
     const s = await reload()
@@ -343,7 +345,7 @@ export default function MissionActions({ tx, userId, onChange, compact = false, 
       <div style={{ display: 'flex', gap: 8, ...style }} onClick={e => e.stopPropagation()}>
         {isBuyer || isSeller ? (
           <>
-            <button type="button" style={{ ...btn('#fff', C.navy, C.line), flex: 1 }} onClick={async e => { e.stopPropagation(); setCompactSt(await fetchCancellationState(createClient(), tx.id)); setReschedOpen(true) }}>Reporter</button>
+            {avail && <button type="button" style={{ ...btn('#fff', C.navy, C.line), flex: 1 }} onClick={async e => { e.stopPropagation(); setCompactSt(await fetchCancellationState(createClient(), tx.id)); setReschedOpen(true) }}>Reporter</button>}
             <button type="button" style={{ ...btn('#fff', C.danger, C.line), flex: 1 }} onClick={e => { e.stopPropagation(); setCancelOpen(true) }}>Annuler</button>
           </>
         ) : null}

@@ -76,6 +76,20 @@ export const TIER_LABEL: Record<string, string> = {
 /** Événements e-mail d'annulation, ajoutés à /api/notify. */
 export type CancelMail = 'cancelled_by_client' | 'cancelled_by_provider' | 'provider_no_show' | 'reschedule_proposed' | 'reschedule_answer' | 'closed_on_proof'
 
+let available: Promise<boolean> | null = null
+/** Migration 056 collée ? (sonde : la fonction existe, même si la mission demandée n'existe pas). */
+export function cancellationAvailable(supabase: SupabaseClient): Promise<boolean> {
+  if (available) return available
+  available = (async () => {
+    const { error } = await supabase.rpc('cancellation_state', { p_transaction: '00000000-0000-0000-0000-000000000000' })
+    if (!error) return true
+    if (missingRpc(error)) return false
+    available = null
+    return false
+  })()
+  return available
+}
+
 /** État de la mission pour l'écran ; null si la migration 056 n'est pas collée (l'application garde l'ancien comportement). */
 export async function fetchCancellationState(supabase: SupabaseClient, txId: string): Promise<CancellationState | null> {
   try {
