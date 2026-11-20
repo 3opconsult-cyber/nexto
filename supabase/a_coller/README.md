@@ -16,6 +16,19 @@ publiée passe en « matched » dès qu'une proposition est acceptée, quel que 
 déjà la demande quand c'est le client qui accepte. Vérification :
 `select proname from pg_proc where proname in ('match_request_on_accept', '_request_matched_on_price');`
 
+**À coller (réservation à accepter, 19/11/2026)** : `052_reservation_a_accepter.sql` (copie exacte de
+`supabase/migrations/052_…`), APRÈS 051 (et après 045 et 048 si elles sont collées : 052 réécrit `book_service` et
+`unread_counts`, en gardant les ajouts de 038/048 s'ils sont présents ; si 038 ou 048 est recollée plus tard, recoller 052).
+Une réservation directe (`book_service`) naît « en_attente » : le prestataire l'accepte (`accept_booking`) ou la refuse
+(`refuse_booking`, motif facultatif : annulation sans frais, créneau libéré) ; sans réponse avant `accept_deadline`
+(24 h ou 2 h avant le rendez-vous, le plus court, au moins 30 min), `expire_pending_bookings()` l'annule (pg_cron toutes les
+10 min si l'extension est là, et l'application l'appelle aussi à la lecture). Verrou : ni « Je pars », ni arrivée, ni fin tant
+qu'elle n'est pas acceptée. Missions issues d'un devis accepté et réservations existantes : « acceptee » (valeur par défaut).
+Sans elle, l'application garde le fonctionnement actuel (réservation confirmée d'office). Testée sur PostgreSQL 16 (collée deux
+fois, avec et sans 038/048). Vérification :
+`select proname from pg_proc where proname in ('accept_booking', 'refuse_booking', 'expire_pending_bookings');` puis
+`select booking_status, count(*) from transactions group by 1;` et `select jobname from cron.job where jobname = 'ping_reservations_expirees';`
+
 **Règle commune.** Déployer l'application AVANT de coller. Chaque fichier ci-dessous :
 - est une copie exacte de `supabase/migrations/…` (sauf `provider_services_public.sql` et `comptes_qa.sql`, qui n'existent qu'ici) ;
 - est idempotent : on peut le recoller sans risque ;
