@@ -637,6 +637,15 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
 
       <!-- TRANSACTIONS -->
       <section class="section" id="s_tx">
+        <div class="card" style="margin-bottom:14px"><h3>Conversations <span class="muted" id="convN">toutes les missions</span></h3>
+          <p class="note" style="margin:0 0 10px">Vous voyez toutes les conversations entre clients et prestataires, et vous pouvez y écrire en tant que PING (les deux parties reçoivent le message en direct, avec pastille et e-mail). Les missions au litige ouvert sont en tête.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <input id="convQ" type="search" placeholder="Nom, métier ou début de numéro de mission" style="flex:1 1 220px;border:1.5px solid #E7EDEB;border-radius:9px;padding:8px 10px;font-size:13px">
+            <select id="convF" style="border:1.5px solid #E7EDEB;border-radius:9px;padding:8px 10px;font-size:13px"><option value="all">Toutes les conversations</option><option value="litige">Litige ouvert</option><option value="mediation">Intervention de PING demandée</option></select>
+          </div>
+          <table class="tbl"><thead><tr><th>Dernier message</th><th>Mission</th><th>Dernier échange</th><th>Messages</th><th>Litige</th></tr></thead><tbody id="convBody"></tbody></table>
+          <p class="muted" id="convEmpty" style="padding:12px 0;text-align:center;display:none"></p>
+        </div>
         <div class="card"><h3>Transactions <span class="muted" id="txAllN">les plus récentes d'abord</span></h3>
           <table class="tbl"><thead><tr><th>Date / heure</th><th>Mission</th><th>Statut</th><th>Sous-total</th><th>Frais client</th><th>Commission pro</th><th>Total client</th></tr></thead><tbody id="txAllBody"></tbody></table>
           <p class="muted" id="txAllEmpty" style="padding:18px 0;text-align:center">Données disponibles au lancement</p>
@@ -3657,11 +3666,18 @@ window.openTxDetail = async function (txId) {
     '<div class="muted mt" style="font-size:12px;margin-top:8px">' + esc(phone || 'Téléphone non renseigné') + '</div>' +
     '<div class="muted" style="font-size:12px">' + esc(email || 'Email indisponible') + '</div></div>'
 
-  const msgRows = (msgs || []).map(m => {
+  const buildMsgRows = (list, tt) => (list || []).map(m => {
+    const who = (id) => esc(id === tt.buyer_id ? (tt.buyer && tt.buyer.full_name) : (tt.seller && tt.seller.full_name))
+    const hm = '<span class="muted" style="font-size:10.5px"> ' + esc(fmtDT(m.created_at) || '') + '</span>'
     if (m.kind === 'offer') return '<div class="mt" style="border:1.5px solid #12B39C;border-radius:10px;padding:8px 10px;font-size:12px"><b>Devis</b> — ' + euros(m.offer_cents) + ' · ' + esc(m.offer_status || 'pending') + '</div>'
-    if (m.sender_id === null) return '<div class="mt muted" style="font-size:11.5px">• ' + esc(m.body) + '</div>'
-    return '<div class="mt" style="font-size:12.5px"><b>' + esc(m.sender_id === t.buyer_id ? (t.buyer && t.buyer.full_name) : (t.seller && t.seller.full_name)) + ' :</b> ' + esc(m.body) + '</div>'
+    if (m.sender_id === null || m.kind === 'system') return '<div class="mt muted" style="font-size:11.5px">• ' + esc(m.body) + '</div>'
+    const isPing = m.kind === 'mediation' || (m.sender_id !== tt.buyer_id && m.sender_id !== tt.seller_id)
+    if (isPing) return '<div class="mt" style="font-size:12.5px;background:#123644;color:#fff;border-radius:10px;padding:8px 10px"><b style="color:#7FE0D0">PING' + (m.dispute_id ? ' · litige' : '') + ' :</b> ' + esc(m.body) + hm + '</div>'
+    if (m.dispute_id) return '<div class="mt" style="font-size:12.5px;background:#FFFBF2;border:1px solid #F5D9A6;border-radius:10px;padding:8px 10px"><b>Litige · ' + who(m.sender_id) + ' :</b> ' + esc(m.body) + hm + ' <span class="link" onclick="window.openLitigeDossier(' + jsArg(m.dispute_id) + ')">dossier</span></div>'
+    return '<div class="mt" style="font-size:12.5px"><b>' + who(m.sender_id) + ' :</b> ' + esc(m.body) + hm + '</div>'
   }).join('') || '<div class="muted mt">Aucun message</div>'
+  window.__buildMsgRows = buildMsgRows
+  const msgRows = buildMsgRows(msgs, t)
 
   const disputeHtml = (disputes && disputes.length)
     ? disputes.map(d => '<div class="mt click" style="background:#FFFBF2;border:1px solid #F5D9A6;border-radius:10px;padding:10px;cursor:pointer" onclick="window.openLitigeDossier(' + jsArg(d.id) + ')"><b>Litige — ' + esc(DISPUTE_STATUS[d.status] || d.status) + '</b> <span class="link">Ouvrir le dossier</span><div class="muted" style="font-size:12px">' + esc(d.reason) + '</div></div>').join('')
@@ -3691,13 +3707,50 @@ window.openTxDetail = async function (txId) {
     '<div id="txInvList" style="font-size:12.5px;color:var(--navy)">Chargement…</div>' +
 
     '<h3 class="mt">Litiges</h3>' + disputeHtml +
-    '<h3 class="mt">Conversation</h3><div style="max-height:220px;overflow:auto">' + msgRows + '</div>' +
+    '<h3 class="mt">Conversation <span class="muted" style="font-size:11px;font-weight:600">visible des deux parties · vous écrivez en tant que PING</span></h3><div id="txConvBox" data-tx="' + esc(txId) + '" style="max-height:260px;overflow:auto">' + msgRows + '</div>' +
+    '<div style="display:flex;gap:8px;margin-top:10px;align-items:flex-end"><textarea id="txPingText" rows="2" maxlength="2000" placeholder="Message aux deux parties, au nom de PING" style="flex:1;border:1.5px solid #E7EDEB;border-radius:9px;padding:8px 10px;font-size:13px;font-family:inherit"></textarea>' +
+    '<button class="btn" id="txPingSend" onclick="window.txPingSend(' + jsArg(txId) + ')">Envoyer en tant que PING</button></div>' +
+    '<p class="note" id="txPingMsg" style="margin:6px 0 0"></p>' +
     '</div>'
+  txConvListen(txId)
   const invEl = document.getElementById('txInvList')
   const { data: invs, error: invErr } = await supabaseLive.from('invoices').select('number, kind, template, net_cents, issued_at').eq('transaction_id', txId).order('issued_at')
   if (invEl) invEl.innerHTML = invErr ? esc('Lecture impossible : ' + invErr.message)
     : (invs && invs.length) ? invs.map(v => esc(v.number) + ' · ' + esc(invKindLabel(v)) + ' · ' + euros(v.net_cents)).join(' &nbsp;·&nbsp; ')
     : '<span class="muted">Pas encore de facture : elles sont émises automatiquement à la fin de la mission.</span>'
+}
+
+// Temps réel : la conversation ouverte se met à jour quand un message arrive (parties ou PING).
+let __txConvChan = null
+function txConvListen(txId) {
+  try { if (__txConvChan) supabaseLive.removeChannel(__txConvChan) } catch (e) { }
+  __txConvChan = supabaseLive.channel('admin-conv-' + txId)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: 'transaction_id=eq.' + txId }, () => window.txConvRefresh(txId))
+    .subscribe()
+}
+
+// PING écrit dans la conversation d'une mission (migration 059b) : RPC réservée à l'admin, puis e-mail aux deux parties.
+window.txPingSend = async function (txId) {
+  const ta = document.getElementById('txPingText'), btn = document.getElementById('txPingSend'), out = document.getElementById('txPingMsg')
+  const body = ta ? ta.value.trim() : ''
+  if (!body) { if (out) out.textContent = 'Écrivez un message.'; return }
+  btn.disabled = true; out.textContent = 'Envoi…'
+  const { error } = await supabaseLive.rpc('admin_post_chat_message', { p_transaction: txId, p_body: body })
+  btn.disabled = false
+  if (error) { out.textContent = /function|schema cache/i.test(error.message || '') ? 'Disponible après le collage de la migration 059b.' : 'Message non envoyé : ' + error.message; return }
+  ta.value = ''; out.textContent = 'Envoyé aux deux parties (pastille « non lu » et e-mail).'
+  try { fetch('/api/notify', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ transactionId: txId, event: 'ping_message' }) }).catch(() => { }) } catch (e) { }
+  window.txConvRefresh(txId)
+}
+window.txConvRefresh = async function (txId) {
+  const box = document.getElementById('txConvBox'); if (!box || box.dataset.tx !== txId) return
+  const [{ data: t }, { data: list }] = await Promise.all([
+    supabaseLive.from('transactions').select('buyer_id, seller_id, buyer:profiles!transactions_buyer_id_fkey(full_name), seller:profiles!transactions_seller_id_fkey(full_name)').eq('id', txId).single(),
+    supabaseLive.from('messages').select('*').eq('transaction_id', txId).order('created_at'),
+  ])
+  if (!t || !window.__buildMsgRows) return
+  box.innerHTML = window.__buildMsgRows(list || [], t)
+  box.scrollTop = box.scrollHeight
 }
 
 // Fiche personne — ouverte au clic sur un point de la carte (client ou
@@ -4480,6 +4533,39 @@ window.loadTxList = async function () {
   setTxt('txAllN', pl(v.tx.length, 'mission') + ' · ' + scopeTxt() + " · les plus récentes d'abord")
   const em = document.getElementById('txAllEmpty'); if (em) { em.style.display = v.tx.length ? 'none' : 'block'; em.textContent = 'Aucune mission (' + scopeTxt() + ').' }
 }
+
+/* ---------- Conversations : toutes, cherchables (migration 059b) ---------- */
+window.loadConvList = async function () {
+  const body = document.getElementById('convBody'), em = document.getElementById('convEmpty')
+  if (!body) return
+  const q = (document.getElementById('convQ') || {}).value || '', f = (document.getElementById('convF') || {}).value || 'all'
+  const { data, error } = await supabaseLive.rpc('admin_conversations_list', { p_query: q.trim() || null, p_filter: f, p_limit: 200 })
+  if (error) {
+    body.innerHTML = ''
+    em.style.display = 'block'
+    em.textContent = /function|schema cache/i.test(error.message || '') ? 'La liste des conversations sera disponible après le collage de la migration 059b.' : 'Lecture impossible : ' + error.message
+    return
+  }
+  const rows = data || []
+  setTxt('convN', pl(rows.length, 'conversation') + (f === 'litige' ? ' · litige ouvert' : f === 'mediation' ? ' · intervention de PING demandée' : ''))
+  body.innerHTML = rows.map(r =>
+    '<tr class="click" onclick="window.openTxDetail(' + jsArg(r.transaction_id) + ')"><td class="mono" data-sort="' + esc(r.last_at || '') + '">' + esc(r.last_at ? dateTimeY(r.last_at) : '—') + '</td>' +
+    '<td>' + esc(r.buyer_name || 'Client') + ' ↔ ' + esc(r.seller_name || 'Prestataire') + '<div class="muted mono" style="font-size:10.5px">' + esc(String(r.transaction_id).slice(0, 8)) + (r.category ? ' · ' + esc(r.category) : '') + '</div></td>' +
+    '<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (r.last_kind === 'mediation' ? '<b>PING :</b> ' : '') + esc(r.last_body || '—') + '</td>' +
+    '<td>' + esc(r.n_messages) + '</td>' +
+    '<td>' + (r.dispute_open ? '<span class="tag wait">' + (r.mediation ? 'PING demandé' : 'ouvert') + '</span>' : r.dispute_id ? '<span class="tag ink">clos</span>' : '') + '</td></tr>').join('')
+  em.style.display = rows.length ? 'none' : 'block'
+  em.textContent = 'Aucune conversation ne correspond.'
+}
+;(function () {
+  let t = null
+  const run = () => { clearTimeout(t); t = setTimeout(() => window.loadConvList && window.loadConvList(), 250) }
+  const q = document.getElementById('convQ'), f = document.getElementById('convF')
+  if (q) q.addEventListener('input', run)
+  if (f) f.addEventListener('change', () => window.loadConvList && window.loadConvList())
+})()
+const _loadTxListConv = window.loadTxList
+window.loadTxList = async function () { await _loadTxListConv(); if (window.loadConvList) window.loadConvList() }
 
 /* ---------- Commissions ---------- */
 window.loadCommissionsLive = async function () {
