@@ -28,6 +28,8 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .nav{padding:6px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
 .nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:#a9c3c9;font-size:13.5px;font-weight:600;cursor:pointer;text-decoration:none}
 .nav a svg{width:18px;height:18px;flex:0 0 auto}
+.npill{display:none;margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#E8743B;color:#fff;font-size:11px;font-weight:800;align-items:center;justify-content:center}
+.npill.on{display:inline-flex}
 .nav a:hover{background:rgba(255,255,255,.05);color:#e6f0f2}
 .nav a.on{background:var(--teal);color:#fff}
 .nav .sep{margin:10px 12px 4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5c7f88;font-weight:700}
@@ -481,7 +483,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
       <a data-s="pay" onclick="nav('pay')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Paiements &amp; séquestre</a>
       <a data-s="dac7" onclick="nav('dac7')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M9 12l2 2 4-4"/></svg> Déclarations DAC7</a>
       <div class="sep">Contrôle</div>
-      <a data-s="conformite" onclick="nav('conformite')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Conformité (KYC)</a>
+      <a data-s="conformite" onclick="nav('conformite')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Conformité (KYC) <span class="npill" id="pillConformite" role="status" aria-label="Pièces à valider"></span></a>
       <a data-s="litiges" onclick="nav('litiges')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg> Litiges</a>
       <a data-s="signalements" onclick="nav('signalements')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18"/><path d="M5 4h11l-1.5 4L16 12H5"/></svg> Signalements</a>
       <a data-s="retours" onclick="nav('retours')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/></svg> Retours des testeurs</a>
@@ -536,7 +538,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
             <p class="muted" style="padding:34px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
           </div>
           <div class="card"><h3>À traiter</h3>
-            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b><small>Pièces déposées par les prestataires : aperçu, puis valider ou refuser</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b> <span class="npill" id="pillOv" role="status" aria-label="Alertes pièces à valider" style="margin-left:8px"></span><small>Pièces déposées par les prestataires : aperçu, puis valider ou refuser</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
             <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b><small id="ovDisputes2S">Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
             <div class="qrow"><div class="who"><div class="av">R</div></div><div class="m"><b id="ovFbL">— retour de testeur à traiter</b><small>Commentaires laissés dans la bulle verte de l'application</small></div><span class="link" onclick="nav('retours')">Voir</span></div>
             <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="overviewExpiryL">0 assurance à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
@@ -3333,7 +3335,7 @@ const supabaseLive = createBrowserClient(
 // Toute donnee venant de la base inseree en HTML passe par esc() (ou textContent).
 const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]))
 const TRADES_LIVE = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage' }
-const DOC_LABELS_LIVE = { identite: "Pièce d'identité", rcpro: 'Assurance RC Pro', kbis: 'Justificatif de statut', decennale: 'Garantie décennale' }
+const DOC_LABELS_LIVE = { identite: "Pièce d'identité", rcpro: 'Assurance RC Pro', kbis: 'Justificatif de statut', decennale: 'Garantie décennale', diplome: 'Diplôme ou qualification', sap: 'Récépissé SAP', rib: 'RIB' }
 const TX_STATUS_LIVE = { pending: 'En attente', held: 'Confirmée', arrived: 'En cours', completed: 'Terminée', released: 'Réglée', disputed: 'En litige', refunded: 'Remboursée', cancelled: 'Annulée' }
 const euros = c => ((c || 0) / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 const dateTimeFr = s => new Date(s).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
@@ -4300,6 +4302,26 @@ async function loadDocRows() {
   return supabaseLive.from('documents').select(cols).order('created_at', { ascending: true })
 }
 const EXPIRY_DAYS = 45
+/* Alertes « pièce à valider » (migration 057, table admin_notifications) : pastille sur Conformité et sur l'accueil.
+   Sans la migration, on compte les pièces en attente. NOTIF_OK = vrai si la table existe : c'est alors la base qui
+   écrit le message au déposant à chaque décision (validée, refusée avec motif, expirée), pas cet écran. */
+let NOTIF_OK = false
+window.refreshDocAlerts = async function () {
+  try {
+    const r = await supabaseLive.from('admin_notifications').select('id', { count: 'exact', head: true }).eq('kind', 'document_pending').is('handled_at', null)
+    let n = 0
+    if (r.error) {
+      NOTIF_OK = false
+      const c = await loadCore(); n = c ? view(c).docsPending.length : 0
+    } else { NOTIF_OK = true; n = r.count || 0 }
+    ;['pillConformite', 'pillOv'].forEach(id => {
+      const e = document.getElementById(id); if (!e) return
+      e.textContent = n > 99 ? '99+' : String(n); e.classList.toggle('on', n > 0)
+      e.setAttribute('aria-label', n + (n > 1 ? ' pièces à valider' : ' pièce à valider'))
+    })
+  } catch (e) { /* l'admin continue sans pastille */ }
+}
+setInterval(() => { if (!document.hidden) window.refreshDocAlerts() }, 60000)
 function docExpiry(d) {
   if (!d || !d.valid_until || (d.status !== 'valid' && d.status !== 'expired')) return null
   const end = new Date(String(d.valid_until) + 'T23:59:59')
@@ -4388,6 +4410,7 @@ function liveKpisHtml(c) {
 
 /* ---------- Vue d'ensemble ---------- */
 window.loadOverviewStats = async function () {
+  window.refreshDocAlerts()
   const c = await loadCore()
   if (!c) return
   const v = view(c)
@@ -4613,6 +4636,7 @@ window.loadDocsQueue = async function () {
   body.innerHTML = v.docsPending.map(d =>
     '<tr class="click" onclick="window.reviewDoc(' + jsArg(d.id) + ')"><td>' + esc(c.name(d.owner_id)) + fxTag(c.userFx(d.owner_id)) + '</td><td>' + esc(DOC_LABELS_LIVE[d.kind] || d.kind) + '</td><td class="mono" data-sort="' + esc(d.created_at) + '">' + esc(dateTimeY(d.created_at)) + '</td><td><span class="tag wait">À examiner</span></td><td><button class="btn" style="font-size:11px;padding:5px 10px" type="button">Examiner</button></td></tr>').join('')
   setTxt('docsQueueN', pl(v.docsPending.length, 'pièce en attente', 'pièces en attente') + ' · ' + scopeTxt())
+  window.refreshDocAlerts()
   const em = document.getElementById('docsQueueEmpty'); if (em) em.style.display = v.docsPending.length ? 'none' : 'block'
   window.loadExpiryAlerts(c)
 }
@@ -4777,7 +4801,8 @@ window.reviewDoc = async function (docId) {
       if (error) { b.disabled = false; toast('Enregistrement refusé : ' + esc(error.message)); return }
       if (a === 'ok') { done(status, 'Pièce validée'); return }
       const txt = 'Bonjour, votre pièce « ' + label + ' » n’a pas pu être validée. Motif : ' + motif + '.' + (prec ? ' ' + prec : '') + ' Vous pouvez en déposer une nouvelle depuis Mon entreprise, rubrique Mes pièces.'
-      const sent = await sendSupportText(d.owner_id, txt)
+      // Migration 057 : la base envoie déjà le motif au déposant (Support PING) ; sinon, on l'envoie d'ici.
+      const sent = NOTIF_OK ? true : await sendSupportText(d.owner_id, txt)
       done(status, sent ? 'Pièce refusée · motif envoyé au prestataire (Support PING)' : 'Pièce refusée · le motif n’a pas pu être envoyé, écrivez-lui depuis sa fiche')
     }
   }
