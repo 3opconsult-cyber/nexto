@@ -162,6 +162,11 @@ export async function startCheckout(userId: string, txId: string, origin: string
   const tx = await loadTx(db, txId)
   if (tx.buyer_id !== userId) throw new PaymentError('Mission introuvable.', 404)
   if (tx.status === 'cancelled') throw new PaymentError('Mission annulée.', 409)
+  {
+    // Réservation refusée ou expirée (052) : plus rien à payer (colonne absente avant 052 : ignorée).
+    const { data: b } = await db.from('transactions').select('booking_status').eq('id', txId).maybeSingle()
+    if (b && ['refusee', 'expiree'].includes((b as any).booking_status)) throw new PaymentError('Réservation annulée.', 409)
+  }
   if (!tx.price_confirmed) throw new PaymentError('Le tarif doit être validé avant le paiement.', 409)
   if (['released', 'refunded'].includes(tx.payment_status)) throw new PaymentError('Cette mission est déjà réglée.', 409)
   if (tx.payment_provider && tx.payment_provider !== p.name) throw new PaymentError('Mission rattachée à un autre prestataire de paiement.', 409)
@@ -236,6 +241,10 @@ export async function settle(txId: string, opts: { force?: boolean } = {}) {
   if (!opts.force && Date.now() - new Date(tx.completed_at).getTime() < RELEASE_DELAY_HOURS * 3600_000) return { etat: 'delai_reclamation' }
   const { count } = await db.from('disputes').select('id', { count: 'exact', head: true }).eq('transaction_id', txId).eq('status', 'open')
   if (count) return { etat: 'litige_ouvert' }
+  // Litige clos par un arrangement ou une décision PING dont la répartition n'est pas encore faite : c'est elle
+  // qui verse (X € rendus au client, le reste au prestataire), jamais le versement plein.
+  const pendingOutcome = await pendingDisputeOutcome(db, txId)
+  if (pendingOutcome) return applyDisputeMoney(pendingOutcome)
 
   let { charges, paid } = await chargesOf(db, txId)
   const total = due(tx)
@@ -280,7 +289,7 @@ async function releaseAmount(db: SupabaseClient, p: PaymentProvider, tx: Tx, cha
   }
 }
 
-async function refundAmount(db: SupabaseClient, p: PaymentProvider, txId: string, charges: PaymentRow[], amount: number, reason: string) {
+async function refundAmount(db: SupabaseClient, p: PaymentProvider, txId: string, charges: PaymentRow[], amount: number, reason: string, extraMeta: Record<string, unknown> = {}) {
   const tx = await loadTx(db, txId)
   const buyerAccount = await loadAccount(db, p.name, tx.buyer_id, 'buyer')
   const { rows } = await chargesOf(db, txId)
@@ -294,7 +303,7 @@ async function refundAmount(db: SupabaseClient, p: PaymentProvider, txId: string
     const r = await p.refund({ charge: c, amountCents: part, reason, buyerAccount })
     await db.from('payments').insert({
       transaction_id: txId, provider: p.name, kind: 'refund', external_id: r.externalId, amount_cents: part,
-      status: 'succeeded', meta: { charge_id: c.id, motif: reason },
+      status: 'succeeded', meta: { charge_id: c.id, motif: reason, ...extraMeta },
     })
     left -= part
   }
@@ -332,6 +341,172 @@ export async function refund(actor: { userId: string; isAdmin: boolean }, txId: 
   if (back >= paid) await setPaymentStatus(db, txId, 'refunded')
   else await recompute(db, txId)
   return { rembourseCents: back }
+}
+
+// Message système dans la conversation de la mission (la RLS refuse sender_id NULL : posté au nom du client,
+// kind 'system', affiché comme un message de PING).
+async function systemMessage(db: SupabaseClient, tx: { id: string; buyer_id: string }, body: string) {
+  try { await db.from('messages').insert({ transaction_id: tx.id, sender_id: tx.buyer_id, kind: 'system', body }) } catch { /* trace secondaire */ }
+}
+const eur = (c: number) => (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+
+// ---------- réservation refusée ou expirée (052) : remboursement automatique à 100 % ----------
+// Décision Romain 20/11 : sans action manuelle. Aucune somme ne part vers le prestataire (il n'a rien fait).
+// Un encaissement encore en attente chez le PSP (awaiting) est repris par le cron une fois reçu (held).
+export async function refundEndedBooking(txId: string) {
+  const p = paymentsProvider()
+  if (!p) return { etat: 'inactif' as const }
+  const db = createAdminClient()
+  const { data: b } = await db.from('transactions').select('booking_status').eq('id', txId).maybeSingle()
+  const booking = (b as any)?.booking_status as string | undefined
+  if (booking !== 'refusee' && booking !== 'expiree') return { etat: 'reservation_active' as const }
+  await syncTransaction(txId).catch(() => null)
+  const tx = await loadTx(db, txId)
+  if (tx.payment_provider && tx.payment_provider !== p.name) return { etat: 'autre_prestataire' as const }
+  if (!['held', 'complement_due'].includes(tx.payment_status)) return { etat: tx.payment_status as string }
+  const { charges, paid } = await chargesOf(db, txId)
+  if (paid <= 0) return { etat: 'rien_encaisse' as const }
+  // Verrou : un seul remboursement, même si le cron et l'application le lancent en même temps.
+  const { data: claimed } = await db.from('transactions').update({ payment_status: 'refunded' })
+    .eq('id', txId).in('payment_status', ['held', 'complement_due']).select('id')
+  if (!claimed?.length) return { etat: 'deja_traite' as const }
+  try {
+    const motif = booking === 'refusee' ? 'Réservation refusée par le prestataire' : 'Réservation expirée sans réponse'
+    const back = await refundAmount(db, p, txId, charges, paid, motif)
+    if (back < paid) await setPaymentStatus(db, txId, 'held')
+    await systemMessage(db, tx, `Paiement remboursé à 100 % : ${eur(back)} reviennent sur votre moyen de paiement (${motif.toLowerCase()}). Aucun frais.`)
+    return { etat: back >= paid ? 'rembourse' as const : 'rembourse_partiel' as const, rembourseCents: back }
+  } catch (e) {
+    await setPaymentStatus(db, txId, 'held')
+    await db.from('payment_alerts').insert({ provider_id: tx.seller_id, kind: 'refund_failed', detail: { transactionId: txId, psp: p.name, erreur: (e as Error).message, cause: 'reservation_' + booking } })
+    throw e
+  }
+}
+
+// ---------- fin de litige : répartition chez le PSP (054) ----------
+type DisputeRow = {
+  id: string; transaction_id: string; status: string; settlement_status?: string | null; agreed_cents?: number | null
+  decided_at?: string | null; decision_refund_cents?: number | null; money_applied_at?: string | null
+}
+
+/** Montant rendu au client fixé par la fin du litige (arrangement accepté ou décision PING), sinon null. */
+export function disputeRefundCents(d: DisputeRow): number | null {
+  if (d.status === 'open') return null
+  if (d.decided_at) return Math.max(0, d.decision_refund_cents ?? 0)
+  if (d.settlement_status === 'acceptee') return Math.max(0, d.agreed_cents ?? 0)
+  return null
+}
+
+// Litige clos dont la répartition reste à faire (colonne money_applied_at de 054 ; absente : rien à faire).
+async function pendingDisputeOutcome(db: SupabaseClient, txId: string): Promise<string | null> {
+  const { data, error } = await db.from('disputes').select('*').eq('transaction_id', txId).neq('status', 'open')
+    .is('money_applied_at', null).order('created_at', { ascending: false })
+  if (error) return null
+  const d = ((data ?? []) as DisputeRow[]).find(x => (disputeRefundCents(x) ?? 0) > 0)
+  return d?.id ?? null
+}
+
+async function markDispute(db: SupabaseClient, id: string, result: Record<string, unknown>, error?: string) {
+  await db.from('disputes').update(error
+    ? { money_error: error.slice(0, 500), money_result: result }
+    : { money_applied_at: new Date().toISOString(), money_result: result, money_error: null }).eq('id', id)
+}
+
+/**
+ * Applique la fin d'un litige à l'argent de la mission :
+ *  - séquestre (payment_status held / complement_due) : X € remboursés au client, puis versement immédiat du reste
+ *    au prestataire (sa part moins X ; les frais et la commission PING ne changent pas, comme l'avoir de 040 / 047).
+ *    Si X dépasse sa part, la différence devient une dette (commission_debts) retenue sur ses prochains versements ;
+ *  - déjà versé : X € retenus sur les prochains versements du prestataire + alerte « remboursement client à faire » ;
+ *  - rien d'encaissé en ligne (virement) : l'avoir sur la facture est posé par la base (040 / 054), rien à faire ici.
+ * Idempotente (money_applied_at). Mission pas encore terminée : on attend la fin (le cron reprend).
+ */
+export async function applyDisputeMoney(disputeId: string) {
+  const db = createAdminClient()
+  const { data, error } = await db.from('disputes').select('*').eq('id', disputeId).maybeSingle()
+  if (error || !data) throw new PaymentError('Litige introuvable.', 404)
+  const d = data as DisputeRow
+  if (!('money_applied_at' in d)) return { etat: 'migration_054_absente' }
+  if (d.status === 'open') return { etat: 'litige_ouvert' }
+  if (d.money_applied_at) return { etat: 'deja_applique' }
+  const refundCents = disputeRefundCents(d) ?? 0
+  const p = paymentsProvider()
+  const tx = await loadTx(db, d.transaction_id)
+  const base = { rembourseClientCents: refundCents, mode: p ? 'sequestre' : 'virement' }
+
+  if (!p || tx.payment_status === 'none' || tx.payment_status === 'failed' || tx.payment_status === 'refunded') {
+    // Virement (ou rien d'encaissé en ligne) : l'avoir et l'ajustement du virement sont faits par la base.
+    const r = { ...base, etat: 'virement_avoir' }
+    await markDispute(db, d.id, r)
+    return r
+  }
+  if (tx.payment_provider && tx.payment_provider !== p.name) return { etat: 'autre_prestataire' }
+  if (tx.payment_status === 'awaiting') return { etat: 'encaissement_en_attente' }
+
+  if (tx.payment_status === 'released') {
+    // Déjà versé au prestataire (litige ouvert après le versement) : retenue sur ses prochains versements,
+    // et PING rembourse le client (alerte admin, le PSP ne reprend pas un virement déjà parti).
+    if (refundCents > 0) {
+      await db.from('commission_debts').insert({ provider_id: tx.seller_id, transaction_id: tx.id, amount_cents: refundCents, reason: 'Litige : montant rendu au client après versement' })
+      await db.from('payment_alerts').insert({ provider_id: tx.seller_id, kind: 'refund_after_release', detail: { transactionId: tx.id, disputeId: d.id, amountCents: refundCents } })
+    }
+    const r = { ...base, etat: 'deja_verse', retenueCents: refundCents }
+    await markDispute(db, d.id, r)
+    return r
+  }
+
+  // Séquestre (held / complement_due).
+  if (!tx.completed_at && tx.status !== 'cancelled') return { etat: 'mission_non_terminee' }
+  try {
+    await syncTransaction(tx.id).catch(() => null)
+    let { rows, charges, paid } = await chargesOf(db, tx.id)
+    // Déjà rendu pour CE litige (reprise après un versement bloqué) : jamais deux remboursements.
+    const renduAvant = rows.filter(r => r.kind === 'refund' && r.status === 'succeeded' && r.meta?.dispute_id === d.id).reduce((s, r) => s + r.amount_cents, 0)
+    const refund = Math.max(0, Math.min(refundCents - renduAvant, paid))
+    let rendu = renduAvant
+    if (refund > 0) {
+      rendu += await refundAmount(db, p, tx.id, charges, refund, 'Litige : montant rendu au client', { dispute_id: d.id })
+      ;({ rows, charges, paid } = await chargesOf(db, tx.id))
+    }
+    const share = Math.max(0, tx.payout_cents ?? 0)
+    const payout = Math.max(0, Math.min(share - rendu, paid))
+    const debt = Math.max(0, rendu - share)
+    const moved: Record<string, any> = paid > 0 ? await releaseAmount(db, p, tx, charges, payout, Math.max(0, paid - payout)) : { etat: 'rien_a_verser' }
+    if (!['verse', 'rien_a_verser'].includes(moved.etat)) {
+      // Versement bloqué (prestataire suspendu, déjà en cours) : le remboursement est fait et tracé, le cron reprend.
+      const r = { ...base, etat: 'versement_en_attente', rembourseCents: rendu, verse: moved }
+      await markDispute(db, d.id, r, `Versement non effectué : ${moved.etat}`)
+      return r
+    }
+    if (debt > 0) await db.from('commission_debts').insert({ provider_id: tx.seller_id, transaction_id: tx.id, amount_cents: debt, reason: 'Litige : montant rendu au-delà de la part du prestataire' })
+    const r = { ...base, etat: 'reparti', rembourseCents: rendu, verse: moved, detteCents: debt }
+    await markDispute(db, d.id, r)
+    await systemMessage(db, tx, `Litige clos : répartition appliquée. ${eur(rendu)} remboursés au client${'payoutCents' in moved ? `, ${eur((moved as any).payoutCents)} versés au prestataire` : ''}.`)
+    return r
+  } catch (e) {
+    await markDispute(db, d.id, { ...base, etat: 'erreur' }, (e as Error).message)
+    throw e
+  }
+}
+
+/** Cron : réservations refusées/expirées payées à rembourser, et litiges clos dont la répartition reste à faire. */
+export async function sweepEndedMoney() {
+  if (!paymentsProvider()) return { actif: false, reservations: [], litiges: [] }
+  const db = createAdminClient()
+  const out = { actif: true, reservations: [] as any[], litiges: [] as any[] }
+  const { data: tx, error } = await db.from('transactions').select('id').in('booking_status', ['refusee', 'expiree'])
+    .in('payment_status', ['held', 'complement_due']).limit(100)
+  if (!error) for (const t of tx ?? []) {
+    try { out.reservations.push({ id: t.id, ...(await refundEndedBooking(t.id)) }) }
+    catch (e) { out.reservations.push({ id: t.id, etat: 'erreur', erreur: (e as Error).message }) }
+  }
+  const { data: ds, error: dErr } = await db.from('disputes').select('*').neq('status', 'open').is('money_applied_at', null).limit(100)
+  if (!dErr) for (const d of (ds ?? []) as DisputeRow[]) {
+    if (disputeRefundCents(d) == null) continue
+    try { out.litiges.push({ id: d.id, ...(await applyDisputeMoney(d.id)) }) }
+    catch (e) { out.litiges.push({ id: d.id, etat: 'erreur', erreur: (e as Error).message }) }
+  }
+  return out
 }
 
 // ---------- webhooks ----------

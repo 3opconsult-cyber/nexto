@@ -6,6 +6,7 @@ import { EUR } from '@/lib/invoice-pdf'
 import { filterMessage } from '@/lib/chatFilter'
 import { categoryLabel } from '@/components/DisputeFields'
 import AmicableSettlement from '@/components/AmicableSettlement'
+import { notifyOther } from '@/lib/notify'
 
 /**
  * Dossier d'un litige, comme le centre de résolution d'Airbnb (Romain 31/10) : un fil de discussion
@@ -39,6 +40,11 @@ export default function LitigePage() {
   const [refundEur, setRefundEur] = useState('')
   const [moneyMsg, setMoneyMsg] = useState('')
   const [photoUrls, setPhotoUrls] = useState<string[]>([])
+  // Décision PING (054) : montant rendu au client, motif, confirmation en 2 appuis.
+  const [decRefund, setDecRefund] = useState('')
+  const [decConfirm, setDecConfirm] = useState(false)
+  const [decBusy, setDecBusy] = useState(false)
+  const [medBusy, setMedBusy] = useState(false)
   const end = useRef<HTMLDivElement>(null)
 
   const loadMsgs = useCallback(async () => {
@@ -79,6 +85,46 @@ export default function LitigePage() {
     const { data } = await createClient().from('disputes').select('*').eq('id', id).maybeSingle()
     if (data) setD((prev: any) => ({ ...prev, ...data }))
     loadMsgs()
+    return data
+  }
+
+  // Fin du litige (arrangement accepté, décision PING) : le serveur exécute la répartition de l'argent chez le
+  // prestataire de paiement (séquestre) et prévient les deux parties par e-mail. Le cron reprend en cas d'échec.
+  async function applyMoney() {
+    try {
+      const r = await fetch('/api/disputes/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ disputeId: id }) })
+      return await r.json().catch(() => ({}))
+    } catch { return {} }
+  }
+
+  // « Demander l'intervention de PING » (client ou prestataire) : PING prend le relais dans ce fil.
+  async function requestMediation() {
+    setMedBusy(true); setErr('')
+    const { error } = await createClient().rpc('request_ping_mediation', { p_dispute: id })
+    setMedBusy(false)
+    if (error) { setErr(error.message || 'Demande non envoyée. Réessayez.'); return }
+    if (d?.transaction_id) notifyOther(d.transaction_id, 'dispute_mediation', id)
+    reloadDispute()
+  }
+
+  // Décision PING : la base clôt le litige, émet l'avoir et ajuste le virement ; le serveur répartit le séquestre.
+  async function applyDecision() {
+    const ceiling = d?.transactions?.subtotal_cents ?? 0
+    const cents = decRefund.trim() === '' ? NaN : Math.round(Number(decRefund.replace(',', '.').replace(/\s/g, '')) * 100)
+    if (!Number.isFinite(cents) || cents < 0) { setErr('Indiquez le montant rendu au client (0 € si rien).'); setDecConfirm(false); return }
+    if (cents > ceiling) { setErr(`Au plus ${EUR(ceiling)}, le prix de la prestation.`); setDecConfirm(false); return }
+    if (!decision.trim()) { setErr('Écrivez le motif de la décision.'); setDecConfirm(false); return }
+    setDecBusy(true); setErr('')
+    const { error } = await createClient().rpc('ping_decide_dispute', { p_dispute: id, p_refund_cents: cents, p_reason: decision.trim() })
+    if (error) { setDecBusy(false); setDecConfirm(false); setErr(error.message || 'Décision non appliquée.'); return }
+    const r = await applyMoney()
+    setDecBusy(false); setDecConfirm(false); setDecision(''); setDecRefund('')
+    const etat = r?.argent?.etat
+    setMoneyMsg(etat === 'reparti' ? 'Décision appliquée : remboursement et versement effectués chez le prestataire de paiement.'
+      : etat === 'virement_avoir' ? 'Décision appliquée : avoir émis sur la facture, virement de la prestation ajusté.'
+      : etat === 'erreur' ? `Décision enregistrée, mais la répartition du paiement a échoué (${r.argent.erreur}). Elle sera retentée automatiquement.`
+      : 'Décision appliquée. Les deux parties sont prévenues.')
+    reloadDispute()
   }
 
   // Le fil se met à jour tout seul tant que la page est ouverte.
@@ -187,6 +233,21 @@ export default function LitigePage() {
             {d.resolution && <div style={{ fontSize: 13, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Décision : {d.resolution}</div>}
             {tx && uid && <AmicableSettlement dispute={d} buyerId={tx.buyer_id} sellerId={tx.seller_id} userId={uid}
               ceilingCents={tx.subtotal_cents} onChange={reloadDispute} />}
+            {/* Intervention de PING (054) : visible des deux parties tant que le litige est ouvert. */}
+            {tx && uid && open && 'mediation_requested_at' in d && (uid === tx.buyer_id || uid === tx.seller_id) && (
+              d.mediation_requested_at ? (
+                <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(18,179,156,.08)', border: '1px solid rgba(18,179,156,.3)', fontSize: 12.5, color: '#123644', lineHeight: 1.5 }}>
+                  <b>Intervention de PING demandée</b> le {new Date(d.mediation_requested_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                  {d.mediation_requested_by === uid ? ' (par vous)' : d.mediation_requested_by === tx.buyer_id ? ' par le client' : ' par le prestataire'}.
+                  {' '}PING prend le relais dans ce fil et rendra sa décision : montant rendu au client, reste versé au prestataire.
+                </div>
+              ) : (
+                <button type="button" onClick={requestMediation} disabled={medBusy}
+                  style={{ ...linkBtn, width: '100%', marginTop: 10, border: '1.5px solid #123644', color: '#123644', cursor: medBusy ? 'default' : 'pointer', opacity: medBusy ? .6 : 1, fontFamily: 'inherit' }}>
+                  Demander l’intervention de PING
+                </button>
+              )
+            )}
             {/* Liens en boutons de 44 px (audit ergonomie 19/11, correction 20). */}
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <a href={`/mission/${d.transaction_id}/chat`} style={linkBtn}>Voir la mission</a>
@@ -220,11 +281,17 @@ export default function LitigePage() {
       {d && (
         <div style={{ padding: '0 16px 10px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
           <MoneyPanel tx={tx} pays={pays} admin={admin} open={open} refundEur={refundEur} setRefundEur={setRefundEur}
-            onRefund={refundClient} onRetenue={retenue} msg={moneyMsg} />
+            onRefund={refundClient} onRetenue={retenue} msg={moneyMsg} dispute={d} />
         </div>
       )}
 
-      {admin && open && (
+      {admin && open && d && 'decided_at' in d && (
+        <DecisionPanel ceiling={tx?.subtotal_cents ?? 0} requested={d.mediation_requested_at} refund={decRefund} setRefund={v => { setDecRefund(v); setDecConfirm(false) }}
+          reason={decision} setReason={v => { setDecision(v); setDecConfirm(false) }} confirm={decConfirm} setConfirm={setDecConfirm}
+          busy={decBusy} onApply={applyDecision} />
+      )}
+
+      {admin && open && d && !('decided_at' in d) && (
         <div style={{ padding: '0 16px 10px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
           <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', marginBottom: 6 }}>Médiation PING (visible par vous seul)</div>
@@ -271,20 +338,51 @@ const PAY: Record<string, string> = {
   failed: 'Encaissement en échec.',
 }
 
-function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, onRetenue, msg }: {
+function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, onRetenue, msg, dispute }: {
   tx: any; pays: any[]; admin: boolean; open: boolean; refundEur: string; setRefundEur: (v: string) => void
-  onRefund: () => void; onRetenue: () => void; msg: string
+  onRefund: () => void; onRetenue: () => void; msg: string; dispute: any
 }) {
   if (!tx) return null
   const ps = tx.payment_status || 'none'
+  // 054 collée : la « Décision PING » fait la répartition ; les outils manuels restent pour les litiges clos.
+  const withDecision = !!dispute && 'decided_at' in dispute
+  const showManual = !withDecision || !open
+  const online = ps !== 'none'
+  const result = dispute?.money_result as { etat?: string; rembourseCents?: number; retenueCents?: number } | null | undefined
   const sum = (k: string) => pays.filter(p => p.kind === k && p.status === 'succeeded').reduce((a, p) => a + p.amount_cents, 0)
   const held = ps === 'held' || ps === 'complement_due'
   return (
     <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Argent de la mission</div>
       <div style={{ fontSize: 13, color: '#123644', lineHeight: 1.55 }}>{PAY[ps] || ps}</div>
-      {open && ps !== 'released' && <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 6 }}>Versement au prestataire bloqué tant que le litige est ouvert.</div>}
-      {admin && (
+      {open && ps !== 'released' && (
+        <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 6, lineHeight: 1.5 }}>
+          Le paiement est bloqué jusqu’à la résolution du litige{online ? ' : rien n’est versé au prestataire.' : ' : le virement de la prestation est suspendu, sans relance de retard.'}
+        </div>
+      )}
+      {/* Les 3 fins possibles, dites clairement (demande Romain 20/11). */}
+      {open && (
+        <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12, color: '#4E6470', lineHeight: 1.55 }}>
+          <li><b>Arrangement à l’amiable</b> accepté par les deux : le montant convenu est rendu au client{online ? '' : ' (avoir sur la facture)'}, le reste va au prestataire.</li>
+          <li><b>Intervention de PING</b>, demandée par l’un ou l’autre : PING décide du montant rendu au client, le reste va au prestataire.</li>
+          <li>Sans réclamation retenue : la prestation est réglée normalement au prestataire.</li>
+        </ul>
+      )}
+      {!open && dispute?.decided_at && (
+        <div style={{ fontSize: 12.5, color: '#123644', marginTop: 6, lineHeight: 1.5 }}>
+          Décision de PING : <b>{EUR(dispute.decision_refund_cents || 0)}</b> rendus au client, <b>{EUR(dispute.decision_payout_cents || 0)}</b> pour le prestataire (sur le prix de la prestation).
+        </div>
+      )}
+      {!open && result?.etat && (
+        <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>
+          {result.etat === 'reparti' ? `Répartition faite : ${EUR(result.rembourseCents || 0)} remboursés au client, le reste versé au prestataire.`
+            : result.etat === 'virement_avoir' ? 'Répartition par avoir sur la facture : le virement de la prestation est ajusté.'
+            : result.etat === 'deja_verse' ? `Prestation déjà versée : ${EUR(result.retenueCents || 0)} retenus sur les prochains versements du prestataire.`
+            : result.etat === 'versement_en_attente' ? 'Remboursement fait ; versement au prestataire en attente (reprise automatique).' : null}
+        </div>
+      )}
+      {!open && dispute?.money_error && admin && <div style={{ fontSize: 12, color: '#C0503A', marginTop: 4 }}>Répartition à reprendre : {dispute.money_error}</div>}
+      {admin && showManual && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12.5, color: '#4E6470', marginTop: 10 }}>
             <span>Total payé par le client</span><b style={{ color: '#123644' }}>{EUR(tx.total_charged_cents || 0)}</b>
@@ -320,6 +418,63 @@ function Countdown({ to }: { to: string }) {
   return (
     <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: late ? '#C0503A' : '#8a6520' }}>
       {late ? `Réponse attendue depuis ${h} h ${String(m).padStart(2, '0')}` : `Réponse attendue sous ${h} h ${String(m).padStart(2, '0')}`}
+    </div>
+  )
+}
+
+/** Décision PING (admin, 054) : montant rendu au client (0 à prix de la prestation), reste au prestataire, motif. */
+function DecisionPanel({ ceiling, requested, refund, setRefund, reason, setReason, confirm, setConfirm, busy, onApply }: {
+  ceiling: number; requested?: string | null; refund: string; setRefund: (v: string) => void
+  reason: string; setReason: (v: string) => void; confirm: boolean; setConfirm: (v: boolean) => void
+  busy: boolean; onApply: () => void
+}) {
+  const cents = refund.trim() === '' ? null : Math.round(Number(refund.replace(',', '.').replace(/\s/g, '')) * 100)
+  const valid = cents != null && Number.isFinite(cents) && cents >= 0 && cents <= ceiling
+  const payout = valid ? ceiling - (cents as number) : null
+  const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 14 }
+  const quick = (c: number) => setRefund((c / 100).toString().replace('.', ','))
+  return (
+    <div style={{ padding: '0 16px 10px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
+      <div style={{ background: '#fff', border: '1.5px solid #12B39C', borderRadius: 14, padding: 14 }}>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Décision PING</div>
+        <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.5 }}>
+          {requested ? `Intervention demandée le ${new Date(requested).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}. ` : ''}
+          Prix de la prestation : <b>{EUR(ceiling)}</b>. Frais de service et commission PING inchangés.
+        </div>
+        <label htmlFor="dec-refund" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#123644', margin: '12px 0 6px' }}>Montant rendu au client (€)</label>
+        <input id="dec-refund" value={refund} onChange={e => setRefund(e.target.value)} inputMode="decimal" autoComplete="off" style={field} />
+        <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+          {[0, 0.25, 0.5, 1].map(f => (
+            <button key={f} type="button" onClick={() => quick(Math.round(ceiling * f))}
+              style={{ minHeight: 36, padding: '0 12px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              {f === 0 ? 'Rien' : f === 1 ? 'Tout' : `${f * 100} %`}
+            </button>
+          ))}
+        </div>
+        <div style={{ fontSize: 13, color: '#123644', marginTop: 8 }}>
+          Versé au prestataire : <b>{payout != null ? EUR(payout) : '—'}</b>{cents != null && !valid ? <span style={{ color: '#C0503A' }}> · entre 0 et {EUR(ceiling)}</span> : null}
+        </div>
+        <label htmlFor="dec-reason" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#123644', margin: '12px 0 6px' }}>Motif (lu par les deux parties)</label>
+        <textarea id="dec-reason" value={reason} onChange={e => setReason(e.target.value)} rows={3} maxLength={1000} style={{ ...field, minHeight: 72 }} />
+        {confirm ? (
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <button type="button" disabled={busy} onClick={onApply}
+              style={{ flex: 1, minHeight: 44, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? .6 : 1, fontFamily: 'inherit' }}>
+              {busy ? 'Application…' : `Confirmer : ${valid ? EUR(cents as number) : '—'} au client, ${payout != null ? EUR(payout) : '—'} au prestataire`}
+            </button>
+            <button type="button" disabled={busy} onClick={() => setConfirm(false)}
+              style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Retour</button>
+          </div>
+        ) : (
+          <button type="button" disabled={!valid || !reason.trim()} onClick={() => setConfirm(true)}
+            style={{ width: '100%', marginTop: 10, minHeight: 44, borderRadius: 999, border: 'none', background: valid && reason.trim() ? '#0C8F7E' : '#DCE5E3', color: '#fff', fontWeight: 700, cursor: valid && reason.trim() ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+            Appliquer la décision
+          </button>
+        )}
+        <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8, lineHeight: 1.5 }}>
+          Le litige est clos, un avoir est émis sur la facture si un montant est rendu, le virement est ajusté (ou, paiement en ligne : remboursement puis versement du reste) et les deux parties sont prévenues.
+        </div>
+      </div>
     </div>
   )
 }

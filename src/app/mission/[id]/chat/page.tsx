@@ -571,7 +571,7 @@ export default function ChatPage() {
     await supabase.from('dispute_messages').insert({ dispute_id: dsp.id, sender_id: userId, body: reportReason.trim(), kind: 'text' })
     await supabase.from('messages').insert({
       transaction_id: transactionId, ...(await systemSender(supabase)),
-      body: 'Litige ouvert sur cette mission : la discussion continue dans le dossier du litige.',
+      body: 'Litige ouvert sur cette mission : le paiement est bloqué jusqu’à la résolution du litige. La discussion continue dans le dossier du litige.',
     })
     notifyOther(transactionId, 'dispute')
     setReportReason(''); setReportExtra(EMPTY_DISPUTE)

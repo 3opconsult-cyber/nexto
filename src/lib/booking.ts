@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
-import { notifyOther } from '@/lib/notify'
+import { notifyOther, settleEndedBooking } from '@/lib/notify'
 import { sessionUserId } from '@/lib/screenCache'
 
 // Réservation directe à accepter par le prestataire (décision Romain 19/11, migration 052).
@@ -73,8 +73,10 @@ async function decide(supabase: SupabaseClient, txId: string, fn: 'accept_bookin
   const { data, error } = await supabase.rpc(fn, args)
   if (error) return { ok: false, message: missingRpc(error) ? 'Fonction indisponible : réessayez dans un instant.' : (error.message || 'Action impossible.') }
   const r = (data || {}) as BookingResult
-  if (r.ok && !r.already) notifyOther(txId, fn === 'accept_booking' ? 'booking_accepted' : 'booking_refused')
-  if (r.reason === 'expiree') notifyOther(txId, 'booking_expired')
+  // Acceptée : e-mail au client. Refusée ou expirée : le serveur prévient le client (une seule fois) et, si la
+  // réservation était payée en ligne, la rembourse à 100 % (/api/bookings/ended, 053).
+  if (r.ok && !r.already) { if (fn === 'accept_booking') notifyOther(txId, 'booking_accepted'); else settleEndedBooking(txId) }
+  if (r.reason === 'expiree') settleEndedBooking(txId)
   return r
 }
 
@@ -84,18 +86,28 @@ export const acceptBooking = (supabase: SupabaseClient, txId: string) => decide(
 export const refuseBooking = (supabase: SupabaseClient, txId: string, reason?: string) => decide(supabase, txId, 'refuse_booking', reason)
 
 /**
- * Expiration « à la lecture » (en plus du cron de 052) : passe en « expirée » les réservations dont le délai est
- * dépassé. Quand c'est le prestataire qui ouvre l'application, le client est prévenu par e-mail.
+ * Expiration « à la lecture » (en plus de pg_cron et du cron serveur /api/bookings/expire) : passe en « expirée » les
+ * réservations dont le délai est dépassé. Le serveur prévient alors le client par e-mail (une seule fois) et rembourse
+ * à 100 % si elle avait été payée en ligne. `uid` est gardé pour compatibilité des appels.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function expireBookings(supabase: SupabaseClient, uid?: string | null) {
   try {
     const { data, error } = await supabase.rpc('expire_pending_bookings')
     if (error || !Array.isArray(data)) return
-    for (const r of data as { transaction_id: string; seller_id: string }[]) {
-      if (uid && r.seller_id === uid) notifyOther(r.transaction_id, 'booking_expired')
-    }
+    for (const r of data as { transaction_id: string }[]) settleEndedBooking(r.transaction_id)
   } catch { }
 }
+
+/**
+ * Réservation dont le délai de réponse est dépassé mais pas encore passée « expirée » (le cron n'est pas encore
+ * passé) : traitée comme expirée à l'affichage, pour qu'elle ne reste jamais sur un écran actif.
+ */
+export const bookingLapsed = (t: { booking_status?: string | null; accept_deadline?: string | null } | null | undefined, now = Date.now()) =>
+  t?.booking_status === 'en_attente' && !!t.accept_deadline && new Date(t.accept_deadline).getTime() < now
+
+/** Réservation encore « active » (à venir, en cours) : ni refusée, ni expirée, ni au délai dépassé. */
+export const bookingLive = (t: Row & { accept_deadline?: string | null }) => !bookingEnded(t) && !bookingLapsed(t)
 
 export type PendingBooking = { id: string; scheduled_at: string | null; accept_deadline: string | null }
 
@@ -108,7 +120,7 @@ export async function fetchPendingBookings(supabase: SupabaseClient): Promise<Pe
   const { data } = await supabase.from('transactions').select('id, scheduled_at, accept_deadline, buyer_id')
     .eq('seller_id', uid).eq('booking_status', 'en_attente').eq('status', 'pending')
     .order('accept_deadline', { ascending: true }).limit(20)
-  return ((data ?? []) as any[]).filter(t => t.buyer_id !== uid).map(t => ({ id: t.id, scheduled_at: t.scheduled_at, accept_deadline: t.accept_deadline }))
+  return ((data ?? []) as any[]).filter(t => t.buyer_id !== uid && !bookingLapsed(t)).map(t => ({ id: t.id, scheduled_at: t.scheduled_at, accept_deadline: t.accept_deadline }))
 }
 
 /** Bandeau « Nouvelle réservation : accepter » (prestataire) : relu à chaque page et toutes les 60 s. */

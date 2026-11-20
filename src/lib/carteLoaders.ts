@@ -1,6 +1,7 @@
 "use client"
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { readScreenCache, writeScreenCache } from '@/lib/screenCache'
+import { bookingLive } from '@/lib/booking'
 import {
   fetchProvidersNearby, fetchProviderActivities, fetchProviderFlags, fetchRequestsNearby,
   type ProviderNearby, type ProviderFlags, type RequestNearby,
@@ -29,10 +30,12 @@ export type CarteCache = {
 /** Interventions confirmées (vue « Mes interventions »). */
 export async function fetchCarteMissions(supabase: SupabaseClient, uid: string): Promise<any[]> {
   const { data } = await supabase.from('transactions')
-    .select('id, status, scheduled_at, created_at, subtotal_cents, address_status, requests(category, title, address, lat, lng)')
+    // « * » : booking_status / accept_deadline (052) arrivent seuls une fois la migration collée.
+    .select('*, requests(category, title, address, lat, lng)')
     .eq('seller_id', uid).eq('price_confirmed', true).in('status', ['pending', 'arrived'])
     .order('scheduled_at', { ascending: true, nullsFirst: false })
-  return data ?? []
+  // Réservation refusée, expirée ou au délai de réponse dépassé : jamais dans les interventions à venir.
+  return (data ?? []).filter((t: any) => bookingLive(t))
 }
 /** Propositions envoyées sur une demande encore ouverte (lot 16). */
 export async function fetchCarteSent(supabase: SupabaseClient, uid: string): Promise<any[]> {

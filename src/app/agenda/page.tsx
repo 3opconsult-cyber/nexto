@@ -15,7 +15,7 @@ import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import PresenceTag from '@/components/presence/PresenceTag'
 import { rowHasPresence } from '@/lib/presence'
 import BookingCard from '@/components/BookingCard'
-import { bookingPending, bookingEnded, expireBookings } from '@/lib/booking'
+import { bookingPending, bookingEnded, bookingLapsed, expireBookings } from '@/lib/booking'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
@@ -110,14 +110,16 @@ export default function AgendaPage() {
   // reste dans Messages, sinon chaque « Contacter » ajoutait une fausse date au calendrier.
   const disputedIds = new Set(disputes.map(d => d.transaction_id))
   const pendingTalks = mine.filter(t => UPCOMING.includes(t.status) && !t.price_confirmed).length
-  const upcoming = mine.filter(t => UPCOMING.includes(t.status) && t.price_confirmed)
+  // Réservation au délai de réponse dépassé (pas encore passée « expirée » par le cron) : comme une expirée,
+  // elle quitte « En cours » et rejoint l'historique « Terminées » (demande Romain 20/11).
+  const upcoming = mine.filter(t => UPCOMING.includes(t.status) && t.price_confirmed && !bookingLapsed(t))
     .sort((a, b) => (a.scheduled_at ? 0 : 1) - (b.scheduled_at ? 0 : 1) || txDate(a).getTime() - txDate(b).getTime())
   // Terminées (audit ergonomie 19/11, correction 7) : missions effectuées d'abord, la plus récemment terminée en
   // tête (son « Noter » est le premier visible) ; les réservations annulées ensuite, en bas.
   const doneTime = (t: any) => new Date(t.completed_at || t.scheduled_at || t.created_at).getTime()
   const done = [
     ...mine.filter(t => DONE.includes(t.status)).sort((a, b) => doneTime(b) - doneTime(a)),
-    ...mine.filter(t => t.status === 'cancelled' && t.price_confirmed).sort((a, b) => new Date(b.scheduled_at || b.created_at).getTime() - new Date(a.scheduled_at || a.created_at).getTime()),
+    ...mine.filter(t => (t.status === 'cancelled' || bookingLapsed(t)) && t.price_confirmed).sort((a, b) => new Date(b.scheduled_at || b.created_at).getTime() - new Date(a.scheduled_at || a.created_at).getTime()),
   ]
   // « Aujourd'hui » : missions en cours ou du jour, avec un bouton vers l'écran « Mission du jour ».
   const todayList = upcoming.filter(t => isTodayMission(t))
@@ -135,6 +137,7 @@ export default function AgendaPage() {
 
   // Comme la démo (v_agenda) : un statut qui dit où en est la mission, pas juste « à venir ».
   function badge(t: any): { label: string; bg: string; fg: string } {
+    if (bookingLapsed(t)) return { label: 'Expirée', bg: '#EEF2F1', fg: '#4E6470' }
     if (t.status === 'cancelled') return t.booking_status === 'refusee' ? { label: 'Refusée', bg: '#EEF2F1', fg: '#4E6470' }
       : t.booking_status === 'expiree' ? { label: 'Expirée', bg: '#EEF2F1', fg: '#4E6470' }
         : { label: 'Annulée', bg: '#EEF2F1', fg: '#4E6470' }
@@ -150,7 +153,7 @@ export default function AgendaPage() {
   // confirmés du mode courant, et en mode pro ses créneaux encore libres.
   const events: CalEvent[] = useMemo(() => {
     const appts: CalEvent[] = mine
-      .filter(t => t.scheduled_at && ((t.price_confirmed || DONE.includes(t.status)) && t.status !== 'cancelled' || disputedIds.has(t.id)))
+      .filter(t => t.scheduled_at && ((t.price_confirmed || DONE.includes(t.status)) && t.status !== 'cancelled' && !bookingLapsed(t) || disputedIds.has(t.id)))
       .map(t => {
         const start = new Date(t.scheduled_at)
         return {
@@ -208,7 +211,7 @@ export default function AgendaPage() {
         </div>
       </div>
       {/* Réservation directe à accepter (052) : Accepter / Refuser sur la carte même, ou « Choisir un autre prestataire ». */}
-      {(bookingPending(t) || bookingEnded(t)) && (
+      {((bookingPending(t) && !bookingLapsed(t)) || bookingEnded(t)) && (
         <div style={{ marginTop: 10 }}>
           <BookingCard tx={t} userId={uid} counterpart={names[t.id]} compact
             onChange={patch => setTxs(list => list.map(x => x.id === t.id ? { ...x, ...patch } : x))} />

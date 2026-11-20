@@ -66,6 +66,11 @@ export default function AmicableSettlement({ dispute, buyerId, sellerId, userId,
     const { error } = await createClient().rpc(fn, args)
     setBusy(false)
     if (error) { setErr(error.message || 'Action impossible. Réessayez.'); return false }
+    // Accord conclu : le serveur répartit l'argent (séquestre : X € rendus au client, le reste versé au
+    // prestataire) et prévient les deux parties. Virement : l'avoir est déjà posé par la base (040).
+    if (fn === 'accept_settlement' && dispute.id) {
+      fetch('/api/disputes/apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ disputeId: dispute.id }), keepalive: true }).catch(() => { })
+    }
     setStep('idle'); setAmount(''); onChange()
     return true
   }
@@ -151,7 +156,7 @@ export default function AmicableSettlement({ dispute, buyerId, sellerId, userId,
 
       {step === 'form' && form}
       {err && <div role="alert" style={{ color: '#c0503a', fontSize: 12, marginTop: 8 }}>{err}</div>}
-      <div style={{ fontSize: 11.5, color: C.slate, marginTop: 8, lineHeight: 1.5 }}>Pas d’accord ? PING peut arbitrer : écrivez-lui dans le fil du litige.</div>
+      <div style={{ fontSize: 11.5, color: C.slate, marginTop: 8, lineHeight: 1.5 }}>Pas d’accord ? Demandez l’intervention de PING depuis le dossier du litige : PING décide du montant rendu au client.</div>
     </div>
   )
 }

@@ -4,6 +4,7 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "crons": [
-    { "path": "/api/payments/release", "schedule": "17 7 * * *" }
+    { "path": "/api/payments/release", "schedule": "17 7 * * *" },
+    { "path": "/api/bookings/expire", "schedule": "43 5 * * *" }
   ]
 }
