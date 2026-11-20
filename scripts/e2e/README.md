@@ -32,3 +32,13 @@ précédentes). Ne jamais le lancer avec de vrais comptes.
 script sort en erreur ou affiche une ligne qui commence par `ECHEC` (les deux scripts terminent par
 `process.exit(1)` s'il y a au moins un échec). Aucun secret : les comptes `audit.*@ping-demo.invalid`
 et leurs données fictives sont dans les scripts. `parcours.mjs` n'est pas planifié : il crée une mission en base à chaque passage, à lancer à la main.
+
+## Pièces et position d'intervention (20/11/2026, migrations 057 et 058)
+
+`pieces-position.mjs` : à jouer APRÈS collage de 057 et 058 (sans elles les étapes concernées sont « IGNORE »).
+Dépôt d'une pièce par le client et par le prestataire (« Reçu, en cours de traitement »), puis, avec `ADMIN_EMAIL` et
+`ADMIN_PASSWORD` : pastille « pièces à valider » sur Conformité, refus de l'assurance avec motif, motif et bouton
+« Renvoyer une pièce » côté prestataire, message Support PING reçu. Puis « Je suis en intervention ici » : fenêtre de
+consentement (secteur ~500 m, 12 h, jamais l'adresse du client), second repère « Ici aujourd'hui » sur la carte client,
+arrêt volontaire, retrait du consentement. Les comptes `.invalid` ne déclenchent aucun e-mail : l'envoi à PING se vérifie
+à la main avec un vrai compte (RESEND_API_KEY, ADMIN_NOTIFY_EMAIL).

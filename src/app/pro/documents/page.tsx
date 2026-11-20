@@ -252,8 +252,15 @@ export default function ProDocumentsPage() {
                   <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>
                   {row?.status === 'rejected' && (
                     <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(255,122,102,.1)', color: '#A8432F', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>
-                      Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Déposez une nouvelle pièce ci-dessous : elle repart en contrôle.
+                      Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Déposez une nouvelle pièce : elle repart en contrôle. Une pièce refusée ne compte pas pour « profil vérifié par PING ».
                     </div>
+                  )}
+                  {(row?.status === 'rejected' || row?.status === 'expired' || exp?.expired) && (
+                    <button type="button" disabled={busy === r.kind} onClick={() => choose(r.kind, mine[0]?.type || r.types[0].key, 'file')}
+                      style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, padding: '0 18px', border: 'none', borderRadius: 999, background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
+                      Renvoyer une pièce
+                    </button>
                   )}
                   {exp && row?.status !== 'rejected' && (
                     <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: exp.expired || exp.days <= 14 ? 'rgba(255,122,102,.1)' : 'rgba(242,169,59,.14)', color: exp.expired || exp.days <= 14 ? '#A8432F' : '#7A5717', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>

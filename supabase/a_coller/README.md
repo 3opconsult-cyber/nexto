@@ -45,6 +45,26 @@ fois, avec et sans 038/048). Vérification :
    au-delà, ou paiement déjà versé, l'ouverture est refusée : jamais de remboursement à la main après versement.
    Vérification : `select tgname from pg_trigger where tgname = 'trg_enforce_incident_window';`
 
+**À coller (alertes admin sur les pièces, pièces expirées, position d'intervention, 20/11/2026)**, dans cet ordre, APRÈS 042 :
+1. `057_alertes_admin_pieces.sql` (copie exacte de `supabase/migrations/057_…`) : table `admin_notifications` (lecture et traitement
+   réservés à `is_admin()`) alimentée par trigger à chaque dépôt ou remplacement de pièce (prestataire ou client) et marquée traitée à la
+   décision ; message « Support PING » au déposant à chaque décision (validée, refusée avec motif, expirée) ; `expire_documents()` (pose
+   `expired` quand `valid_until` est dépassé, rappel unique 45 jours avant), planifiée chaque jour à 6 h 41 UTC par pg_cron s'il est installé.
+   Pastille « pièces à valider » dans l'admin (Conformité et accueil) ; e-mail à PING par la route serveur `/api/admin/document-alert`
+   (variable Vercel `ADMIN_NOTIFY_EMAIL`, repli `info@opconsult.co`, 1 e-mail par déposant toutes les 10 min, jamais le contenu de la pièce ;
+   `RESEND_API_KEY` et `SUPABASE_SERVICE_ROLE_KEY` requis, sinon rien ne part). Sans elle : l'admin garde sa file « Pièces à valider »,
+   compte les pièces en attente pour la pastille, et envoie lui-même le motif de refus.
+   Vérification : `select tgname from pg_trigger where tgname = 'trg_documents_admin_alert';` puis `select public.expire_documents();`
+   puis `select jobname, schedule from cron.job where jobname = 'ping_pieces_expirees';`
+2. `058_position_intervention.sql` (indépendante de 057) : « Je suis en intervention ici (visible aujourd'hui) » — consentement
+   (`provider_private.live_zone_consent_at`), table `provider_live_zone` (position arrondie à ~500 m par la base, jamais la position exacte ;
+   12 h ; arrêt à tout moment, à l'expiration et à la fin de la mission liée), RPC `set_live_zone_consent`, `set_live_zone`,
+   `clear_live_zone`, `providers_live_zones(p_lat, p_lng, radius_m, p_trade)` (lecture publique, version floutée seulement).
+   `providers_nearby` n'est PAS modifiée (voir l'en-tête du fichier). Sans elle : l'interrupteur n'apparaît pas, la carte est inchangée.
+   Vérification : `select proname from pg_proc where proname in ('set_live_zone', 'clear_live_zone', 'set_live_zone_consent', 'providers_live_zones');`
+   Testées sur PostgreSQL 16 (collées deux fois, accès interdits refusés). Rien à supprimer : une zone terminée est seulement fermée.
+   Test de bout en bout après collage : `node scripts/e2e/pieces-position.mjs`.
+
 **Règle commune.** Déployer l'application AVANT de coller. Chaque fichier ci-dessous :
 - est une copie exacte de `supabase/migrations/…` (sauf `provider_services_public.sql` et `comptes_qa.sql`, qui n'existent qu'ici) ;
 - est idempotent : on peut le recoller sans risque ;

@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
 
-type DocRow = { status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string }
+type DocRow = { status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string; rejection_reason?: string | null }
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
   valid: { label: 'Fournie', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
@@ -28,7 +28,9 @@ export default function ClientDocumentsPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
-    const { data } = await supabase.from('documents').select('status, storage_path, created_at').eq('owner_id', user.id).eq('kind', 'identite').maybeSingle()
+    // Motif de refus (migration 042) : relu sans cette colonne tant qu'elle n'existe pas.
+    let { data, error } = await supabase.from('documents').select('status, storage_path, created_at, rejection_reason').eq('owner_id', user.id).eq('kind', 'identite').maybeSingle()
+    if (error) ({ data } = await supabase.from('documents').select('status, storage_path, created_at').eq('owner_id', user.id).eq('kind', 'identite').maybeSingle())
     setRow(data)
     setReady(true)
   }
@@ -106,6 +108,15 @@ export default function ClientDocumentsPage() {
             {uploading ? 'Envoi…' : row ? 'Remplacer' : 'Ajouter'}
           </button>
         </div>
+        {row?.status === 'rejected' && (
+          <div role="status" style={{ marginTop: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,122,102,.1)', color: '#A8432F', fontSize: 12.5, fontWeight: 600, lineHeight: 1.45 }}>
+            Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Envoyez une nouvelle pièce : elle repart en contrôle.
+            <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+              style={{ display: 'block', marginTop: 8, minHeight: 44, padding: '0 18px', border: 'none', borderRadius: 999, background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              Renvoyer une pièce
+            </button>
+          </div>
+        )}
         {err && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, marginTop: 10 }}>{err}</p>}
         <p style={{ fontSize: 11, color: '#6E8592', marginTop: 10 }}>PDF, JPG ou PNG · 10 Mo maximum.</p>
       </div>

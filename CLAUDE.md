@@ -70,7 +70,9 @@ design system `src/app/ping-ui.css` (teal #12B39C, navy #123644, gold, Quicksand
 - **3 modes de prix pro** : forfait, horaire, **sur devis** (enum `pricing_type` inclut `devis`).
 - **Langage déclaratif** : « pièce fournie », « assurance renseignée » ; « certifié » et « garanti » restent interdits. **Exception 03/11 (Romain : PING contrôle la photo et les papiers des prestataires)** : « profil vérifié par PING » / « photo et pièces contrôlées » est autorisé pour les profils dont les pièces ont été validées par un admin PING (`documents.status = valid`) ; ne pas l'employer pour un profil non validé.
 - **Pas d'emoji, que des pictogrammes** (rappel de Romain, 27/10/2026) : icônes = SVG inline (voir NavDrawer, LiveMap), jamais de caractère emoji coloré (🗺️📊🔑 etc.) dans l'UI ni dans les messages système insérés en base. ✓/✕/★/←/→ en texte brut (horodatage de message, étoiles d'avis, flèche de retour) restent tolérés — ce sont des symboles typographiques standards, pas des emoji — mais à vérifier au cas par cas si Romain élargit la règle.
-- **Pas de GPS** pour le suivi, SAUF la validation d'arrivée « client absent » (photo horodatée + GPS).
+- **GPS seulement** : (1) validation d'arrivée « client absent » (photo horodatée + GPS) ; (2) option volontaire et consentie
+  « Je suis en intervention ici » (décision Romain 20/11/2026) : secteur flouté à ~500 m par la base (jamais la position exacte),
+  12 h maximum, arrêt à tout moment ou à la fin de la mission, jamais l'adresse du client. Aucun autre suivi de position.
 - **Adresse du RDV** visible par le prestataire seulement quand la mission est **confirmée ET payée** (Romain 30/10 :
   « une fois que le client a validé et payé, pas avant » ; tant que le paiement en ligne est éteint, « payé » = tarif
   validé ; une fois allumé, `payment_status` held/released — filtrage applicatif dans le chat, la RLS `requests`
@@ -639,3 +641,20 @@ PING va intégrer rapidement d'autres services et produits (au-delà de ménage,
 - **Délai d'incident 24 h (Romain 20/11)** : client et prestataire ont 24 h après la fin de la mission pour ouvrir un litige ; ensuite
   le paiement est libéré, plus aucun litige (trigger `trg_enforce_incident_window`, migration 055, réglage `incident_window_hours` ;
   `src/lib/incident.ts`). Jamais de remboursement « à la main » après versement : le cas « déjà versé » de `applyDisputeMoney` ne fait plus rien.
+
+## 20/11/2026 — alertes admin sur les pièces, pièces expirées, position d'intervention (migrations 057, 058 à coller)
+- **057** (après 042) : `admin_notifications` (trigger `trg_documents_admin_alert` : alerte à chaque dépôt/remplacement de pièce, prestataire OU client ;
+  traitée à la décision), message Support PING au déposant à chaque décision (validée / refusée avec motif / expirée), `expire_documents()` (status
+  `expired` quand `valid_until` est dépassé + rappel unique 45 j avant, pg_cron `ping_pieces_expirees` 6 h 41 UTC). Pastille admin (`#pillConformite`,
+  `refreshDocAlerts` dans `public/admin.html`) ; e-mail à PING par `/api/admin/document-alert` (`sendDocumentAlerts` dans `src/lib/notifyServer.ts`,
+  `ADMIN_NOTIFY_EMAIL` sinon info@opconsult.co, 1 e-mail par déposant / 10 min, jamais le contenu de la pièce ; rattrapage dans le cron `/api/bookings/expire`,
+  qui appelle aussi `expire_documents`). Comptes `.invalid` : alerte dans l'admin mais pas d'e-mail. Si la migration est collée, c'est la base qui envoie le message
+  de refus (l'admin ne le double plus). « Profil vérifié par PING » : exige une pièce d'identité `valid` non expirée (042) ; refusée ou expirée = « Nouveau · pièces
+  en cours de contrôle », le prestataire reste réservable (18/11). Prestataire : motif + « Renvoyer une pièce » (`/pro/documents`, `/client/documents`).
+- **058** : « Je suis en intervention ici » (`LiveZoneCard`, `src/lib/liveZone.ts`, interrupteur dans `/pro/carte` et Mon entreprise). Consentement
+  `provider_private.live_zone_consent_at` (RPC `set_live_zone_consent`), table `provider_live_zone` (jamais lisible par le public ni inscriptible en direct :
+  RPC `set_live_zone` arrondit à la grille de 0,005° AVANT d'écrire, retire les chiffres du libellé, 12 h ; `clear_live_zone` ; trigger d'arrêt à la fin ou à
+  l'annulation de la mission liée). Carte client : RPC SÉPARÉE `providers_live_zones(p_lat, p_lng, radius_m, p_trade)` (second repère « Ici aujourd'hui » en plus du
+  domicile, `LiveMap` prop `zones`) ; `providers_nearby` n'a PAS été recréée (définition de prod absente du dépôt, et changer ses colonnes exige un DROP).
+  Aucune suppression nulle part : une zone terminée est seulement fermée (`ended_at`).
+- Tests : `scripts/e2e/pieces-position.mjs` (après collage). SQL testé sur PostgreSQL 16 avec un schéma minimal.
