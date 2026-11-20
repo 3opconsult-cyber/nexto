@@ -230,6 +230,19 @@ async function scenario(browser, sbC, label, absent) {
     await waitText(pp, /Arrivée validée|Intervention en cours/, { timeout: 15000 })
     pj = await text(pp)
     log('pro : arrivée validée (scanner intégré)', (pj.match(/Arrivée (validée|à \d\d:\d\d)[^·]*/) || [''])[0], /Intervention en cours/.test(pj))
+    // Option CANCEL_AFTER_ARRIVAL=1 : le client annule alors que le prestataire est arrivé (056 : frais totaux + alerte
+    // antifraude), puis le scénario s'arrête (mission annulée).
+    if (process.env.CANCEL_AFTER_ARRIVAL) {
+      const r1 = await sbC.rpc('cancel_booking', { p_transaction: tx })
+      log('annulation après arrivée : frais totaux demandés (confirmation)', r1.error?.message || r1.data, r1.data?.reason === 'confirmation_frais')
+      const r2 = await sbC.rpc('cancel_booking', { p_transaction: tx, p_confirm_fees: true })
+      log('annulation après arrivée : annulée aux frais totaux', r2.error?.message || r2.data, r2.data?.ok === true && r2.data?.tier === 'frais_totaux')
+      const { data: ct } = await sbC.from('transactions').select('status,cancel_tier,cancel_fee_cents').eq('id', tx).single()
+      log('annulation après arrivée : état en base', ct, ct?.status === 'cancelled' && ct?.cancel_fee_cents > 0)
+      const { data: inv } = await sbC.from('invoices').select('number,kind').eq('transaction_id', tx)
+      log('annulation après arrivée : documents de facturation', inv, (inv || []).length >= 2)
+      return
+    }
     // 8A. Fin : jeton de fin lu par le client, QR scanné avec l'appareil photo → /scan/complete
     await go(cp, `/mission/${tx}/jour`, 3500)
     log('client : QR de fin affiché', /Votre QR de fin/.test(await text(cp)), /Votre QR de fin/.test(await text(cp)))
