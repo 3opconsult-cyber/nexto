@@ -29,6 +29,19 @@ fois, avec et sans 038/048). Vérification :
 `select proname from pg_proc where proname in ('accept_booking', 'refuse_booking', 'expire_pending_bookings');` puis
 `select booking_status, count(*) from transactions group by 1;` et `select jobname from cron.job where jobname = 'ping_reservations_expirees';`
 
+**À coller (réservations expirées et argent des litiges, 20/11/2026)**, dans cet ordre, APRÈS 052 et 040 :
+1. `053_reservations_expirees_serveur.sql` : droit de la clé service sur `expire_pending_bookings()` et lecture
+   `booking_ended_unnotified()` (réservations expirées ou refusées dont le client n'a pas encore reçu l'e-mail). Sert à la
+   route cron `/api/bookings/expire` (e-mail au client même si personne n'ouvre l'app, remboursement à 100 % quand le
+   paiement en ligne sera actif). Vérification : `select * from public.booking_ended_unnotified();`
+2. `054_litige_decision_ping.sql` : paiement bloqué dès l'ouverture d'un litige (virement de la prestation « suspendu »,
+   sans relance ; message dans le fil), « Demander l'intervention de PING » (`request_ping_mediation`), « Décision PING »
+   de l'admin (`ping_decide_dispute` : montant rendu au client, reste au prestataire, motif ; avoir et virement ajustés
+   comme 040 ; litige clos), colonnes `money_*` pour la répartition chez le PSP (séquestre). Sans elle : l'app garde
+   l'ancienne clôture admin (résolu / non retenu). Testées sur PostgreSQL 16 (collées deux fois, scénarios virement,
+   amiable, décision 0 €, décision avant facture). Vérification :
+   `select proname from pg_proc where proname in ('request_ping_mediation', 'ping_decide_dispute', 'apply_dispute_credit');`
+
 **Règle commune.** Déployer l'application AVANT de coller. Chaque fichier ci-dessous :
 - est une copie exacte de `supabase/migrations/…` (sauf `provider_services_public.sql` et `comptes_qa.sql`, qui n'existent qu'ici) ;
 - est idempotent : on peut le recoller sans risque ;
