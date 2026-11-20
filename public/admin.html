@@ -483,6 +483,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
       <div class="sep">Contrôle</div>
       <a data-s="conformite" onclick="nav('conformite')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Conformité (KYC)</a>
       <a data-s="litiges" onclick="nav('litiges')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg> Litiges</a>
+      <a data-s="annulations" onclick="nav('annulations')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg> Annulations</a>
       <a data-s="signalements" onclick="nav('signalements')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18"/><path d="M5 4h11l-1.5 4L16 12H5"/></svg> Signalements</a>
       <a data-s="retours" onclick="nav('retours')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/></svg> Retours des testeurs</a>
     </nav>
@@ -986,11 +987,29 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
         </div>
 
         <div class="card mt"><h3>Règles prévues <span class="muted">pas encore automatisées : décision au cas par cas par PING</span></h3>
-          <div class="qrow"><div class="m"><b>Absence de scan d'arrivée</b><small>Créneau dépassé de 2 h &rarr; remboursement intégral, transaction annulée</small></div><span class="tag wait">Prévu</span></div>
+          <div class="qrow"><div class="m"><b>Prestataire absent</b><small>Arrivée non validée 30 min (réglable) après l'heure du rendez-vous &rarr; le client déclare l'absence : annulation sans frais, remboursement intégral, alerte PING (migration 056)</small></div><span class="tag ok">Automatique</span></div>
           <div class="qrow"><div class="m"><b>Durée sur place &lt; 50 %</b><small>Proposition de remboursement proratisé envoyée au prestataire</small></div><span class="tag wait">Prévu</span></div>
           <div class="qrow"><div class="m"><b>Silence du prestataire &agrave; 48 h</b><small>Remboursement intégral automatique au client</small></div><span class="tag wait">Prévu</span></div>
           <div class="qrow"><div class="m"><b>Paiement bloqué pendant un litige</b><small>Séquestre : aucun versement tant qu'un litige est ouvert · virement : la prestation passe « suspendue », sans relance de retard (migration 054)</small></div><span class="tag ok">Actif</span></div>
           <div class="qrow"><div class="m"><b>Casse, vol, dégradation</b><small>Jamais de remboursement automatique &rarr; transmission assurance RC du prestataire</small></div><span class="tag ink">Exclu</span></div>
+        </div>
+      </section>
+
+      <!-- ANNULATIONS (056) -->
+      <section class="section" id="s_annulations">
+        <div class="grid k3">
+          <div class="kpi"><div class="l">Annulations (30 j)</div><div class="v" id="canTotal">—</div><div class="d" id="canTotalD">toutes parties</div></div>
+          <div class="kpi"><div class="l">Frais totaux facturés</div><div class="v" id="canFees">—</div><div class="d" id="canFeesD">annulations tardives du client</div></div>
+          <div class="kpi"><div class="l">Absences de prestataires</div><div class="v" id="canNoShow">—</div><div class="d">déclarées par les clients</div></div>
+        </div>
+        <div class="card mt"><h3>Prestataires qui annulent <span class="muted" id="canThrNote">30 derniers jours, alerte au seuil du réglage</span></h3>
+          <table class="tbl"><thead><tr><th>Prestataire</th><th>Annulations</th><th>Absences</th><th>Dernière</th><th>Alerte</th></tr></thead><tbody id="canProv"></tbody></table>
+          <p class="muted" id="canProvEmpty" style="padding:18px 0;text-align:center;display:none">Aucune annulation de prestataire sur la période.</p>
+        </div>
+        <div class="card mt"><h3>Journal des annulations <span class="muted">motifs transmis à PING, plus récentes en tête</span></h3>
+          <table class="tbl"><thead><tr><th>Date</th><th>Mission</th><th>Par</th><th>Cas</th><th>Motif</th><th>Frais</th></tr></thead><tbody id="canLog"></tbody></table>
+          <p class="muted" id="canLogEmpty" style="padding:18px 0;text-align:center;display:none">Aucune annulation enregistrée.</p>
+          <p class="note" id="canNote">Les délais (annulation avec motif, absence, silence du client) et le seuil d'alerte se règlent sur /admin/commission. Disponible après la migration 056.</p>
         </div>
       </section>
 
@@ -1442,7 +1461,7 @@ const $=id=>document.getElementById(id);
    proprement (apostrophes, antislash), puis l'echappement HTML protege l'attribut. */
 function escT(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function jsArg(v){return JSON.stringify(String(v==null?'':v)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-const TITLES={overview:"Vue d'ensemble",live:"Aperçu réel",users:"Utilisateurs",activite:"Activité & annonces",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",catalogue:"Catalogue des services",pay:"Paiements & séquestre",retours:"Retours des testeurs"};
+const TITLES={overview:"Vue d'ensemble",live:"Aperçu réel",users:"Utilisateurs",activite:"Activité & annonces",tx:"Transactions",commissions:"Commissions",docs:"Documents & factures",dac7:"Déclarations DAC7",conformite:"Conformité (KYC)",litiges:"Litiges",annulations:"Annulations",dossier:"Dossier de litige",signalements:"Signalements",dossier_sig:"Dossier de signalement",prospects:"Prospection",catalogue:"Catalogue des services",pay:"Paiements & séquestre",retours:"Retours des testeurs"};
 const ICN={invoice:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg>',check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>',quote:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M14 2H6v20l4-2 4 2 4-2V8z"/></svg>',doc:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 4h10l6 6v10H4z"/></svg>',star:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .8-5 4.8 1.3 6.9L12 17.8 5.4 21l1.3-6.9-5-4.8 7-.8z"/></svg>',chat:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>',user:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',mail:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'};
 function etatTag(e){return e==='Libéré'?'ok':e==='Remboursé'?'dn':'wait';}
 
@@ -5203,11 +5222,49 @@ window.catSave = async function () {
 }
 window.loadCatalogue(true)
 
+/* ---------- Annulations (056) : compteur par prestataire, journal des motifs ---------- */
+const CAN_TIER = { gratuite: 'Gratuite', motif_grave: 'Motif grave', frais_totaux: 'Frais totaux', prestataire: 'Annulée par le prestataire', absence_prestataire: 'Prestataire absent' }
+const CAN_REASON = { maladie: 'Maladie', urgence_familiale: 'Urgence familiale', accident: 'Accident', autre_grave: 'Autre motif grave', panne_vehicule: 'Panne ou véhicule', indisponibilite: 'Indisponibilité', changement_de_plan: 'Changement de plan', autre: 'Autre motif', absence_prestataire: 'Absence du prestataire' }
+window.loadAnnulations = async function () {
+  if (!supabaseLive) return
+  const since = new Date(Date.now() - 30 * 86400000).toISOString()
+  const log = await supabaseLive.from('mission_cancellations').select('id, transaction_id, party, tier, reason_kind, reason_text, fee_cents, created_at, provider_id, client_id').order('created_at', { ascending: false }).limit(200)
+  const body = document.getElementById('canLog'), prov = document.getElementById('canProv')
+  if (log.error) {
+    setTxt('canTotal', '—'); setTxt('canFees', '—'); setTxt('canNoShow', '—')
+    if (body) body.innerHTML = ''
+    const n = document.getElementById('canNote'); if (n) n.textContent = 'Disponible après la migration 056 (supabase/a_coller/056_annulations_frais_absences_report.sql).'
+    return
+  }
+  const rows = log.data || []
+  const recent = rows.filter(r => r.created_at >= since)
+  setTxt('canTotal', String(recent.length))
+  const fees = recent.filter(r => r.tier === 'frais_totaux')
+  setTxt('canFees', euros(fees.reduce((a, r) => a + (r.fee_cents || 0), 0)))
+  setTxt('canFeesD', fees.length + ' annulation' + (fees.length > 1 ? 's' : '') + ' tardive' + (fees.length > 1 ? 's' : '') + ' du client')
+  setTxt('canNoShow', String(recent.filter(r => r.tier === 'absence_prestataire').length))
+  const ids = Array.from(new Set(rows.flatMap(r => [r.provider_id, r.client_id]).filter(Boolean)))
+  const names = {}
+  if (ids.length) { const pr = await supabaseLive.from('profiles').select('id, full_name').in('id', ids); (pr.data || []).forEach(p => { names[p.id] = p.full_name }) }
+  const nm = id => esc(names[id] || (id ? String(id).slice(0, 8) : '—'))
+  const stats = await supabaseLive.rpc('admin_provider_cancellations', { p_days: 30 })
+  const sr = stats.data || []
+  if (prov) prov.innerHTML = sr.map(r => '<tr><td>' + esc(r.provider_name || String(r.provider_id).slice(0, 8)) + '</td><td>' + r.cancels + '</td><td>' + r.no_shows + '</td><td class="mono">' + esc(dateTimeY(r.last_at)) + '</td><td>' + (r.over_threshold ? '<span class="tag dn">Au-delà du seuil</span>' : '<span class="tag ok">Sous le seuil</span>') + '</td></tr>').join('')
+  const pe = document.getElementById('canProvEmpty'); if (pe) pe.style.display = sr.length ? 'none' : 'block'
+  if (body) body.innerHTML = rows.map(r => {
+    const reason = [CAN_REASON[r.reason_kind] || r.reason_kind || '', r.reason_text ? '« ' + r.reason_text + ' »' : ''].filter(Boolean).join(' ') || '—'
+    const by = r.party === 'client' ? 'Client ' + nm(r.client_id) : 'Prestataire ' + nm(r.provider_id)
+    return '<tr><td class="mono">' + esc(dateTimeY(r.created_at)) + '</td><td class="mono">' + esc(String(r.transaction_id).slice(0, 8)) + '</td><td>' + by + '</td><td><span class="tag ' + (r.tier === 'frais_totaux' || r.tier === 'absence_prestataire' ? 'dn' : r.tier === 'prestataire' ? 'wait' : 'ink') + '">' + esc(CAN_TIER[r.tier] || r.tier) + '</span></td><td>' + esc(reason) + '</td><td>' + (r.fee_cents ? esc(euros(r.fee_cents)) : '—') + '</td></tr>'
+  }).join('')
+  const le = document.getElementById('canLogEmpty'); if (le) le.style.display = rows.length ? 'none' : 'block'
+}
+
 /* ---------- Navigation : chaque section charge ses données ---------- */
 const _navLots = window.nav
 window.nav = function (s) {
   _navLots(s)
   if (s === 'litiges') window.loadLitiges()
+  if (s === 'annulations') window.loadAnnulations()
   if (s === 'conformite') window.loadDocsQueue()
   if (s === 'signalements') window.loadReports()
   if (s === 'retours') window.loadRetours()
