@@ -114,6 +114,7 @@ async function scenario(browser, sbC, label, absent) {
 
   // 1. Contacter depuis la fiche du prestataire
   await go(cp, `/pro/${PID}`, 2000)
+  await cp.locator('button:has-text("Contacter")').first().waitFor({ timeout: 20000 }).catch(() => { })
   await cp.locator('button:has-text("Contacter")').first().click()
   await cp.waitForURL(/\/mission\/.*\/chat/, { timeout: 20000 }).catch(() => { })
   const m = cp.url().match(/mission\/([0-9a-f-]{36})\/chat/)
