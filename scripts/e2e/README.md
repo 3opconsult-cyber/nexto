@@ -42,3 +42,10 @@ Dépôt d'une pièce par le client et par le prestataire (« Reçu, en cours de 
 consentement (secteur ~500 m, 12 h, jamais l'adresse du client), second repère « Ici aujourd'hui » sur la carte client,
 arrêt volontaire, retrait du consentement. Les comptes `.invalid` ne déclenchent aucun e-mail : l'envoi à PING se vérifie
 à la main avec un vrai compte (RESEND_API_KEY, ADMIN_NOTIFY_EMAIL).
+## Annulations (20/11/2026, migration 056)
+
+`annulations.mjs` joue chaque palier d'annulation (gratuite, motif grave, frais totaux), l'annulation du prestataire, le report,
+le refus d'un report en route, l'absence du prestataire et la clôture sur preuve, par appels de base avec les comptes audit.
+À lancer APRÈS collage de `056_annulations_frais_absences_report.sql` (sans elle, le script s'arrête dès la sonde). Avec
+`SB_SERVICE=<clé service>`, il antidate un rendez-vous pour jouer aussi l'absence réelle du prestataire. Les réservations
+« QA annulations … » créées sont toutes annulées en fin de passage.

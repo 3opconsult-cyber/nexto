@@ -2,7 +2,7 @@
 
 Lien direct : https://supabase.com/dashboard/project/wmiawwaxwlvascyflpba/sql/new
 
-## Ordre de collage (mis à jour le 19/11/2026)
+## Ordre de collage (mis à jour le 20/11/2026)
 
 **À coller (process de commande, 19/11/2026)** : `048_process_commande.sql`, juste après `038_arrivee_depart_securise.sql`
 (elle lit ses tables et réécrit `_presence_apply`, `validate_presence`, `request_remote_presence`, `presence_state`,
@@ -64,6 +64,18 @@ fois, avec et sans 038/048). Vérification :
    Vérification : `select proname from pg_proc where proname in ('set_live_zone', 'clear_live_zone', 'set_live_zone_consent', 'providers_live_zones');`
    Testées sur PostgreSQL 16 (collées deux fois, accès interdits refusés). Rien à supprimer : une zone terminée est seulement fermée.
    Test de bout en bout après collage : `node scripts/e2e/pieces-position.mjs`.
+**À coller (annulations, frais, absences, report, 20/11/2026)** : `056_annulations_frais_absences_report.sql` (copie exacte de
+`supabase/migrations/056_…`), APRÈS 052, 054 et 055 (lit aussi 038/048 quand elles sont collées). Annulation du client en trois
+paliers tenus par la base (`cancel_booking` : gratuite avant « Je pars » ; motif sérieux obligatoire si le prestataire est en route
+et qu'il reste au moins `cancel_free_minutes` ; frais totaux sinon, avec deux confirmations et documents de facturation), annulation
+du prestataire avec motif (compteur et alerte `provider_cancellations`), `declare_provider_no_show` (absence après `no_show_minutes`),
+report `propose_reschedule` / `accept_reschedule` / `decline_reschedule`, `close_on_proof` (client muet après `client_silence_hours`),
+lecture `cancellation_state`, journal `mission_cancellations` (admin), fenêtre de litige de 24 h étendue (055 réécrite) et verrou :
+plus d'annulation ni de changement de date par écriture directe. Idempotente, sans DROP ni DELETE. Sans elle, l'application garde
+l'annulation directe d'avant. Testée sur PostgreSQL 16 (collée deux fois, chaque palier, appels interdits refusés).
+Vérification : `select proname from pg_proc where proname in ('cancel_booking', 'declare_provider_no_show', 'propose_reschedule',
+'accept_reschedule', 'decline_reschedule', 'close_on_proof', 'cancellation_state');` puis
+`select key, value from app_settings where key in ('cancel_free_minutes', 'no_show_minutes', 'client_silence_hours', 'provider_cancel_alert_threshold');`
 
 **Règle commune.** Déployer l'application AVANT de coller. Chaque fichier ci-dessous :
 - est une copie exacte de `supabase/migrations/…` (sauf `provider_services_public.sql` et `comptes_qa.sql`, qui n'existent qu'ici) ;

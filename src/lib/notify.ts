@@ -5,6 +5,8 @@
 // 'dispute_mediation' : intervention de PING demandée sur un litige (054), lien vers le dossier (`disputeId`).
 export type NotifyEvent = 'message' | 'offer' | 'booking' | 'dispute' | 'presence_arrivee' | 'presence_fin' | 'presence_client' | 'code_client'
   | 'booking_request' | 'booking_accepted' | 'booking_refused' | 'booking_expired' | 'dispute_mediation'
+  // Annulations, absence, report, clôture sur preuve (056) :
+  | 'cancelled_by_client' | 'cancelled_by_provider' | 'provider_no_show' | 'reschedule_proposed' | 'reschedule_answer' | 'closed_on_proof'
 
 export function notifyOther(transactionId: string, event: NotifyEvent, disputeId?: string) {
   try {
