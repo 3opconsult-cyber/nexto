@@ -159,11 +159,14 @@ end $$;
 create or replace function public.providers_live_zones(
   p_lat double precision, p_lng double precision, radius_m integer default 15000, p_trade text default null)
 returns table (provider_id uuid, lat double precision, lng double precision, label text,
-               started_at timestamptz, expires_at timestamptz, distance_m double precision)
+               started_at timestamptz, expires_at timestamptz, distance_m double precision,
+               trade text, full_name text, avatar_hue integer)
 language sql stable security definer set search_path = public as $$
-  select z.provider_id, z.lat, z.lng, z.label, z.started_at, z.expires_at, d.distance_m
+  select z.provider_id, z.lat, z.lng, z.label, z.started_at, z.expires_at, d.distance_m,
+         p.trade, pr.full_name, pr.avatar_hue
   from public.provider_live_zone z
   join public.provider_profiles p on p.id = z.provider_id
+  join public.profiles pr on pr.id = z.provider_id
   cross join lateral (
     select 2 * 6371000 * asin(least(1, sqrt(
       power(sin(radians(z.lat - p_lat) / 2), 2)
