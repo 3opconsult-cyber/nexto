@@ -7,7 +7,7 @@ import { hasServiceRole } from '@/lib/supabase/admin'
 
 export const MAIL_EVENTS = ['message', 'offer', 'booking', 'dispute', 'presence_arrivee', 'presence_fin', 'presence_client', 'code_client',
   'booking_request', 'booking_accepted', 'booking_refused', 'booking_expired', 'booking_refunded',
-  'dispute_mediation', 'dispute_closed'] as const
+  'dispute_mediation', 'dispute_closed', 'transfer_not_received', 'transfer_reaffirmed'] as const
 export type MailEvent = typeof MAIL_EVENTS[number]
 
 // Demandes de confirmation de présence : action attendue du client, lien vers la Mission du jour.
@@ -15,7 +15,7 @@ export const URGENT_EVENTS: readonly string[] = ['presence_arrivee', 'presence_f
 // Réservation (052) et litige (054) : chaque étape est envoyée même si un message vient de partir
 // (limite propre à l'événement : 1 toutes les 2 min par mission et destinataire).
 export const OWN_THROTTLE_EVENTS: readonly string[] = ['booking_request', 'booking_accepted', 'booking_refused', 'booking_expired',
-  'booking_refunded', 'dispute_mediation', 'dispute_closed']
+  'booking_refunded', 'dispute_mediation', 'dispute_closed', 'transfer_not_received', 'transfer_reaffirmed']
 export const SITE = 'https://nexto-eta.vercel.app'
 
 const WHAT: Record<MailEvent, { subject: string; line: (asSeller: boolean) => string }> = {
@@ -33,6 +33,8 @@ const WHAT: Record<MailEvent, { subject: string; line: (asSeller: boolean) => st
   booking_refunded: { subject: 'Votre paiement est remboursé sur PING', line: () => 'Votre réservation est annulée : le paiement est remboursé à 100 % sur votre moyen de paiement.' },
   code_client: { subject: 'Votre client vous a envoyé son code sur PING', line: () => 'Votre client vous a envoyé son code dans la conversation. Saisissez-le dans la mission du jour.' },
   dispute_mediation: { subject: 'Intervention de PING demandée sur un litige', line: () => 'L’intervention de PING a été demandée sur un litige de vos missions. PING prend le relais dans le dossier du litige et rendra sa décision. Le paiement reste bloqué d’ici là.' },
+  transfer_not_received: { subject: 'Un virement est signalé non reçu sur PING', line: () => 'Le destinataire indique ne pas avoir reçu un virement annoncé sur une de vos missions. Vérifiez le montant, la référence et l’IBAN, puis confirmez dans l’écran Facturation de la mission.' },
+  transfer_reaffirmed: { subject: 'Le payeur maintient son virement sur PING', line: () => 'Le payeur maintient avoir fait un virement que vous n’avez pas reçu. PING est informé et peut intervenir dans la conversation de la mission.' },
   dispute_closed: { subject: 'Litige clos sur PING', line: () => 'Un litige de vos missions est clos. La décision et la répartition du paiement sont dans le dossier du litige.' },
 }
 

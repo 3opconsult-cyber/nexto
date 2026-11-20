@@ -6,7 +6,7 @@ import { EUR } from '@/lib/invoice-pdf'
 import { proofLabel } from '@/lib/presence'
 import { TRADES } from '@/lib/trades'
 import { CLIENT_TAGS } from './ClientReviewModal'
-import { TRANSFER_STATUS, TRANSFER_LABEL, transferDue, transfersFor, type Transfer } from '@/lib/transfers'
+import { TRANSFER_STATUS, TRANSFER_LABEL, transferDue, transferState, transfersFor, type Transfer } from '@/lib/transfers'
 import AmicableSettlement, { type SettlementDispute } from '@/components/AmicableSettlement'
 
 /**
@@ -165,7 +165,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
             <Section title="Règlement par virement">
               {transfers.map(t => (
                 <Row key={t.id} label={`${TRANSFER_LABEL(t, t.payer_id === userId)} · ${EUR(transferDue(t))}`}
-                  value={<span style={{ color: TRANSFER_STATUS[t.status].fg }}>{TRANSFER_STATUS[t.status].t}</span>} />
+                  value={<span style={{ color: TRANSFER_STATUS[transferState(t)].fg }}>{TRANSFER_STATUS[transferState(t)].t}</span>} />
               ))}
               {transfers.some(t => t.status !== 'recu') && (
                 <a href={`/mission/${tx.id}/facture`} style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 0, fontSize: 13, fontWeight: 700, color: C.tealD }}>

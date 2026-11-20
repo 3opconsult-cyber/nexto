@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { TRANSFER_STATUS, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
+import { TRANSFER_STATUS, transferState, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
 
 // Séquestre — vue OpConsult. Règle antifraude : l'argent ne sort du séquestre que sur décision de PING
 // (versement automatique par la règle des 24 h, ou bouton ci-dessous ; remboursement par un admin).
@@ -26,6 +26,7 @@ const KIND: Record<string, string> = {
   mandate_revoked: 'Mandat de prélèvement révoqué', mandate_failed: 'Mandat de prélèvement refusé', debit_rejected: 'Prélèvement de commission rejeté',
   chargeback: 'Opposition d’un client', suspended: 'Compte suspendu', unsuspended: 'Suspension levée',
   transfer_overdue: 'Commission par virement en retard',
+  transfer_not_received: 'Virement signalé non reçu', transfer_disagreement: 'Virement : désaccord, le payeur maintient',
 }
 const btn = (bg: string) => ({ border: 'none', borderRadius: 999, padding: '7px 14px', background: bg, color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' })
 
@@ -43,8 +44,14 @@ function Virements() {
 
   async function load() {
     let q = db.from('transfer_payments').select('*, invoices!transfer_payments_invoice_id_fkey(client_snapshot)').order('due_at').limit(300)
-    if (!all) q = q.eq('payee', 'ping').neq('status', 'recu')
-    const { data, error } = await q
+    if (!all) q = q.or('and(payee.eq.ping,status.neq.recu),and(not_received_at.not.is.null,status.neq.recu)')
+    let { data, error } = await q
+    if (error && /not_received_at/.test(error.message)) {
+      // Migration 059 pas encore collée : filtre d'avant.
+      let q0 = db.from('transfer_payments').select('*, invoices!transfer_payments_invoice_id_fkey(client_snapshot)').order('due_at').limit(300)
+      if (!all) q0 = q0.eq('payee', 'ping').neq('status', 'recu')
+      ;({ data, error } = await q0)
+    }
     if (error) setMsg('Lecture impossible : ' + error.message)
     setRows((data ?? []) as Row[])
     const { data: st } = await db.from('app_settings').select('key, value').in('key', ['ping_iban', 'ping_bic', 'ping_beneficiary'])
@@ -66,6 +73,16 @@ function Virements() {
     setMsg(error ? 'Enregistrement impossible : ' + error.message : 'Coordonnées bancaires de PING enregistrées : elles s’affichent aux clients et aux prestataires sous leurs factures.')
   }
 
+  // « Non reçu » côté PING (frais de service, commission) : le payeur est prévenu dans la conversation de la mission.
+  async function notReceived(t: Row) {
+    const note = prompt(`Virement ${t.reference} annoncé mais absent du relevé PING. Précision pour le payeur (facultatif) :`, '')
+    if (note === null) return
+    setBusy(t.id)
+    const { error } = await db.rpc('transfer_report_not_received', { p_transfer: t.id, p_note: note.trim() || null })
+    setBusy(''); setMsg(error ? 'Échec : ' + error.message : `${t.reference} : le payeur est prévenu dans la conversation.`)
+    load()
+  }
+
   async function received(t: Row) {
     if (!confirm(`Noter reçu le virement ${t.reference} de ${eur(t.amount_cents)} ? Vérifiez d’abord qu’il apparaît sur le relevé du compte PING.`)) return
     setBusy(t.id)
@@ -81,7 +98,7 @@ function Virements() {
       <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16 }}>Virements SEPA · mode de paiement actuel</b>
       <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '4px 0 10px' }}>
         Le client vire la prestation directement au prestataire, et ses frais de service à PING ; le prestataire vire sa commission à PING.
-        Notez « Reçu » ce qui arrive sur le compte PING. Une commission non reçue 15 jours après la facture passe « en retard » et devient une
+        Notez « Reçu » ce qui arrive sur le compte PING, « Non reçu » ce qui est annoncé mais absent (le payeur est prévenu dans la conversation). Les virements contestés (prestation ou commission) restent affichés ici tant qu’ils ne sont pas tranchés. Une commission non reçue 15 jours après la facture passe « en retard » et devient une
         dette (relance automatique chaque matin) ; au-delà du plafond d’impayés, le compte du prestataire est suspendu.
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
@@ -102,7 +119,7 @@ function Virements() {
       {!rows ? <p style={{ fontSize: 12.5, color: '#4E6470' }}>Chargement…</p> : rows.length === 0 ? (
         <p style={{ fontSize: 12.5, color: '#4E6470' }}>Rien à rapprocher.</p>
       ) : rows.map(t => {
-        const s = TRANSFER_STATUS[t.status]
+        const s = TRANSFER_STATUS[transferState(t)]
         return (
           <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderTop: '1px solid #E7EDEB', fontSize: 12.5, flexWrap: 'wrap' }}>
             <div style={{ flex: '1 1 260px' }}>
@@ -112,10 +129,22 @@ function Virements() {
                 {' · échéance '}{new Date(t.due_at).toLocaleDateString('fr-FR')}
                 {t.declared_at && ` · annoncé le ${new Date(t.declared_at).toLocaleDateString('fr-FR')}`}
               </div>
+              {t.not_received_at && t.status !== 'recu' && (
+                <div style={{ color: '#7A2E1E', fontSize: 11.5, marginTop: 2 }}>
+                  Non reçu signalé le {new Date(t.not_received_at).toLocaleDateString('fr-FR')}{t.not_received_note ? ` : « ${t.not_received_note} »` : ''}
+                  {t.reaffirmed_at && t.reaffirmed_at >= t.not_received_at ? ` · le payeur maintient${t.reaffirmed_note ? ` : « ${t.reaffirmed_note} »` : ''}` : ' · en attente du payeur'}
+                </div>
+              )}
             </div>
             <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: s.bg, color: s.fg }}>{s.t}</span>
             {t.payee === 'ping' && t.status !== 'recu' && (
               <button disabled={busy === t.id} onClick={() => received(t)} style={btn('#0C8F7E')}>Reçu</button>
+            )}
+            {t.payee === 'ping' && t.declared_at && t.status !== 'recu' && 'not_received_at' in t && transferState(t) !== 'non_recu' && (
+              <button disabled={busy === t.id} onClick={() => notReceived(t)} style={btn('#c0503a')}>Non reçu</button>
+            )}
+            {t.payee === 'pro' && t.not_received_at && t.status !== 'recu' && (
+              <button disabled={busy === t.id} onClick={() => received(t)} style={btn('#6E8592')}>Trancher : reçu</button>
             )}
             <a href={`/mission/${t.transaction_id}/facture`} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E' }}>Mission</a>
           </div>

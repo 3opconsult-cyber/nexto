@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import { EUR } from '@/lib/invoice-pdf'
-import { TRANSFER_STATUS, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
+import { TRANSFER_STATUS, transferState, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
 
 // Paiements du prestataire.
 // 1. Virement SEPA (décision Romain 31/10, migration 025) : le mode de paiement actuel. Le pro saisit
@@ -47,6 +47,7 @@ export default function ProPaiementsPage() {
   const [bankMsg, setBankMsg] = useState<{ ok: boolean; t: string } | null>(null)
   const [bankBusy, setBankBusy] = useState(false)
   const [owed, setOwed] = useState<Transfer[]>([])
+  const [toConfirm, setToConfirm] = useState<Transfer[]>([])
 
   async function load() {
     const supabase = createClient()
@@ -66,6 +67,10 @@ export default function ProPaiementsPage() {
       setSavedIban(priv?.iban ?? null)
       setBank({ holder: priv?.iban_holder ?? '', iban: priv?.iban ? formatIban(priv.iban) : '', bic: priv?.bic ?? '' })
       setOwed((tr ?? []) as Transfer[])
+      // Virements de clients (prestations) annoncés mais pas encore notés reçus : à confirmer ou à contester.
+      const { data: rec } = await supabase.from('transfer_payments').select('*').eq('payee_id', user.id).eq('payee', 'pro')
+        .in('status', ['declare_paye', 'en_retard']).not('declared_at', 'is', null).order('declared_at')
+      setToConfirm((rec ?? []) as Transfer[])
     }
     const r = await fetch('/api/payments/onboarding')
     if (r.status === 401) { router.push('/auth/login'); return }
@@ -151,6 +156,21 @@ export default function ProPaiementsPage() {
             </button>
           </div>
 
+          {toConfirm.length > 0 && (
+            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Virements de vos clients à vérifier</div>
+              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '4px 0 0' }}>Le client a annoncé son virement. Ouvrez la ligne : notez « Reçu » dès qu’il apparaît sur votre compte, ou « Non reçu » s’il manque.</p>
+              {toConfirm.map(t => (
+                <a key={t.id} href={`/mission/${t.transaction_id}/facture`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 12.5, color: '#123644', padding: '9px 0', borderTop: '1px solid #E7EDEB', textDecoration: 'none' }}>
+                  <span>{t.reference} · annoncé le {t.declared_at ? new Date(t.declared_at).toLocaleDateString('fr-FR') : ''}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <b>{EUR(t.amount_cents)}</b>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: TRANSFER_STATUS[transferState(t)].bg, color: TRANSFER_STATUS[transferState(t)].fg }}>{TRANSFER_STATUS[transferState(t)].t}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
           {owed.length > 0 && (
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Commissions PING à régler par virement</div>
@@ -159,7 +179,7 @@ export default function ProPaiementsPage() {
                   <span>{t.reference} · avant le {new Date(t.due_at).toLocaleDateString('fr-FR')}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <b>{EUR(t.amount_cents)}</b>
-                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: TRANSFER_STATUS[t.status].bg, color: TRANSFER_STATUS[t.status].fg }}>{TRANSFER_STATUS[t.status].t}</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: TRANSFER_STATUS[transferState(t)].bg, color: TRANSFER_STATUS[transferState(t)].fg }}>{TRANSFER_STATUS[transferState(t)].t}</span>
                   </span>
                 </a>
               ))}
