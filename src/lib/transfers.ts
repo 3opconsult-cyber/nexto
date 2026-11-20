@@ -18,6 +18,8 @@ export type Transfer = {
   /** 'deduit' : retiré du montant à virer ; 'a_rembourser' : déjà payé, le prestataire rembourse le client. */
   credit_mode?: 'deduit' | 'a_rembourser' | null
   credit_refunded_at?: string | null
+  /** Litige ouvert (migration 054) : virement de la prestation suspendu, sans relance de retard. */
+  suspended_at?: string | null
 }
 
 /** Montant réellement à virer, avoir déduit (un avoir sur une facture déjà payée ne change pas le virement). */

@@ -126,7 +126,8 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
         {iban && bic && <Line label="BIC" value={bic} copy />}
         <Line label="Référence" value={t.reference} copy />
         <div style={{ fontSize: 11.5, color: C.slate, margin: '2px 0 6px' }}>
-          {t.status === 'recu' && transferDue(t) === 0 && t.credit_mode === 'deduit' ? 'Soldé par l’avoir.'
+          {t.suspended_at && t.status !== 'recu' ? 'Suspendu : un litige est ouvert sur cette mission. Le paiement est bloqué jusqu’à sa résolution, sans relance de retard ; le montant final suivra la décision.'
+            : t.status === 'recu' && transferDue(t) === 0 && t.credit_mode === 'deduit' ? 'Soldé par l’avoir.'
             : t.status === 'recu' ? `Reçu le ${dateFr(t.received_at || t.created_at)}.`
             : t.status === 'declare_paye' ? `Virement annoncé le ${dateFr(t.declared_at || t.created_at)}, en attente de réception.`
             : `À régler avant le ${dateFr(t.due_at)}, avec la référence en libellé du virement.`}
