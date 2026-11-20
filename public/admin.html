@@ -4648,7 +4648,13 @@ window.openLitigeDossier = function (id) {
   window.open('/litiges/' + encodeURIComponent(id), '_blank', 'noopener')
 }
 window.loadLitiges = async function () {
-  const c = await loadCore(); if (!c) return
+  const c = await loadCore()
+  if (!c) {
+    const em0 = document.getElementById('litEmpty')
+    if (em0) { em0.style.display = 'block'; em0.innerHTML = 'Aucune session administrateur dans ce navigateur : les litiges ne se chargent pas. Ouvrez <a href="/auth/login?next=/admin" style="color:var(--teal)">la connexion PING</a>, connectez-vous avec le compte administrateur, puis revenez ici (l\'accès par clé partagée seul ne donne pas de session).' }
+    return
+  }
+  if (c.errors && c.errors.length) { const em1 = document.getElementById('litEmpty'); if (em1) { em1.style.display = 'block'; em1.textContent = 'Chargement partiel : ' + c.errors.slice(0, 2).join(' · ') } }
   const v = view(c)
   const now = Date.now()
   const list = v.disputes.slice().sort((a, b) => {
