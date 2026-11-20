@@ -200,7 +200,7 @@ async function scenario(browser, sbC, label, absent) {
 
   // 6. Mission du jour (pro) : accès rapide + Je pars
   await go(pp, '/agenda')
-  log('pro : bouton « Mission du jour » dans la barre du bas', await pp.locator('button[aria-label="Mission du jour"]').count(), (await pp.locator('button[aria-label="Mission du jour"]').count()) > 0)
+  log('pro : bouton « Mission du jour » dans la barre du bas', await pp.locator('button[aria-label^="Mission du jour"]').count(), (await pp.locator('button[aria-label^="Mission du jour"]').count()) > 0)
   await go(pp, `/mission/${tx}/jour`)
   let pj = await text(pp)
   log('pro : Mission du jour (présence sur le billet)', (pj.match(/Client (sur place|absent)/) || ['?'])[0], absent ? /Client absent/.test(pj) : /Client sur place/.test(pj))
