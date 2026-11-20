@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
-import { TRANSFER_STATUS, formatIban, pingBank, transferDue, transfersFor, type PingBank, type Transfer } from '@/lib/transfers'
+import { notifyOther } from '@/lib/notify'
+import { TRANSFER_STATUS, formatIban, hasNotReceived, pingBank, transferDue, transferState, transfersFor, type PingBank, type Transfer } from '@/lib/transfers'
 
 /**
  * Règlement par virement (migration 025), sous les factures d'une mission terminée.
@@ -35,7 +36,7 @@ function Line({ label, value, copy }: { label: string; value: string; copy?: boo
 }
 
 function Badge({ t }: { t: Transfer }) {
-  const s = TRANSFER_STATUS[t.status]
+  const s = TRANSFER_STATUS[transferState(t)]
   return <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: s.bg, color: s.fg, whiteSpace: 'nowrap' }}>{s.t}</span>
 }
 
@@ -63,6 +64,8 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
   const [payee, setPayee] = useState<PayeeBank | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [err, setErr] = useState('')
+  const [note, setNote] = useState('')
+  const [asking, setAsking] = useState<string | null>(null)
 
   async function load() {
     const db = createClient()
@@ -80,6 +83,19 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
     setBusy(t.id); setErr('')
     const { error } = await createClient().from('transfer_payments').update({ status }).eq('id', t.id)
     if (error) setErr('Enregistrement impossible : ' + error.message)
+    await load(); setBusy(null)
+  }
+
+  // Migration 059 : « Non reçu » (destinataire) et « Mon virement est bien parti » (payeur), par RPC.
+  async function contest(t: Transfer, fn: 'transfer_report_not_received' | 'transfer_reaffirm') {
+    setBusy(t.id); setErr('')
+    const { error } = await createClient().rpc(fn, { p_transfer: t.id, p_note: note.trim() || null })
+    if (error) setErr(/function|schema cache/i.test(error.message) ? 'Cette fonction n’est pas encore disponible. Réessayez bientôt.' : error.message)
+    else {
+      setNote(''); setAsking(null)
+      if (fn === 'transfer_report_not_received') notifyOther(t.transaction_id, 'transfer_not_received')
+      else notifyOther(t.transaction_id, 'transfer_reaffirmed')
+    }
     await load(); setBusy(null)
   }
 
@@ -132,6 +148,31 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
             : t.status === 'declare_paye' ? `Virement annoncé le ${dateFr(t.declared_at || t.created_at)}, en attente de réception.`
             : `À régler avant le ${dateFr(t.due_at)}, avec la référence en libellé du virement.`}
         </div>
+        {transferState(t) === 'non_recu' && (
+          <div style={{ background: 'rgba(192,80,58,.08)', borderRadius: 9, padding: '9px 11px', margin: '4px 0 8px', fontSize: 12.5, lineHeight: 1.55, color: '#7A2E1E' }}>
+            <b>{toPro ? 'Le prestataire' : 'PING'} indique ne pas avoir reçu ce virement</b>{t.not_received_at ? ` (le ${dateFr(t.not_received_at)})` : ''}.
+            {t.not_received_note ? ` « ${t.not_received_note} »` : ''} Vérifiez le montant, la référence et l’IBAN sur votre relevé.
+            {asking === t.id ? (
+              <div style={{ marginTop: 8 }}>
+                <textarea value={note} onChange={e => setNote(e.target.value)} maxLength={500} rows={2} placeholder="Facultatif : date du virement, banque…"
+                  style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${C.line}`, borderRadius: 8, padding: 8, fontSize: 12.5, fontFamily: 'Inter, sans-serif' }} />
+                <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                  <button type="button" disabled={busy === t.id} onClick={() => contest(t, 'transfer_reaffirm')} style={btn(true)}>Confirmer : mon virement est bien parti</button>
+                  <button type="button" onClick={() => setAsking(null)} style={btn(false)}>Annuler</button>
+                </div>
+              </div>
+            ) : hasNotReceived(t) && (
+              <div style={{ marginTop: 8 }}>
+                <button type="button" onClick={() => setAsking(t.id)} style={btn(true)}>Mon virement est bien parti</button>
+              </div>
+            )}
+          </div>
+        )}
+        {transferState(t) === 'desaccord' && (
+          <p style={{ fontSize: 12.5, color: '#7A2E1E', background: 'rgba(192,80,58,.08)', borderRadius: 9, padding: '9px 11px', margin: '4px 0 8px', lineHeight: 1.55 }}>
+            Vous maintenez avoir fait ce virement, le destinataire ne le voit pas : PING est informé et peut intervenir dans la conversation de la mission. Une preuve de virement (capture, avis d’exécution) aide à trancher.
+          </p>
+        )}
         {(t.status === 'a_payer' || t.status === 'en_retard') && transferDue(t) > 0 && (
           <button type="button" disabled={busy === t.id} onClick={() => setStatus(t, 'declare_paye')} style={{ ...btn(true), opacity: busy === t.id ? .6 : 1 }}>
             J’ai fait le virement
@@ -178,8 +219,25 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
                   : t.status === 'declare_paye' ? `Le client a annoncé son virement le ${dateFr(t.declared_at || t.created_at)}. Notez-le reçu dès qu’il apparaît sur votre compte.`
                   : 'Le client règle par virement sur votre IBAN (Mon entreprise, Paiements), ou directement (chèque, CESU préfinancé si vous l’acceptez).'}
               </div>
+              {transferState(t) === 'non_recu' && <p style={{ fontSize: 12, color: '#7A2E1E', margin: '0 0 8px', lineHeight: 1.5 }}>Vous avez indiqué ne rien avoir reçu{t.not_received_at ? ` le ${dateFr(t.not_received_at)}` : ''} : le client et PING en sont informés. Dès que le virement apparaît, notez-le reçu.</p>}
+              {transferState(t) === 'desaccord' && <p style={{ fontSize: 12, color: '#7A2E1E', margin: '0 0 8px', lineHeight: 1.5 }}>Le client maintient avoir fait le virement{t.reaffirmed_note ? ` : « ${t.reaffirmed_note} »` : ''}. PING est informé et peut intervenir dans la conversation. Si rien n’arrive, vous pouvez aussi ouvrir un litige.</p>}
+              {asking === t.id && (
+                <div style={{ marginBottom: 8 }}>
+                  <textarea value={note} onChange={e => setNote(e.target.value)} maxLength={500} rows={2} placeholder="Facultatif : ce que vous constatez (rien sur le relevé depuis le…)"
+                    style={{ width: '100%', boxSizing: 'border-box', border: `1px solid ${C.line}`, borderRadius: 8, padding: 8, fontSize: 12.5, fontFamily: 'Inter, sans-serif' }} />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                    <button type="button" disabled={busy === t.id} onClick={() => contest(t, 'transfer_report_not_received')} style={btn(true)}>Confirmer : non reçu</button>
+                    <button type="button" onClick={() => setAsking(null)} style={btn(false)}>Annuler</button>
+                  </div>
+                </div>
+              )}
               {t.status !== 'recu' && (
-                <button type="button" disabled={busy === t.id} onClick={() => setStatus(t, 'recu')} style={{ ...btn(true), opacity: busy === t.id ? .6 : 1 }}>Je l’ai reçu</button>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button type="button" disabled={busy === t.id} onClick={() => setStatus(t, 'recu')} style={{ ...btn(true), opacity: busy === t.id ? .6 : 1 }}>Je l’ai reçu</button>
+                  {hasNotReceived(t) && t.declared_at && transferState(t) !== 'non_recu' && asking !== t.id && (
+                    <button type="button" disabled={busy === t.id} onClick={() => setAsking(t.id)} style={btn(false)}>Non reçu</button>
+                  )}
+                </div>
               )}
             </div>
           ))}

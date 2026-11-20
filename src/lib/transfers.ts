@@ -20,17 +20,38 @@ export type Transfer = {
   credit_refunded_at?: string | null
   /** Litige ouvert (migration 054) : virement de la prestation suspendu, sans relance de retard. */
   suspended_at?: string | null
+  /** Virement non reçu (migration 059) : posé par le destinataire (ou PING) ; absent tant que 059 n'est pas appliquée. */
+  not_received_at?: string | null
+  not_received_by?: string | null
+  not_received_note?: string | null
+  reaffirmed_at?: string | null
+  reaffirmed_note?: string | null
+}
+
+/** Migration 059 appliquée ? (la colonne revient avec `select *`, même à null). */
+export const hasNotReceived = (t: Transfer) => 'not_received_at' in t
+
+/**
+ * 'non_recu' : le destinataire dit ne rien avoir reçu, le payeur n'a pas encore répondu.
+ * 'desaccord' : le payeur maintient son virement (PING arbitre). Sinon : le statut d'origine.
+ */
+export type TransferState = TransferStatus | 'non_recu' | 'desaccord'
+export function transferState(t: Transfer): TransferState {
+  if (t.status === 'recu' || !t.not_received_at) return t.status
+  return t.reaffirmed_at && t.reaffirmed_at >= t.not_received_at ? 'desaccord' : 'non_recu'
 }
 
 /** Montant réellement à virer, avoir déduit (un avoir sur une facture déjà payée ne change pas le virement). */
 export const transferDue = (t: Transfer) =>
   t.credit_mode === 'deduit' ? Math.max(0, t.amount_cents - (t.credit_cents ?? 0)) : t.amount_cents
 
-export const TRANSFER_STATUS: Record<TransferStatus, { t: string; fg: string; bg: string }> = {
+export const TRANSFER_STATUS: Record<TransferState, { t: string; fg: string; bg: string }> = {
   a_payer: { t: 'À régler', fg: '#8A6520', bg: 'rgba(242,169,59,.15)' },
   declare_paye: { t: 'Virement annoncé', fg: '#2C6E8F', bg: 'rgba(44,110,143,.12)' },
   recu: { t: 'Reçu', fg: '#0C8F7E', bg: 'rgba(18,179,156,.12)' },
   en_retard: { t: 'En retard', fg: '#c0503a', bg: 'rgba(192,80,58,.12)' },
+  non_recu: { t: 'Non reçu', fg: '#c0503a', bg: 'rgba(192,80,58,.12)' },
+  desaccord: { t: 'Désaccord', fg: '#8A3E2A', bg: 'rgba(192,80,58,.2)' },
 }
 
 export const cleanIban = (s: string) => s.replace(/[\s-]/g, '').toUpperCase()

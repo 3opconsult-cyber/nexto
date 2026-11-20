@@ -8,7 +8,7 @@ import { hasServiceRole } from '@/lib/supabase/admin'
 export const MAIL_EVENTS = ['message', 'offer', 'booking', 'dispute', 'presence_arrivee', 'presence_fin', 'presence_client', 'code_client',
   'booking_request', 'booking_accepted', 'booking_refused', 'booking_expired', 'booking_refunded',
   'dispute_mediation', 'dispute_closed',
-  'cancelled_by_client', 'cancelled_by_provider', 'provider_no_show', 'reschedule_proposed', 'reschedule_answer', 'closed_on_proof'] as const
+  'cancelled_by_client', 'cancelled_by_provider', 'provider_no_show', 'reschedule_proposed', 'reschedule_answer', 'closed_on_proof', 'transfer_not_received', 'transfer_reaffirmed', 'ping_message'] as const
 export type MailEvent = typeof MAIL_EVENTS[number]
 
 // Demandes de confirmation de présence : action attendue du client, lien vers la Mission du jour.
@@ -17,7 +17,7 @@ export const URGENT_EVENTS: readonly string[] = ['presence_arrivee', 'presence_f
 // (limite propre à l'événement : 1 toutes les 2 min par mission et destinataire).
 export const OWN_THROTTLE_EVENTS: readonly string[] = ['booking_request', 'booking_accepted', 'booking_refused', 'booking_expired',
   'booking_refunded', 'dispute_mediation', 'dispute_closed', 'cancelled_by_client', 'cancelled_by_provider', 'provider_no_show',
-  'reschedule_proposed', 'reschedule_answer', 'closed_on_proof']
+  'reschedule_proposed', 'reschedule_answer', 'closed_on_proof', 'transfer_not_received', 'transfer_reaffirmed', 'ping_message']
 export const SITE = 'https://nexto-eta.vercel.app'
 
 const WHAT: Record<MailEvent, { subject: string; line: (asSeller: boolean) => string }> = {
@@ -41,6 +41,9 @@ const WHAT: Record<MailEvent, { subject: string; line: (asSeller: boolean) => st
   reschedule_proposed: { subject: 'Nouveau créneau proposé sur PING', line: () => 'L’autre partie propose de déplacer le rendez-vous. Acceptez ou refusez depuis la conversation ; le prix ne change pas.' },
   reschedule_answer: { subject: 'Réponse à votre demande de report sur PING', line: () => 'L’autre partie a répondu à votre proposition de nouveau créneau. Le détail est dans la conversation.' },
   closed_on_proof: { subject: 'Mission enregistrée sur preuve sur PING', line: s => s ? 'Votre mission est enregistrée.' : 'Votre prestataire a enregistré l’étape de la mission sur preuve (photo horodatée et position), faute de réponse de votre part. La mission est facturée normalement ; vous pouvez ouvrir un litige dans les 24 h depuis la conversation.' },
+  transfer_not_received: { subject: 'Un virement est signalé non reçu sur PING', line: () => 'Le destinataire indique ne pas avoir reçu un virement annoncé sur une de vos missions. Vérifiez le montant, la référence et l’IBAN, puis confirmez dans l’écran Facturation de la mission.' },
+  transfer_reaffirmed: { subject: 'Le payeur maintient son virement sur PING', line: () => 'Le payeur maintient avoir fait un virement que vous n’avez pas reçu. PING est informé et peut intervenir dans la conversation de la mission.' },
+  ping_message: { subject: 'PING vous a écrit sur une mission', line: () => 'PING vous a envoyé un message dans la conversation de votre mission (médiation). Ouvrez la conversation pour le lire et répondre.' },
   dispute_closed: { subject: 'Litige clos sur PING', line: () => 'Un litige de vos missions est clos. La décision et la répartition du paiement sont dans le dossier du litige.' },
 }
 

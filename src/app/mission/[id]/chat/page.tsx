@@ -36,6 +36,8 @@ import PresenceChoice from '@/components/presence/PresenceChoice'
 import OrderSummary from '@/components/presence/OrderSummary'
 import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
 import BookingCard from '@/components/BookingCard'
+import ChatSpecialCard from '@/components/ChatSpecialCard'
+import { specialChatKind } from '@/lib/chatPing'
 import { bookingAccepted, bookingPending, bookingEnded, expireBookings } from '@/lib/booking'
 
 // Repères de date dans le fil (façon WhatsApp) : se repérer dans une longue
@@ -1029,6 +1031,9 @@ export default function ChatPage() {
             </div>
           ) : null
 
+          // Messages de PING et fil du litige recopié dans la conversation (migration 059b).
+          const special = specialChatKind(m as any, tx)
+          if (special) return <Fragment key={m.id}>{datePill}<ChatSpecialCard m={m as any} tx={tx} userId={userId} kind={special} /></Fragment>
           if (m.kind === 'offer') {
             const mine = m.sender_id === userId
             return (

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
-import { billedHours, getHourThreshold, getRates } from '@/lib/pricing'
+import { computeFinalAmounts, getHourThreshold, getRates } from '@/lib/pricing'
 import { EUR } from '@/lib/invoice-pdf'
 import { systemSender } from '@/lib/systemMessage'
 import { PRESENCE_WARNING, durLabel, presenceAvailable, validatePresence } from '@/lib/presence'
@@ -98,17 +98,10 @@ export default function ScanQR() {
       if (tx.hourly_rate_cents) {
         const threshold = await getHourThreshold()
         const live = await getRates()
-        const rates = tx.subtotal_cents > 0
-          ? { buyer: (tx.buyer_fee_cents ?? 0) / tx.subtotal_cents, seller: (tx.seller_fee_cents ?? 0) / tx.subtotal_cents }
-          : live
-        const subtotal = tx.base_forfait_cents != null && tx.included_hours != null
-          ? tx.base_forfait_cents + tx.hourly_rate_cents * billedHours(Math.max(0, mins - tx.included_hours * 60), threshold)
-          : tx.hourly_rate_cents * Math.max(1, billedHours(mins, threshold))
-        const buyerFee = Math.round(subtotal * rates.buyer)
-        const sellerFee = Math.round(subtotal * rates.seller)
+        const r = computeFinalAmounts(tx, mins, threshold, live)
         Object.assign(updates, {
-          subtotal_cents: subtotal, buyer_fee_cents: buyerFee, seller_fee_cents: sellerFee,
-          total_charged_cents: subtotal + buyerFee, payout_cents: subtotal - sellerFee,
+          subtotal_cents: r.subtotal_cents, buyer_fee_cents: r.buyer_fee_cents, seller_fee_cents: r.seller_fee_cents,
+          total_charged_cents: r.total_charged_cents, payout_cents: r.payout_cents,
         })
       }
       const { data: updated, error } = await supabase.from('transactions').update(updates).eq('id', tx.id).select().maybeSingle()

@@ -46,12 +46,23 @@ export default function LoginPage() {
     return safeNext(new URLSearchParams(window.location.search).get('next'))
   }
 
+  const [resetBusy, setResetBusy] = useState(false)
   async function resetPassword() {
     setError(''); setInfo('')
-    if (!email.trim()) { setError('Indiquez votre email ci-dessus, puis cliquez à nouveau sur « Mot de passe oublié ? ».'); return }
-    const { error } = await createClient().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/reset` })
-    if (error) setError('L’envoi du lien a échoué. Réessayez dans un instant.')
-    else setInfo('Si un compte existe pour cet email, un lien de réinitialisation vient d’y être envoyé (pensez aux spams).')
+    const addr = email.trim()
+    if (!addr) { setError('Indiquez votre email ci-dessus, puis cliquez à nouveau sur « Mot de passe oublié ? ».'); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) { setError('Cette adresse email n’est pas valide. Vérifiez-la, puis cliquez à nouveau sur « Mot de passe oublié ? ».'); return }
+    setResetBusy(true)
+    const { error } = await createClient().auth.resetPasswordForEmail(addr, { redirectTo: `${window.location.origin}/auth/reset` })
+    setResetBusy(false)
+    if (error) {
+      const msg = (error.message || '').toLowerCase()
+      const code = (error as { code?: string }).code || ''
+      if (error.status === 429 || code.includes('rate_limit') || msg.includes('rate limit') || msg.includes('security purposes')) {
+        const wait = msg.match(/after (\d+) second/)
+        setError(wait ? `Un lien vient déjà d’être demandé. Patientez ${wait[1]} secondes avant d’en redemander un.` : 'Trop de demandes en peu de temps. Réessayez dans quelques minutes.')
+      } else setError('L’envoi du lien a échoué. Réessayez dans un instant.')
+    } else setInfo('Si un compte existe pour cet email, un lien de réinitialisation vient d’y être envoyé (pensez aux spams).')
   }
 
   // /admin est servi par un rewrite hors App Router : navigation complète (voir isAdminPath).
@@ -94,11 +105,12 @@ export default function LoginPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    setError(''); setInfo('')
+    if (!email.trim() || !password) { setError('Indiquez votre email et votre mot de passe.'); return }
     setLoading(true)
-    setError('')
     try {
       const supabase = createClient()
-      const { data: signed, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: signed, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
           setError('Email pas encore confirmé — vérifiez votre boîte mail (et les spams) pour le lien de confirmation.')
@@ -142,7 +154,7 @@ export default function LoginPage() {
 
         <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '28px 26px', boxShadow: '0 24px 60px rgba(0,0,0,.35)' }}>
           <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644', marginBottom: 20 }}>Connexion</h1>
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <form onSubmit={handleLogin} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={labelStyle}>Email</label>
               <input type="email" name="email" id="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} required />
@@ -164,7 +176,7 @@ export default function LoginPage() {
             </label>
             <button type="button" onClick={resetPassword}
               style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-              Mot de passe oublié ?
+              {resetBusy ? 'Envoi du lien…' : 'Mot de passe oublié ?'}
             </button>
             {error && <p role="alert" style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
             {info && <p role="status" style={{ color: '#0C8F7E', fontSize: 13, fontWeight: 600, margin: 0 }}>{info}</p>}

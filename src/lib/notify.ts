@@ -7,6 +7,7 @@ export type NotifyEvent = 'message' | 'offer' | 'booking' | 'dispute' | 'presenc
   | 'booking_request' | 'booking_accepted' | 'booking_refused' | 'booking_expired' | 'dispute_mediation'
   // Annulations, absence, report, clôture sur preuve (056) :
   | 'cancelled_by_client' | 'cancelled_by_provider' | 'provider_no_show' | 'reschedule_proposed' | 'reschedule_answer' | 'closed_on_proof'
+  | 'transfer_not_received' | 'transfer_reaffirmed' | 'ping_message'
 
 export function notifyOther(transactionId: string, event: NotifyEvent, disputeId?: string) {
   try {

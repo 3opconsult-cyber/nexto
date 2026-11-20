@@ -35,8 +35,6 @@ export async function getHourThreshold(): Promise<number> {
   return Number.isFinite(n) && n >= 0 && n <= 59 ? n : DEFAULT_HOUR_THRESHOLD_MINUTES
 }
 
-// Heures facturées pour une durée réelle : 3 h 10 → 3 h, 3 h 20 → 4 h (seuil 15 min).
-export function billedHours(minutes: number, thresholdMinutes: number): number {
-  const full = Math.floor(minutes / 60)
-  return full + (minutes % 60 >= thresholdMinutes ? 1 : 0)
-}
+// Calcul pur dans ./billing (testé par scripts/tests/facturation/run.cjs).
+export { billedHours, computeFinalAmounts } from './billing'
+export type { BillingTx, FinalAmounts } from './billing'

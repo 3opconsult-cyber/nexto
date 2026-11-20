@@ -9,6 +9,7 @@ import { MAIL_EVENTS, sendMissionEmail, type MailEvent } from '@/lib/notifyServe
 // Tout est éteint (réponse {sent:false, reason:'off'}) tant que RESEND_API_KEY ou la clé service manque.
 // 'booking_refunded' et 'dispute_closed' ne partent que du serveur (cron, répartition d'un litige).
 const FROM_APP: readonly MailEvent[] = MAIL_EVENTS.filter(e => e !== 'booking_refunded' && e !== 'dispute_closed')
+// 'ping_message' : message de PING dans la conversation (059b), envoyé par un administrateur aux DEUX parties.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const off = () => NextResponse.json({ sent: false, reason: 'off' })
@@ -31,7 +32,15 @@ export async function POST(req: Request) {
 
     const admin = createAdminClient()
     const { data: tx } = await admin.from('transactions').select('id, buyer_id, seller_id').eq('id', b.transactionId).maybeSingle()
-    if (!tx || (tx.buyer_id !== user.id && tx.seller_id !== user.id)) {
+    if (!tx) return NextResponse.json({ sent: false, reason: 'forbidden' }, { status: 403 })
+    if (event === 'ping_message') {
+      // Administrateur PING seulement : prévient l'acheteur et le vendeur.
+      const { data: isAdm } = await supabase.rpc('is_admin')
+      if (isAdm !== true) return NextResponse.json({ sent: false, reason: 'forbidden' }, { status: 403 })
+      const r = await Promise.all([tx.buyer_id, tx.seller_id].filter(Boolean).map((rid: string) => sendMissionEmail(admin, { transactionId: tx.id, recipientId: rid, event })))
+      return NextResponse.json({ sent: r.some(x => x.sent), reason: r.find(x => !x.sent)?.reason })
+    }
+    if (tx.buyer_id !== user.id && tx.seller_id !== user.id) {
       return NextResponse.json({ sent: false, reason: 'forbidden' }, { status: 403 })
     }
     const otherId: string = tx.buyer_id === user.id ? tx.seller_id : tx.buyer_id
