@@ -5,11 +5,15 @@ import { createAdminClient, hasServiceRole } from '@/lib/supabase/admin'
 // Notification par e-mail de l'AUTRE partie d'une mission (message, tarif proposé, réservation, litige).
 // Confidentialité : le corps ne contient jamais le texte du message ni l'adresse, seulement un lien.
 // Tout est éteint (réponse {sent:false, reason:'off'}) tant que RESEND_API_KEY ou la clé service manque.
-const EVENTS = ['message', 'offer', 'booking', 'dispute', 'presence_arrivee', 'presence_fin', 'presence_client', 'code_client'] as const
+const EVENTS = ['message', 'offer', 'booking', 'dispute', 'presence_arrivee', 'presence_fin', 'presence_client', 'code_client',
+  'booking_request', 'booking_accepted', 'booking_refused', 'booking_expired'] as const
 // Demandes de confirmation de présence : action attendue du client, donc hors de la limite des 10 min des
 // messages ; leur propre limite est de 1 e-mail par mission et par type toutes les 2 min (la base n'accepte
 // déjà qu'une demande par minute, 5 au total). Le code n'est JAMAIS mis dans l'e-mail : il s'affiche dans l'application.
 const URGENT: readonly string[] = ['presence_arrivee', 'presence_fin', 'code_client']
+// Réservation à accepter et réponse du prestataire (052) : chaque étape est envoyée même si un message vient de
+// partir (limite propre à l'événement, comme les demandes de présence), mais le lien ouvre la conversation.
+const BOOKING: readonly string[] = ['booking_request', 'booking_accepted', 'booking_refused', 'booking_expired']
 const URGENT_THROTTLE_MS = 2 * 60 * 1000
 type Ev = typeof EVENTS[number]
 const THROTTLE_MS = 10 * 60 * 1000
@@ -24,6 +28,10 @@ const WHAT: Record<Ev, { subject: string; line: (asSeller: boolean) => string }>
   presence_arrivee: { subject: 'Votre prestataire est arrivé : confirmez dans PING', line: () => 'Votre prestataire indique être arrivé chez vous et ne pas vous y trouver. Ouvrez la mission du jour pour confirmer sa présence en un appui (ou signaler un problème).' },
   presence_fin: { subject: 'Fin de mission : envoyez votre code de fin sur PING', line: () => 'Votre prestataire indique avoir terminé la mission. Ouvrez la mission du jour pour voir la durée et le montant, puis envoyer votre code de fin ou contester.' },
   presence_client: { subject: 'Votre client a indiqué s’il sera sur place', line: () => 'Votre client a indiqué s’il sera sur place le jour du rendez-vous. Ouvrez la mission pour voir comment valider votre arrivée et la fin.' },
+  booking_request: { subject: 'Nouvelle réservation à accepter sur PING', line: () => 'Un client vient de réserver une prestation auprès de vous, au prix de votre fiche. Acceptez-la ou refusez-la en un appui depuis la conversation : sans réponse dans le délai indiqué, elle est annulée.' },
+  booking_accepted: { subject: 'Votre réservation est acceptée sur PING', line: () => 'Votre prestataire a accepté votre réservation : le rendez-vous est confirmé.' },
+  booking_refused: { subject: 'Votre réservation n’a pas été acceptée sur PING', line: () => 'Votre prestataire ne peut pas assurer cette réservation. Elle est annulée sans frais : vous pouvez choisir un autre prestataire depuis la conversation.' },
+  booking_expired: { subject: 'Votre réservation a expiré sur PING', line: () => 'Votre prestataire n’a pas répondu à temps : la réservation est annulée sans frais. Vous pouvez choisir un autre prestataire depuis la conversation.' },
   code_client: { subject: 'Votre client vous a envoyé son code sur PING', line: () => 'Votre client vous a envoyé son code dans la conversation. Saisissez-le dans la mission du jour.' },
 }
 
@@ -56,10 +64,11 @@ export async function POST(req: Request) {
 
     // Limite : 1 e-mail par mission et par destinataire toutes les 10 minutes.
     const urgent = URGENT.includes(event)
-    const since = new Date(Date.now() - (urgent ? URGENT_THROTTLE_MS : THROTTLE_MS)).toISOString()
+    const ownThrottle = urgent || BOOKING.includes(event)
+    const since = new Date(Date.now() - (ownThrottle ? URGENT_THROTTLE_MS : THROTTLE_MS)).toISOString()
     let q = admin.from('notification_log').select('id')
       .eq('user_id', otherId).eq('transaction_id', tx.id).gte('created_at', since)
-    if (urgent) q = q.eq('event', event)
+    if (ownThrottle) q = q.eq('event', event)
     const { data: recent } = await q.limit(1)
     if (recent && recent.length > 0) return NextResponse.json({ sent: false, reason: 'throttled' })
 

@@ -21,6 +21,7 @@ import { fetchPrestations, prestationName, prestationPhotoUrl, type Prestation }
 import { openConversation } from '@/lib/services'
 import { pricingShort, pricingSummary } from '@/lib/servicePricing'
 import { markFirstAction } from '@/lib/firstAction'
+import { bookingAvailable } from '@/lib/booking'
 
 // Passe à « Remplacé » (offer_status declined + message système) les devis en attente des
 // conversations non confirmées entre ce client et ce prestataire, autres que la réservation
@@ -71,6 +72,9 @@ function MissionForm() {
     })
   }, [])
   const [description, setDescription] = useState('')
+  // Migration 052 : la réservation part « en attente d'acceptation » ; on le dit avant le bouton.
+  const [needsAccept, setNeedsAccept] = useState(false)
+  useEffect(() => { bookingAvailable(createClient()).then(setNeedsAccept).catch(() => { }) }, [])
   // Sans créneaux publiés par le pro, le client indique lui-même la date et l'heure souhaitées.
   const [wantedAt, setWantedAt] = useState('')
   const [estimatedHours, setEstimatedHours] = useState('2')
@@ -230,6 +234,8 @@ function MissionForm() {
     // Réservation calculée en base (migration 045) : prix, frais et commission recalculés côté serveur
     // depuis la fiche de prix et les taux de app_settings. Repli sur l'ancien chemin si la fonction manque.
     let tx: { id: string } | null = null
+    // Réservation à accepter par le prestataire (migration 052) : book_service la crée « en attente ».
+    let awaiting = false
     const { data: booked, error: bookErr } = await supabase.rpc('book_service', {
       p_provider: pro.id,
       p_service: serviceId,
@@ -245,6 +251,7 @@ function MissionForm() {
     })
     if (!bookErr && booked && (booked as any).transaction_id) {
       tx = { id: (booked as any).transaction_id as string }
+      awaiting = (booked as any).booking_status === 'en_attente'
     } else if (bookErr && !missingRpc(bookErr)) {
       // Refus explicite de la base (prestation masquée, sur devis, adresse…) : message en français.
       setError(bookErr.message || 'Impossible de créer la réservation.'); setCreating(false); return
@@ -305,9 +312,13 @@ function MissionForm() {
     }
     await supabase.from('messages').insert({
       transaction_id: tx.id, ...(await systemSender(supabase)),
-      body: chosenAddr.status === 'a_valider'
-        ? `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · autre adresse à valider par le prestataire : ${maskAddress(address)}`
-        : `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
+      // En attente d'acceptation (052) : l'adresse exacte n'est pas écrite dans le fil (le prestataire la reçoit
+      // quand il accepte, dans le récapitulatif de la mission).
+      body: awaiting
+        ? `Réservation envoyée — ${label} · ${priceLabel}${when} · ${maskAddress(address)} · en attente de l’acceptation du prestataire`
+        : chosenAddr.status === 'a_valider'
+          ? `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · autre adresse à valider par le prestataire : ${maskAddress(address)}`
+          : `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
     })
 
     // Fonction serveur absente (migration 045 pas encore collée) : PostgREST répond PGRST202, Postgres 42883.
@@ -323,7 +334,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
 
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
     markFirstAction('reservation')
-    notifyOther(tx.id, 'booking')
+    notifyOther(tx.id, awaiting ? 'booking_request' : 'booking')
     if (paymentsOn) {
       // Si le prestataire n'a pas encore de compte de paiement, la mission reste réservée et le
       // bouton « Payer » de l'écran suivant prendra le relais.
@@ -505,6 +516,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.07)', marginBottom: 14 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
           <span style={{ fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
+            {needsAccept && <><b>Le prestataire accepte votre réservation sous 24 h</b> (au plus tard 2 h avant le rendez-vous), sinon la réservation est annulée sans frais. </>}
             Annulation gratuite tant que le prestataire n'est pas en route — des frais s'appliquent au-delà. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
           </span>
         </div>

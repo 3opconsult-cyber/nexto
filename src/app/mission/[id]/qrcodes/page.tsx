@@ -7,6 +7,7 @@ import PaymentCard from '@/components/PaymentCard'
 import ClientProofCard from '@/components/presence/ClientProofCard'
 import RemoteConfirmCard from '@/components/presence/RemoteConfirmCard'
 import { getPresenceState, presenceAvailable, type PresenceState } from '@/lib/presence'
+import { bookingPending } from '@/lib/booking'
 
 export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
@@ -67,6 +68,15 @@ export default function MissionQrCodes() {
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
       <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 18, color: '#123644' }}>Réservation annulée</div>
       <p style={{ color: '#4E6470', fontSize: 13.5, marginTop: 8, maxWidth: '32ch' }}>Les codes d&apos;arrivée et de fin ne sont plus valables.</p>
+      <button className="ping-btn ghost" style={{ width: 'auto', marginTop: 16, padding: '10px 20px' }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Revenir à la conversation</button>
+    </div>
+  )
+
+  // Réservation pas encore acceptée par le prestataire (052) : pas de QR tant qu'il n'a pas accepté.
+  if (bookingPending(tx)) return (
+    <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
+      <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 18, color: '#123644' }}>Réservation envoyée</div>
+      <p style={{ color: '#4E6470', fontSize: 13.5, marginTop: 8, maxWidth: '32ch' }}>Vos codes d&apos;arrivée et de fin apparaissent dès que le prestataire a accepté la réservation.</p>
       <button className="ping-btn ghost" style={{ width: 'auto', marginTop: 16, padding: '10px 20px' }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Revenir à la conversation</button>
     </div>
   )

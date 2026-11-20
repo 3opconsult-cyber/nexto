@@ -59,6 +59,11 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // Activités choisies (plusieurs à la fois, ex. ménage + vitres). Vide = « Tous » = aucun filtre.
   // Une seule sélection pilote les épingles de la carte ET la liste de recherche.
   const [sel, setSel] = useState<string[]>([])
+  // « Choisir un autre prestataire » après un refus ou une expiration (052) : /map?service=<métier> présélectionne
+  // le même service (lu après le montage : le rendu serveur reste identique).
+  useEffect(() => {
+    try { const s = new URLSearchParams(window.location.search).get('service'); if (s && /^[a-z0-9_-]{2,40}$/i.test(s)) setSel([s]) } catch { }
+  }, [])
   const [rawPros, setRawPros] = useState<ProviderNearby[]>([])
   const [acts, setActs] = useState<Record<string, string[]>>({})
   // CESU préfinancé accepté, pièces contrôlées (migration 039 ; vide tant qu'elle n'est pas appliquée).

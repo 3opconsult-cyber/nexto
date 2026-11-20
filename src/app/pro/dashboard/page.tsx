@@ -14,6 +14,7 @@ import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 import { documentAlerts, type DocRowFull } from '@/lib/pieces'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import ProMonthBlock from '@/components/ProMonthBlock'
+import { usePendingBookings, deadlineLeft } from '@/lib/booking'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { readScreenCache, sessionUserId } from '@/lib/screenCache'
 import { loadDashboardSnap, loadDashboardListing, type DashboardSnap } from '@/lib/screenLoaders'
@@ -44,6 +45,8 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
 
 export default function ProDashboard() {
   const router = useRouter()
+  // Réservations directes en attente de ma réponse (migration 052 ; liste vide avant).
+  const bookings = usePendingBookings(true)
   const [firstName, setFirstName] = useState('')
   const [pro, setPro] = useState<any>(null)
   const [uploading, setUploading] = useState<'cover' | 'logo' | null>(null)
@@ -260,6 +263,21 @@ export default function ProDashboard() {
                 <button type="button" onClick={() => router.push('/pro/onboarding')} className="btn ghost" style={{ width: '100%', minHeight: 44, marginTop: 10, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>Modifier mes informations</button>
               </div>
             </div>
+
+            {/* Réservations directes à accepter (052) : un appui ouvre la conversation, où sont Accepter / Refuser. */}
+            {bookings.length > 0 && (
+              <button type="button" onClick={() => router.push(`/mission/${bookings[0].id}/chat`)}
+                style={{ width: '100%', margin: '0 0 12px', minHeight: 56, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 14, border: '1.5px solid #F2A93B', background: '#FFF7ED', textAlign: 'left', cursor: 'pointer' }}>
+                <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', background: '#E8743B', flexShrink: 0 }} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>
+                    {bookings.length > 1 ? `${bookings.length} nouvelles réservations : accepter` : 'Nouvelle réservation : accepter'}
+                  </span>
+                  <span style={{ display: 'block', fontSize: 12, color: '#8a6520', fontWeight: 600, marginTop: 2 }}>Répondez sous {deadlineLeft(bookings[0].accept_deadline)}, sinon elle est annulée</span>
+                </span>
+                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.4}><path d="M9 6l6 6-6 6" /></svg>
+              </button>
+            )}
 
             {docAlerts.length > 0 && (
               <div role="status" style={{ margin: '0 0 12px', padding: '12px 14px', borderRadius: 14, background: '#fff', border: `1px solid ${docAlerts.some(a => a.urgent) ? 'rgba(255,122,102,.45)' : 'rgba(242,169,59,.5)'}` }}>

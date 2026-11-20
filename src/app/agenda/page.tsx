@@ -14,6 +14,8 @@ import { isTodayMission } from '@/lib/todayMission'
 import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import PresenceTag from '@/components/presence/PresenceTag'
 import { rowHasPresence } from '@/lib/presence'
+import BookingCard from '@/components/BookingCard'
+import { bookingPending, bookingEnded, expireBookings } from '@/lib/booking'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
@@ -88,6 +90,8 @@ export default function AgendaPage() {
       const c = readScreenCache<AgendaCache>(AGENDA_CACHE, user.id)
       if (c) { apply(c); setLoading(false) }
       try {
+        // Réservations à accepter (052) : un délai dépassé passe en « expirée » avant l'affichage.
+        await expireBookings(supabase, user.id)
         const next = await loadAgendaSnap(supabase, user.id)
         if (!alive) return
         apply(next)
@@ -131,7 +135,10 @@ export default function AgendaPage() {
 
   // Comme la démo (v_agenda) : un statut qui dit où en est la mission, pas juste « à venir ».
   function badge(t: any): { label: string; bg: string; fg: string } {
-    if (t.status === 'cancelled') return { label: 'Annulée', bg: '#EEF2F1', fg: '#4E6470' }
+    if (t.status === 'cancelled') return t.booking_status === 'refusee' ? { label: 'Refusée', bg: '#EEF2F1', fg: '#4E6470' }
+      : t.booking_status === 'expiree' ? { label: 'Expirée', bg: '#EEF2F1', fg: '#4E6470' }
+        : { label: 'Annulée', bg: '#EEF2F1', fg: '#4E6470' }
+    if (bookingPending(t)) return t.seller_id === uid ? { label: 'À accepter', bg: '#FFF7ED', fg: '#8a6520' } : { label: 'En attente du prestataire', bg: '#FFF7ED', fg: '#8a6520' }
     if (DONE.includes(t.status)) return { label: 'Effectuée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (t.status === 'arrived') return { label: 'En cours', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
     if (t.en_route_at) return { label: 'En route', bg: 'rgba(47,208,110,.15)', fg: '#1a7a43' }
@@ -193,15 +200,22 @@ export default function AgendaPage() {
               border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Mission du jour</button>
           )}
-          {!muted && !isTodayMission(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
+          {!muted && !isTodayMission(t) && !bookingPending(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/commande`) }} style={{
               border: '1.5px solid #0C8F7E', borderRadius: 999, padding: '0 12px', minHeight: 44, background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Répondre</button>
           )}
         </div>
       </div>
+      {/* Réservation directe à accepter (052) : Accepter / Refuser sur la carte même, ou « Choisir un autre prestataire ». */}
+      {(bookingPending(t) || bookingEnded(t)) && (
+        <div style={{ marginTop: 10 }}>
+          <BookingCard tx={t} userId={uid} counterpart={names[t.id]} compact
+            onChange={patch => setTxs(list => list.map(x => x.id === t.id ? { ...x, ...patch } : x))} />
+        </div>
+      )}
       {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
-      {withSuivi && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
+      {withSuivi && !bookingPending(t) && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
       {/* Terminées (audit ergonomie 18/11, amélioration 8) : avis et litige en un appui. */}
       {withActions && DONE.includes(t.status) && (
         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>

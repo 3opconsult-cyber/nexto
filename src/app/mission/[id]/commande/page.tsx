@@ -11,6 +11,8 @@ import PaymentCard from '@/components/PaymentCard'
 import OrderSummary from '@/components/presence/OrderSummary'
 import PresenceChoice from '@/components/presence/PresenceChoice'
 import PresenceTag from '@/components/presence/PresenceTag'
+import BookingCard from '@/components/BookingCard'
+import { bookingAccepted, bookingPending, expireBookings } from '@/lib/booking'
 
 /**
  * « Commande validée » (client) / « Commande reçue » (prestataire), maquette « Process, paiement et validation
@@ -33,6 +35,7 @@ export default function Commande() {
 
   const load = useCallback(async () => {
     const supabase = createClient()
+    await expireBookings(supabase)
     const { data: t } = await supabase.from('transactions').select('*, requests(address, category, title)').eq('id', id).maybeSingle()
     if (!t) { setMissing(true); return }
     setTx(t)
@@ -67,6 +70,18 @@ export default function Commande() {
       <button style={primary} onClick={back}>Ouvrir la conversation</button>
     </Shell>
   )
+  // Réservation directe à accepter (052) : « Réservation envoyée, en attente de … » / « Accepter · Refuser » ;
+  // la question de présence et la Mission du jour attendent l'acceptation.
+  if (!bookingAccepted(tx)) {
+    const pend = bookingPending(tx)
+    return (
+      <Shell title={pend ? (isSeller ? 'Réservation à accepter' : 'Réservation envoyée') : tx.booking_status === 'expiree' ? 'Réservation expirée' : 'Réservation refusée'} onBack={back}>
+        <BookingCard tx={tx} userId={uid} counterpart={name} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} />
+        {pend && <div style={{ marginTop: 12 }}><OrderSummary tx={tx} asSeller={isSeller} counterpart={name || undefined} payOn={payOn} threshold={thr} /></div>}
+        <button style={{ ...primary, background: '#fff', color: '#0C8F7E', border: '1.5px solid #0C8F7E' }} onClick={back}>Ouvrir la conversation</button>
+      </Shell>
+    )
+  }
   if (tx.status === 'cancelled') return <Shell title={title} onBack={back}><p style={muted}>Réservation annulée.</p><button style={primary} onClick={back}>Revenir à la conversation</button></Shell>
 
   const v48 = rowHasPresence(tx)

@@ -21,6 +21,8 @@ import PresenceTag from '@/components/presence/PresenceTag'
 import PresenceChoice from '@/components/presence/PresenceChoice'
 import AbsentProcess from '@/components/presence/AbsentProcess'
 import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
+import BookingCard from '@/components/BookingCard'
+import { bookingAccepted } from '@/lib/booking'
 
 /**
  * Mission du jour : un seul écran, un seul bouton principal selon l'étape (audit arrivée / départ, 18/11).
@@ -166,6 +168,13 @@ export default function MissionDuJour() {
   )
   if (!tx || !uid || v2 === null) return <Shell onBack={() => router.back()} title="Mission du jour"><p style={{ color: '#4E6470', fontSize: 13 }}>Chargement…</p></Shell>
   if (!isSeller && !isBuyer) return <Shell onBack={() => router.back()} title="Mission"><p style={{ color: '#4E6470', fontSize: 13 }}>Cette mission ne vous concerne pas.</p></Shell>
+  // Réservation pas encore acceptée (ou refusée / expirée), migration 052 : ni adresse, ni QR, ni « Je pars ».
+  if (!bookingAccepted(tx)) return (
+    <Shell onBack={() => router.push(`/mission/${tx.id}/chat`)} title="Mission">
+      <BookingCard tx={tx} userId={uid} counterpart={name} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} />
+      <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ width: '100%', minHeight: 48, marginTop: 12, borderRadius: 999, border: '1.5px solid #0C8F7E', background: '#fff', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}>Ouvrir la conversation</button>
+    </Shell>
+  )
 
   const step = stepIndex(tx)
   const address = isBuyer || ((!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status)) ? tx.requests?.address : null
