@@ -28,7 +28,12 @@ export default function ResetPage() {
       if (session && (ev === 'PASSWORD_RECOVERY' || ev === 'SIGNED_IN' || ev === 'INITIAL_SESSION')) setReady(true)
     })
     supabase.auth.getSession().then(({ data }) => { if (data.session) setReady(true) })
-    const t = setTimeout(() => setExpired(true), 4000)
+    // Lien invalide : Supabase renvoie l'erreur dans l'adresse (#error_description=… ou ?error_description=…).
+    try {
+      const u = window.location.hash + '&' + window.location.search
+      if (/error(_code|_description)?=/.test(u)) setExpired(true)
+    } catch { }
+    const t = setTimeout(() => setExpired(true), 6000)
     return () => { sub.subscription.unsubscribe(); clearTimeout(t) }
   }, [])
 
@@ -40,7 +45,13 @@ export default function ResetPage() {
     setLoading(true)
     const { error } = await createClient().auth.updateUser({ password: pw })
     setLoading(false)
-    if (error) { setError('Impossible de changer le mot de passe. Le lien a peut-être expiré : refaites une demande depuis la page de connexion.'); return }
+    if (error) {
+      const m = (error.message || '').toLowerCase()
+      if (m.includes('different from the old')) setError('Choisissez un mot de passe différent de l’ancien.')
+      else if (m.includes('weak') || m.includes('least') || m.includes('should')) setError('Mot de passe trop faible : au moins 8 caractères, en mélangeant lettres et chiffres.')
+      else setError('Impossible de changer le mot de passe. Le lien a peut-être expiré : refaites une demande depuis la page de connexion.')
+      return
+    }
     setDone(true)
     setTimeout(() => router.push('/map'), 1500)
   }
@@ -59,7 +70,7 @@ export default function ResetPage() {
               : 'Vérification du lien…'}
           </p>
         ) : (
-          <form onSubmit={submit}>
+          <form onSubmit={submit} noValidate>
             <p style={{ color: '#4E6470', fontSize: 14, margin: '0 0 14px' }}>Choisissez un nouveau mot de passe (8 caractères minimum).</p>
             <input type="password" autoComplete="new-password" placeholder="Nouveau mot de passe" value={pw} onChange={e => setPw(e.target.value)} style={{ ...inputStyle, marginBottom: 10 }} />
             <input type="password" autoComplete="new-password" placeholder="Confirmer le mot de passe" value={pw2} onChange={e => setPw2(e.target.value)} style={inputStyle} />

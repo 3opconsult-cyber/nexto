@@ -62,7 +62,7 @@ function SignupForm() {
 
   // Saisie gardée le temps de l'onglet (sessionStorage, jamais le mot de passe) : un aller-retour vers une
   // autre page, un rechargement ou la bascule Particulier / Professionnel ne vident plus le formulaire.
-  const restored = useRef(false)
+  const [hydrated, setHydrated] = useState(false)
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(DRAFT_KEY)
@@ -75,16 +75,16 @@ function SignupForm() {
         }
       }
     } catch { }
-    restored.current = true
+    setHydrated(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => {
-    if (!restored.current) return
+    if (!hydrated) return
     try {
       const { password: _pw, ...rest } = form
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form: rest, role, step }))
     } catch { }
-  }, [form, role, step])
+  }, [form, role, step, hydrated])
 
   function update(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
 
@@ -95,6 +95,21 @@ function SignupForm() {
       setError('Renseignez votre prénom, votre nom et votre téléphone pour continuer.')
       return false
     }
+    const num = form.phone.replace(/[\s.\-()]/g, '')
+    if (!/^(0\d{9}|\+33\d{9}|0033\d{9}|\+\d{8,15})$/.test(num)) {
+      setError('Ce numéro de téléphone n’est pas valide. Exemple : 06 12 34 56 78 ou +33 6 12 34 56 78.')
+      return false
+    }
+    setError('')
+    return true
+  }
+
+  // Contrôles de l'étape 2 en français (le formulaire est en noValidate : les bulles du navigateur
+  // dépendent de sa langue et ne disent pas ce qu'il faut faire).
+  function step2Ok() {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) { setError('Indiquez une adresse e-mail valide, par exemple prenom.nom@exemple.fr.'); return false }
+    if (form.password.length < 8) { setError('Le mot de passe doit contenir au moins 8 caractères.'); return false }
+    if (!cguOk) { setError('Pour créer votre compte, acceptez les Conditions Générales et la Politique de confidentialité.'); return false }
     setError('')
     return true
   }
@@ -102,9 +117,10 @@ function SignupForm() {
   function frenchError(msg: string) {
     const m = msg.toLowerCase()
     if (m.includes('already registered') || m.includes('already exists')) return 'Un compte existe déjà avec cet email. Connectez-vous ou réinitialisez votre mot de passe.'
-    if (m.includes('password')) return 'Mot de passe trop faible : au moins 8 caractères, en mélangeant lettres et chiffres.'
+    if (m.includes('password') && (m.includes('weak') || m.includes('least') || m.includes('short') || m.includes('should'))) return 'Mot de passe trop faible : au moins 8 caractères, en mélangeant lettres et chiffres.'
     if (m.includes('invalid') && m.includes('email')) return 'Cette adresse email n’est pas valide.'
     if (m.includes('rate limit') || m.includes('too many')) return 'Trop de tentatives en peu de temps. Patientez quelques minutes puis réessayez.'
+    if (m.includes('failed to fetch') || m.includes('network')) return 'Connexion impossible : vérifiez votre réseau puis réessayez.'
     return 'L’inscription n’a pas abouti. Vérifiez vos informations et réessayez.'
   }
 
@@ -127,13 +143,14 @@ function SignupForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (step === 1) { if (step1Ok()) setStep(2); return }
+    if (!step2Ok()) return
     setLoading(true)
     setError('')
     try {
       const supabase = createClient()
       const attr = readAttribution()
       const { data, error: signupError } = await supabase.auth.signUp({
-        email: form.email, password: form.password,
+        email: form.email.trim(), password: form.password,
         options: {
           data: {
             first_name: form.firstName,
@@ -238,7 +255,7 @@ function SignupForm() {
           </h1>
           <p style={{ fontSize: 11.5, color: '#4E6470', fontWeight: 700, marginBottom: 18 }}>Étape {step} sur 2</p>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+          <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
             {step === 1 ? (
               <>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -298,7 +315,7 @@ function SignupForm() {
                 </label>
               </>
             )}
-            {error && <p style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
+            {error && <p role="alert" style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
             <button type="submit" disabled={loading}
               style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
               {loading ? 'Création…' : step === 1 ? 'Continuer →' : 'Créer mon compte'}
