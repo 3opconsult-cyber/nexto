@@ -41,6 +41,13 @@ for (const [label, viewport] of [['mobile', { width: 390, height: 844 }], ['ordi
   check(/Fictif 2/.test(t) && !/Audit C\./.test(t), 'Messages (particulier) : seulement l’achat personnel')
   check(/dans votre espace prestataire/.test(t), 'cloche : signale ce qui attend côté prestataire')
   await go('/agenda'); t = await text()
+  // Le rendez-vous de test vieillit : s'il est passé, il est sous « Terminées » ou replié sous « mission passée ».
+  if (!/Fictif 2/.test(t)) {
+    const past = p.locator('text=/mission.? passée/i').first()
+    if (await past.count()) { await past.click().catch(() => {}); await p.waitForTimeout(1200); t += await text() }
+    const done = p.locator('button', { hasText: /^Terminées$/ }).first()
+    if (!/Fictif 2/.test(t) && await done.count()) { await done.click(); await p.waitForTimeout(2000); t += await text() }
+  }
   check(/Fictif 2/.test(t) && !/Audit C\./.test(t), 'Agenda (particulier) : seulement ses propres rendez-vous')
   await go('/documents'); t = await text()
   check(!/Audit Client/.test(t), 'Mes opérations (particulier) : aucune facture émise comme prestataire')
