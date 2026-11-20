@@ -22,6 +22,7 @@ import PresenceChoice from '@/components/presence/PresenceChoice'
 import AbsentProcess from '@/components/presence/AbsentProcess'
 import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
 import BookingCard from '@/components/BookingCard'
+import MissionActions from '@/components/MissionActions'
 import { bookingAccepted } from '@/lib/booking'
 
 /**
@@ -237,7 +238,9 @@ export default function MissionDuJour() {
         <div role="status" style={{ ...block, padding: '10px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: msg.kind === 'ok' ? 'rgba(18,179,156,.12)' : 'rgba(229,72,77,.1)', color: msg.kind === 'ok' ? '#0C8F7E' : '#B3402F' }}>{msg.text}</div>
       )}
 
-      {cancelled && <p style={{ ...block, fontSize: 14, color: '#4E6470', fontWeight: 600 }}>Réservation annulée.</p>}
+      {/* Annuler, reporter, absence du prestataire, clôture sur preuve (056). */}
+      {tx.price_confirmed && <MissionActions tx={tx} userId={uid} style={{ margin: '12px 0 0' }} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} />}
+      {cancelled && !tx.cancel_tier && <p style={{ ...block, fontSize: 14, color: '#4E6470', fontWeight: 600 }}>Réservation annulée.</p>}
       {!cancelled && !tx.price_confirmed && (
         <div style={block}>
           <p style={{ fontSize: 13, color: '#4E6470' }}>Le tarif n&apos;est pas encore validé.</p>

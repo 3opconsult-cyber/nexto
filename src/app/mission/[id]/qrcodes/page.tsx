@@ -8,6 +8,7 @@ import ClientProofCard from '@/components/presence/ClientProofCard'
 import RemoteConfirmCard from '@/components/presence/RemoteConfirmCard'
 import { getPresenceState, presenceAvailable, type PresenceState } from '@/lib/presence'
 import { bookingPending } from '@/lib/booking'
+import MissionActions from '@/components/MissionActions'
 
 export default function MissionQrCodes() {
   const params = useParams<{ id: string }>()
@@ -31,6 +32,8 @@ export default function MissionQrCodes() {
   // Migration 038 : QR + code à usage unique (get_mission_proof), confirmation à distance en un appui.
   const [v2, setV2] = useState<boolean | null>(null)
   const [pst, setPst] = useState<PresenceState | null>(null)
+  const [uid, setUid] = useState<string | null>(null)
+  useEffect(() => { createClient().auth.getUser().then(({ data }) => setUid(data.user?.id ?? null)) }, [])
 
   async function makeOnsite(renew = false) {
     setOnsiteBusy(true); setOnsiteErr('')
@@ -68,6 +71,7 @@ export default function MissionQrCodes() {
     <div className="ping-screen" style={{ alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
       <div style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 18, color: '#123644' }}>Réservation annulée</div>
       <p style={{ color: '#4E6470', fontSize: 13.5, marginTop: 8, maxWidth: '32ch' }}>Les codes d&apos;arrivée et de fin ne sont plus valables.</p>
+      {uid && <div style={{ width: '100%', maxWidth: 420, textAlign: 'left' }}><MissionActions tx={tx} userId={uid} style={{ margin: '12px 0 0' }} /></div>}
       <button className="ping-btn ghost" style={{ width: 'auto', marginTop: 16, padding: '10px 20px' }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Revenir à la conversation</button>
     </div>
   )
@@ -100,6 +104,7 @@ export default function MissionQrCodes() {
 
       <div className="ping-body pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ width: '100%', maxWidth: 420 }}><PaymentCard transactionId={tx.id} /></div>
+        {uid && step < 3 && <div style={{ width: '100%', maxWidth: 420 }}><MissionActions tx={tx} userId={uid} style={{ margin: '4px 0 0' }} /></div>}
         {step < 3 && (
           <>
             <div className="ping-h1" style={{ textAlign: 'center', marginTop: 8 }}>

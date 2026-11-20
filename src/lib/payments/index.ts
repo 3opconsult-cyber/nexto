@@ -61,6 +61,13 @@ async function loadTx(db: SupabaseClient, id: string): Promise<Tx> {
   return data as Tx
 }
 
+// Palier d'annulation (colonne de la migration 056) ; null tant qu'elle n'est pas collée.
+async function cancelTierOf(db: SupabaseClient, id: string): Promise<string | null> {
+  const { data, error } = await db.from('transactions').select('cancel_tier').eq('id', id).maybeSingle()
+  if (error) return null
+  return ((data as { cancel_tier?: string | null } | null)?.cancel_tier) ?? null
+}
+
 async function loadAccount(db: SupabaseClient, provider: ProviderName, userId: string, role: 'buyer' | 'seller') {
   const { data } = await db.from('payment_accounts').select('*').eq('provider', provider).eq('user_id', userId).eq('role', role).maybeSingle()
   return (data as AccountRow | null) ?? null
@@ -327,7 +334,14 @@ export async function refund(actor: { userId: string; isAdmin: boolean }, txId: 
   if (!actor.isAdmin) {
     // Partie à la mission : uniquement l'annulation gratuite, montant non choisi.
     if (tx.status !== 'cancelled') throw new PaymentError('Ouvrez un litige depuis la conversation.', 403)
-    if (tx.en_route_at || tx.arrived_at || tx.completed_at) {
+    // Migration 056 : le palier d'annulation est posé par la base. Remboursement à 100 % automatique pour l'annulation
+    // gratuite, le motif grave, l'annulation du prestataire et son absence ; frais totaux = rien à rembourser.
+    const tier = await cancelTierOf(db, txId)
+    if (tier === 'frais_totaux') {
+      return { rembourseCents: 0, enAttente: 'Annulation avec frais totaux : aucun remboursement, le paiement revient au prestataire sur décision de PING.' }
+    }
+    const freeTier = !!tier && ['gratuite', 'motif_grave', 'prestataire', 'absence_prestataire'].includes(tier)
+    if (!freeTier && (tx.en_route_at || tx.arrived_at || tx.completed_at)) {
       return { rembourseCents: 0, enAttente: 'Annulation tardive : remboursement décidé par PING sous 48 h.' }
     }
     const back = await refundAmount(db, p, txId, charges, paid, 'Annulation')

@@ -15,6 +15,7 @@ import DisputeFields, { createDispute, EMPTY_DISPUTE, type DisputeExtra } from '
 import ReviewModal from '@/components/ReviewModal'
 import ClientReviewModal, { CLIENT_TAGS } from '@/components/ClientReviewModal'
 import DepartureBar from '@/components/DepartureBar'
+import MissionActions, { CancelSheet } from '@/components/MissionActions'
 import MissionRecap from '@/components/MissionRecap'
 import { filterMessage } from '@/lib/chatFilter'
 import { getRates } from '@/lib/pricing'
@@ -444,54 +445,11 @@ export default function ChatPage() {
     setMsgs(prev => prev.map(x => x.id === m.id ? { ...x, offer_status: 'declined' } : x))
   }
 
-  const [cancelling, setCancelling] = useState(false)
+  // Annulation (056) : fenêtre à paliers (gratuite / motif grave / frais totaux, ou motif du prestataire), voir MissionActions.
+  const [cancelOpen, setCancelOpen] = useState(false)
   // Menu « … » de l'en-tête (audit 19/11, correction 5) : l'annulation n'est plus un lien de 17 px
   // posé dans le fil, qu'on touchait par erreur.
   const [moreOpen, setMoreOpen] = useState(false)
-  // Confirmation de l'annulation dans le menu « … » (« Confirmer l'annulation » / « Garder ») au lieu de confirm().
-  const [cancelAsk, setCancelAsk] = useState(false)
-  // Annulation façon Uber : gratuite tant que le prestataire n'a pas annoncé
-  // son départ ; des frais s'appliquent une fois en route (il a déjà engagé du
-  // temps/trajet) ; impossible une fois arrivé (QR scanné) — ça, c'est un
-  // litige, pas une annulation. Les frais restent déclaratifs (pas de
-  // prélèvement réel tant que Stripe n'est pas branché), comme le reste du
-  // séquestre simulé.
-  function cancelInfo() {
-    const isBuyer = !!tx && userId === tx.buyer_id
-    // Les frais d'annulation tardive ne concernent que le client (le prestataire s'est déplacé).
-    const late = !!tx?.en_route_at && isBuyer
-    const feeCents = late ? Math.round((tx?.subtotal_cents || 0) * 0.15) : 0
-    const what = tx?.price_confirmed ? 'cette réservation' : 'cette demande'
-    const confirmMsg = late
-      ? `Le prestataire est déjà en route : des frais d'annulation de ${EUR(feeCents)} s'appliquent.`
-      : isBuyer || !tx?.en_route_at
-        ? `Annuler ${what} ? Cette action est définitive.`
-        : 'Vous avez annoncé votre départ : le client sera prévenu de l\u2019annulation.'
-    return { late, feeCents, confirmMsg }
-  }
-  // Appelée seulement après « Confirmer l'annulation » dans le menu « … ».
-  async function cancelMission() {
-    if (!tx || !userId) return
-    const { late, feeCents } = cancelInfo()
-    setCancelling(true)
-    const supabase = createClient()
-    const { data: updated, error } = await supabase.from('transactions')
-      .update({ status: 'cancelled' }).eq('id', tx.id).select().maybeSingle()
-    if (!error && updated) {
-      setTx(updated)
-      // Paiement en ligne actif : remboursement (moins les frais d'annulation tardive). Sans effet sinon.
-      if (await paymentsActive()) {
-        fetch('/api/payments/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ transactionId: tx.id, motif: 'Annulation' }) }).catch(() => {})
-      }
-      const who = userId === updated.buyer_id ? 'le client' : 'le prestataire'
-      const feeNote = late ? ` — frais d'annulation tardive : ${EUR(feeCents)} (appliqués dès le paiement en ligne actif)` : ''
-      await supabase.from('messages').insert({
-        transaction_id: tx.id, ...(await systemSender(supabase)),
-        body: `✕ ${tx.price_confirmed ? 'Réservation' : 'Demande'} annulée par ${who}${feeNote}.`,
-      })
-    }
-    setCancelling(false)
-  }
 
   async function counterOffer(m: Msg) {
     await declineOffer(m)
@@ -529,7 +487,7 @@ export default function ChatPage() {
       setTx((t: any) => ({ ...t, requests: { ...(t.requests || {}), address: addr, ...(pos ? { lat: pos.lat, lng: pos.lng } : {}) } }))
     }
     const { data: upd, error: txErr } = await supabase.from('transactions')
-      .update({ scheduled_at: when.toISOString(), address_status: chosenAddr.status }).eq('id', tx.id).select().maybeSingle()
+      .update({ ...(tx.scheduled_at ? {} : { scheduled_at: when.toISOString() }), address_status: chosenAddr.status }).eq('id', tx.id).select().maybeSingle()
     if (txErr || !upd) { setRdvSaving(false); setRdvError('Date non enregistrée — réessayez.'); return }
     setTx((t: any) => ({ ...t, scheduled_at: upd.scheduled_at, address_status: upd.address_status }))
     await supabase.from('messages').insert({
@@ -619,7 +577,7 @@ export default function ChatPage() {
   // Annulation façon Uber : gratuite avant le départ du prestataire, payante une fois en route,
   // impossible une fois arrivé (passe alors par un litige).
   const canCancel = !!tx && !!userId && !tx.arrived_at && !['cancelled', 'completed', 'released'].includes(tx.status)
-  const cancelLabel = cancelling ? 'Annulation…' : (tx?.en_route_at && userId === tx?.buyer_id) ? 'Annuler (frais applicables)' : tx?.price_confirmed ? 'Annuler cette réservation' : 'Annuler cette demande'
+  const cancelLabel = (tx?.en_route_at && userId === tx?.buyer_id) ? 'Annuler (motif ou frais)' : tx?.price_confirmed ? 'Annuler cette réservation' : 'Annuler cette demande'
   // Prix écrit dans un message alors qu'aucun tarif n'est validé : rappel sous le dernier message concerné.
   const priceHintId = (() => {
     if (!tx || tx.price_confirmed || tx.status !== 'pending') return null
@@ -670,31 +628,19 @@ export default function ChatPage() {
         </button>
         {canCancel && (
           <span style={{ position: 'relative', flexShrink: 0 }}>
-            <button type="button" onClick={() => { setMoreOpen(o => !o); setCancelAsk(false) }} aria-label="Plus d’actions" aria-haspopup="menu" aria-expanded={moreOpen}
+            <button type="button" onClick={() => setMoreOpen(o => !o)} aria-label="Plus d’actions" aria-haspopup="menu" aria-expanded={moreOpen}
               style={{ width: 44, height: 44, border: 'none', background: 'none', borderRadius: 12, display: 'grid', placeItems: 'center', cursor: 'pointer', color: '#4E6470', marginRight: -6 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
             </button>
             {moreOpen && (
               <>
-                <div onClick={() => { setMoreOpen(false); setCancelAsk(false) }} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                <div onClick={() => setMoreOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
                 <div role="menu" style={{ position: 'absolute', right: -6, top: 48, zIndex: 41, minWidth: 250, background: '#fff', borderRadius: 14, boxShadow: '0 10px 30px rgba(18,54,68,.22)', border: '1px solid #E7EDEB', padding: 6 }}>
-                  {!cancelAsk ? (
-                    <button type="button" role="menuitem" disabled={cancelling} onClick={() => setCancelAsk(true)}
-                      style={{ width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', borderRadius: 10, padding: '0 12px', textAlign: 'left', cursor: 'pointer', color: '#C0503A', fontWeight: 700, fontSize: 14 }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
-                      {cancelLabel}
-                    </button>
-                  ) : (
-                    <div role="alertdialog" aria-label="Confirmer l'annulation" style={{ padding: '8px 6px 4px' }}>
-                      <p style={{ fontSize: 13, color: '#123644', lineHeight: 1.45, margin: '0 6px 10px', fontWeight: 600 }}>{cancelInfo().confirmMsg}</p>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button type="button" onClick={() => { setCancelAsk(false); setMoreOpen(false) }}
-                          style={{ flex: 1, minHeight: 44, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Garder</button>
-                        <button type="button" disabled={cancelling} autoFocus onClick={() => { setCancelAsk(false); setMoreOpen(false); cancelMission() }}
-                          style={{ flex: 1.4, minHeight: 44, borderRadius: 999, border: 'none', background: '#C0503A', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Confirmer l&apos;annulation</button>
-                      </div>
-                    </div>
-                  )}
+                  <button type="button" role="menuitem" onClick={() => { setMoreOpen(false); setCancelOpen(true) }}
+                    style={{ width: '100%', minHeight: 48, display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'none', borderRadius: 10, padding: '0 12px', textAlign: 'left', cursor: 'pointer', color: '#C0503A', fontWeight: 700, fontSize: 13.5 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9 9l6 6M15 9l-6 6" /></svg>
+                    {cancelLabel}
+                  </button>
                 </div>
               </>
             )}
@@ -735,6 +681,14 @@ export default function ChatPage() {
         <DepartureBar tx={tx} userId={userId} onChange={setTx}
           address={(userId === tx.buyer_id || (accepted && (!payOn || ['held', 'released'].includes(tx.payment_status)) && addressUsable(tx.address_status))) ? reqAddr : null}
           confirmed={!!tx && !!tx.price_confirmed && accepted} />
+      )}
+
+      {/* Report, absence du prestataire, clôture sur preuve, annulation (056). */}
+      {tx && userId && tx.buyer_id !== tx.seller_id && (
+        <MissionActions tx={tx} userId={userId} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} hideCancel />
+      )}
+      {tx && userId && (
+        <CancelSheet tx={tx} userId={userId} open={cancelOpen} onClose={() => setCancelOpen(false)} onDone={patch => setTx((t: any) => ({ ...t, ...patch }))} />
       )}
 
       {/* Récapitulatif de la demande : ce que le client a demandé, visible des deux côtés. */}

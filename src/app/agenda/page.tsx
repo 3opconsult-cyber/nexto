@@ -16,6 +16,7 @@ import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import PresenceTag from '@/components/presence/PresenceTag'
 import { rowHasPresence } from '@/lib/presence'
 import BookingCard from '@/components/BookingCard'
+import MissionActions from '@/components/MissionActions'
 import { bookingPending, bookingEnded, bookingLapsed, expireBookings } from '@/lib/booking'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
@@ -217,6 +218,11 @@ export default function AgendaPage() {
           <BookingCard tx={t} userId={uid} counterpart={names[t.id]} compact
             onChange={patch => setTxs(list => list.map(x => x.id === t.id ? { ...x, ...patch } : x))} />
         </div>
+      )}
+      {/* Annuler ou reporter un rendez-vous à venir (056) : deux boutons, les règles s'affichent à l'ouverture. */}
+      {!muted && t.price_confirmed && t.status === 'pending' && !t.arrived_at && !bookingPending(t) && !bookingEnded(t) && t.buyer_id !== t.seller_id && (
+        <MissionActions tx={t} userId={uid} compact style={{ marginTop: 10 }}
+          onChange={patch => setTxs(list => list.map(x => x.id === t.id ? { ...x, ...patch } : x))} />
       )}
       {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
       {withSuivi && !bookingPending(t) && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
