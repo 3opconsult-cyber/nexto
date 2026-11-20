@@ -417,7 +417,7 @@ async function markDispute(db: SupabaseClient, id: string, result: Record<string
  *  - séquestre (payment_status held / complement_due) : X € remboursés au client, puis versement immédiat du reste
  *    au prestataire (sa part moins X ; les frais et la commission PING ne changent pas, comme l'avoir de 040 / 047).
  *    Si X dépasse sa part, la différence devient une dette (commission_debts) retenue sur ses prochains versements ;
- *  - déjà versé : X € retenus sur les prochains versements du prestataire + alerte « remboursement client à faire » ;
+ *  - déjà versé : impossible (litige seulement dans les 24 h après la fin, avant versement : 055) ;
  *  - rien d'encaissé en ligne (virement) : l'avoir sur la facture est posé par la base (040 / 054), rien à faire ici.
  * Idempotente (money_applied_at). Mission pas encore terminée : on attend la fin (le cron reprend).
  */
@@ -444,14 +444,10 @@ export async function applyDisputeMoney(disputeId: string) {
   if (tx.payment_status === 'awaiting') return { etat: 'encaissement_en_attente' }
 
   if (tx.payment_status === 'released') {
-    // Déjà versé au prestataire (litige ouvert après le versement) : retenue sur ses prochains versements,
-    // et PING rembourse le client (alerte admin, le PSP ne reprend pas un virement déjà parti).
-    if (refundCents > 0) {
-      await db.from('commission_debts').insert({ provider_id: tx.seller_id, transaction_id: tx.id, amount_cents: refundCents, reason: 'Litige : montant rendu au client après versement' })
-      await db.from('payment_alerts').insert({ provider_id: tx.seller_id, kind: 'refund_after_release', detail: { transactionId: tx.id, disputeId: d.id, amountCents: refundCents } })
-    }
-    const r = { ...base, etat: 'deja_verse', retenueCents: refundCents }
-    await markDispute(db, d.id, r)
+    // Ne doit pas arriver : un litige ne s'ouvre que dans les 24 h après la fin, avant tout versement (055),
+    // et le versement est bloqué tant qu'un litige est ouvert. Jamais de remboursement « à la main » : on trace.
+    const r = { ...base, etat: 'deja_verse_refuse' }
+    await markDispute(db, d.id, r, 'Paiement déjà versé : aucune répartition possible (délai de 24 h).')
     return r
   }
 

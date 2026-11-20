@@ -41,6 +41,9 @@ fois, avec et sans 038/048). Vérification :
    l'ancienne clôture admin (résolu / non retenu). Testées sur PostgreSQL 16 (collées deux fois, scénarios virement,
    amiable, décision 0 €, décision avant facture). Vérification :
    `select proname from pg_proc where proname in ('request_ping_mediation', 'ping_decide_dispute', 'apply_dispute_credit');`
+3. `055_delai_incident_24h.sql` : 24 h après la fin de la mission pour ouvrir un litige (réglage `incident_window_hours`) ;
+   au-delà, ou paiement déjà versé, l'ouverture est refusée : jamais de remboursement à la main après versement.
+   Vérification : `select tgname from pg_trigger where tgname = 'trg_enforce_incident_window';`
 
 **Règle commune.** Déployer l'application AVANT de coller. Chaque fichier ci-dessous :
 - est une copie exacte de `supabase/migrations/…` (sauf `provider_services_public.sql` et `comptes_qa.sql`, qui n'existent qu'ici) ;

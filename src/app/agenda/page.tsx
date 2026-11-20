@@ -1,4 +1,5 @@
 "use client"
+import { incidentOpen } from '@/lib/incident'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -228,10 +229,12 @@ export default function AgendaPage() {
               {mode === 'pro' ? 'Noter le client' : 'Noter'}
             </button>
           )}
+{incidentOpen(t) && (
           <button type="button" onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat?signaler`) }}
             style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
             Signaler un problème
           </button>
+          )}
         </div>
       )}
     </div>

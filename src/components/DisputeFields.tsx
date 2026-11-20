@@ -52,7 +52,7 @@ export async function createDispute(
     claimed_cents: amountToCents(p.extra.amount),
     photo_paths: paths,
   })
-  if (error) return { error: 'Le litige n’a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.' }
+  if (error) return { error: /délai|déjà été versé/i.test(error.message || '') ? error.message : 'Le litige n’a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.' }
   return { id }
 }
 

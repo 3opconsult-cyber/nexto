@@ -10,6 +10,7 @@ import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
 import { markRead } from '@/lib/unread'
 import { notifyOther } from '@/lib/notify'
+import { incidentOpen, incidentDeadlineLabel, INCIDENT_WINDOW_H } from '@/lib/incident'
 import DisputeFields, { createDispute, EMPTY_DISPUTE, type DisputeExtra } from '@/components/DisputeFields'
 import ReviewModal from '@/components/ReviewModal'
 import ClientReviewModal, { CLIENT_TAGS } from '@/components/ClientReviewModal'
@@ -949,8 +950,13 @@ export default function ChatPage() {
               </>
             ) : (
               <>
+                {!incidentOpen(tx) ? (<>
+                <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Délai dépassé</h3>
+                <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Un incident se signale dans les {INCIDENT_WINDOW_H} h qui suivent la fin de la mission. Ce délai est passé : le paiement est libéré au prestataire et un litige n&apos;est plus possible.</p>
+                <button onClick={() => setReporting(false)} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>Fermer</button>
+                </>) : (<>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler un problème</h3>
-                <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Choisissez un motif et décrivez ce qui ne va pas : c'est tracé et visible par les deux parties, qui disposent de 48 h pour répondre.</p>
+                <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Choisissez un motif et décrivez ce qui ne va pas : c'est tracé et visible par les deux parties, qui disposent de 48 h pour répondre.{incidentDeadlineLabel(tx) ? ` Signalement possible ${incidentDeadlineLabel(tx)}, ensuite le paiement est libéré.` : ''}</p>
                 <DisputeFields value={reportExtra} onChange={setReportExtra} />
                 <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} rows={3}
                   style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
@@ -958,6 +964,7 @@ export default function ChatPage() {
                 <button onClick={submitReport} disabled={reportBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: reportBusy ? .6 : 1 }}>
                   {reportBusy ? 'Envoi…' : 'Ouvrir le litige'}
                 </button>
+                </>)}
                 {reportsOn && (
                   <button type="button" onClick={() => setReportKind('choix')} style={{ display: 'block', minHeight: 44, minWidth: 88, padding: '0 16px', margin: '6px auto 0', border: 'none', background: 'none', borderRadius: 999, color: '#4E6470', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Retour</button>
                 )}
