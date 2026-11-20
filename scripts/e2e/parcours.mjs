@@ -127,6 +127,7 @@ async function scenario(browser, sbC, label, absent) {
   // 2. Le prestataire propose un tarif
   await go(pp, `/mission/${tx}/chat`)
   const propose = pp.locator('button:has-text("Proposer un tarif")').first()
+  await propose.waitFor({ timeout: 15000 }).catch(() => { })
   if (log('pro : « + Proposer un tarif » visible', await propose.count(), (await propose.count()) > 0)) {
     await propose.click(); await pp.waitForTimeout(800)
     const nums = pp.locator('input[type=number]')
@@ -140,6 +141,7 @@ async function scenario(browser, sbC, label, absent) {
   // 3. Le client accepte
   await cp.reload({ waitUntil: 'networkidle' }); await cp.waitForTimeout(2500)
   const acc = cp.locator('button:has-text("Accepter")').last()
+  await acc.waitFor({ timeout: 15000 }).catch(() => { })
   if (log('client : « Accepter » visible', await acc.count(), (await acc.count()) > 0)) { await acc.click(); await cp.waitForTimeout(3000) }
   const { data: tA } = await sbC.from('transactions').select('price_confirmed, subtotal_cents, buyer_fee_cents, seller_fee_cents, base_forfait_cents, included_hours, hourly_rate_cents').eq('id', tx).single()
   log('tarif validé en base', tA, tA?.price_confirmed && tA.subtotal_cents === OFFER.eur * 100 && tA.base_forfait_cents === OFFER.eur * 100 && Number(tA.included_hours) === OFFER.hours && tA.hourly_rate_cents === OFFER.hourly * 100)
