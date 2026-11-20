@@ -349,7 +349,7 @@ create or replace function public.cancel_booking(
   p_transaction uuid, p_reason_kind text default null, p_reason_text text default null, p_confirm_fees boolean default false)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
-  uid uuid := auth.uid(); t record; is_buyer boolean; tier text; fee integer := 0; kind text := nullif(trim(coalesce(p_reason_kind, '')), '');
+  uid uuid := auth.uid(); t record; is_buyer boolean; tier text; fee integer := 0; v_kind text := nullif(trim(coalesce(p_reason_kind, '')), '');
   why text := nullif(trim(coalesce(p_reason_text, '')), ''); confirmed boolean; body text; label text; motif text;
   grave text[] := array['maladie', 'urgence_familiale', 'accident', 'autre_grave'];
   libre_client text[] := array['maladie', 'urgence_familiale', 'accident', 'autre_grave', 'changement_de_plan', 'autre'];
@@ -365,21 +365,21 @@ begin
   if t.status in ('completed', 'released') then
     return jsonb_build_object('ok', false, 'reason', 'terminee', 'message', 'Cette mission est terminée.');
   end if;
-  if kind is not null and not (kind = any (case when is_buyer then libre_client else libre_pro end)) then
+  if v_kind is not null and not (v_kind = any (case when is_buyer then libre_client else libre_pro end)) then
     return jsonb_build_object('ok', false, 'reason', 'motif_invalide', 'message', 'Motif inconnu : choisissez-en un dans la liste.');
   end if;
-  motif := case kind when 'maladie' then 'maladie' when 'urgence_familiale' then 'urgence familiale' when 'accident' then 'accident'
+  motif := case v_kind when 'maladie' then 'maladie' when 'urgence_familiale' then 'urgence familiale' when 'accident' then 'accident'
     when 'autre_grave' then 'autre motif grave' when 'panne_vehicule' then 'panne ou problème de véhicule'
     when 'indisponibilite' then 'indisponibilité' when 'changement_de_plan' then 'changement de plan' when 'autre' then 'autre motif' end;
 
   if is_buyer then
     tier := public._cx_tier(p_transaction);
     if tier = 'motif_grave' then
-      if kind is null or not (kind = any (grave)) then
+      if v_kind is null or not (v_kind = any (grave)) then
         return jsonb_build_object('ok', false, 'reason', 'motif_requis', 'tier', tier,
           'message', 'Le prestataire est en route : l''annulation n''est possible que pour un motif sérieux (maladie, urgence familiale, accident, autre motif grave).');
       end if;
-      if kind = 'autre_grave' and (why is null or char_length(why) < 5) then
+      if v_kind = 'autre_grave' and (why is null or char_length(why) < 5) then
         return jsonb_build_object('ok', false, 'reason', 'texte_requis', 'tier', tier, 'message', 'Décrivez ce motif grave en quelques mots.');
       end if;
     elsif tier = 'frais_totaux' then
@@ -393,10 +393,10 @@ begin
   else
     tier := 'prestataire';
     if confirmed then
-      if kind is null then
+      if v_kind is null then
         return jsonb_build_object('ok', false, 'reason', 'motif_requis', 'tier', tier, 'message', 'Choisissez le motif de l''annulation.');
       end if;
-      if kind = 'autre' and (why is null or char_length(why) < 5) then
+      if v_kind = 'autre' and (why is null or char_length(why) < 5) then
         return jsonb_build_object('ok', false, 'reason', 'texte_requis', 'tier', tier, 'message', 'Décrivez le motif en quelques mots.');
       end if;
     end if;
@@ -407,12 +407,12 @@ begin
   perform set_config('ping.cancel_rpc', '1', true);
   update public.transactions set status = 'cancelled', cancelled_at = now(), cancelled_by = uid,
       cancel_tier = label,
-      cancel_reason_kind = kind, cancel_reason_text = why, cancel_fee_cents = case when tier = 'frais_totaux' then fee else 0 end
+      cancel_reason_kind = v_kind, cancel_reason_text = why, cancel_fee_cents = case when tier = 'frais_totaux' then fee else 0 end
     where id = p_transaction;
 
   if confirmed then
     insert into public.mission_cancellations (transaction_id, party, actor_id, provider_id, client_id, tier, reason_kind, reason_text, fee_cents)
-      values (p_transaction, case when is_buyer then 'client' else 'prestataire' end, uid, t.seller_id, t.buyer_id, label, kind, why,
+      values (p_transaction, case when is_buyer then 'client' else 'prestataire' end, uid, t.seller_id, t.buyer_id, label, v_kind, why,
               case when tier = 'frais_totaux' then fee else 0 end);
   end if;
 
