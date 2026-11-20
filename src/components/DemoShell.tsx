@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { openConversation, prefetchProDetail, type ProviderNearby, type ProviderFlags } from '@/lib/services'
+import { fetchLiveZones, type LiveZonePin } from '@/lib/liveZone'
 import { FALLBACK_POS, isFallbackPos, loadMapPros, readMapCache, type MapCache } from '@/lib/carteLoaders'
 import { sessionUserId } from '@/lib/screenCache'
 import { createClient } from '@/lib/supabase/client'
@@ -107,6 +108,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // Chargement réel des prestataires (providers_nearby renvoie lat/lng réels), avec leurs activités
   // (métier principal + métiers des prestations, table services) et leurs pièces. Seule la dernière
   // lecture lancée s'affiche (une réponse plus ancienne, ex. autour du repli, est ignorée).
+  // Zones « en intervention ici aujourd'hui » (058) : second repère à côté du domicile, tableau vide avant la migration.
+  const [zones, setZones] = useState<LiveZonePin[]>([])
   const loadSeq = useRef(0)
   const loadPros = useCallback(() => {
     if (!boot) return
@@ -118,6 +121,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
       if (seq !== loadSeq.current) return
       setRawPros(d.list); setActs(d.acts); setFlags(d.flags)
     }).catch(() => { })
+    fetchLiveZones(userPos.lat, userPos.lng).then(z => { if (seq === loadSeq.current) setZones(z) }).catch(() => { })
   }, [userPos, boot])
   const actsOf = useCallback((x: { id: string; trade: string }) => acts[x.id] || (x.trade ? [x.trade] : []), [acts])
   const hitsOf = useCallback((x: { id: string; trade: string }) => {
@@ -200,6 +204,12 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     return c
   }, [rawPros, actsOf])
   const selTxt = sel.map(lab).join(' + ')
+  // Zones visibles : mêmes filtres de service que les épingles (le métier principal du prestataire).
+  const zonesVisible = useMemo(() => zones.filter(z => sel.length === 0 || (z.trade != null && sel.includes(z.trade)) || hitsOf({ id: z.provider_id, trade: z.trade || '' }) > 0), [zones, sel, hitsOf])
+  // Toucher un repère d'intervention : l'aperçu du prestataire s'il est dans la liste, sinon sa fiche.
+  function onSelectZone(id: string) {
+    if (pros.some(q => q.id === id)) { setContactErr(''); setPvId(id) } else router.push(`/pro/${id}`)
+  }
   function onSelectPro(p: { id: string }) {
     if (pros.some(q => q.id === p.id)) { setContactErr(''); setPvId(p.id) }
   }
@@ -392,7 +402,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 </div>
 
                 <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
-                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} />
+                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} />
                 </div>
 
                 <div className="searchbar" role="button" aria-haspopup="dialog" style={{ top: 66 }} onClick={() => go('v_search')}>

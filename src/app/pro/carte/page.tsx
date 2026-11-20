@@ -1,4 +1,5 @@
 "use client"
+import LiveZoneCard from '@/components/LiveZoneCard'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
@@ -328,6 +329,7 @@ export default function ProCartePage() {
         </div>
         {toggle}
       </div>
+      <LiveZoneCard compact />
       <p style={{ fontSize: 13.5, color: 'var(--ink)', marginBottom: 8 }}>
         {!loaded ? 'Recherche des demandes autour de vous…' : <>{reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}</>}
       </p>

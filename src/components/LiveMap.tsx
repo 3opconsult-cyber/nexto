@@ -148,6 +148,11 @@ function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B', inn
   return pinIcon(color, label ?? null, i, inner, selected ? 'sel' : 'normal')
 }
 
+// Second repère d'un prestataire qui a activé « Je suis en intervention ici » (058) : secteur flouté à ~500 m,
+// en plus de son domicile. Teal foncé et cible au centre, étiquette « Ici aujourd'hui » (jamais une adresse).
+const ZONE_INNER = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6" fill="#fff"/></svg>'
+function zoneIcon(i = 0) { return pinIcon('#0C8F7E', 'Ici aujourd’hui', i, ZONE_INNER, 'normal') }
+
 type FitPad = { top: number; right: number; bottom: number; left: number }
 function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad }: {
   userPos: { lat: number; lng: number }; pts: { lat: number; lng: number }[]; recenterTick?: number
@@ -213,7 +218,7 @@ function MapClick({ onClick }: { onClick?: () => void }) {
 type ReqPin = { id: string; lat: number; lng: number; label?: string | null; color?: string; icon?: string }
 export default function LiveMap({
   userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici', echo = false,
-  onMapClick, fit = false, fitKey, fitPad, selectedId = null, newIds,
+  onMapClick, fit = false, fitKey, fitPad, selectedId = null, newIds, zones = [], onSelectZone,
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
@@ -231,6 +236,9 @@ export default function LiveMap({
   selectedId?: string | null
   /** Prestataires « Nouveau · pièces en cours de contrôle » (goutte plus claire). */
   newIds?: Set<string>
+  /** Zones d'intervention du jour (providers_live_zones) : second repère « en intervention près de <secteur> ». */
+  zones?: { provider_id: string; lat: number; lng: number; label: string | null; full_name: string | null }[]
+  onSelectZone?: (providerId: string) => void
 }) {
   return (
     <>
@@ -272,6 +280,19 @@ export default function LiveMap({
             zIndexOffset={p.id === selectedId ? 1000 : p.is_active ? 0 : -500}
             eventHandlers={{ click: () => onSelect(p) }}
           />
+        ))}
+        {zones.filter(z => z.lat != null && z.lng != null).map((z, i) => (
+          <Marker
+            key={`zone-${z.provider_id}`}
+            position={[z.lat, z.lng]}
+            icon={zoneIcon(i)}
+            zIndexOffset={-100}
+            eventHandlers={{ click: () => onSelectZone?.(z.provider_id) }}
+          >
+            <Tooltip direction="top" offset={[0, -62]} className="you-tip">
+              {`${(z.full_name || 'Un prestataire').split(' ')[0]} en intervention près de ${z.label || 'ce secteur'}`}
+            </Tooltip>
+          </Marker>
         ))}
         {requests.filter(r => r.lat != null && r.lng != null).map((r, i) => (
           <Marker

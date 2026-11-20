@@ -1,4 +1,5 @@
 "use client"
+import LiveZoneCard from '@/components/LiveZoneCard'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -288,6 +289,8 @@ export default function ProDashboard() {
                 <button type="button" onClick={() => router.push('/pro/documents')} style={{ marginTop: 8, minHeight: 44, width: '100%', border: '1.5px solid #12B39C', borderRadius: 999, background: '#fff', padding: '0 14px', color: '#0C8F7E', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Ouvrir Mes pièces</button>
               </div>
             )}
+
+            <LiveZoneCard />
 
             <ProMonthBlock pro={pro} transactions={transactions} />
 
