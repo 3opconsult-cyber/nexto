@@ -7,6 +7,7 @@ import { trackEvent } from '@/lib/tracking'
 import NavDrawer from '@/components/NavDrawer'
 import RetourLink from '@/components/RetourLink'
 import Modal from '@/components/Modal'
+import ConfirmSheet from '@/components/ConfirmSheet'
 import { useCatalog, docsForServices } from '@/lib/catalog'
 import { fetchProviderActivities } from '@/lib/services'
 import { fetchMyDocuments, expiryOf, expiryText } from '@/lib/pieces'
@@ -86,6 +87,7 @@ export default function ProDocumentsPage() {
   const [siret, setSiret] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [toRemove, setToRemove] = useState<Piece | null>(null)
   const [adding, setAdding] = useState<{ kind: Kind; type: string } | null>(null)
   const [viewing, setViewing] = useState<{ piece: Piece; url: string } | null>(null)
   const photoRef = useRef<HTMLInputElement>(null)
@@ -159,7 +161,7 @@ export default function ProDocumentsPage() {
   }
 
   async function remove(piece: Piece) {
-    if (!confirm('Supprimer cette pièce ?')) return
+    setToRemove(null)
     const supabase = createClient()
     const { error } = await supabase.storage.from('documents').remove([piece.path])
     if (error) { setError('Suppression impossible pour le moment.'); return }
@@ -294,7 +296,7 @@ export default function ProDocumentsPage() {
                         {p.at > 0 && <div style={{ fontSize: 11, color: '#6E8592' }}>Déposée le {new Date(p.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
                       </div>
                       <button onClick={() => open(p)} style={{ minWidth: 56, minHeight: 44, padding: '0 10px', border: 'none', borderRadius: 10, background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Voir</button>
-                      <button onClick={() => remove(p)} aria-label={`Supprimer ${typeLabel(r, p)}`} style={{ width: 44, height: 44, border: 'none', borderRadius: 10, background: 'none', color: '#4E6470', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <button onClick={() => setToRemove(p)} aria-label={`Supprimer ${typeLabel(r, p)}`} style={{ width: 44, height: 44, border: 'none', borderRadius: 10, background: 'none', color: '#4E6470', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
                       </button>
                     </div>
@@ -343,6 +345,9 @@ export default function ProDocumentsPage() {
           </div>
         )}
       </Modal>
+      <ConfirmSheet open={!!toRemove} danger title="Supprimer cette pièce ?"
+        text="Elle sera retirée de votre dossier. Vous pourrez en ajouter une autre ensuite."
+        confirmLabel="Oui, supprimer" cancelLabel="Non, garder" onConfirm={() => toRemove && remove(toRemove)} onCancel={() => setToRemove(null)} />
     </div>
   )
 }
