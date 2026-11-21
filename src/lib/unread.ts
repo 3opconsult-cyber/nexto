@@ -3,24 +3,34 @@ import { useEffect, useState } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { roleColumn, type Mode } from '@/lib/mode'
+import { sessionUserId } from '@/lib/screenCache'
 
 // Messages non lus : RPC unread_counts() (migration 028) = messages de l'autre partie plus récents que
 // la dernière lecture notée dans message_reads. Rien n'est modifié sur `messages`.
 export const UNREAD_EVENT = 'ping-unread'
 
 // { identifiant de mission → nombre de non lus }, toutes missions confondues.
-export async function fetchUnreadByTx(supabase: SupabaseClient): Promise<Record<string, number>> {
-  const { data, error } = await supabase.rpc('unread_counts')
-  if (error || !data) return {}
-  const out: Record<string, number> = {}
-  for (const r of data as { transaction_id: string; n: number }[]) if (r.n > 0) out[r.transaction_id] = Number(r.n)
-  return out
+// Les lecteurs simultanés (pastilles de la barre, du menu, de la liste) partagent une seule requête (audit 21/11 :
+// 4 à 6 appels unread_counts par écran). Rien n'est gardé une fois la réponse reçue.
+let unreadInFlight: Promise<Record<string, number>> | null = null
+export function fetchUnreadByTx(supabase: SupabaseClient): Promise<Record<string, number>> {
+  if (unreadInFlight) return unreadInFlight
+  const p = (async () => {
+    const { data, error } = await supabase.rpc('unread_counts')
+    if (error || !data) return {}
+    const out: Record<string, number> = {}
+    for (const r of data as { transaction_id: string; n: number }[]) if (r.n > 0) out[r.transaction_id] = Number(r.n)
+    return out
+  })().finally(() => { if (unreadInFlight === p) unreadInFlight = null })
+  unreadInFlight = p
+  return p
 }
 
 // Total du mode courant : pro = missions où l'on est prestataire, particulier = où l'on est client.
 export async function fetchUnreadTotal(supabase: SupabaseClient, mode: Mode): Promise<number> {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return 0
+  const uid = await sessionUserId(supabase)
+  if (!uid) return 0
+  const user = { id: uid }
   const byTx = await fetchUnreadByTx(supabase)
   const ids = Object.keys(byTx)
   if (!ids.length) return 0

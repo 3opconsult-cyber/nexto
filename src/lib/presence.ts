@@ -72,10 +72,20 @@ export function presenceAvailable(supabase: SupabaseClient): Promise<boolean> {
   return available
 }
 
-export async function getPresenceState(supabase: SupabaseClient, txId: string): Promise<PresenceState | null> {
-  const { data, error } = await supabase.rpc('presence_state', { p_transaction: txId })
-  if (error || !data) return null
-  return data as PresenceState
+// Lectures simultanées de la même mission : une seule requête partagée (la barre du bas, le menu et la page
+// l'interrogeaient chacun, audit 21/11). Rien n'est gardé une fois la réponse reçue : un rechargement après
+// une action relit toujours la base.
+const presenceInFlight = new Map<string, Promise<PresenceState | null>>()
+export function getPresenceState(supabase: SupabaseClient, txId: string): Promise<PresenceState | null> {
+  const hit = presenceInFlight.get(txId)
+  if (hit) return hit
+  const p = (async () => {
+    const { data, error } = await supabase.rpc('presence_state', { p_transaction: txId })
+    if (error || !data) return null
+    return data as PresenceState
+  })().finally(() => { if (presenceInFlight.get(txId) === p) presenceInFlight.delete(txId) })
+  presenceInFlight.set(txId, p)
+  return p
 }
 
 export async function getMissionProof(supabase: SupabaseClient, txId: string, phase?: Phase): Promise<{ proof: MissionProof | null; error?: string }> {

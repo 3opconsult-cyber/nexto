@@ -35,6 +35,7 @@ import PresenceTag from '@/components/presence/PresenceTag'
 import PresenceChoice from '@/components/presence/PresenceChoice'
 import OrderSummary from '@/components/presence/OrderSummary'
 import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
+import { sessionUserId } from '@/lib/screenCache'
 import BookingCard from '@/components/BookingCard'
 import ChatSpecialCard from '@/components/ChatSpecialCard'
 import { specialChatKind } from '@/lib/chatPing'
@@ -197,60 +198,61 @@ export default function ChatPage() {
   useEffect(() => {
     const supabase = createClient()
     async function init() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) { setUserId(user.id); meRef.current = user.id }
-      const { data } = await supabase.from('messages')
-        .select('*').eq('transaction_id', transactionId).order('created_at')
+      // Audit ergonomie 21/11 : lecture en cascade (7 allers-retours l'un après l'autre) remplacée par des lectures
+      // simultanées. Session locale (aucun appel réseau) ; l'expiration des réservations part en parallèle (le délai
+      // dépassé est de toute façon affiché « expiré » par bookingLapsed).
+      const uid = await sessionUserId(supabase)
+      if (uid) { setUserId(uid); meRef.current = uid }
+      const user = uid ? { id: uid } : null
+      const msgsP = supabase.from('messages').select('*').eq('transaction_id', transactionId).order('created_at')
+      const txP = supabase.from('transactions')
+        .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents, frequency, hours_wanted, linen_kg, linen_types, household_size, surface_m2, payment_pref)')
+        .eq('id', transactionId).single()
+      // profiles n'est lisible qu'en libre-service (RLS auth.uid() = id) : le nom de l'autre partie passe par une
+      // fonction dédiée qui ne révèle que le vrai interlocuteur.
+      const namesP = supabase.rpc('transaction_counterparts', { p_transaction_ids: [transactionId] })
+      const profP = user ? supabase.from('profiles').select('address').eq('id', user.id).maybeSingle() : Promise.resolve({ data: null })
+      expireBookings(supabase, uid)
+      const { data } = await msgsP
       const loaded = (data ?? []) as Msg[]
       setMsgs(loaded)
       if (user) markRead(supabase, user.id, transactionId, loaded.length ? loaded[loaded.length - 1].created_at : null)
       resolvePhotoUrls(loaded)
-      // Réservation à accepter (052) : un délai dépassé passe en « expirée » avant l'affichage.
-      await expireBookings(supabase, user?.id)
-      const { data: t } = await supabase.from('transactions')
-        .select('*, requests(id, address, lat, lng, title, description, category, desired_date, desired_slot, budget_min_cents, budget_max_cents, frequency, hours_wanted, linen_kg, linen_types, household_size, surface_m2, payment_pref)')
-        .eq('id', transactionId).single()
+      const { data: t } = await txP
       setTx(t)
       if (!t) setMissing(true)
       if (t && user && user.id === t.buyer_id) {
-        const { data: pr } = await supabase.from('profiles').select('address').eq('id', user.id).maybeSingle()
-        setMyProfileAddr(pr?.address?.trim() || null)
+        const { data: pr } = await profP
+        setMyProfileAddr((pr as any)?.address?.trim() || null)
       }
       if (t?.requests) setReq(t.requests)
       if (t?.requests?.address) { setReqAddr(t.requests.address); setRdvAddr(t.requests.address) }
       if (t?.scheduled_at) setRdvAt(toLocalInput(t.scheduled_at))
       if (t && user) {
-        // profiles n'est lisible qu'en libre-service (RLS auth.uid() = id) : un
-        // select direct sur l'id de l'autre partie ne renvoie rien — le nom passe
-        // par une fonction dediee qui ne revele que le vrai interlocuteur.
-        const { data: names } = await supabase.rpc('transaction_counterparts', { p_transaction_ids: [t.id] })
+        const { data: names } = await namesP
         if (names?.[0]?.full_name) setCounterpart(names[0].full_name)
 
-        // Mission terminee et pas encore notee par ce client : on demande son
-        // avis ici, c'est l'ecran ou il atterrit apres le scan de sortie.
-        if (user.id === t.buyer_id && t.buyer_id !== t.seller_id && ['completed', 'released'].includes(t.status)) {
-          const { data: rev } = await supabase.from('reviews')
-            .select('stars, comment')
-            .eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle()
-          if (rev) setMyReview(rev as any)
-          else setAskReview(true)
-        }
-        if (user.id === t.seller_id && t.buyer_id !== t.seller_id) {
-          supabase.from('provider_profiles').select('base_price_cents').eq('id', user.id).maybeSingle()
-            .then(({ data: pp }) => { if (pp?.base_price_cents > 0) setMyBaseCents(pp.base_price_cents) })
-          // Note publique du client (avis des autres prestataires), pour se faire une idée.
-          const { data: pub, error: crErr } = await supabase.from('client_reviews').select('stars').eq('client_id', t.buyer_id).eq('is_public', true)
+        const done = ['completed', 'released'].includes(t.status)
+        // Mission terminée et pas encore notée par ce client : on demande son avis ici, c'est l'écran où il atterrit
+        // après le scan de sortie.
+        const clientSide = user.id === t.buyer_id && t.buyer_id !== t.seller_id && done
+        const proSide = user.id === t.seller_id && t.buyer_id !== t.seller_id
+        const [revR, baseR, pubR, notesR, mineR] = await Promise.all([
+          clientSide ? supabase.from('reviews').select('stars, comment').eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle() : null,
+          proSide ? supabase.from('provider_profiles').select('base_price_cents').eq('id', user.id).maybeSingle() : null,
+          proSide ? supabase.from('client_reviews').select('stars').eq('client_id', t.buyer_id).eq('is_public', true) : null,
+          proSide ? supabase.from('client_private_notes').select('note, created_at, transaction_id')
+            .eq('seller_id', user.id).eq('client_id', t.buyer_id).order('created_at', { ascending: false }).limit(5) : null,
+          proSide && done ? supabase.from('client_reviews').select('stars, is_public, comment, tags').eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle() : null,
+        ])
+        if (clientSide) { if (revR?.data) setMyReview(revR.data as any); else setAskReview(true) }
+        if (proSide) {
+          const pp: any = baseR?.data
+          if (pp?.base_price_cents > 0) setMyBaseCents(pp.base_price_cents)
+          const crErr = pubR?.error, pub: any[] | null | undefined = pubR?.data
           if (!crErr && pub?.length) setClientRating({ avg: pub.reduce((a: number, r: any) => a + r.stars, 0) / pub.length, n: pub.length })
-          // Mes notes personnelles sur ce client (table client_private_notes, RLS prestataire seul).
-          const { data: notes, error: nErr } = await supabase.from('client_private_notes').select('note, created_at, transaction_id')
-            .eq('seller_id', user.id).eq('client_id', t.buyer_id).order('created_at', { ascending: false }).limit(5)
-          if (!nErr && notes) setClientNotes(notes as any)
-          if (!crErr && ['completed', 'released'].includes(t.status)) {
-            const { data: mine } = await supabase.from('client_reviews').select('stars, is_public, comment, tags')
-              .eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle()
-            if (mine) setMyClientReview(mine as any)
-            else setAskClientReview(true)
-          }
+          if (!notesR?.error && notesR?.data) setClientNotes(notesR.data as any)
+          if (!crErr && done) { if (mineR?.data) setMyClientReview(mineR.data as any); else setAskClientReview(true) }
         }
       }
     }
@@ -687,9 +689,10 @@ export default function ChatPage() {
 
       {/* Report, absence du prestataire, clôture sur preuve, annulation (056). */}
       {tx && userId && tx.buyer_id !== tx.seller_id && (
-        <MissionActions tx={tx} userId={userId} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} hideCancel />
+        <MissionActions tx={tx} userId={userId} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))}
+          cancelRequest={cancelOpen} onCancelClose={() => setCancelOpen(false)} />
       )}
-      {tx && userId && (
+      {tx && userId && tx.buyer_id === tx.seller_id && (
         <CancelSheet tx={tx} userId={userId} open={cancelOpen} onClose={() => setCancelOpen(false)} onDone={patch => setTx((t: any) => ({ ...t, ...patch }))} />
       )}
 
