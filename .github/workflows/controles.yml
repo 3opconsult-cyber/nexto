@@ -1,0 +1,113 @@
+name: Contrôles automatiques
+
+# Niveau 2 des contrôles (demande Romain 21/11/2026) : à chaque mise en ligne sur main, chaque lundi, et à la demande.
+# AUCUN secret requis, AUCUNE écriture en base ou sur la prod : le contrôle des pages ne fait que des lectures (GET).
+# Rouge (le workflow échoue) seulement pour : compilation (tsc, build), secrets dans le dépôt, pages principales en erreur.
+# Tout le reste (audit npm, poids des pages, tests unitaires, étiquette de version) = avertissement jaune, jamais bloquant.
+# Niveau 1 (base de données, chaque nuit) : supabase/migrations/061_controles_nocturnes.sql. Détail : docs/controles-niveau-3.md.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 4 * * 1'   # chaque lundi, 04 h 23 UTC
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Adresse du site à contrôler (défaut : la prod)'
+        required: false
+        default: 'https://nexto-eta.vercel.app'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: controles
+  cancel-in-progress: true
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      BASE: ${{ github.event.inputs.base || 'https://nexto-eta.vercel.app' }}
+      # Valeurs de forme seulement : le build compile le code, il n'appelle jamais Supabase. Ce ne sont pas des secrets.
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # l'historique et les étiquettes servent au contrôle de version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # --- BLOQUANT : secrets dans le dépôt suivi (rapide, avant tout le reste) ---
+      - name: Secrets dans le dépôt
+        run: node scripts/controles/secrets.mjs
+
+      - name: Installer les dépendances
+        run: npm ci --no-audit --no-fund
+
+      # --- BLOQUANT : compilation ---
+      - name: Types (tsc)
+        run: npx tsc --noEmit
+
+      - name: Build de production
+        run: |
+          set -o pipefail
+          NODE_ENV=production npm run build 2>&1 | tee build.log
+
+      # --- Avertissements : poids des pages, audit npm, tests unitaires, étiquette de version ---
+      - name: Poids des pages
+        run: node scripts/controles/poids.mjs build.log || echo "::warning::Le contrôle du poids des pages a échoué (non bloquant)"
+
+      - name: Audit npm (gravité haute)
+        run: |
+          if npm audit --audit-level=high; then
+            echo "Aucune faille de gravité haute connue."
+          else
+            echo "::warning::npm audit signale des failles de gravité haute (non bloquant) : voir le journal de cette étape"
+          fi
+
+      - name: Tests unitaires sans réseau
+        run: |
+          fail=0
+          for t in scripts/tests/facturation/run.cjs scripts/tests/litige-chat/chatping.cjs scripts/tests/pare-feu/run.cjs; do
+            echo "=== $t"
+            if ! node "$t"; then echo "::warning::Test en échec : $t (non bloquant)"; fail=1; fi
+          done
+          # Tests qui utilisent un PostgreSQL local jetable (jamais la base de production) : ignorés s'il est absent.
+          for t in scripts/tests/virement-non-recu/run.cjs scripts/tests/litige-chat/run.cjs scripts/tests/controles-nuit/run.cjs; do
+            echo "=== $t"
+            if ! node "$t"; then echo "::warning::Test SQL en échec ou impossible ici : $t (non bloquant)"; fi
+          done
+          exit 0
+
+      - name: Étiquette de version récente
+        run: |
+          tag=$(git tag --sort=-creatordate | head -1)
+          if [ -z "$tag" ]; then
+            echo "::warning::Aucune étiquette de version dans le dépôt (git tag prod-AAAA-MM-JJ avant une mise en ligne)"
+          else
+            age=$(( ( $(date +%s) - $(git log -1 --format=%ct "$tag") ) / 86400 ))
+            echo "Dernière étiquette : $tag (il y a $age jours)"
+            if [ "$age" -gt 60 ]; then echo "::warning::La dernière étiquette de version ($tag) a plus de 60 jours"; fi
+          fi
+
+      # --- BLOQUANT : pages principales en ligne (lecture seule) ---
+      # Après un push sur main, Vercel met 1 à 2 minutes à déployer : trois essais espacés de 45 s avant d'échouer.
+      - name: Pages principales
+        run: |
+          for i in 1 2 3; do
+            if node scripts/controles/pages.mjs; then exit 0; fi
+            echo "Essai $i sur 3 échoué"; [ "$i" -lt 3 ] && sleep 45
+          done
+          echo "::error::Une page principale ne répond pas correctement sur $BASE"
+          exit 1

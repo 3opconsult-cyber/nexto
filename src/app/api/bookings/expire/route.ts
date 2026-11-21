@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient, hasServiceRole } from '@/lib/supabase/admin'
 import { sweepBookings } from '@/lib/bookingsServer'
-import { sendDocumentAlerts } from '@/lib/notifyServer'
+import { sendControlAlert, sendDocumentAlerts } from '@/lib/notifyServer'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +26,10 @@ export async function GET(req: Request) {
       const exp = await db.rpc('expire_documents')
       pieces = { expirees: exp.error ? null : exp.data, ...(await sendDocumentAlerts(db)) }
     } catch (e) { pieces = { erreur: (e as Error).message } }
-    return NextResponse.json({ actif: true, ...out, pieces })
+    // 5. contrôles de nuit (061) : e-mail court à PING seulement s'il y a du rouge, une seule fois.
+    let controles: Record<string, unknown> = {}
+    try { controles = await sendControlAlert(db) } catch (e) { controles = { erreur: (e as Error).message } }
+    return NextResponse.json({ actif: true, ...out, pieces, controles })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || 'Erreur.' }, { status: 500 })
   }
