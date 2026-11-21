@@ -88,10 +88,20 @@ export function getPresenceState(supabase: SupabaseClient, txId: string): Promis
   return p
 }
 
-export async function getMissionProof(supabase: SupabaseClient, txId: string, phase?: Phase): Promise<{ proof: MissionProof | null; error?: string }> {
-  const { data, error } = await supabase.rpc('get_mission_proof', { p_transaction: txId, p_phase: phase ?? null })
-  if (error) return { proof: null, error: error.message }
-  return { proof: data as MissionProof }
+// Deux demandes simultanées du QR d'une même mission créeraient deux codes (le dernier écrase le premier : l'écran
+// afficherait un code périmé). Une seule requête partagée tant qu'elle n'a pas répondu.
+const proofInFlight = new Map<string, Promise<{ proof: MissionProof | null; error?: string }>>()
+export function getMissionProof(supabase: SupabaseClient, txId: string, phase?: Phase): Promise<{ proof: MissionProof | null; error?: string }> {
+  const key = txId + ':' + (phase ?? '')
+  const hit = proofInFlight.get(key)
+  if (hit) return hit
+  const p = (async () => {
+    const { data, error } = await supabase.rpc('get_mission_proof', { p_transaction: txId, p_phase: phase ?? null })
+    if (error) return { proof: null, error: error.message }
+    return { proof: data as MissionProof }
+  })().finally(() => { if (proofInFlight.get(key) === p) proofInFlight.delete(key) })
+  proofInFlight.set(key, p)
+  return p
 }
 
 export async function validatePresence(supabase: SupabaseClient, txId: string, phase: Phase, proof: string): Promise<PresenceResult> {
