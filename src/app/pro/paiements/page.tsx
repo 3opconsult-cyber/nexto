@@ -29,7 +29,7 @@ const MANDAT: Record<string, { t: string; fg: string; bg: string; txt: string }>
   failed: { t: 'Refusé', fg: '#c0503a', bg: 'rgba(192,80,58,.12)', txt: 'Votre banque a refusé le mandat. Contactez le support PING pour le renouveler.' },
 }
 
-const input = { width: '100%', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 13.5, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' as const }
+const input = { width: '100%', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '0 12px', minHeight: 44, fontSize: 13.5, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' as const }
 const label = { fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase' as const, letterSpacing: '.03em', margin: '10px 0 5px', display: 'block' }
 
 export default function ProPaiementsPage() {
@@ -283,7 +283,7 @@ export default function ProPaiementsPage() {
                   aucun mandat de prélèvement ne vous est demandé. Conditions : voir les CGV prestataires.
                 </p>
               )}
-              <a href="/cgu#prestataires" style={{ display: 'inline-block', marginTop: 8, fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>CGV prestataires et contrat de commission</a>
+              <a href="/cgu#prestataires" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 4, fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>CGV prestataires et contrat de commission</a>
             </div>
           )}
 

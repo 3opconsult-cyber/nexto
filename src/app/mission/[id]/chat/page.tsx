@@ -860,7 +860,7 @@ export default function ChatPage() {
           du bas, quel que soit le contexte d'empilement de la page (audit 19/11 bis n° 11). */}
       {reporting && typeof document !== 'undefined' && createPortal(
         <div onClick={() => setReporting(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: '20px 20px calc(20px + env(safe-area-inset-bottom, 0px))', maxHeight: '92dvh', overflowY: 'auto', overscrollBehavior: 'contain' }}>
+          <div role="dialog" aria-modal="true" aria-label="Signaler ou ouvrir un litige" onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: '20px 20px calc(20px + env(safe-area-inset-bottom, 0px))', maxHeight: '92dvh', overflowY: 'auto', overscrollBehavior: 'contain' }}>
             {reportKind === 'choix' ? (
               <>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler</h3>
@@ -917,8 +917,10 @@ export default function ChatPage() {
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler un problème</h3>
                 <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Choisissez un motif et décrivez ce qui ne va pas : c'est tracé et visible par les deux parties, qui disposent de 48 h pour répondre.{incidentDeadlineLabel(tx) ? ` Signalement possible ${incidentDeadlineLabel(tx)}, ensuite le paiement est libéré.` : ''}</p>
                 <DisputeFields value={reportExtra} onChange={setReportExtra} />
-                <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} rows={3}
-                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
+                <label htmlFor="dispute-reason" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Ce qui ne va pas</label>
+                <textarea id="dispute-reason" value={reportReason} onChange={e => { setReportReason(e.target.value); setReportError('') }} rows={3} maxLength={2000}
+                  placeholder="Décrivez les faits : ce qui était prévu, ce qui s’est passé."
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
                 {reportError && <p style={{ color: '#c0503a', fontSize: 12, margin: '-6px 0 10px' }}>{reportError}</p>}
                 <button onClick={submitReport} disabled={reportBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: reportBusy ? .6 : 1 }}>
                   {reportBusy ? 'Envoi…' : 'Ouvrir le litige'}
@@ -936,7 +938,7 @@ export default function ChatPage() {
 
       {editingPrice && (
         <div onClick={() => setEditingPrice(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(18,54,68,.4)', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', zIndex: 2000 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
+          <div role="dialog" aria-modal="true" aria-label="Signaler ou ouvrir un litige" onClick={e => e.stopPropagation()} style={{ background: '#fff', width: '100%', maxWidth: 480, borderRadius: '20px 20px 0 0', padding: 20 }}>
             <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>{lastOfferCents ? 'Faire une contre-proposition' : 'Proposer un tarif'}</h3>
             <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Ce n'est pas appliqué tout de suite — l'autre partie doit valider dans la conversation, avec la photo si elle justifie le changement.</p>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Montant (€)</label>

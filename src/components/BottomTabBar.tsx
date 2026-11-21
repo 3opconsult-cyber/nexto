@@ -65,10 +65,12 @@ export default function BottomTabBar() {
   // Réservation directe à accepter (migration 052) : « Nouvelle réservation : accepter » en un appui, jusqu'à la
   // réponse du prestataire, sauf sur la conversation de cette réservation (la carte Accepter / Refuser y est).
   const bookings = usePendingBookings(isPro, pathname)
-  const nextBooking = !callText ? bookings.find(b => !pathname.startsWith(`/mission/${b.id}`)) ?? null : null
+  // Jamais par-dessus la zone de saisie d'une conversation (audit 21/11 : le bandeau cachait le bouton Envoyer).
+  const inChat = /^\/mission\/[^/]+\/chat/.test(pathname)
+  const nextBooking = !callText && !inChat ? bookings.find(b => !pathname.startsWith(`/mission/${b.id}`)) ?? null : null
   // Après la fin d'une mission (correction 14) : « Notez … » ouvre l'avis en un appui, une fois par mission.
   const [rate, rateDone] = useRatePrompt(mode, pathname)
-  const rateShown = !callText && !nextBooking && !!rate && !pathname.startsWith(`/mission/${rate.id}`)
+  const rateShown = !callText && !nextBooking && !inChat && !!rate && !pathname.startsWith(`/mission/${rate.id}`)
 
   return (
     <div className="app-bottom-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
