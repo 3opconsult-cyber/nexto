@@ -39,3 +39,5 @@ Mode d'emploi et variables : `scripts/e2e/README.md`. `parcours.mjs` crée une m
 - Alerte automatique en 4 lignes à Romain si un contrôle échoue : prévu.
 - Vérification des droits (appel anonyme refusé sur les RPC sensibles) : prévu.
 - Lecture des journaux Vercel (`get_runtime_errors`) après chaque déploiement : prévu.
+
+- 21/11/2026 : phase 2 livrée dans le dépôt, NON vérifiée en production : migration 061 (contrôle de nuit, à coller, puis `select public.run_nightly_controls();`), workflow `.github/workflows/controles.yml` (jamais exécuté sur GitHub), `scripts/controles/*`, alerte e-mail `/api/controles/alerte` (attend Resend). Détail : docs/controles-niveau-3.md.
