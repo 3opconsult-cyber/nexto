@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Aucune image n'utilise next/image : on coupe le service d'optimisation (failles GHSA signalées par npm audit, 21/11/2026).
+  images: { unoptimized: true },
   async headers() {
     return [
       {
