@@ -956,7 +956,12 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
 
       <!-- CONFORMITE -->
       <section class="section" id="s_conformite">
-        <div class="card"><h3>Échéances documentaires <span class="muted">alerte à 45 jours</span></h3>
+        <div class="card" id="nightCard"><h3>Contrôles de nuit <span class="muted" id="nightWhen"></span></h3>
+          <p class="muted" style="font-size:12px;margin:-4px 0 10px">Vérifications automatiques de la base, chaque nuit à 3 h 17 (UTC), sans intelligence artificielle : droits d'accès, cohérence des missions et des factures, tâches planifiées, volume, dérive du schéma.</p>
+          <div id="nightBody"><p class="muted">Chargement…</p></div>
+        </div>
+
+        <div class="card mt"><h3>Échéances documentaires <span class="muted">alerte à 45 jours</span></h3>
           <table class="tbl"><tr><th>Type de document</th><th>Durée de validité usuelle</th><th>Ce que PING contrôle</th></tr>
             <tr><td>Assurance responsabilité civile pro</td><td>1 an, renouvelable</td><td>Date d'expiration sur l'attestation</td></tr>
             <tr><td>Assurance complémentaire (dommages)</td><td>1 an, renouvelable</td><td>Date d'expiration sur l'attestation</td></tr>
@@ -5382,10 +5387,83 @@ window.nav = function (s) {
   _navLots(s)
   if (s === 'litiges') window.loadLitiges()
   if (s === 'annulations') window.loadAnnulations()
-  if (s === 'conformite') window.loadDocsQueue()
+  if (s === 'conformite') { window.loadDocsQueue(); window.loadNightChecks() }
   if (s === 'signalements') window.loadReports()
   if (s === 'retours') window.loadRetours()
   if (s === 'catalogue') window.loadCatalogue()
+}
+
+/* ---------- Contrôles de nuit (migration 061) : dernier passage, vert / orange / rouge, détail, schéma de référence ---------- */
+const NIGHT_LABELS = {
+  droits_anon: 'Droits d\'un visiteur sans compte', droits_dangereux: 'Droits dangereux (TRUNCATE, TRIGGER, REFERENCES)', rls_active: 'Sécurité par ligne',
+  rls_regles_ouvertes: 'Règles ouvertes à tous', fonctions_anon: 'Fonctions ouvertes sans compte', integrite_arrivee: 'Missions terminées sans arrivée',
+  integrite_acheteur_vendeur: 'Mission avec soi-même', integrite_total: 'Total = prestation + frais', integrite_factures: 'Trois factures par mission',
+  integrite_virements: 'Virements sans facture', integrite_suspension: 'Virements suspendus sans litige', integrite_litiges: 'Litiges ouverts depuis longtemps',
+  integrite_reservations: 'Réservations non expirées à temps', integrite_pieces: 'Pièces validées échues', integrite_dettes: 'Dettes de commission',
+  cron: 'Tâches planifiées', donnees_test: 'Données de test restantes', volume: 'Volume de la base', derive_schema: 'Schéma de la base',
+  sauvegarde: 'Sauvegarde', alerte_admin: 'Alerte admin',
+}
+function nightDetail(d) {
+  if (!d || typeof d !== 'object') return ''
+  const bits = []
+  for (const [k, v] of Object.entries(d)) {
+    if (v == null || v === '' || (Array.isArray(v) && !v.length)) continue
+    bits.push(k.replace(/_/g, ' ') + ' : ' + (Array.isArray(v) ? v.slice(0, 8).join(', ') + (v.length > 8 ? '…' : '') : typeof v === 'object' ? JSON.stringify(v) : v))
+  }
+  return bits.join(' · ')
+}
+window.loadNightChecks = async function () {
+  const body = document.getElementById('nightBody'); const when = document.getElementById('nightWhen')
+  if (!body) return
+  try {
+    const last = await supabaseLive.from('controles_resultats').select('run_id, run_at').order('run_at', { ascending: false }).limit(1)
+    if (last.error) {
+      body.innerHTML = '<p class="muted">Pas encore disponible : migration 061 à coller (supabase/a_coller/061_controles_nocturnes.sql).</p>'
+      if (when) when.textContent = ''
+      return
+    }
+    if (!last.data || !last.data.length) {
+      body.innerHTML = '<p class="muted">Aucun passage pour l\'instant. Dans l\'éditeur SQL : <code>select public.run_nightly_controls();</code> (sinon, premier passage cette nuit à 3 h 17 UTC).</p>'
+      if (when) when.textContent = ''
+      return
+    }
+    const run = last.data[0]
+    const { data: rows, error } = await supabaseLive.from('controles_resultats').select('controle, gravite, titre, detail, acquittee_le').eq('run_id', run.run_id).order('controle')
+    if (error) { body.innerHTML = '<p class="muted">Lecture impossible : ' + esc(error.message) + '</p>'; return }
+    const n = g => rows.filter(r => r.gravite === g).length
+    if (when) when.textContent = 'dernier passage le ' + new Date(run.run_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const bad = rows.filter(r => r.gravite !== 'vert').sort((a, b) => (a.gravite === 'rouge' ? 0 : 1) - (b.gravite === 'rouge' ? 0 : 1))
+    const stale = (Date.now() - new Date(run.run_at).getTime()) > 36 * 3600 * 1000
+    let h = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+      + '<span class="tag ok">' + n('vert') + ' vert</span><span class="tag wait">' + n('orange') + ' orange</span><span class="tag dn">' + n('rouge') + ' rouge</span>'
+      + (stale ? '<span class="tag dn">Plus de 36 h sans passage : vérifier la tâche ping_controles_nuit</span>' : '') + '</div>'
+    if (!bad.length) h += '<p class="muted">Tout est vert.</p>'
+    else {
+      h += '<table class="tbl"><tr><th></th><th>Contrôle</th><th>Constat</th><th></th></tr>' + bad.map(r => {
+        const tag = r.gravite === 'rouge' ? '<span class="tag dn">Rouge</span>' : '<span class="tag wait">Orange</span>'
+        const act = r.controle === 'sauvegarde' ? '<button type="button" class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="acknowledgeBackup()">J\'ai vérifié les sauvegardes</button>' : ''
+        return '<tr><td>' + tag + '</td><td>' + esc(NIGHT_LABELS[r.controle] || r.controle) + '</td><td>' + esc(r.titre)
+          + (nightDetail(r.detail) ? '<br><small class="muted">' + esc(nightDetail(r.detail)) + '</small>' : '') + '</td><td>' + act + '</td></tr>'
+      }).join('') + '</table>'
+    }
+    h += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn ghost" onclick="acceptSchemaRef()">Accepter le schéma actuel</button>'
+      + '<small class="muted">À utiliser après une migration voulue : le schéma d\'aujourd\'hui devient la référence.</small></div>'
+    body.innerHTML = h
+  } catch (e) {
+    body.innerHTML = '<p class="muted">Lecture impossible : ' + esc(e.message || e) + '</p>'
+  }
+}
+window.acceptSchemaRef = async function () {
+  const { error } = await supabaseLive.rpc('accept_schema_reference')
+  if (error) { toast('Impossible : ' + (/Could not find|does not exist/i.test(error.message) ? 'migration 061 à coller' : error.message)); return }
+  toast('Schéma actuel accepté comme référence')
+  window.loadNightChecks()
+}
+window.acknowledgeBackup = async function () {
+  const { error } = await supabaseLive.rpc('acknowledge_control', { p_controle: 'sauvegarde' })
+  if (error) { toast('Impossible : ' + error.message); return }
+  toast('Sauvegarde acquittée pour 90 jours')
+  window.loadNightChecks()
 }
 if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOverviewStats(); window.loadActOverview() }
 </script>

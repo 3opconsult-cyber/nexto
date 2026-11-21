@@ -155,3 +155,50 @@ export async function sendDocumentAlerts(admin: SupabaseClient, opts: { userId?:
   }
   return { sent }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Alerte « contrôles de nuit » (migration 061). La base écrit une ligne par contrôle dans `controles_resultats` et, s'il y
+// a du rouge ou de l'orange, une alerte `admin_notifications` (kind 'controle_nuit') : c'est la pastille de l'admin.
+// Ici, le serveur envoie UN e-mail court à PING seulement s'il y a du ROUGE dans le dernier passage, une seule fois
+// par alerte (emailed_at). Jamais de détail : le titre de chaque ligne rouge (noms de tables, nombres) et un lien vers
+// /admin. Format en 4 lignes : problème et gravité / cause / solution ou fait / décision attendue (voir
+// docs/controles-niveau-3.md). Éteint ({sent:false}) sans clé Resend, sans clé service ou avant la migration 061.
+export async function sendControlAlert(admin: SupabaseClient): Promise<{ sent: boolean; reason?: string; rouge?: number }> {
+  const key = process.env.RESEND_API_KEY
+  if (!key || !hasServiceRole()) return { sent: false, reason: 'off' }
+  const last = await admin.from('controles_resultats').select('run_id, run_at').order('run_at', { ascending: false }).limit(1)
+  if (last.error) return { sent: false, reason: 'migration_061_absente' }
+  const run = last.data?.[0] as { run_id: string; run_at: string } | undefined
+  if (!run) return { sent: false, reason: 'aucun_passage' }
+  const { data: lines } = await admin.from('controles_resultats').select('controle, titre').eq('run_id', run.run_id).eq('gravite', 'rouge').order('controle')
+  const rouges = (lines ?? []) as { controle: string; titre: string }[]
+  if (rouges.length === 0) return { sent: false, reason: 'aucun_rouge', rouge: 0 }
+  // Une seule fois par alerte : l'alerte du jour (admin_notifications) porte emailed_at.
+  const al = await admin.from('admin_notifications').select('id').eq('kind', 'controle_nuit').is('handled_at', null).is('emailed_at', null).limit(1)
+  if (al.error) return { sent: false, reason: 'migration_057_absente' }
+  if (!al.data || al.data.length === 0) return { sent: false, reason: 'deja_envoye', rouge: rouges.length }
+  const to = (process.env.ADMIN_NOTIFY_EMAIL || '').trim() || ADMIN_NOTIFY_FALLBACK
+  const link = `${SITE}/admin`
+  const subject = `PING : ${rouges.length} contrôle(s) rouge(s) cette nuit`
+  const text = [
+    `1. Problème : ${rouges.length} contrôle(s) en rouge (gravité haute).`,
+    `2. Cause : ${rouges.map(r => r.titre).join(' ; ')}`,
+    '3. Solution : ouvrir Conformité dans l’administration, lire le détail de chaque ligne rouge.',
+    '4. Décision attendue : corriger, ou accepter le schéma actuel si le changement est voulu.',
+    '', link, '', 'Aucune donnée personnelle dans ce message : seulement des noms de tables et des nombres.',
+  ].join('\n')
+  const html = `<div style="font-family:Arial,sans-serif;color:#123644;font-size:15px;line-height:1.5">`
+    + `<p style="margin:0 0 6px"><b>1. Problème :</b> ${rouges.length} contrôle(s) en rouge (gravité haute).</p>`
+    + `<p style="margin:0 0 6px"><b>2. Cause :</b> ${rouges.map(r => escHtml(r.titre)).join(' ; ')}</p>`
+    + `<p style="margin:0 0 6px"><b>3. Solution :</b> ouvrir Conformité dans l’administration, lire le détail de chaque ligne rouge.</p>`
+    + `<p style="margin:0 0 12px"><b>4. Décision attendue :</b> corriger, ou accepter le schéma actuel si le changement est voulu.</p>`
+    + `<p><a href="${link}" style="display:inline-block;background:#12B39C;color:#ffffff;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:999px">Ouvrir l’administration</a></p></div>`
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: process.env.NOTIFY_FROM || 'PING <notifications@ping.invalid>', to: [to], subject, text, html }),
+  })
+  if (!r.ok) return { sent: false, reason: 'resend_refuse', rouge: rouges.length }
+  await admin.from('admin_notifications').update({ emailed_at: new Date().toISOString() }).in('id', (al.data as { id: string }[]).map(x => x.id))
+  return { sent: true, rouge: rouges.length }
+}
