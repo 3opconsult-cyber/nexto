@@ -69,7 +69,7 @@ export default function LitigesPage() {
           <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12, marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', marginBottom: 8 }}>Médiation PING · litiges ouverts sur la plateforme</div>
             {rows.filter((d: any) => d.status === 'open' && d.transactions?.buyer_id !== userId && d.transactions?.seller_id !== userId).map((d: any) => (
-              <div key={d.id} onClick={() => router.push(`/litiges/${d.id}`)} style={{ padding: '8px 0', borderTop: '1px solid #E7EDEB', cursor: 'pointer', fontSize: 12.5, color: '#123644' }}>
+              <div key={d.id} onClick={() => router.push(`/litiges/${d.id}`)} role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/litiges/${d.id}`) } }} style={{ padding: '8px 0', borderTop: '1px solid #E7EDEB', cursor: 'pointer', fontSize: 12.5, color: '#123644' }}>
                 {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} · {d.reason}
               </div>
             ))}
@@ -93,7 +93,7 @@ export default function LitigesPage() {
               {list.map(d => {
                 const cat = d.transactions?.requests?.category
                 return (
-                  <div key={d.id} onClick={() => router.push(`/litiges/${d.id}`)}
+                  <div key={d.id} onClick={() => router.push(`/litiges/${d.id}`)} role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/litiges/${d.id}`) } }}
                     style={{ background: '#FFFBF2', border: '1px solid #F5D9A6', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                       <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>

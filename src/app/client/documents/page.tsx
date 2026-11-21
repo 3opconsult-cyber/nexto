@@ -104,7 +104,7 @@ export default function ClientDocumentsPage() {
             )}
           </div>
           <button onClick={() => inputRef.current?.click()} disabled={uploading}
-            style={{ padding: '8px 13px', borderRadius: 999, border: 'none', background: row ? '#F3F6F5' : '#123644', color: row ? '#123644' : '#fff', fontSize: 11.5, fontWeight: 700, flexShrink: 0 }}>
+            style={{ padding: '0 16px', minHeight: 44, borderRadius: 999, border: 'none', background: row ? '#F3F6F5' : '#123644', color: row ? '#123644' : '#fff', fontSize: 11.5, fontWeight: 700, flexShrink: 0 }}>
             {uploading ? 'Envoi…' : row ? 'Remplacer' : 'Ajouter'}
           </button>
         </div>

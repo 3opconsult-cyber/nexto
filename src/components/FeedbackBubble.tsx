@@ -6,7 +6,7 @@ import { trackEvent } from '@/lib/tracking'
 // Pas de sens sur les pages avant l'appli elle-même (recrutement testeurs,
 // connexion/inscription) : Romain l'a précisé, ce sont des pages de
 // présentation, pas des écrans à noter. La bulle vit dans l'application réelle.
-const HIDDEN_PREFIXES = ['/essai', '/auth', '/mission/', '/client/demandes/new', '/pro/onboarding']
+const HIDDEN_PREFIXES = ['/essai', '/auth', '/mission/', '/client/demandes/new', '/pro/onboarding', '/litiges/']
 // Jamais sur une fiche prestataire (sa barre Contacter / Réserver est en bas) ni sur un formulaire
 // (audit ergonomie 19/11, correction 19) : la bulle n'y recouvre plus rien.
 const HIDDEN_RE = /^\/pro\/[0-9a-f]{8}-[0-9a-f]{4}-/i

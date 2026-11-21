@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import DayTimePicker, { firstFreeTime } from '@/components/DayTimePicker'
@@ -52,6 +52,13 @@ export function useCancellationState(txId?: string, enabled = true) {
 }
 
 function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  const boxRef = useRef<HTMLDivElement>(null)
+  // Le focus entre dans la fenêtre à l'ouverture (clavier, lecteur d'écran) et revient au bouton qui l'a ouverte.
+  useEffect(() => {
+    const prev = document.activeElement as HTMLElement | null
+    boxRef.current?.focus({ preventScroll: true })
+    return () => { try { prev?.focus?.({ preventScroll: true }) } catch { /* élément disparu */ } }
+  }, [])
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', k)
@@ -59,8 +66,8 @@ function Sheet({ title, onClose, children }: { title: string; onClose: () => voi
   }, [onClose])
   return (
     <div role="dialog" aria-modal="true" aria-label={title} onClick={e => { e.stopPropagation(); if (e.target === e.currentTarget) onClose() }}
-      style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(18,54,68,.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: 520, background: '#fff', borderRadius: '18px 18px 0 0', padding: '16px 16px calc(18px + env(safe-area-inset-bottom))', maxHeight: '92vh', overflowY: 'auto' }}>
+      style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(18,54,68,.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div ref={boxRef} tabIndex={-1} style={{ outline: 'none', width: '100%', maxWidth: 520, background: '#fff', borderRadius: '18px 18px 0 0', padding: '16px 16px calc(18px + env(safe-area-inset-bottom))', maxHeight: '92vh', overflowY: 'auto' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: C.navy, marginBottom: 8 }}>{title}</div>
         {children}
       </div>
@@ -69,8 +76,10 @@ function Sheet({ title, onClose, children }: { title: string; onClose: () => voi
 }
 
 /** Fenêtre d'annulation : un texte et un bouton par palier, jamais de confirm() natif. */
-export function CancelSheet({ tx, userId, open, onClose, onDone }: {
+export function CancelSheet({ tx, userId, open, onClose, onDone, initial }: {
   tx: any; userId: string; open: boolean; onClose: () => void; onDone?: (patch: Record<string, unknown>, r: CancelResult) => void
+  /** Dernier état connu de la mission (déjà lu par l'écran) : affiché tout de suite, relu en arrière-plan (audit 21/11 : plus de « Chargement… »). */
+  initial?: CancellationState | null
 }) {
   const [st, setSt] = useState<CancellationState | null | undefined>(undefined)
   const [step, setStep] = useState<'main' | 'fees2' | 'text'>('main')
@@ -82,9 +91,10 @@ export function CancelSheet({ tx, userId, open, onClose, onDone }: {
   useEffect(() => {
     if (!open) return
     let alive = true
-    setSt(undefined); setStep('main'); setKind(null); setText(''); setErr(''); setBusy(false)
+    setSt(initial ?? undefined); setStep('main'); setKind(null); setText(''); setErr(''); setBusy(false)
     fetchCancellationState(createClient(), tx.id).then(s => { if (alive) setSt(s) })
     return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, tx.id])
 
   if (!open) return null
@@ -287,9 +297,11 @@ export function RescheduleSheet({ tx, st, open, onClose, onDone }: {
  * Bandeaux et boutons d'une mission : report en attente, absence du prestataire, clôture sur preuve, « Reporter » et
  * « Annuler ». `compact` : seulement les deux boutons (agenda). Rien n'est rendu avant la migration, sauf « Annuler ».
  */
-export default function MissionActions({ tx, userId, onChange, compact = false, hideCancel = false, style }: {
+export default function MissionActions({ tx, userId, onChange, compact = false, hideCancel = false, style, cancelRequest = false, onCancelClose }: {
   tx: any; userId: string; onChange?: (patch: Record<string, unknown>) => void
   compact?: boolean; hideCancel?: boolean; style?: React.CSSProperties
+  /** Ouverture de la fenêtre d'annulation depuis l'extérieur (menu « … » du chat) : une seule fenêtre, état déjà lu. */
+  cancelRequest?: boolean; onCancelClose?: () => void
 }) {
   const router = useRouter()
   const live = !!tx && !!userId && !['cancelled', 'completed', 'released'].includes(tx.status)
@@ -458,7 +470,7 @@ export default function MissionActions({ tx, userId, onChange, compact = false, 
       )}
 
       <RescheduleSheet tx={tx} st={st} open={reschedOpen} onClose={() => setReschedOpen(false)} onDone={refresh} />
-      <CancelSheet tx={tx} userId={userId} open={cancelOpen} onClose={() => setCancelOpen(false)} onDone={patch => { onChange?.(patch); refresh() }} />
+      <CancelSheet tx={tx} userId={userId} open={cancelOpen || cancelRequest} initial={st} onClose={() => { setCancelOpen(false); onCancelClose?.() }} onDone={patch => { onChange?.(patch); refresh() }} />
     </div>
   )
 }

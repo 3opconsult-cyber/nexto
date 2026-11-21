@@ -31,7 +31,20 @@ export function isTodayMission(t: { status?: string; booking_status?: string | n
   return diff <= 2 * 3600_000 && diff > -12 * 3600_000
 }
 
-export async function fetchTodayMission(mode: Mode): Promise<TodayMission | null> {
+// Barre du bas, menu et barre latérale lisent la même chose : une seule lecture partagée par mode (audit 21/11 :
+// jusqu'à 19 appels presence_state par chargement d'écran). Les appels simultanés et ceux de moins de 4 s la partagent.
+const TODAY_TTL_MS = 4000
+const todayShared = new Map<Mode, { at: number; p: Promise<TodayMission | null> }>()
+export function fetchTodayMission(mode: Mode): Promise<TodayMission | null> {
+  const hit = todayShared.get(mode)
+  if (hit && Date.now() - hit.at < TODAY_TTL_MS) return hit.p
+  const p = readTodayMission(mode)
+  todayShared.set(mode, { at: Date.now(), p })
+  p.catch(() => { if (todayShared.get(mode)?.p === p) todayShared.delete(mode) })
+  return p
+}
+
+async function readTodayMission(mode: Mode): Promise<TodayMission | null> {
   const supabase = createClient()
   // Session locale (aucun aller-retour, relu toutes les 15 s) ; la RLS reste la garde.
   const uid = await sessionUserId(supabase)

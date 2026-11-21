@@ -91,12 +91,22 @@ export const refuseBooking = (supabase: SupabaseClient, txId: string, reason?: s
  * à 100 % si elle avait été payée en ligne. `uid` est gardé pour compatibilité des appels.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function expireBookings(supabase: SupabaseClient, uid?: string | null) {
-  try {
-    const { data, error } = await supabase.rpc('expire_pending_bookings')
-    if (error || !Array.isArray(data)) return
-    for (const r of data as { transaction_id: string }[]) settleEndedBooking(r.transaction_id)
-  } catch { }
+// Une seule expiration à la fois et pas plus d'une toutes les 20 s par onglet (audit 21/11 : l'agenda, le chat et la barre
+// du bas l'appelaient en rafale). Le cron et pg_cron restent la vraie garde.
+let expireLast = 0
+let expireRunning: Promise<void> | null = null
+export function expireBookings(supabase: SupabaseClient, uid?: string | null): Promise<void> {
+  if (expireRunning) return expireRunning
+  if (Date.now() - expireLast < 20_000) return Promise.resolve()
+  expireLast = Date.now()
+  expireRunning = (async () => {
+    try {
+      const { data, error } = await supabase.rpc('expire_pending_bookings')
+      if (error || !Array.isArray(data)) return
+      for (const r of data as { transaction_id: string }[]) settleEndedBooking(r.transaction_id)
+    } catch { }
+  })().finally(() => { expireRunning = null })
+  return expireRunning
 }
 
 /**

@@ -90,9 +90,12 @@ export default function LiveZoneCard({ compact = false }: { compact?: boolean })
               : 'Les clients vous voient aussi là où vous travaillez aujourd’hui, en plus de votre domicile. Vous choisissez, et vous arrêtez quand vous voulez.'}
           </small>
         </div>
+        {/* Zone de toucher de 44 px autour de l'interrupteur visible (52 x 30). */}
         <button type="button" role="switch" aria-checked={on} aria-label="Je suis en intervention ici, visible aujourd’hui" disabled={busy} onClick={toggle}
-          style={{ width: 52, height: 30, borderRadius: 999, border: 'none', padding: 0, background: on ? '#F2A93B' : '#cdd6d3', position: 'relative', cursor: busy ? 'wait' : 'pointer', flex: '0 0 auto', transition: 'background .2s' }}>
-          <span style={{ position: 'absolute', top: 3, left: on ? 25 : 3, width: 24, height: 24, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
+          style={{ minWidth: 60, height: 44, border: 'none', padding: 0, background: 'none', display: 'grid', placeItems: 'center', cursor: busy ? 'wait' : 'pointer', flex: '0 0 auto' }}>
+          <span aria-hidden style={{ width: 52, height: 30, borderRadius: 999, background: on ? '#F2A93B' : '#cdd6d3', position: 'relative', display: 'block', transition: 'background .2s' }}>
+            <span style={{ position: 'absolute', top: 3, left: on ? 25 : 3, width: 24, height: 24, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
+          </span>
         </button>
       </div>
       {busy && <div role="status" style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 6 }}>Un instant…</div>}

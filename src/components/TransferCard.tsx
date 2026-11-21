@@ -19,7 +19,7 @@ function Copy({ value }: { value: string }) {
   const [ok, setOk] = useState(false)
   return (
     <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(value); setOk(true); setTimeout(() => setOk(false), 1500) } catch { } }}
-      style={{ border: `1px solid ${C.line}`, background: '#fff', color: C.tealD, borderRadius: 8, padding: '3px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+      style={{ border: `1px solid ${C.line}`, background: '#fff', color: C.tealD, borderRadius: 10, padding: '0 12px', minHeight: 44, minWidth: 68, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
       {ok ? 'Copié' : 'Copier'}
     </button>
   )
@@ -113,7 +113,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
 
   const btn = (primary: boolean): React.CSSProperties => ({
     border: primary ? 'none' : `1.5px solid ${C.line}`, background: primary ? C.teal : '#fff', color: primary ? '#fff' : C.navy,
-    fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, padding: '9px 14px', borderRadius: 999, cursor: 'pointer',
+    fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, padding: '0 16px', minHeight: 44, borderRadius: 999, cursor: 'pointer',
   })
 
   const payBlock = (t: Transfer) => {
