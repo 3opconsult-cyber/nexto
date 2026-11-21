@@ -29,3 +29,4 @@ Source : CLAUDE.md (HISTORIQUE.md), `docs/audit-ergonomie-2026-11-21.md`, sessio
 - Un incident = une ligne ici + un garde-fou (test, contrainte, revue). Sans garde-fou, l'incident est « non clos ».
 - Une relecture de code ne remplace pas un scénario réel avec de vrais comptes de test.
 - Toute migration : rejouable, testée collée deux fois, appels interdits refusés.
+- 21/11/2026 | `parcours.mjs` A et B échouent au « Je pars » en soirée | le sélecteur de créneau n'offre que des heures du jour à +30 min dans les horaires d'ouverture ; tard dans la journée il propose le lendemain, et la base refuse « Je pars » avant le jour du rendez-vous (038) | ce n'est pas une régression du produit | rejouer ces deux parcours en journée (avant ~17 h heure de Paris), ou avec la clé service pour fixer un rendez-vous du jour
