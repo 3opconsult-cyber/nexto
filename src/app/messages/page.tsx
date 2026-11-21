@@ -125,7 +125,8 @@ export default function MessagesPage() {
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucune conversation pour l'instant</div>
-            <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>Elles apparaissent ici dès le premier message échangé.</div>
+            <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>{mode === 'pro' ? 'Elles apparaissent ici quand un client vous écrit ou répond à une demande.' : 'Contactez un prestataire depuis la carte pour démarrer une conversation.'}</div>
+            <a href={mode === 'pro' ? '/pro/carte' : '/map'} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 22px', marginTop: 14, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>{mode === 'pro' ? 'Voir les demandes' : 'Voir la carte'}</a>
           </div>
         )}
         {!loading && visible.length > 0 && (() => {

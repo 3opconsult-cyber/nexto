@@ -78,7 +78,7 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
 
   const ghost: React.CSSProperties = {
     width: '100%', border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999,
-    padding: '11px 0', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+    padding: '11px 0', minHeight: 44, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer',
   }
 
   if (!open && !waiting) {

@@ -34,7 +34,7 @@ export function trackEvent(eventType: string, extra: Record<string, unknown> = {
         session_id: getSessionId(),
         user_id: user?.id ?? null,
         event_type: eventType,
-        path: typeof window !== 'undefined' ? window.location.pathname + window.location.search : null,
+        path: typeof window !== 'undefined' ? safePath() : null,
         qr_code: utm.qr || null,
         // Mode (particulier / pro) au moment de l'action : un même compte peut être les deux.
         metadata: { ...utm, mode: (() => { try { return localStorage.getItem('ping_mode') === 'pro' ? 'pro' : 'particulier' } catch { return null } })(), ...extra },
@@ -44,4 +44,15 @@ export function trackEvent(eventType: string, extra: Record<string, unknown> = {
   } catch {
     // le suivi ne doit jamais bloquer l'usage réel
   }
+}
+
+// Chemin sans paramètres sensibles (21/11/2026, critique données) : jeton du QR de présence (?token=), code de connexion
+// (?code=) et tout le reste sont retirés ; seules les clés de suivi marketing (utm_*, qr, ref) sont gardées.
+function safePath(): string {
+  const keep = ['qr', 'ref']
+  const sp = new URLSearchParams(window.location.search)
+  const out = new URLSearchParams()
+  sp.forEach((v, k) => { if (k.startsWith('utm_') || keep.includes(k)) out.set(k, v) })
+  const q = out.toString()
+  return window.location.pathname + (q ? '?' + q : '')
 }
