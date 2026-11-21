@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import ConfirmSheet from '@/components/ConfirmSheet'
 import { notifyOther } from '@/lib/notify'
 import { EUR } from '@/lib/invoice-pdf'
 import {
@@ -11,7 +12,6 @@ import {
 
 const hhmm = (d?: string | null) => d ? new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''
 const spaced = (c: string) => c.replace(/^(\d{3})(\d{3})$/, '$1 $2')
-function ask(q: string) { try { return window.confirm(q) } catch { return true } }
 
 /**
  * Client absent (migration 048), une seule action principale :
@@ -29,6 +29,7 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
   const pn = proName || 'Votre prestataire'
   const [busy, setBusy] = useState<'' | 'ok' | 'code' | 'no'>('')
   const [err, setErr] = useState('')
+  const [askNo, setAskNo] = useState(false)
   const [photo, setPhoto] = useState<string | null>(null)
   const [sent, setSent] = useState<{ code: string; exp?: string } | null>(null)
 
@@ -58,14 +59,21 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
     onDone()
   }
   async function decline() {
-    if (!ask(phase === 'arrivee' ? 'Indiquer que la présence du prestataire n’est pas normale ?' : 'Contester la fin annoncée ?')) return
     setBusy('no')
     const r = await clientDeclinePresence(createClient(), txId, phase)
-    setBusy('')
+    setBusy(''); setAskNo(false)
     if (!r.ok) { setErr(r.message || 'Action impossible.'); return }
     router.push(`/mission/${txId}/chat?signaler`)
   }
 
+  const sheet = (
+    <ConfirmSheet open={askNo} danger busy={busy === 'no'}
+      title={phase === 'arrivee' ? 'Indiquer que la présence du prestataire n’est pas normale ?' : 'Contester la fin annoncée ?'}
+      text={phase === 'arrivee'
+        ? 'La demande du prestataire sera refusée et le signalement s’ouvrira dans la conversation, pour décrire ce qui ne va pas. Rien n’est validé sans vous.'
+        : 'La fin annoncée ne sera pas validée et le signalement s’ouvrira dans la conversation, pour expliquer votre désaccord. Le paiement reste en attente.'}
+      confirmLabel="Oui, signaler" cancelLabel="Non, revenir" onConfirm={() => decline()} onCancel={() => setAskNo(false)} />
+  )
   const primary: React.CSSProperties = {
     width: '100%', minHeight: 50, marginTop: 12, border: 'none', borderRadius: 999, background: '#0C8F7E', color: '#fff',
     fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, cursor: 'pointer', opacity: busy ? .7 : 1,
@@ -99,8 +107,9 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
         <button type="button" style={second} disabled={!!busy} onClick={sendCode}>
           {busy === 'code' ? 'Envoi…' : shown ? 'Renvoyer le code' : 'Ou : envoyer un code de validation'}
         </button>
-        <button type="button" style={{ ...second, color: '#B3402F', marginTop: 0 }} disabled={!!busy} onClick={decline}>Ce n’est pas normal</button>
+        <button type="button" style={{ ...second, color: '#B3402F', marginTop: 0 }} disabled={!!busy} onClick={() => setAskNo(true)}>Ce n’est pas normal</button>
         {err && <p role="status" style={{ marginTop: 6, fontSize: 12, color: '#B3402F' }}>{err}</p>}
+        {sheet}
       </div>
     )
   }
@@ -120,8 +129,9 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
       {!shown && <p style={{ fontSize: 12.5, color: '#3d5560', margin: '4px 0 0', lineHeight: 1.5 }}>Envoyez votre code de fin : {pn} le saisit pour clôturer. La facture suit.</p>}
       {!shown && <button type="button" style={primary} disabled={!!busy} onClick={sendCode}>{busy === 'code' ? 'Envoi…' : 'Envoyer mon code de fin'}</button>}
       {codeBlock}
-      <button type="button" style={{ ...second, color: '#B3402F' }} disabled={!!busy} onClick={decline}>Contester</button>
+      <button type="button" style={{ ...second, color: '#B3402F' }} disabled={!!busy} onClick={() => setAskNo(true)}>Contester</button>
       {err && <p role="status" style={{ marginTop: 6, fontSize: 12, color: '#B3402F' }}>{err}</p>}
+      {sheet}
     </div>
   )
 }

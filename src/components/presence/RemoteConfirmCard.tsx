@@ -2,12 +2,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import ConfirmSheet from '@/components/ConfirmSheet'
 import { EUR } from '@/lib/invoice-pdf'
 import { clientConfirmPresence, clientDeclinePresence, durLabel, type Phase, type RemoteRequest } from '@/lib/presence'
 
 const hhmm = (d: string) => new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 
-function ask(q: string) { try { return window.confirm(q) } catch { return true } }
 
 /**
  * Client absent : le prestataire a envoyé sa position et attend. Un appui suffit pour confirmer ; le code reste
@@ -20,6 +20,7 @@ export default function RemoteConfirmCard({ txId, phase, req, onDone }: {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [showCode, setShowCode] = useState(false)
+  const [askNo, setAskNo] = useState(false)
   const p = req.preview
 
   async function confirm() {
@@ -30,13 +31,21 @@ export default function RemoteConfirmCard({ txId, phase, req, onDone }: {
     onDone()
   }
   async function decline() {
-    if (!ask(phase === 'arrivee' ? 'Indiquer que la présence du prestataire n’est pas normale ?' : 'Contester la fin annoncée ?')) return
     setBusy(true)
     const r = await clientDeclinePresence(createClient(), txId, phase)
-    setBusy(false)
+    setBusy(false); setAskNo(false)
     if (!r.ok) { setMsg(r.message || 'Action impossible.'); return }
     router.push(`/mission/${txId}/chat?signaler`)
   }
+
+  const sheet = (
+    <ConfirmSheet open={askNo} danger busy={busy}
+      title={phase === 'arrivee' ? 'Indiquer que la présence du prestataire n’est pas normale ?' : 'Contester la fin annoncée ?'}
+      text={phase === 'arrivee'
+        ? 'La demande du prestataire sera refusée et le signalement s’ouvrira dans la conversation, pour décrire ce qui ne va pas. Rien n’est validé sans vous.'
+        : 'La fin annoncée ne sera pas validée et le signalement s’ouvrira dans la conversation, pour expliquer votre désaccord. Le paiement reste en attente.'}
+      confirmLabel="Oui, signaler" cancelLabel="Non, revenir" onConfirm={() => decline()} onCancel={() => setAskNo(false)} />
+  )
 
   return (
     <div role="alert" style={{ background: '#FFF1EF', border: '2px solid #E5484D', borderRadius: 16, padding: 16 }}>
@@ -69,7 +78,7 @@ export default function RemoteConfirmCard({ txId, phase, req, onDone }: {
             {showCode ? 'Masquer le code' : 'Code à lui dicter'}
           </button>
         )}
-        <button onClick={decline} disabled={busy} style={{ flex: 1, border: '1px solid #E5484D', background: '#fff', color: '#B3402F', borderRadius: 999, padding: '9px 0', minHeight: 44, fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+        <button onClick={() => setAskNo(true)} disabled={busy} style={{ flex: 1, border: '1px solid #E5484D', background: '#fff', color: '#B3402F', borderRadius: 999, padding: '9px 0', minHeight: 44, fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
           {phase === 'arrivee' ? 'Ce n’est pas normal' : 'Contester'}
         </button>
       </div>
@@ -80,6 +89,7 @@ export default function RemoteConfirmCard({ txId, phase, req, onDone }: {
         </div>
       )}
       {msg && <div role="status" style={{ marginTop: 8, fontSize: 12, color: '#B3402F' }}>{msg}</div>}
+      {sheet}
     </div>
   )
 }

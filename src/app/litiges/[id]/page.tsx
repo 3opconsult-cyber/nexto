@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
 import { filterMessage } from '@/lib/chatFilter'
-import { categoryLabel } from '@/components/DisputeFields'
+import { categoryLabel } from '@/lib/dispute'
 import AmicableSettlement from '@/components/AmicableSettlement'
 import { notifyOther } from '@/lib/notify'
 

@@ -29,6 +29,7 @@ export default function DepartureBar({
 }: { tx: any; userId: string; onChange: (t: any) => void; address?: string | null; confirmed?: boolean }) {
   const router = useRouter()
   const [ask, setAsk] = useState(false)
+  const [depErr, setDepErr] = useState('')
   const [eta, setEta] = useState(DEFAULT_ETA)
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(() => Date.now())
@@ -66,15 +67,15 @@ export default function DepartureBar({
   }, [enRoute, inProgress])
 
   async function declareDeparture() {
-    setBusy(true)
+    setBusy(true); setDepErr('')
     const supabase = createClient()
     const at = new Date().toISOString()
     const { data, error } = await supabase.from('transactions')
       .update({ en_route_at: at, eta_minutes: eta }).eq('id', tx.id).select().single()
     if (error || !data) {
-      setBusy(false); setAsk(false)
-      // Migration 038 : « Je pars » refusé avant le jour du rendez-vous (message de la base).
-      alert(error?.message?.includes('jour même') ? error.message : 'Départ non enregistré — vérifiez votre connexion et réessayez.')
+      // Migration 038 : « Je pars » refusé avant le jour du rendez-vous (message de la base). Message dans la fenêtre, pas d'alerte du navigateur.
+      setBusy(false)
+      setDepErr(error?.message?.includes('jour même') ? error.message : 'Départ non enregistré — vérifiez votre connexion et réessayez.')
       return
     }
     saveLastEta(eta)
@@ -119,7 +120,7 @@ export default function DepartureBar({
             // Dernière durée choisie présélectionnée (correction 5 du 19/11 ter), relevée si la distance l'exige.
             const v = readLastEta(ETAS)
             setEta(minPlausibleMin != null && v < minPlausibleMin ? (ETAS.find(x => x >= minPlausibleMin) ?? ETAS[ETAS.length - 1]) : v)
-            setAsk(true)
+            setDepErr(''); setAsk(true)
           }} style={{
             width: '100%', border: 'none', borderRadius: 999, padding: '11px 0', cursor: 'pointer',
             background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif',
@@ -158,6 +159,7 @@ export default function DepartureBar({
               )
             })}
           </div>
+          {depErr && <p role="alert" style={{ fontSize: 12.5, color: '#B3402F', fontWeight: 600, margin: '12px 0 0', lineHeight: 1.5 }}>{depErr}</p>}
           <div style={{ height: 10 }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 10 }}>
             <Cta onClick={declareDeparture} disabled={busy}>

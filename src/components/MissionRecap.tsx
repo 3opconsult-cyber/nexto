@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
 import { proofLabel } from '@/lib/presence'
 import { TRADES } from '@/lib/trades'
-import { CLIENT_TAGS } from './ClientReviewModal'
+import { CLIENT_TAGS } from '@/lib/clientTags'
 import { TRANSFER_STATUS, TRANSFER_LABEL, transferDue, transferState, transfersFor, type Transfer } from '@/lib/transfers'
 import AmicableSettlement, { type SettlementDispute } from '@/components/AmicableSettlement'
 

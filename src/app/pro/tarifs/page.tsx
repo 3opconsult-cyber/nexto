@@ -7,6 +7,7 @@ import PricingEditor from '@/components/PricingEditor'
 import { TRADES, tradeOfServiceName } from '@/lib/trades'
 import { useCatalog } from '@/lib/catalog'
 import RetourLink from '@/components/RetourLink'
+import ConfirmSheet from '@/components/ConfirmSheet'
 import { type PricingDraft, draftFromColumns, emptyDraft, pricingShort, pricingSummary, toColumns, validateDraft } from '@/lib/servicePricing'
 import {
   type Prestation, fetchPrestations, prestationName, prestationPhotoUrl, removePrestationPhoto, uploadPrestationPhoto,
@@ -69,6 +70,7 @@ export default function ProTarifsPage() {
   const [showErr, setShowErr] = useState(false)
   const [saving, setSaving] = useState(false)
   const [sheetError, setSheetError] = useState('')
+  const [askRemove, setAskRemove] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   async function load() {
@@ -187,7 +189,7 @@ export default function ProTarifsPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Retirer cette prestation de votre catalogue ? Les clients ne pourront plus la réserver.' + (ext ? ' (Pour la retirer seulement un temps, masquez-la.)' : ''))) return
+    setAskRemove(null)
     const supabase = createClient()
     const r = rows.find(x => x.id === id)
     const { error: delErr } = await supabase.from('services').delete().eq('id', id)
@@ -371,7 +373,7 @@ export default function ProTarifsPage() {
                 visible, sans défiler sous le formulaire de prix. */}
             <div style={{ display: 'flex', gap: 8, position: 'sticky', bottom: -20, zIndex: 2, margin: '18px -20px -20px', padding: '12px 20px calc(16px + env(safe-area-inset-bottom, 0px))', background: '#fff', borderTop: '1px solid #EEF2F1' }}>
               {editing.kind === 'row' && (
-                <button type="button" onClick={() => remove(editing.id)}
+                <button type="button" onClick={() => setAskRemove(editing.id)}
                   style={{ minHeight: 48, padding: '12px 16px', borderRadius: 999, border: '1.5px solid #F3D3CC', background: '#fff', color: '#c0503a', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Retirer</button>
               )}
               <button type="button" onClick={close}
@@ -384,6 +386,9 @@ export default function ProTarifsPage() {
           </div>
         </div>
       )}
+      <ConfirmSheet open={!!askRemove} danger title="Retirer cette prestation de votre catalogue ?"
+        text={'Les clients ne pourront plus la réserver.' + (ext ? ' Pour la retirer seulement un temps, masquez-la plutôt.' : '')}
+        confirmLabel="Oui, retirer" cancelLabel="Non, garder" onConfirm={() => askRemove && remove(askRemove)} onCancel={() => setAskRemove(null)} />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import ConfirmSheet from '@/components/ConfirmSheet'
 import { TRANSFER_STATUS, transferState, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
 
 // Séquestre — vue OpConsult. Règle antifraude : l'argent ne sort du séquestre que sur décision de PING
@@ -41,6 +42,7 @@ function Virements() {
   const [bank, setBank] = useState({ iban: '', bic: '', beneficiary: '' })
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState('')
+  const [dlg, setDlg] = useState<{ kind: 'recu' | 'non'; t: Row } | null>(null)
 
   async function load() {
     let q = db.from('transfer_payments').select('*, invoices!transfer_payments_invoice_id_fkey(client_snapshot)').order('due_at').limit(300)
@@ -74,9 +76,7 @@ function Virements() {
   }
 
   // « Non reçu » côté PING (frais de service, commission) : le payeur est prévenu dans la conversation de la mission.
-  async function notReceived(t: Row) {
-    const note = prompt(`Virement ${t.reference} annoncé mais absent du relevé PING. Précision pour le payeur (facultatif) :`, '')
-    if (note === null) return
+  async function notReceived(t: Row, note: string) {
     setBusy(t.id)
     const { error } = await db.rpc('transfer_report_not_received', { p_transfer: t.id, p_note: note.trim() || null })
     setBusy(''); setMsg(error ? 'Échec : ' + error.message : `${t.reference} : le payeur est prévenu dans la conversation.`)
@@ -84,7 +84,6 @@ function Virements() {
   }
 
   async function received(t: Row) {
-    if (!confirm(`Noter reçu le virement ${t.reference} de ${eur(t.amount_cents)} ? Vérifiez d’abord qu’il apparaît sur le relevé du compte PING.`)) return
     setBusy(t.id)
     const { error } = await db.from('transfer_payments').update({ status: 'recu' }).eq('id', t.id)
     setBusy(''); setMsg(error ? 'Échec : ' + error.message : `${t.reference} noté reçu.`)
@@ -138,18 +137,27 @@ function Virements() {
             </div>
             <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: s.bg, color: s.fg }}>{s.t}</span>
             {t.payee === 'ping' && t.status !== 'recu' && (
-              <button disabled={busy === t.id} onClick={() => received(t)} style={btn('#0C8F7E')}>Reçu</button>
+              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#0C8F7E')}>Reçu</button>
             )}
             {t.payee === 'ping' && t.declared_at && t.status !== 'recu' && 'not_received_at' in t && transferState(t) !== 'non_recu' && (
-              <button disabled={busy === t.id} onClick={() => notReceived(t)} style={btn('#c0503a')}>Non reçu</button>
+              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'non', t })} style={btn('#c0503a')}>Non reçu</button>
             )}
             {t.payee === 'pro' && t.not_received_at && t.status !== 'recu' && (
-              <button disabled={busy === t.id} onClick={() => received(t)} style={btn('#6E8592')}>Trancher : reçu</button>
+              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#6E8592')}>Trancher : reçu</button>
             )}
             <a href={`/mission/${t.transaction_id}/facture`} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E' }}>Mission</a>
           </div>
         )
       })}
+      <ConfirmSheet open={!!dlg} busy={!!busy}
+        title={dlg?.kind === 'recu' ? `Noter reçu le virement ${dlg.t.reference} ?` : `Virement ${dlg?.t.reference ?? ''} absent du relevé ?`}
+        text={dlg?.kind === 'recu'
+          ? `Montant : ${eur(dlg.t.amount_cents)}. Vérifiez d’abord qu’il apparaît sur le relevé du compte PING.`
+          : 'Le payeur sera prévenu dans la conversation de la mission. Vous pouvez ajouter une précision pour lui.'}
+        input={dlg?.kind === 'non' ? { label: 'Précision pour le payeur (facultatif)' } : undefined}
+        confirmLabel={dlg?.kind === 'recu' ? 'Oui, noter reçu' : 'Prévenir le payeur'} cancelLabel="Annuler"
+        onConfirm={v => { const d0 = dlg; setDlg(null); if (!d0) return; if (d0.kind === 'recu') received(d0.t); else notReceived(d0.t, v) }}
+        onCancel={() => setDlg(null)} />
     </div>
   )
 }
@@ -158,6 +166,7 @@ export default function AdminPaiementsPage() {
   const [d, setD] = useState<Data | null>(null)
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState('')
+  const [dlg, setDlg] = useState<{ title: string; text?: string; input?: { label: string; inputMode?: 'decimal' }; label: string; run: (v: string) => void } | null>(null)
 
   async function load() {
     const r = await fetch('/api/payments/admin')
@@ -165,8 +174,10 @@ export default function AdminPaiementsPage() {
   }
   useEffect(() => { load() }, [])
 
-  async function act(path: string, body: Record<string, unknown>, confirmText: string) {
-    if (!confirm(confirmText)) return
+  function act(path: string, body: Record<string, unknown>, confirmText: string) {
+    setDlg({ title: confirmText, label: 'Confirmer', run: () => doAct(path, body) })
+  }
+  async function doAct(path: string, body: Record<string, unknown>) {
     setBusy(String(body.transactionId ?? body.providerId ?? body.alertId)); setMsg('')
     const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const j = await r.json().catch(() => ({}))
@@ -176,12 +187,20 @@ export default function AdminPaiementsPage() {
   }
 
   function refund(m: Mission) {
-    const v = prompt(`Montant à rembourser au client (en €, payé : ${eur(m.payeCents)}). Laisser vide = tout.`, '')
-    if (v === null) return
-    const cents = v.trim() ? Math.round(Number(v.replace(',', '.')) * 100) : undefined
-    if (cents !== undefined && !(cents > 0)) { setMsg('Montant invalide'); return }
-    act('/api/payments/refund', { transactionId: m.id, montantCents: cents, motif: 'Décision PING' }, `Rembourser ${cents ? eur(cents) : 'la totalité'} au client ?`)
+    setDlg({
+      title: 'Rembourser le client ?', text: `Payé : ${eur(m.payeCents)}. Laisser vide pour tout rembourser.`,
+      input: { label: 'Montant à rembourser (en €)', inputMode: 'decimal' }, label: 'Continuer',
+      run: v => {
+        const cents = v.trim() ? Math.round(Number(v.replace(',', '.')) * 100) : undefined
+        if (cents !== undefined && !(cents > 0)) { setMsg('Montant invalide'); return }
+        act('/api/payments/refund', { transactionId: m.id, montantCents: cents, motif: 'Décision PING' }, `Rembourser ${cents ? eur(cents) : 'la totalité'} au client ?`)
+      },
+    })
   }
+  const dialog = (
+    <ConfirmSheet open={!!dlg} danger title={dlg?.title ?? ''} text={dlg?.text} input={dlg?.input} confirmLabel={dlg?.label} cancelLabel="Annuler"
+      onConfirm={v => { const d0 = dlg; setDlg(null); d0?.run(v) }} onCancel={() => setDlg(null)} />
+  )
 
   const box = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 16, marginBottom: 14 }
   if (!d) return <div style={{ padding: 40, fontFamily: 'Inter, sans-serif', color: '#4E6470' }}>Chargement…</div>
@@ -191,6 +210,7 @@ export default function AdminPaiementsPage() {
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 24, margin: '0 0 12px' }}>Paiements</h1>
         <Virements />
         <p style={{ fontSize: 12.5, color: '#c0503a' }}>Séquestre : {d.error || 'indisponible'}</p>
+        {dialog}
       </div>
     </div>
   )
@@ -293,6 +313,7 @@ export default function AdminPaiementsPage() {
           </div>
         )))}
       </div>
+      {dialog}
     </div>
   )
 }
