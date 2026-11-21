@@ -272,7 +272,7 @@ async function scenario(browser, sbC, label, absent) {
     await btn(pp, /Envoyer la photo à/).click()
     await waitText(pp, /En attente de|Photo envoyée/, { timeout: 15000 })
     pj = await text(pp)
-    log('pro : photo envoyée, en attente du client', (pj.match(/Position relevée une fois[^.]*\./) || [''])[0], /En attente de/.test(pj))
+    log('pro : photo envoyée, en attente du client', (pj.match(/Position relevée une fois[^.]*\./) || [''])[0], /En attente de|Photo envoyée/.test(pj))
     await shot(pp, `${tag}-07-pro-photo-envoyee`)
     // Messagerie du client : la photo, la distance et l'heure
     await go(cp, `/mission/${tx}/chat`, 4000)
