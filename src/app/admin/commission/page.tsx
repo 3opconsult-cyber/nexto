@@ -22,6 +22,7 @@ export default function AdminCommissionPage() {
   const [noShowMin, setNoShowMin] = useState('30')
   const [silenceH, setSilenceH] = useState('2')
   const [alertN, setAlertN] = useState('3')
+  const [reschH, setReschH] = useState('24')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -35,7 +36,7 @@ export default function AdminCommissionPage() {
       setAuthed(isAdmin)
       if (!isAdmin) { setLoading(false); return }
       const { data } = await supabase.from('app_settings').select('key, value')
-        .in('key', ['commission_buyer_rate', 'commission_seller_rate', 'billing_hour_threshold_minutes', 'cancel_free_minutes', 'no_show_minutes', 'client_silence_hours', 'provider_cancel_alert_threshold'])
+        .in('key', ['commission_buyer_rate', 'commission_seller_rate', 'billing_hour_threshold_minutes', 'cancel_free_minutes', 'no_show_minutes', 'client_silence_hours', 'provider_cancel_alert_threshold', 'reschedule_free_hours'])
       const byKey: Record<string, number> = {}
       ;(data ?? []).forEach((r: any) => { byKey[r.key] = Number(r.value) })
       setBuyer(String((byKey.commission_buyer_rate ?? 0.08) * 100))
@@ -45,6 +46,7 @@ export default function AdminCommissionPage() {
       setNoShowMin(String(byKey.no_show_minutes ?? 30))
       setSilenceH(String(byKey.client_silence_hours ?? 2))
       setAlertN(String(byKey.provider_cancel_alert_threshold ?? 3))
+      setReschH(String(byKey.reschedule_free_hours ?? 24))
       setLoading(false)
     })
   }, [])
@@ -57,11 +59,12 @@ export default function AdminCommissionPage() {
     }
     const thr = Number(threshold)
     if (!Number.isInteger(thr) || thr < 0 || thr > 59) { setError('Le seuil doit être un nombre entier de minutes entre 0 et 59.'); return }
-    const fm = Number(freeMin), nm = Number(noShowMin), sh = Number(silenceH.replace(',', '.')), an = Number(alertN)
+    const fm = Number(freeMin), nm = Number(noShowMin), sh = Number(silenceH.replace(',', '.')), an = Number(alertN), rh = Number(reschH.replace(',', '.'))
     if (!Number.isInteger(fm) || fm < 0 || fm > 240) { setError('Le délai d\u2019annulation sans motif doit être un nombre entier de minutes entre 0 et 240.'); return }
     if (!Number.isInteger(nm) || nm < 5 || nm > 240) { setError('Le délai d\u2019absence du prestataire doit être un nombre entier de minutes entre 5 et 240.'); return }
     if (!(sh >= 0.5 && sh <= 48)) { setError('Le délai de silence du client doit être entre 0,5 et 48 heures.'); return }
     if (!Number.isInteger(an) || an < 1 || an > 50) { setError('Le seuil d\u2019alerte doit être un nombre entier entre 1 et 50.'); return }
+    if (!(rh >= 0 && rh <= 240)) { setError('Le délai de report gratuit doit être entre 0 et 240 heures.'); return }
     setError(''); setSaving(true); setSaved(false)
     const supabase = createClient()
     const { error: err } = await supabase.from('app_settings').upsert([
@@ -72,6 +75,7 @@ export default function AdminCommissionPage() {
       { key: 'no_show_minutes', value: nm },
       { key: 'client_silence_hours', value: sh },
       { key: 'provider_cancel_alert_threshold', value: an },
+      { key: 'reschedule_free_hours', value: rh },
     ])
     setSaving(false)
     if (err) { setError("Échec de l'enregistrement — vérifiez que vous êtes bien connecté en admin."); return }
@@ -149,6 +153,7 @@ export default function AdminCommissionPage() {
               ['Annulation du client avec motif sérieux possible jusqu\u2019à (avant l\u2019heure du rendez-vous)', freeMin, setFreeMin, 'minutes', 'Prestataire en route : au-delà de ce délai, le client doit donner un motif réel (maladie, urgence, accident). À moins de ce délai, ou prestataire arrivé : 100 % de la prestation et des frais de service sont facturés.'],
               ['Prestataire absent : déclaration possible après', noShowMin, setNoShowMin, 'minutes', 'Après l\u2019heure du rendez-vous, sans arrivée : le client annule sans frais, remboursement à 100 %, PING est alerté.'],
               ['Client sans réponse : clôture sur preuve possible après', silenceH, setSilenceH, 'heures', 'Photo d\u2019arrivée ou code de fin resté sans réponse : le prestataire peut clôturer sur preuve ; facturée normalement, litige possible 24 h.'],
+              ['Report de rendez-vous gratuit jusqu\u2019à', reschH, setReschH, 'heures avant', 'Au-delà, l\u2019autre partie doit accepter ; moins de ce délai, le report demande son accord et sinon seule l\u2019annulation (avec ses règles) reste possible.'],
               ['Alerte PING au-delà de (annulations d\u2019un prestataire sur 30 jours)', alertN, setAlertN, 'annulations', 'Compteur par prestataire dans l\u2019admin (Annulations) et alerte « provider_cancellations ».'],
             ] as [string, string, (v: string) => void, string, string][]).map(([label, val, set, unit, help]) => (
               <label key={label} style={{ display: 'block', marginTop: 12 }}>
