@@ -55,3 +55,4 @@ Règle : toute ligne non vérifiée depuis 60 jours devient « à revérifier »
 ## Données de test restantes (à nettoyer avec accord)
 - Missions « QA ergo ... » et « QA parcours ... » (annulées, litiges ouverts, une avec frais totaux et 3 documents) ; comptes `audit.*` et `qa.*` ; prestataires Fictif 1 à 19 ; données « Exemple -- » du compte de Romain.
 - Scripts de nettoyage : `supabase/a_coller/nettoyage_donnees_fictives.sql` (contient DELETE : confirmation humaine requise, ne jamais lancer sans accord).
+- 21/11/2026 : première passe des 5 critiques faite (propositions A-021 à A-040 dans AMELIORATIONS.md) ; correctifs faits : events.path nettoyé (73bf766), Messages vide, cartes de présence 44 px (non vérifiés à l'écran). 2 déploiements de production par push confirmés (A-036).
