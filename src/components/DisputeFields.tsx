@@ -1,61 +1,8 @@
 "use client"
 import { useState } from 'react'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { DISPUTE_CATEGORIES, MAX_PHOTOS, MAX_BYTES, TYPES, type DisputeExtra } from '@/lib/dispute'
 
-/**
- * Champs structurés d'un litige (motif, montant réclamé, jusqu'à 3 photos) + enregistrement.
- * Utilisé par la fenêtre « Signaler un problème » du chat. Les photos vont dans le bucket privé
- * `dispute-photos`, chemin `<uid>/<id du litige>/<fichier>` (migration 030) : l'autre partie et PING
- * les lisent par URL signée. La date cible de réponse (48 h) est posée par la base, pas par le client.
- */
-export const DISPUTE_CATEGORIES: { key: string; label: string }[] = [
-  { key: 'non_realisee', label: 'Prestation non réalisée' },
-  { key: 'qualite', label: 'Qualité insuffisante' },
-  { key: 'casse', label: 'Dégât ou casse' },
-  { key: 'retard_absence', label: 'Retard ou absence' },
-  { key: 'montant', label: 'Montant contesté' },
-  { key: 'autre', label: 'Autre' },
-]
-export const categoryLabel = (k: string | null | undefined) => DISPUTE_CATEGORIES.find(c => c.key === k)?.label ?? null
-
-export type DisputeExtra = { category: string; amount: string; photos: File[] }
-export const EMPTY_DISPUTE: DisputeExtra = { category: '', amount: '', photos: [] }
-
-const MAX_PHOTOS = 3
-const MAX_BYTES = 10 * 1024 * 1024
-const TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
-
-/** Montant saisi en euros (« 25 », « 25,50 ») → centimes, null si vide ou invalide. */
-export function amountToCents(v: string): number | null {
-  const n = Number(v.replace(',', '.').replace(/\s/g, ''))
-  return v.trim() && isFinite(n) && n >= 0 ? Math.round(n * 100) : null
-}
-
-/** Ouvre le litige : photos d'abord (l'id du litige est choisi ici pour fixer leur chemin), puis la ligne. */
-export async function createDispute(
-  supabase: SupabaseClient,
-  p: { transactionId: string; userId: string; reason: string; extra: DisputeExtra },
-): Promise<{ id: string } | { error: string }> {
-  const id = crypto.randomUUID()
-  const paths: string[] = []
-  for (let i = 0; i < p.extra.photos.length; i++) {
-    const f = p.extra.photos[i]
-    const path = `${p.userId}/${id}/${Date.now()}-${i}.${EXT[f.type] || 'jpg'}`
-    const { error } = await supabase.storage.from('dispute-photos').upload(path, f, { contentType: f.type })
-    if (error) return { error: 'Une photo n’a pas pu être envoyée. Réessayez, ou retirez-la.' }
-    paths.push(path)
-  }
-  const { error } = await supabase.from('disputes').insert({
-    id, transaction_id: p.transactionId, opener_id: p.userId, reason: p.reason,
-    category: p.extra.category || null,
-    claimed_cents: amountToCents(p.extra.amount),
-    photo_paths: paths,
-  })
-  if (error) return { error: /délai|déjà été versé/i.test(error.message || '') ? error.message : 'Le litige n’a pas pu être enregistré. Réessayez, ou écrivez à info@opconsult.co.' }
-  return { id }
-}
-
+/** Champs structurés d'un litige (voir src/lib/dispute.ts pour l'enregistrement). */
 const label: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 6px' }
 
 export default function DisputeFields({ value, onChange }: { value: DisputeExtra; onChange: (v: DisputeExtra) => void }) {

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
-import { amountToCents } from '@/components/DisputeFields'
+import { amountToCents } from '@/lib/dispute'
 
 /**
  * Arrangement à l'amiable (décision Romain du 18/11/2026, migration 040).

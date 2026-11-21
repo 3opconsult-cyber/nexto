@@ -6,16 +6,21 @@ import RequestDetails from '@/components/RequestDetails'
 import AddressChoice, { resolveAddress, type AddressValue } from '@/components/AddressChoice'
 import { maskAddress, addressUsable } from '@/lib/address'
 import { useParams, useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
 import { markRead } from '@/lib/unread'
 import { notifyOther } from '@/lib/notify'
 import { incidentOpen, incidentDeadlineLabel, INCIDENT_WINDOW_H } from '@/lib/incident'
-import DisputeFields, { createDispute, EMPTY_DISPUTE, type DisputeExtra } from '@/components/DisputeFields'
-import ReviewModal from '@/components/ReviewModal'
-import ClientReviewModal, { CLIENT_TAGS } from '@/components/ClientReviewModal'
+import { createDispute, EMPTY_DISPUTE, type DisputeExtra } from '@/lib/dispute'
+import { CLIENT_TAGS } from '@/lib/clientTags'
 import DepartureBar from '@/components/DepartureBar'
-import MissionActions, { CancelSheet } from '@/components/MissionActions'
+import MissionActions from '@/components/MissionActions'
+// Fenêtres rarement ouvertes : chargées à l'ouverture seulement (A-034), montées sans flash car jamais visibles avant.
+const DisputeFields = dynamic(() => import('@/components/DisputeFields'), { ssr: false })
+const ReviewModal = dynamic(() => import('@/components/ReviewModal'), { ssr: false })
+const ClientReviewModal = dynamic(() => import('@/components/ClientReviewModal'), { ssr: false })
+const CancelSheet = dynamic(() => import('@/components/MissionSheets').then(m => m.CancelSheet), { ssr: false })
 import MissionRecap from '@/components/MissionRecap'
 import { filterMessage } from '@/lib/chatFilter'
 import { getRates } from '@/lib/pricing'
@@ -693,7 +698,7 @@ export default function ChatPage() {
           cancelRequest={cancelOpen} onCancelClose={() => setCancelOpen(false)} />
       )}
       {tx && userId && tx.buyer_id === tx.seller_id && (
-        <CancelSheet tx={tx} userId={userId} open={cancelOpen} onClose={() => setCancelOpen(false)} onDone={patch => setTx((t: any) => ({ ...t, ...patch }))} />
+        cancelOpen && <CancelSheet tx={tx} userId={userId} open onClose={() => setCancelOpen(false)} onDone={patch => setTx((t: any) => ({ ...t, ...patch }))} />
       )}
 
       {/* Récapitulatif de la demande : ce que le client a demandé, visible des deux côtés. */}
@@ -832,7 +837,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      {tx && userId && (
+      {tx && userId && askReview && (
         <ReviewModal
           open={askReview}
           onClose={() => setAskReview(false)}
@@ -844,7 +849,7 @@ export default function ChatPage() {
         />
       )}
 
-      {tx && userId && userId === tx.seller_id && (
+      {tx && userId && userId === tx.seller_id && askClientReview && (
         <ClientReviewModal
           open={askClientReview}
           onClose={() => setAskClientReview(false)}
