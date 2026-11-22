@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient, hasServiceRole } from '@/lib/supabase/admin'
 import { sweepBookings } from '@/lib/bookingsServer'
-import { sendControlAlert, sendDocumentAlerts } from '@/lib/notifyServer'
+import { sendControlAlert, sendDocumentAlerts, sendPaymentAlerts } from '@/lib/notifyServer'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +29,10 @@ export async function GET(req: Request) {
     // 5. contrôles de nuit (061) : e-mail court à PING seulement s'il y a du rouge, une seule fois.
     let controles: Record<string, unknown> = {}
     try { controles = await sendControlAlert(db) } catch (e) { controles = { erreur: (e as Error).message } }
-    return NextResponse.json({ actif: true, ...out, pieces, controles })
+    // 6. alertes d'argent et de litige (062) : un e-mail court à PING pour les cas graves, une seule fois par alerte.
+    let alertes: Record<string, unknown> = {}
+    try { alertes = await sendPaymentAlerts(db) } catch (e) { alertes = { erreur: (e as Error).message } }
+    return NextResponse.json({ actif: true, ...out, pieces, controles, alertes })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message || 'Erreur.' }, { status: 500 })
   }

@@ -174,6 +174,11 @@ export default function ChatPage() {
   const [insuranceErr, setInsuranceErr] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const meRef = useRef<string | null>(null)
+  // Chat en direct (22/11) : ids déjà affichés (un message reçu par Realtime ET par la relecture n'apparaît qu'une fois),
+  // date du dernier message (la relecture ne lit que ce qui est plus récent) et relecture appelable après un envoi.
+  const seenIdsRef = useRef<Set<string>>(new Set())
+  const lastAtRef = useRef<string | null>(null)
+  const refreshRef = useRef<(() => Promise<void>) | null>(null)
 
   // Raccourcis depuis l'écran QR : ?signaler ouvre le signalement, ?avis l'avis (client, mission terminée).
   const shortcutDone = useRef(false)
@@ -202,6 +207,8 @@ export default function ChatPage() {
 
   useEffect(() => {
     const supabase = createClient()
+    // Autre conversation (même écran réutilisé) : on repart de zéro.
+    seenIdsRef.current = new Set(); lastAtRef.current = null; setMsgs([])
     async function init() {
       // Audit ergonomie 21/11 : lecture en cascade (7 allers-retours l'un après l'autre) remplacée par des lectures
       // simultanées. Session locale (aucun appel réseau) ; l'expiration des réservations part en parallèle (le délai
@@ -220,7 +227,10 @@ export default function ChatPage() {
       expireBookings(supabase, uid)
       const { data } = await msgsP
       const loaded = (data ?? []) as Msg[]
-      setMsgs(loaded)
+      // Un message arrivé en direct pendant la lecture initiale est gardé (pas écrasé), sans doublon.
+      const loadedIds = new Set(loaded.map(m => m.id))
+      setMsgs(prev => [...loaded, ...prev.filter(m => !loadedIds.has(m.id))])
+      loaded.forEach(m => { seenIdsRef.current.add(m.id); noteAt(m.created_at) })
       if (user) markRead(supabase, user.id, transactionId, loaded.length ? loaded[loaded.length - 1].created_at : null)
       resolvePhotoUrls(loaded)
       const { data: t } = await txP
@@ -273,29 +283,69 @@ export default function ChatPage() {
       }
     }
 
+    function noteAt(at: string | null | undefined) {
+      if (at && (!lastAtRef.current || at > lastAtRef.current)) lastAtRef.current = at
+    }
+
+    // Nouveau message (Realtime ou relecture) : affiché une seule fois, puis mêmes suites qu'avant.
+    function onIncoming(m: Msg) {
+      if (!m?.id || seenIdsRef.current.has(m.id)) return
+      seenIdsRef.current.add(m.id)
+      noteAt(m.created_at)
+      setMsgs(prev => prev.some(x => x.id === m.id) ? prev : [...prev, m])
+      // Conversation ouverte : le message de l'autre est lu à l'instant.
+      if (meRef.current && m.sender_id !== meRef.current) markRead(supabase, meRef.current, transactionId, m.created_at)
+      if (m.photo_path) resolvePhotoUrls([m])
+      // Présence annoncée, photo d'arrivée, code envoyé : l'état de la mission du jour suit le fil.
+      if (isSystemMessage(m) || /^(Code de validation|Mon code de fin)/.test(m.body || '')) setMsgTick(t => t + 1)
+      // Réservation acceptée / refusée / expirée (052) : l'état de la réservation suit le fil, sans recharger.
+      if (isSystemMessage(m) && /^[✓✕] Réservation (acceptée|refusée|expirée)/.test(m.body || '')) {
+        supabase.from('transactions').select('booking_status, accepted_at, refused_at, expired_at, refusal_reason, status')
+          .eq('id', transactionId).maybeSingle()
+          .then(({ data: b }) => { if (b) setTx((t: any) => t ? { ...t, ...b } : t) })
+      }
+    }
+
+    // Relecture légère : une seule requête, seulement les messages depuis le dernier affiché (au plus 50).
+    let refreshing = false
+    async function refresh() {
+      if (refreshing) return
+      refreshing = true
+      try {
+        let q = supabase.from('messages').select('*').eq('transaction_id', transactionId)
+        if (lastAtRef.current) q = q.gte('created_at', lastAtRef.current)
+        const { data } = await q.order('created_at').limit(50)
+        ;((data ?? []) as Msg[]).forEach(onIncoming)
+      } catch { /* réseau coupé : nouvel essai au prochain tour */ } finally { refreshing = false }
+    }
+    refreshRef.current = refresh
+
+    // Repli si la connexion Realtime est coupée (refus, délai dépassé, fermée) : relecture toutes les 20 s,
+    // seulement quand l'onglet est visible. Retour sur l'onglet : une relecture (le téléphone a pu couper la connexion).
+    let live = false
+    const poll = setInterval(() => { if (!live && !document.hidden) refresh() }, 20000)
+    const onVisible = () => { if (!document.hidden) refresh() }
+    document.addEventListener('visibilitychange', onVisible)
+
     const channel = supabase.channel(`chat:${transactionId}`)
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `transaction_id=eq.${transactionId}` },
-        payload => {
-          const m = payload.new as Msg
-          setMsgs(prev => [...prev, m])
-          // Conversation ouverte : le message de l'autre est lu à l'instant.
-          if (meRef.current && m.sender_id !== meRef.current) markRead(supabase, meRef.current, transactionId, m.created_at)
-          if (m.photo_path) resolvePhotoUrls([m])
-          // Présence annoncée, photo d'arrivée, code envoyé : l'état de la mission du jour suit le fil.
-          if (isSystemMessage(m) || /^(Code de validation|Mon code de fin)/.test(m.body || '')) setMsgTick(t => t + 1)
-          // Réservation acceptée / refusée / expirée (052) : l'état de la réservation suit le fil, sans recharger.
-          if (isSystemMessage(m) && /^[✓✕] Réservation (acceptée|refusée|expirée)/.test(m.body || '')) {
-            supabase.from('transactions').select('booking_status, accepted_at, refused_at, expired_at, refusal_reason, status')
-              .eq('id', transactionId).maybeSingle()
-              .then(({ data: b }) => { if (b) setTx((t: any) => t ? { ...t, ...b } : t) })
-          }
-        })
+        payload => onIncoming(payload.new as Msg))
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages', filter: `transaction_id=eq.${transactionId}` },
         payload => setMsgs(prev => prev.map(m => m.id === payload.new.id ? payload.new as Msg : m)))
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
+      .subscribe(status => {
+        const wasLive = live
+        live = status === 'SUBSCRIBED'
+        // Reconnexion après une coupure : on rattrape ce qui est arrivé entre-temps.
+        if (live && !wasLive && lastAtRef.current) refresh()
+      })
+    return () => {
+      clearInterval(poll)
+      document.removeEventListener('visibilitychange', onVisible)
+      refreshRef.current = null
+      supabase.removeChannel(channel)
+    }
   }, [transactionId])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
@@ -317,6 +367,8 @@ export default function ChatPage() {
     notifyOther(transactionId, 'message')
     markFirstAction('message')
     setInput('')
+    // Le message envoyé s'affiche tout de suite, même si Realtime ne l'a pas encore renvoyé (sans doublon).
+    refreshRef.current?.()
   }
 
   // Client : demande l'attestation d'assurance du prestataire (message dans le fil + e-mail).

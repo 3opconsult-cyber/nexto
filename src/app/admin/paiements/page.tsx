@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import ConfirmSheet from '@/components/ConfirmSheet'
 import { TRANSFER_STATUS, transferState, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
+import { paymentAlertLabel, paymentAlertGrave, sortPaymentAlerts } from '@/lib/adminAlerts'
 
 // Séquestre — vue OpConsult. Règle antifraude : l'argent ne sort du séquestre que sur décision de PING
 // (versement automatique par la règle des 24 h, ou bouton ci-dessous ; remboursement par un admin).
@@ -23,12 +24,8 @@ type Data = {
 
 const eur = (c: number | null) => ((c ?? 0) / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 const STATUT: Record<string, string> = { held: 'Bloqué (payé)', complement_due: 'Complément dû', awaiting: 'Paiement en attente', failed: 'Paiement refusé' }
-const KIND: Record<string, string> = {
-  mandate_revoked: 'Mandat de prélèvement révoqué', mandate_failed: 'Mandat de prélèvement refusé', debit_rejected: 'Prélèvement de commission rejeté',
-  chargeback: 'Opposition d’un client', suspended: 'Compte suspendu', unsuspended: 'Suspension levée',
-  transfer_overdue: 'Commission par virement en retard',
-  transfer_not_received: 'Virement signalé non reçu', transfer_disagreement: 'Virement : désaccord, le payeur maintient',
-}
+// Libellés français de chaque alerte (migration 062, même vocabulaire que la base) : src/lib/adminAlerts.ts.
+const KIND = (k: string) => paymentAlertLabel(k)
 const btn = (bg: string) => ({ border: 'none', borderRadius: 999, padding: '7px 14px', background: bg, color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif' })
 
 // Virement SEPA (migration 025) : mode de paiement actuel. PING note ici les virements reçus sur SON
@@ -164,6 +161,8 @@ function Virements() {
 
 export default function AdminPaiementsPage() {
   const [d, setD] = useState<Data | null>(null)
+  // Migration 062 collée ? (pastilles et e-mail des alertes dans l'admin). null = pas encore su.
+  const [alerts062, setAlerts062] = useState<boolean | null>(null)
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState('')
   const [dlg, setDlg] = useState<{ title: string; text?: string; input?: { label: string; inputMode?: 'decimal' }; label: string; run: (v: string) => void } | null>(null)
@@ -171,6 +170,11 @@ export default function AdminPaiementsPage() {
   async function load() {
     const r = await fetch('/api/payments/admin')
     setD(await r.json().catch(() => null))
+    // Sonde de la migration 062 : sans elle, la liste ci-dessous reste lisible, seules la pastille et l'e-mail manquent.
+    try {
+      const p = await createClient().rpc('admin_alert_counts')
+      setAlerts062(!p.error)
+    } catch { setAlerts062(false) }
   }
   useEffect(() => { load() }, [])
 
@@ -260,18 +264,31 @@ export default function AdminPaiementsPage() {
               </div>
             ))}
             <div style={{ fontSize: 12, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '14px 0 6px' }}>Alertes à traiter</div>
-            {d.pareFeu.alertes.length === 0 ? <div style={{ fontSize: 13, color: '#4E6470' }}>Aucune.</div> : d.pareFeu.alertes.map(a => (
+            {alerts062 === false && (
+              <p style={{ fontSize: 12, color: '#8A6520', background: '#FFF7E6', borderRadius: 8, padding: '7px 10px', margin: '0 0 8px', lineHeight: 1.5 }}>
+                Migration 062 pas encore collée : ces alertes sont listées ici, mais l’accueil de l’administration n’affiche pas encore
+                de pastille et PING ne reçoit pas d’e-mail pour les cas graves.
+              </p>
+            )}
+            {d.pareFeu.alertes.length === 0 ? <div style={{ fontSize: 13, color: '#4E6470' }}>Aucune.</div> : sortPaymentAlerts(d.pareFeu.alertes).map(a => (
               <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #E7EDEB' }}>
                 <div style={{ fontSize: 13 }}>
-                  <b style={{ color: ['suspended', 'chargeback', 'debit_rejected', 'mandate_revoked'].includes(a.kind) ? '#c0503a' : '#123644' }}>{KIND[a.kind] || a.kind}</b>
+                  <b style={{ color: paymentAlertGrave(a.kind) ? '#c0503a' : '#123644' }}>{KIND(a.kind)}</b>
+                  {paymentAlertGrave(a.kind) && <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#FCE9E4', color: '#7A2E1E', marginLeft: 6 }}>Grave</span>}
                   {' · '}{a.provider_id ? a.nom : 'prestataire non retrouvé'} · {new Date(a.created_at).toLocaleString('fr-FR')}
                   {a.detail?.amountCents ? <span> · {eur(a.detail.amountCents)}</span> : null}
                   {a.detail?.reason && <div style={{ fontSize: 12, color: '#4E6470' }}>{a.detail.reason}</div>}
+                  {typeof a.detail?.reference === 'string' && <div style={{ fontSize: 12, color: '#4E6470' }}>Référence {a.detail.reference}</div>}
+                  {typeof a.detail?.transactionId === 'string' && (
+                    <div style={{ fontSize: 12 }}>
+                      <a href={`/mission/${a.detail.transactionId}/facture`} style={{ fontWeight: 700, color: '#0C8F7E' }}>Mission {a.detail.transactionId.slice(0, 8).toUpperCase()}</a>
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {a.provider_id && !['suspended', 'unsuspended'].includes(a.kind) && (
                     <button disabled={busy === a.provider_id} style={btn('#c0503a')}
-                      onClick={() => act('/api/payments/admin', { action: 'suspend', providerId: a.provider_id, reason: KIND[a.kind] || a.kind }, `Suspendre ${a.nom} (retrait de la carte, versements bloqués) ?`)}>Suspendre</button>
+                      onClick={() => act('/api/payments/admin', { action: 'suspend', providerId: a.provider_id, reason: KIND(a.kind) }, `Suspendre ${a.nom} (retrait de la carte, versements bloqués) ?`)}>Suspendre</button>
                   )}
                   <button disabled={busy === a.id} style={btn('#4E6470')}
                     onClick={() => act('/api/payments/admin', { action: 'handled', alertId: a.id }, 'Marquer cette alerte comme traitée ?')}>Traitée</button>

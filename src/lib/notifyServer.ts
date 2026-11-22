@@ -202,3 +202,54 @@ export async function sendControlAlert(admin: SupabaseClient): Promise<{ sent: b
   await admin.from('admin_notifications').update({ emailed_at: new Date().toISOString() }).in('id', (al.data as { id: string }[]).map(x => x.id))
   return { sent: true, rouge: rouges.length }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Alertes d'argent et de litige (migration 062). La base pose une ligne `admin_notifications` (kind 'payment_alert',
+// 'dispute_open', 'dispute_mediation') : c'est la pastille de l'admin. Ici, UN e-mail court à PING par passage du cron
+// quotidien, seulement pour les cas graves (detail.gravite = 'grave' : annulation après l'arrivée, prestataire absent,
+// désaccord sur un virement, compte suspendu, incidents du séquestre, intervention de PING demandée), une seule fois par
+// alerte (emailed_at). Contenu : le titre de chaque alerte (aucun nom, aucune note, aucune adresse) et un lien vers /admin.
+// Comptes de démonstration (.invalid) : l'alerte reste dans l'admin, sans e-mail. Éteint sans clé Resend, sans clé service
+// ou avant la migration 062.
+export async function sendPaymentAlerts(admin: SupabaseClient): Promise<{ sent: number; reason?: string; graves?: number }> {
+  const key = process.env.RESEND_API_KEY
+  if (!key || !hasServiceRole()) return { sent: 0, reason: 'off' }
+  const { data, error } = await admin.from('admin_notifications').select('id, user_id, kind, title')
+    .in('kind', ['payment_alert', 'dispute_mediation']).is('handled_at', null).is('emailed_at', null)
+    .eq('detail->>gravite', 'grave').order('created_at', { ascending: true }).limit(100)
+  if (error) return { sent: 0, reason: 'migration_062_absente' }
+  const rows = (data ?? []) as { id: string; user_id: string | null; kind: string; title: string }[]
+  if (rows.length === 0) return { sent: 0, reason: 'rien_a_envoyer', graves: 0 }
+  // Comptes de démonstration (.invalid) : pas d'e-mail.
+  const demo = new Map<string, boolean>()
+  const real: typeof rows = []
+  for (const r of rows) {
+    if (!r.user_id) { real.push(r); continue }
+    if (!demo.has(r.user_id)) {
+      const { data: u } = await admin.auth.admin.getUserById(r.user_id)
+      demo.set(r.user_id, /\.invalid$/i.test(u?.user?.email || ''))
+    }
+    if (!demo.get(r.user_id)) real.push(r)
+  }
+  const ids = rows.map(r => r.id)
+  if (real.length === 0) {
+    await admin.from('admin_notifications').update({ emailed_at: new Date().toISOString() }).in('id', ids)
+    return { sent: 0, reason: 'comptes_demo', graves: rows.length }
+  }
+  const to = (process.env.ADMIN_NOTIFY_EMAIL || '').trim() || ADMIN_NOTIFY_FALLBACK
+  const link = `${SITE}/admin`
+  const subject = real.length === 1 ? `PING : ${real[0].title}` : `PING : ${real.length} alertes graves à traiter`
+  const text = `${real.map(r => '- ' + r.title).join('\n')}\n\nOuvrir l’administration (Paiements & séquestre, Litiges) : ${link}\n\nPour la confidentialité, aucun nom ni détail n’est envoyé par e-mail.`
+  const html = `<div style="font-family:Arial,sans-serif;color:#123644;font-size:15px;line-height:1.5">`
+    + real.map(r => `<p style="margin:0 0 6px"><b>${escHtml(r.title)}</b></p>`).join('')
+    + `<p><a href="${link}" style="display:inline-block;background:#12B39C;color:#ffffff;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:999px">Ouvrir l’administration</a></p>`
+    + `<p style="color:#4E6470;font-size:13px">Pour la confidentialité, aucun nom ni détail n’est envoyé par e-mail.</p></div>`
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: process.env.NOTIFY_FROM || 'PING <notifications@ping.invalid>', to: [to], subject, text, html }),
+  })
+  if (!r.ok) return { sent: 0, reason: 'resend_refuse', graves: rows.length }   // nouvel essai au prochain passage
+  await admin.from('admin_notifications').update({ emailed_at: new Date().toISOString() }).in('id', ids)
+  return { sent: 1, graves: real.length }
+}

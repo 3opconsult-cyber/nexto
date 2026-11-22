@@ -480,11 +480,11 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
       <div class="sep">Finances</div>
       <a data-s="commissions" onclick="nav('commissions')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg> Commissions</a>
       <a data-s="docs" onclick="nav('docs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/></svg> Documents &amp; factures</a>
-      <a data-s="pay" onclick="nav('pay')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Paiements &amp; séquestre</a>
+      <a data-s="pay" onclick="nav('pay')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Paiements &amp; séquestre <span class="npill" id="pillPay" role="status" aria-label="Alertes de paiement à traiter"></span></a>
       <a data-s="dac7" onclick="nav('dac7')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M9 12l2 2 4-4"/></svg> Déclarations DAC7</a>
       <div class="sep">Contrôle</div>
       <a data-s="conformite" onclick="nav('conformite')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg> Conformité (KYC) <span class="npill" id="pillConformite" role="status" aria-label="Pièces à valider"></span></a>
-      <a data-s="litiges" onclick="nav('litiges')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg> Litiges</a>
+      <a data-s="litiges" onclick="nav('litiges')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg> Litiges <span class="npill" id="pillLitiges" role="status" aria-label="Alertes de litige à traiter"></span></a>
       <a data-s="annulations" onclick="nav('annulations')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg> Annulations</a>
       <a data-s="signalements" onclick="nav('signalements')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18"/><path d="M5 4h11l-1.5 4L16 12H5"/></svg> Signalements</a>
       <a data-s="retours" onclick="nav('retours')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/></svg> Retours des testeurs</a>
@@ -540,7 +540,8 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           </div>
           <div class="card"><h3>À traiter</h3>
             <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b> <span class="npill" id="pillOv" role="status" aria-label="Alertes pièces à valider" style="margin-left:8px"></span><small>Pièces déposées par les prestataires : aperçu, puis valider ou refuser</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b><small id="ovDisputes2S">Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b> <span class="npill" id="pillOvLit" role="status" aria-label="Alertes de litige à traiter" style="margin-left:8px"></span><small id="ovDisputes2S">Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
+            <div class="qrow" id="ovPayAlert" style="display:none"><div class="who"><div class="av coral">€</div></div><div class="m"><b id="ovPayAlertL">0 alerte de paiement à traiter</b> <span class="npill" id="pillOvPay" role="status" aria-label="Alertes de paiement à traiter" style="margin-left:8px"></span><small id="ovPayAlertS">Annulations, absences, virements, commissions, suspensions</small></div><a class="link" style="text-decoration:none" href="/admin/paiements" target="_blank" rel="noopener">Voir</a></div>
             <div class="qrow"><div class="who"><div class="av">R</div></div><div class="m"><b id="ovFbL">— retour de testeur à traiter</b><small>Commentaires laissés dans la bulle verte de l'application</small></div><span class="link" onclick="nav('retours')">Voir</span></div>
             <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="overviewExpiryL">0 assurance à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
             <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026</b><small>À brancher avant janvier 2027</small></div><span class="link" onclick="nav('dac7')">Voir</span></div>
@@ -1109,6 +1110,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
         </div>
         <div class="card mt"><h3>Brique de paiement &amp; séquestre <span class="muted">agnostique · remplaçable</span></h3>
           <div class="qrow"><div class="m"><b>Connecteur</b><small>Stripe Connect, Mangopay et Lemonway codés · choix par la variable PAYMENT_PROVIDER · éteint tant que les clés manquent</small></div><span class="tag wait">Prêt, à brancher</span></div>
+          <div class="qrow" id="payAlertRow" style="display:none"><div class="m"><b id="payAlertL">0 alerte de paiement à traiter</b> <span class="npill" id="pillPaySec" role="status" aria-label="Alertes de paiement à traiter" style="margin-left:8px"></span><small>Libellé, gravité et bouton « Traitée » dans la vue Paiements</small></div><a class="link" style="text-decoration:none" href="/admin/paiements" target="_blank" rel="noopener">Ouvrir</a></div>
           <div class="qrow"><div class="m"><b>Séquestre — vue OpConsult</b><small>Argent bloqué, versements et remboursements : seul PING décide</small></div><a class="link" style="text-decoration:none" href="/admin/paiements" target="_blank" rel="noopener">Ouvrir</a></div>
           <div class="qrow"><div class="m"><b>Séquestre</b><small>Fonds bloqués chez le PSP — jamais sur un compte PING</small></div><span class="tag ok">Modèle validé</span></div>
           <div class="qrow"><div class="m"><b>Libération automatique</b><small>24 h après le scan de fin sans litige → versement au pro (− commission PING) · ou mode manuel (PAYMENT_RELEASE_MODE=manuel)</small></div><span class="tag wait">Prêt, à brancher</span></div>
@@ -4415,6 +4417,29 @@ window.refreshDocAlerts = async function () {
       e.setAttribute('aria-label', n + (n > 1 ? ' pièces à valider' : ' pièce à valider'))
     })
   } catch (e) { /* l'admin continue sans pastille */ }
+  try { await refreshMoneyAlerts() } catch (e) { /* idem : pastilles d'argent et de litige absentes */ }
+}
+/* Alertes d'argent et de litige (migration 062) : compteurs séparés par catégorie, lus en une seule requête
+   (admin_alert_counts). Sans la migration 062 : pastilles cachées, rien ne plante. */
+let ALERTS062 = false
+async function refreshMoneyAlerts() {
+  const r = await supabaseLive.rpc('admin_alert_counts')
+  ALERTS062 = !r.error && !!r.data
+  const c = ALERTS062 ? r.data : {}
+  const pay = Number(c.paiements) || 0, graves = Number(c.paiements_graves) || 0
+  const lit = Number(c.litiges) || 0, med = Number(c.mediation) || 0
+  const pill = (ids, n, label) => ids.forEach(id => {
+    const e = document.getElementById(id); if (!e) return
+    e.textContent = n > 99 ? '99+' : String(n); e.classList.toggle('on', n > 0)
+    e.setAttribute('aria-label', label)
+  })
+  const payLabel = pay + (pay > 1 ? ' alertes de paiement à traiter' : ' alerte de paiement à traiter') + (graves ? ', dont ' + graves + (graves > 1 ? ' graves' : ' grave') : '')
+  const litLabel = lit + (lit > 1 ? ' alertes de litige à traiter' : ' alerte de litige à traiter') + (med ? ', dont ' + med + ' intervention' + (med > 1 ? 's' : '') + ' de PING demandée' + (med > 1 ? 's' : '') : '')
+  pill(['pillPay', 'pillOvPay', 'pillPaySec'], pay, payLabel)
+  pill(['pillLitiges', 'pillOvLit'], lit, litLabel)
+  const set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t }
+  set('ovPayAlertL', payLabel); set('payAlertL', payLabel)
+  ;['ovPayAlert', 'payAlertRow'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = pay > 0 ? '' : 'none' })
 }
 setInterval(() => { if (!document.hidden) window.refreshDocAlerts() }, 60000)
 function docExpiry(d) {
