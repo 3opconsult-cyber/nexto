@@ -62,7 +62,12 @@ jobs:
       - name: Build de production
         run: |
           set -o pipefail
-          NODE_ENV=production npm run build 2>&1 | tee build.log
+          # Le chargement des polices Google par next/font échoue parfois côté GitHub (réseau, 22/11/2026) : 3 essais.
+          for i in 1 2 3; do
+            if NODE_ENV=production npm run build 2>&1 | tee build.log; then exit 0; fi
+            echo "::warning::Build échoué (essai $i sur 3)"; sleep 20
+          done
+          exit 1
 
       # --- Avertissements : poids des pages, audit npm, tests unitaires, étiquette de version ---
       - name: Poids des pages
