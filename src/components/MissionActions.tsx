@@ -205,6 +205,9 @@ export default function MissionActions({ tx, userId, onChange, compact = false, 
             Nouveau créneau : <b style={{ color: C.navy }}>{whenLabel(pend.new_at)}</b> (au lieu de {whenLabel(pend.old_at)}). Le prix ne change pas.
             {pend.late && ' Moins de 24 h avant le rendez-vous : sans accord, le rendez-vous reste et seule l’annulation, avec ses règles, est possible.'}
             {pend.note ? ` « ${pend.note} »` : ''}
+            {pend.mine
+              ? ` Vous n’avez rien d’autre à faire : tant que l’autre partie n’a pas répondu, le rendez-vous reste fixé${pend.old_at ? ` au ${whenLabel(pend.old_at)}` : ''}. Proposition valable jusqu’au ${whenLabel(pend.expires_at)}.`
+              : ' Tant que vous n’avez pas répondu, le rendez-vous reste inchangé.'}
           </p>
           {pend.mine ? (
             <button type="button" disabled={busy === 'resch'} style={btn('#fff', C.navy, C.line)} onClick={() => answer(false, pend.id)}>Retirer ma proposition</button>

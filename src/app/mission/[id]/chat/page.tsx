@@ -38,7 +38,7 @@ import { markFirstAction } from '@/lib/firstAction'
 import { getPresenceState, hasProcess, presenceAvailable, PRESENCE_PHOTO_BUCKET, type ClientPresence, type PresenceState } from '@/lib/presence'
 import PresenceTag from '@/components/presence/PresenceTag'
 import PresenceChoice from '@/components/presence/PresenceChoice'
-import OrderSummary from '@/components/presence/OrderSummary'
+import OrderCardLink from '@/components/presence/OrderCardLink'
 import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
 import { sessionUserId } from '@/lib/screenCache'
 import BookingCard from '@/components/BookingCard'
@@ -789,7 +789,7 @@ export default function ChatPage() {
                 {userId === tx.buyer_id && hasProcess(pst) && !pst?.client_presence ? (
                   <>
                     <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Commande validée. Serez-vous sur place ?</div>
-                    <div style={{ margin: '3px 0 10px' }}><OrderSummary tx={tx} asSeller={false} counterpart={counterpart || undefined} payOn={payOn} compact /></div>
+                    <div style={{ margin: '6px 0 10px' }}><OrderCardLink tx={tx} asSeller={false} counterpart={counterpart || undefined} payOn={payOn} /></div>
                     <PresenceChoice txId={tx.id} presence={null} proName={counterpart || undefined} compact
                       onChange={(p: ClientPresence) => { setPst(s => s ? { ...s, client_presence: p } : s); setMsgTick(t => t + 1) }} />
                   </>
@@ -799,10 +799,7 @@ export default function ChatPage() {
                       ? <div style={{ flex: '1 1 100%' }}><PresenceChoice txId={tx.id} presence={pst.client_presence} proName={counterpart || undefined} toggle
                           onChange={(p: ClientPresence) => { setPst(s => s ? { ...s, client_presence: p } : s); setMsgTick(t => t + 1) }} /></div>
                       : <PresenceTag presence={pst?.client_presence} asSeller={userId === tx.seller_id} />)}
-                    <div style={{ flex: '1 1 180px', minWidth: 0 }}><OrderSummary tx={tx} asSeller={userId === tx.seller_id} counterpart={counterpart || undefined} payOn={payOn} compact /></div>
-                    <button onClick={() => router.push(`/mission/${tx.id}/commande`)} style={{ border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, padding: '0 4px' }}>
-                      {userId === tx.seller_id ? 'Commande reçue' : 'Récapitulatif du paiement'}
-                    </button>
+                    <div style={{ flex: '1 1 100%', minWidth: 0 }}><OrderCardLink tx={tx} asSeller={userId === tx.seller_id} counterpart={counterpart || undefined} payOn={payOn} /></div>
                   </div>
                 )}
               </div>

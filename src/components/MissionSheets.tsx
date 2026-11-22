@@ -10,7 +10,7 @@ import {
 } from '@/lib/cancellation'
 
 /** Fenêtres d'annulation et de report, chargées à la demande par MissionActions (A-034). */
-function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   const boxRef = useRef<HTMLDivElement>(null)
   // Le focus entre dans la fenêtre à l'ouverture (clavier, lecteur d'écran) et revient au bouton qui l'a ouverte.
   useEffect(() => {
