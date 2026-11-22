@@ -161,6 +161,71 @@ export const PING_MAP_STYLE: any = {
   ],
 }
 
+
+// Variante « conviviale » inspirée de Waze (demande Romain 22/11/2026) : fond gris-bleu très clair, routes blanches avec
+// liseré gris, axes principaux jaunes puis orange, eau bleue franche, parcs verts, noms plus gros et foncés avec contour
+// blanc épais. Mêmes tuiles gratuites OpenFreeMap, aucun service payant. Choix : défaut PING_MAP_STYLE ; essai en ligne
+// avec ?carte=waze (voir pickMapStyle).
+const W = {
+  land: '#EEF1F5', water: '#9FD6F0', green: '#CDE9C4', building: '#E1E5EB',
+  casing: '#C7CED6', minor: '#FFFFFF', second: '#FFF1B8', secondCase: '#E6C766', major: '#FFC94D', majorCase: '#E39A1D',
+  label: '#3A4752', labelSoft: '#5B6A76', halo: 'rgba(255,255,255,.95)', waterLabel: '#4D86A8',
+}
+function wazeRoad(id: string, classes: string[], minzoom: number, stops: [number, number][], fill: string, edge: string, extra: number) {
+  const casing = {
+    id: id + '-casing', type: 'line', source: 'openmaptiles', 'source-layer': 'transportation', minzoom,
+    filter: ['all', LINE, ['match', ['get', 'class'], classes, true, false]],
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': edge,
+      'line-opacity': ['case', ['==', ['get', 'brunnel'], 'tunnel'], 0.4, 1],
+      'line-width': width(stops.map(([z, w]) => [z, w + extra * (z >= 14 ? 1 : 0.6)] as [number, number])),
+    },
+  }
+  const inner: any = road(id, classes, minzoom, stops)
+  inner.paint['line-color'] = fill
+  return [casing, inner]
+}
+export function buildWazeStyle(): any {
+  const base: any = JSON.parse(JSON.stringify(PING_MAP_STYLE))
+  const layers: any[] = []
+  for (const l of base.layers) {
+    if (l.id === 'background') l.paint['background-color'] = W.land
+    else if (l.id === 'greens' || l.id === 'park') l.paint['fill-color'] = W.green
+    else if (l.id === 'water') l.paint['fill-color'] = W.water
+    else if (l.id === 'waterway') l.paint['line-color'] = W.water
+    else if (l.id === 'building') l.paint['fill-color'] = W.building
+    else if (l.id === 'road-service') { layers.push(...wazeRoad('road-service', ['service', 'track'], 15, [[15, 1.2], [18, 7]], W.minor, W.casing, 1.4)); continue }
+    else if (l.id === 'road-minor') { layers.push(...wazeRoad('road-minor', ['minor'], 12, [[12, 0.7], [14, 1.8], [16, 5.5], [18, 16]], W.minor, W.casing, 1.6)); continue }
+    else if (l.id === 'road-tertiary') { layers.push(...wazeRoad('road-tertiary', ['tertiary'], 10, [[10, 0.8], [13, 2.8], [15, 7.5], [18, 22]], W.minor, W.casing, 1.8)); continue }
+    else if (l.id === 'road-secondary') { layers.push(...wazeRoad('road-secondary', ['secondary', 'primary'], 8, [[8, 0.8], [11, 2.4], [13, 4.8], [15, 10], [18, 28]], W.second, W.secondCase, 2)); continue }
+    else if (l.id === 'road-major') { layers.push(...wazeRoad('road-major', ['trunk', 'motorway'], 6, [[6, 0.8], [10, 2.6], [13, 5.6], [15, 11], [18, 32]], W.major, W.majorCase, 2.2)); continue }
+    else if (l.type === 'symbol') {
+      l.paint['text-color'] = l.id === 'water-name' ? W.waterLabel : (l.id === 'road-name' || l.id === 'place-quarter' ? W.labelSoft : W.label)
+      l.paint['text-halo-color'] = l.id === 'water-name' ? 'rgba(159,214,240,.85)' : W.halo
+      l.paint['text-halo-width'] = 2
+      if (l.layout['text-font']) l.layout['text-font'] = l.id === 'water-name' ? ['Noto Sans Italic'] : ['Noto Sans Bold']
+      if (Array.isArray(l.layout['text-size'])) l.layout['text-size'] = l.layout['text-size'].map((v: any, k: number) => (k >= 4 && k % 2 === 0 && typeof v === 'number' ? v + 1.5 : v))
+      else if (typeof l.layout['text-size'] === 'number') l.layout['text-size'] += 1.5
+    }
+    layers.push(l)
+  }
+  base.layers = layers
+  base.name = 'PING Waze'
+  return base
+}
+
+// Style choisi : PING (défaut) ou Waze (essai avec ?carte=waze, mémorisé sur l'appareil).
+export function pickMapStyle(): any {
+  try {
+    const q = new URLSearchParams(window.location.search).get('carte')
+    if (q === 'waze' || q === 'ping') localStorage.setItem('ping_map_style', q)
+    const v = q || localStorage.getItem('ping_map_style')
+    if (v === 'waze') return buildWazeStyle()
+  } catch { /* style par défaut */ }
+  return PING_MAP_STYLE
+}
+
 // WebGL disponible ? (sinon : repli immédiat sur les tuiles raster).
 export function hasWebGL(): boolean {
   try {

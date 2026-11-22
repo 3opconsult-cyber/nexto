@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { ProviderNearby } from '@/lib/services'
 import { iconSvg } from './PingIcons'
-import { PING_MAP_STYLE, MAP_ATTRIBUTION, hasWebGL } from '@/lib/mapStyle'
+import { pickMapStyle, MAP_ATTRIBUTION, hasWebGL } from '@/lib/mapStyle'
 
 // Fond de carte : vectoriel aux couleurs PING (MapLibre GL + tuiles OpenFreeMap) rendu sous
 // Leaflet via @maplibre/maplibre-gl-leaflet — Leaflet garde la main sur les gestes, les
@@ -30,7 +30,7 @@ function PingBaseLayer() {
         await import('maplibre-gl')
         await import('@maplibre/maplibre-gl-leaflet')
         if (cancelled) return
-        const gl = L.maplibreGL({ style: PING_MAP_STYLE, attributionControl: false })
+        const gl = L.maplibreGL({ style: pickMapStyle(), attributionControl: false })
         layer = gl
         gl.addTo(map)
         const glMap = gl.getMaplibreMap()
