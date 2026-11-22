@@ -5,7 +5,7 @@
 // 1 Accroche, 2 Demandes autour de moi, 3 Je suis prestataire, 4 Mes tarifs, 5 Mes disponibilités, 6 Déposez vos pièces,
 // 7 PING vous rend visible, 8 Moins de factures, 9 Moins de paperasse, 10 Moins d'administratif, 11 QR, 12 Avis croisés,
 // 13 Litige, 14 Paiement sous séquestre, 15 Final). L'agenda et la facture ne sont plus dans la vidéo client : ils restent
-// dans /animation-ping (rang 4). Les paramètres ?embed=1 et ?scene=N sont lus par les pages /animation*.
+// dans /animation-ping (rang 4 ; ATTENTION : /animation-ping est redirigée vers /animation-client, voir docs/audit-animations-2026-11-22.md). Les 3 rubriques « en bref » (22/11/2026) lisent /animation-courte*, sans ?scene. Les paramètres ?embed=1 et ?scene=N sont lus par les pages /animation*.
 export type AideRubrique = {
   slug: string
   title: string
@@ -24,6 +24,9 @@ export const AIDE_RUBRIQUES: AideRubrique[] = [
   { slug: 'facture', title: 'Facture, avis et pourboire', sub: 'La facture après la mission, puis les avis croisés.', src: '/animation-client?embed=1&scene=7', space: 'particulier', icon: 'doc' },
   { slug: 'facture-pro', title: 'Facture et avis', sub: 'La facture se génère à chaque mission, puis les avis croisés.', src: '/animation-prestataire?embed=1&scene=7', space: 'pro', icon: 'doc' },
   { slug: 'devenir-prestataire', title: 'Devenir prestataire', sub: 'Créer votre profil prestataire pas à pas.', src: '/animation-inscription?embed=1&part=pro', space: 'pro', icon: 'swap' },
+  { slug: 'en-bref', title: 'PING en 20 secondes', sub: 'Le teaser : la carte, le prix, l’arrivée et le départ.', src: '/animation-courte?embed=1', space: 'tous', icon: 'pin' },
+  { slug: 'en-bref-client', title: 'PING côté client, en bref', sub: 'Trouver, choisir, payer, noter : 35 secondes, sous-titrées.', src: '/animation-courte-client?embed=1', space: 'particulier', icon: 'chat' },
+  { slug: 'en-bref-prestataire', title: 'PING côté prestataire, en bref', sub: 'Demandes, tarifs, Disponible, pièces : 35 secondes, sous-titrées.', src: '/animation-courte-prestataire?embed=1', space: 'pro', icon: 'tag' },
   { slug: 'etre-prestataire', title: 'Être prestataire : demandes, tarifs, disponibilités', sub: 'Fixer vos tarifs, indiquer vos créneaux et passer « Disponible ».', src: '/animation-prestataire?embed=1&scene=2', space: 'pro', icon: 'tag' },
 ]
 

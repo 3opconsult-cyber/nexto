@@ -5,7 +5,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|plaquettes|animation|animation-pro|animation-inscription|animation-ping|animation-client|animation-prestataire|animation-tuto|animation-tuto-absent|bienvenue|plan-marketing|maquette).html',
+        source: '/:path(admin|demo|client|demo-parcours|presentation|parcours-navigable|landing-particulier|landing-pro|planche-de-marque|maquette-inscription-telephone|plaquettes|animation|animation-pro|animation-inscription|animation-ping|animation-client|animation-prestataire|animation-tuto|animation-tuto-absent|animation-courte|animation-courte-client|animation-courte-prestataire|bienvenue|plan-marketing|maquette).html',
         headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
       },
       {
@@ -52,6 +52,9 @@ const nextConfig = {
         { source: '/animation-prestataire', destination: '/animation-prestataire.html' },
         { source: '/animation-tuto', destination: '/animation-tuto.html' },
         { source: '/animation-tuto-absent', destination: '/animation-tuto-absent.html' },
+        { source: '/animation-courte', destination: '/animation-courte.html' },
+        { source: '/animation-courte-client', destination: '/animation-courte-client.html' },
+        { source: '/animation-courte-prestataire', destination: '/animation-courte-prestataire.html' },
         { source: '/bienvenue', destination: '/bienvenue.html' },
         { source: '/plan-marketing', destination: '/plan-marketing.html' },
         { source: '/maquette', destination: '/maquette.html' },
