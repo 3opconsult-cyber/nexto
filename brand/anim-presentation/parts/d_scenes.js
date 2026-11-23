@@ -396,7 +396,7 @@
     {i:'qr', l:[['QR de sécurité à l’arrivée'], ['et au départ :'], ['l’heure fait foi.', 'g']], s:'Arrivée et fin sont pointées par QR code.'},
     {i:'star', l:[['Prestataires et clients'], ['se notent.', 'g']], s:'Un avis croisé après chaque mission.'},
     {i:'scales', l:[['Service litige :'], ['un dossier,'], ['un médiateur PING.', 'g']], s:'Chaque litige est suivi dans un dossier unique.'},
-    {i:'lock', l:[['Paiement sécurisé'], ['sous séquestre :'], ['vous êtes payé.', 'y']], s:'Conservé jusqu’à la fin de la mission.'}
+    {i:'lock', l:[['Paiement par virement'], ['de votre client :'], ['vous êtes payé.', 'y']], s:'Avec la référence de la facture.'}
   ];
   // variante : sous-ensemble des arguments (indices dans l'ordre ci-dessus), créneaux ARG0 + n × ARGD dans le temps source
   if (VAR.extra) ARGS = ARGS.concat(VAR.extra);   // écrans d'argument propres à la variante (indices 7, 8…)

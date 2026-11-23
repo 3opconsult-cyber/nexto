@@ -199,7 +199,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
   <aside class="side" id="side">
     <div class="eyebrow">PING pour les particuliers · 9:16</div>
     <h1>PING pour les particuliers</h1>
-    <p class="lead">La vidéo à envoyer à un particulier : l'accroche, la carte, le choix du prestataire, le chat (prix validé, paiement sous séquestre), le QR de sécurité à l'arrivée, l'avis, puis l'inscription (QR et « Je m'inscris »). Rien du côté prestataire, aucun tuto d'inscription au milieu. Format vertical, lisible sans le son.</p>
+    <p class="lead">La vidéo à envoyer à un particulier : l'accroche, la carte, le choix du prestataire, le chat (prix validé, paiement par virement), le QR de sécurité à l'arrivée, l'avis, puis l'inscription (QR et « Je m'inscris »). Rien du côté prestataire, aucun tuto d'inscription au milieu. Format vertical, lisible sans le son.</p>
     <ol class="scenes" id="scenes"></ol>
     <p class="foot">Mêmes scènes que « PING en 1 minute », réordonnées, sans la partie prestataire. Le bouton « Je m'inscris » (page web seulement, absent d'un futur MP4 qui montrera le QR) pointe vers /l/ins, qui mesure le trafic venu de cette vidéo.</p>
     <p class="foot">Pas encore de fichier MP4 pour cette animation : à enregistrer (procédure en tête de brand/anim-presentation/build.py).</p>
@@ -321,7 +321,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
       C.push({ a: 4.7,  b: 7.8,  lines: ['Les prestataires disponibles', 'autour de vous.'] },
              { a: 27.6, b: 30.2, lines: ['Vous choisissez', 'votre prestataire.'] },
              { a: 10.9, b: 13.5, lines: ['Vous validez le prix et', 'payez directement dans le chat.'] },
-             { a: 13.5, b: 14.75, lines: ['Votre paiement reste sous séquestre', 'jusqu’à la fin de la mission.'] });
+             { a: 13.5, b: 14.75, lines: ['Vous réglez par virement,', 'avec la référence de la facture.'] });
     },
     // [début source, fin source, fondu au navy à la jonction, vitesse]
     segs: [[0, 7.8, false], [27.6, 30.2, true, 0.8], [43.3, 46.2, true], [10.9, 14.75, true, 0.6], [46.2, 55.2, true], [64.2, 69.5, true]],
@@ -331,7 +331,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
       { k: 0, s: 4.6,  title: 'La carte', d: "Les prestataires disponibles autour de vous, sur la carte." },
       { k: 1, s: 27.6, title: 'Vous choisissez votre prestataire', d: "Le service choisi, la fiche du prestataire sur la carte, puis « Contacter »." },
       { k: 2, s: 43.2, title: 'Des profils détaillés', d: "Pièces fournies, assurance renseignée : vous savez qui vient." },
-      { k: 3, s: 10.9, title: 'Le chat, le prix et le paiement', d: "Vous validez le prix et payez directement dans le chat ; le paiement reste sous séquestre jusqu'à la fin de la mission." },
+      { k: 3, s: 10.9, title: 'Le chat, le prix et le paiement', d: "Vous validez le prix dans le chat, puis vous réglez par virement avec la référence de la facture." },
       { k: 4, s: 46.2, title: 'QR de sécurité : arrivée et départ', d: "Un QR code à l'arrivée et au départ : l'heure fait foi." },
       { k: 4, s: 49.2, title: 'Vous notez votre prestataire', d: "Un avis en quelques clics après la mission." },
       { k: 4, s: 52.2, title: 'Un service litige', d: "Historique, factures, échanges et dossier de litige au même endroit." },
@@ -736,7 +736,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     {i:'qr', l:[['QR de sécurité à l’arrivée'], ['et au départ :'], ['l’heure fait foi.', 'g']], s:'Arrivée et fin sont pointées par QR code.'},
     {i:'star', l:[['Prestataires et clients'], ['se notent.', 'g']], s:'Un avis croisé après chaque mission.'},
     {i:'scales', l:[['Service litige :'], ['un dossier,'], ['un médiateur PING.', 'g']], s:'Chaque litige est suivi dans un dossier unique.'},
-    {i:'lock', l:[['Paiement sécurisé'], ['sous séquestre :'], ['vous êtes payé.', 'y']], s:'Conservé jusqu’à la fin de la mission.'}
+    {i:'lock', l:[['Paiement par virement'], ['de votre client :'], ['vous êtes payé.', 'y']], s:'Avec la référence de la facture.'}
   ];
   // variante : sous-ensemble des arguments (indices dans l'ordre ci-dessus), créneaux ARG0 + n × ARGD dans le temps source
   if (VAR.extra) ARGS = ARGS.concat(VAR.extra);   // écrans d'argument propres à la variante (indices 7, 8…)
@@ -911,12 +911,12 @@ html.rec .player{width:auto; min-width:0; margin:0;}
   // ---------- lecteur partagé (brand/anim/player.js, injecté par chaque build.py) ----------
   // Contrat d'URL : ?admin=1 (panneau scénario), ?embed=1 (lecteur seul + rubriques repliables, postMessage
   // {ping:'anim-ended'} à la fin), ?scene=N (rang 1..n dans la liste des rubriques), ?autoplay=0 (démarre en pause),
-  // ?speed=0.75|0.85|1. Vitesse par défaut 0,85× : seul le temps de lecture est ralenti, seek(t) reste déterministe.
+  // ?speed=0.75|0.85|1. Vitesse par défaut 0,85× (cfg.speed la remplace : les animations courtes du 22/11/2026 sont à 1×) ; hooks facultatifs cfg.onFrame(t, playing, speed) et cfg.onState(playing, t, speed) (voix off) : seul le temps de lecture est ralenti, seek(t) reste déterministe.
   // cfg = { dur, scenes:[{a:début, go:point de saut, title, d}], paint(t), init(), start(): t initial, still }
   function makePlayer(cfg){
     var DUR = cfg.dur, SC = cfg.scenes, q = location.search, g = function(id){ return document.getElementById(id); };
     var admin = /[?&]admin=1\b/.test(q), embed = /[?&]embed=1\b/.test(q), rec = location.hash === '#record';
-    var speed = 0.85, ms = /[?&]speed=(0\.75|0\.85|1)(?:\.0+)?\b/.exec(q); if (ms) speed = parseFloat(ms[1]);
+    var speed = cfg.speed || 0.85, ms = /[?&]speed=(0\.75|0\.85|1)(?:\.0+)?\b/.exec(q); if (ms) speed = parseFloat(ms[1]);
     var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     var playing = !reduced && !/[?&]autoplay=0\b/.test(q), last = null, t = 0, ended = false;
     if (rec) { document.body.classList.add('rec'); playing = false; speed = 1; }
@@ -948,6 +948,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     function seek(x){ t = Math.max(0, Math.min(DUR, x)); if (t < DUR - 0.05) ended = false; paint(); }
     function paint(){
       cfg.paint(t);
+      if (cfg.onFrame) cfg.onFrame(t, playing, speed);
       g('scrub').value = t;
       g('tc').textContent = fmt(t / speed) + ' / ' + fmt(DUR / speed) + ' s';
       var k = cur(t);
@@ -955,7 +956,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     }
     var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15L19.5 12z"/></svg><span>Lecture</span>';
     var PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg><span>Pause</span>';
-    function sync(){ var p = g('play'); p.innerHTML = playing ? PAUSE : PLAY; p.setAttribute('aria-label', playing ? 'Pause' : 'Lecture'); }
+    function sync(){ var p = g('play'); p.innerHTML = playing ? PAUSE : PLAY; p.setAttribute('aria-label', playing ? 'Pause' : 'Lecture'); if (cfg.onState) cfg.onState(playing, t, speed); }
     function finish(){
       t = DUR; playing = false; sync();
       if (!ended) { ended = true; try { window.parent.postMessage({ ping: 'anim-ended' }, '*'); } catch (e) {} }
@@ -984,7 +985,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     function setSpeed(v){ speed = v; spBtns.forEach(function(b){ b.setAttribute('aria-pressed', parseFloat(b.getAttribute('data-speed')) === v ? 'true' : 'false'); }); paint(); }
     spBtns.forEach(function(b){ b.addEventListener('click', function(){ setSpeed(parseFloat(b.getAttribute('data-speed'))); }); });
     g('scrub').max = DUR;
-    window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); }, get speed(){ return speed; } };
+    window.PING_ANIM = { duration: DUR, seek: function(x){ seek(x); }, get speed(){ return speed; }, get playing(){ return playing; }, get time(){ return t; } };
     var start = function(){
       if (cfg.init) cfg.init();
       setSpeed(speed); sync();

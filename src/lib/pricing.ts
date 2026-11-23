@@ -8,10 +8,13 @@ import { createClient } from './supabase/client'
 export const DEFAULT_BUYER_RATE = 0.08
 export const DEFAULT_SELLER_RATE = 0.17
 
+// Cache de 60 s : un taux modifié sur /admin/commission est repris par un onglet déjà ouvert (A-037, 23/11).
 let cache: { buyer: number; seller: number } | null = null
+let cacheAt = 0
+const RATES_TTL_MS = 60_000
 
 export async function getRates(): Promise<{ buyer: number; seller: number }> {
-  if (cache) return cache
+  if (cache && Date.now() - cacheAt < RATES_TTL_MS) return cache
   const supabase = createClient()
   const { data } = await supabase.from('app_settings').select('key, value')
     .in('key', ['commission_buyer_rate', 'commission_seller_rate'])
@@ -21,6 +24,7 @@ export async function getRates(): Promise<{ buyer: number; seller: number }> {
     buyer: byKey.commission_buyer_rate ?? DEFAULT_BUYER_RATE,
     seller: byKey.commission_seller_rate ?? DEFAULT_SELLER_RATE,
   }
+  cacheAt = Date.now()
   return cache
 }
 

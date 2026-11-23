@@ -25,7 +25,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'PING — Et si ce que vous cherchez se trouvait juste à côté de vous ?',
-  description: 'Ménage, repassage, nettoyage : trouvez un prestataire disponible près de chez vous, paiement sous séquestre.',
+  description: 'Ménage, repassage, nettoyage : trouvez un prestataire disponible près de chez vous.',
   manifest: '/manifest.json',
   icons: {
     icon: [

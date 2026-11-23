@@ -9,7 +9,6 @@ exports.validatePresence = validatePresence;
 exports.clientConfirmPresence = clientConfirmPresence;
 exports.clientDeclinePresence = clientDeclinePresence;
 exports.requestRemotePresence = requestRemotePresence;
-exports.getPositionOnce = getPositionOnce;
 exports.proofLabel = proofLabel;
 exports.presenceSentence = presenceSentence;
 exports.billedLabel = billedLabel;
@@ -17,6 +16,7 @@ exports.parseScanned = parseScanned;
 exports.uploadPresencePhoto = uploadPresencePhoto;
 exports.presencePhotoUrl = presencePhotoUrl;
 exports.presenceTagLabel = presenceTagLabel;
+const netError_1 = require("@/lib/netError");
 /** Process de commande (migration 048) : présence annoncée, photo d'arrivée, codes envoyés par le client. */
 const hasProcess = (st) => !!st && Number(st.v) >= 48;
 exports.hasProcess = hasProcess;
@@ -102,28 +102,21 @@ async function clientDeclinePresence(supabase, txId, phase) {
 /**
  * Client absent : le prestataire (consentement donné) envoie sa position ; /api/arrival compare et prévient le client.
  * Migration 048 : `photoPath` (photo prise sur place, obligatoire à l'arrivée) part avec, dans un seul message.
+ * `dryRun` : la route ne fait QUE les contrôles (mission, état, distance) et ne pose rien. Appelé AVANT le téléversement
+ * de la photo : une position éloignée ou une mission non prête ne laisse plus de photo orpheline au stockage.
+ * Panne réseau : `error: 'network'` (renvoi possible) ; erreur du serveur : `error: 'server'`.
  */
-async function requestRemotePresence(txId, phase, pos, photoPath) {
+async function requestRemotePresence(txId, phase, pos, photoPath, dryRun = false) {
     try {
         const r = await fetch('/api/arrival', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transactionId: txId, phase, lat: pos.lat, lng: pos.lng, accuracy: pos.accuracyM ?? null, consent: true, photoPath: photoPath ?? null }),
+            body: JSON.stringify({ transactionId: txId, phase, lat: pos.lat, lng: pos.lng, accuracy: pos.accuracyM ?? null, consent: true, photoPath: photoPath ?? null, dryRun }),
         });
         return await r.json();
     }
     catch {
-        return { ok: false, error: 'server', message: 'Réseau indisponible, réessayez.' };
+        return { ok: false, error: 'network', message: netError_1.OFFLINE_TEXT };
     }
-}
-/** Position unique, après consentement (jamais de suivi). */
-function getPositionOnce(timeoutMs = 10000) {
-    return new Promise(resolve => {
-        if (typeof navigator === 'undefined' || !navigator.geolocation) {
-            resolve(null);
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracyM: p.coords.accuracy }), () => resolve(null), { enableHighAccuracy: true, timeout: timeoutMs });
-    });
 }
 // Libellés (facture, récapitulatif, frise). Ancien arrival_method (033) accepté en repli. La phase précise le mode
 // réel à distance (048) : photo et position à l'arrivée, code de fin envoyé par le client à la fin.
@@ -223,7 +216,7 @@ async function uploadPresencePhoto(supabase, uid, txId, file) {
     const path = `${uid}/${txId}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from(exports.PRESENCE_PHOTO_BUCKET).upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' });
     if (error)
-        return { error: 'Photo non envoyée : vérifiez votre connexion et réessayez.' };
+        return { error: (0, netError_1.isNetworkMessage)(error.message) ? netError_1.OFFLINE_TEXT : 'Photo non envoyée : réessayez.', network: (0, netError_1.isNetworkMessage)(error.message) };
     return { path };
 }
 async function presencePhotoUrl(supabase, path) {

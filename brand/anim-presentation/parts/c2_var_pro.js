@@ -30,7 +30,7 @@
       { s: 52.2, k: 3, title: 'QR de sécurité : l’heure fait foi', d: "QR code à l'arrivée et au départ." },
       { s: 55.2, k: 3, title: 'Prestataires et clients se notent', d: "Avis croisés après chaque mission." },
       { s: 58.2, k: 3, title: 'Service litige', d: "Un dossier, un médiateur PING." },
-      { s: 61.2, k: 3, title: 'Paiement sécurisé sous séquestre', d: "Vous êtes payé : le paiement reste sous séquestre jusqu'à la fin de la mission." },
+      { s: 61.2, k: 3, title: 'Paiement par virement', d: "Vous êtes payé par virement de votre client, avec la référence de la facture." },
       { s: 64.2, k: 3, title: 'Final', d: "Logo PING, QR code d'inscription prestataire (/l/insp) et bouton « Je m'inscris » (page web seulement)." }
     ]
   };

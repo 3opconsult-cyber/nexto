@@ -24,7 +24,7 @@
       C.push({ a: 4.7,  b: 7.8,  lines: ['Les prestataires disponibles', 'autour de vous.'] },
              { a: 27.6, b: 30.2, lines: ['Vous choisissez', 'votre prestataire.'] },
              { a: 10.9, b: 13.5, lines: ['Vous validez le prix et', 'payez directement dans le chat.'] },
-             { a: 13.5, b: 14.75, lines: ['Votre paiement reste sous séquestre', 'jusqu’à la fin de la mission.'] });
+             { a: 13.5, b: 14.75, lines: ['Vous réglez par virement,', 'avec la référence de la facture.'] });
     },
     // [début source, fin source, fondu au navy à la jonction, vitesse]
     segs: [[0, 7.8, false], [27.6, 30.2, true, 0.8], [43.3, 46.2, true], [10.9, 14.75, true, 0.6], [46.2, 55.2, true], [64.2, 69.5, true]],
@@ -34,7 +34,7 @@
       { k: 0, s: 4.6,  title: 'La carte', d: "Les prestataires disponibles autour de vous, sur la carte." },
       { k: 1, s: 27.6, title: 'Vous choisissez votre prestataire', d: "Le service choisi, la fiche du prestataire sur la carte, puis « Contacter »." },
       { k: 2, s: 43.2, title: 'Des profils détaillés', d: "Pièces fournies, assurance renseignée : vous savez qui vient." },
-      { k: 3, s: 10.9, title: 'Le chat, le prix et le paiement', d: "Vous validez le prix et payez directement dans le chat ; le paiement reste sous séquestre jusqu'à la fin de la mission." },
+      { k: 3, s: 10.9, title: 'Le chat, le prix et le paiement', d: "Vous validez le prix dans le chat, puis vous réglez par virement avec la référence de la facture." },
       { k: 4, s: 46.2, title: 'QR de sécurité : arrivée et départ', d: "Un QR code à l'arrivée et au départ : l'heure fait foi." },
       { k: 4, s: 49.2, title: 'Vous notez votre prestataire', d: "Un avis en quelques clics après la mission." },
       { k: 4, s: 52.2, title: 'Un service litige', d: "Historique, factures, échanges et dossier de litige au même endroit." },
