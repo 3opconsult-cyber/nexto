@@ -5,9 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import { notifyOther } from '@/lib/notify'
 import { EUR } from '@/lib/invoice-pdf'
 import {
-  billedLabel, durLabel, getPositionOnce, requestEndCode, requestRemotePresence, uploadPresencePhoto, validatePresence,
+  billedLabel, durLabel, requestEndCode, validatePresence,
   type Amounts, type Phase, type RemoteRequest,
 } from '@/lib/presence'
+import { geoMessage, isGeoFail, readPositionOnce } from '@/lib/position'
+import { compressPhoto, deleteProof, getProof, saveProof, type StoredProof } from '@/lib/proofStore'
+import { KEPT_TEXT, PROOF_FAILED_EVENT, PROOF_SENT_EVENT, sendProof } from '@/lib/proofSend'
+import { OFFLINE_TEXT, friendlyError } from '@/lib/netError'
 
 const hhmm = (d?: string | null) => d ? new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''
 
@@ -75,8 +79,12 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
 }) {
   const router = useRouter()
   const cl = clientName || 'Le client'
-  const [pos, setPos] = useState<{ lat: number; lng: number; accuracyM: number } | null>(null)
+  const [pos, setPos] = useState<{ lat: number; lng: number; accuracyM: number; approx: boolean } | null>(null)
+  const [posFail, setPosFail] = useState(false)
   const [photo, setPhoto] = useState<File | null>(null)
+  // Heure de prise de vue sur le téléphone : affichage seulement, jamais envoyée au serveur (qui garde son heure).
+  const [takenAt, setTakenAt] = useState<number | null>(null)
+  const [queued, setQueued] = useState(false)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [busy, setBusy] = useState<'' | 'pos' | 'send' | 'code'>('')
   const [info, setInfo] = useState<{ err: boolean; text: string } | null>(null)
@@ -88,13 +96,60 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
   const pending = remote?.etat === 'en_attente'
   const refused = remote?.etat === 'refusee'
   const codeSent = pending && !!remote?.code_sent_at
+  const onDoneRef = useRef(onDone)
+  onDoneRef.current = onDone
+
+  // Preuve gardée sur le téléphone (photo, position, heure de prise) : reprise après un rechargement ou une coupure.
+  useEffect(() => {
+    if (phase !== 'arrivee') return
+    if (pending) { deleteProof(txId); return }
+    let off = false
+    getProof(txId).then(e => {
+      if (off || !e || e.uid !== uid) return
+      setPos({ lat: e.lat, lng: e.lng, accuracyM: e.accuracyM, approx: e.approx })
+      setPhoto(new File([e.photo], 'photo.jpg', { type: e.photo.type || 'image/jpeg' }))
+      setPhotoUrl(URL.createObjectURL(e.photo)); setTakenAt(e.takenAt)
+      if (e.queued) { setQueued(true); setInfo({ err: false, text: KEPT_TEXT }) }
+      else setInfo({ err: false, text: `Votre preuve est gardée sur ce téléphone (photo prise à ${hhmm(new Date(e.takenAt).toISOString())}). Touchez « Envoyer » quand vous voulez.` })
+    })
+    return () => { off = true }
+  }, [txId, uid, phase, pending])
+
+  // Photo et position réunies : on les garde sur le téléphone (compressées) avant tout envoi.
+  useEffect(() => {
+    if (phase !== 'arrivee' || pending || !pos || !photo || takenAt == null) return
+    let off = false
+    ;(async () => {
+      const ex = await getProof(txId)
+      if (off || (ex && ex.takenAt === takenAt && ex.lat === pos.lat && ex.lng === pos.lng)) return
+      const blob = await compressPhoto(photo)
+      if (off) return
+      await saveProof({ txId, uid, photo: blob, lat: pos.lat, lng: pos.lng, accuracyM: pos.accuracyM, approx: pos.approx, takenAt, savedAt: Date.now() })
+    })()
+    return () => { off = true }
+  }, [phase, pending, pos, photo, takenAt, txId, uid])
+
+  // Envoi réussi (ici ou renvoi automatique au retour du réseau) ou refusé par le serveur.
+  useEffect(() => {
+    const sent = (e: Event) => {
+      if ((e as CustomEvent).detail?.txId !== txId) return
+      setQueued(false); setInfo({ err: false, text: `Photo envoyée à ${cl.replace(/\.$/, '')}.` }); onDoneRef.current()
+    }
+    const failed = (e: Event) => {
+      const d = (e as CustomEvent).detail
+      if (d?.txId !== txId) return
+      setQueued(false); setInfo({ err: true, text: d.message || 'Envoi refusé.' })
+    }
+    window.addEventListener(PROOF_SENT_EVENT, sent); window.addEventListener(PROOF_FAILED_EVENT, failed)
+    return () => { window.removeEventListener(PROOF_SENT_EVENT, sent); window.removeEventListener(PROOF_FAILED_EVENT, failed) }
+  }, [txId, cl])
 
   async function locate() {
-    setBusy('pos'); setInfo(null)
-    const r = await getPositionOnce()
+    setBusy('pos'); setInfo(null); setPosFail(false)
+    const r = await readPositionOnce()
     setBusy('')
-    if (!r) { setInfo({ err: true, text: 'Position indisponible : autorisez la localisation pour PING, puis réessayez.' }); return }
-    setPos(r)
+    if (isGeoFail(r)) { setPosFail(true); setInfo({ err: true, text: geoMessage(r.reason) }); return }
+    setPos({ lat: r.lat, lng: r.lng, accuracyM: r.accuracyM, approx: r.approx })
   }
 
   function pick(e: React.ChangeEvent<HTMLInputElement>) {
@@ -103,26 +158,30 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
     if (!f) return
     if (!/^image\//.test(f.type)) { setInfo({ err: true, text: 'Choisissez une photo.' }); return }
     if (photoUrl) URL.revokeObjectURL(photoUrl)
-    setPhoto(f); setPhotoUrl(URL.createObjectURL(f)); setInfo(null)
+    setPhoto(f); setPhotoUrl(URL.createObjectURL(f)); setTakenAt(Date.now()); setInfo(null)
   }
 
   async function sendPhoto() {
-    if (!pos || !photo) return
+    if (!pos || !photo || takenAt == null) return
     setBusy('send'); setInfo(null)
-    const supabase = createClient()
-    const up = await uploadPresencePhoto(supabase, uid, txId, photo)
-    if (!up.path) { setBusy(''); setInfo({ err: true, text: up.error || 'Photo non envoyée.' }); return }
-    const r = await requestRemotePresence(txId, 'arrivee', pos, up.path)
+    // Ordre : contrôle de distance par le serveur, PUIS téléversement de la photo, PUIS envoi (src/lib/proofSend.ts).
+    let entry = await getProof(txId)
+    if (!entry || entry.takenAt !== takenAt || entry.lat !== pos.lat || entry.lng !== pos.lng) {
+      entry = { txId, uid, photo: await compressPhoto(photo), lat: pos.lat, lng: pos.lng, accuracyM: pos.accuracyM, approx: pos.approx, takenAt, savedAt: Date.now() }
+      await saveProof(entry)
+    }
+    const out = await sendProof(createClient(), entry)
     setBusy('')
-    if (r.ok !== true) {
-      const f = r as Extract<typeof r, { ok: false }>
-      setInfo({ err: true, text: f.message })
-      if (f.error === 'too_far') setPos(null)
+    if (out.kind === 'sent') return // l'événement PROOF_SENT_EVENT affiche le message et rafraîchit l'écran
+    if (out.kind === 'network') {
+      entry.queued = true
+      const kept = await saveProof(entry)
+      setQueued(kept)
+      setInfo({ err: !kept, text: kept ? KEPT_TEXT : `${OFFLINE_TEXT} Restez sur cette page : votre photo et votre position y sont conservées.` })
       return
     }
-    notifyOther(txId, 'presence_arrivee')
-    setInfo({ err: false, text: `Photo envoyée à ${cl.replace(/\.$/, '')}.` })
-    onDone()
+    setInfo({ err: true, text: friendlyError(out.message, 'Photo non envoyée.') })
+    if (out.code === 'too_far') { setPos(null); await deleteProof(txId) }
   }
 
   async function askEndCode() {
@@ -163,7 +222,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
     </>
   )
 
-  const msg = info && <p role={info.err ? 'alert' : 'status'} style={{ ...p, color: info.err ? '#B3402F' : '#0C8F7E', fontWeight: 600 }}>{info.text}</p>
+  const msg = info && <p role={info.err ? 'alert' : 'status'} style={{ ...p, color: info.err ? '#B3402F' : '#0C8F7E', fontWeight: 600, whiteSpace: 'pre-line' }}>{info.text}</p>
 
   if (phase === 'arrivee') {
     const sentAt = pending ? remote?.requested_at : null
@@ -176,23 +235,24 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
         <p style={p}>Votre arrivée est validée par {cl}, jamais par vous seul.</p>
         <ol style={{ listStyle: 'none', margin: '6px 0 0', padding: 0 }}>
           <Step n={1} state={pending || pos ? 'ok' : 'now'} title="Arrivez sur place">
-            <p style={p}>{pending ? `Sur place à ${hhmm(sentAt)}.` : `À l’adresse de ${cl}, devant la porte.`}</p>
+            <p style={p}>{pending ? `Arrivée signalée à ${hhmm(sentAt)}.` : `À l’adresse de ${cl}, devant la porte.`}</p>
           </Step>
           <Step n={2} state={s2} title="Géolocalisez-vous">
             {pending
               ? <p style={p}>{remote?.distance_m != null ? `Position relevée une fois : à ${remote.distance_m} m de l’adresse.` : 'Position relevée une fois.'}</p>
               : pos
-                ? <p style={p}>Position relevée (précision ± {Math.round(pos.accuracyM)} m). Elle est comparée à l’adresse à l’envoi.</p>
+                ? <p style={p}>{pos.approx ? 'Position approximative' : 'Position relevée'} (précision ± {Math.round(pos.accuracyM)} m). Elle est comparée à l’adresse avant l’envoi de la photo.</p>
                 : <>
                   <p style={p}>Seul cas où PING relève votre position : une fois, avec votre accord, comparée à l’adresse. Pas de suivi.</p>
                 </>}
           </Step>
           <Step n={3} state={s3} title="Prenez une photo">
             {pending
-              ? <p style={p}>Photo prise à {hhmm(sentAt)}.</p>
+              ? <p style={p}>Photo envoyée à {hhmm(sentAt)}.</p>
               : <>
                 <p style={p}>Devant la porte, ou sur place. Obligatoire.</p>
                 {photoUrl && <img src={photoUrl} alt="Votre photo d’arrivée" style={{ display: 'block', width: '100%', maxHeight: 180, objectFit: 'cover', borderRadius: 12, marginTop: 8 }} />}
+                {photoUrl && takenAt != null && <p style={p}>Prise à {hhmm(new Date(takenAt).toISOString())} (heure de votre téléphone). L’heure retenue par PING est celle de l’envoi.</p>}
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={pick} style={{ display: 'none' }} />
                 {pos && photo && (
                   <button type="button" style={ghost} disabled={!!busy} onClick={() => fileRef.current?.click()}>Reprendre la photo</button>
@@ -201,7 +261,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
           </Step>
           <Step n={4} state={s4} title="Envoyez la photo dans la messagerie">
             {pending
-              ? <p style={p}>Envoyée à {hhmm(sentAt)} avec votre position et l’heure. {cl} est prévenu.</p>
+              ? <p style={p}>Envoyée à {hhmm(sentAt)} (heure de PING) avec votre position. {cl} est prévenu.</p>
               : <>
                 <p style={p}>Elle part à {cl} avec votre position et l’heure ; une notification le prévient.</p>
               </>}
@@ -217,9 +277,9 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
           </Step>
         </ol>
         {msg}
-        {!pending && !pos && <StickyCta disabled={!!busy} onClick={locate}>{busy === 'pos' ? 'Localisation…' : 'J’accepte : partager ma position'}</StickyCta>}
+        {!pending && !pos && <StickyCta disabled={!!busy} onClick={locate}>{busy === 'pos' ? 'Localisation…' : posFail ? 'Réessayer' : 'J’accepte : partager ma position'}</StickyCta>}
         {!pending && pos && !photo && <StickyCta disabled={!!busy} onClick={() => fileRef.current?.click()}>Prendre la photo</StickyCta>}
-        {!pending && pos && photo && <StickyCta disabled={!!busy} onClick={sendPhoto}>{busy === 'send' ? 'Envoi…' : `Envoyer la photo à ${cl}`}</StickyCta>}
+        {!pending && pos && photo && <StickyCta disabled={!!busy} onClick={sendPhoto}>{busy === 'send' ? 'Envoi…' : queued ? 'Réessayer maintenant' : `Envoyer la photo à ${cl}`}</StickyCta>}
         {pending && (codeSent || code.length > 0) && <StickyCta disabled={!!busy || code.length !== 6} onClick={submitCode}
           above={codeSent ? codeInput(`Code de validation envoyé par ${cl}`, true) : undefined}>{busy === 'code' ? 'Vérification…' : 'Valider avec le code'}</StickyCta>}
       </div>

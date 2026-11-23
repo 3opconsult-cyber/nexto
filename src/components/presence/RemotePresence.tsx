@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { notifyOther } from '@/lib/notify'
 import { systemSender } from '@/lib/systemMessage'
-import { getPositionOnce, requestRemotePresence, validatePresence, type Phase, type RemoteRequest } from '@/lib/presence'
+import { requestRemotePresence, validatePresence, type Phase, type RemoteRequest } from '@/lib/presence'
+import { geoMessage, isGeoFail, readPositionOnce } from '@/lib/position'
+import { friendlyError } from '@/lib/netError'
 
 const hhmm = (d: string) => new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 
@@ -20,6 +22,7 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
   const [consent, setConsent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [info, setInfo] = useState('')
+  const [posFail, setPosFail] = useState(false)
   const [sent, setSent] = useState(false)
   const [code, setCode] = useState('')
 
@@ -27,21 +30,21 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
   const waiting = pending || sent
 
   async function send() {
-    setConsent(false); setInfo(''); setBusy(true)
-    const pos = await getPositionOnce()
-    if (!pos) { setBusy(false); setInfo('Position indisponible : activez la localisation puis réessayez.'); return }
+    setConsent(false); setInfo(''); setPosFail(false); setBusy(true)
+    const pos = await readPositionOnce()
+    if (isGeoFail(pos)) { setBusy(false); setPosFail(true); setInfo(geoMessage(pos.reason)); return }
     const r = await requestRemotePresence(txId, phase, pos)
     setBusy(false)
     if (r.ok !== true) {
       const f = r as Extract<typeof r, { ok: false }>
-      setInfo(f.message)
+      setInfo(friendlyError(f.message))
       if (f.error === 'throttled') setSent(true)
       return
     }
     setSent(true)
     notifyOther(txId, v2 ? (phase === 'arrivee' ? 'presence_arrivee' : 'presence_fin') : 'message')
     setInfo(r.geo === 'conforme'
-      ? 'Le client est prévenu. Votre position correspond à l’adresse.'
+      ? `Le client est prévenu. Votre position correspond à l’adresse (précision ± ${Math.round(pos.accuracyM)} m).`
       : 'Le client est prévenu. Votre position n’a pas pu être comparée à l’adresse : seule la confirmation du client fait foi.')
     onDone()
   }
@@ -53,13 +56,13 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
     if (v2) {
       const r = await validatePresence(supabase, txId, phase, code)
       setBusy(false)
-      if (!r.ok) { setInfo(r.message || 'Code refusé.'); return }
+      if (!r.ok) { setInfo(friendlyError(r.message, 'Code refusé.')); return }
       onDone()
       return
     }
     // Repli 033 (arrivée seulement).
     const { data: r, error } = await supabase.rpc('arrive_with_code', { p_transaction: txId, p_code: code })
-    if (error) { setBusy(false); setInfo(error.message); return }
+    if (error) { setBusy(false); setInfo(friendlyError(error)); return }
     if (!r?.ok) {
       setBusy(false)
       setInfo(r?.reason === 'bad_code' ? `Code incorrect. Il vous reste ${r.remaining} essai${r.remaining > 1 ? 's' : ''}.`
@@ -141,7 +144,10 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
           </button>
         </>
       )}
-      {info && <div role="status" style={{ marginTop: 7, fontSize: 12, color: '#123644', lineHeight: 1.45 }}>{info}</div>}
+      {info && <div role="status" style={{ marginTop: 7, fontSize: 12, color: '#123644', lineHeight: 1.45, whiteSpace: 'pre-line' }}>{info}</div>}
+      {posFail && !busy && (
+        <button type="button" onClick={send} style={{ ...ghost, marginTop: 8, background: '#0C8F7E', color: '#fff', border: 'none' }}>Réessayer</button>
+      )}
     </div>
   )
 }

@@ -49,3 +49,7 @@ le refus d'un report en route, l'absence du prestataire et la clôture sur preuv
 À lancer APRÈS collage de `056_annulations_frais_absences_report.sql` (sans elle, le script s'arrête dès la sonde). Avec
 `SB_SERVICE=<clé service>`, il antidate un rendez-vous pour jouer aussi l'absence réelle du prestataire. Les réservations
 « QA annulations … » créées sont toutes annulées en fin de passage.
+
+## Hors connexion et position (23/11/2026)
+
+`hors-ligne.mjs` : coupure réseau, refus de distance (aucune photo orpheline), refus / repli / indisponibilité de la position, preuve gardée puis renvoyée, doublon du chat, brouillon d annonce, arrêt de la zone hors ligne. Mot de passe des comptes audit passé par `PWD_AUDIT` (jamais écrit). `BASE=http://localhost:3100` pour un serveur local ; `TX=<mission en route>` pour réutiliser une mission ; `TESTS=coupure,distance,permission,retour,chat,brouillon,zone`. Écrit en base (comptes audit) : missions et messages « QA hors-ligne 23-11 ».

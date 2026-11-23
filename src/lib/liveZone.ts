@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { isNetworkMessage } from '@/lib/netError'
+import { ZONE_ATTEMPTS, geoMessage, isGeoFail, readPositionOnce } from '@/lib/position'
 
 // Position d'intervention « Je suis en intervention ici (visible aujourd'hui) » — décision Romain 20/11/2026, migration 058.
 // Le prestataire reste visible à son domicile ET, s'il le choisit, à l'endroit où il intervient. Règle « pas de GPS » levée
@@ -57,6 +59,51 @@ export async function stopLiveZone(supabase: SupabaseClient): Promise<string | n
   return error ? error.message : null
 }
 
+// « Arrêter » sans réseau (audit 23/11, correction 5) : la demande d'arrêt est gardée sur le téléphone et rejouée
+// au retour de la connexion (renvoi automatique toutes les 15 s tant qu'elle attend). Jusque-là, la zone reste visible
+// des clients : l'écran le dit. Le renvoi n'agit que pour le compte qui a demandé l'arrêt, et expire au bout de 12 h
+// (durée maximale d'une zone).
+const ZONE_STOP_KEY = 'ping_zone_stop_pending'
+export const ZONE_STOP_EVENT = 'ping:zone-stop'
+
+type PendingStop = { uid: string; at: number }
+
+export function pendingZoneStop(uid?: string | null, now = Date.now()): boolean {
+  try {
+    const raw = localStorage.getItem(ZONE_STOP_KEY)
+    if (!raw) return false
+    const p = JSON.parse(raw) as PendingStop
+    if (now - p.at > LIVE_ZONE_HOURS * 3600 * 1000) { localStorage.removeItem(ZONE_STOP_KEY); return false }
+    return !uid || p.uid === uid
+  } catch { return false }
+}
+function setPendingZoneStop(uid: string | null) {
+  try {
+    if (uid) localStorage.setItem(ZONE_STOP_KEY, JSON.stringify({ uid, at: Date.now() } satisfies PendingStop))
+    else localStorage.removeItem(ZONE_STOP_KEY)
+    window.dispatchEvent(new CustomEvent(ZONE_STOP_EVENT))
+  } catch { /* stockage indisponible : l'arrêt reste à refaire à la main */ }
+}
+/** Un nouvel « Activer » annule un arrêt resté en attente. */
+export const cancelPendingZoneStop = () => setPendingZoneStop(null)
+
+/** Arrête la zone ; sans réseau, met l'arrêt en attente. 'queued' : en attente ; sinon texte d'erreur ou null (arrêtée). */
+export async function stopLiveZoneOrQueue(supabase: SupabaseClient, uid: string): Promise<'queued' | string | null> {
+  const e = await stopLiveZone(supabase)
+  if (!e) { setPendingZoneStop(null); return null }
+  if (isNetworkMessage(e)) { setPendingZoneStop(uid); return 'queued' }
+  return e
+}
+
+/** Rejoue l'arrêt en attente du compte connecté. Renvoie true si la zone est arrêtée. */
+export async function flushZoneStop(supabase: SupabaseClient, uid: string): Promise<boolean> {
+  if (!pendingZoneStop(uid)) return false
+  const e = await stopLiveZone(supabase)
+  if (e) return false
+  setPendingZoneStop(null)
+  return true
+}
+
 /** Mission en cours du prestataire (arrivée posée, pas terminée) : la zone s'arrête avec elle. */
 export async function currentMissionId(supabase: SupabaseClient, uid: string): Promise<string | null> {
   const { data } = await supabase.from('transactions').select('id').eq('seller_id', uid).eq('status', 'arrived').limit(1)
@@ -74,15 +121,15 @@ export async function sectorLabel(lat: number, lng: number): Promise<string | nu
   } catch { return null }
 }
 
-/** Position de l'appareil, une seule fois, à la demande du prestataire (après son consentement). */
-export function devicePosition(timeoutMs = 12000): Promise<{ lat: number; lng: number }> {
-  return new Promise((resolve, reject) => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) { reject(new Error('Position indisponible sur cet appareil.')); return }
-    navigator.geolocation.getCurrentPosition(
-      p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      () => reject(new Error('Position refusée ou indisponible. Autorisez la localisation dans votre navigateur, puis réessayez.')),
-      { enableHighAccuracy: false, timeout: timeoutMs, maximumAge: 60000 })
-  })
+/**
+ * Position de l'appareil, une seule fois, à la demande du prestataire (après son consentement) : basse précision
+ * (cache de 60 s), puis haute précision en repli. Lève une Error dont le texte dit la cause (refus, délai,
+ * indisponible) et où réactiver la localisation ; `reason` porte la cause.
+ */
+export async function devicePosition(): Promise<{ lat: number; lng: number }> {
+  const r = await readPositionOnce(ZONE_ATTEMPTS)
+  if (isGeoFail(r)) throw Object.assign(new Error(geoMessage(r.reason)), { reason: r.reason })
+  return { lat: r.lat, lng: r.lng }
 }
 
 /** Zones d'intervention visibles autour d'un point (carte client). Tableau vide si la migration 058 n'est pas collée. */

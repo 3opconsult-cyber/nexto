@@ -18,6 +18,7 @@ import ClientProofCard from '@/components/presence/ClientProofCard'
 import RemoteConfirmCard from '@/components/presence/RemoteConfirmCard'
 import RemotePresence from '@/components/presence/RemotePresence'
 import PresenceTag from '@/components/presence/PresenceTag'
+import { isNetworkMessage } from '@/lib/netError'
 import PresenceChoice from '@/components/presence/PresenceChoice'
 import AbsentProcess from '@/components/presence/AbsentProcess'
 import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
@@ -112,6 +113,12 @@ export default function MissionDuJour() {
     if (isSeller && q.has('absent')) { setWantAbsent(true); setAbsentOpen(true) }
   }, [tx, uid, v2, isSeller])
 
+  // Scan sans réseau : rien n'est enregistré ni gardé, l'heure retenue est celle de la validation (serveur). Phrase claire
+  // plutôt que « Failed to fetch » ; le champ du scanner est rouvert pour un nouvel essai.
+  const scanErr = (m: string | undefined, fallback: string) => isNetworkMessage(m)
+    ? 'Pas de connexion : rien n’est validé. Scannez de nouveau dès que le réseau revient ; l’heure retenue est celle de la validation.'
+    : (m || fallback)
+
   async function handleScan(raw: string) {
     if (!tx || !scan) return
     const phase = scan
@@ -125,7 +132,7 @@ export default function MissionDuJour() {
     if (parsed.phase === 'onsite') {
       const { data, error } = await supabase.rpc('arrive_with_onsite_token', { p_transaction: tx.id, p_token: parsed.token })
       setBusy(false)
-      if (error) { setMsg({ kind: 'err', text: error.message || 'QR invalide ou déjà utilisé.' }); setScanKey(k => k + 1); return }
+      if (error) { setMsg({ kind: 'err', text: scanErr(error.message, 'QR invalide ou déjà utilisé.') }); setScanKey(k => k + 1); return }
       if (!v2) {
         await supabase.from('messages').insert({
           transaction_id: tx.id, ...(await systemSender(supabase)),
@@ -137,7 +144,7 @@ export default function MissionDuJour() {
     if (v2) {
       const r = await validatePresence(supabase, tx.id, phase, parsed.token)
       setBusy(false)
-      if (!r.ok) { setMsg({ kind: 'err', text: r.message || 'Preuve refusée.' }); setScanKey(k => k + 1); return }
+      if (!r.ok) { setMsg({ kind: 'err', text: scanErr(r.message, 'Preuve refusée.') }); setScanKey(k => k + 1); return }
       setScan(null)
       setMsg({ kind: 'ok', text: (phase === 'arrivee' ? 'Arrivée validée.' : 'Fin validée.') + (r.warning && PRESENCE_WARNING[r.warning] ? ' ' + PRESENCE_WARNING[r.warning] : '') })
       load(); return

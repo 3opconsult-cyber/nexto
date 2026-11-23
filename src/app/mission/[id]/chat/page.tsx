@@ -28,6 +28,7 @@ import { EUR } from '@/lib/invoice-pdf'
 import { TRADES } from '@/lib/trades'
 import { geocodeAddress } from '@/lib/geocode'
 import { systemSender, isSystemMessage } from '@/lib/systemMessage'
+import { ERR_MS, OFFLINE_TEXT, isNetworkMessage } from '@/lib/netError'
 import { isTodayMission } from '@/lib/todayMission'
 import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import { INSURANCE_REQUEST_BODY, INSURANCE_SENT_PREFIX, INSURANCE_LINK_DAYS, isInsuranceRequest, isInsuranceSent, insuranceLink, signMyInsurance } from '@/lib/insurance'
@@ -82,6 +83,10 @@ function toLocalInput(iso: string) {
 const rdvLabel = (iso: string) => new Date(iso).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 const SLOT_LABEL: Record<string, string> = { matin: 'le matin', 'apres-midi': "l'après-midi", soir: 'le soir', flexible: 'horaire flexible' }
 
+// Identifiant de message fabriqué sur le téléphone (crypto.randomUUID demande HTTPS ; repli pour les vieux navigateurs).
+const newMessageId = (): string => typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+  ? crypto.randomUUID()
+  : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (Number(c) ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))).toString(16))
 export default function ChatPage() {
   const params = useParams()
   const router = useRouter()
@@ -350,25 +355,40 @@ export default function ChatPage() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs])
 
+  // Anti-doublon (audit 23/11, correction 5) : chaque message porte un identifiant unique fabriqué sur le téléphone.
+  // Si la réponse du serveur se perd après coup et que l'on renvoie le même texte, le même identifiant est réutilisé :
+  // la base refuse le second exemplaire (clé déjà prise, code 23505), ce qui vaut « déjà envoyé ». Aucune migration.
+  const pendingSend = useRef<{ body: string; id: string } | null>(null)
+  const sendingRef = useRef(false)
   async function send() {
-    if (!input.trim() || !userId) return
-    const result = filterMessage(input)
-    if (result.blocked) {
-      setWarning(`Message filtré : ${result.reasons.join(', ')} interdits hors plateforme.`)
-      setTimeout(() => setWarning(''), 4000)
-    }
-    const supabase = createClient()
-    const { error } = await supabase.from('messages').insert({
-      transaction_id: transactionId,
-      sender_id: userId,
-      body: result.clean,
-    })
-    if (error) { setWarning('Message non envoyé — vérifiez votre connexion et réessayez.'); setTimeout(() => setWarning(''), 4000); return }
-    notifyOther(transactionId, 'message')
-    markFirstAction('message')
-    setInput('')
-    // Le message envoyé s'affiche tout de suite, même si Realtime ne l'a pas encore renvoyé (sans doublon).
-    refreshRef.current?.()
+    if (!input.trim() || !userId || sendingRef.current) return
+    sendingRef.current = true
+    try {
+      const result = filterMessage(input)
+      if (result.blocked) {
+        setWarning(`Message filtré : ${result.reasons.join(', ')} interdits hors plateforme.`)
+        setTimeout(() => setWarning(''), ERR_MS)
+      }
+      if (pendingSend.current?.body !== result.clean) pendingSend.current = { body: result.clean, id: newMessageId() }
+      const supabase = createClient()
+      const { error } = await supabase.from('messages').insert({
+        id: pendingSend.current.id,
+        transaction_id: transactionId,
+        sender_id: userId,
+        body: result.clean,
+      })
+      if (error && error.code !== '23505') {
+        setWarning(isNetworkMessage(error.message) ? `Message non envoyé. ${OFFLINE_TEXT} Votre texte est gardé.` : 'Message non envoyé — réessayez. Votre texte est gardé.')
+        setTimeout(() => setWarning(''), ERR_MS)
+        return
+      }
+      pendingSend.current = null
+      notifyOther(transactionId, 'message')
+      markFirstAction('message')
+      setInput('')
+      // Le message envoyé s'affiche tout de suite, même si Realtime ne l'a pas encore renvoyé (sans doublon).
+      refreshRef.current?.()
+    } finally { sendingRef.current = false }
   }
 
   // Client : demande l'attestation d'assurance du prestataire (message dans le fil + e-mail).
@@ -448,7 +468,7 @@ export default function ChatPage() {
     })
     if (offerErr) {
       setSendingOffer(false)
-      setWarning('Proposition non envoyée — réessayez.'); setTimeout(() => setWarning(''), 4000)
+      setWarning('Proposition non envoyée — réessayez.'); setTimeout(() => setWarning(''), ERR_MS)
       return
     }
 
@@ -493,7 +513,7 @@ export default function ChatPage() {
     if (tx?.price_confirmed) return
     const r = await acceptOfferMessage(createClient(), transactionId, m as any)
     if ('error' in r) {
-      setWarning(r.error); setTimeout(() => setWarning(''), 4000)
+      setWarning(r.error); setTimeout(() => setWarning(''), ERR_MS)
       return
     }
     setTx(r.tx)
@@ -567,7 +587,7 @@ export default function ChatPage() {
     const supabase = createClient()
     const { data: upd, error } = await supabase.from('transactions').update({ address_status: ok ? 'acceptee' : 'refusee' }).eq('id', tx.id).select().maybeSingle()
     setAddrBusy(false)
-    if (error || !upd) { setWarning('Réponse non enregistrée — réessayez.'); setTimeout(() => setWarning(''), 4000); return }
+    if (error || !upd) { setWarning('Réponse non enregistrée — réessayez.'); setTimeout(() => setWarning(''), ERR_MS); return }
     setTx((t: any) => ({ ...t, address_status: upd.address_status }))
     await supabase.from('messages').insert({
       transaction_id: tx.id, ...(await systemSender(supabase)),

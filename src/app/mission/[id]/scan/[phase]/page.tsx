@@ -7,6 +7,7 @@ import { computeFinalAmounts, getHourThreshold, getRates } from '@/lib/pricing'
 import { EUR } from '@/lib/invoice-pdf'
 import { systemSender } from '@/lib/systemMessage'
 import { PRESENCE_WARNING, durLabel, presenceAvailable, validatePresence } from '@/lib/presence'
+import { isNetworkMessage } from '@/lib/netError'
 
 // Écran ouvert par le QR du client quand le prestataire le scanne avec l'appareil photo de son téléphone
 // (le scanner intégré de « Mission du jour » fait la même chose sans quitter l'application).
@@ -32,7 +33,9 @@ export default function ScanQR() {
         router.replace(`/auth/login?next=${encodeURIComponent(here)}`)
         return
       }
-      const { data: tx } = await supabase.from('transactions').select('*').eq('id', params.id).maybeSingle()
+      const { data: tx, error: txErr } = await supabase.from('transactions').select('*').eq('id', params.id).maybeSingle()
+      // Coupure réseau : pas « mission introuvable » (le code reste valable, rien n'est validé).
+      if (txErr && isNetworkMessage(txErr.message)) { setStatus('error'); setMessage('Pas de connexion : rien n’est validé. Rouvrez ce lien dès que le réseau revient.'); return }
 
       if (!tx) { setStatus('error'); setMessage('Mission introuvable pour ce compte. Connectez-vous avec le compte du prestataire de la mission.'); return }
       if (tx.status === 'cancelled') { setStatus('error'); setMessage('Cette réservation a été annulée.'); return }

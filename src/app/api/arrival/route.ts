@@ -58,6 +58,10 @@ export async function POST(req: Request) {
     const geo = verdict.status === 'conforme' ? 'conforme' : 'non_verifiable'
 
     const distance = verdict.status === 'conforme' ? Math.round(verdict.distanceM) : null
+    // Contrôle seul (audit 23/11, correction 4) : le téléphone demande l'avis du serveur AVANT de téléverser la photo.
+    // Mêmes contrôles que l'envoi réel (auteur, état de la mission, distance), rien n'est écrit : aucune photo orpheline
+    // sur un refus. L'envoi réel refait les mêmes contrôles ; la base reste seule juge de l'heure.
+    if (b.dryRun === true) return NextResponse.json({ ok: true, dryRun: true, geo, distanceM: distance })
     // Migration 048 : arrivée avec la photo prise sur place (obligatoire), un seul message avec photo, distance
     // et heure. Fonction absente : repli sur 038 (sans photo), puis 033.
     const photoPath = typeof b.photoPath === 'string' && b.photoPath.length < 300 ? b.photoPath : null

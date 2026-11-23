@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { OFFLINE_TEXT, isNetworkMessage } from '@/lib/netError'
 
 // Arrivée et départ sécurisés (migration 038). Toute validation passe par une RPC SECURITY DEFINER qui exige une
 // preuve du client : QR / code à 6 chiffres affichés chez lui, ou, client absent, sa confirmation en un appui
@@ -123,37 +124,28 @@ export async function clientDeclinePresence(supabase: SupabaseClient, txId: stri
 }
 
 export type RemoteRequestResult =
-  | { ok: true; geo: 'conforme' | 'non_verifiable'; expiresAt: string; confirmUntil?: string; distanceM?: number | null }
+  | { ok: true; geo: 'conforme' | 'non_verifiable'; expiresAt?: string; confirmUntil?: string; distanceM?: number | null; dryRun?: boolean }
   | { ok: false; error: string; message: string; distanceM?: number }
 
 /**
  * Client absent : le prestataire (consentement donné) envoie sa position ; /api/arrival compare et prévient le client.
  * Migration 048 : `photoPath` (photo prise sur place, obligatoire à l'arrivée) part avec, dans un seul message.
+ * `dryRun` : la route ne fait QUE les contrôles (mission, état, distance) et ne pose rien. Appelé AVANT le téléversement
+ * de la photo : une position éloignée ou une mission non prête ne laisse plus de photo orpheline au stockage.
+ * Panne réseau : `error: 'network'` (renvoi possible) ; erreur du serveur : `error: 'server'`.
  */
 export async function requestRemotePresence(
-  txId: string, phase: Phase, pos: { lat: number; lng: number; accuracyM?: number | null }, photoPath?: string | null,
+  txId: string, phase: Phase, pos: { lat: number; lng: number; accuracyM?: number | null }, photoPath?: string | null, dryRun = false,
 ): Promise<RemoteRequestResult> {
   try {
     const r = await fetch('/api/arrival', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transactionId: txId, phase, lat: pos.lat, lng: pos.lng, accuracy: pos.accuracyM ?? null, consent: true, photoPath: photoPath ?? null }),
+      body: JSON.stringify({ transactionId: txId, phase, lat: pos.lat, lng: pos.lng, accuracy: pos.accuracyM ?? null, consent: true, photoPath: photoPath ?? null, dryRun }),
     })
     return await r.json()
   } catch {
-    return { ok: false, error: 'server', message: 'Réseau indisponible, réessayez.' }
+    return { ok: false, error: 'network', message: OFFLINE_TEXT }
   }
-}
-
-/** Position unique, après consentement (jamais de suivi). */
-export function getPositionOnce(timeoutMs = 10000): Promise<{ lat: number; lng: number; accuracyM: number } | null> {
-  return new Promise(resolve => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) { resolve(null); return }
-    navigator.geolocation.getCurrentPosition(
-      p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracyM: p.coords.accuracy }),
-      () => resolve(null),
-      { enableHighAccuracy: true, timeout: timeoutMs },
-    )
-  })
 }
 
 // Libellés (facture, récapitulatif, frise). Ancien arrival_method (033) accepté en repli. La phase précise le mode
@@ -251,12 +243,12 @@ export const requestEndCode = (supabase: SupabaseClient, txId: string) =>
 export const PRESENCE_PHOTO_BUCKET = 'presence-photos'
 
 /** Photo d'arrivée (client absent) : bucket privé, `<uid>/<mission>/<horodatage>.<ext>`. */
-export async function uploadPresencePhoto(supabase: SupabaseClient, uid: string, txId: string, file: File): Promise<{ path?: string; error?: string }> {
+export async function uploadPresencePhoto(supabase: SupabaseClient, uid: string, txId: string, file: File | Blob): Promise<{ path?: string; error?: string; network?: boolean }> {
   if (file.size > 10 * 1024 * 1024) return { error: 'Photo trop lourde (10 Mo au plus).' }
   const ext = ((file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace(/[^a-z0-9]/g, '')) || 'jpg'
   const path = `${uid}/${txId}/${Date.now()}.${ext}`
   const { error } = await supabase.storage.from(PRESENCE_PHOTO_BUCKET).upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' })
-  if (error) return { error: 'Photo non envoyée : vérifiez votre connexion et réessayez.' }
+  if (error) return { error: isNetworkMessage(error.message) ? OFFLINE_TEXT : 'Photo non envoyée : réessayez.', network: isNetworkMessage(error.message) }
   return { path }
 }
 

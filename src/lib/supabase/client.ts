@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { pingFetch } from '@/lib/netError'
 
 // Audit ergonomie 21/11 : un écran appelait auth.getUser() 7 à 9 fois au chargement (chaque composant de la
 // barre, du menu, du chat), soit autant d'allers-retours /auth/v1/user. On garde UNE réponse partagée quelques
@@ -10,7 +11,9 @@ let patched = false
 export function createClient() {
   const client = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    // Coupure réseau : phrase française au lieu de « Failed to fetch » (src/lib/netError.ts).
+    { global: { fetch: pingFetch } },
   )
   if (typeof window !== 'undefined' && !patched) {
     patched = true

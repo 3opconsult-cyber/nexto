@@ -7,6 +7,8 @@ import NavDrawer from '@/components/NavDrawer'
 import { cesuEligible } from '@/lib/trades'
 import { useCatalog, type RequestField } from '@/lib/catalog'
 import { geocodeAddress, addressLocality } from '@/lib/geocode'
+import { OFFLINE_TEXT, isNetworkMessage } from '@/lib/netError'
+import { clearDraft, readDraft, writeDraft } from '@/lib/draft'
 import LocationAsk from '@/components/LocationAsk'
 import { markFirstAction } from '@/lib/firstAction'
 import type { Point } from '@/lib/location'
@@ -65,14 +67,53 @@ export default function NewOpenRequestPage() {
   // correction 18) : le formulaire tient sans défilement obligatoire jusqu'à « Publier ».
   const [more, setMore] = useState(false)
 
+  // Brouillon d'annonce (audit 23/11, correction 5) : gardé dans le navigateur de CE téléphone (jamais envoyé), repris
+  // après un rechargement ou une coupure, effacé à la publication ou au bout de 7 jours. Un brouillon par compte.
+  const [draftUid, setDraftUid] = useState<string | null>(null)
+  const [draftReady, setDraftReady] = useState(false)
+  const [draftRestored, setDraftRestored] = useState(false)
+
   useEffect(() => {
     const sb = createClient()
     sb.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/auth/login?next=/client/demandes/new'); return }
+      setDraftUid(user.id)
+      const d = readDraft(user.id)
+      if (d) {
+        const today = new Date(); today.setHours(0, 0, 0, 0)
+        const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+        if (typeof d.category === 'string') setCategory(d.category)
+        if (typeof d.title === 'string') setTitle(d.title)
+        if (typeof d.description === 'string') setDescription(d.description)
+        if (typeof d.surface === 'string') setSurface(d.surface)
+        if (typeof d.pieces === 'number') setPieces(d.pieces)
+        if (d.hours === null || typeof d.hours === 'number') setHours(d.hours)
+        if (d.kilos === null || typeof d.kilos === 'number') setKilos(d.kilos)
+        if (Array.isArray(d.linen)) setLinen(d.linen.filter((x: unknown) => typeof x === 'string'))
+        if (typeof d.frequency === 'string') setFrequency(d.frequency)
+        if (d.household === null || typeof d.household === 'string') setHousehold(d.household)
+        if (typeof d.payment === 'string') setPayment(d.payment)
+        if (typeof d.desiredDate === 'string' && d.desiredDate >= todayIso) setDesiredDate(d.desiredDate)
+        if (typeof d.desiredSlot === 'string') setDesiredSlot(d.desiredSlot)
+        if (typeof d.budgetMin === 'string') setBudgetMin(d.budgetMin)
+        if (typeof d.budgetMax === 'string') setBudgetMax(d.budgetMax)
+        if (typeof d.urgent === 'boolean') setUrgent(d.urgent)
+        if (d.addr && (d.addr.mode === 'profil' || d.addr.mode === 'autre') && typeof d.addr.other === 'string') setAddr({ mode: d.addr.mode, other: d.addr.other, confirmed: !!d.addr.confirmed })
+        if (typeof d.more === 'boolean') setMore(d.more)
+        setDraftRestored(true)
+      }
+      setDraftReady(true)
       const { data } = await sb.from('profiles').select('address').eq('id', user.id).maybeSingle()
       setProfileAddress(data?.address?.trim() || null)
     })
   }, [router])
+  useEffect(() => {
+    if (!draftReady || !draftUid) return
+    const t = setTimeout(() => {
+      writeDraft(draftUid, { category, title, description, surface, pieces, hours, kilos, linen, frequency, household, payment, desiredDate, desiredSlot, budgetMin, budgetMax, urgent, addr, more })
+    }, 400)
+    return () => clearTimeout(t)
+  }, [draftReady, draftUid, category, title, description, surface, pieces, hours, kilos, linen, frequency, household, payment, desiredDate, desiredSlot, budgetMin, budgetMax, urgent, addr, more])
 
   // Champs de l'annonce du service choisi (catalogue) : linge pour le repassage, logement sinon.
   const fields = new Set<RequestField>(catalog.get(category)?.request_fields ?? [])
@@ -117,6 +158,8 @@ export default function NewOpenRequestPage() {
     if (!point) point = await geocodeAddress(addressLocality(address)).catch(() => null)
     if (!point) {
       setCreating(false)
+      // Hors ligne, l'adresse ne peut pas être reconnue : ce n'est pas un problème de position (audit 23/11).
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) { setError(`${OFFLINE_TEXT} Votre brouillon est gardé sur ce téléphone.`); return }
       setAskPos(true)
       return
     }
@@ -151,8 +194,12 @@ export default function NewOpenRequestPage() {
       delete row.nombre_pieces
       ;({ error: reqErr } = await supabase.from('requests').insert(row))
     }
-    if (reqErr) { setError('Impossible de publier l’annonce. Réessayez dans un instant.'); setCreating(false); return }
+    if (reqErr) {
+      setError(isNetworkMessage(reqErr.message) ? `${OFFLINE_TEXT} Votre brouillon est gardé sur ce téléphone.` : 'Impossible de publier l’annonce. Réessayez dans un instant.')
+      setCreating(false); return
+    }
 
+    clearDraft(user.id)
     markFirstAction('demande')
     router.push('/client/demandes')
   }
@@ -178,6 +225,13 @@ export default function NewOpenRequestPage() {
       </div>
 
       <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh', maxWidth: 640, margin: '0 auto' }}>
+        {draftRestored && (
+          <div role="status" data-draft-note style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #DCE5E3', borderRadius: 12, padding: '8px 12px', marginBottom: 12, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>
+            <span style={{ flex: 1 }}>Votre brouillon a été repris : il est gardé sur ce téléphone jusqu’à la publication.</span>
+            <button type="button" onClick={() => { if (draftUid) clearDraft(draftUid); window.location.reload() }}
+              style={{ minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer' }}>Repartir de zéro</button>
+          </div>
+        )}
         <Section title="Quel service ?">
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {catalog.selectable.map(t => <button key={t.key} type="button" onClick={() => setCategory(t.key)} style={chip(category === t.key)}>{t.label}</button>)}

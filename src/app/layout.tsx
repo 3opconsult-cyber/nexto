@@ -10,6 +10,7 @@ import FeedbackBubble from '@/components/FeedbackBubble'
 import InstallPrompt from '@/components/InstallPrompt'
 import AuthGate from '@/components/AuthGate'
 import TabPrefetch from '@/components/TabPrefetch'
+import OfflineSync from '@/components/OfflineSync'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -75,6 +76,7 @@ export default function RootLayout({
         <InstallPrompt />
         <AuthGate />
         <TabPrefetch />
+        <OfflineSync />
       </body>
     </html>
   )
