@@ -149,11 +149,13 @@ export default function ProMonthBlock({ pro, transactions, hideDispute }: Props)
             <div style={lab}>{nearby === 0 ? 'Aucune demande proche' : `Demande${nearby != null && nearby > 1 ? 's' : ''} proche${nearby != null && nearby > 1 ? 's' : ''}`}</div>
           </div>
         </div>
-        <div style={{ borderTop: '1px solid #EEF2F1', marginTop: 10, paddingTop: 8, fontSize: 12.5, color: '#4E6470' }}>
-          {next.length === 0
-            ? 'Aucun rendez-vous confirmé pour le moment.'
-            : <><b style={{ color: '#123644' }}>Prochain</b> : {names[next[0].id] || 'Client'} · {when(next[0].scheduled_at)}{next.length > 1 ? ` (+${next.length - 1})` : ''}</>}
-        </div>
+        {next.length === 0
+          ? <div style={{ borderTop: '1px solid #EEF2F1', marginTop: 10, paddingTop: 8, fontSize: 12.5, color: '#4E6470' }}>Aucun rendez-vous confirmé pour le moment.</div>
+          : <button type="button" onClick={() => router.push('/agenda')}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, border: 'none', borderTop: '1px solid #EEF2F1', marginTop: 10, background: 'none', padding: '8px 0 0', fontSize: 12.5, color: '#4E6470', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <span style={{ flex: 1 }}><b style={{ color: '#123644' }}>Prochain</b> : {names[next[0].id] || 'Client'} · {when(next[0].scheduled_at)}{next.length > 1 ? ` (+${next.length - 1})` : ''}</span>
+              <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M9 6l6 6-6 6" /></svg>
+            </button>}
       </div>
     </div>
   )
