@@ -37,8 +37,10 @@ export function bestOf(list: ProviderNearby[]): ProviderNearby | null {
   return near.reduce((best, p) => ((p.rating || 0) > (best.rating || 0) ? p : best), near[0])
 }
 
-export default function FindSheet({ open, onClose, services, pros, acts, newIds, onReserve, onDeposit }: {
+export default function FindSheet({ open, onClose, services, pros, acts, newIds, onReserve, onDeposit, embedded = false }: {
   open: boolean
+  /** Bureau (>= 1000 px) : le parcours est posé dans le panneau latéral, à côté de la carte, au lieu d'une feuille qui la recouvre. */
+  embedded?: boolean
   onClose: () => void
   services: FindService[]
   pros: ProviderNearby[]
@@ -143,11 +145,18 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
   const bestDevis = best?.pricing_type === 'devis'
   const bestPrice = best ? priceOf(best, sel.length === 1 ? sel[0] : null) : ''
 
+  const boxStyle: React.CSSProperties = embedded
+    ? { outline: 'none', width: '100%', height: '100%', background: '#fff', padding: '8px 16px 16px', overflowY: 'auto', boxSizing: 'border-box' }
+    : { outline: 'none', width: '100%', maxWidth: 520, background: '#fff', borderRadius: '22px 22px 0 0', padding: '8px 16px calc(16px + env(safe-area-inset-bottom))', maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' }
+  const wrapStyle: React.CSSProperties = embedded
+    ? { height: '100%' }
+    : { position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(18,54,68,.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }
+
   return (
-    <div role="dialog" aria-modal="true" aria-label="Trouver un prestataire" data-find-sheet={step}
-      onClick={e => { e.stopPropagation(); if (e.target === e.currentTarget) onClose() }}
-      style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(18,54,68,.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div ref={boxRef} tabIndex={-1} style={{ outline: 'none', width: '100%', maxWidth: 520, background: '#fff', borderRadius: '22px 22px 0 0', padding: '8px 16px calc(16px + env(safe-area-inset-bottom))', maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' }}>
+    <div role={embedded ? 'region' : 'dialog'} aria-modal={embedded ? undefined : true} aria-label="Trouver un prestataire" data-find-sheet={step} data-find-embedded={embedded ? '' : undefined}
+      onClick={embedded ? undefined : e => { e.stopPropagation(); if (e.target === e.currentTarget) onClose() }}
+      style={wrapStyle}>
+      <div ref={boxRef} tabIndex={-1} style={boxStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: -8, marginRight: -8 }}>
           {back[step] ? <button type="button" style={iconBtn} aria-label="Retour" onClick={() => setStep(back[step] as Step)}><Ic name="back" size={20} /></button> : <span style={{ width: 8 }} />}
           <h2 style={{ flex: 1, margin: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: C.navy }}>{title}</h2>

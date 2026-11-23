@@ -4,10 +4,10 @@ import type { ReactNode } from 'react'
 // Rubriques de « Mon entreprise » (pro) et « Mon profil » (particulier) : même présentation des deux
 // côtés, comme le menu Profil d'Airbnb — un titre de groupe, puis des lignes pictogramme + titre +
 // sous-titre + chevron. Le menu latéral ne garde que l'essentiel ; tout le reste est rangé ici.
-export function HubGroup({ title, children }: { title: string; children: ReactNode }) {
+export function HubGroup({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <div style={{ marginTop: 18 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 8px 2px' }}>{title}</div>
+      {title && <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 8px 2px' }}>{title}</div>}
       <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, overflow: 'hidden' }}>{children}</div>
     </div>
   )

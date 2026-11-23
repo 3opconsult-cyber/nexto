@@ -20,7 +20,7 @@ type Props = {
 }
 
 /** Alerte litige ouvert (même texte et même lien que dans le bloc du mois), placée sous la fiche comme la maquette. */
-export function ProDisputeAlert({ transactions }: { transactions: any[] }) {
+export function ProDisputeAlert({ transactions, compact = false }: { transactions: any[]; compact?: boolean }) {
   const router = useRouter()
   const [dispute, setDispute] = useState<{ id: string; count: number } | null>(null)
   const allKey = transactions.map(t => t.id).join(',')
@@ -39,9 +39,9 @@ export function ProDisputeAlert({ transactions }: { transactions: any[] }) {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0503A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2 2 21h20z" /><path d="M12 9v5M12 18h.01" /></svg>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 13, color: '#C0503A' }}>
-          {dispute.count > 1 ? `${dispute.count} litiges ouverts` : 'Un litige est ouvert'} sur vos missions
+          {dispute.count > 1 ? `${dispute.count} litiges ouverts` : 'Un litige est ouvert'}{compact ? ' : répondre' : ' sur vos missions'}
         </div>
-        <div style={{ fontSize: 11.5, color: '#C0503A', marginTop: 2 }}>Répondez dans le dossier pour que PING puisse trancher.</div>
+        {!compact && <div style={{ fontSize: 11.5, color: '#C0503A', marginTop: 2 }}>Répondez dans le dossier pour que PING puisse trancher.</div>}
       </div>
       <span style={{ color: '#C0503A' }}>›</span>
     </div>
@@ -106,8 +106,8 @@ export default function ProMonthBlock({ pro, transactions, hideDispute }: Props)
   }, [pro.id, pro.lat, pro.lng, pro.trade, pro.service_radius_km])
 
   const reviews = pro.reviews_count || 0
-  const card: React.CSSProperties = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 13 }
-  const big: React.CSSProperties = { fontFamily: 'Quicksand, sans-serif', fontWeight: 700, color: '#123644', fontSize: 20 }
+  const card: React.CSSProperties = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 12px' }
+  const big: React.CSSProperties = { fontFamily: 'Quicksand, sans-serif', fontWeight: 700, color: '#123644', fontSize: 18 }
   const lab: React.CSSProperties = { fontSize: 11, color: '#4E6470', marginTop: 2 }
 
   return (
@@ -128,42 +128,32 @@ export default function ProMonthBlock({ pro, transactions, hideDispute }: Props)
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
-        <div style={card}>
-          <div style={big}>{doneThisMonth.length ? EUR(revenueCents) : '—'}</div>
-          <div style={lab}>Chiffre d&apos;affaires du mois (net)</div>
-        </div>
-        <div style={card}>
-          <div style={big}>{doneThisMonth.length || '—'}</div>
-          <div style={lab}>Intervention{doneThisMonth.length > 1 ? 's' : ''} terminée{doneThisMonth.length > 1 ? 's' : ''} ce mois</div>
-        </div>
-        <div style={card}>
-          <div style={big}>{reviews && pro.rating ? `${Number(pro.rating).toFixed(1).replace('.', ',')} ★` : '—'}</div>
-          <div style={lab}>{reviews ? `Note moyenne · ${reviews} avis` : 'Pas encore d’avis'}</div>
-        </div>
-        <div onClick={() => router.push('/pro/carte')} role="button" style={{ ...card, cursor: 'pointer' }}>
-          <div style={big}>{nearby != null ? nearby : '—'}</div>
-          <div style={lab}>
-            {nearby == null ? 'Demandes près de vous' : nearby === 0 ? 'Aucune demande près de vous' : `Demande${nearby > 1 ? 's' : ''} près de vous`}
-            {nearby != null && nearby > 0 && <span style={{ color: '#0B8374', fontWeight: 700 }}> · voir ›</span>}
+      {/* Une seule carte : quatre chiffres (2 x 2) et le prochain rendez-vous. L'accès aux demandes est le premier onglet de la barre
+          du bas, la liste des rendez-vous et chaque mission sont dans l'onglet Agenda. */}
+      <div style={{ ...card, padding: '10px 14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px' }}>
+          <div>
+            <div style={big}>{doneThisMonth.length ? EUR(revenueCents) : '—'}</div>
+            <div style={lab}>Chiffre d&apos;affaires (net)</div>
+          </div>
+          <div>
+            <div style={big}>{doneThisMonth.length || '—'}</div>
+            <div style={lab}>Intervention{doneThisMonth.length > 1 ? 's' : ''}</div>
+          </div>
+          <div>
+            <div style={big}>{reviews && pro.rating ? `${Number(pro.rating).toFixed(1).replace('.', ',')} ★` : '—'}</div>
+            <div style={lab}>{reviews ? `${reviews} avis` : 'Pas encore d’avis'}</div>
+          </div>
+          <div>
+            <div style={big}>{nearby != null ? nearby : '—'}</div>
+            <div style={lab}>{nearby === 0 ? 'Aucune demande proche' : `Demande${nearby != null && nearby > 1 ? 's' : ''} proche${nearby != null && nearby > 1 ? 's' : ''}`}</div>
           </div>
         </div>
-      </div>
-
-      <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, overflow: 'hidden', marginTop: 9 }}>
-        <div style={{ padding: '11px 14px', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Prochains rendez-vous</div>
-        {next.length === 0 ? (
-          <div style={{ padding: '2px 14px 14px', fontSize: 12.5, color: '#4E6470' }}>Aucun rendez-vous confirmé pour le moment.</div>
-        ) : next.map(t => (
-          <div key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)} role="button"
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderTop: '1px solid #EEF2F1', cursor: 'pointer' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: '#123644', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{names[t.id] || 'Client'}</div>
-              <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{when(t.scheduled_at)}</div>
-            </div>
-            <span style={{ color: '#6E8592' }}>›</span>
-          </div>
-        ))}
+        <div style={{ borderTop: '1px solid #EEF2F1', marginTop: 10, paddingTop: 8, fontSize: 12.5, color: '#4E6470' }}>
+          {next.length === 0
+            ? 'Aucun rendez-vous confirmé pour le moment.'
+            : <><b style={{ color: '#123644' }}>Prochain</b> : {names[next[0].id] || 'Client'} · {when(next[0].scheduled_at)}{next.length > 1 ? ` (+${next.length - 1})` : ''}</>}
+        </div>
       </div>
     </div>
   )

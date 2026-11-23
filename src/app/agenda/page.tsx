@@ -3,7 +3,6 @@ import { incidentOpen } from '@/lib/incident'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { BackArrow } from '@/components/BackHeader'
 import { slotEnd, dayLabel, hhmm, type Slot } from '@/lib/slots'
 import { readScreenCache } from '@/lib/screenCache'
 import { AGENDA_CACHE, loadAgendaSnap, type AgendaCache } from '@/lib/agendaLoader'
@@ -134,6 +133,8 @@ export default function AgendaPage() {
   const stale = upcoming.filter(t => isStale(t)).sort((a, b) => txDate(b).getTime() - txDate(a).getTime())
   const [showStale, setShowStale] = useState(false)
   const [allLater, setAllLater] = useState(false)
+  const [allToday, setAllToday] = useState(false)
+  const [openCards, setOpenCards] = useState<Set<string>>(() => new Set())
   const mineById = new Map(mine.map(t => [t.id, t]))
   const shownInvoices = mode ? invoices.filter(r => mineById.has(r.transaction_id) && MODE_KINDS[mode].includes(r.kind)) : []
   const invoicedIds = new Set(invoices.map(r => r.transaction_id))
@@ -176,19 +177,26 @@ export default function AgendaPage() {
 
   const open = (t: any) => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)
 
-  const card = (t: any, withSuivi = false, withActions = false, muted = false) => (
-    <div key={t.id} role="link" tabIndex={0} onClick={() => open(t)} aria-label={`${names[t.id] || 'Mission'}, ${badge(t).label}`}
-      onKeyDown={e => { if (e.key === 'Enter' && e.target === e.currentTarget) open(t) }}
+  // lean : carte « Aujourd'hui » allégée (heure seule, sans report/annulation/frise : tout est dans « Mission du jour » et la
+  // conversation) ; 'first' garde le bouton « Mission du jour », 'more' ouvre directement l'écran du jour.
+  // fold : report, annulation et frise derrière un seul bouton (cartes « À venir »).
+  const card = (t: any, withSuivi = false, withActions = false, muted = false, lean: false | 'first' | 'more' = false, fold = false) => {
+    const actionsOk = !muted && !lean && !!t.price_confirmed && t.status === 'pending' && !t.arrived_at && !bookingPending(t) && !bookingEnded(t) && t.buyer_id !== t.seller_id
+    const foldable = fold && (actionsOk || (withSuivi && !bookingPending(t)))
+    const shown = !foldable || openCards.has(t.id)
+    return (
+    <div key={t.id} role="link" tabIndex={0} onClick={() => lean === 'more' ? router.push(`/mission/${t.id}/jour`) : open(t)} aria-label={`${names[t.id] || 'Mission'}, ${badge(t).label}`}
+      onKeyDown={e => { if (e.key === 'Enter' && e.target === e.currentTarget) { lean === 'more' ? router.push(`/mission/${t.id}/jour`) : open(t) } }}
       style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer', opacity: muted ? .75 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
             {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
           </div>
-          <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
+          {t.requests?.description && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests.description}</div>}
           <div style={{ fontSize: 11, color: t.scheduled_at && UPCOMING.includes(t.status) ? '#0B8374' : '#4E6470', fontWeight: t.scheduled_at && UPCOMING.includes(t.status) ? 700 : 400, marginTop: 3 }}>
             {t.scheduled_at && UPCOMING.includes(t.status)
-              ? `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`
+              ? (lean ? hhmm(t.scheduled_at) : `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`)
               : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
             {t.subtotal_cents ? ` · ${eur(t.subtotal_cents)}` : ''}
           </div>
@@ -201,7 +209,7 @@ export default function AgendaPage() {
           <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: badge(t).bg, color: badge(t).fg }}>
             {badge(t).label}
           </span>
-          {isTodayMission(t) && (
+          {isTodayMission(t) && lean !== 'more' && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
               border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Mission du jour</button>
@@ -221,12 +229,19 @@ export default function AgendaPage() {
         </div>
       )}
       {/* Annuler ou reporter un rendez-vous à venir (056) : deux boutons, les règles s'affichent à l'ouverture. */}
-      {!muted && t.price_confirmed && t.status === 'pending' && !t.arrived_at && !bookingPending(t) && !bookingEnded(t) && t.buyer_id !== t.seller_id && (
+      {actionsOk && shown && (
         <MissionActions tx={t} userId={uid} compact style={{ marginTop: 10 }}
           onChange={patch => setTxs(list => list.map(x => x.id === t.id ? { ...x, ...patch } : x))} />
       )}
       {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
-      {withSuivi && !bookingPending(t) && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
+      {withSuivi && shown && !lean && !bookingPending(t) && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
+      {foldable && (
+        <button type="button" aria-expanded={shown} onClick={e => { e.stopPropagation(); setOpenCards(set => { const n = new Set(set); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n }) }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 44, marginTop: 8, border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+          {shown ? 'Masquer' : 'Reporter, annuler, suivi'}
+          <svg aria-hidden width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} style={{ transform: shown ? 'rotate(-90deg)' : 'rotate(90deg)' }}><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      )}
       {/* Terminées (audit ergonomie 18/11, amélioration 8) : avis et litige en un appui. */}
       {withActions && DONE.includes(t.status) && (
         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
@@ -246,26 +261,41 @@ export default function AgendaPage() {
       )}
     </div>
   )
+  }
+
+  // Mes demandes sans passer par Profil (espace client seulement) : en tête s'il y a une proposition à examiner, sinon après les rendez-vous.
+  const demandesRow = mode === 'particulier' ? (
+            <button type="button" onClick={() => router.push('/client/demandes')}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', background: offersWaiting ? '#FFF7ED' : '#fff', border: offersWaiting ? '1.5px solid #F2A93B' : '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px', marginBottom: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes demandes en ligne</span>
+                <span style={{ display: 'block', fontSize: 12, color: offersWaiting ? '#8a6520' : '#4E6470', fontWeight: offersWaiting ? 700 : 400, marginTop: 2 }}>
+                  {offersWaiting
+                    ? `${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} de tarif à examiner`
+                    : openRequests ? `${openRequests} demande${openRequests > 1 ? 's' : ''} publiée${openRequests > 1 ? 's' : ''}, en attente de propositions` : 'Vos annonces et les propositions reçues'}
+                </span>
+              </span>
+              {offersWaiting > 0 && (
+                <span aria-hidden="true" style={{ minWidth: 22, height: 22, lineHeight: '22px', padding: '0 6px', borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 12, fontWeight: 700, textAlign: 'center' }}>{offersWaiting > 9 ? '9+' : offersWaiting}</span>
+              )}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0 }} aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+            </button>
+  ) : null
 
   const empty = (text: string) => <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 20 }}>{text}</p>
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
-      <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,.1)', display: 'grid', placeItems: 'center' }}><BackArrow fallback={mode === 'pro' ? '/pro/carte' : '/map'} dark /></span>
-        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', margin: 0 }}>Agenda</h1>
+      {/* Racine d'onglet : titre sur une ligne, décompte des missions de l'espace à droite (plus de bandeau séparé). */}
+      <div style={{ padding: '0 16px', minHeight: 52, background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <h1 style={{ flex: 1, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', margin: 0 }}>Agenda</h1>
+        {mode && !loading && (
+          <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)' }} aria-label={`${mine.length} mission${mine.length > 1 ? 's' : ''} dans votre espace ${mode === 'pro' ? 'prestataire' : 'particulier'}`}>{mine.length} mission{mine.length > 1 ? 's' : ''}</span>
+        )}
       </div>
 
-      <div style={{ padding: 16, maxWidth: 980, margin: '0 auto' }}>
-        {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} />}
-
-        {/* Bandeau de décompte de la maquette : missions de l'espace affiché. */}
-        {mode && !loading && (
-          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'center', fontSize: 12.5, color: '#4E6470', marginBottom: 12 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={2} aria-hidden><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
-            <span>{mine.length} mission{mine.length > 1 ? 's' : ''} dans votre espace {mode === 'pro' ? 'prestataire' : 'particulier'}</span>
-          </div>
-        )}
+      <div style={{ padding: '12px 16px 16px', maxWidth: 980, margin: '0 auto' }}>
+        {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} compact />}
 
         {/* Un seul bandeau litige, quel que soit l'onglet (maquette) : un litige ouvre son dossier, plusieurs ouvrent la liste. */}
         {shownDisputes.length > 0 && (() => {
@@ -275,17 +305,17 @@ export default function AgendaPage() {
           return (
             <div role="link" tabIndex={0} onClick={() => router.push(href)}
               onKeyDown={e => { if (e.key === 'Enter') router.push(href) }}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 11, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 52, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: '8px 14px', marginBottom: 10, cursor: 'pointer' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
                   {n} litige{n > 1 ? 's' : ''} en cours
                 </div>
-                <div style={{ fontSize: 11.5, color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {n > 1 ? 'Touchez pour voir la liste' : ('Ouvert le ' + new Date(first.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + (names[first.transaction_id] ? ` · ${names[first.transaction_id]}` : ''))}
-                </div>
+                {n === 1 && <div style={{ fontSize: 11.5, color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {'Ouvert le ' + new Date(first.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + (names[first.transaction_id] ? ` · ${names[first.transaction_id]}` : '')}
+                </div>}
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
             </div>
@@ -337,33 +367,23 @@ export default function AgendaPage() {
 
           {tab === 'cours' && !loading && (
             <>
-              {/* Mes demandes sans passer par Profil (espace client seulement). */}
-              {mode === 'particulier' && (
-                <button type="button" onClick={() => router.push('/client/demandes')}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', background: offersWaiting ? '#FFF7ED' : '#fff', border: offersWaiting ? '1.5px solid #F2A93B' : '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px', marginBottom: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes demandes en ligne</span>
-                    <span style={{ display: 'block', fontSize: 12, color: offersWaiting ? '#8a6520' : '#4E6470', fontWeight: offersWaiting ? 700 : 400, marginTop: 2 }}>
-                      {offersWaiting
-                        ? `${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} de tarif à examiner`
-                        : openRequests ? `${openRequests} demande${openRequests > 1 ? 's' : ''} publiée${openRequests > 1 ? 's' : ''}, en attente de propositions` : 'Vos annonces et les propositions reçues'}
-                    </span>
-                  </span>
-                  {offersWaiting > 0 && (
-                    <span aria-hidden="true" style={{ minWidth: 22, height: 22, lineHeight: '22px', padding: '0 6px', borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 12, fontWeight: 700, textAlign: 'center' }}>{offersWaiting > 9 ? '9+' : offersWaiting}</span>
-                  )}
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0 }} aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-                </button>
-              )}
+              {offersWaiting > 0 && demandesRow}
               {todayList.length > 0 && (
                 <>
                   <div style={{ ...sectionTitle, color: '#0B8374' }}>Aujourd&apos;hui</div>
-                  {todayList.map(t => card(t, true))}
+                  {/* Cartes allégées : report, annulation et frise de suivi sont dans « Mission du jour » et dans la conversation, à un appui. */}
+                  {(allToday ? todayList : todayList.slice(0, 2)).map((t, i) => card(t, false, false, false, i === 0 ? 'first' : 'more'))}
+                  {!allToday && todayList.length > 2 && (
+                    <button type="button" onClick={() => setAllToday(true)}
+                      style={{ width: '100%', minHeight: 48, marginBottom: 10, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                      Voir les {todayList.length - 2} autres du jour
+                    </button>
+                  )}
                   <div style={{ height: 10 }} />
                 </>
               )}
               <div style={sectionTitle}>À venir</div>
-              {later.length ? (allLater ? later : later.slice(0, 2)).map(t => card(t, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
+              {later.length ? (allLater ? later : later.slice(0, 2)).map(t => card(t, true, false, false, false, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
               {!allLater && later.length > 2 && (
                 <button type="button" onClick={() => setAllLater(true)}
                   style={{ width: '100%', minHeight: 48, marginBottom: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
@@ -385,6 +405,7 @@ export default function AgendaPage() {
                   {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
                 </button>
               )}
+              {offersWaiting === 0 && demandesRow}
             </>
           )}
 
