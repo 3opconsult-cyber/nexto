@@ -1,39 +1,33 @@
 1
-00:00:00,350 --> 00:00:04,550
-Et si ce que vous cherchez
-se trouvait juste à côté ?
+00:00:00,350 --> 00:00:05,650
+Avant d’aller chercher plus
+loin, regardez autour de vous.
 
 2
-00:00:05,150 --> 00:00:08,750
-Les prestataires disponibles
-près de chez vous.
+00:00:06,250 --> 00:00:12,150
+Chez vous, la confiance compte : profils
+contrôlés, avis d’autres clients.
 
 3
-00:00:09,350 --> 00:00:12,350
-Vous comparez les profils,
-puis vous choisissez.
+00:00:12,750 --> 00:00:22,450
+Ménage, repassage, nettoyage, fin de
+chantier, remise en état : quatre gestes.
 
 4
-00:00:12,950 --> 00:00:16,950
-Pièces d’identité et assurance
-renseignées, contrôlées par PING.
+00:00:23,050 --> 00:00:29,850
+Le jour du rendez-vous, vous
+savez à quelle heure il arrive.
 
 5
-00:00:17,550 --> 00:00:21,750
-Le paiement reste sous séquestre
-jusqu’à la fin de la mission.
+00:00:30,450 --> 00:00:34,850
+Arrivée et départ sont
+horodatés ; chacun note l’autre.
 
 6
-00:00:22,350 --> 00:00:25,950
-Un QR code enregistre
-l’arrivée et le départ.
+00:00:35,450 --> 00:00:38,350
+Votre argent reste sous séquestre.
 
 7
-00:00:26,550 --> 00:00:30,150
-Après la mission, donnez
-votre avis en quelques clics.
-
-8
-00:00:30,900 --> 00:00:35,000
-Trouvez-les sur PING :
-ils sont juste à côté.
+00:00:39,100 --> 00:00:44,700
+Vous cherchez un prestataire ?
+Activez PING : ils sont juste à côté.

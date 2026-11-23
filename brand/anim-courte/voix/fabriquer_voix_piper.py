@@ -9,7 +9,7 @@ Usage (dans un dossier de travail HORS du dépôt) :
   curl -L -O https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx
   curl -L -O https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json
   ./v/bin/python /chemin/du/depot/brand/anim-courte/voix/fabriquer_voix_piper.py fr_FR-siwis-medium.onnx sortie/
-Puis ÉCOUTER sortie/*.mp3 ; s'ils conviennent, les copier dans public/brand/files/ (voix-courte.mp3, voix-courte-client.mp3,
+Puis ÉCOUTER sortie/*.mp3 ; s'ils conviennent, les copier dans public/brand/files/ (voix-courte-client.mp3 et
 voix-courte-prestataire.mp3). Nécessite ffmpeg. Une phrase plus longue que sa fenêtre est signalée (« TROP LONG ») : raccourcir le texte
 dans brand/anim-courte/scenarios.py puis relancer build.py."""
 import pathlib
@@ -26,13 +26,13 @@ out.mkdir(parents=True, exist_ok=True)
 voice = PiperVoice.load(model)
 for key, vid in SC.VIDEOS.items():
     t0, inputs, delays = 0.0, [], []
-    for s in vid["shots"]:
+    for s in vid["scenes"]:
         wav = out / f"{key}_{s['id']}.wav"
         with wave.open(str(wav), "wb") as w:
             voice.synthesize_wav(s["v"], w)
         with wave.open(str(wav)) as w:
             dur = w.getnframes() / w.getframerate()
-        win = s["d"] - s.get("v0", 0.35) - (0.25 if s["k"] != "end" else 0.1)
+        win = s["d"] - s.get("v0", 0.35) - (0.25 if s["kind"] != "final" else 0.1)
         print(key, s["id"], f"voix {dur:.2f} s / fenêtre {win:.2f} s", "OK" if dur <= win else "TROP LONG")
         inputs.append(wav)
         delays.append(int((t0 + s.get("v0", 0.35)) * 1000))
