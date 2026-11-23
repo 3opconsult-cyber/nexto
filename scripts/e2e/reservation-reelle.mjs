@@ -24,7 +24,11 @@ const d = new Date(Date.now() + 3 * 86400000); d.setHours(10, 0, 0, 0)
 const when = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T10:00`
 await page.goto(BASE + `/mission/new?pro=${PRO_ID}&trade=menage&when=${encodeURIComponent(when)}&need=${encodeURIComponent('Ménage')}`, { waitUntil: 'networkidle' })
 await page.waitForFunction(() => /Confirmer/.test(document.body.innerText), null, { timeout: 25000 }).catch(() => { })
-await page.getByRole('button', { name: 'Chaque semaine (4 semaines)' }).tap()
+await page.waitForTimeout(3000)
+await page.screenshot({ path: '/tmp/cartes/reelle-avant.png', fullPage: true })
+const wk = page.getByRole('button', { name: 'Chaque semaine (4 semaines)' })
+if (!(await wk.count())) { console.log('KO bouton absent ; texte :', norm(await page.locator('body').innerText()).slice(0, 500)); process.exit(1) }
+await wk.tap()
 await page.waitForTimeout(600)
 const desc = page.locator('textarea').first()
 if (await desc.count()) await desc.fill('QA fréquence 23-11 : réservation hebdomadaire de test')
