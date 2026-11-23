@@ -25,7 +25,7 @@ horodatés ; chacun note l’autre.
 
 6
 00:00:35,450 --> 00:00:38,350
-Votre argent reste sous séquestre.
+Prix validé d’avance, réglé par virement.
 
 7
 00:00:39,100 --> 00:00:44,700

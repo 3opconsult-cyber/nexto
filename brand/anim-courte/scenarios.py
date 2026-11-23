@@ -10,7 +10,7 @@ et docs/animations-nouvelles-2026-11-23.md reprend les mêmes tableaux.
 ############################################################################################################
 """
 
-SEQUESTRE = True   # True = « compte sous séquestre » (à diffuser APRÈS le branchement) ; False = « Paiement par virement, prix validé »
+SEQUESTRE = False   # True = « compte sous séquestre » (à diffuser APRÈS le branchement) ; False = « Paiement par virement, prix validé »
 
 # --- Règles de lecture (brief de Romain du 23/11/2026 : le défaut n°1 est la vitesse) ---------------------------------------
 #   seuil de lecture d'un texte = 1 s + max(mots / 2,5 ; signes / 17) ;  0,6 s de respiration entre deux messages ;
@@ -61,7 +61,7 @@ CLIENT = dict(
         dict(id="traces", kind="times", d=5.0, lib="Arrivée, départ, notes", desc="Heure d'arrivée, heure de départ, notes croisées : pas de place pour les fausses notes.",
              msgs=[dict(id="m1", lines=["Pas de place pour", "les fausses notes"], at=0.2, style="cap")],
              v="Arrivée et départ sont horodatés ; chacun note l’autre."),
-        dict(id="paiement", kind="pay", d=3.5, lib="Paiement", desc="Compte sous séquestre (ou virement, selon SEQUESTRE) : prix validé, 60 € en exemple.",
+        dict(id="paiement", kind="pay", d=3.5, lib="Paiement", desc=("Compte sous séquestre : prix validé, 60 € en exemple." if SEQUESTRE else "Paiement par virement : prix validé, 60 € en exemple."),
              msgs=[dict(id="m1", lines=[SEQ_A], at=0.2, style="cap")] if SEQUESTRE else [dict(id="m1", lines=[VIR_A, VIR_B], at=0.2, style="cap")],
              v="Votre argent reste sous séquestre." if SEQUESTRE else "Prix validé d’avance, réglé par virement."),
         dict(id="final", kind="final", d=6.1, lib="Activer PING", desc="Logo PING, « Activer PING », « Ils sont juste à côté. », QR /l/ins et bouton « Je m'inscris » (page web seulement).",
