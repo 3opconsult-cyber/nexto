@@ -365,6 +365,16 @@ export default function ProCartePage() {
       <p style={{ fontSize: 13.5, color: 'var(--ink)', marginBottom: 8 }}>
         {!loaded ? 'Recherche des demandes autour de vous…' : <>{reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}</>}
       </p>
+      {loaded && reqs.length > 0 && view === 'demandes' && (() => {
+        // Un appui pour voir la demande la plus proche (réflexe de dernière minute) ; la liste reste dessous.
+        const near = reqs.reduce((m, r) => ((r.distance_m ?? Infinity) < (m.distance_m ?? Infinity) ? r : m), reqs[0])
+        return (
+          <button type="button" data-voir-plus-proche onClick={() => selectRequest(near.id)}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, margin: '0 0 10px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+            Voir la plus proche · à {distanceTxt(near.distance_m)}
+          </button>
+        )
+      })()}
       {loaded && reqs.length === 0 && (
         <p style={{ fontSize: 12.5, color: 'var(--slate)', margin: '2px 0 10px' }}>
           {allReqs.length > 0 ? 'Aucune demande pour ces services dans votre zone.' : 'Aucune demande ouverte dans votre zone pour le moment. Élargissez la zone pour en voir davantage.'}

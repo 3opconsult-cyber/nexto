@@ -53,3 +53,11 @@ le refus d'un report en route, l'absence du prestataire et la clôture sur preuv
 ## Hors connexion et position (23/11/2026)
 
 `hors-ligne.mjs` : coupure réseau, refus de distance (aucune photo orpheline), refus / repli / indisponibilité de la position, preuve gardée puis renvoyée, doublon du chat, brouillon d annonce, arrêt de la zone hors ligne. Mot de passe des comptes audit passé par `PWD_AUDIT` (jamais écrit). `BASE=http://localhost:3100` pour un serveur local ; `TX=<mission en route>` pour réutiliser une mission ; `TESTS=coupure,distance,permission,retour,chat,brouillon,zone`. Écrit en base (comptes audit) : missions et messages « QA hors-ligne 23-11 ».
+
+## Parcours rapide « Trouver un prestataire » (23/11/2026)
+
+`parcours-rapide.mjs` compte les appuis de l'ouverture de `/map` à l'écran de réservation prérempli (objectif 4), sans créer
+de réservation (arrêt avant la confirmation, `book_service` bloqué côté navigateur), puis contrôle le multi-choix, la carte
+« personne dans le rayon » (position simulée à Saint-Raphaël), le zoom libre (déplacement, pincement, double appui, aucun
+recadrage tout seul) et « Voir la plus proche » côté prestataire. `BASE=http://localhost:3000 node scripts/e2e/parcours-rapide.mjs`
+depuis la racine ; captures et `mesures.json` dans `docs/refonte-recherche-2026-11-23/`.

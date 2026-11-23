@@ -52,6 +52,11 @@ function MissionForm() {
   const params = useSearchParams()
   const proId = params.get('pro')
   const serviceParam = params.get('service')
+  // Préremplissage depuis « Trouver un prestataire » (carte) : métier, moment (AAAA-MM-JJTHH:MM, heure locale) et besoin.
+  // Rien n'est envoyé ni calculé ici : le client voit le prix et confirme comme d'habitude.
+  const tradeParam = params.get('trade')
+  const whenParam = params.get('when') || ''
+  const needParam = (params.get('need') || '').slice(0, 120)
   const [pro, setPro] = useState<any>(null)
   const [proName, setProName] = useState('')
   // Prestations visibles du catalogue (table services) ; `selId` = celle réservée (null = métier
@@ -72,12 +77,12 @@ function MissionForm() {
       setProfileAddress(data?.address?.trim() || null)
     })
   }, [])
-  const [description, setDescription] = useState('')
+  const [description, setDescription] = useState(needParam ? `Services souhaités : ${needParam}` : '')
   // Migration 052 : la réservation part « en attente d'acceptation » ; on le dit avant le bouton.
   const [needsAccept, setNeedsAccept] = useState(false)
   useEffect(() => { bookingAvailable(createClient()).then(setNeedsAccept).catch(() => { }) }, [])
   // Sans créneaux publiés par le pro, le client indique lui-même la date et l'heure souhaitées.
-  const [wantedAt, setWantedAt] = useState('')
+  const [wantedAt, setWantedAt] = useState(() => (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(whenParam) && new Date(whenParam).getTime() > Date.now() ? whenParam : ''))
   const [estimatedHours, setEstimatedHours] = useState('2')
   const [mode, setMode] = useState<'forfait' | 'horaire' | null>(null)
   const [error, setError] = useState('')
@@ -139,6 +144,11 @@ function MissionForm() {
   // prestation à prix fixe s'il y en a une.
   useEffect(() => {
     if (!pro || catalog === null || selId) return
+    // Métier demandé depuis la carte : le métier principal du prestataire s'il correspond, sinon sa première prestation à prix fixe de ce métier.
+    if (tradeParam && pro.trade !== tradeParam) {
+      const t = catalog.find(c => c.trade === tradeParam && c.pricing_type !== 'devis')
+      if (t) { setSelId(t.id); return }
+    }
     if (pro.pricing_type === 'devis') {
       const first = catalog.find(c => c.pricing_type !== 'devis')
       if (first) setSelId(first.id)

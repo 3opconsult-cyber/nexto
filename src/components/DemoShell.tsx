@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { openConversation, prefetchProDetail, type ProviderNearby, type ProviderFlags } from '@/lib/services'
 import { fetchLiveZones, type LiveZonePin } from '@/lib/liveZone'
-import { FALLBACK_POS, isFallbackPos, loadMapPros, readMapCache, type MapCache } from '@/lib/carteLoaders'
+import { FALLBACK_POS, isFallbackPos, loadMapPros, readMapCache, MAP_RADIUS_M, MAP_WIDER_RADII_M, type MapCache } from '@/lib/carteLoaders'
 import { sessionUserId } from '@/lib/screenCache'
 import { createClient } from '@/lib/supabase/client'
 import { TRADES } from '@/lib/trades'
@@ -16,6 +16,7 @@ import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight, useBannerH } fro
 import { useUnreadTotal } from '@/lib/unread'
 import { Ic, Stars, r1, svcIconKey, ICON } from './PingIcons'
 import LocationAsk from './LocationAsk'
+import FindSheet from './FindSheet'
 import { useInitialPosition } from '@/lib/location'
 
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
@@ -85,6 +86,12 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [cesuOnly, setCesuOnly] = useState(false)
   const unread = useUnreadTotal('particulier', 'map')
   const [contactErr, setContactErr] = useState('')
+  // « Trouver un prestataire » (feuille en 3 étapes) et ligne d'état de la carte (détail par métier au toucher).
+  const [findOpen, setFindOpen] = useState(false)
+  const [statusOpen, setStatusOpen] = useState(false)
+  // Personne dans le rayon habituel : la liste est relue plus loin (30 puis 60 km) et la carte cadre les plus proches.
+  const [wide, setWide] = useState<{ radiusKm: number } | null>(null)
+  const [loaded, setLoaded] = useState(false)
 
   const go = useCallback((v: string) => { setPrevView(view); setViewState(v) }, [view])
   const back = useCallback((v: string) => { setViewState(v) }, [])
@@ -99,7 +106,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     sessionUserId(createClient()).then(uid => {
       if (off) return
       const c = uid ? readMapCache(uid) : null
-      if (c) { setRawPros(c.list || []); setActs(c.acts || {}); setFlags(c.flags || {}) }
+      if (c) { setRawPros(c.list || []); setActs(c.acts || {}); setFlags(c.flags || {}); setLoaded(true) }
       setBoot({ uid, center: c?.center ?? null })
     })
     return () => { off = true }
@@ -116,9 +123,19 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     // un instant les prestataires autour de Grasse.
     if (isFallbackPos(userPos) && boot.center && !isFallbackPos(boot.center)) return
     const seq = ++loadSeq.current
-    loadMapPros({ lat: userPos.lat, lng: userPos.lng }, boot.uid).then((d: MapCache) => {
+    const here = { lat: userPos.lat, lng: userPos.lng }
+    loadMapPros(here, boot.uid).then(async (d: MapCache) => {
       if (seq !== loadSeq.current) return
-      setRawPros(d.list); setActs(d.acts); setFlags(d.flags)
+      if (d.list.length === 0) {
+        // Carte jamais vide : personne à moins de 15 km, on élargit (30 puis 60 km) sans toucher au cache de la carte.
+        for (const r of MAP_WIDER_RADII_M) {
+          const w = await loadMapPros(here, null, r)
+          if (seq !== loadSeq.current) return
+          if (w.list.length) { setRawPros(w.list); setActs(w.acts); setFlags(w.flags); setWide({ radiusKm: MAP_RADIUS_M / 1000 }); setLoaded(true); return }
+        }
+      }
+      setWide(null)
+      setRawPros(d.list); setActs(d.acts); setFlags(d.flags); setLoaded(true)
     }).catch(() => { })
     fetchLiveZones(userPos.lat, userPos.lng).then(z => { if (seq === loadSeq.current) setZones(z) }).catch(() => { })
   }, [userPos, boot])
@@ -273,9 +290,30 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const onlinePart = partList.filter(p => p.active)
   const offList = [...fullList, ...partList].filter(p => !p.active)
   const onlineCount = searchList.filter(p => p.active).length
-  const sheetTitle = sel.length > 1
-    ? `${onlineFull.length} font ${selTxt.toLowerCase()}`
-    : `${onlineCount} prestataire${onlineCount > 1 ? 's' : ''} près de vous`
+  // Une seule ligne d'état sur la carte (« 7 en ligne près de vous ») ; la liste porte un titre sans compteur.
+  const sheetTitle = sel.length > 1 ? `Ils font ${selTxt.toLowerCase()}` : 'Liste des prestataires'
+  const liveCount = rawVisible.filter(p => p.is_active).length
+  const laterCount = rawVisible.length - liveCount
+  const nearestKm = rawPros.length ? Math.max(1, Math.round(Math.min(...rawPros.map(p => p.distance_m)) / 1000)) : 0
+  const statusText = wide && rawPros.length
+    ? `Aucun prestataire à moins de ${wide.radiusKm} km : les plus proches sont à ${nearestKm} km`
+    : !loaded ? 'Recherche des prestataires…'
+      : liveCount > 0 ? `${liveCount} en ligne près de vous`
+        : laterCount > 0 ? `Personne en ligne maintenant · ${laterCount} disponible${laterCount > 1 ? 's' : ''} plus tard`
+          : 'Aucun prestataire pour ce choix'
+  const liveByTrade = tradeKeys.map(k => ({ k, n: rawPros.filter(p => p.is_active && actsOf(p).includes(k)).length })).filter(x => x.n > 0)
+  // Les plus proches (au plus 5) cadrés une fois quand la liste a dû être élargie.
+  const focusPts = wide ? [{ lat: userPos.lat, lng: userPos.lng }, ...[...rawPros].sort((a, b) => a.distance_m - b.distance_m).slice(0, 5).filter(p => p.lat != null && p.lng != null).map(p => ({ lat: p.lat, lng: p.lng }))] : undefined
+  const focusKey = wide && rawPros.length ? `w|${userPos.lat.toFixed(3)}|${userPos.lng.toFixed(3)}|${rawPros.length}` : undefined
+  // « Réserver » depuis la feuille : la réservation existante, préremplie (service, moment, description si plusieurs services).
+  function reserveFromFind(p: ProviderNearby, o: { trades: string[]; labels: string[]; when: string }) {
+    const q = new URLSearchParams({ pro: p.id })
+    if (o.trades[0]) q.set('trade', o.trades[0])
+    if (o.when) q.set('when', o.when)
+    if (o.labels.length > 1) q.set('need', o.labels.join(', '))
+    setFindOpen(false)
+    router.push(`/mission/new?${q.toString()}`)
+  }
 
   // Boutons de la carte (Déposer une demande, PING, Recentrer) : posés au-dessus du volet et du
   // bandeau d'installation, jamais dessous. Cachés quand le volet est plein ou qu'un aperçu est
@@ -395,6 +433,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   return (
     <div className="stage" id="stage">
       {askLoc && <LocationAsk onChoose={chooseLoc} onClose={dismissLoc} />}
+      <FindSheet open={findOpen} onClose={() => setFindOpen(false)}
+        services={tradeKeys.map(k => ({ key: k, label: lab(k), icon: svcIc(k) }))}
+        pros={rawPros} acts={acts} newIds={newIds} onReserve={reserveFromFind}
+        onDeposit={() => { setFindOpen(false); router.push('/client/demandes/new') }} />
       <div className="device">
         <div className="frame"><div className="screen" id="screen">
 
@@ -422,34 +464,47 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 </div>
 
                 <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
-                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} inset={mapInset} />
+                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} inset={mapInset} focusPts={focusPts} focusKey={focusKey} />
                 </div>
 
-                <div className="searchbar map-search" role="button" aria-haspopup="dialog" style={{ top: 66 }} onClick={() => go('v_search')}>
-                  <div className="lg" style={{ background: 'var(--btnFill)', color: '#fff' }}><Ic name="filter" size={15} /></div>
-                  <div className="tx">{sel.length || cesuOnly ? [selTxt, cesuOnly ? 'CESU préfinancé' : ''].filter(Boolean).join(' · ') : 'Filtrer par service, près de vous'}</div>
-                  <span className="chv"><Ic name="down" size={20} /></span>
+                {/* Ligne d'état unique : « 7 en ligne près de vous ». Au toucher : détail par métier et accès au filtre. */}
+                <div className="searchbar map-search" role="button" aria-haspopup="true" aria-expanded={statusOpen} data-map-status style={{ top: 66, height: 'auto' }} onClick={() => setStatusOpen(o => !o)}>
+                  <div className="lg" style={{ background: liveCount > 0 ? 'var(--btnFill)' : '#6E8592', color: '#fff' }}><Ic name="loc" size={15} /></div>
+                  <div className="tx" style={{ fontWeight: 700, color: 'var(--ink)', whiteSpace: wide ? 'normal' : 'nowrap', lineHeight: 1.25, padding: wide ? '6px 0' : 0 }}>{statusText}</div>
+                  <span className="chv" style={{ transform: statusOpen ? 'rotate(180deg)' : 'none' }}><Ic name="down" size={20} /></span>
                 </div>
+                {statusOpen && (
+                  <div className="map-status-panel" style={{ position: 'absolute', zIndex: 31, top: isDesk ? 124 : (wide ? 84 : 62), left: isDesk ? 14 : 64, right: isDesk ? 14 : 12, maxWidth: isDesk ? 420 : undefined, background: '#fff', borderRadius: 14, boxShadow: '0 10px 24px rgba(20,50,60,.22)', padding: '10px 14px 6px' }}>
+                    {liveByTrade.length > 0
+                      ? liveByTrade.map(x => <div key={x.k} style={{ display: 'flex', justifyContent: 'space-between', minHeight: 32, alignItems: 'center', fontSize: 14, color: 'var(--ink)' }}><span>{lab(x.k)}</span><b>{x.n} en ligne</b></div>)
+                      : <p style={{ margin: '4px 0 8px', fontSize: 13.5, color: '#4E6470' }}>Personne en ligne maintenant.</p>}
+                    <button type="button" onClick={e => { e.stopPropagation(); setStatusOpen(false); go('v_search') }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, border: 0, borderTop: '1px solid var(--line, #E7EDEB)', background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'var(--fb)', padding: 0 }}>
+                      <Ic name="filter" size={15} />Filtrer par service{sel.length || cesuOnly ? ` (${[selTxt, cesuOnly ? 'CESU préfinancé' : ''].filter(Boolean).join(' · ')})` : ''}
+                    </button>
+                  </div>
+                )}
 
                 {/* Ordinateur : puces sous la barre. Mobile : les mêmes puces sont dans la feuille (et dans l'écran de filtre). */}
                 {isDesk && serviceChips({ top: 128 })}
 
                 {!ctrlHidden && (<>
-                  <div className="pingbtn" role="button" aria-label="PING : actualiser les prestataires autour de vous" onClick={() => loadPros()} style={{ bottom: ctrlBase, right: ctrlRight }}><span className="halo" /><span className="lbl">PING</span></div>
-                  {/* Déposer une annonce (Romain 31/10 : introuvable depuis la carte). Masqué quand une fiche est ouverte. */}
+                  <div className="pingbtn" role="button" aria-label="PING : actualiser les prestataires autour de vous" onClick={() => loadPros()} style={{ bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 66px)`, right: ctrlRight }}><span className="halo" /><span className="lbl">PING</span></div>
+                  {/* Action principale : une seule, grosse, en bas de la carte (« Déposer une demande » est passée dans la feuille). */}
                   {!pvShow && (
-                    <button type="button" onClick={() => router.push('/client/demandes/new')}
-                      style={{ position: 'absolute', left: 14, bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 4px)`, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, minHeight: 48, boxSizing: 'border-box', padding: '0 18px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
-                      <Ic name="plus" size={16} />
-                      Déposer une demande
+                    <button type="button" data-find-open onClick={() => setFindOpen(true)}
+                      style={{ position: 'absolute', left: 14, right: isDesk ? undefined : 14, width: isDesk ? 340 : undefined, bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 4px)`, zIndex: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 56, boxSizing: 'border-box', padding: '0 22px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, boxShadow: '0 10px 24px rgba(12,143,126,.38)', cursor: 'pointer' }}>
+                      <Ic name="search" size={20} />
+                      Trouver un prestataire
                     </button>
                   )}
-                  <div className="loc" role="button" aria-label="Recentrer sur ma position" onClick={() => setRecenterTick(t => t + 1)} style={isDesk ? { bottom: `calc(${ctrlBase} + 68px)`, right: ctrlRight + 8, color: 'var(--ink)' } : { bottom: `calc(${ctrlBase} + 6px)`, right: ctrlRight + 56 + 10, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>
+                  <div className="loc" role="button" aria-label="Recentrer sur ma position" onClick={() => setRecenterTick(t => t + 1)} style={isDesk ? { bottom: `calc(${ctrlBase} + 68px)`, right: ctrlRight + 8, color: 'var(--ink)' } : { bottom: `calc(${ctrlBase} + 72px)`, right: ctrlRight + 56 + 10, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>
                 </>)}
 
                 {/* Volet de la liste (mobile) : remplacé par l'aperçu quand un prestataire est choisi. */}
                 {!pvShow && (
-                  <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}>
+                  <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}
+                    footer={<button type="button" onClick={() => router.push('/client/demandes/new')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, border: '1.5px solid #DCE5E3', borderRadius: 999, background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}><Ic name="plus" size={16} />Déposer une demande</button>}>
                     {!isDesk && serviceChips({ inSheet: true })}
                     {listBody}
                     <SheetFeedbackRow />

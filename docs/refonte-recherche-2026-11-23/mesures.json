@@ -1,0 +1,226 @@
+{
+  "base": "http://localhost:3107",
+  "taps": [
+    "Trouver un prestataire",
+    "tuile Ménage",
+    "Voir les prestataires",
+    "Réserver"
+  ],
+  "checks": [
+    {
+      "k": "ligne d’état de la carte",
+      "v": "5 en ligne près de vous",
+      "ok": true
+    },
+    {
+      "k": "une seule action principale en bas",
+      "v": "Trouver un prestataire",
+      "ok": true
+    },
+    {
+      "k": "bouton principal >= 44 px",
+      "v": "362x56",
+      "ok": true
+    },
+    {
+      "k": "« Déposer une demande » plus sur la carte (hors feuille)",
+      "v": 0,
+      "ok": true
+    },
+    {
+      "k": "3 tuiles de service",
+      "v": [
+        "Ménage",
+        "Repassage",
+        "Nettoyage"
+      ],
+      "ok": true
+    },
+    {
+      "k": "cibles du dialogue >= 44 px (étape 1)",
+      "v": [],
+      "ok": true
+    },
+    {
+      "k": "« Dès que possible » présélectionné",
+      "v": "true",
+      "ok": true
+    },
+    {
+      "k": "cibles du dialogue >= 44 px (étape 2)",
+      "v": [],
+      "ok": true
+    },
+    {
+      "k": "une carte « meilleur choix » + un gros bouton Réserver",
+      "v": "Le meilleur choix pour vous Ménage · dès que possible A Audit Pro ☆☆☆☆☆ ★★★★★ 5 (39) · à 0 m Nouveau · pièces en cours de contrôle 100 € Réserver · 100 € Voir l",
+      "ok": true
+    },
+    {
+      "k": "cibles du dialogue >= 44 px (étape 3)",
+      "v": [],
+      "ok": true
+    },
+    {
+      "k": "bouton Réserver >= 44 px",
+      "v": "358x56",
+      "ok": true
+    },
+    {
+      "k": "URL de réservation préremplie (pro, métier, moment)",
+      "v": "/mission/new?pro=b9f8cd9a-16de-4a36-afd8-10a2135ab970&trade=menage&when=2026-11-23T19%3A30",
+      "ok": true
+    },
+    {
+      "k": "écran de confirmation atteint, bouton de confirmation visible",
+      "v": "Confirmer la réservation · 108,00 € Carte 9+ Mess",
+      "ok": true
+    },
+    {
+      "k": "moment prérempli affiché",
+      "v": "Date et heure souhaitées ",
+      "ok": true
+    },
+    {
+      "k": "service prérempli (Ménage)",
+      "v": "Ménage — 100,00 € (3 h incluses), puis 25,00 €/h au-delà Adresse d",
+      "ok": true
+    },
+    {
+      "k": "prestataire avec créneaux publiés (appui en plus) ?",
+      "v": false,
+      "ok": true
+    },
+    {
+      "k": "APPUIS de la carte à l’écran de réservation prérempli : 4",
+      "v": [
+        "Trouver un prestataire",
+        "tuile Ménage",
+        "Voir les prestataires",
+        "Réserver"
+      ],
+      "ok": true
+    },
+    {
+      "k": "aucune réservation créée (book_service jamais envoyé)",
+      "v": 0,
+      "ok": true
+    },
+    {
+      "k": "erreurs de page",
+      "v": [],
+      "ok": true
+    },
+    {
+      "k": "multi-choix : « Continuer » actif après 2 services",
+      "v": true,
+      "ok": true
+    },
+    {
+      "k": "interrupteur : zone de toucher >= 44 px",
+      "v": "60x44",
+      "ok": true
+    },
+    {
+      "k": "message « aucun à moins de 15 km »",
+      "v": "Aucun prestataire à moins de 15 km : les plus proches sont à 21 km",
+      "ok": true
+    },
+    {
+      "k": "la carte montre les prestataires les plus proches (épingles dans le cadre)",
+      "v": 4,
+      "ok": true
+    },
+    {
+      "k": "point de départ lu",
+      "v": {
+        "dot": {
+          "x": 195,
+          "y": 358
+        },
+        "pins": 2
+      },
+      "ok": true
+    },
+    {
+      "k": "déplacement : la carte suit le doigt (~ -80, -70)",
+      "v": {
+        "dx": -80,
+        "dy": -70
+      },
+      "ok": true
+    },
+    {
+      "k": "pincement : zoom autour du point touché (rapport > 1,5, direction conservée)",
+      "v": {
+        "rapport": 2.17,
+        "ecartAngleDeg": 3.9
+      },
+      "ok": true
+    },
+    {
+      "k": "aucun recadrage tout seul (8 s + actualisation PING)",
+      "v": {
+        "ecart": 0
+      },
+      "ok": true
+    },
+    {
+      "k": "double appui : zoom d’un cran sur l’endroit touché (rapport ~ 2)",
+      "v": {
+        "rapport": 2
+      },
+      "ok": true
+    },
+    {
+      "k": "toujours aucun recadrage tout seul",
+      "v": {
+        "ecart": 0
+      },
+      "ok": true
+    },
+    {
+      "k": "« Recentrer » ramène la position à l’écran (centre de la zone visible)",
+      "v": {
+        "x": 195,
+        "y": 358
+      },
+      "ok": true
+    },
+    {
+      "k": "épingles en ligne : anneau animé présent ; hors ligne : « Plus tard » sans anneau",
+      "v": {
+        "enLigneAnimees": 5,
+        "plusTard": 1
+      },
+      "ok": true
+    },
+    {
+      "k": "ligne d’état ne compte que les prestataires en ligne",
+      "v": "5 en ligne près de vous",
+      "ok": true
+    },
+    {
+      "k": "au toucher de la ligne : détail par métier",
+      "v": "Ménage 5 en ligne Filtrer par service",
+      "ok": true
+    },
+    {
+      "k": "prestataire : bouton « Voir la plus proche » (si des demandes sont ouvertes)",
+      "v": "Voir la plus proche · à 478 m",
+      "ok": true
+    },
+    {
+      "k": "bouton >= 44 px",
+      "v": "358x48",
+      "ok": true
+    },
+    {
+      "k": "un appui ouvre la demande (bouton de la liste disparu)",
+      "v": 0,
+      "ok": true
+    }
+  ],
+  "tapsToConfirmScreen": 4,
+  "ko": []
+}
