@@ -1,39 +1,34 @@
 1
-00:00:00,350 --> 00:00:04,550
-Et si vos prochains clients
-se trouvaient juste à côté ?
+00:00:00,350 --> 00:00:05,250
+Regardez autour de vous : vos prochains
+clients sont peut-être tout près.
 
 2
-00:00:05,150 --> 00:00:08,950
-Les clients proches de vous
-vous écrivent directement.
+00:00:05,850 --> 00:00:12,450
+Pour éviter impayés et rendez-vous perdus,
+le prix est validé avant la mission.
 
 3
-00:00:09,550 --> 00:00:12,950
-Forfait ou horaire, le
-prix est validé d’avance.
+00:00:13,050 --> 00:00:18,450
+Un QR code enregistre vos
+heures, à l’arrivée et au départ.
 
 4
-00:00:13,550 --> 00:00:16,950
-Un bouton, et vous
-apparaissez sur la carte.
+00:00:19,050 --> 00:00:25,850
+Voyez les demandes autour de vous et
+répondez à celles qui vous conviennent.
 
 5
-00:00:17,550 --> 00:00:21,550
-Pièces d’identité et assurance
-renseignées, contrôlées par PING.
+00:00:26,450 --> 00:00:30,650
+Un geste, et vous apparaissez
+sur la carte des clients.
 
 6
-00:00:22,150 --> 00:00:25,350
-Un QR code enregistre
-l’arrivée et le départ.
+00:00:31,250 --> 00:00:36,250
+La mission terminée, vous êtes
+payé et noté par votre client.
 
 7
-00:00:25,950 --> 00:00:29,750
-La facture se crée seule,
-paiement sous séquestre.
-
-8
-00:00:30,500 --> 00:00:34,800
-Prestataire, inscrivez-vous :
-vos clients sont juste à côté.
+00:00:37,000 --> 00:00:42,600
+Vous êtes prestataire ? Inscrivez-vous
+: vos clients sont juste à côté.
