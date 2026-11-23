@@ -7,7 +7,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 :root{--danger:#C0503A;--danger-bg:rgba(192,80,58,.1);--warn-text:#8A6520;--warn-bg:#FFF7ED;--ink:#123644;--paper:#F3F6F5;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;
---teal:#12B39C;--tealD:#0C8F7E;--btnFill:#0C8F7E;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
+--teal:#12B39C;--tealD:#0C8F7E;--btnFill:#0B8374;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
 --fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 /* body vitrine desktop neutralise pendant la bascule (fond sombre + centrage
@@ -410,7 +410,7 @@ svg{display:block}
 
 /* ============================================================
    Accessibilité de base (lot 31, validé par Romain le 18/11/2026)
-   - Boutons pleins : texte blanc sur teal foncé --btnFill (#0C8F7E, 4,9:1, AA) ;
+   - Boutons pleins : texte blanc sur teal foncé --btnFill (#0B8374, 4,65:1, AA ; #0C8F7E ne faisait que 4,0:1, mesuré le 23/11) ;
      le teal #12B39C reste pour les accents (pictogrammes, bordures, jauges).
    - Focus visible au clavier partout (les « outline: none » en ligne des champs
      sont outrepassés seulement au focus).
