@@ -14,8 +14,9 @@ import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 import { documentAlerts, type DocRowFull } from '@/lib/pieces'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
-import ProMonthBlock, { ProDisputeAlert } from '@/components/ProMonthBlock'
-import { usePendingBookings, deadlineLeft } from '@/lib/booking'
+import ProMonthBlock from '@/components/ProMonthBlock'
+import OrdersInProgress from '@/components/OrdersInProgress'
+import MonAnnonceCard from '@/components/MonAnnonceCard'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { readScreenCache, sessionUserId } from '@/lib/screenCache'
 import { loadDashboardSnap, loadDashboardListing, type DashboardSnap } from '@/lib/screenLoaders'
@@ -46,8 +47,6 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
 
 export default function ProDashboard() {
   const router = useRouter()
-  // Réservations directes en attente de ma réponse (migration 052 ; liste vide avant).
-  const bookings = usePendingBookings(true)
   const [firstName, setFirstName] = useState('')
   const [pro, setPro] = useState<any>(null)
   const [uploading, setUploading] = useState<'cover' | 'logo' | null>(null)
@@ -61,6 +60,7 @@ export default function ProDashboard() {
   const [city, setCity] = useState('')
   // « Mon annonce » : complétude (même calcul que /pro/annonce).
   const [listingPct, setListingPct] = useState<number | null>(null)
+  const [listingOk, setListingOk] = useState<boolean | null>(null)
   // Encart « Paiements et fiscalité » : état honnête de chaque élément. Tant que le paiement en
   // ligne est éteint, tout se règle par virement sur facture (rien n'est débité ni versé par PING).
   const [payOn, setPayOn] = useState(false)
@@ -81,6 +81,7 @@ export default function ProDashboard() {
       ;(v.docRows ?? []).forEach((d: any) => { docMap[d.kind] = d })
       setDocs(docMap); setDocRowsFull(v.docRows ?? [])
       if (v.listingPct != null) setListingPct(v.listingPct)
+      if (v.listingOk != null) setListingOk(v.listingOk)
       setTaxId(v.taxId); setHasIban(v.hasIban)
       setLoading(false)
     }
@@ -98,7 +99,7 @@ export default function ProDashboard() {
       if (!alive) return
       if (!snap) { router.push('/pro/onboarding'); return }
       apply(snap)
-      loadDashboardListing(supabase, id, snap).then(pct => { if (alive) setListingPct(pct) }).catch(() => {})
+      loadDashboardListing(supabase, id, snap).then(r => { if (alive) { setListingPct(r.pct); setListingOk(r.ok) } }).catch(() => {})
     })()
     return () => { alive = false }
   }, [router])
@@ -160,7 +161,7 @@ export default function ProDashboard() {
           <NavDrawer />
           <div style={{ flex: 1, minWidth: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff', whiteSpace: 'nowrap' }}>Mon entreprise</div>
           <button onClick={toggleAvailable} aria-pressed={available}
-            style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
+            style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: 'none', fontSize: 14, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
             {available ? '● Visible sur la carte' : '○ Masqué'}
           </button>
         </div>
@@ -178,96 +179,33 @@ export default function ProDashboard() {
 
       <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '16px 18px 22px', minHeight: '70vh' }}>
         {tab === 'hub' && pro && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '4px 2px 0' }}>
             <ProSuspensionBanner />
 
-            {/* Ce qui attend une réponse passe en premier : réservation à accepter, pièces, litige, éléments manquants. */}
-            {bookings.length > 0 && (
-              <button type="button" onClick={() => router.push(`/mission/${bookings[0].id}/chat`)}
-                style={{ width: '100%', minHeight: 56, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 14, border: '1.5px solid #F2A93B', background: '#FFF7ED', textAlign: 'left', cursor: 'pointer' }}>
-                <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', background: '#E8743B', flexShrink: 0 }} />
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>
-                    {bookings.length > 1 ? `${bookings.length} nouvelles réservations : accepter` : 'Nouvelle réservation : accepter'}
-                  </span>
-                  <span style={{ display: 'block', fontSize: 12, color: '#8a6520', fontWeight: 600, marginTop: 2 }}>Répondez sous {deadlineLeft(bookings[0].accept_deadline)}, sinon elle est annulée</span>
-                </span>
-                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.4}><path d="M9 6l6 6-6 6" /></svg>
-              </button>
-            )}
+            {/* Une question : où en sont mes commandes ? Réservation à accepter, en route, sur place, à valider, litige : une ligne chacune. */}
+            <OrdersInProgress role="pro" transactions={transactions} />
 
-            {docAlerts.length > 0 && (
-              <button type="button" onClick={() => router.push('/pro/documents')}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', minHeight: 56, padding: '10px 14px', borderRadius: 14, background: '#fff', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', border: `1.5px solid ${docAlerts.some(a => a.urgent) ? 'rgba(255,122,102,.6)' : 'rgba(242,169,59,.6)'}` }}>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes pièces : à mettre à jour</span>
-                  <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, marginTop: 2, color: docAlerts[0].urgent ? '#A8432F' : '#7A5717' }}>
-                    {docAlerts[0].text}{docAlerts.length > 1 ? ` · et ${docAlerts.length - 1} autre${docAlerts.length > 2 ? 's' : ''}` : ''}
-                  </span>
-                </span>
-                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2}><path d="M9 6l6 6-6 6" /></svg>
-              </button>
-            )}
-
-            <ProDisputeAlert transactions={transactions} compact />
-
-            {(() => {
-              const todo: { label: string; sub: string }[] = []
-              if (!idOk) todo.push({ label: 'Pièce d’identité', sub: 'Une photo suffit' })
-              if (!rcOk) todo.push({ label: 'Assurance responsabilité civile', sub: 'Conseillée · une photo suffit' })
-              if (!todo.length || docAlerts.length > 0) return null
-              return (
-                <div style={{ padding: '12px 14px', borderRadius: 14, background: '#fff', border: '1.5px solid #F2A93B' }}>
-                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginBottom: 4 }}>Il vous reste {todo.length} élément{todo.length > 1 ? 's' : ''} à ajouter</div>
-                  {todo.map(t => (
-                    <button key={t.label} type="button" onClick={() => router.push('/pro/documents')}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', minHeight: 48, border: 'none', background: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <b style={{ display: 'block', fontSize: 13.5, color: '#123644' }}>{t.label}</b>
-                        <small style={{ display: 'block', fontSize: 12, color: '#4E6470' }}>{t.sub}</small>
-                      </span>
-                      <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2}><path d="M9 6l6 6-6 6" /></svg>
-                    </button>
-                  ))}
-                </div>
-              )
-            })()}
-
-            {/* « Mon annonce » : complétude (même calcul que /pro/annonce). L'état « visible » est déjà dit par le bouton du haut. */}
-            <button onClick={() => router.push('/pro/annonce')}
-              style={{ textAlign: 'left', width: '100%', minHeight: 56, padding: '10px 14px', borderRadius: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                border: `1px solid ${live ? 'rgba(18,179,156,.45)' : '#E7EDEB'}`, background: live ? 'rgba(18,179,156,.06)' : '#fff' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <b style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Mon annonce</b>
-                {pro.payments_suspended_at
-                  ? <span className="mq-tag" style={{ background: '#FEE2E2', color: '#C0503A' }}>Suspendue</span>
-                  : !available && <span className="mq-tag warn">Hors ligne</span>}
-                {listingPct != null && <small style={{ fontSize: 12, color: '#4E6470', fontWeight: 600 }}>Complète à {listingPct} %{listingPct < 100 ? ' ›' : ''}</small>}
-              </div>
-              {listingPct != null && (
-                <div style={{ height: 6, borderRadius: 999, background: '#E3EBE9', overflow: 'hidden', marginTop: 8 }}>
-                  <div style={{ width: `${listingPct}%`, height: '100%', background: '#12B39C', borderRadius: 999 }} />
-                </div>
-              )}
-            </button>
+            {/* Mon annonce : état, complétude, actions à un appui (mise en pause, remise en ligne, modifier, aperçu). */}
+            <MonAnnonceCard pro={pro} pct={listingPct} canPublishNow={listingOk}
+              onActive={v => { setAvailable(v); setPro((p: any) => ({ ...p, is_active: v })) }} />
 
             {/* Fiche de l'entreprise : une ligne (nom + note, ou « Nouveau »), le reste derrière un appui. */}
-            <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
+            <div>
               <button type="button" onClick={() => setIdOpen(o => !o)} aria-expanded={idOpen} aria-label={`${identityName} : photos, fiche publique et tarifs`}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, padding: '8px 14px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <span aria-hidden style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: pro.logo_url ? `url(${pro.logo_url}) center/cover` : '#12B39C', display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 76, padding: '16px 0', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <span aria-hidden style={{ width: 48, height: 48, borderRadius: 14, flexShrink: 0, background: pro.logo_url ? `url(${pro.logo_url}) center/cover` : '#12B39C', display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>
                   {!pro.logo_url && (pro.company_name || firstName || '?').charAt(0).toUpperCase()}
                 </span>
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 15, color: '#123644', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{identityName}</b>
-                  <span style={{ display: 'block', fontSize: 12.5, color: '#4E6470' }}>
-                    {pro.rating > 0 ? <><Stars r={pro.rating} size={12} /> <b style={{ color: '#123644' }}>{r1(pro.rating)}</b> ({pro.reviews_count || 0} avis)</> : 'Nouveau, pas encore d’avis'}
+                  <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 18, lineHeight: 1.35, color: '#123644', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{identityName}</b>
+                  <span style={{ display: 'block', fontSize: 15, lineHeight: 1.5, color: '#4E6470' }}>
+                    {pro.rating > 0 ? <><Stars r={pro.rating} size={14} /> <b style={{ color: '#123644' }}>{r1(pro.rating)}</b> ({pro.reviews_count || 0} avis)</> : 'Nouveau, pas encore d’avis'}
                   </span>
                 </span>
-                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0, transform: idOpen ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
+                <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0, transform: idOpen ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
               </button>
               {idOpen && (
-                <>
+                <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
                   <div style={{ height: 110, position: 'relative', background: pro.photo_url ? `url(${pro.photo_url}) center/cover` : 'linear-gradient(160deg,#12B39C,#0B8374)' }}>
                     <input id="cover-input" type="file" accept="image/*" style={{ display: 'none' }}
                       onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('cover', f) }} />
@@ -308,14 +246,51 @@ export default function ProDashboard() {
                       </button>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
+
+            {docAlerts.length > 0 && (
+              <button type="button" onClick={() => router.push('/pro/documents')}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', minHeight: 56, padding: '14px 18px', borderRadius: 16, background: '#fff', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', border: `1.5px solid ${docAlerts.some(a => a.urgent) ? 'rgba(255,122,102,.6)' : 'rgba(242,169,59,.6)'}` }}>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>Mes pièces : à mettre à jour</span>
+                  <span style={{ display: 'block', fontSize: 15, lineHeight: 1.5, fontWeight: 600, marginTop: 2, color: docAlerts[0].urgent ? '#A8432F' : '#7A5717' }}>
+                    {docAlerts[0].text}{docAlerts.length > 1 ? ` · et ${docAlerts.length - 1} autre${docAlerts.length > 2 ? 's' : ''}` : ''}
+                  </span>
+                </span>
+                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2}><path d="M9 6l6 6-6 6" /></svg>
+              </button>
+            )}
+
+
+            {(() => {
+              const todo: { label: string; sub: string }[] = []
+              if (!idOk) todo.push({ label: 'Pièce d’identité', sub: 'Une photo suffit' })
+              if (!rcOk) todo.push({ label: 'Assurance responsabilité civile', sub: 'Conseillée · une photo suffit' })
+              if (!todo.length || docAlerts.length > 0) return null
+              return (
+                <div style={{ padding: '16px 18px', borderRadius: 16, background: '#fff', border: '1.5px solid #F2A93B' }}>
+                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', marginBottom: 4 }}>Il vous reste {todo.length} élément{todo.length > 1 ? 's' : ''} à ajouter</div>
+                  {todo.map(t => (
+                    <button key={t.label} type="button" onClick={() => router.push('/pro/documents')}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', minHeight: 48, border: 'none', background: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <b style={{ display: 'block', fontSize: 16, color: '#123644' }}>{t.label}</b>
+                        <small style={{ display: 'block', fontSize: 15, color: '#4E6470' }}>{t.sub}</small>
+                      </span>
+                      <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2}><path d="M9 6l6 6-6 6" /></svg>
+                    </button>
+                  ))}
+                </div>
+              )
+            })()}
 
             <ProMonthBlock pro={pro} transactions={transactions} hideDispute />
 
             {/* Trois accès en tête ; tout le reste de la page est derrière « Voir plus » (un appui), rien n'est retiré. */}
             <HubGroup>
+              <HubRow icon={HUB_ICONS.eye} label="Mon annonce" sub="Modifier, mettre en pause, aperçu" onClick={() => router.push('/pro/annonce')} />
               <HubRow icon={HUB_ICONS.agenda} label="Agenda et disponibilités" onClick={() => router.push('/pro/disponibilites')} />
               <HubRow icon={HUB_ICONS.chart} label="Mes revenus" onClick={() => router.push('/pro/revenus')} />
               <HubRow icon={HUB_ICONS.id} label="Mes pièces"

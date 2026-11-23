@@ -155,15 +155,21 @@ export default function AgendaPage() {
 
   // Calendrier partagé (même composant que les disponibilités et la réservation) : les rendez-vous
   // confirmés du mode courant, et en mode pro ses créneaux encore libres.
+  // Réservations en attente de réponse (prestataire : « À accepter », client : « En attente ») et missions en
+  // cours (en route, sur place) s'affichent aussi, avec un style distinct ; les expirées, refusées et annulées non.
+  const shortLabel = (t: any) => bookingPending(t) ? (t.seller_id === uid ? 'À accepter' : 'En attente')
+    : t.status === 'arrived' ? 'Sur place' : t.en_route_at && t.status === 'pending' ? 'En route' : badge(t).label
+  const [dayPick, setDayPick] = useState<Date | null>(null)
   const events: CalEvent[] = useMemo(() => {
     const appts: CalEvent[] = mine
-      .filter(t => t.scheduled_at && ((t.price_confirmed || DONE.includes(t.status)) && t.status !== 'cancelled' && !bookingLapsed(t) || disputedIds.has(t.id)))
+      .filter(t => t.scheduled_at && (disputedIds.has(t.id) || (t.status !== 'cancelled' && !bookingLapsed(t) && !bookingEnded(t) && (t.price_confirmed || DONE.includes(t.status) || bookingPending(t)))))
       .map(t => {
         const start = new Date(t.scheduled_at)
+        const tone: CalEvent['tone'] = bookingPending(t) ? 'pending' : (t.status === 'arrived' || (t.en_route_at && t.status === 'pending')) ? 'live' : undefined
         return {
-          id: t.id, start, end: new Date(start.getTime() + durationMinutes(t) * 60000), kind: 'busy' as const,
+          id: t.id, start, end: new Date(start.getTime() + durationMinutes(t) * 60000), kind: 'busy' as const, tone,
           title: `${names[t.id] || 'Rendez-vous'}${t.requests?.category ? ' · ' + (TRAD[t.requests.category] || t.requests.category) : ''}`,
-          subtitle: badge(t).label,
+          subtitle: shortLabel(t),
           onClick: () => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`),
         }
       })
@@ -173,7 +179,8 @@ export default function AgendaPage() {
     })) : []
     return [...appts, ...free]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mine, names, freeSlots, mode, disputedIds])
+  }, [mine, names, freeSlots, mode, disputedIds, uid])
+  const dayEvents = dayPick ? events.filter(e => e.kind === 'busy' && e.start.toDateString() === dayPick.toDateString()).sort((a, b) => a.start.getTime() - b.start.getTime()) : []
 
   const open = (t: any) => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)
 
@@ -305,7 +312,7 @@ export default function AgendaPage() {
           return (
             <div role="link" tabIndex={0} onClick={() => router.push(href)}
               onKeyDown={e => { if (e.key === 'Enter') router.push(href) }}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 52, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: '8px 14px', marginBottom: 10, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, background: '#FFF7ED', border: 'none', borderRadius: 16, padding: '8px 14px', marginBottom: 16, cursor: 'pointer' }}>
               <div style={{ width: 32, height: 32, borderRadius: 10, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
               </div>
@@ -341,9 +348,31 @@ export default function AgendaPage() {
           {tab === 'calendrier' && (
             <>
               <div style={{ marginBottom: 20 }}>
-                <Calendar events={events}
+                <Calendar events={events} onDayClick={d => setDayPick(p => p && p.toDateString() === d.toDateString() ? null : d)}
+                  selection={dayPick ? { type: 'days', days: [dayPick] } : null}
                   emptyHint={mode === 'pro' ? 'Aucun rendez-vous ni créneau pour l’instant. Publiez vos disponibilités pour être réservé en un clic.' : 'Aucun rendez-vous pour l’instant.'} />
               </div>
+              {/* Légende et détail du jour touché (vue Mois) : un titre, une ligne par rendez-vous, sans cadre. */}
+              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 14, lineHeight: 1.5, color: '#4E6470', margin: '-8px 4px 20px' }}>
+                <span><span aria-hidden style={{ display: 'inline-block', width: 22, height: 12, borderRadius: 6, background: '#123644', verticalAlign: -1, marginRight: 8 }} />Confirmé</span>
+                <span><span aria-hidden style={{ display: 'inline-block', width: 22, height: 12, borderRadius: 6, border: '1.5px dashed #F2A93B', background: '#FFF7ED', verticalAlign: -1, marginRight: 8 }} />{mode === 'pro' ? 'À accepter' : 'En attente de réponse'}</span>
+              </div>
+              {dayPick && (
+                <div data-day-detail style={{ margin: '0 4px 24px' }}>
+                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644', textTransform: 'capitalize', marginBottom: 8 }}>
+                    {dayPick.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </div>
+                  {dayEvents.length === 0 && <p style={{ fontSize: 15, lineHeight: 1.5, color: '#4E6470', margin: 0 }}>Rien de prévu ce jour-là.</p>}
+                  {dayEvents.map(e => (
+                    <button key={e.id} type="button" onClick={() => e.onClick?.()}
+                      style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 64, textAlign: 'left', border: 'none', borderTop: '1px solid #EEF2F1', background: 'none', padding: '12px 0', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', width: 52, flexShrink: 0 }}>{hhmm(e.start.toISOString())}</b>
+                      <span style={{ flex: 1, minWidth: 0, fontSize: 15, lineHeight: 1.5, color: '#123644' }}>{e.title}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, padding: '4px 12px', borderRadius: 999, flexShrink: 0, ...(e.tone === 'pending' ? { background: '#FFF7ED', color: '#7A5717', border: '1.5px dashed #F2A93B' } : e.tone === 'live' ? { background: 'rgba(18,179,156,.14)', color: '#0B8374' } : { background: '#EEF2F1', color: '#123644' }) }}>{e.subtitle}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {isPro && mode === 'pro' && freeSlots !== null && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', margin: '22px 0 6px' }}>

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { readScreenCache, writeScreenCache } from '@/lib/screenCache'
 import { fetchMyDocuments, type DocRowFull } from '@/lib/pieces'
-import { listingChecks, listingScore, loadListingFacts } from '@/lib/listing'
+import { canPublish, listingChecks, listingScore, loadListingFacts } from '@/lib/listing'
 import { withProTaxStatus, type ProTaxStatus, type Invoice } from '@/lib/invoice-pdf'
 
 // Lectures de Mon entreprise, Revenus et Facturation, partagées entre l'écran et le préchargement
@@ -14,7 +14,7 @@ const DONE = ['completed', 'released']
 // ---- Mon entreprise (/pro/dashboard) ----
 export type DashboardSnap = {
   firstName: string; city: string; pro: any; tx: any[]; docRows: DocRowFull[]
-  listingPct: number | null; taxId: string | null; hasIban: boolean
+  listingPct: number | null; listingOk?: boolean | null; taxId: string | null; hasIban: boolean
 }
 
 /** null : pas encore de profil prestataire (l'écran renvoie vers l'onboarding). */
@@ -39,11 +39,12 @@ export async function loadDashboardSnap(supabase: SupabaseClient, id: string, pr
 }
 
 /** Complétude de l'annonce (même calcul que /pro/annonce), ajoutée au cache de Mon entreprise. */
-export async function loadDashboardListing(supabase: SupabaseClient, id: string, snap: DashboardSnap): Promise<number> {
+export async function loadDashboardListing(supabase: SupabaseClient, id: string, snap: DashboardSnap): Promise<{ pct: number; ok: boolean }> {
   const r = await loadListingFacts(supabase, id, snap.pro)
   const pct = listingScore(listingChecks(r.facts))
-  writeScreenCache('dashboard', id, { ...snap, listingPct: pct })
-  return pct
+  const ok = canPublish(r.facts).ok // tarif + position : « Brouillon » tant que ce n'est pas le cas
+  writeScreenCache('dashboard', id, { ...snap, listingPct: pct, listingOk: ok })
+  return { pct, ok }
 }
 
 // ---- Revenus (/pro/revenus) ----

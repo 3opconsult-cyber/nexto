@@ -1,0 +1,109 @@
+{
+ "base": "http://localhost:3000",
+ "phase": "avant",
+ "checks": [
+  {
+   "k": "carte pro : bouton PING présent (mobile)",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "Mon entreprise : encart Commandes en cours",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "Agenda pro (mois) : jours avec réservation à accepter",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "Agenda pro (Semaine) : réservation « À accepter » visible",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "Agenda pro (Jour) : réservation « À accepter » visible",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "aucune erreur de page (pro)",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "Agenda client (mois) : jours avec « En attente »",
+   "v": 0,
+   "ok": true
+  }
+ ],
+ "mesures": {
+  "carteReduite": {
+   "minFont": 9.5,
+   "textesSous12px": [
+    "11px Vous êtes ici",
+    "9.5px OpenFreeMap",
+    "9.5px OpenMapTiles",
+    "9.5px OpenStreetMap",
+    "10.5px Demandes",
+    "10px 9+"
+   ],
+   "bordures": 6,
+   "ciblesSous44": [
+    "64x11 OpenFreeMap",
+    "65x11 OpenMapTiles",
+    "71x11 OpenStreetMap"
+   ]
+  },
+  "carteMiHauteur": {
+   "minFont": 9.5,
+   "textesSous12px": [
+    "11px Vous êtes ici",
+    "9.5px OpenFreeMap",
+    "9.5px OpenMapTiles",
+    "9.5px OpenStreetMap",
+    "11.5px 120 €",
+    "11.5px Ménage · à 478 m · il y "
+   ],
+   "bordures": 11,
+   "ciblesSous44": [
+    "64x11 OpenFreeMap",
+    "65x11 OpenMapTiles",
+    "71x11 OpenStreetMap"
+   ]
+  },
+  "monEntreprise": {
+   "minFont": 10,
+   "textesSous12px": [
+    "11px Mon activité du mois",
+    "11px Chiffre d'affaires (net)",
+    "11px Interventions",
+    "11px 42 avis",
+    "11px Demandes proches",
+    "10.5px à jour"
+   ],
+   "bordures": 12,
+   "ciblesSous44": []
+  },
+  "agendaMoisPro": {
+   "minFont": 9.5,
+   "textesSous12px": [
+    "10.5px lun",
+    "10.5px mar",
+    "10.5px mer",
+    "10.5px jeu",
+    "10.5px ven",
+    "10.5px sam"
+   ],
+   "bordures": 50,
+   "ciblesSous44": [
+    "42x44 Gérer"
+   ]
+  },
+  "agenda_mois_pro": "Aujourd'hui | Novembre 2026 | Jour | Semaine | Mois | Lun | Mar | Mer | Jeu | Ven | Sam | Dim | 26 | 27 | 28 | 1 RDV | 29 | 1 RDV | 30 | 1 RDV | 31 | 1 RDV | 1 | 1 RDV | 2 | 3 | 2 RDV | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 1 RDV | 19 | 3 RDV | 20 | 17 RDV | 21 | 7 RDV | 22 | 6 RDV | 23 | 33 RDV | 24 | 10 RDV | 25 | 26 | 3 RDV | 27 | 28 | 29 | 30 | 1 | 2 | 3 | 1 RDV ",
+  "agenda_semaine_pro": "Aujourd'hui | 23 Nov. – 29 Nov. 2026 | Jour | Semaine | Mois | L | 23 | M | 24 | M | 25 | J | 26 | V | 27 | S | 28 | D | 29 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 10:33 | 10:37 | 10:51 | 12:30 | 12:30 | 12:30 | 12:30 | 15:00 | 15:00 | 15:00 | 15:30 | 15:30 | 16:00 | 16:00 | 16:00 | 18:00 | 18:00 | 18:00 | 18:00 | 18:30 | 18:3",
+  "agenda_jour_pro": "Aujourd'hui | Lundi 30 Novembre 2026 | Jour | Semaine | Mois | lun. | 30 | 00:00 | 01:00 | 02:00 | 03:00 | 04:00 | 05:00 | 06:00 | 07:00 | 08:00 | 09:00 | 10:00 | 11:00 | 12:00 | 13:00 | 14:00 | 15:00 | 16:00 | 17:00 | 18:00 | 19:00 | 20:00 | 21:00 | 22:00 | 23:00 | MES CRÉNEAUX LIBRES | Gérer | Publiez vos disponibilités pour être réservé en un clic.",
+  "agenda_client": "Aujourd'hui | 1 Févr. – 7 Févr. 2027 | Jour | Semaine | Mois | L | 1 | M | 2 | M | 3 | J | 4 | V | 5 | S | 6 | D | 7 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23"
+ }
+}

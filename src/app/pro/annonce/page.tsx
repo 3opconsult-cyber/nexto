@@ -54,6 +54,8 @@ export default function MonAnnoncePage() {
   const [publishing, setPublishing] = useState(false)
   const [view, setView] = useState<'edit' | 'preview'>('edit')
 
+  // ?apercu : ouvre l'aperçu client (lien « Aperçu » de Mon entreprise).
+  useEffect(() => { try { if (new URLSearchParams(window.location.search).has('apercu')) setView('preview') } catch { /* rien */ } }, [])
   useEffect(() => {
     const supabase = createClient()
     ;(async () => {

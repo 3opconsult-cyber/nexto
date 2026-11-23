@@ -203,7 +203,7 @@ export default function ProCartePage() {
   const load = useCallback((newZone = false) => {
     if (newZone) zoneSeq.current += 1
     const seq = zoneSeq.current
-    fetchRequestsNearby(center.lat, center.lng, radiusKm * 1000).then(list => {
+    return fetchRequestsNearby(center.lat, center.lng, radiusKm * 1000).then(list => {
       if (seq !== zoneSeq.current) return
       setAllReqs(list); setLoaded(true)
       if (newZone) setZoneGen(g => g + 1)
@@ -215,6 +215,13 @@ export default function ProCartePage() {
     })
   }, [center.lat, center.lng, radiusKm])
   useEffect(() => { if (boot) load(true) }, [load, boot])
+  // Bouton PING (comme sur la carte du client) : relit les demandes autour de moi, en un appui.
+  const [pinging, setPinging] = useState(false)
+  const pingNow = () => {
+    if (pinging) return
+    setPinging(true)
+    Promise.resolve(load(false)).catch(() => { }).finally(() => setTimeout(() => setPinging(false), 700))
+  }
   // Mémorise la dernière liste (et les compteurs) pour la prochaine ouverture ; pas une zone
   // choisie par ville (elle n'est pas gardée à la réouverture).
   useEffect(() => {
@@ -306,6 +313,9 @@ export default function ProCartePage() {
   // panneau desktop (".detail-panel", toujours visible a cote de la carte) :
   // meme etat, meme actions, seule la mise en page differe selon l'ecran.
   const urgentCount = reqs.filter(r => r.urgent).length
+  // Feuille réduite : une ligne ; mi-hauteur : quelques demandes lisibles ; réglages et raccourcis seulement à l'état plein (ordinateur : panneau complet).
+  const showAll = isDesk || sheet === 'full'
+  const reqsShown = showAll ? reqs : reqs.slice(0, 3)
   // Interrupteur (panneau ordinateur) : zone de toucher 60 x 44 autour du curseur de 52 x 30.
   const toggle = (
     <div onClick={toggleAvailable} role="switch" aria-checked={available} aria-label="Disponible maintenant" tabIndex={0}
@@ -358,43 +368,51 @@ export default function ProCartePage() {
           </div>
           {toggle}
         </div>
-      ) : (
-        <p style={{ fontSize: 12, color: 'var(--slate)', margin: '0 0 8px' }}>{available ? 'Les clients vous voient sur la carte.' : 'Les clients ne vous voient plus sur la carte.'}</p>
-      )}
-      <LiveZoneCard compact />
-      <p style={{ fontSize: 13.5, color: 'var(--ink)', marginBottom: 8 }}>
-        {!loaded ? 'Recherche des demandes autour de vous…' : <>{reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}</>}
+      ) : showAll ? (
+        <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--slate)', margin: '0 0 16px' }}>{available ? 'Les clients vous voient sur la carte.' : 'Les clients ne vous voient plus sur la carte.'}</p>
+      ) : null}
+      {showAll && <LiveZoneCard compact />}
+      <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--ink)', margin: '0 0 16px' }}>
+        {!loaded ? 'Recherche des demandes autour de vous…' : showAll ? <>{reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}</> : null}
       </p>
       {loaded && reqs.length > 0 && view === 'demandes' && (() => {
         // Un appui pour voir la demande la plus proche (réflexe de dernière minute) ; la liste reste dessous.
         const near = reqs.reduce((m, r) => ((r.distance_m ?? Infinity) < (m.distance_m ?? Infinity) ? r : m), reqs[0])
         return (
           <button type="button" data-voir-plus-proche onClick={() => selectRequest(near.id)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, margin: '0 0 10px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 56, margin: '0 0 20px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer' }}>
             Voir la plus proche · à {distanceTxt(near.distance_m)}
           </button>
         )
       })()}
       {loaded && reqs.length === 0 && (
-        <p style={{ fontSize: 12.5, color: 'var(--slate)', margin: '2px 0 10px' }}>
+        <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--slate)', margin: '2px 0 16px' }}>
           {allReqs.length > 0 ? 'Aucune demande pour ces services dans votre zone.' : 'Aucune demande ouverte dans votre zone pour le moment. Élargissez la zone pour en voir davantage.'}
         </p>
       )}
 
-      {/* Cartes de demandes (maquette, .rcard) : urgence et titre, budget, puis service · distance · âge */}
-      {reqs.map(r => (
-        <button type="button" key={r.id} className="mq-rcard" onClick={() => selectRequest(r.id)}>
-          {r.urgent && <UrgentTag />}<b style={{ display: 'inline' }}>{r.title || TRADES[r.category] || r.category}</b>
-          <span className="bud">{budgetRangeTxt(r)}</span>
-          <small>{TRADES[r.category] || r.category} · à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}
-            {sentByRequest[r.id] && <span className="mq-tag" style={{ marginLeft: 6 }}>Déjà contactée</span>}</small>
+      {/* Demandes : liste aérée (titre, budget, une ligne d'info), séparateur léger, sans cadre. */}
+      <div>
+        {reqsShown.map(r => (
+          <button type="button" key={r.id} className="air-row" onClick={() => selectRequest(r.id)}>
+            <span className="t">{r.urgent && <UrgentTag />}{r.title || TRADES[r.category] || r.category}</span>
+            <span className="bud">{budgetRangeTxt(r)}</span>
+            <span className="s">{TRADES[r.category] || r.category} · à {distanceTxt(r.distance_m)} · {agoTxt(r.created_at)}
+              {sentByRequest[r.id] && <span className="mq-tag" style={{ marginLeft: 6 }}>Déjà contactée</span>}</span>
+          </button>
+        ))}
+      </div>
+      {!showAll && loaded && (
+        <button type="button" onClick={() => setSheet('full')}
+          style={{ width: '100%', minHeight: 52, margin: '12px 0 0', borderRadius: 14, border: 'none', background: '#E8F6F3', color: '#0B8374', fontWeight: 700, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
+          {reqs.length > 3 ? `Voir les ${reqs.length - 3} autres` : 'Voir plus : zone, métiers, interventions'}
         </button>
-      ))}
+      )}
 
-      <div style={{ marginTop: 6 }}>
+      {showAll && <div style={{ marginTop: 16 }}>
         {sent.length > 0 && linkRow(`Propositions envoyées (${sent.length})`, 'Demandes auxquelles vous avez répondu, tarif pas encore validé', () => { setView('interventions'); setSelectedId(null) }, 'tag')}
         {linkRow(`Mes interventions (${missions.length + done.length})`, missions.length ? `${missions.length} à venir, avec leur adresse` : 'Missions au tarif validé', () => { setView('interventions'); setSelectedId(null) }, 'ag')}
-      </div>
+      </div>}
     </>
   )
 
@@ -464,7 +482,7 @@ export default function ProCartePage() {
     </>
   )
   // Sur mobile, les puces de métiers ouvrent la liste de la feuille ; sur ordinateur elles sont sous la barre de zone.
-  const sidePanel = view === 'interventions' ? missionsPanel : (selected ? requestDetail : <>{!isDesk && tradeChips(true)}{activityPanel}</>)
+  const sidePanel = view === 'interventions' ? missionsPanel : (selected ? requestDetail : <>{!isDesk && sheet === 'full' && tradeChips(true)}{activityPanel}</>)
   const sideActions = view !== 'interventions' && selected ? requestActions : null
   const mapPins = view === 'interventions'
     ? missions.filter(m => m.requests?.lat != null && m.requests?.lng != null && addressUsable(m.address_status)).map(m => ({
@@ -494,6 +512,7 @@ export default function ProCartePage() {
   const deskLift = 'var(--ping-install-lift, 0px)'
   const locBottom = isDesk ? `calc(${deskLift} + 24px)` : `calc(${SHEET_H[sheet]} + ${SHEET_LIFT} + 16px)`
   const locRight = isDesk ? 418 : 14
+  const pingRight = locRight + 44 + 12 // à gauche de « Recentrer », même ligne
   const wrapBottomGap = typeof window !== 'undefined' && wrapEl ? Math.max(0, window.innerHeight - wrapEl.getBoundingClientRect().bottom) : 64
   // Bulle verte : masquée sur mobile (carte libre, doublon de l'onglet Messages ; « Laisser un commentaire sur
   // cette page » en bas de la feuille ouvre le même volet) ; sur ordinateur, à gauche du panneau permanent.
@@ -597,6 +616,10 @@ export default function ProCartePage() {
             </div>
           )}
 
+ {!locHidden && (
+            <div className={`pingbtn${pinging ? ' busy' : ''}`} role="button" aria-label="PING : actualiser les demandes autour de moi" onClick={pingNow}
+              style={{ bottom: `calc(${locBottom} - 6px)`, right: pingRight }}><span className="halo" /><span className="lbl">PING</span></div>
+          )}
           {!locHidden && (
             <div className="loc" role="button" aria-label="Recentrer sur ma position et les demandes" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: locBottom, right: locRight, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>
           )}

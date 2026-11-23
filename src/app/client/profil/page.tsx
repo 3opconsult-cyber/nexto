@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Modal from '@/components/Modal'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
+import OrdersInProgress from '@/components/OrdersInProgress'
 import { writeMode } from '@/lib/mode'
 
 const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '12px 0 5px' }
@@ -114,6 +115,7 @@ export default function ClientProfil() {
                 </div>
               )}
             </div>
+            <OrdersInProgress role="particulier" title="Mes commandes en cours" topGap={28} />
             {done < 4 && (
               <div style={{ margin: '10px 2px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12.5 }}>

@@ -22,6 +22,8 @@ export type CalEvent = {
   kind: 'free' | 'busy'
   title?: string
   subtitle?: string
+  /** Réservation pas encore confirmée (pointillé orange) ou mission en cours (route, sur place). */
+  tone?: 'pending' | 'live'
   selected?: boolean
   onClick?: () => void
 }
@@ -138,15 +140,15 @@ export default function Calendar({
   const btn: React.CSSProperties = { border: `1px solid ${C.line}`, background: '#fff', color: C.ink, borderRadius: 12, height: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '0 10px', fontSize: 12.5, fontWeight: 700, fontFamily: 'Inter, sans-serif' }
 
   return (
-    <div ref={root} style={{ background: '#fff', border: `1px solid ${C.line}`, borderRadius: 18, padding: 12, fontFamily: 'Inter, sans-serif', color: C.ink, minWidth: 0 }}>
+    <div ref={root} style={{ background: '#fff', borderRadius: 18, padding: '16px 8px', fontFamily: 'Inter, sans-serif', color: C.ink, minWidth: 0 }}>
       {/* En-tête : navigation + choix de la vue */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 6 }}>
           <button type="button" aria-label="Précédent" onClick={() => move(-1)} style={btn}><Chevron dir="l" /></button>
           <button type="button" onClick={() => setCursor(startOfDay(new Date()))} style={btn}>Aujourd&apos;hui</button>
           <button type="button" aria-label="Suivant" onClick={() => move(1)} style={btn}><Chevron dir="r" /></button>
         </div>
-        <b style={{ flex: 1, minWidth: 140, fontFamily: 'Quicksand, sans-serif', fontSize: 15.5, textTransform: 'capitalize' }}>{ready ? title : "\u00a0"}</b>
+        <b style={{ flex: 1, minWidth: 140, fontFamily: 'Quicksand, sans-serif', fontSize: 18, textTransform: 'capitalize' }}>{ready ? title : "\u00a0"}</b>
         {views.length > 1 && (
           <div style={{ display: 'flex', background: C.paper, borderRadius: 11, padding: 3 }}>
             {views.map(x => (
@@ -220,7 +222,7 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
           const today = sameDay(d, now)
           return (
             <div key={d.getTime()} style={{ textAlign: 'center', minWidth: 0 }}>
-              <div style={{ fontSize: 10.5, color: C.slate, fontWeight: 600 }}>{narrow ? WD[(d.getDay() + 6) % 7].slice(0, 1).toUpperCase() : WD[(d.getDay() + 6) % 7]}</div>
+              <div style={{ fontSize: 12, color: C.slate, fontWeight: 600 }}>{narrow ? WD[(d.getDay() + 6) % 7].slice(0, 1).toUpperCase() : WD[(d.getDay() + 6) % 7]}</div>
               <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, marginTop: 2, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, background: today ? C.teal : 'transparent', color: today ? '#fff' : C.ink }}>{d.getDate()}</div>
             </div>
           )
@@ -270,22 +272,24 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
                   const endMin = sameDay(e.start, e.end) ? minutesOfDay(e.end) : 24 * 60
                   const h = Math.max(18, (Math.min(endMin, h1) - Math.max(minutesOfDay(e.start), h0)) * PX_PER_MIN - 2)
                   const free = e.kind === 'free'
-                  const bg = e.selected ? C.gold : free ? 'rgba(18,179,156,.14)' : C.ink
-                  const fg = e.selected ? '#3a2a06' : free ? C.tealD : '#fff'
+                  const pending = e.tone === 'pending', live = e.tone === 'live'
+                  const bg = e.selected ? C.gold : free ? 'rgba(18,179,156,.14)' : pending ? '#FFF7ED' : live ? C.tealD : C.ink
+                  const fg = e.selected ? '#3a2a06' : free ? C.tealD : pending ? '#7A5717' : '#fff'
                   return (
-                    <div key={e.id}
+                    <div key={e.id} {...(pending ? { 'data-pending-event': '' } : {})}
                       onPointerDown={ev => ev.stopPropagation()} onPointerUp={ev => ev.stopPropagation()}
                       onClick={ev => { ev.stopPropagation(); e.onClick?.() }}
                       title={`${timeLabel(e.start)} – ${timeLabel(e.end)}${e.title ? ' · ' + e.title : ''}`}
                       style={{
                         position: 'absolute', top: top + 1, height: h, left: `calc(${(lane / lanes) * 100}% + 2px)`, width: `calc(${100 / lanes}% - 4px)`,
-                        background: bg, color: fg, border: free && !e.selected ? `1.5px solid ${C.teal}` : 'none', borderRadius: 8,
+                        background: bg, color: fg, border: pending ? `1.5px dashed ${C.gold}` : free && !e.selected ? `1.5px solid ${C.teal}` : 'none', borderRadius: 8,
                         padding: narrow ? '2px 3px' : '3px 6px', overflow: 'hidden', cursor: e.onClick ? 'pointer' : 'default', zIndex: 2,
-                        fontSize: narrow ? 9.5 : 11, lineHeight: 1.25, boxSizing: 'border-box',
+                        fontSize: narrow ? 10.5 : 12, lineHeight: 1.3, boxSizing: 'border-box',
                       }}>
                       <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{timeLabel(e.start)}</div>
                       {!narrow && e.title && <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>}
-                      {!narrow && e.subtitle && h > 44 && <div style={{ opacity: .8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.subtitle}</div>}
+                      {!narrow && e.subtitle && h > 44 && <div style={{ opacity: .85, fontWeight: e.tone ? 700 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.subtitle}</div>}
+                      {narrow && lanes === 1 && e.tone && e.subtitle && <div style={{ fontWeight: 700, lineHeight: 1.2, wordBreak: 'break-word' }}>{e.subtitle}</div>}
                     </div>
                   )
                 })}
@@ -352,29 +356,32 @@ function MonthGrid({ cursor, events, now, selectable, selection, onSelect, onOpe
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 4, marginBottom: 4 }}>
-        {WD.map(w => <div key={w} style={{ textAlign: 'center', fontSize: 10.5, fontWeight: 700, color: C.slate, textTransform: 'capitalize' }}>{w.slice(0, 3)}</div>)}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, marginBottom: 6 }}>
+        {WD.map(w => <div key={w} style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: C.slate, textTransform: 'capitalize' }}>{w.slice(0, 3)}</div>)}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 4 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6 }}>
         {cells.map(d => {
           const inMonth = d.getMonth() === cursor.getMonth()
           const dayEv = events.filter(e => sameDay(e.start, d))
           const free = dayEv.filter(e => e.kind === 'free').length
-          const busy = dayEv.length - free
+          const pend = dayEv.filter(e => e.kind === 'busy' && e.tone === 'pending').length
+          const busy = dayEv.length - free - pend
           const today = sameDay(d, now)
           const past = startOfDay(d) < startOfDay(now)
           const on = isSel(d)
           return (
-            <button key={d.getTime()} type="button" onClick={e => click(d, e.shiftKey)}
+            <button key={d.getTime()} type="button" onClick={e => click(d, e.shiftKey)} {...(pend > 0 ? { 'data-pending-day': '' } : {})}
+              aria-label={`${d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}${past ? ', passé' : ''}${busy ? `, ${busy} rendez-vous` : ''}${pend ? `, ${pend} en attente de réponse` : ''}`}
               style={{
-                minHeight: bigCells ? 76 : 56, borderRadius: 11, padding: '5px 4px', cursor: selectable && past ? 'default' : 'pointer', textAlign: 'left',
-                border: on ? `2px solid ${C.gold}` : today ? `1.5px solid ${C.teal}` : `1px solid ${C.line}`,
-                background: on ? 'rgba(242,169,59,.18)' : past ? '#FAFBFB' : '#fff', opacity: inMonth ? 1 : .45,
-                display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, fontFamily: 'Inter, sans-serif',
+                minHeight: bigCells ? 76 : 60, borderRadius: 12, padding: '6px 3px', cursor: selectable && past ? 'default' : 'pointer', textAlign: 'left',
+                border: on ? `2px solid ${C.gold}` : today ? `2px solid ${C.teal}` : 'none',
+                background: on ? 'rgba(242,169,59,.18)' : past ? 'transparent' : C.paper, opacity: inMonth ? 1 : .45,
+                display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0, fontFamily: 'Inter, sans-serif',
               }}>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: today ? C.tealD : C.ink }}>{d.getDate()}</span>
-              {busy > 0 && <span style={{ fontSize: 9.5, fontWeight: 700, color: '#fff', background: C.ink, borderRadius: 999, padding: '1px 5px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{busy} RDV</span>}
-              {free > 0 && <span style={{ fontSize: 9.5, fontWeight: 700, color: C.tealD, background: 'rgba(18,179,156,.14)', borderRadius: 999, padding: '1px 5px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{free} libre{free > 1 ? 's' : ''}</span>}
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: today ? C.tealD : past ? '#6E8592' : C.ink }}>{d.getDate()}</span>
+              {busy > 0 && <span style={{ fontSize: 10.5, fontWeight: 700, color: '#fff', background: past ? '#8A9BA3' : C.ink, borderRadius: 999, padding: '1px 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{busy} RDV</span>}
+              {pend > 0 && <span style={{ fontSize: 10.5, fontWeight: 700, color: '#7A5717', background: '#FFF7ED', border: `1.5px dashed ${C.gold}`, borderRadius: 999, padding: '0 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{pend} RDV</span>}
+              {free > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: C.tealD, background: 'rgba(18,179,156,.14)', borderRadius: 999, padding: '1px 5px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{free} libre{free > 1 ? 's' : ''}</span>}
             </button>
           )
         })}
