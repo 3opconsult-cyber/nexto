@@ -1,6 +1,6 @@
 "use client"
 import { notifyAdminDocument } from '@/lib/notify'
-import { useState, useRef, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/tracking'
@@ -8,6 +8,7 @@ import NavDrawer from '@/components/NavDrawer'
 import RetourLink from '@/components/RetourLink'
 import Modal from '@/components/Modal'
 import ConfirmSheet from '@/components/ConfirmSheet'
+import DocCaptureSheet from '@/components/DocCaptureSheet'
 import { useCatalog, docsForServices } from '@/lib/catalog'
 import { fetchProviderActivities } from '@/lib/services'
 import { fetchMyDocuments, expiryOf, expiryText } from '@/lib/pieces'
@@ -91,8 +92,7 @@ export default function ProDocumentsPage() {
   const [toRemove, setToRemove] = useState<Piece | null>(null)
   const [adding, setAdding] = useState<{ kind: Kind; type: string } | null>(null)
   const [viewing, setViewing] = useState<{ piece: Piece; url: string } | null>(null)
-  const photoRef = useRef<HTMLInputElement>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [capture, setCapture] = useState(false)
   // Pièces et qualifications demandées par le catalogue des services pour les métiers du prestataire
   // (lot 27). Sans table service_catalog, ou sans pièce demandée, rien ne change à l'écran.
   const catalog = useCatalog()
@@ -129,10 +129,11 @@ export default function ProDocumentsPage() {
   }
   useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function choose(kind: Kind, type: string, how: 'photo' | 'file') {
+  // Maquette : l'ajout ouvre l'écran de prise de vue (« Cadrez le document en entier »), avec « Prendre en photo » et « Choisir un fichier ».
+  function choose(kind: Kind, type: string) {
     setAdding({ kind, type })
     setError('')
-    ;(how === 'photo' ? photoRef : fileRef).current?.click()
+    setCapture(true)
   }
 
   async function upload(file: File) {
@@ -192,10 +193,8 @@ export default function ProDocumentsPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
       <RetourLink />
-      <input ref={photoRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
-        onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
-      <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.heic" style={{ display: 'none' }}
-        onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
+      <DocCaptureSheet open={capture && !!adding} title={(() => { const r = adding && RUBRIQUES.find(x => x.kind === adding.kind); const t = r && r.types.find(y => y.key === adding!.type); return t?.label || r?.title || 'Pièce' })()}
+        onClose={() => setCapture(false)} onFile={f => upload(f)} />
 
       <div style={{ background: '#123644', padding: '16px 20px 22px' }}>
         <NavDrawer />
@@ -258,7 +257,7 @@ export default function ProDocumentsPage() {
                     </div>
                   )}
                   {(row?.status === 'rejected' || row?.status === 'expired' || exp?.expired) && (
-                    <button type="button" disabled={busy === r.kind} onClick={() => choose(r.kind, mine[0]?.type || r.types[0].key, 'file')}
+                    <button type="button" disabled={busy === r.kind} onClick={() => choose(r.kind, mine[0]?.type || r.types[0].key)}
                       style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, padding: '0 18px', border: 'none', borderRadius: 999, background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
                       Renvoyer une pièce
@@ -316,15 +315,10 @@ export default function ProDocumentsPage() {
                   {r.types.map(t => (
                     <div key={t.key} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ flex: '1 1 160px', fontSize: 12.5, color: '#123644', fontWeight: 600 }}>{t.label}</span>
-                      <button disabled={busy === r.kind} onClick={() => choose(r.kind, t.key, 'photo')}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', borderRadius: 999, minHeight: 44, padding: '0 16px', background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                      <button disabled={busy === r.kind} onClick={() => choose(r.kind, t.key)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 'none', borderRadius: 999, minHeight: 44, padding: '0 18px', background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
-                        Photo
-                      </button>
-                      <button disabled={busy === r.kind} onClick={() => choose(r.kind, t.key, 'file')}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid #DCE5E3', borderRadius: 999, minHeight: 44, padding: '0 16px', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
-                        Fichier
+                        Ajouter
                       </button>
                     </div>
                   ))}

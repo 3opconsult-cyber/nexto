@@ -56,6 +56,8 @@ body {
 .detail-panel { display: none; }
 /* Bulle verte : cachée quand un écran de carte le demande (volet plein, aperçu ouvert). */
 html[data-fb-hide] .ping-fb { display: none !important; }
+/* Maquette : pas de bulle flottante sur mobile ; la fonction reste dans Support PING (« Laisser un commentaire ») et dans la feuille de la carte. */
+@media (max-width: 999px) { .ping-fb { display: none !important; } }
 .dnav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 14.5px; color: #123644; cursor: pointer; }
 .dnav-item:hover { background: #F3F6F5; }
 .dnav-item.on { background: #F3F6F5; color: var(--nav-acc, #0B8374); }

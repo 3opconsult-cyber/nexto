@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import NavDrawer from '@/components/NavDrawer'
+import { BackArrow } from '@/components/BackHeader'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 import { sessionUserId } from '@/lib/screenCache'
@@ -52,6 +52,7 @@ export default function MessagesPage() {
   const [sortMode, setSortMode] = useState<'date' | 'client'>('date')
   const [uid, setUid] = useState('')
   const [showAll, setShowAll] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [unread, setUnread] = useState<Record<string, number>>({})
   const [isPro, setIsPro] = useState<boolean | null>(null)
   const [mode, setMode] = useMode(isPro)
@@ -89,9 +90,19 @@ export default function MessagesPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <NavDrawer />
+        <span style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,.1)', display: 'grid', placeItems: 'center' }}><BackArrow fallback={mode === 'pro' ? '/pro/carte' : '/map'} dark /></span>
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>Messages</span>
       </div>
+
+      {/* Bandeau de décompte de la maquette : conversations de l'espace affiché. */}
+      {!loading && mode && (
+        <div style={{ padding: '14px 16px 0' }}>
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'center', fontSize: 12.5, color: '#4E6470' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={2} aria-hidden><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+            <span>{visible.filter(r => r.kind === 'mission').length} conversation{visible.filter(r => r.kind === 'mission').length > 1 ? 's' : ''} dans votre espace {mode === 'pro' ? 'prestataire' : 'particulier'}</span>
+          </div>
+        </div>
+      )}
 
       {!loading && isPro && mode && (
         <div style={{ padding: '12px 16px 0' }}>
@@ -108,16 +119,16 @@ export default function MessagesPage() {
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher"
               style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '11px 14px 11px 36px', borderRadius: 12, border: '1px solid #E7EDEB', background: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
           </div>
-          {visible.length > 6 && <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-            {(['date', 'client'] as const).map(m => (
-              <button key={m} onClick={() => setSortMode(m)} style={{
-                minHeight: 44, padding: '0 15px', borderRadius: 999, border: 'none', cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 12.5,
-                background: sortMode === m ? '#123644' : '#fff', color: sortMode === m ? '#fff' : '#4E6470',
-                boxShadow: sortMode === m ? 'none' : '0 0 0 1px #E7EDEB',
-              }}>{m === 'date' ? 'Trier par date' : mode === 'pro' ? 'Trier par client' : 'Trier par prestataire'}</button>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            {([['all', 'Tous'], ['unread', 'Non lus']] as const).map(([k, l]) => (
+              <button key={k} type="button" onClick={() => setFilter(k)} aria-pressed={filter === k} style={{
+                minHeight: 44, padding: '0 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13,
+                background: filter === k ? '#123644' : '#fff', color: filter === k ? '#fff' : '#123644',
+                boxShadow: filter === k ? 'none' : '0 0 0 1px #E7EDEB',
+              }}>{l}</button>
             ))}
-          </div>}
+          </div>
         </div>
       )}
 
@@ -132,10 +143,11 @@ export default function MessagesPage() {
         )}
         {!loading && visible.length > 0 && (() => {
           const q = query.trim().toLowerCase()
-          const filtered = q ? visible.filter(t => {
+          const base = filter === 'unread' ? visible.filter(t => t.kind === 'mission' && (unread[t.id] || 0) > 0) : visible
+          const filtered = q ? base.filter(t => {
             const name = t.kind === 'support' ? 'Support PING' : t.counterpart
             return (name || '').toLowerCase().includes(q) || (t.lastMessage?.body || '').toLowerCase().includes(q) || (t.kind === 'mission' && missionLine(t).toLowerCase().includes(q))
-          }) : visible
+          }) : base
           // Liste longue : les 8 plus récentes, le reste un appui plus loin (recherche : tout).
           const LIMIT = 8
           const capped = !q && !showAll && filtered.length > LIMIT
@@ -144,7 +156,7 @@ export default function MessagesPage() {
           if (filtered.length === 0) {
             return (
               <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucun résultat pour « {query} »</div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>{q ? `Aucun résultat pour « ${query} »` : 'Aucun message non lu'}</div>
               </div>
             )
           }
@@ -166,20 +178,20 @@ export default function MessagesPage() {
           } else {
             // Sections type messagerie (Aujourd'hui / Hier / Cette semaine / …) :
             // regroupe les lignes déjà triées par activité, sans casser l'ordre.
-            sections = []
-            shown.forEach(t => {
-              const d = new Date(t.lastMessage?.created_at || t.created_at)
-              const label = sectionLabel(d)
-              const current = sections[sections.length - 1]
-              if (current && current.label === label) current.items.push(t)
-              else sections.push({ label, items: [t] })
-            })
+            // Maquette : un seul intitulé « Les plus récentes d'abord » (liste déjà triée par activité).
+            sections = [{ label: "Les plus récentes d'abord", items: shown }]
           }
 
           const list = sections.map(section => (
             <div key={section.label} style={{ marginBottom: 6 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: 0.4, padding: '6px 2px' }}>
-                {section.label}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '0 2px' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: 0.4, padding: '6px 0' }}>{section.label}</div>
+                {section === sections[0] && visible.length > 6 && (
+                  <button type="button" onClick={() => setSortMode(sortMode === 'date' ? 'client' : 'date')}
+                    style={{ minHeight: 44, padding: '0 4px', background: 'none', border: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                    {sortMode === 'date' ? (mode === 'pro' ? 'Trier par client' : 'Trier par prestataire') : 'Trier par date'}
+                  </button>
+                )}
               </div>
               {section.items.map(t => {
                 const name = t.kind === 'support' ? 'Support PING' : t.counterpart
@@ -194,14 +206,14 @@ export default function MessagesPage() {
                     }}>{(name || '?').charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}{nUnread > 0 && <span aria-label={`${nUnread} non lu${nUnread > 1 ? 's' : ''}`} style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#C0503A', marginLeft: 7, verticalAlign: 'middle' }} />}</span>
+                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}</span>
                         <span style={{ fontSize: 10.5, color: '#6E8592', fontWeight: 600, flexShrink: 0 }}>
                           {rowTime(new Date(t.lastMessage?.created_at || t.created_at))}
                         </span>
                       </div>
                       {/* Titre de la mission sous le nom (audit 19/11, correction 15) : plus de liste de « Audit P. » identiques. */}
                       {t.kind === 'mission' && (
-                        <div style={{ fontSize: 11.5, color: '#0B6F63', fontWeight: 700, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{missionLine(t)}</div>
+                        <div style={{ fontSize: 11.5, color: '#4E6470', fontWeight: 500, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{missionLine(t)}</div>
                       )}
                       <div style={{ fontSize: 12, color: nUnread > 0 ? '#123644' : '#4E6470', fontWeight: nUnread > 0 ? 700 : 400, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {isInsuranceSent(t.lastMessage?.body) ? 'Attestation d’assurance transmise' : (t.lastMessage?.body || 'Aucun message — ouvrir la conversation')}
@@ -211,6 +223,7 @@ export default function MessagesPage() {
                         <div style={{ marginTop: 5 }}><PresenceTag presence={t.client_presence} asSeller={t.isSeller} /></div>
                       )}
                     </div>
+                    {nUnread > 0 && <span aria-label={`${nUnread} non lu${nUnread > 1 ? 's' : ''}`} style={{ minWidth: 20, height: 20, borderRadius: 999, background: '#E5484D', color: '#fff', font: '700 11px Inter, sans-serif', padding: '0 5px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{nUnread > 9 ? '9+' : nUnread}</span>}
                   </button>
                 )
               })}

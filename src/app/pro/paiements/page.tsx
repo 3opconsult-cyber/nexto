@@ -2,10 +2,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import NavDrawer from '@/components/NavDrawer'
+import BackHeader from '@/components/BackHeader'
+import { getRates } from '@/lib/pricing'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import { EUR } from '@/lib/invoice-pdf'
-import { TRANSFER_STATUS, transferState, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
+import { TRANSFER_STATUS, pingBank, transferState, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
 
 // Paiements du prestataire.
 // 1. Virement SEPA (décision Romain 31/10, migration 025) : le mode de paiement actuel. Le pro saisit
@@ -29,6 +30,7 @@ const MANDAT: Record<string, { t: string; fg: string; bg: string; txt: string }>
   failed: { t: 'Refusé', fg: '#c0503a', bg: 'rgba(192,80,58,.12)', txt: 'Votre banque a refusé le mandat. Contactez le support PING pour le renouveler.' },
 }
 
+const maskIban = (raw: string) => { const c = cleanIban(raw); return c.length > 8 ? formatIban(c.slice(0, 4) + '•'.repeat(c.length - 8) + c.slice(-4)) : c }
 const input = { width: '100%', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '0 12px', minHeight: 44, fontSize: 13.5, fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' as const }
 const label = { fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase' as const, letterSpacing: '.03em', margin: '10px 0 5px', display: 'block' }
 
@@ -48,6 +50,11 @@ export default function ProPaiementsPage() {
   const [bankBusy, setBankBusy] = useState(false)
   const [owed, setOwed] = useState<Transfer[]>([])
   const [toConfirm, setToConfirm] = useState<Transfer[]>([])
+  const [editIban, setEditIban] = useState(false)
+  const [rate, setRate] = useState<number | null>(null)
+  const [pingIban, setPingIban] = useState<{ iban: string; bic: string; beneficiary: string } | null>(null)
+  const [vbusy, setVbusy] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   async function load() {
     const supabase = createClient()
@@ -77,6 +84,8 @@ export default function ProPaiementsPage() {
     setSt(await r.json().catch(() => ({ actif: false })))
   }
   useEffect(() => {
+    getRates().then(r => setRate(r.seller)).catch(() => { })
+    pingBank(createClient()).then(setPingIban).catch(() => { })
     createClient().auth.getUser().then(({ data: { user } }) => { if (!user) router.push('/auth/login'); else load() })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -94,6 +103,14 @@ export default function ProPaiementsPage() {
     if (e) { setBankMsg({ ok: false, t: 'Enregistrement impossible : ' + e.message }); return }
     setSavedIban(iban); setBank(b => ({ ...b, iban: formatIban(iban) }))
     setBankMsg({ ok: true, t: 'IBAN enregistré. Il sera indiqué à vos clients après chaque intervention terminée.' })
+    setEditIban(false)
+  }
+
+  // « J'ai viré » : même écriture que « J'ai fait le virement » de la facture (le payeur annonce son virement).
+  async function declare(t: Transfer) {
+    setVbusy(t.id)
+    await createClient().from('transfer_payments').update({ status: 'declare_paye' }).eq('id', t.id)
+    await load(); setVbusy(null)
   }
 
   async function submit() {
@@ -121,71 +138,101 @@ export default function ProPaiementsPage() {
     : c ? { t: 'En cours de contrôle', bg: 'rgba(242,169,59,.15)', fg: '#8A6520' } : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
-      <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
-      <div style={{ padding: '20px 20px 16px' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', marginBottom: 4 }}>Espace prestataire</div>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes versements</div>
-      </div>
-      <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh' }}>
+    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
+      <BackHeader title="Paiements" fallback="/pro/dashboard" />
+      <div style={{ padding: '16px 16px 20px' }}>
         <div style={{ maxWidth: 560, margin: '0 auto' }}>
           <ProSuspensionBanner />
 
-          <div id="virement" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Être payé par virement</div>
-              <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, whiteSpace: 'nowrap', ...(savedIban ? { background: 'rgba(18,179,156,.12)', color: '#0B8374' } : { background: 'rgba(242,169,59,.15)', color: '#8A6520' }) }}>
-                {savedIban ? 'IBAN renseigné' : 'À renseigner'}
-              </span>
-            </div>
-            <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.55, margin: '6px 0 0' }}>
-              Après l&apos;intervention, votre client vous règle le prix de la prestation par virement, directement sur ce
-              compte, avec le numéro de votre facture en référence. PING ne touche pas à cet argent. Votre IBAN n&apos;est
-              communiqué qu&apos;au client d&apos;une mission terminée, jamais sur votre fiche publique.
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+            <h2 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Comment vous êtes payé</h2>
+            <p style={{ fontSize: 13, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>
+              Le client vous vire la prestation directement, avec la référence de la facture. Vous virez votre commission à PING{rate !== null ? ` (${String(Math.round(rate * 1000) / 10).replace('.', ',')} % pour les nouvelles réservations ; chaque mission garde son taux)` : ''}.
             </p>
-            <label style={label}>Titulaire du compte</label>
-            <input style={input} value={bank.holder} onChange={e => setBank({ ...bank, holder: e.target.value })} autoComplete="name" />
-            <label style={label}>IBAN</label>
-            <input style={{ ...input, fontFamily: 'ui-monospace, monospace' }} value={bank.iban} placeholder="FR76 …" inputMode="text" autoComplete="off"
-              onChange={e => setBank({ ...bank, iban: formatIban(e.target.value) })} />
-            <label style={label}>BIC (facultatif)</label>
-            <input style={input} value={bank.bic} onChange={e => setBank({ ...bank, bic: e.target.value.toUpperCase().replace(/\s/g, '') })} />
-            {bankMsg && <p style={{ color: bankMsg.ok ? '#0B8374' : '#c0503a', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
-            <button onClick={saveBank} disabled={bankBusy} style={{ width: '100%', marginTop: 14, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: bankBusy ? 0.7 : 1 }}>
-              {bankBusy ? 'Enregistrement…' : savedIban ? 'Mettre à jour mon IBAN' : 'Enregistrer mon IBAN'}
-            </button>
           </div>
 
-          {toConfirm.length > 0 && (
-            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Virements de vos clients à vérifier</div>
-              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '4px 0 0' }}>Le client a annoncé son virement. Ouvrez la ligne : notez « Reçu » dès qu’il apparaît sur votre compte, ou « Non reçu » s’il manque.</p>
-              {toConfirm.map(t => (
-                <a key={t.id} href={`/mission/${t.transaction_id}/facture`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 12.5, color: '#123644', padding: '9px 0', borderTop: '1px solid #E7EDEB', textDecoration: 'none' }}>
-                  <span>{t.reference} · annoncé le {t.declared_at ? new Date(t.declared_at).toLocaleDateString('fr-FR') : ''}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <b>{EUR(t.amount_cents)}</b>
-                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: TRANSFER_STATUS[transferState(t)].bg, color: TRANSFER_STATUS[transferState(t)].fg }}>{TRANSFER_STATUS[transferState(t)].t}</span>
-                  </span>
-                </a>
-              ))}
-            </div>
-          )}
-          {owed.length > 0 && (
-            <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Commissions PING à régler par virement</div>
-              {owed.map(t => (
-                <a key={t.id} href={`/mission/${t.transaction_id}/facture`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, fontSize: 12.5, color: '#123644', padding: '9px 0', borderTop: '1px solid #E7EDEB', textDecoration: 'none' }}>
-                  <span>{t.reference} · avant le {new Date(t.due_at).toLocaleDateString('fr-FR')}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <b>{EUR(t.amount_cents)}</b>
-                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: TRANSFER_STATUS[transferState(t)].bg, color: TRANSFER_STATUS[transferState(t)].fg }}>{TRANSFER_STATUS[transferState(t)].t}</span>
-                  </span>
-                </a>
-              ))}
-              <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>Touchez une ligne pour les coordonnées bancaires de PING et la référence à indiquer.</p>
-            </div>
-          )}
+          <div id="virement" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+            <h2 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Votre IBAN</h2>
+            <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '4px 0 0' }}>
+              Donné seulement au client d&apos;une mission terminée et facturée. PING ne touche pas à cet argent ; votre IBAN n&apos;apparaît jamais sur votre fiche publique.
+            </p>
+            {!editIban ? (
+              <>
+                <p style={{ margin: '10px 0 0', fontSize: 14, color: '#123644' }}>
+                  <b style={{ fontFamily: 'ui-monospace, monospace', letterSpacing: '.02em' }}>{savedIban ? maskIban(savedIban) : 'Aucun IBAN : le client ne peut pas vous virer la prestation'}</b>
+                  {savedIban && bank.holder && <><br /><small style={{ color: '#4E6470', fontSize: 12 }}>{bank.holder}{bank.bic ? ` · BIC ${bank.bic}` : ''}</small></>}
+                </p>
+                <button type="button" onClick={() => { setBankMsg(null); setEditIban(true) }}
+                  style={{ marginTop: 10, minHeight: 44, padding: '0 18px', borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+                  {savedIban ? 'Modifier' : 'Ajouter'}
+                </button>
+                {bankMsg && <p style={{ color: bankMsg.ok ? '#0B8374' : '#c0503a', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
+              </>
+            ) : (
+              <>
+                <label style={label}>Titulaire du compte</label>
+                <input style={input} value={bank.holder} onChange={e => setBank({ ...bank, holder: e.target.value })} autoComplete="name" />
+                <label style={label}>IBAN</label>
+                <input style={{ ...input, fontFamily: 'ui-monospace, monospace' }} value={bank.iban} placeholder="FR76 …" inputMode="text" autoComplete="off"
+                  onChange={e => setBank({ ...bank, iban: formatIban(e.target.value) })} />
+                <label style={label}>BIC (facultatif)</label>
+                <input style={input} value={bank.bic} onChange={e => setBank({ ...bank, bic: e.target.value.toUpperCase().replace(/\s/g, '') })} />
+                {bankMsg && <p style={{ color: bankMsg.ok ? '#0B8374' : '#c0503a', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
+                <button onClick={saveBank} disabled={bankBusy} style={{ width: '100%', marginTop: 14, minHeight: 48, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: bankBusy ? 0.7 : 1 }}>
+                  {bankBusy ? 'Enregistrement…' : savedIban ? 'Mettre à jour mon IBAN' : 'Enregistrer mon IBAN'}
+                </button>
+                <button type="button" onClick={() => setEditIban(false)} style={{ width: '100%', minHeight: 44, marginTop: 6, border: 'none', background: 'none', color: '#4E6470', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Annuler</button>
+              </>
+            )}
+          </div>
+
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px 2px' }}>Commissions à régler à PING</div>
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, overflow: 'hidden' }}>
+            {owed.length === 0 && <div style={{ padding: 16, fontSize: 12.5, color: '#4E6470' }}>Rien à régler.</div>}
+            {owed.map((t, i) => {
+              const sst = transferState(t)
+              const open = sst === 'a_payer' || sst === 'en_retard'
+              return (
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 56, padding: '12px 14px', borderTop: i ? '1px solid #EEF2F1' : 'none' }}>
+                  <a href={`/mission/${t.transaction_id}/facture`} style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: '#123644' }}>
+                    <b style={{ display: 'block', fontSize: 13.5 }}>{t.reference} · {EUR(t.amount_cents)}</b>
+                    <small style={{ color: '#4E6470', fontSize: 12 }}>{sst === 'en_retard' ? 'en retard' : `avant le ${new Date(t.due_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`}</small>
+                  </a>
+                  {open
+                    ? <button type="button" disabled={vbusy === t.id} onClick={() => declare(t)} style={{ minHeight: 44, padding: '0 18px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: vbusy === t.id ? 0.6 : 1, whiteSpace: 'nowrap' }}>J&apos;ai viré</button>
+                    : <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: TRANSFER_STATUS[sst].bg, color: TRANSFER_STATUS[sst].fg, whiteSpace: 'nowrap' }}>{TRANSFER_STATUS[sst].t}</span>}
+                </div>
+              )
+            })}
+          </div>
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginTop: 10 }}>
+            <b style={{ fontSize: 13, color: '#123644' }}>Virer à PING</b>
+            {pingIban?.iban ? (
+              <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '4px 0 0' }}>
+                {pingIban.beneficiary} · IBAN {formatIban(pingIban.iban)}{pingIban.bic ? ` · BIC ${pingIban.bic}` : ''}
+                <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(pingIban.iban.replace(/\s/g, '')); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { } }}
+                  style={{ marginLeft: 8, minHeight: 44, minWidth: 68, border: '1px solid #E7EDEB', background: '#fff', color: '#0B8374', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{copied ? 'Copié' : 'Copier'}</button>
+                <br />Référence : le numéro PING-V-… du document
+              </p>
+            ) : (
+              <p style={{ fontSize: 12.5, color: '#8A6520', lineHeight: 1.5, margin: '4px 0 0' }}>IBAN de PING pas encore renseigné : les coordonnées bancaires de PING vous seront communiquées très prochainement.</p>
+            )}
+          </div>
+
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px 2px' }}>Virements de vos clients à vérifier</div>
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, overflow: 'hidden' }}>
+            {toConfirm.length === 0 && <div style={{ padding: 16, fontSize: 12.5, color: '#4E6470' }}>Tout est reçu.</div>}
+            {toConfirm.map((t, i) => (
+              <a key={t.id} href={`/mission/${t.transaction_id}/facture`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, minHeight: 56, fontSize: 12.5, color: '#123644', padding: '12px 14px', borderTop: i ? '1px solid #EEF2F1' : 'none', textDecoration: 'none' }}>
+                <span>{t.reference} · annoncé le {t.declared_at ? new Date(t.declared_at).toLocaleDateString('fr-FR') : ''}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <b>{EUR(t.amount_cents)}</b>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: TRANSFER_STATUS[transferState(t)].bg, color: TRANSFER_STATUS[transferState(t)].fg }}>{TRANSFER_STATUS[transferState(t)].t}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+          <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 2px 14px' }}>Le client a annoncé son virement : ouvrez la ligne, notez « Reçu » dès qu’il apparaît sur votre compte, ou « Non reçu » s’il manque.</p>
           {!st ? (
             <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
           ) : !st.actif ? (

@@ -227,13 +227,9 @@ export default function ProDashboard() {
                   </div>
                   <input id="logo-input" type="file" accept="image/*" style={{ display: 'none' }}
                     onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('logo', f) }} />
-                  <label htmlFor="logo-input" aria-label="Changer le logo" style={{
-                    position: 'absolute', right: -14, bottom: -14, width: 44, height: 44, borderRadius: '50%',
-                    background: '#12B39C', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                  }}>
-                    {uploading === 'logo'
-                      ? <span style={{ color: '#fff', fontSize: 9, fontWeight: 700 }}>…</span>
-                      : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M12 5v14M5 12h14" /></svg>}
+                  {/* Un seul « + » dans le cadre (celui de la couverture, comme la maquette) : le logo se change en touchant le logo. */}
+                  <label htmlFor="logo-input" aria-label="Changer le logo" style={{ position: 'absolute', inset: 0, cursor: 'pointer', borderRadius: 16 }}>
+                    {uploading === 'logo' && <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: 'rgba(18,54,68,.45)', borderRadius: 16, color: '#fff', fontSize: 11, fontWeight: 700 }}>…</span>}
                   </label>
                 </div>
 
@@ -247,11 +243,15 @@ export default function ProDashboard() {
                 <p style={{ marginTop: 4, fontSize: 13, color: '#123644' }}>
                   {pro.rating > 0 ? <><Stars r={pro.rating} size={13} /> <b>{r1(pro.rating)}</b> <span style={{ color: '#4E6470' }}>({pro.reviews_count || 0} avis)</span></> : <span style={{ color: '#4E6470' }}>Nouveau, pas encore d&apos;avis</span>}
                 </p>
-                {/* Une seule action propre à ce bloc : la fiche publique. Tarifs, pièces, revenus et coordonnées
-                    sont des lignes du Hub plus bas (chaque accès une seule fois, refonte 23/11). */}
-                <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ width: '100%', minHeight: 44, marginTop: 10, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
-                  <Ic name="eye" size={18} />Ma fiche publique
-                </button>
+                {/* Maquette : deux boutons, « Ma fiche publique » et « Mes tarifs » (la ligne Hub « Mes tarifs » est retirée : un seul accès). */}
+                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                  <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ flex: 1, minHeight: 56, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                    <Ic name="eye" size={18} />Ma fiche publique
+                  </button>
+                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/tarifs')} style={{ flex: 1, minHeight: 56, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                    <Ic name="tag" size={18} />Mes tarifs
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -318,7 +318,6 @@ export default function ProDashboard() {
             </HubGroup>
 
             <HubGroup title="Prix et revenus">
-              <HubRow icon={HUB_ICONS.tag} label="Mes tarifs" sub="Vos prestations : forfait, à l'heure, sur devis, avec photo" onClick={() => router.push('/pro/tarifs')} />
               <HubRow icon={HUB_ICONS.chart} label="Mes revenus" sub="Récapitulatif et déclaration" onClick={() => router.push('/pro/revenus')} />
               <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
             </HubGroup>

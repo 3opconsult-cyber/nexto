@@ -1,10 +1,11 @@
 "use client"
 import { notifyAdminDocument } from '@/lib/notify'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
+import DocCaptureSheet from '@/components/DocCaptureSheet'
 
 type DocRow = { status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string; rejection_reason?: string | null }
 
@@ -22,7 +23,7 @@ export default function ClientDocumentsPage() {
   const [uploading, setUploading] = useState(false)
   const [err, setErr] = useState('')
   const [viewing, setViewing] = useState<{ url: string; isImage: boolean } | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [capture, setCapture] = useState(false)
 
   async function load() {
     const supabase = createClient()
@@ -77,8 +78,7 @@ export default function ClientDocumentsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
-      <input ref={inputRef} type="file" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png"
-        onChange={e => { if (e.target.files?.[0]) { handleFile(e.target.files[0]); e.target.value = '' } }} />
+      <DocCaptureSheet open={capture} title="Pièce d'identité" accept=".pdf,.jpg,.jpeg,.png" onClose={() => setCapture(false)} onFile={f => handleFile(f)} />
 
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
         <NavDrawer />
@@ -103,7 +103,7 @@ export default function ClientDocumentsPage() {
               <div style={{ fontSize: 11.5, color: '#6E8592', fontWeight: 600, marginTop: 4 }}>Non fournie</div>
             )}
           </div>
-          <button onClick={() => inputRef.current?.click()} disabled={uploading}
+          <button onClick={() => setCapture(true)} disabled={uploading}
             style={{ padding: '0 16px', minHeight: 44, borderRadius: 999, border: 'none', background: row ? '#F3F6F5' : '#123644', color: row ? '#123644' : '#fff', fontSize: 11.5, fontWeight: 700, flexShrink: 0 }}>
             {uploading ? 'Envoi…' : row ? 'Remplacer' : 'Ajouter'}
           </button>
@@ -111,7 +111,7 @@ export default function ClientDocumentsPage() {
         {row?.status === 'rejected' && (
           <div role="status" style={{ marginTop: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,122,102,.1)', color: '#A8432F', fontSize: 12.5, fontWeight: 600, lineHeight: 1.45 }}>
             Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Envoyez une nouvelle pièce : elle repart en contrôle.
-            <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+            <button type="button" onClick={() => setCapture(true)} disabled={uploading}
               style={{ display: 'block', marginTop: 8, minHeight: 44, padding: '0 18px', border: 'none', borderRadius: 999, background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
               Renvoyer une pièce
             </button>

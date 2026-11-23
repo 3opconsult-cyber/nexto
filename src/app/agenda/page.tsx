@@ -3,7 +3,7 @@ import { incidentOpen } from '@/lib/incident'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import NavDrawer from '@/components/NavDrawer'
+import { BackArrow } from '@/components/BackHeader'
 import { slotEnd, dayLabel, hhmm, type Slot } from '@/lib/slots'
 import { readScreenCache } from '@/lib/screenCache'
 import { AGENDA_CACHE, loadAgendaSnap, type AgendaCache } from '@/lib/agendaLoader'
@@ -44,7 +44,6 @@ export default function AgendaPage() {
   const [txs, setTxs] = useState<any[]>([])
   const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
-  const [allDisputes, setAllDisputes] = useState(false)
   const [disputes, setDisputes] = useState<any[]>([])
   const [invoices, setInvoices] = useState<any[]>([])
   const [freeSlots, setFreeSlots] = useState<Slot[] | null>(null)
@@ -253,39 +252,45 @@ export default function AgendaPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <NavDrawer />
+        <span style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,.1)', display: 'grid', placeItems: 'center' }}><BackArrow fallback={mode === 'pro' ? '/pro/carte' : '/map'} dark /></span>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', margin: 0 }}>Agenda</h1>
       </div>
 
       <div style={{ padding: 16, maxWidth: 980, margin: '0 auto' }}>
         {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} />}
 
-        {/* Litige en tête, quel que soit l'onglet. */}
-        {(allDisputes ? shownDisputes : shownDisputes.slice(0, 2)).map(d => (
-          <div key={d.id} role="link" tabIndex={0} onClick={() => router.push(`/mission/${d.transaction_id}/chat`)}
-            onKeyDown={e => { if (e.key === 'Enter') router.push(`/mission/${d.transaction_id}/chat`) }}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer' }}>
-            <div style={{ width: 36, height: 36, borderRadius: 11, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
-                Litige en cours{names[d.transaction_id] ? ` · ${names[d.transaction_id]}` : ''}
-              </div>
-              <div style={{ fontSize: 11.5, color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {'Ouvert le ' + new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}{d.reason ? ` · ${d.reason}` : ''}
-              </div>
-            </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
+        {/* Bandeau de décompte de la maquette : missions de l'espace affiché. */}
+        {mode && !loading && (
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'center', fontSize: 12.5, color: '#4E6470', marginBottom: 12 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={2} aria-hidden><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+            <span>{mine.length} mission{mine.length > 1 ? 's' : ''} dans votre espace {mode === 'pro' ? 'prestataire' : 'particulier'}</span>
           </div>
-        ))}
-
-        {!allDisputes && shownDisputes.length > 2 && (
-          <button type="button" onClick={() => setAllDisputes(true)}
-            style={{ width: '100%', minHeight: 44, marginBottom: 14, borderRadius: 999, border: '1.5px solid #F2A93B', background: '#fff', color: '#8a6520', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-            Voir les {shownDisputes.length - 2} autres litiges
-          </button>
         )}
+
+        {/* Un seul bandeau litige, quel que soit l'onglet (maquette) : un litige ouvre son dossier, plusieurs ouvrent la liste. */}
+        {shownDisputes.length > 0 && (() => {
+          const n = shownDisputes.length
+          const first = shownDisputes[0]
+          const href = n > 1 ? '/litiges' : `/litiges/${first.id}`
+          return (
+            <div role="link" tabIndex={0} onClick={() => router.push(href)}
+              onKeyDown={e => { if (e.key === 'Enter') router.push(href) }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 11, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
+                  {n} litige{n > 1 ? 's' : ''} en cours
+                </div>
+                <div style={{ fontSize: 11.5, color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {n > 1 ? 'Touchez pour voir la liste' : ('Ouvert le ' + new Date(first.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + (names[first.transaction_id] ? ` · ${names[first.transaction_id]}` : ''))}
+                </div>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
+            </div>
+          )
+        })()}
 
         <div className="ping-tabs" role="tablist" aria-label="Agenda">
           {TABS.map(([k, label]) => (

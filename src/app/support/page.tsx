@@ -73,6 +73,9 @@ export default function SupportPage() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', display: 'inline-flex', alignItems: 'center', gap: 8 }}><Sign size={18} />Support</span>
+        <span style={{ flex: 1 }} />
+        <button type="button" onClick={() => window.dispatchEvent(new Event('ping-feedback'))}
+          style={{ minHeight: 44, padding: '0 6px', background: 'none', border: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Laisser un commentaire</button>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
