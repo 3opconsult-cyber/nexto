@@ -47,6 +47,12 @@ async function replacePendingOffers(supabase: ReturnType<typeof createClient>, b
   } catch { /* la réservation reste valable */ }
 }
 
+// Fonction serveur absente (migration 045 pas encore collée) : PostgREST répond PGRST202, Postgres 42883.
+function missingRpc(e: { code?: string; message?: string } | null) {
+  return !!e && (e.code === 'PGRST202' || e.code === '42883' || /Could not find the function|function .* does not exist/i.test(e.message || ''))
+}
+const WEEKS = 4
+
 function MissionForm() {
   const router = useRouter()
   const params = useSearchParams()
@@ -64,6 +70,11 @@ function MissionForm() {
   const [catalog, setCatalog] = useState<Prestation[] | null>(null)
   const [selId, setSelId] = useState<string | null>(serviceParam)
   const [devisBusy, setDevisBusy] = useState(false)
+  // Étapes déjà connues (carte, profil) : repliées sur une ligne, « Modifier » les rouvre.
+  const [openSvc, setOpenSvc] = useState(false)
+  const [openWhen, setOpenWhen] = useState(false)
+  const [openAddr, setOpenAddr] = useState(false)
+  const [weekly, setWeekly] = useState(false)
   const article: any = selId ? (catalog?.find(x => x.id === selId) ?? null) : null
   const serviceId = article ? article.id as string : null
   // Adresse d'intervention : celle du profil par défaut, confirmée par le client (Romain 31/10).
@@ -113,9 +124,16 @@ function MissionForm() {
     // Nom affiché par la fonction dédiée (profiles est en lecture personnelle : jamais d'embed).
     createClient().rpc('provider_public_name', { provider_id: proId })
       .then(({ data }) => { const n = Array.isArray(data) ? data[0]?.full_name : null; if (n && String(n).trim()) setProName(shortName(n)) }, () => { })
-    fetchSlots(createClient(), proId, 21).then(list => {
+    // 29 jours : le créneau choisi et ses trois reprises hebdomadaires (+7, +14, +21 jours).
+    fetchSlots(createClient(), proId, 29).then(list => {
       const free = list ? list.filter(x => !x.transaction_id) : null
       setSlots(free)
+      // Moment venu de la carte : le créneau publié qui correspond exactement est présélectionné.
+      if (free && whenParam) {
+        const t = new Date(whenParam).getTime()
+        const m = free.find(x => new Date(x.starts_at).getTime() === t)
+        if (m) setSlotId(m.id)
+      }
     })
   }, [proId])
 
@@ -220,47 +238,60 @@ function MissionForm() {
     submit()
   }
 
-  async function submit() {
-    if (!validate()) return
-    const chosenAddr = resolveAddress(profileAddress, addr)
-    if ('error' in chosenAddr) return
-    const address = chosenAddr.address
-    if (!pro || !mode || isDevis || missingService) return
-    setError('')
-    setCreating(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/auth/login'); return }
-    if (user.id === pro.id) { setError('Vous ne pouvez pas réserver vos propres services.'); setCreating(false); return }
+  // ---- Fréquence (maquette : « Une fois » / « Chaque semaine (4 semaines) ») ----
+  // « Chaque semaine » = 4 réservations INDÉPENDANTES (même service, même heure, +7, +14, +21 jours),
+  // créées une à une avec la même fonction book_service : prix figé, acceptation et règles
+  // d'annulation propres à chacune. Aucun calcul d'argent nouveau.
+  type PlanItem = { idx: number; slot: Slot | null; whenIso: string | null; label: string; skip?: string }
+  type Result = { idx: number; label: string; status: 'ok' | 'skipped' | 'fail'; txId?: string; msg?: string }
+  type RunCtx = { userId: string; address: string; addrStatus: 'profil' | 'a_valider'; pos: { lat: number; lng: number } | null; plan: PlanItem[] }
+  function buildPlan(): PlanItem[] {
+    const baseIso = chosen ? chosen.starts_at : wantedAt ? new Date(wantedAt).toISOString() : null
+    if (!baseIso) return []
+    const n = weekly ? WEEKS : 1
+    const out: PlanItem[] = []
+    for (let k = 0; k < n; k++) {
+      const d = new Date(baseIso); d.setDate(d.getDate() + 7 * k)
+      const iso = d.toISOString()
+      const label = `${dayLabel(iso, { weekday: 'long', day: 'numeric', month: 'long' })} à ${hhmm(iso)}`
+      if (chosen) {
+        const slot = k === 0 ? chosen : (slots ?? []).find(x => !x.transaction_id && new Date(x.starts_at).getTime() === d.getTime()) ?? null
+        out.push(slot ? { idx: k, slot, whenIso: null, label } : { idx: k, slot: null, whenIso: null, label, skip: 'Aucun créneau publié ce jour-là.' })
+      } else out.push({ idx: k, slot: null, whenIso: iso, label })
+    }
+    return out
+  }
+  const plan = buildPlan()
+  const planOk = plan.filter(x => !x.skip).length
+  const [results, setResults] = useState<Result[] | null>(null)
+  const [runCtx, setRunCtx] = useState<RunCtx>({ userId: '', address: '', addrStatus: 'profil', pos: null, plan: [] })
 
-    if (chosen) {
-      const { data: still } = await supabase.from('provider_slots').select('id').eq('id', chosen.id).is('transaction_id', null).maybeSingle()
+  // Crée UNE réservation (même chemin qu'avant : book_service, repli ancien chemin, créneau, message système).
+  async function createOne(c: RunCtx, item: PlanItem): Promise<{ txId?: string; awaiting?: boolean; error?: string }> {
+    const supabase = createClient()
+    const slot = item.slot
+    if (slot) {
+      const { data: still } = await supabase.from('provider_slots').select('id').eq('id', slot.id).is('transaction_id', null).maybeSingle()
       if (!still) {
-        setError("Ce créneau vient d'être réservé. Choisissez-en un autre.")
-        setSlots(prev => prev ? prev.filter(x => x.id !== chosen.id) : prev); setSlotId(null); setCreating(false)
-        return
+        setSlots(prev => prev ? prev.filter(x => x.id !== slot.id) : prev)
+        if (item.idx === 0) setSlotId(null)
+        return { error: "Ce créneau vient d'être réservé. Choisissez-en un autre." }
       }
     }
-
-    // Coordonnées de l'adresse : servent au contrôle de vraisemblance du départ et au scan.
-    const pos = await geocodeAddress(address.trim()).catch(() => null)
     const desc = description.trim() || (article ? prestationName(article) : '')
-    // Réservation calculée en base (migration 045) : prix, frais et commission recalculés côté serveur
-    // depuis la fiche de prix et les taux de app_settings. Repli sur l'ancien chemin si la fonction manque.
     let tx: { id: string } | null = null
-    // Réservation à accepter par le prestataire (migration 052) : book_service la crée « en attente ».
     let awaiting = false
     const { data: booked, error: bookErr } = await supabase.rpc('book_service', {
       p_provider: pro.id,
       p_service: serviceId,
       p_mode: mode,
       p_estimated_hours: mode === 'horaire' && !hasOvertime ? Number(estimatedHours || 0) : null,
-      p_address: address.trim(),
-      p_address_status: chosenAddr.status,
-      p_scheduled_at: !needsSlot && wantedAt ? new Date(wantedAt).toISOString() : null,
+      p_address: c.address.trim(),
+      p_address_status: c.addrStatus,
+      p_scheduled_at: item.whenIso,
       p_description: desc,
-      p_lat: pos?.lat ?? null,
-      p_lng: pos?.lng ?? null,
+      p_lat: c.pos?.lat ?? null,
+      p_lng: c.pos?.lng ?? null,
       p_payment_pref: payCesu && cesuOk ? 'cesu' : null,
     })
     if (!bookErr && booked && (booked as any).transaction_id) {
@@ -268,29 +299,27 @@ function MissionForm() {
       awaiting = (booked as any).booking_status === 'en_attente'
     } else if (bookErr && !missingRpc(bookErr)) {
       // Refus explicite de la base (prestation masquée, sur devis, adresse…) : message en français.
-      setError(bookErr.message || 'Impossible de créer la réservation.'); setCreating(false); return
+      return { error: bookErr.message || 'Impossible de créer la réservation.' }
     } else {
       const { data: req, error: reqErr } = await supabase.from('requests').insert({
         // description est NOT NULL en base : le champ est facultatif a l'ecran,
         // "|| null" faisait donc echouer la reservation des que le client ne
-        // remplissait pas la description (jamais declenche par les tests, ou
-        // elle etait toujours remplie a la main).
-        requester_id: user.id, category: serviceTrade || pro.trade,
+        // remplissait pas la description.
+        requester_id: c.userId, category: serviceTrade || pro.trade,
         description: description.trim() || (article ? prestationName(article) : ''),
-        address: address.trim(), budget_cents: totalTtc, status: 'matched',
+        address: c.address.trim(), budget_cents: totalTtc, status: 'matched',
         ...(payCesu && cesuOk ? { payment_pref: 'cesu' } : {}),
-        ...(pos ? { lat: pos.lat, lng: pos.lng } : {}),
+        ...(c.pos ? { lat: c.pos.lat, lng: c.pos.lng } : {}),
       }).select().single()
-      if (reqErr || !req) { setError("Impossible de créer la demande."); setCreating(false); return }
+      if (reqErr || !req) return { error: "Impossible de créer la demande." }
 
-      // Relit les taux à l'instant T (pas le state React, qui peut dater de
-      // l'affichage initial) : la source de vérité au moment de l'écriture.
+      // Relit les taux à l'instant T : la source de vérité au moment de l'écriture.
       const liveRates = await getRates()
       const liveBuyerFee = Math.round(subtotalCents * liveRates.buyer)
       const sellerFee = Math.round(subtotalCents * liveRates.seller)
       const liveTotalTtc = subtotalCents + liveBuyerFee
       const { data: txRow, error: txErr } = await supabase.from('transactions').insert({
-        kind: 'service', buyer_id: user.id, seller_id: pro.id, request_id: req.id,
+        kind: 'service', buyer_id: c.userId, seller_id: pro.id, request_id: req.id,
         subtotal_cents: subtotalCents, buyer_fee_cents: liveBuyerFee, seller_fee_cents: sellerFee,
         total_charged_cents: liveTotalTtc, payout_cents: subtotalCents - sellerFee,
         hourly_rate_cents: hasOvertime ? pricing.hourly_rate_cents : (mode === 'horaire' ? pricing.hourly_rate_cents : null),
@@ -298,14 +327,13 @@ function MissionForm() {
         base_forfait_cents: hasOvertime ? pricing.base_price_cents : null,
         status: 'pending',
         price_confirmed: true,
-        address_status: chosenAddr.status,
-        ...(!needsSlot && wantedAt ? { scheduled_at: new Date(wantedAt).toISOString() } : {}),
+        address_status: c.addrStatus,
+        ...(item.whenIso ? { scheduled_at: item.whenIso } : {}),
       }).select().single()
-      if (txErr || !txRow) { setError('Impossible de créer la réservation.'); setCreating(false); return }
+      if (txErr || !txRow) return { error: 'Impossible de créer la réservation.' }
       tx = txRow
     }
-    if (!tx) { setError('Impossible de créer la réservation.'); setCreating(false); return }
-    if (chosenAddr.saveToProfile) await supabase.from('profiles').update({ address }).eq('id', user.id)
+    if (!tx) return { error: 'Impossible de créer la réservation.' }
 
     // Sans ça, le chat s'ouvrait totalement vide malgré un prix déjà validé
     // (règle suprême du tarif) — rien ne rappelait ce qui avait été réservé.
@@ -315,49 +343,120 @@ function MissionForm() {
       : mode === 'horaire' ? `${(pricing.hourly_rate_cents / 100).toFixed(0)} €/h`
         : `${(pricing.base_price_cents / 100).toFixed(0)} €`
     let when = ''
-    if (chosen) {
-      const { error: slotErr } = await supabase.rpc('book_slot', { p_slot: chosen.id, p_transaction: tx.id })
+    if (slot) {
+      const { error: slotErr } = await supabase.rpc('book_slot', { p_slot: slot.id, p_transaction: tx.id })
       when = slotErr
         ? ' · créneau à convenir dans la conversation (celui choisi vient d\'être pris)'
-        : ` · ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}`
-    } else if (wantedAt) {
-      const d = new Date(wantedAt)
-      when = ` · ${dayLabel(d.toISOString())} à ${hhmm(d.toISOString())}`
+        : ` · ${dayLabel(slot.starts_at)} à ${hhmm(slot.starts_at)}`
+    } else if (item.whenIso) {
+      when = ` · ${dayLabel(item.whenIso)} à ${hhmm(item.whenIso)}`
     }
     await supabase.from('messages').insert({
       transaction_id: tx.id, ...(await systemSender(supabase)),
-      // En attente d'acceptation (052) : l'adresse exacte n'est pas écrite dans le fil (le prestataire la reçoit
-      // quand il accepte, dans le récapitulatif de la mission).
+      // En attente d'acceptation (052) : l'adresse exacte n'est pas écrite dans le fil.
       body: awaiting
-        ? `Réservation envoyée — ${label} · ${priceLabel}${when} · ${maskAddress(address)} · en attente de l’acceptation du prestataire`
-        : chosenAddr.status === 'a_valider'
-          ? `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · autre adresse à valider par le prestataire : ${maskAddress(address)}`
-          : `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${address.trim()}`,
+        ? `Réservation envoyée — ${label} · ${priceLabel}${when} · ${maskAddress(c.address)} · en attente de l’acceptation du prestataire`
+        : c.addrStatus === 'a_valider'
+          ? `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · autre adresse à valider par le prestataire : ${maskAddress(c.address)}`
+          : `✓ Réservation confirmée — ${label} · ${priceLabel}${when} · ${c.address.trim()}`,
     })
-
-    // Fonction serveur absente (migration 045 pas encore collée) : PostgREST répond PGRST202, Postgres 42883.
-function missingRpc(e: { code?: string; message?: string } | null) {
-  return !!e && (e.code === 'PGRST202' || e.code === '42883' || /Could not find the function|function .* does not exist/i.test(e.message || ''))
-}
-
-// Conversations encore en négociation avec ce prestataire (« Contacter », devis en attente) :
-    // la réservation à prix figé les remplace. Sans ça, un ancien devis restait « Accepter »
-    // et l'accepter créait une deuxième mission confirmée chez le même pro (lot 1, constat n° 2).
-    // Le client a le droit de refuser une proposition (comme declineOffer dans le chat).
-    await replacePendingOffers(supabase, user.id, pro.id, tx.id, `${label}${when}`)
-
+    // La réservation à prix figé remplace les devis en attente avec ce prestataire (lot 1, constat n° 2).
+    await replacePendingOffers(supabase, c.userId, pro.id, tx.id, `${label}${when}`)
     trackEvent('mission_booked', { pro_id: proId, service_id: serviceId, subtotal_cents: subtotalCents })
     markFirstAction('reservation')
     notifyOther(tx.id, awaiting ? 'booking_request' : 'booking')
+    return { txId: tx.id, awaiting }
+  }
+
+  async function goAfter(txId: string) {
     if (paymentsOn) {
       // Si le prestataire n'a pas encore de compte de paiement, la mission reste réservée et le
       // bouton « Payer » de l'écran suivant prendra le relais.
-      const pay = await startCheckout(tx.id)
+      const pay = await startCheckout(txId)
       if (pay.redirectUrl) { window.location.href = pay.redirectUrl; return }
     }
     // « Commande validée » : récapitulatif du paiement, puis « Serez-vous sur place ? » (maquette 18/11).
-    router.push(`/mission/${tx.id}/commande`)
+    router.push(`/mission/${txId}/commande`)
   }
+
+  async function submit() {
+    if (!validate()) return
+    const chosenAddr = resolveAddress(profileAddress, addr)
+    if ('error' in chosenAddr) return
+    if (!pro || !mode || isDevis || missingService) return
+    const items = buildPlan()
+    if (!items.length) return
+    setError(''); setResults(null)
+    setCreating(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/auth/login'); return }
+    if (user.id === pro.id) { setError('Vous ne pouvez pas réserver vos propres services.'); setCreating(false); return }
+    // Coordonnées de l'adresse : servent au contrôle de vraisemblance du départ et au scan.
+    const pos = await geocodeAddress(chosenAddr.address.trim()).catch(() => null)
+    const c: RunCtx = { userId: user.id, address: chosenAddr.address, addrStatus: chosenAddr.status as 'profil' | 'a_valider', pos: pos ? { lat: pos.lat, lng: pos.lng } : null, plan: items }
+    setRunCtx(c)
+    const res: Result[] = []
+    for (const it of items) {
+      if (it.skip) { res.push({ idx: it.idx, label: it.label, status: 'skipped', msg: it.skip }); continue }
+      const r = await createOne(c, it)
+      res.push(r.txId ? { idx: it.idx, label: it.label, status: 'ok', txId: r.txId } : { idx: it.idx, label: it.label, status: 'fail', msg: r.error })
+      if (r.txId && chosenAddr.saveToProfile) await supabase.from('profiles').update({ address: chosenAddr.address }).eq('id', user.id)
+    }
+    setCreating(false)
+    finish(res, items.length === 1)
+  }
+
+  function finish(res: Result[], single: boolean) {
+    const firstOk = res.find(r => r.status === 'ok')
+    if (single) {
+      if (firstOk?.txId) { goAfter(firstOk.txId); return }
+      setError(res[0]?.msg || 'Impossible de créer la réservation.'); return
+    }
+    setResults(res)
+    if (res.every(r => r.status === 'ok') && firstOk?.txId) goAfter(firstOk.txId)
+    else try { document.getElementById('mn-results')?.scrollIntoView({ behavior: 'smooth', block: 'center' }) } catch { /* rien */ }
+  }
+
+  // Réessaie une seule semaine : les autres réservations ne sont pas touchées.
+  async function retryOne(idx: number) {
+    const it = runCtx.plan.find(x => x.idx === idx)
+    if (!it || !results) return
+    setCreating(true)
+    let item = it
+    if (it.skip || !it.slot) {
+      // Créneau pas publié au départ : on cherche à nouveau dans la liste (le prestataire a pu en ouvrir un).
+      const base = new Date(runCtx.plan[0].slot?.starts_at ?? runCtx.plan[0].whenIso ?? '')
+      base.setDate(base.getDate() + 7 * idx)
+      const again = runCtx.plan[0].slot ? (slots ?? []).find(x => !x.transaction_id && new Date(x.starts_at).getTime() === base.getTime()) ?? null : null
+      if (runCtx.plan[0].slot && !again) { setCreating(false); return }
+      item = { ...it, slot: again, skip: undefined }
+    }
+    const r = await createOne(runCtx, item)
+    setCreating(false)
+    const next = results.map(x => x.idx !== idx ? x : r.txId ? { ...x, status: 'ok' as const, txId: r.txId, msg: undefined } : { ...x, status: 'fail' as const, msg: r.error })
+    setResults(next)
+    if (next.every(x => x.status === 'ok')) { const f = next.find(x => x.txId); if (f?.txId) goAfter(f.txId) }
+  }
+
+  const sectionTitle: React.CSSProperties = { font: '700 11px Inter, sans-serif', color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px 2px' }
+  const chip = (on: boolean): React.CSSProperties => ({ display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '8px 15px', borderRadius: 999, border: on ? '1px solid #123644' : '1px solid #DCE5E3', background: on ? '#123644' : '#fff', color: on ? '#fff' : '#123644', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' })
+  const card: React.CSSProperties = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 12 }
+  // Étape repliée : la valeur déjà connue (venue de la carte ou du profil) en une ligne, « Modifier » la rouvre.
+  const folded = (value: string, onOpen: (() => void) | null, what: string) => (
+    <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 8, padding: '4px 4px 4px 14px', minHeight: 52 }}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M5 12l5 5 9-10" /></svg>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: '#123644', overflowWrap: 'anywhere' }}>{value}</span>
+      {onOpen && <button type="button" onClick={onOpen} aria-label={`Modifier : ${what}`} style={{ minHeight: 44, minWidth: 44, border: 'none', background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', flexShrink: 0 }}>Modifier</button>}
+    </div>
+  )
+  const svcLabel = article ? prestationName(article) : (pro ? (TRADES[pro.trade] || pro.trade) : '')
+  const svcFolded = !openSvc && !!pricing && !missingService && (options.length <= 1 || !!serviceParam || !!tradeParam)
+  const whenPrefilled = !!whenParam && (needsSlot ? !!chosen : !!wantedAt)
+  const whenFolded = !openWhen && whenPrefilled
+  const whenText = chosen ? `${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : wantedAt ? `${dayLabel(new Date(wantedAt).toISOString())} à ${hhmm(new Date(wantedAt).toISOString())}` : ''
+  const addrFolded = !openAddr && !!profileAddress && addr.mode === 'profil'
+  const nOk = results ? results.filter(r => r.status === 'ok').length : 0
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff' }}>
@@ -368,53 +467,41 @@ function missingRpc(e: { code?: string; message?: string } | null) {
           </button>
           <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 20, color: '#123644', margin: 0 }}>{proName ? `Réserver ${proName}` : 'Réserver'}</h1>
         </div>
-        <p style={{ fontSize: 13, color: '#4E6470', margin: '2px 0 0' }}>
-          {pricing
-            ? hasOvertime
-              ? `${article ? prestationName(article) : TRADES[pro.trade] || pro.trade} — ${EUR(pricing.base_price_cents)} (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${EUR(pricing.hourly_rate_cents)}/h au-delà`
-              : isDevis ? `${article ? prestationName(article) : TRADES[pro.trade] || pro.trade} — sur devis`
-              : `${article ? prestationName(article) : TRADES[pro.trade] || pro.trade} — ${[hasFlat ? EUR(pricing.base_price_cents)+' forfait' : null, hasHourly ? EUR(pricing.hourly_rate_cents)+'/h' : null].filter(Boolean).join(' · ')}`
-            : 'Chargement…'}
-        </p>
       </div>
 
-      <div style={{ background: '#fff', padding: '20px 20px', minHeight: 'calc(100vh - 110px)' }}>
-        {/* Choix de la prestation : son prix et sa manière de tarifer sont figés sur la réservation. */}
-        {options.length > 1 && (
-          <div style={{ marginBottom: 18 }}>
-            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Prestation</span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-              {options.map(o => {
-                const on = !missingService && (o.id ?? null) === (article ? article.id : null)
-                const photo = prestationPhotoUrl(o.photo_path)
-                return (
-                  <button key={o.id ?? 'primary'} type="button" onClick={() => { setSelId(o.id); setError('') }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 12, cursor: 'pointer', border: on ? '2px solid #12B39C' : '2px solid #E7EDEB', background: on ? 'rgba(18,179,156,.06)' : '#fff' }}>
-                    {photo && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photo} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                        style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0, background: '#F3F6F5' }} />
-                    )}
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{o.name}</span>
-                      <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{pricingSummary(o.cols)}</span>
-                    </span>
-                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(o.cols) ?? ''}</span>
-                  </button>
-                )
-              })}
-            </div>
+      <div style={{ background: '#fff', padding: '4px 20px 20px', minHeight: 'calc(100vh - 110px)' }}>
+        <div style={sectionTitle}>1. Prestation</div>
+        {missingService && (
+          <div style={{ padding: 13, borderRadius: 12, background: '#FFF4DD', fontSize: 12.5, color: '#8A5A00', marginBottom: 12, lineHeight: 1.5 }}>
+            Cette prestation n&apos;est plus proposée par ce prestataire.{options.length > 1 ? ' Choisissez-en une autre ci-dessous.' : ''}
           </div>
         )}
-
-        {missingService && (
-          <div style={{ padding: 13, borderRadius: 12, background: '#FFF4DD', fontSize: 12.5, color: '#8A5A00', marginBottom: 16, lineHeight: 1.5 }}>
-            Cette prestation n&apos;est plus proposée par ce prestataire.{options.length > 1 ? ' Choisissez-en une autre ci-dessus.' : ''}
+        {svcFolded ? folded(`${svcLabel}${pricing ? ` · ${isDevis ? 'sur devis' : (pricingShort(pricing) ?? '')}` : ''}`, options.length > 1 ? () => setOpenSvc(true) : null, 'prestation') : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {options.map(o => {
+              const on = !missingService && (o.id ?? null) === (article ? article.id : null)
+              const photo = prestationPhotoUrl(o.photo_path)
+              return (
+                <button key={o.id ?? 'primary'} type="button" aria-pressed={on} onClick={() => { setSelId(o.id); setError('') }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 52, textAlign: 'left', padding: '10px 12px', borderRadius: 12, cursor: 'pointer', border: on ? '2px solid #12B39C' : '2px solid #E7EDEB', background: on ? 'rgba(18,179,156,.06)' : '#fff' }}>
+                  {photo && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={photo} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                      style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0, background: '#F3F6F5' }} />
+                  )}
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{o.name}</span>
+                    <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{pricingSummary(o.cols)}</span>
+                  </span>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(o.cols) ?? ''}</span>
+                </button>
+              )
+            })}
           </div>
         )}
 
         {isDevis ? (
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginTop: 16, marginBottom: 16 }}>
             <div style={{ padding: 14, borderRadius: 12, background: '#F3F6F5', fontSize: 13, color: '#123644', lineHeight: 1.55, marginBottom: 14 }}>
               <b>Prestation sur devis.</b> Pas de prix à l&apos;avance : décrivez votre besoin dans la conversation,
               le prestataire vous envoie un tarif que vous acceptez ou non. Rien n&apos;est réservé tant que vous
@@ -427,30 +514,77 @@ function missingRpc(e: { code?: string; message?: string } | null) {
             </button>
           </div>
         ) : (<>
-        <div id="mn-addr" style={{ marginBottom: 16 }}>
-          <AddressChoice profileAddress={profileAddress} value={addr} onChange={v => { setAddr(v); if (fieldErr?.field === 'addr') setFieldErr(null) }}
-            error={fieldErr?.field === 'addr' ? fieldErr.msg : undefined} />
+        <div style={sectionTitle}>2. Quand ? {proName && <span style={{ textTransform: 'none', fontWeight: 500 }}>créneaux ouverts par {proName}</span>}</div>
+        <div id={needsSlot ? 'mn-slot' : 'mn-date'}>
+          {whenFolded ? folded(whenText, () => setOpenWhen(true), 'date et heure') : needsSlot ? (
+            <div style={card}>
+              <Calendar events={slotEvents} views={['week', 'day']} defaultView="week" initialDate={slotEvents[0]?.start} />
+              <div style={{ fontSize: 11.5, color: chosen ? '#0B8374' : '#6E8592', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
+                {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
+              </div>
+              {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
+            </div>
+          ) : (
+            <div style={card}>
+              <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Date et heure souhaitées</span>
+              <div style={{ marginTop: 6 }}><DayTimePicker value={wantedAt} onChange={v => { setWantedAt(v); if (fieldErr?.field === 'date') setFieldErr(null) }} /></div>
+              {fieldErr?.field === 'date' && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
+            </div>
+          )}
         </div>
 
-        {!needsSlot && (
-          <div id="mn-date" style={{ marginBottom: 16 }}>
-            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Date et heure souhaitées</span>
-            <div style={{ marginTop: 6 }}><DayTimePicker value={wantedAt} onChange={v => { setWantedAt(v); if (fieldErr?.field === 'date') setFieldErr(null) }} /></div>
-            {fieldErr?.field === 'date' && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
+        <div style={sectionTitle}>3. Fréquence</div>
+        <div style={card} data-step="frequence">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {([['once', 'Une fois'], ['weekly', 'Chaque semaine (4 semaines)']] as const).map(([k, l]) => (
+              <button key={k} type="button" aria-pressed={(k === 'weekly') === weekly} onClick={() => { setWeekly(k === 'weekly'); setResults(null) }} style={chip((k === 'weekly') === weekly)}>{l}</button>
+            ))}
           </div>
+          {weekly && <p style={{ color: '#4E6470', fontSize: 12.5, margin: '8px 0 0' }}>Même jour, même heure, pendant 4 semaines : une mission (et une facture) par passage. Les semaines où le créneau est déjà pris sont signalées.</p>}
+        </div>
+
+        <div style={sectionTitle}>4. Adresse</div>
+        <div id="mn-addr">
+          {addrFolded ? folded(`${profileAddress} (votre profil)`, () => setOpenAddr(true), 'adresse') : (
+            <div style={card}>
+              <AddressChoice profileAddress={profileAddress} value={addr} onChange={v => { setAddr(v); if (fieldErr?.field === 'addr') setFieldErr(null) }}
+                error={fieldErr?.field === 'addr' ? fieldErr.msg : undefined} />
+            </div>
+          )}
+        </div>
+
+        {cesuEligible(serviceTrade) && (
+          <>
+            <div style={sectionTitle}>5. Paiement</div>
+            <div style={card}>
+              {cesuOk ? (<>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {([[false, 'Virement sur facture'], [true, 'Payer en CESU préfinancé']] as const).map(([v, l]) => (
+                    <button key={String(v)} type="button" aria-pressed={payCesu === v} onClick={() => setPayCesu(v)} style={chip(payCesu === v)}>{l}</button>
+                  ))}
+                </div>
+                <p style={{ color: '#4E6470', fontSize: 12.5, margin: '8px 0 0' }}>
+                  {payCesu ? `Vous remettez vos titres CESU (ou e-CESU) à ${pro?.company_name || 'votre prestataire'} ; vos frais de service PING se règlent par virement. ` : ''}
+                  Service éligible au crédit d&apos;impôt de 50 % : vous le déclarez vous-même.
+                </p>
+              </>) : (
+                <p style={{ color: '#4E6470', fontSize: 12.5, margin: 0 }}>Virement sur facture : {pro?.company_name || 'ce prestataire'} n&apos;accepte pas le CESU préfinancé.</p>
+              )}
+            </div>
+          </>
         )}
 
-        <label style={{ display: 'block', marginBottom: 16 }}>
+        <label style={{ display: 'block', marginTop: 12, marginBottom: 16 }}>
           <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Description (facultatif)</span>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
-            style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 13.5, fontFamily: 'inherit' }} />
+          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2}
+            style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 13.5, fontFamily: 'inherit', boxSizing: 'border-box' }} />
         </label>
 
         {hasFlat && hasHourly && !hasOvertime && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             {(['forfait', 'horaire'] as const).map(t => (
               <button key={t} onClick={() => setMode(t)}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 12, border: mode === t ? '2px solid #12B39C' : '2px solid #E7EDEB', background: mode === t ? 'rgba(18,179,156,.06)' : '#fff', fontWeight: 700, fontSize: 14, color: '#123644' }}>
+                style={{ flex: 1, minHeight: 44, padding: '12px 0', borderRadius: 12, border: mode === t ? '2px solid #12B39C' : '2px solid #E7EDEB', background: mode === t ? 'rgba(18,179,156,.06)' : '#fff', fontWeight: 700, fontSize: 14, color: '#123644' }}>
                 {t === 'forfait' ? `Forfait — ${EUR(pricing.base_price_cents)}` : `À l'heure — ${EUR(pricing.hourly_rate_cents)}/h`}
               </button>
             ))}
@@ -468,36 +602,26 @@ function missingRpc(e: { code?: string; message?: string } | null) {
           <label id="mn-hours" style={{ display: 'block', marginBottom: 16 }}>
             <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
             <input type="number" value={estimatedHours} onChange={e => { setEstimatedHours(e.target.value); if (fieldErr?.field === 'hours') setFieldErr(null) }} min="0.5" step="0.5"
-              style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14 }} />
+              style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, boxSizing: 'border-box' }} />
             {fieldErr?.field === 'hours' && <span role="alert" style={{ display: 'block', color: '#c0503a', fontSize: 12.5, fontWeight: 600, marginTop: 6 }}>{fieldErr.msg}</span>}
           </label>
         )}
 
-        {needsSlot && (
-          <div id="mn-slot" style={{ marginBottom: 18 }}>
-            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Choisir un créneau</span>
-            <div style={{ marginTop: 8 }}>
-              <Calendar events={slotEvents} views={['week', 'day']} defaultView="week"
-                initialDate={slotEvents[0]?.start} />
-            </div>
-            <div style={{ fontSize: 11.5, color: chosen ? '#0B8374' : '#6E8592', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
-              {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
-            </div>
-            {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
-          </div>
-        )}
-
-        {/* Prix tout compris, façon Airbnb/Booking : un seul montant à l'écran,
-            pas une addition qui s'allonge sous les yeux du client — le détail
-            reste disponible (facture, mission/[id]/facture) sans être imposé
-            ici. Les montants envoyés en base ne changent pas (subtotal_cents,
-            buyer_fee_cents...) : c'est la présentation qui change, pas le prix. */}
-        <div style={{ background: '#F3F6F5', borderRadius: 14, padding: 16, marginBottom: 22 }}>
+        {/* Prix figé : un seul montant à l'écran ; les montants envoyés en base ne changent pas. */}
+        <div style={{ background: 'rgba(18,179,156,.08)', border: '1px solid rgba(18,179,156,.4)', borderRadius: 14, padding: 16, marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Total</span>
-            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{EUR(totalTtc)}</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Prix figé</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }} data-testid="prix-un">{EUR(totalTtc)}</span>
           </div>
-          <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4 }}>Frais de service PING inclus</div>
+          <div style={{ fontSize: 11, color: '#4E6470', marginTop: 4 }}>{totalTtc > 0 ? `${EUR(subtotalCents)} + frais de service PING ${EUR(buyerFee)}, facturés à part. ` : ''}Plus de renégociation après la confirmation.</div>
+          {weekly && totalTtc > 0 && planOk > 0 && (
+            <div data-testid="rep-total" style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', fontSize: 13.5, fontWeight: 700, color: '#123644' }}>
+              {planOk} réservations de {EUR(totalTtc)} = total {EUR(totalTtc * planOk)}
+            </div>
+          )}
+          {weekly && plan.filter(x => x.skip).map(x => (
+            <div key={x.idx} style={{ marginTop: 6, fontSize: 12, color: '#8a6520' }}>Semaine {x.idx + 1} ({x.label}) : {x.skip}</div>
+          ))}
           {/* Paiement (ex-fenêtre PaymentPendingModal) : dit AVANT que le client valide, sans fenêtre. */}
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
             {paymentsOn
@@ -512,36 +636,37 @@ function missingRpc(e: { code?: string; message?: string } | null) {
           )}
         </div>
 
-        {cesuOk && (
-          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '12px 14px', borderRadius: 12, border: payCesu ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: payCesu ? 'rgba(18,179,156,.06)' : '#fff', marginBottom: 14, cursor: 'pointer' }}>
-            <input type="checkbox" checked={payCesu} onChange={e => setPayCesu(e.target.checked)} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: '#123644', lineHeight: 1.5 }}>
-              <b>Payer en CESU préfinancé</b>
-              <span style={{ display: 'block', fontSize: 11.5, color: '#6E8592', marginTop: 3 }}>Ce prestataire accepte les titres CESU remis par votre employeur ou votre comité d&apos;entreprise : vous les lui remettez directement après l&apos;intervention. Vous gérez vous-même votre crédit d&apos;impôt.</span>
-            </span>
-          </label>
-        )}
-
-        {/* Argument de confiance discret, façon Airbnb : une ligne, pas un pavé —
-            cf. critique "pas d'argumentaire visible" + décision de garder la
-            sobriété plutôt que lister des badges. Politique honnête vu l'état
-            actuel (rien n'est débité avant la prestation, Stripe non branché) :
-            l'annulation est donc réellement gratuite jusqu'à l'arrivée, ce n'est
-            pas une promesse en avance sur la fonctionnalité. */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.07)', marginBottom: 14 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
           <span style={{ fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
             {needsAccept && <><b>Le prestataire accepte votre réservation sous 24 h</b> (au plus tard 2 h avant le rendez-vous), sinon la réservation est annulée sans frais. </>}
             Annulation gratuite tant que le prestataire n'est pas en route — des frais s'appliquent au-delà. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
           </span>
         </div>
 
-        {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
+        {error && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
+
+        {results && (
+          <div id="mn-results" role="status" style={{ ...card, borderColor: '#F2A93B' }}>
+            <b style={{ fontSize: 14, color: '#123644' }}>{nOk} réservation{nOk > 1 ? 's' : ''} envoyée{nOk > 1 ? 's' : ''} sur {results.length}</b>
+            <p style={{ fontSize: 12, color: '#4E6470', margin: '4px 0 8px' }}>Chacune est indépendante : les réservations envoyées ne sont pas annulées.</p>
+            {results.map(r => (
+              <div key={r.idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderTop: '1px solid #EEF2F1', minHeight: 44 }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#123644' }}>
+                  <b>Semaine {r.idx + 1}</b> · {r.label}<br />
+                  <span style={{ color: r.status === 'ok' ? '#097A6C' : '#8A5A00' }}>{r.status === 'ok' ? '✓ Envoyée' : r.status === 'skipped' ? `Non créée : ${r.msg}` : `Échec : ${r.msg || 'réessayez'}`}</span>
+                </span>
+                {r.status !== 'ok' && <button type="button" disabled={creating} onClick={() => retryOne(r.idx)} style={{ minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1px solid #12B39C', background: '#fff', color: '#097A6C', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Réessayer</button>}
+              </div>
+            ))}
+            {nOk > 0 && <button type="button" onClick={() => goAfter(results.find(r => r.txId)!.txId!)} style={{ width: '100%', minHeight: 44, marginTop: 8, border: 'none', background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Continuer vers la commande</button>}
+          </div>
+        )}
 
         {/* Bouton collant au-dessus de la barre du bas : jamais sous le pli (audit 19/11, correction 10). */}
         <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '10px 20px calc(10px + env(safe-area-inset-bottom, 0px))', background: '#fff', borderTop: '1px solid #EEF2F1' }}>
-          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
-            {creating ? 'Confirmation…' : `${chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}${totalTtc > 0 ? ` · ${EUR(totalTtc)}` : ''}`}
+          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService || !!results} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, opacity: creating || results ? 0.7 : 1 }}>
+            {creating ? 'Confirmation…' : weekly && planOk > 1 && totalTtc > 0 ? `Confirmer les ${planOk} réservations · ${EUR(totalTtc * planOk)}` : `Confirmer la réservation${totalTtc > 0 ? ` · ${EUR(totalTtc)}` : ''}`}
           </button>
         </div>
         </>)}

@@ -1,0 +1,91 @@
+{
+ "base": "http://localhost:3010",
+ "checks": [
+  {
+   "k": "client : deux sections empilées dans l'ordre",
+   "v": [
+    "PRESTATION",
+    "FRAIS DE SERVICE PING"
+   ],
+   "ok": true
+  },
+  {
+   "k": "client : en-tête avec flèche retour",
+   "v": 1,
+   "ok": true
+  },
+  {
+   "k": "client : plus d'onglets",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "client : ne voit que SA commission",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "client : un PDF par section",
+   "v": 2,
+   "ok": true
+  },
+  {
+   "k": "client : bloc virement présent",
+   "v": 4,
+   "ok": true
+  },
+  {
+   "k": "client : cibles < 44 px",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "client : erreurs de page",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "pro : deux sections empilées dans l'ordre",
+   "v": [
+    "VOTRE FACTURE",
+    "COMMISSION PING"
+   ],
+   "ok": true
+  },
+  {
+   "k": "pro : en-tête avec flèche retour",
+   "v": 1,
+   "ok": true
+  },
+  {
+   "k": "pro : plus d'onglets",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "pro : ne voit que SA commission",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "pro : un PDF par section",
+   "v": 2,
+   "ok": true
+  },
+  {
+   "k": "pro : bloc virement présent",
+   "v": 2,
+   "ok": true
+  },
+  {
+   "k": "pro : cibles < 44 px",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "pro : erreurs de page",
+   "v": [],
+   "ok": true
+  }
+ ]
+}
