@@ -37,6 +37,20 @@ export function useIsDesktop() {
   return desk
 }
 
+/** Hauteur du bandeau d'action posé au-dessus de la barre du bas (--banner-h, BottomTabBar), suivie en direct. */
+export function useBannerH() {
+  const [h, setH] = useState(0)
+  useEffect(() => {
+    const root = document.documentElement
+    const read = () => setH(parseFloat(root.style.getPropertyValue('--banner-h')) || 0)
+    read()
+    const mo = new MutationObserver(read)
+    mo.observe(root, { attributes: true, attributeFilter: ['style'] })
+    return () => mo.disconnect()
+  }, [])
+  return h
+}
+
 /** Hauteur d'un élément, suivie au redimensionnement. */
 export function useElementHeight(el: HTMLElement | null) {
   const [h, setH] = useState(0)

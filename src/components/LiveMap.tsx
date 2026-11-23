@@ -79,7 +79,9 @@ function userIcon(echo = false) {
   return L.divIcon({
     className: '',
     // Point de 30 px inchangé, centré dans une zone de 44 px (cible tactile, audit 19/11 bis n° 12).
-    html: `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><div style="position:relative;width:30px;height:30px">${rings}<div style="position:relative;width:30px;height:30px;border-radius:50%;background:#12B39C;border:4px solid #fff;box-sizing:border-box;box-shadow:0 0 0 7px rgba(18,179,156,.28),0 3px 10px rgba(0,0,0,.3)"></div></div></div>`,
+    // Point de 26 px (30 avant) : posé au-dessus des épingles (zIndexOffset) sans cacher l'initiale d'une
+    // épingle voisine, et sans prendre le toucher (marqueur non interactif).
+    html: `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><div style="position:relative;width:26px;height:26px">${rings}<div class="you-dot" style="position:relative;width:26px;height:26px;border-radius:50%;background:#12B39C;border:4px solid #fff;box-sizing:border-box;box-shadow:0 0 0 6px rgba(18,179,156,.28),0 3px 10px rgba(0,0,0,.3)"></div></div></div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 22],
   })
@@ -154,11 +156,16 @@ const ZONE_INNER = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" 
 function zoneIcon(i = 0) { return pinIcon('#0C8F7E', 'Ici aujourd’hui', i, ZONE_INNER, 'normal') }
 
 type FitPad = { top: number; right: number; bottom: number; left: number }
-function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad }: {
+function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad, inset = 0 }: {
   userPos: { lat: number; lng: number }; pts: { lat: number; lng: number }[]; recenterTick?: number
-  fit?: boolean; fitKey?: string; fitPad?: FitPad
+  fit?: boolean; fitKey?: string; fitPad?: FitPad; inset?: number
 }) {
   const map = useMap()
+  // inset : hauteur (px) cachée en bas par la feuille. La position de l'utilisateur est centrée dans la partie
+  // visible : décalée de inset / 2 au centrage, puis suivie quand la feuille change de position (sans recharger).
+  const appliedInset = useRef(inset)
+  const insetNow = useRef(inset)
+  insetNow.current = inset
   // Par défaut (carte client) : la carte pointe sur la position de l'utilisateur (zoom de quartier),
   // sans dézoomer sur tous les prestataires ; elle ne bouge plus quand la liste se rafraîchit.
   // Mode `fit` (carte pro) : la position ET les épingles tiennent dans le champ, zoom plafonné au
@@ -191,9 +198,17 @@ function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad }: {
       return true
     }
     // Carte pro : positionnement sans animation, pour qu'un recadrage qui suit de près ne soit pas perdu.
-    map.setView([u.lat, u.lng], 15, fit ? { animate: false } : undefined)
+    map.setView([u.lat, u.lng], 15, { animate: false })
+    if (insetNow.current) map.panBy([0, insetNow.current / 2], { animate: false })
+    appliedInset.current = insetNow.current
     return false
   }
+  useEffect(() => {
+    if (fit) return
+    const d = inset - appliedInset.current
+    appliedInset.current = inset
+    if (Math.abs(d) > 1) map.panBy([0, d / 2], { animate: true })
+  }, [inset, fit, map])
   useEffect(() => {
     if (place()) fittedKey.current = fitKey ?? ''
     const t = setTimeout(() => { map.invalidateSize(); if (fit) place() }, 100)
@@ -215,10 +230,59 @@ function MapClick({ onClick }: { onClick?: () => void }) {
   return null
 }
 
+// Étiquettes de prix sans chevauchement : quand deux étiquettes (ou une étiquette et le point « Vous êtes
+// ici » avec sa bulle) se recouvrent à l'écran, la plus prioritaire reste (épingle choisie, puis plus proche
+// de l'utilisateur dans l'ordre de la liste), l'autre est masquée ; l'épingle reste visible et cliquable,
+// le prix reste lisible dans la liste et à l'ouverture de la fiche. Recalculé à chaque zoom / déplacement.
+function DeclutterTags({ sig }: { sig: string }) {
+  const map = useMap()
+  useEffect(() => {
+    let raf = 0
+    const run = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        const root = map.getContainer()
+        const pins = Array.from(root.querySelectorAll<HTMLElement>('.ping-pin'))
+        pins.forEach(p => { const t = p.querySelector<HTMLElement>('.pin-tag'); if (t) t.style.visibility = '' })
+        const placed: DOMRect[] = []
+        const dot = root.querySelector('.you-dot')?.getBoundingClientRect()
+        const tip = root.querySelector('.you-tip')?.getBoundingClientRect()
+        if (dot && dot.width) placed.push(new DOMRect(dot.x - 6, dot.y - 6, dot.width + 12, dot.height + 12))
+        if (tip && tip.width) placed.push(tip)
+        const over = (r: DOMRect, p: DOMRect, m = 2) => r.x < p.x + p.width + m && p.x < r.x + r.width + m && r.y < p.y + p.height + m && p.y < r.y + r.height + m
+        // Ordre : l'épingle choisie (étiquette teal) d'abord, puis celle dessinée au-dessus (z-index Leaflet) :
+        // l'étiquette gardée est toujours celle de l'épingle qu'on voit.
+        const isSel = (p: HTMLElement) => (p.querySelector<HTMLElement>('.pin-tag')?.style.background || '').includes('rgb(18, 179, 156)')
+        const zOf = (p: HTMLElement) => parseInt((p.closest('.leaflet-marker-icon') as HTMLElement | null)?.style.zIndex || p.style.zIndex || '0', 10) || 0
+        // À z-index égal, la dernière épingle du DOM est dessinée par-dessus.
+        const ordered = [...pins.filter(isSel), ...pins.filter(p => !isSel(p)).sort((a, b) => zOf(b) - zOf(a) || pins.indexOf(b) - pins.indexOf(a))]
+        const bodies: DOMRect[] = []
+        for (const p of ordered) {
+          const body = p.querySelector<HTMLElement>('.pin-hit')?.getBoundingClientRect()
+          const t = p.querySelector<HTMLElement>('.pin-tag')
+          const r = t?.getBoundingClientRect()
+          // Goutte recouverte par une goutte déjà gardée (deux prestataires au même endroit) : son prix serait lu sur l'autre.
+          const covered = !!body && body.width > 0 && bodies.some(b => over(body, new DOMRect(b.x + 12, b.y + 12, b.width - 24, b.height - 24), 0))
+          if (t && r && r.width) {
+            if (covered || placed.some(q => over(r, q))) t.style.visibility = 'hidden'
+            else placed.push(r)
+          }
+          if (body && body.width) bodies.push(body)
+        }
+      })
+    }
+    map.on('zoomend moveend', run)
+    const ts = [200, 800, 1700].map(ms => window.setTimeout(run, ms))
+    run()
+    return () => { map.off('zoomend moveend', run); ts.forEach(clearTimeout); cancelAnimationFrame(raf) }
+  }, [map, sig])
+  return null
+}
+
 type ReqPin = { id: string; lat: number; lng: number; label?: string | null; color?: string; icon?: string }
 export default function LiveMap({
   userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici', echo = false,
-  onMapClick, fit = false, fitKey, fitPad, selectedId = null, newIds, zones = [], onSelectZone,
+  onMapClick, fit = false, fitKey, fitPad, selectedId = null, newIds, zones = [], onSelectZone, inset = 0,
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
@@ -239,10 +303,13 @@ export default function LiveMap({
   /** Zones d'intervention du jour (providers_live_zones) : second repère « en intervention près de <secteur> ». */
   zones?: { provider_id: string; lat: number; lng: number; label: string | null; full_name: string | null }[]
   onSelectZone?: (providerId: string) => void
+  /** Hauteur (px) du bas de la carte cachée par la feuille : la position reste centrée dans la partie visible. */
+  inset?: number
 }) {
   return (
     <>
       <style>{`.leaflet-top.leaflet-left{top:158px}
+        @media (max-width:999px){.leaflet-control-zoom{display:none !important}}
         .leaflet-container{background:#E9F1EA}
         .leaflet-control-attribution{font:9.5px/1.4 Inter,sans-serif !important;color:#6E8592 !important;background:rgba(255,255,255,.55) !important;padding:0 5px !important;border-radius:6px 0 0 0}
         .leaflet-control-attribution a{color:#6E8592 !important;text-decoration:none}.leaflet-control-zoom{z-index:400 !important}
@@ -252,7 +319,7 @@ export default function LiveMap({
         @keyframes pingEcho{0%{transform:scale(1);opacity:.55}100%{transform:scale(6);opacity:0}}
         .leaflet-marker-icon.ping-pin{pointer-events:none !important}
         .ping-pin .pin-hit,.ping-pin .pin-tag{pointer-events:auto;cursor:pointer}
-        .ping-echo{position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;border:2px solid #12B39C;animation:pingEcho 2.2s ease-out infinite;pointer-events:none}
+        .ping-echo{position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;border:2px solid #12B39C;animation:pingEcho 2.2s ease-out infinite;pointer-events:none}
         @media (prefers-reduced-motion: reduce){.ping-echo{animation:none;display:none}}`}</style>
       <MapContainer
         center={[userPos.lat, userPos.lng]}
@@ -267,9 +334,11 @@ export default function LiveMap({
       >
         <AttributionPrefix />
         <PingBaseLayer />
-        <FitAll userPos={userPos} pts={requests} recenterTick={recenterTick} fit={fit} fitKey={fitKey} fitPad={fitPad} />
+        <FitAll userPos={userPos} pts={requests} recenterTick={recenterTick} fit={fit} fitKey={fitKey} fitPad={fitPad} inset={inset} />
         <MapClick onClick={onMapClick} />
-        <Marker position={[userPos.lat, userPos.lng]} icon={userIcon(echo)}>
+        <DeclutterTags sig={`${pros.length}|${requests.length}|${zones.length}|${selectedId ?? ''}|${requests.map(r => r.label).join(',')}`} />
+        {/* Position de l'utilisateur : toujours au-dessus des épingles, jamais cliquable (le toucher passe à l'épingle dessous). */}
+        <Marker position={[userPos.lat, userPos.lng]} icon={userIcon(echo)} zIndexOffset={2000} interactive={false} keyboard={false}>
           <Tooltip permanent direction="bottom" offset={[0, 8]} className="you-tip">{youLabel}</Tooltip>
         </Marker>
         {pros.filter(p => p.lat != null && p.lng != null).map((p, i) => (

@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { trackEvent } from '@/lib/tracking'
 
@@ -28,6 +28,13 @@ export default function FeedbackBubble() {
   const [text, setText] = useState('')
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
+  // Écrans de carte (mobile) : la bulle flottante est masquée pour laisser la carte libre ; la ligne
+  // « Laisser un commentaire sur cette page » de la feuille ouvre le même volet (événement ping-feedback).
+  useEffect(() => {
+    const on = () => setOpen(true)
+    window.addEventListener('ping-feedback', on)
+    return () => window.removeEventListener('ping-feedback', on)
+  }, [])
 
   if (HIDDEN_PREFIXES.some(p => pathname?.startsWith(p)) || HIDDEN_RE.test(pathname || '')) return null
 

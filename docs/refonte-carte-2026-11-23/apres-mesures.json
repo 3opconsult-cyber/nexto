@@ -1,0 +1,661 @@
+{
+ "client-mission-bandeau-reel": false,
+ "client-mission-bandeau-simule": true,
+ "client-mission-ouverture": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 1,
+  "sheetItems": [
+   "Afficher la liste"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 660,
+   "bottom": 724,
+   "h": 64
+  },
+  "barTop": 729,
+  "pinOverlaps": [],
+  "snap": "peek"
+ },
+ "client-mission-poignee": {
+  "w": 390,
+  "h": 55
+ },
+ "client-mission-appui1": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 9,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 373,
+   "bottom": 724,
+   "h": 351
+  },
+  "barTop": 729,
+  "pinOverlaps": []
+ },
+ "client-mission-appui2": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous"
+  ],
+  "nChrome": 2,
+  "sheet": 12,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 724,
+   "h": 660
+  },
+  "barTop": 729,
+  "pinOverlaps": []
+ },
+ "client-mission-appui-sequence": [
+  "peek",
+  "half",
+  "full",
+  "peek"
+ ],
+ "client-mission-doigt-haut": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 9,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 373,
+   "bottom": 724,
+   "h": 351
+  },
+  "barTop": 729,
+  "pinOverlaps": []
+ },
+ "client-mission-doigt-plein": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous"
+  ],
+  "nChrome": 2,
+  "sheet": 12,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 724,
+   "h": 660
+  },
+  "barTop": 729,
+  "pinOverlaps": []
+ },
+ "client-mission-glissements": [
+  {
+   "de": "peek"
+  },
+  {
+   "apresGlisserHautModere": "half"
+  },
+  {
+   "apresGlisserBas": "peek"
+  },
+  {
+   "apresGlisserHautGrand": "full"
+  },
+  {
+   "apresSourisBas": "peek"
+  }
+ ],
+ "client-mission-avant-rechargement": {
+  "snap": "peek"
+ },
+ "client-mission-apres-rechargement": {
+  "snap": "peek"
+ },
+ "client-mission-memoire": {
+  "laisse": "half",
+  "rouvert": "half",
+  "laisse2": "full",
+  "rouvert2": "half"
+ },
+ "client-mission-memoire-rouverte": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 9,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 373,
+   "bottom": 724,
+   "h": 351
+  },
+  "barTop": 729,
+  "pinOverlaps": []
+ },
+ "client-mission-erreurs": [],
+ "pro-mission-bandeau-reel": false,
+ "pro-mission-bandeau-simule": false,
+ "pro-mission-ouverture": {
+  "chrome": [
+   "A",
+   "Particulier",
+   "Professionnel",
+   "INPUT",
+   "INPUT",
+   "INPUT",
+   "INPUT",
+   "Continuer →",
+   "Se connecter"
+  ],
+  "nChrome": 9,
+  "sheet": 0,
+  "sheetItems": [],
+  "tabbar": 0,
+  "small": [
+   "A 40x40",
+   "Particulier 104x38",
+   "Professionnel 125x38",
+   "Se connecter 84x16"
+  ],
+  "barTop": null,
+  "pinOverlaps": [],
+  "snap": null
+ },
+ "pro-mission-poignee": null,
+ "pro-mission-apres-rechargement": {
+  "snap": null
+ },
+ "pro-mission-erreurs": [],
+ "client-sans-mission-ouverture": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 1,
+  "sheetItems": [
+   "Afficher la liste"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 716,
+   "bottom": 780,
+   "h": 64
+  },
+  "barTop": 785,
+  "pinOverlaps": [],
+  "snap": "peek"
+ },
+ "client-sans-mission-poignee": {
+  "w": 390,
+  "h": 55
+ },
+ "client-sans-mission-appui1": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 9,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "client-sans-mission-appui2": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous"
+  ],
+  "nChrome": 2,
+  "sheet": 12,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "client-sans-mission-appui-sequence": [
+  "peek",
+  "half",
+  "full",
+  "peek"
+ ],
+ "client-sans-mission-doigt-haut": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 9,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "client-sans-mission-doigt-plein": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous"
+  ],
+  "nChrome": 2,
+  "sheet": 12,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "client-sans-mission-glissements": [
+  {
+   "de": "peek"
+  },
+  {
+   "apresGlisserHautModere": "half"
+  },
+  {
+   "apresGlisserBas": "peek"
+  },
+  {
+   "apresGlisserHautGrand": "full"
+  },
+  {
+   "apresSourisBas": "peek"
+  }
+ ],
+ "client-sans-mission-avant-rechargement": {
+  "snap": "peek"
+ },
+ "client-sans-mission-apres-rechargement": {
+  "snap": "peek"
+ },
+ "client-sans-mission-memoire": {
+  "laisse": "half",
+  "rouvert": "half",
+  "laisse2": "full",
+  "rouvert2": "half"
+ },
+ "client-sans-mission-memoire-rouverte": {
+  "chrome": [
+   "Menu",
+   "Filtrer par service, près de vous",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position"
+  ],
+  "nChrome": 5,
+  "sheet": 9,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous",
+   "Ménage",
+   "Repassage"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "client-sans-mission-erreurs": [],
+ "pro-sans-mission-ouverture": {
+  "chrome": [
+   "Menu",
+   "Visible · à moins de 15 km Zone",
+   "Recentrer sur ma position et les demande",
+   "Disponible maintenant : appuyer pour pas"
+  ],
+  "nChrome": 4,
+  "sheet": 1,
+  "sheetItems": [
+   "Afficher la liste"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 716,
+   "bottom": 780,
+   "h": 64
+  },
+  "barTop": 785,
+  "pinOverlaps": [],
+  "snap": "peek"
+ },
+ "pro-sans-mission-poignee": {
+  "w": 390,
+  "h": 55
+ },
+ "pro-sans-mission-appui1": {
+  "chrome": [
+   "Menu",
+   "Visible · à moins de 15 km Zone",
+   "Recentrer sur ma position et les demande",
+   "Disponible maintenant : appuyer pour pas"
+  ],
+  "nChrome": 4,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-appui2": {
+  "chrome": [
+   "Menu",
+   "Visible · à moins de 15 km Zone"
+  ],
+  "nChrome": 2,
+  "sheet": 10,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-appui-sequence": [
+  "peek",
+  "half",
+  "full",
+  "peek"
+ ],
+ "pro-sans-mission-doigt-haut": {
+  "chrome": [
+   "Menu",
+   "Visible · à moins de 15 km Zone",
+   "Recentrer sur ma position et les demande",
+   "Disponible maintenant : appuyer pour pas"
+  ],
+  "nChrome": 4,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-doigt-plein": {
+  "chrome": [
+   "Menu",
+   "Visible · à moins de 15 km Zone"
+  ],
+  "nChrome": 2,
+  "sheet": 10,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-glissements": [
+  {
+   "de": "peek"
+  },
+  {
+   "apresGlisserHautModere": "half"
+  },
+  {
+   "apresGlisserBas": "peek"
+  },
+  {
+   "apresGlisserHautGrand": "full"
+  },
+  {
+   "apresSourisBas": "peek"
+  }
+ ],
+ "pro-sans-mission-avant-rechargement": {
+  "snap": "peek"
+ },
+ "pro-sans-mission-apres-rechargement": {
+  "snap": "peek"
+ },
+ "pro-sans-mission-memoire": {
+  "laisse": "half",
+  "rouvert": "half",
+  "laisse2": "full",
+  "rouvert2": "half"
+ },
+ "pro-sans-mission-memoire-rouverte": {
+  "chrome": [
+   "Menu",
+   "Visible · à moins de 15 km Zone",
+   "Recentrer sur ma position et les demande",
+   "Disponible maintenant : appuyer pour pas"
+  ],
+  "nChrome": 4,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-erreurs": [],
+ "client-bureau-1000x800": {
+  "chrome": [
+   "Devenir prestataire",
+   "Messages, 57 non lus",
+   "Zoom out",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €",
+   "Fictif 13, 22 €/h",
+   "Fictif 3, 19 €/h",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 17,
+  "sheet": 0,
+  "sheetItems": [],
+  "tabbar": 0,
+  "small": [],
+  "sheetRect": {
+   "top": 0,
+   "bottom": 0,
+   "h": 0
+  },
+  "barTop": 0,
+  "pinOverlaps": []
+ },
+ "pro-bureau-1000x800": {
+  "chrome": [
+   "Espace client",
+   "Messages, 39 non lus",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8",
+   "Exemple — Grand ménage de printemps, mai",
+   "Mes interventions (44) 24 à venir, avec ",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 15,
+  "sheet": 0,
+  "sheetItems": [],
+  "tabbar": 0,
+  "small": [],
+  "sheetRect": {
+   "top": 0,
+   "bottom": 0,
+   "h": 0
+  },
+  "barTop": 0,
+  "pinOverlaps": []
+ }
+}
