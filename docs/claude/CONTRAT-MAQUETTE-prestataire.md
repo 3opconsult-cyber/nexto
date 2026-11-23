@@ -5,8 +5,8 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 
 | Écran ou onglet | Élément | Statut | Note |
 |---|---|---|---|
-| Menu | 4 entrées : Demandes autour de moi, Messages, Agenda, Mon entreprise + Support PING ; interrupteur Disponible | OK (code) | src/components/DesktopShell.tsx:32 ; Q077 ; HISTORIQUE.md l.36 |
-| Menu | Entrée « Mission » les jours de mission seulement | VOULU | Décision Romain 18/11 « Navigation validée » (HISTORIQUE.md l.629 ; A-TRANCHER r) |
+| Menu | 4 entrées : Demandes autour de moi, Messages, Agenda, Mon entreprise + Support PING ; interrupteur Disponible | OK | src/components/DesktopShell.tsx:32 ; Q077 ; HISTORIQUE.md l.36 ; app-carte-pro.png : Demandes, Messages, Agenda, Entreprise ; interrupteur « Disponible maintenant » |
+| Menu | Entrée « Mission » les jours de mission seulement | VOULU | Décision Romain 18/11 « Navigation validée » (HISTORIQUE.md l.629 ; A-TRANCHER r) ; vu : « Mission » au centre de la barre (app-carte-pro.png) |
 | Demandes (carte pro) | Zone autour d'une ville : distances recalculées, filtre par service | OK (code) | src/app/pro/carte/page.tsx:83 ; A19 Q033 Q063 Q150 |
 | Demandes (carte pro) | Demande publiée visible ; « Propositions envoyées » | OK (code) | src/app/pro/carte/page.tsx:353 ; Q029 Q102 |
 | Demande | « Contacter le client » d'abord, puis « Proposer mon tarif » | OK (code) | src/app/pro/carte/page.tsx:292 ; Q007 Q155 |
@@ -32,8 +32,8 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Création de l'activité | Compte d'abord, 4 étapes exactement | MANQUE | 5 ou 7 étapes en ligne contre 4 en maquette (src/app/pro/onboarding/page.tsx:43-47) ; aucune décision de Romain trouvée |
 | Profil envoyé | « Votre profil est en ligne » / pièce À ajouter ou En contrôle | OK (code) | src/app/pro/attente/page.tsx:54 ; Q086 |
 | Disponibilités | Écran Mes disponibilités, répétition ; la réservation propose ses créneaux | OK (code) | src/app/pro/disponibilites/page.tsx:154 ; Q005 |
-| Agenda | Même agenda que le client, mode pro ; Agenda ouvre sur la mission du jour | OK (code) | src/app/agenda/page.tsx:235 ; Q004 Q105 |
-| Billet de mission | « Client sur place » / « Client absent » sur le billet | OK (code) | src/components/presence/PresenceTag.tsx:8 ; Q200 |
+| Agenda | Même agenda que le client, mode pro ; Agenda ouvre sur la mission du jour | OK | src/app/agenda/page.tsx:235 ; Q004 Q105 ; app-agenda-pro.png : mêmes onglets que le client, mode pro |
+| Billet de mission | « Client sur place » / « Client absent » sur le billet | OK | src/components/presence/PresenceTag.tsx:8 ; Q200 ; app-agenda-pro.png : « Client absent » sur le billet |
 | Réservation reçue | Accepter (1 appui) / Refuser ; expirée disparaît | OK (code) | src/components/BookingCard.tsx:96 ; D-03 faite ; Q003 |
 | Adresse à valider | Adresse sans numéro ; le pro accepte ou refuse | OK (code) | src/components/AddressChoice.tsx:79 ; Q003 Q095 ; 023 |
 | Je pars | Bouton « Je pars » seulement après acceptation | OK (code) | src/components/DepartureBar.tsx:60 (bookable = confirmé) et :128 ; « le jour du rendez-vous » : aucune garde de date trouvée dans DepartureBar, voir ligne MANQUE suivante ; Q095 Q172 Q151 |
@@ -57,3 +57,4 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Aide | Aide du prestataire | OK (code) | src/app/aide/[slug]/page.tsx:7 ; Q156 |
 | Conversation | Une conversation par interlocuteur et par demande | OK (code) | src/app/messages/page.tsx:127 ; Q093 Q154 |
 | Commande reçue | Écran « Commande reçue » (paiement) côté prestataire | OK (code) | src/app/mission/[id]/commande/page.tsx:86 ; maquette « Commande reçue (paiement) » ; écritures non testées (D-14) |
+| Mon entreprise | Ordre des blocs : jauge « Mon annonce », fiche, bouton « Ma fiche publique » / « Mes tarifs », alerte litige rouge, « Il vous reste 2 éléments à ajouter », puis MON ACTIVITÉ | MANQUE | maquette-mon-entreprise.png / app-mon-entreprise.png : l'app ajoute « Mes pièces », « Mes revenus », « Modifier mes informations » et la carte « Je suis en intervention ici » avant « MON ACTIVITÉ DU MOIS » (chiffre d'affaires, 9 litiges) ; en-tête menu + « Visible sur la carte » ; « Il vous reste… » non vu (compte de test) ; aucune décision citée |

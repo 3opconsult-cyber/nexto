@@ -12,14 +12,18 @@ Un écart n'est VOULU que si Romain l'a décidé (date et source citées) ; un �
 - **VOULU** : écart décidé par Romain, décision citée (voir la section en bas).
 - **NON VÉRIFIÉ** : preuve impossible pour l'instant, raison écrite dans la note (compte administrateur, base, mesure à faire).
 
-## Décompte au 23/11/2026 (182 lignes)
+## Décompte au 23/11/2026, après la passe visuelle (192 lignes)
 | Profil | OK | OK (code) | MANQUE | VOULU | NON VÉRIFIÉ | Total |
 |---|---|---|---|---|---|---|
-| Site public | 0 | 12 | 0 | 0 | 1 | 13 |
-| Particulier | 0 | 70 | 3 | 5 | 4 | 82 |
-| Prestataire | 0 | 47 | 3 | 2 | 0 | 52 |
+| Site public | 4 | 8 | 2 | 0 | 1 | 15 |
+| Particulier | 25 | 43 | 12 | 5 | 4 | 89 |
+| Prestataire | 3 | 44 | 4 | 2 | 0 | 53 |
 | Administration | 0 | 27 | 2 | 2 | 4 | 35 |
-| **Total** | 0 | 156 | 8 | 9 | 9 | 182 |
+| **Total** | 32 | 122 | 20 | 9 | 9 | 192 |
+
+Passe visuelle du 23/11 : 15 écrans comparés à 390x844, maquette (file://, `showView` / `jump`) contre production (Playwright, comptes de test `.invalid`, lecture seule). Captures `maquette-<écran>.png` et `app-<écran>.png` dans `docs/maquette-ecarts-2026-11-23/`. 10 lignes nouvelles (écarts vus), 32 lignes passées à OK (nom de capture en note), 2 lignes passées de OK (code) à MANQUE (contraste du bouton, « Mes opérations »).
+Non montrable avec les comptes de test : mission « Pas encore l'heure », facture « Récapitulatif » (particulier sans SIRET), IBAN et « Copier » (le prestataire de test n'a pas d'IBAN), « Il vous reste… » côté pro, état « Serez-vous sur place ? » non répondu (mission déjà en cours).
+Avant la passe visuelle : OK 0, OK (code) 156, MANQUE 8, VOULU 9, NON VÉRIFIÉ 9 (182 lignes).
 
 Avant la deuxième passe : OK (code) 158, MANQUE 7, VOULU 10, NON VÉRIFIÉ 7. Aucune ligne n'est « OK » : la production n'a pas pu être lue (voir « Limites de la preuve »). Les 248 lignes de `data.js` sont regroupées en lignes d'élément (doublons Audit / Contrôle qualité fusionnés, identifiants A / Q rappelés dans chaque note) ; aucune ligne de `data.js` n'est omise.
 
@@ -30,7 +34,7 @@ Avant la deuxième passe : OK (code) 158, MANQUE 7, VOULU 10, NON VÉRIFIÉ 7. A
 - `CONTRAT-MAQUETTE-admin.md` : administration (`public/admin.html`, `/admin/*`).
 
 ## Limites de la preuve (23/11/2026)
-- Production injoignable depuis l'environnement de cette passe : `curl` sur toutes les pages de nexto-eta.vercel.app répond 403 (en-tête `x-vercel-mitigated: deny`, pare-feu Vercel), même `/robots.txt`. Aucun contournement tenté. Commit de production non vérifié par moi ; repris de l'agent principal (b4c6437).
+- (Passe 1, obsolète depuis la passe visuelle : Playwright atteint la production ; curl reste bloqué.) Production injoignable depuis l'environnement de cette passe : `curl` sur toutes les pages de nexto-eta.vercel.app répond 403 (en-tête `x-vercel-mitigated: deny`, pare-feu Vercel), même `/robots.txt`. Aucun contournement tenté. Commit de production non vérifié par moi ; repris de l'agent principal (b4c6437).
 - Donc aucune preuve « texte trouvé dans un fichier de production » ni mesure en navigateur. Tout est lu dans le dépôt ; une mesure (cibles 44 px, hauteurs d'en-tête, boutons recouverts) reste NON VÉRIFIÉ.
 - L'administration n'est lisible que par un compte administrateur, que cet agent n'a pas : tout ce qui dépend de données lues par l'admin est NON VÉRIFIÉ ; structure et textes de `public/admin.html` prouvés par le code seulement.
 - « OK (code) » vérifie la présence du texte ou de la fonction (grep sur une ligne qui n'est pas un commentaire), pas qu'elle s'affiche au bon endroit ni avec les bonnes données. À rejouer en production dès que le pare-feu laisse passer le gardien.
@@ -47,6 +51,15 @@ Avant la deuxième passe : OK (code) 158, MANQUE 7, VOULU 10, NON VÉRIFIÉ 7. A
 Écarts cités dans la consigne mais NON retenus comme VOULU : « annonce non modifiable » (DEMANDES.md D-17 dit que Romain veut « modifiable », aucune décision contraire trouvée : ligne MANQUE) ; « nouveau prestataire réservable » (la maquette le montre aussi : OK (code)).
 
 ## MANQUE ouverts (à traiter ou à trancher par Romain)
+Ajoutés le 23/11 après la passe visuelle (captures dans docs/maquette-ecarts-2026-11-23/) :
+- client, Carte : contraste du bouton principal #0C8F7E (4,0:1) contre #0B8374 (4,65:1) de la maquette
+- client, Réservation : 5 étapes numérotées et choix de fréquence absents ; en-tête sans nom du prestataire
+- client, Mon profil : « Mes opérations » au lieu de « Mes factures » ; barre « Profil complet » absente
+- client, Facture (onglets au lieu d'un défilement), Litige (« intervention » au lieu de « médiation »), Conversation (bandeau), Agenda (libellés)
+- public, Accueil : « J'ai déjà un compte » et accroche absents de /bienvenue ; Connexion : « Retour », « Créer un compte »
+- pro, Mon entreprise : ordre des blocs
+- À trancher : puce « Vitres » présente en production alors que REGLES-METIER dit « non proposé » (A-TRANCHER n)
+Avant :
 - client, Carte : fond OpenFreeMap / variante Waze, aucune décision écrite de Romain (ex-VOULU, repassé MANQUE le 23/11) (détail : CONTRAT-MAQUETTE-client.md)
 - client, Déposer une demande : « Modifier » une annonce déjà publiée (détail : CONTRAT-MAQUETTE-client.md)
 - client, Paiements : Rubrique « Pourboires annoncés » (intention non prélevée) (détail : CONTRAT-MAQUETTE-client-2.md)

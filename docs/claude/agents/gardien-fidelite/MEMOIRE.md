@@ -25,3 +25,5 @@
 - Un VOULU exige une décision écrite de Romain : la pile technique (HISTORIQUE l.26) n'est pas une décision ; la carte OpenFreeMap est repassée MANQUE. HISTORIQUE l.336 dit l'inverse du séquestre éteint : la décision est l.567.
 - `providers_nearby` en production n'est pas dans le dépôt (058 l.18) : ce que la liste affiche se prouve en production seulement.
 - DEMANDES.md : des chiffres de tests (34/34, 42/42) ne correspondaient pas à ETAT.md (35/35, 41/42) : comparer au dépôt avant de croire une ligne « faite ».
+- 23/11 passe visuelle : maquette ouvrable sans réseau avec Playwright : `showView(role); jump(role, écran)` puis capture de `#screen` (390x740). Production : connexion par /auth/login ; ids de mission lus par clic dans /messages, litige par clic dans /litiges.
+- 23/11 : écarts mesurés, pas supposés : bouton principal prod #0C8F7E (4,0:1) contre maquette #0B8374 (4,65:1) ; puce « Vitres » présente en prod malgré la règle « non proposé » ; `/` mène à l'inscription, l'accueil réel est `/bienvenue` (page statique).
