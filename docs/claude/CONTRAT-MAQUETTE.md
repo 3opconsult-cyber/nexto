@@ -12,14 +12,18 @@ Un écart n'est VOULU que si Romain l'a décidé (date et source citées) ; un �
 - **VOULU** : écart décidé par Romain, décision citée (voir la section en bas).
 - **NON VÉRIFIÉ** : preuve impossible pour l'instant, raison écrite dans la note (compte administrateur, base, mesure à faire).
 
-## Décompte au 23/11/2026, après la passe visuelle (192 lignes)
+## Décompte au 23/11/2026 soir, troisième passe visuelle (201 lignes)
+Production du 23/11 soir (alignement maquette, refonte de la carte, simplification des comptes) : 15 écrans + Messages (client et pro), Mes pièces (client et pro), Mon entreprise, Paiements pro, Mon profil client, comparés à 390x844 (captures `*-3.png`).
 | Profil | OK | OK (code) | MANQUE | VOULU | NON VÉRIFIÉ | Total |
 |---|---|---|---|---|---|---|
 | Site public | 4 | 8 | 2 | 0 | 1 | 15 |
-| Particulier | 25 | 43 | 12 | 5 | 4 | 89 |
-| Prestataire | 3 | 44 | 4 | 2 | 0 | 53 |
-| Administration | 0 | 27 | 2 | 2 | 4 | 35 |
-| **Total** | 32 | 122 | 20 | 9 | 9 | 192 |
+| Particulier | 30 | 42 | 9 | 7 | 4 | 92 |
+| Prestataire | 3 | 44 | 7 | 3 | 1 | 58 |
+| Administration | 0 | 27 | 2 | 2 | 5 | 36 |
+| **Total** | 37 | 121 | 20 | 12 | 11 | 201 |
+Fidélité : 37 lignes OK sur 201 (18,4 %) ; 158 sur 201 (78,6 %) en comptant « OK (code) » ; parmi les 57 lignes tranchées en production (OK ou MANQUE), 37 OK (65 %). Les 12 VOULU sont des écarts décidés, hors calcul d'écart.
+Avant (passe visuelle du matin, 192 lignes) : OK 32, OK (code) 122, MANQUE 20, VOULU 9, NON VÉRIFIÉ 9. Changements du soir : VOULU +2 nets (carte centrale : fond/Waze, zoom, puces) ; OK +5 (Vitres retirée des puces, en-tête Réservation, Mes factures, médiation, bandeau de la conversation) ; ligne Vitres repassée de VOULU à OK ; 8 lignes ajoutées (Messages x3, Mes pièces x2, Paiements pro, Accueil admin, Mission du jour pro).
+Décision de Romain du 23/11 (message sur la carte centrale) : voir la section VOULU.
 
 Passe visuelle du 23/11 : 15 écrans comparés à 390x844, maquette (file://, `showView` / `jump`) contre production (Playwright, comptes de test `.invalid`, lecture seule). Captures `maquette-<écran>.png` et `app-<écran>.png` dans `docs/maquette-ecarts-2026-11-23/`. 10 lignes nouvelles (écarts vus), 32 lignes passées à OK (nom de capture en note), 2 lignes passées de OK (code) à MANQUE (contraste du bouton, « Mes opérations »).
 Non montrable avec les comptes de test : mission « Pas encore l'heure », facture « Récapitulatif » (particulier sans SIRET), IBAN et « Copier » (le prestataire de test n'a pas d'IBAN), « Il vous reste… » côté pro, état « Serez-vous sur place ? » non répondu (mission déjà en cours).
@@ -44,30 +48,25 @@ Avant la deuxième passe : OK (code) 158, MANQUE 7, VOULU 10, NON VÉRIFIÉ 7. A
 |---|---|---|
 | Vitres absent du catalogue proposé ; fin de chantier et remise en état hors catalogue ; mono-produit ménage / repassage / nettoyage | HISTORIQUE.md l.47 (mono-produit) et l.622 (décision 07/11, services extensibles par catalogue) ; A-TRANCHER n | client, prestataire, admin |
 | Séquestre écrit mais éteint ; virement SEPA d'abord | A-TRANCHER b et d ; HISTORIQUE.md l.567 (« Virement SEPA, 31/10 : décision Romain, virement d'abord, séquestre en suspens ») ; DEMANDES.md D-19 (aucun prestataire de paiement choisi). L.336 citée avant est fausse : elle dit l'inverse (A-TRANCHER d) | client, admin |
+| Carte mobile = objet central, style Waze : UNE ligne en haut (menu + filtre/zone), feuille du bas à 3 états réduite par défaut ; donc logo, cloche, puces de service, zoom + / − et bulle de commentaire du haut de carte de la maquette VOULUS absents du premier écran mobile (puces dans la feuille, filtre dans le menu / la feuille) | Romain, 23/11, message sur la carte centrale | client (Carte), prestataire (Demandes autour de moi) |
 | Menu à 4 entrées ; pas de bouton central « Demander » ; entrée « Mission » conservée les jours de mission | Romain 30/10 (HISTORIQUE.md l.36) ; « Navigation validée » 18/11 (l.629) ; A-TRANCHER r | client, prestataire |
 | « Profil vérifié par PING » seulement si pièces validées (maquette : « contrôlée par PING ») | Exception 03/11 (HISTORIQUE.md l.71) ; A-TRANCHER e ; jamais « certifié » ni « garanti » | client |
 | Annulation : 3 paliers et frais totaux après l'arrivée (maquette : 15 % après « en route ») | Romain 20/11 (HISTORIQUE.md l.662-663 et l.679) ; A-TRANCHER a ; DEMANDES.md D-07 | client |
 
 Écarts cités dans la consigne mais NON retenus comme VOULU : « annonce non modifiable » (DEMANDES.md D-17 dit que Romain veut « modifiable », aucune décision contraire trouvée : ligne MANQUE) ; « nouveau prestataire réservable » (la maquette le montre aussi : OK (code)).
 
-## MANQUE ouverts (à traiter ou à trancher par Romain)
-Ajoutés le 23/11 après la passe visuelle (captures dans docs/maquette-ecarts-2026-11-23/) :
-- client, Carte : contraste du bouton principal #0C8F7E (4,0:1) contre #0B8374 (4,65:1) de la maquette
-- client, Réservation : 5 étapes numérotées et choix de fréquence absents ; en-tête sans nom du prestataire
-- client, Mon profil : « Mes opérations » au lieu de « Mes factures » ; barre « Profil complet » absente
-- client, Facture (onglets au lieu d'un défilement), Litige (« intervention » au lieu de « médiation »), Conversation (bandeau), Agenda (libellés)
-- public, Accueil : « J'ai déjà un compte » et accroche absents de /bienvenue ; Connexion : « Retour », « Créer un compte »
-- pro, Mon entreprise : ordre des blocs
-- À trancher : puce « Vitres » présente en production alors que REGLES-METIER dit « non proposé » (A-TRANCHER n)
-Avant :
-- client, Carte : fond OpenFreeMap / variante Waze, aucune décision écrite de Romain (ex-VOULU, repassé MANQUE le 23/11) (détail : CONTRAT-MAQUETTE-client.md)
-- client, Déposer une demande : « Modifier » une annonce déjà publiée (détail : CONTRAT-MAQUETTE-client.md)
-- client, Paiements : Rubrique « Pourboires annoncés » (intention non prélevée) (détail : CONTRAT-MAQUETTE-client-2.md)
-- pro, Création de l'activité : Compte d'abord, 4 étapes exactement (détail : CONTRAT-MAQUETTE-prestataire.md)
-- pro, Je pars : Avertissements « Vous partez tôt », « En avance de… », « Rendez-vous dépassé » (détail : CONTRAT-MAQUETTE-prestataire.md)
-- pro, Client absent : Position comparée à l'adresse à 40 m ; photo non envoyée si trop loin (détail : CONTRAT-MAQUETTE-prestataire.md)
-- admin, Fiche utilisateur : « Voir comme » en lecture seule (détail : CONTRAT-MAQUETTE-admin.md)
-- admin, Documents et factures : Export CSV du registre horodaté (détail : CONTRAT-MAQUETTE-admin.md)
+## MANQUE ouverts au 23/11/2026 soir (20 lignes ; ordre = ordre de correction proposé, détail dans les fichiers de profil)
+1. Paiements client : l'écran « Paiements » de la maquette (À régler, Réglé, pourboires) n'existe pas ; la ligne « Paiements · Virement sur facture » du profil n'ouvre rien (client-2)
+2. Messages (liste, client et pro) : filtres « Tous / Non lus », bandeau de décompte, flèche retour, aperçu du dernier message (client-2, prestataire)
+3. Réservation : 5 étapes numérotées, choix « Fréquence » (client)
+4. Mon profil client : barre « Profil complet : 3 sur 4 », flèche retour (client-2)
+5. Facture : un seul défilement au lieu d'onglets (client-2)
+6. Paiements pro : écran « Comment vous êtes payé », IBAN affiché + « Modifier », « Commissions à régler » ; en production : « Mes versements » avec champs IBAN (prestataire)
+7. Mon entreprise pro : ordre des blocs, boutons « + » du cadre, texte de jauge (prestataire)
+8. Mes pièces (client et pro) : écran de prise de vue « Cadrez le document en entier » (client-2, prestataire)
+9. Agenda client : un seul bandeau litige, flèche retour (client)
+10. Contraste du bouton principal #0C8F7E (4,0:1) contre #0B8374 (client)
+Autres : accueil /bienvenue (logo « ping », accroche), connexion (logo « ping »), « Modifier » une annonce, création de l'activité en 4 étapes, avertissements « Je pars », rayon 40 m du client absent, « Voir comme », export CSV admin.
 
 ## Rappels
 Aucun emoji, jamais « certifié » ni « garanti » ; aucune donnée inventée. Les écrans de `docs/maquette/` n'ont pas été modifiés. Autres écarts de forme (rayon d'arrivée 300 m, assistant de création en 5 ou 7 étapes, pourboires) : voir les lignes MANQUE.

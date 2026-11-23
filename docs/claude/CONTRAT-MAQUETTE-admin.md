@@ -40,3 +40,4 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Parcours | Entonnoir de l'inscription à l'avis | OK (code) | src/app/admin/parcours/page.tsx:21 ; A34 |
 | Droits (RLS) | Règles d'accès litiges, profils ; RLS invoices | NON VÉRIFIÉ | Contrôle en base impossible (accès Supabase refusé) ; A-TRANCHER h ; Q074 |
 | Données lues par l'admin | Toute valeur affichée dépendant de la base (comptes, factures, litiges) | NON VÉRIFIÉ | Aucun compte administrateur disponible pour cet agent |
+| Accueil admin | Tableau de bord administrateur | NON VÉRIFIÉ | Compte administrateur indisponible (règle : aucun compte admin de test) : capture maquette seule (maquette-admin-accueil-3.png) |
