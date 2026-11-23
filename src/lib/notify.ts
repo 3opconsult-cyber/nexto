@@ -35,6 +35,19 @@ export function settleEndedBooking(transactionId: string) {
   } catch { }
 }
 
+export function alertAdminNow(transactionId: string, kind: 'cancellation' | 'provider_no_show' | 'transfer' | 'dispute_open' | 'dispute_mediation') {
+  // Alerte grave pour PING en quasi-immédiat : à appeler juste après la réussite de l'action. Le serveur relit l'alerte posée
+  // par la base et envoie UN e-mail court à PING. Tire-et-oublie, jamais bloquant ; le cron quotidien rattrape un appel perdu.
+  try {
+    fetch('/api/admin/alerte-immediate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactionId, kind }),
+      keepalive: true,
+    }).catch(() => { })
+  } catch { }
+}
+
 /**
  * Pièce déposée (prestataire ou client) : le serveur prévient PING par e-mail (migration 057, route
  * /api/admin/document-alert). Jamais le contenu de la pièce. Tire-et-oublie ; le cron quotidien rattrape un appel perdu.

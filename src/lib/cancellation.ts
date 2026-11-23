@@ -1,6 +1,6 @@
 "use client"
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { notifyOther } from '@/lib/notify'
+import { notifyOther, alertAdminNow } from '@/lib/notify'
 import { systemSender } from '@/lib/systemMessage'
 import { paymentsActive } from '@/lib/paymentsClient'
 
@@ -128,6 +128,7 @@ export async function cancelMission(supabase: SupabaseClient, tx: any, userId: s
   const r = (data || {}) as CancelResult
   if (r.ok && !r.already) {
     notifyOther(tx.id, userId === tx.buyer_id ? 'cancelled_by_client' : 'cancelled_by_provider')
+    if (userId === tx.buyer_id) alertAdminNow(tx.id, 'cancellation')   // après l'arrivée ou tardive à frais : e-mail à PING
     if (r.refund_online) refundOnline(tx.id, 'Annulation')
   }
   return r
@@ -137,7 +138,7 @@ export async function declareProviderNoShow(supabase: SupabaseClient, tx: any): 
   const { data, error } = await supabase.rpc('declare_provider_no_show', { p_transaction: tx.id })
   if (error) return { ok: false, message: missingRpc(error) ? 'Fonction indisponible : réessayez dans un instant.' : (error.message || 'Action impossible.') }
   const r = (data || {}) as CancelResult
-  if (r.ok && !r.already) { notifyOther(tx.id, 'provider_no_show'); if (r.refund_online) refundOnline(tx.id, 'Absence du prestataire') }
+  if (r.ok && !r.already) { notifyOther(tx.id, 'provider_no_show'); alertAdminNow(tx.id, 'provider_no_show'); if (r.refund_online) refundOnline(tx.id, 'Absence du prestataire') }
   return r
 }
 

@@ -4,6 +4,7 @@
 // Éteint (rien n'est envoyé) tant que RESEND_API_KEY ou la clé service manque.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { hasServiceRole } from '@/lib/supabase/admin'
+import { IMMEDIATE_ALERTS, isImmediateKind, paymentAlertLabel } from '@/lib/adminAlerts'
 
 export const MAIL_EVENTS = ['message', 'offer', 'booking', 'dispute', 'presence_arrivee', 'presence_fin', 'presence_client', 'code_client',
   'booking_request', 'booking_accepted', 'booking_refused', 'booking_expired', 'booking_refunded',
@@ -252,4 +253,82 @@ export async function sendPaymentAlerts(admin: SupabaseClient): Promise<{ sent: 
   if (!r.ok) return { sent: 0, reason: 'resend_refuse', graves: rows.length }   // nouvel essai au prochain passage
   await admin.from('admin_notifications').update({ emailed_at: new Date().toISOString() }).in('id', ids)
   return { sent: 1, graves: real.length }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Alerte grave à PING en quasi-immédiat (décision du 23/11/2026). L'application appelle /api/admin/alerte-immediate juste
+// après la réussite de l'action (annulation après l'arrivée ou tardive à frais, prestataire absent, litige ouvert,
+// intervention de PING, virement non reçu ou contesté). La base a déjà posé la ligne (admin_notifications 062, ou
+// payment_alerts seule avant 062). Ici : l'appelant doit être partie à la mission ; on relit l'alerte créée dans les
+// 3 dernières minutes ; on la « réserve » (emailed_at) AVANT l'envoi, donc au plus 1 e-mail par alerte, et le cron
+// quotidien ne la renvoie pas ; UN e-mail court (titre français + lien /admin, aucune donnée personnelle). Comptes
+// `.invalid` : réservée, sans e-mail. Sans clé Resend ou clé service : {sent:false, reason:'off'}.
+export async function sendImmediateAdminAlert(admin: SupabaseClient, input: { transactionId: string; callerId: string; kind: string }): Promise<MailResult> {
+  const key = process.env.RESEND_API_KEY
+  if (!key || !hasServiceRole()) return { sent: false, reason: 'off' }
+  if (!isImmediateKind(input.kind)) return { sent: false, reason: 'invalid' }
+  const spec = IMMEDIATE_ALERTS[input.kind]
+  const { data: tx } = await admin.from('transactions').select('id, buyer_id, seller_id').eq('id', input.transactionId).maybeSingle()
+  if (!tx || (tx.buyer_id !== input.callerId && tx.seller_id !== input.callerId)) return { sent: false, reason: 'forbidden' }
+  const since = new Date(Date.now() - 3 * 60 * 1000).toISOString()
+
+  // 1. L'alerte créée par la base (admin_notifications), ou à défaut payment_alerts (avant la migration 062).
+  let title = ''
+  let notifIds: string[] = []
+  let logEvent = ''
+  const n = await admin.from('admin_notifications').select('id, title, detail').eq('kind', spec.notif)
+    .eq('detail->>transaction_id', tx.id).gte('created_at', since).is('emailed_at', null).order('created_at', { ascending: false }).limit(10)
+  if (!n.error) {
+    const rows = ((n.data ?? []) as { id: string; title: string; detail: { payment_kind?: string } | null }[])
+      .filter(r => !spec.payment || spec.payment.includes(r.detail?.payment_kind ?? ''))
+    if (rows.length === 0) return { sent: false, reason: 'no_alert' }
+    notifIds = rows.map(r => r.id)
+    title = spec.payment ? paymentAlertLabel(rows[0].detail?.payment_kind ?? '') : spec.title
+  } else if (spec.payment) {
+    const p = await admin.from('payment_alerts').select('id, kind').in('kind', spec.payment as string[])
+      .eq('detail->>transactionId', tx.id).gte('created_at', since).order('created_at', { ascending: false }).limit(5)
+    if (p.error || !p.data || p.data.length === 0) return { sent: false, reason: 'no_alert' }
+    title = paymentAlertLabel((p.data[0] as { kind: string }).kind)
+    logEvent = `admin_alert:${(p.data[0] as { id: string }).id}`
+  } else {
+    return { sent: false, reason: 'migration_062_absente' }
+  }
+
+  // 2. Réservation de l'alerte : une seule requête gagne, les autres (et le cron) l'ignorent.
+  if (notifIds.length > 0) {
+    const claim = await admin.from('admin_notifications').update({ emailed_at: new Date().toISOString() }).in('id', notifIds).is('emailed_at', null).select('id')
+    if (claim.error || !claim.data || claim.data.length === 0) return { sent: false, reason: 'deja_envoye' }
+  } else {
+    const dup = await admin.from('notification_log').select('id').eq('transaction_id', tx.id).eq('event', logEvent).limit(1)
+    if (dup.data && dup.data.length > 0) return { sent: false, reason: 'deja_envoye' }
+    await admin.from('notification_log').insert({ user_id: input.callerId, transaction_id: tx.id, event: logEvent })
+  }
+
+  // 3. Comptes de démonstration (.invalid) : rien n'est envoyé.
+  for (const id of [tx.buyer_id, tx.seller_id].filter(Boolean) as string[]) {
+    const { data: u } = await admin.auth.admin.getUserById(id)
+    if (/\.invalid$/i.test(u?.user?.email || '')) return { sent: false, reason: 'comptes_demo' }
+  }
+
+  const to = (process.env.ADMIN_NOTIFY_EMAIL || '').trim() || ADMIN_NOTIFY_FALLBACK
+  const link = `${SITE}/admin`
+  const text = `${title}\n\nOuvrir l’administration : ${link}\n\nPour la confidentialité, aucun nom ni détail n’est envoyé par e-mail.`
+  const html = `<div style="font-family:Arial,sans-serif;color:#123644;font-size:15px;line-height:1.5"><p style="margin:0 0 6px"><b>${escHtml(title)}</b></p>`
+    + `<p><a href="${link}" style="display:inline-block;background:#12B39C;color:#ffffff;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:999px">Ouvrir l’administration</a></p>`
+    + `<p style="color:#4E6470;font-size:13px">Pour la confidentialité, aucun nom ni détail n’est envoyé par e-mail.</p></div>`
+  let ok = false
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: process.env.NOTIFY_FROM || 'PING <notifications@ping.invalid>', to: [to], subject: `PING : ${title}`, text, html }),
+    })
+    ok = r.ok
+  } catch { ok = false }
+  if (!ok) {
+    // Échec : on rend l'alerte au cron quotidien (nouvel essai).
+    if (notifIds.length > 0) await admin.from('admin_notifications').update({ emailed_at: null }).in('id', notifIds)
+    return { sent: false, reason: 'provider_error' }
+  }
+  return { sent: true }
 }
