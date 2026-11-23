@@ -72,6 +72,15 @@ export default function BottomTabBar() {
   const [rate, rateDone] = useRatePrompt(mode, pathname)
   const rateShown = !callText && !nextBooking && !inChat && !!rate && !pathname.startsWith(`/mission/${rate.id}`)
 
+  // Un bandeau posé au-dessus de la barre (48 px + 8 px de marge) ne doit jamais recouvrir les boutons collants
+  // des écrans (« Contacter », « Envoyer », « Réserver ») : --banner-h s'ajoute à --tabbar-h (globals.css).
+  const bannerShown = !!(callText || nextBooking || rateShown)
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('--banner-h', bannerShown ? '56px' : '0px')
+    return () => { root.style.setProperty('--banner-h', '0px') }
+  }, [bannerShown])
+
   return (
     <div className="app-bottom-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
       {callText && today && (

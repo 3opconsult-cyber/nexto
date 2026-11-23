@@ -50,7 +50,7 @@ body {
 .shell-main { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F3F6F5; box-shadow: 0 0 40px rgba(18,54,68,.08); }
 /* Place pour la barre d'onglets fixe (mobile uniquement : elle est masquée à partir de 1000 px). */
 /* --tabbar-h : hauteur de la barre du bas, pour poser au-dessus les barres d'action collantes (chat, réserver). */
-.shell-main.with-tabbar { --tabbar-h: calc(64px + env(safe-area-inset-bottom, 0px)); padding-bottom: var(--tabbar-h); }
+.shell-main.with-tabbar { --tabbar-h: calc(64px + var(--banner-h, 0px) + env(safe-area-inset-bottom, 0px)); padding-bottom: var(--tabbar-h); }
 @media (min-width: 1000px) { .shell-main.with-tabbar { --tabbar-h: 0px; padding-bottom: 0; } }
 .desk-nav { display: none; }
 .detail-panel { display: none; }
