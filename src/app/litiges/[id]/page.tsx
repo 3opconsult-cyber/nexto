@@ -7,6 +7,7 @@ import { filterMessage } from '@/lib/chatFilter'
 import { categoryLabel } from '@/lib/dispute'
 import AmicableSettlement from '@/components/AmicableSettlement'
 import { notifyOther, alertAdminNow } from '@/lib/notify'
+import '../../aere.css'
 
 /**
  * Dossier d'un litige, comme le centre de résolution d'Airbnb (Romain 31/10) : un fil de discussion
@@ -129,7 +130,12 @@ export default function LitigePage() {
 
   // Le fil se met à jour tout seul tant que la page est ouverte.
   useEffect(() => { const t = setInterval(loadMsgs, 10000); return () => clearInterval(t) }, [loadMsgs])
-  useEffect(() => { end.current?.scrollIntoView({ block: 'end' }) }, [msgs.length])
+  // Ouverture du dossier : on lit d'abord le résumé (en haut) ; le fil ne descend au dernier message qu'à l'arrivée d'un nouveau.
+  const msgsSeen = useRef(false)
+  useEffect(() => {
+    if (!msgsSeen.current) { if (msgs.length) msgsSeen.current = true; return }
+    end.current?.scrollIntoView({ block: 'end' })
+  }, [msgs.length])
 
   async function send(kind: 'text' | 'mediation' = 'text') {
     const body = input.trim()
@@ -190,35 +196,35 @@ export default function LitigePage() {
   const who = (m: Msg) => m.kind === 'mediation' ? 'PING' : m.sender_id === uid ? 'Vous' : m.sender_id === tx?.buyer_id ? `${other || 'Client'} (client)` : m.sender_id === tx?.seller_id ? `${other || 'Prestataire'} (prestataire)` : 'PING'
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ background: '#123644', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="aere a-lift" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ background: '#123644', color: '#fff', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
         <button onClick={() => router.push('/litiges')} aria-label="Retour" style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: 'none', background: 'rgba(255,255,255,.1)', color: '#fff', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
           <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16 }}>Litige{other ? ` · ${other}` : ''}</div>
-          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)' }}>Dossier suivi par PING · les deux parties et PING voient ce fil</div>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20 }}>Litige{other ? ` · ${other}` : ''}</div>
+          <div style={{ fontSize: 15, lineHeight: 1.5, color: 'rgba(255,255,255,.88)', marginTop: 2 }}>Dossier suivi par PING · les deux parties et PING voient ce fil</div>
         </div>
       </div>
 
       {d && (
-        <div style={{ padding: '14px 16px 0', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
-          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14 }}>
+        <div style={{ padding: '24px 20px 0', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
+          <div className="a-lift">
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{tx?.requests?.title || TRAD[tx?.requests?.category] || 'Mission'}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: st.bg, color: st.fg, flexShrink: 0 }}>{st.label}</span>
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, lineHeight: 1.5, color: '#123644' }}>{tx?.requests?.title || TRAD[tx?.requests?.category] || 'Mission'}</span>
+              <span className="a-pill" style={{ background: st.bg, color: st.fg, flexShrink: 0 }}>{st.label}</span>
             </div>
-            <div style={{ fontSize: 12, color: '#4E6470', marginTop: 6, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 16, color: '#4E6470', marginTop: 10, lineHeight: 1.6 }}>
               Ouvert le {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} par {d.opener_id === uid ? 'vous' : d.opener_id === tx?.buyer_id ? 'le client' : 'le prestataire'}
               {tx?.subtotal_cents ? <> · prestation {EUR(tx.subtotal_cents)}</> : null}
             </div>
             {(d.category || d.claimed_cents != null) && (
-              <div style={{ fontSize: 13, color: '#123644', marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+              <div style={{ fontSize: 16, color: '#123644', marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: '6px 16px' }}>
                 {d.category && <span><b>Catégorie :</b> {categoryLabel(d.category) ?? d.category}</span>}
                 {d.claimed_cents != null && <span><b>Montant réclamé :</b> {EUR(d.claimed_cents)}</span>}
               </div>
             )}
-            <div style={{ fontSize: 13, color: '#123644', marginTop: 8 }}><b>Motif :</b> {d.reason}</div>
+            <div style={{ fontSize: 16, lineHeight: 1.6, color: '#123644', marginTop: 12 }}><b>Motif :</b> {d.reason}</div>
             {open && d.deadline_at && <Countdown to={d.deadline_at} />}
             {photoUrls.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
@@ -230,26 +236,26 @@ export default function LitigePage() {
                 ))}
               </div>
             )}
-            {d.resolution && <div style={{ fontSize: 13, color: '#0B8374', marginTop: 6, fontWeight: 600 }}>Décision : {d.resolution}</div>}
+            {d.resolution && <div style={{ fontSize: 16, color: '#0B6F63', marginTop: 12, fontWeight: 600 }}>Décision : {d.resolution}</div>}
             {tx && uid && <AmicableSettlement dispute={d} buyerId={tx.buyer_id} sellerId={tx.seller_id} userId={uid}
               ceilingCents={tx.subtotal_cents} onChange={reloadDispute} />}
             {/* Intervention de PING (054) : visible des deux parties tant que le litige est ouvert. */}
             {tx && uid && open && 'mediation_requested_at' in d && (uid === tx.buyer_id || uid === tx.seller_id) && (
               d.mediation_requested_at ? (
-                <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(18,179,156,.08)', border: '1px solid rgba(18,179,156,.3)', fontSize: 12.5, color: '#123644', lineHeight: 1.5 }}>
+                <div style={{ marginTop: 20, padding: '16px', borderRadius: 14, background: 'rgba(18,179,156,.08)', fontSize: 16, color: '#123644', lineHeight: 1.6 }}>
                   <b>Intervention de PING demandée</b> le {new Date(d.mediation_requested_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                   {d.mediation_requested_by === uid ? ' (par vous)' : d.mediation_requested_by === tx.buyer_id ? ' par le client' : ' par le prestataire'}.
                   {' '}PING prend le relais dans ce fil et rendra sa décision : montant rendu au client, reste versé au prestataire.
                 </div>
               ) : (
                 <button type="button" onClick={requestMediation} disabled={medBusy}
-                  style={{ ...linkBtn, width: '100%', marginTop: 10, border: '1.5px solid #123644', color: '#123644', cursor: medBusy ? 'default' : 'pointer', opacity: medBusy ? .6 : 1, fontFamily: 'inherit' }}>
+                  style={{ ...linkBtn, width: '100%', marginTop: 20, border: '1.5px solid #123644', color: '#123644', cursor: medBusy ? 'default' : 'pointer', opacity: medBusy ? .6 : 1, fontFamily: 'inherit' }}>
                   Demander la médiation de PING
                 </button>
               )
             )}
             {/* Liens en boutons de 44 px (audit ergonomie 19/11, correction 20). */}
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
               <a href={`/mission/${d.transaction_id}/chat`} style={linkBtn}>Voir la mission</a>
               <a href={`/mission/${d.transaction_id}/facture`} style={linkBtn}>Factures</a>
             </div>
@@ -257,29 +263,28 @@ export default function LitigePage() {
         </div>
       )}
 
-      <div style={{ flex: 1, padding: 16, maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ flex: 1, padding: '28px 20px 20px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {msgs.map(m => {
           const mine = m.sender_id === uid && m.kind !== 'mediation'
           const med = m.kind === 'mediation'
           return (
             <div key={m.id} style={{ alignSelf: med ? 'stretch' : mine ? 'flex-end' : 'flex-start', maxWidth: med ? '100%' : '82%' }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: med ? '#0B8374' : '#4E6470', margin: '0 4px 3px', textAlign: mine ? 'right' : 'left' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: med ? '#0B6F63' : '#4E6470', margin: '0 4px 6px', textAlign: mine ? 'right' : 'left' }}>
                 {who(m)} · {new Date(m.created_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </div>
-              <div style={{
-                padding: '10px 13px', borderRadius: 14, fontSize: 13.5, lineHeight: 1.5, whiteSpace: 'pre-wrap',
-                background: med ? 'rgba(18,179,156,.1)' : mine ? '#123644' : '#fff', color: mine && !med ? '#fff' : '#123644',
-                border: med ? '1px solid rgba(18,179,156,.35)' : mine ? 'none' : '1px solid #E7EDEB',
+              <div className="a-keep" style={{
+                padding: '14px 16px', borderRadius: 16, fontSize: 16, lineHeight: 1.55, whiteSpace: 'pre-wrap',
+                background: med ? 'rgba(18,179,156,.1)' : mine ? '#123644' : '#EEF3F2', color: mine && !med ? '#fff' : '#123644',
               }}>{m.body}</div>
             </div>
           )
         })}
-        {!msgs.length && d && <div style={{ textAlign: 'center', color: '#4E6470', fontSize: 13, padding: 20 }}>Expliquez ce qui s’est passé : l’autre partie et PING vous répondent ici.</div>}
+        {!msgs.length && d && <div style={{ textAlign: 'center', color: '#4E6470', fontSize: 16, lineHeight: 1.6, padding: 20 }}>Expliquez ce qui s’est passé : l’autre partie et PING vous répondent ici.</div>}
         <div ref={end} />
       </div>
 
       {d && (
-        <div style={{ padding: '0 16px 10px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
+        <div style={{ padding: '0 20px 16px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
           <MoneyPanel tx={tx} pays={pays} admin={admin} open={open} refundEur={refundEur} setRefundEur={setRefundEur}
             onRefund={refundClient} onRetenue={retenue} msg={moneyMsg} dispute={d} />
         </div>
@@ -305,18 +310,18 @@ export default function LitigePage() {
         </div>
       )}
 
-      <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, background: '#fff', borderTop: '1px solid #E7EDEB', padding: '10px 16px' }}>
-        {err && <div style={{ color: '#c0503a', fontSize: 12, marginBottom: 6 }}>{err}</div>}
+      <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, background: '#fff', boxShadow: '0 -1px 0 #E3EAE8', padding: '12px 20px' }}>
+        {err && <div style={{ color: '#B2432E', fontSize: 15, marginBottom: 8 }}>{err}</div>}
         {open || admin ? (
           <div style={{ display: 'flex', gap: 8, maxWidth: 640, margin: '0 auto' }}>
             <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(admin ? 'mediation' : 'text') }}
               aria-label={admin ? 'Message de PING aux deux parties' : 'Votre message sur ce litige'}
-              style={{ flex: 1, minWidth: 0, minHeight: 44, padding: '12px 14px', borderRadius: 999, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', background: '#F3F6F5' }} />
+              style={{ flex: 1, minWidth: 0, minHeight: 52, padding: '12px 18px', borderRadius: 999, border: '1.5px solid #CFDAD7', fontSize: 16, fontFamily: 'inherit', background: '#fff' }} />
             <button onClick={() => send(admin ? 'mediation' : 'text')} disabled={sending || !input.trim()}
-              style={{ minHeight: 44, padding: '0 18px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
+              style={{ minHeight: 52, padding: '0 22px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 16, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
           </div>
         ) : (
-          <div style={{ textAlign: 'center', fontSize: 12.5, color: '#4E6470' }}>Litige clos : le fil reste consultable.</div>
+          <div style={{ textAlign: 'center', fontSize: 16, color: '#4E6470' }}>Litige clos : le fil reste consultable.</div>
         )}
       </div>
     </div>
@@ -324,8 +329,8 @@ export default function LitigePage() {
 }
 
 const linkBtn: React.CSSProperties = {
-  flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 14px', borderRadius: 999,
-  border: '1.5px solid #DCE5E3', background: '#fff', color: '#0B8374', fontSize: 13, fontWeight: 700, textDecoration: 'none',
+  flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, padding: '0 14px', borderRadius: 16,
+  border: '1.5px solid #CFDAD7', background: '#fff', color: '#0B6F63', fontSize: 16, fontWeight: 700, textDecoration: 'none',
 }
 
 const PAY: Record<string, string> = {

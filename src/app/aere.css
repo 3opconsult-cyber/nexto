@@ -1,0 +1,72 @@
+/* Lecture aérée du particulier (24/11/2026). Importée par les seuls écrans repris ; tout est sous la classe .aere
+   (posée sur la racine de l'écran) pour ne rien changer ailleurs. Repères mesurables :
+   texte courant 16 px (jamais sous 15, sauf .a-mini 13 px : pastilles et mentions), titres 20 px, interligne 1,55,
+   marges latérales 20 px, 24 px entre blocs, 14 px dans un bloc, cibles 48 px, séparateurs fins plutôt que cadres. */
+.aere{--a-ink:#123644;--a-mut:#4E6470;--a-sep:#E3EAE8;--a-teal:#0B8374;font-family:Inter,sans-serif;color:var(--a-ink);line-height:1.55;font-size:16px}
+.aere *{box-sizing:border-box}
+.aere .a-page{padding:24px 20px 48px;display:block}
+.aere .a-block{margin:0 0 28px}
+.aere .a-title{font:700 20px/1.5 Quicksand,sans-serif;color:var(--a-ink);margin:0}
+.aere .a-h2{font:700 18px/1.5 Quicksand,sans-serif;color:var(--a-ink);margin:0}
+.aere .a-info{font-size:16px;line-height:1.55;color:var(--a-mut);margin:0}
+.aere .a-strong{font-weight:700;color:var(--a-ink)}
+.aere .a-mini{font-size:13px;line-height:1.5}
+.aere .a-money{font-variant-numeric:tabular-nums;font-weight:700;color:var(--a-ink);white-space:nowrap}
+.aere .a-block>*+*{margin-top:14px}
+
+/* Liste aérée : une ligne = pictogramme ou initiale, un titre, une info ; séparateur fin, pas de cadre. */
+.aere .a-list{display:block;margin:0;padding:0}
+.aere .a-row{position:relative;display:flex;align-items:center;gap:16px;width:100%;min-height:68px;padding:16px 0;background:none;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.aere .a-row+.a-row::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:var(--a-sep)}
+.aere .a-row .a-ic{flex:0 0 44px;width:44px;height:44px;border-radius:14px;background:#EAF3F1;display:grid;place-items:center}
+.aere .a-row .a-tx{flex:1;min-width:0}
+.aere .a-row .a-t{display:block;font:700 17px/1.4 Quicksand,sans-serif;color:var(--a-ink)}
+.aere .a-row .a-s{display:block;font-size:15px;line-height:1.5;color:var(--a-mut);margin-top:2px}
+.aere .a-row .a-chev{flex:0 0 auto;color:#6E8592;font-size:20px;line-height:1}
+.aere .a-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;line-height:1.5;font-weight:700;background:rgba(242,169,59,.18);color:#7A5710}
+.aere .a-pill.ok{background:rgba(18,179,156,.14);color:#0B6F63}
+
+/* Boutons : une action principale en grand, le reste en texte. */
+.aere .a-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;padding:12px 20px;border-radius:16px;border:0;background:var(--a-teal);color:#fff;font:700 17px/1.5 Quicksand,sans-serif;cursor:pointer;text-decoration:none}
+.aere .a-btn[disabled]{opacity:.6}
+.aere .a-btn.sec{background:#fff;color:var(--a-teal);box-shadow:inset 0 0 0 1.5px var(--a-teal)}
+.aere .a-link{display:inline-flex;align-items:center;min-height:48px;padding:0 4px;background:none;border:0;color:var(--a-teal);font:700 16px/1.5 Inter,sans-serif;cursor:pointer;text-decoration:none}
+.aere .a-center{text-align:center;display:flex;justify-content:center}
+
+/* Zone de lecture dépliée « Voir plus » : le secondaire reste derrière un appui. */
+.aere .a-more{border:0;padding:0}
+.aere .a-more>summary{display:flex;align-items:center;min-height:52px;color:var(--a-teal);font:700 16px Inter,sans-serif;cursor:pointer;list-style:none}
+.aere .a-more>summary::-webkit-details-marker{display:none}
+.aere .a-more>summary::after{content:"+";margin-left:10px;font-size:20px}
+.aere .a-more[open]>summary::after{content:"−"}
+
+/* Champs : 52 px, texte 16 px (évite aussi le zoom automatique sur mobile). */
+.aere .a-field{display:block;margin:0 0 20px}
+.aere .a-field>span{display:block;font-size:15px;font-weight:600;color:var(--a-ink);margin:0 0 8px}
+.aere .a-input{width:100%;min-height:52px;padding:12px 16px;border:1.5px solid #CFDAD7;border-radius:14px;background:#fff;font:500 16px/1.4 Inter,sans-serif;color:var(--a-ink);outline:none}
+.aere .a-input:focus{border-color:var(--a-teal)}
+
+/* Composants partagés repris dans un écran aéré (.a-lift) : leurs styles en ligne trop petits sont relevés ici,
+   sans toucher aux écrans du prestataire. Aucun texte, aucun calcul n'est modifié. */
+.a-lift [style*="font-size: 9"],.a-lift [style*="font-size: 10"],.a-lift [style*="font-size: 11"],
+.a-lift [style*="font-size: 12"],.a-lift [style*="font-size: 13"],.a-lift [style*="font-size: 14"]{font-size:15px!important;line-height:1.55!important}
+.a-lift button,.a-lift [role=button]{min-height:52px!important}
+.a-lift p,.a-lift li{line-height:1.55!important}
+.a-lift>*+*{margin-top:16px}
+
+/* Liste de détails : filet fin entre deux lignes. */
+.aere .a-details>*+*{border-top:1px solid var(--a-sep)}
+.aere .a-sumrow{border-top-color:var(--a-sep)}
+.a-lift [style*="border: 1px solid rgb(231, 237, 235)"]:not(button):not(.a-keep),.a-lift [style*="border: 1.5px solid rgb(231, 237, 235)"]:not(button):not(.a-keep),
+.a-lift [style*="border: 1px solid rgb(220, 229, 227)"]:not(button):not(.a-keep){border:0!important;background:transparent!important;border-radius:0!important;padding-left:0!important;padding-right:0!important}
+/* Choix du jour et de l'heure : trois colonnes, 12 px entre les cases (au lieu de quatre serrées). */
+.a-lift [style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.a-lift [style*="overflow-x: auto"]{gap:10px!important}
+.a-lift [style*="width: 58px"]{width:66px!important;min-height:76px!important}
+/* Pas de petites capitales espacées dans les écrans aérés : une phrase normale se lit mieux. */
+.a-lift [style*="text-transform: uppercase"]{text-transform:none!important;letter-spacing:.01em!important}
+.a-lift [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important;gap:24px!important}
+.a-lift a:not([class]){min-height:48px;display:inline-flex;align-items:center}
+@media print{.a-lift [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr 1fr!important}}
+/* Cases de jour et d'heure : fond doux, pas de contour (le choix se lit à la couleur pleine). */
+.a-lift button[style*="border: 1px solid rgb(220, 229, 227)"]{border-color:transparent!important;background:#F1F5F4!important}

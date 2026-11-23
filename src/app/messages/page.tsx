@@ -11,6 +11,7 @@ import { TRADES } from '@/lib/trades'
 import { isInsuranceSent } from '@/lib/insurance'
 import { rowHasPresence } from '@/lib/presence'
 import PresenceTag from '@/components/presence/PresenceTag'
+import '../aere.css'
 
 // Repères type messagerie (WhatsApp) plutôt qu'une date brute sur chaque ligne :
 // plus lisible dès qu'il y a beaucoup de conversations (demande de Romain, 26/10).
@@ -87,43 +88,36 @@ export default function MessagesPage() {
   const listed = rows.filter(r => !isEmpty(r))
   const visible = mode ? listed.filter(r => r.kind === 'support' || r[roleColumn(mode)] === uid) : []
   const otherCount = mode ? listed.filter(r => r.kind === 'mission' && r.buyer_id !== r.seller_id && r[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === uid).length : 0
+  const nbConv = visible.filter(r => r.kind === 'mission').length
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
-      <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="aere" style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
+      <div style={{ padding: '14px 20px', background: '#123644', display: 'flex', alignItems: 'center', gap: 14 }}>
         <span style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,.1)', display: 'grid', placeItems: 'center' }}><BackArrow fallback={mode === 'pro' ? '/pro/carte' : '/map'} dark /></span>
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>Messages</span>
+        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>Messages</span>
       </div>
 
-      {/* Bandeau de décompte de la maquette : conversations de l'espace affiché. */}
-      {!loading && mode && (
-        <div style={{ padding: '14px 16px 0' }}>
-          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'center', fontSize: 12.5, color: '#4E6470' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={2} aria-hidden><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
-            <span>{visible.filter(r => r.kind === 'mission').length} conversation{visible.filter(r => r.kind === 'mission').length > 1 ? 's' : ''} dans votre espace {mode === 'pro' ? 'prestataire' : 'particulier'}</span>
-          </div>
-        </div>
-      )}
-
       {!loading && isPro && mode && (
-        <div style={{ padding: '12px 16px 0' }}>
+        <div style={{ padding: '20px 20px 0' }}>
           <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'conversations' : 'conversation'} />
         </div>
       )}
 
       {!loading && visible.length > 0 && (
-        <div style={{ padding: '12px 16px 0' }}>
+        <div style={{ padding: '24px 20px 0' }}>
+          {/* Décompte de la maquette, en simple phrase (plus de cadre). */}
+          {mode && <p style={{ margin: '0 0 16px', fontSize: 16, lineHeight: 1.55, color: '#4E6470' }}>{nbConv} conversation{nbConv > 1 ? 's' : ''} dans votre espace {mode === 'pro' ? 'prestataire' : 'particulier'}</p>}
           <div style={{ position: 'relative' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }}>
               <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
             </svg>
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher"
-              style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '11px 14px 11px 36px', borderRadius: 12, border: '1px solid #E7EDEB', background: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
+              style={{ width: '100%', boxSizing: 'border-box', minHeight: 52, padding: '12px 16px 12px 44px', borderRadius: 14, border: '1.5px solid #CFDAD7', background: '#fff', fontSize: 16, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+          <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
             {([['all', 'Tous'], ['unread', 'Non lus']] as const).map(([k, l]) => (
               <button key={k} type="button" onClick={() => setFilter(k)} aria-pressed={filter === k} style={{
-                minHeight: 44, padding: '0 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 13,
+                minHeight: 48, padding: '0 22px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 16,
                 background: filter === k ? '#123644' : '#fff', color: filter === k ? '#fff' : '#123644',
                 boxShadow: filter === k ? 'none' : '0 0 0 1px #E7EDEB',
               }}>{l}</button>
@@ -132,13 +126,13 @@ export default function MessagesPage() {
         </div>
       )}
 
-      <div style={{ padding: 16 }}>
-        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+      <div style={{ padding: '28px 20px 16px' }}>
+        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 16 }}>Chargement…</div>}
         {!loading && visible.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucune conversation pour l'instant</div>
-            <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>{mode === 'pro' ? 'Elles apparaissent ici quand un client vous écrit ou répond à une demande.' : 'Contactez un prestataire depuis la carte pour démarrer une conversation.'}</div>
-            <a href={mode === 'pro' ? '/pro/carte' : '/map'} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 22px', marginTop: 14, borderRadius: 999, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>{mode === 'pro' ? 'Voir les demandes' : 'Voir la carte'}</a>
+          <div style={{ textAlign: 'center', padding: '40px 8px' }}>
+            <div style={{ fontWeight: 700, fontSize: 18, color: '#123644' }}>Aucune conversation pour l'instant</div>
+            <div style={{ fontSize: 16, lineHeight: 1.55, color: '#4E6470', marginTop: 10 }}>{mode === 'pro' ? 'Elles apparaissent ici quand un client vous écrit ou répond à une demande.' : 'Contactez un prestataire depuis la carte pour démarrer une conversation.'}</div>
+            <a href={mode === 'pro' ? '/pro/carte' : '/map'} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, padding: '0 28px', marginTop: 20, borderRadius: 999, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, textDecoration: 'none' }}>{mode === 'pro' ? 'Voir les demandes' : 'Voir la carte'}</a>
           </div>
         )}
         {!loading && visible.length > 0 && (() => {
@@ -155,8 +149,8 @@ export default function MessagesPage() {
 
           if (filtered.length === 0) {
             return (
-              <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>{q ? `Aucun résultat pour « ${query} »` : 'Aucun message non lu'}</div>
+              <div style={{ textAlign: 'center', padding: '40px 8px' }}>
+                <div style={{ fontWeight: 700, fontSize: 18, color: '#4E6470' }}>{q ? `Aucun résultat pour « ${query} »` : 'Aucun message non lu'}</div>
               </div>
             )
           }
@@ -183,12 +177,12 @@ export default function MessagesPage() {
           }
 
           const list = sections.map(section => (
-            <div key={section.label} style={{ marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '0 2px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: 0.4, padding: '6px 0' }}>{section.label}</div>
+            <div key={section.label} style={{ marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '0' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#123644', padding: '8px 0', whiteSpace: 'nowrap' }}>{section.label}</div>
                 {section === sections[0] && visible.length > 6 && (
                   <button type="button" onClick={() => setSortMode(sortMode === 'date' ? 'client' : 'date')}
-                    style={{ minHeight: 44, padding: '0 4px', background: 'none', border: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                    style={{ minHeight: 48, padding: '0 4px', background: 'none', border: 'none', color: '#0B8374', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', cursor: 'pointer' }}>
                     {sortMode === 'date' ? (mode === 'pro' ? 'Trier par client' : 'Trier par prestataire') : 'Trier par date'}
                   </button>
                 )}
@@ -198,39 +192,39 @@ export default function MessagesPage() {
                 const nUnread = t.kind === 'mission' ? (unread[t.id] || 0) : 0
                 return (
                   <button key={t.id} onClick={() => router.push(t.kind === 'support' ? '/support' : `/mission/${t.id}/chat`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', background: '#fff', border: t.kind === 'support' ? '1px solid #12B39C' : '1px solid #E7EDEB', borderRadius: 14, padding: 12, marginBottom: 10, cursor: 'pointer' }}>
+                    className="a-row" style={{ alignItems: 'flex-start', padding: '20px 0', minHeight: 88 }}>
                     <div style={{
-                      width: 42, height: 42, borderRadius: 13, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff',
+                      width: 48, height: 48, borderRadius: 15, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff',
                       background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0B8374)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#8A6520)' : 'linear-gradient(160deg,#4E6470,#4c6472)'),
                     }}>{(name || '?').charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{name}</span>
-                        <span style={{ fontSize: 10.5, color: '#6E8592', fontWeight: 600, flexShrink: 0 }}>
+                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>{name}</span>
+                        <span className="a-mini" style={{ color: '#4E6470', fontWeight: 600, flexShrink: 0 }}>
                           {rowTime(new Date(t.lastMessage?.created_at || t.created_at))}
                         </span>
                       </div>
                       {/* Titre de la mission sous le nom (audit 19/11, correction 15) : plus de liste de « Audit P. » identiques. */}
                       {t.kind === 'mission' && (
-                        <div style={{ fontSize: 11.5, color: '#4E6470', fontWeight: 500, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{missionLine(t)}</div>
+                        <div style={{ fontSize: 15, lineHeight: 1.5, color: '#4E6470', fontWeight: 500, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{missionLine(t)}</div>
                       )}
-                      <div style={{ fontSize: 12, color: nUnread > 0 ? '#123644' : '#4E6470', fontWeight: nUnread > 0 ? 700 : 400, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 15, lineHeight: 1.5, color: nUnread > 0 ? '#123644' : '#4E6470', fontWeight: nUnread > 0 ? 700 : 400, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {isInsuranceSent(t.lastMessage?.body) ? 'Attestation d’assurance transmise' : (t.lastMessage?.body || 'Aucun message — ouvrir la conversation')}
                       </div>
                       {/* Présence annoncée par le client (migration 048), comme sur le billet de mission. */}
                       {t.kind === 'mission' && rowHasPresence(t) && t.price_confirmed && t.status === 'pending' && !t.arrived_at && t.scheduled_at && (
-                        <div style={{ marginTop: 5 }}><PresenceTag presence={t.client_presence} asSeller={t.isSeller} /></div>
+                        <div className="a-lift" style={{ marginTop: 10 }}><PresenceTag presence={t.client_presence} asSeller={t.isSeller} /></div>
                       )}
                     </div>
-                    {nUnread > 0 && <span aria-label={`${nUnread} non lu${nUnread > 1 ? 's' : ''}`} style={{ minWidth: 20, height: 20, borderRadius: 999, background: '#E5484D', color: '#fff', font: '700 11px Inter, sans-serif', padding: '0 5px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{nUnread > 9 ? '9+' : nUnread}</span>}
+                    {nUnread > 0 && <span aria-label={`${nUnread} non lu${nUnread > 1 ? 's' : ''}`} style={{ minWidth: 24, height: 24, borderRadius: 999, background: '#C73A3F', color: '#fff', font: '700 13px Inter, sans-serif', padding: '0 7px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{nUnread > 9 ? '9+' : nUnread}</span>}
                   </button>
                 )
               })}
             </div>
           ))
           return <>{list}{capped && (
-            <button type="button" onClick={() => setShowAll(true)} style={{ width: '100%', minHeight: 48, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+            <button type="button" onClick={() => setShowAll(true)} className="a-btn sec" style={{ marginTop: 16 }}>
               Voir les {filtered.length - LIMIT} autres conversations
             </button>
           )}</>

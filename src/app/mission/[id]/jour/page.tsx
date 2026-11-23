@@ -25,6 +25,7 @@ import ClientAbsentAction from '@/components/presence/ClientAbsentAction'
 import BookingCard from '@/components/BookingCard'
 import MissionActions from '@/components/MissionActions'
 import { bookingAccepted } from '@/lib/booking'
+import '../../../aere.css'
 
 /**
  * Mission du jour : un seul écran, un seul bouton principal selon l'étape (audit arrivée / départ, 18/11).
@@ -212,35 +213,35 @@ export default function MissionDuJour() {
   const rateBuyer = tx.subtotal_cents ? (tx.buyer_fee_cents || 0) / tx.subtotal_cents : null
 
   const primary: React.CSSProperties = {
-    width: '100%', border: 'none', borderRadius: 999, padding: '14px 0', background: '#0B8374', color: '#fff',
-    fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, cursor: 'pointer',
+    width: '100%', border: 'none', borderRadius: 16, padding: '16px 0', minHeight: 54, background: '#0B8374', color: '#fff',
+    fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer',
   }
   // Liens texte à 44 px de haut (Itinéraire, Comment ça marche, Noter le client…), audit ergonomie 19/11.
-  const link: React.CSSProperties = { border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, padding: '0 6px' }
-  const block: React.CSSProperties = { marginTop: 12 }
+  const link: React.CSSProperties = { border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 16, textDecoration: 'underline', cursor: 'pointer', minHeight: 48, padding: '0 8px' }
+  const block: React.CSSProperties = { marginTop: 20 }
 
   return (
     <Shell onBack={() => router.push(`/mission/${tx.id}/chat`)} title="Mission du jour">
-      {/* Billet */}
-      <div style={{ background: '#123644', color: '#fff', borderRadius: 18, padding: 16 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)' }}>
-          {isSeller ? 'Client' : 'Prestataire'}{trade ? ` · ${trade}` : ''}
-        </div>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, marginTop: 2 }}>{name || (isSeller ? 'Votre client' : 'Votre prestataire')}</div>
-        <div style={{ fontSize: 12.5, marginTop: 6, color: 'rgba(255,255,255,.85)' }}>
+      {/* Bloc 1 : le billet, sans cadre : qui, quand, où ; la frise vient juste dessous. */}
+      <div className="a-block" style={{ marginBottom: 24 }}>
+        <div>
+        <p className="a-info" style={{ margin: 0 }}>{isSeller ? 'Client' : 'Prestataire'}{trade ? ` · ${trade}` : ''}</p>
+        <h1 className="a-title" style={{ marginTop: 4 }}>{name || (isSeller ? 'Votre client' : 'Votre prestataire')}</h1>
+        <p className="a-info" style={{ marginTop: 10 }}>
           {tx.scheduled_at ? `Rendez-vous ${rdvLabel(tx.scheduled_at)}` : 'Heure du rendez-vous non fixée'}
-        </div>
-        {address && <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>{address}</div>}
-        {v48 && !done && !cancelled && tx.price_confirmed && (!tx.arrived_at || presence) && (
-          <div style={{ marginTop: 8 }}><PresenceTag presence={presence} asSeller={isSeller} onDark /></div>
+        </p>
+        {address && <p className="a-strong" style={{ margin: '4px 0 0', fontSize: 17 }}>{address}</p>}
+        {v48 && !done && !cancelled && tx.price_confirmed && (!tx.arrived_at || presence) && (isSeller || presence) && (
+          <div className="a-lift" style={{ marginTop: 14 }}><PresenceTag presence={presence} asSeller={isSeller} /></div>
         )}
         {isSeller && address && !tx.arrived_at && (
           <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`} target="_blank" rel="noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '0 14px', marginTop: 8, borderRadius: 999, border: '1.5px solid rgba(127,227,211,.6)', color: '#7FE3D3', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>Itinéraire</a>
+            className="a-link" style={{ marginTop: 6 }}>Itinéraire</a>
         )}
-        <div style={{ marginTop: 12, background: '#fff', borderRadius: 12, padding: '8px 4px 4px' }}>
-          <MissionTimeline current={cancelled ? 0 : step}
-            times={[hhmm(tx.scheduled_at), hhmm(tx.en_route_at), hhmm(tx.arrived_at), tx.arrived_at && !done ? durLabel(onSiteMin) : null, hhmm(tx.completed_at), null]} />
+        </div>
+        <div style={{ marginTop: 24 }}>
+        <MissionTimeline airy current={cancelled ? 0 : step}
+          times={[hhmm(tx.scheduled_at), hhmm(tx.en_route_at), hhmm(tx.arrived_at), tx.arrived_at && !done ? durLabel(onSiteMin) : null, hhmm(tx.completed_at), null]} />
         </div>
       </div>
 
@@ -249,7 +250,7 @@ export default function MissionDuJour() {
       )}
 
       {/* Annuler, reporter, absence du prestataire, clôture sur preuve (056). */}
-      {tx.price_confirmed && <MissionActions tx={tx} userId={uid} style={{ margin: '12px 0 0' }} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} />}
+      {tx.price_confirmed && <div className="a-lift" style={{ marginTop: 8 }}><MissionActions tx={tx} userId={uid} style={{ margin: '0' }} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} /></div>}
       {cancelled && !tx.cancel_tier && <p style={{ ...block, fontSize: 14, color: '#4E6470', fontWeight: 600 }}>Réservation annulée.</p>}
       {!cancelled && !tx.price_confirmed && (
         <div style={block}>
@@ -391,12 +392,10 @@ export default function MissionDuJour() {
                 remA?.etat === 'en_attente' ? (
                   <ClientAbsentAction txId={tx.id} phase="arrivee" req={remA} proName={name || undefined} onDone={load} />
                 ) : !presence ? (
-                  <div style={{ background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: 14 }}>
-                    <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#123644', marginBottom: 4 }}>
-                      Serez-vous sur place{tx.scheduled_at ? ` à ${hhmm(tx.scheduled_at)}` : ''} ?
-                    </div>
-                    <p style={{ fontSize: 12.5, color: '#4E6470', margin: '0 0 10px', lineHeight: 1.5 }}>Votre réponse prépare l&apos;arrivée de {pn.replace(/\.$/, '')}.</p>
-                    <PresenceChoice txId={tx.id} presence={presence} proName={name || undefined} onChange={() => load()} />
+                  <div style={{ marginTop: 8 }}>
+                    <h2 className="a-title">Serez-vous sur place{tx.scheduled_at ? ` à ${hhmm(tx.scheduled_at)}` : ''} ?</h2>
+                    <p className="a-info" style={{ margin: '8px 0 6px' }}>Votre réponse prépare l&apos;arrivée de {pn.replace(/\.$/, '')}.</p>
+                    <PresenceChoice airy txId={tx.id} presence={presence} proName={name || undefined} onChange={() => load()} />
                   </div>
                 ) : presence === 'sur_place' ? (
                   <>
@@ -484,8 +483,8 @@ export default function MissionDuJour() {
         </>
       )}
 
-      <div style={{ textAlign: 'center', marginTop: 18 }}>
-        <button style={{ ...link, color: '#4E6470', minHeight: 44 }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Conversation</button>
+      <div className="a-lift" style={{ textAlign: 'center', marginTop: 32 }}>
+        <button style={{ ...link, color: '#4E6470', minHeight: 48 }} onClick={() => router.push(`/mission/${tx.id}/chat`)}>Conversation</button>
         <span style={{ color: '#C5D3CF', margin: '0 10px' }}>·</span>
         {!done && !cancelled && tx.price_confirmed && (
           <>
@@ -507,14 +506,14 @@ export default function MissionDuJour() {
 
 function Shell({ title, onBack, children }: { title: string; onBack: () => void; children: React.ReactNode }) {
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 110 }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 20, height: 52, background: '#fff', borderBottom: '1px solid #DCE5E3', display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px' }}>
-        <button onClick={onBack} aria-label="Retour" style={{ width: 44, height: 44, marginLeft: -6, borderRadius: 12, display: 'grid', placeItems: 'center', border: 'none', background: 'none', cursor: 'pointer' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
+    <div className="aere" style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', paddingBottom: 120 }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 20, height: 60, background: '#fff', display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px' }}>
+        <button onClick={onBack} aria-label="Retour" style={{ width: 48, height: 48, borderRadius: 12, display: 'grid', placeItems: 'center', border: 'none', background: 'none', cursor: 'pointer' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
-        <b style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644' }}>{title}</b>
+        <b style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>{title}</b>
       </div>
-      <div style={{ padding: 16, maxWidth: 480, margin: '0 auto' }}>{children}</div>
+      <div className="a-page a-lift" style={{ maxWidth: 480, margin: '0 auto', padding: '24px 20px 48px' }}>{children}</div>
     </div>
   )
 }

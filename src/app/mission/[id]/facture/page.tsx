@@ -1,4 +1,5 @@
 "use client"
+import '../../../aere.css'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -80,20 +81,20 @@ export default function FacturePage() {
   }
 
   const shell = (children: React.ReactNode) => (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
-      <div className="no-print" style={{ padding: '28px 16px 14px', background: '#123644', display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div className="aere a-lift" style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', color: '#123644', paddingBottom: 100 }}>
+      <div className="no-print" style={{ padding: '24px 20px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={() => router.back()} aria-label="Retour"
           style={{ background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', width: 44, height: 44, borderRadius: 12, cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
         <NavDrawer />
-        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#fff', margin: 0 }}>{part ? 'Récapitulatif' : 'Facture'}</h1>
+        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff', margin: 0 }}>{part ? 'Récapitulatif' : 'Facture'}</h1>
       </div>
       {children}
     </div>
   )
 
-  if (loading) return shell(<p style={{ padding: 20, color: '#4E6470', fontSize: 13 }}>Chargement…</p>)
+  if (loading) return shell(<p style={{ padding: 20, color: '#4E6470', fontSize: 16 }}>Chargement…</p>)
 
   if (!invoices.length) return shell(
     <div style={{ padding: 20 }}>
@@ -133,14 +134,14 @@ export default function FacturePage() {
         @page { size: A4; margin: 0 }
       `}</style>
 
-      <div style={{ padding: 16 }}>
+      <div style={{ padding: '24px 20px 16px' }}>
         {ordered.map(inv => (
-        <section key={inv.number} aria-label={sectionTitle(inv)} style={{ marginBottom: 18 }}>
-        <h2 className="no-print" style={{ font: '700 11px Inter, sans-serif', color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '4px auto 8px', maxWidth: 620, padding: '0 2px' }}>{sectionTitle(inv)}</h2>
+        <section key={inv.number} aria-label={sectionTitle(inv)} style={{ marginBottom: 40 }}>
+        <h2 className="no-print" style={{ font: '700 20px/1.4 Quicksand, sans-serif', color: '#123644', margin: '4px auto 16px', maxWidth: 620 }}>{sectionTitle(inv)}</h2>
         {/* La prévisualisation EST la page : ce qu'on voit est ce qui s'imprime. */}
         <div className="sheet" style={{
-          background: '#fff', borderRadius: 14, padding: 22,
-          boxShadow: '0 1px 2px rgba(18,54,68,.06)', maxWidth: 620, margin: '0 auto',
+          background: '#fff', borderRadius: 14, padding: 0,
+          maxWidth: 620, margin: '0 auto',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 }}>
             {/* Le prestataire facture sous son propre en-tête : PING n'apparaît que sur ses
@@ -179,9 +180,9 @@ export default function FacturePage() {
             }}>{inv.legal.avertissement}</div>
           )}
 
-          <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
+          <hr style={{ border: 0, borderTop: '1px solid #E3EAE8', margin: '28px 0' }} />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <div>
               <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#4E6470', textTransform: 'uppercase' }}>
                 {inv.template === 'commission' ? 'Émis par' : inv.template === 'recapitulatif' ? 'Intervenant' : 'Émetteur'}
@@ -227,7 +228,7 @@ export default function FacturePage() {
             </div>
           </div>
 
-          <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
+          <hr style={{ border: 0, borderTop: '1px solid #E3EAE8', margin: '28px 0' }} />
 
           {inv.template === 'commission' ? (
             (inv.lines || []).map((l, i) => { const dl = displayLine(inv, l); return (
@@ -263,12 +264,12 @@ export default function FacturePage() {
 
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-            borderTop: '1px solid #DCE5E3', marginTop: 14, paddingTop: 12,
+            borderTop: '1px solid #E3EAE8', marginTop: 24, paddingTop: 20,
           }}>
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15 }}>
               {inv.template === 'recapitulatif' ? 'Montant perçu' : 'Total'}
             </span>
-            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21 }}>{EUR(inv.net_cents)}</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24 }}>{EUR(inv.net_cents)}</span>
           </div>
           {inv.legal?.franchise_tva && (
             <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>{inv.legal.franchise_tva}</div>
@@ -277,7 +278,7 @@ export default function FacturePage() {
             const av = invoiceCredit(inv)
             if (!av) return null
             return (
-              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 12, background: 'rgba(18,179,156,.08)', border: '1px solid rgba(18,179,156,.3)' }}>
+              <div style={{ marginTop: 20, padding: '16px 16px', borderRadius: 14, background: 'rgba(18,179,156,.08)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13.5, fontWeight: 700 }}>
                   <span>Avoir{av.number ? ` n° ${av.number}` : ''}{av.date ? ` du ${new Date(av.date).toLocaleDateString('fr-FR')}` : ''}</span>
                   <span style={{ whiteSpace: 'nowrap' }}>− {EUR(av.cents)}</span>
@@ -293,7 +294,7 @@ export default function FacturePage() {
             )
           })()}
 
-          <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
+          <hr style={{ border: 0, borderTop: '1px solid #E3EAE8', margin: '28px 0' }} />
 
           <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.09em', color: '#4E6470', textTransform: 'uppercase' }}>
             {inv.template === 'recapitulatif' ? 'Déclaration' : 'Mentions légales'}
@@ -314,42 +315,42 @@ export default function FacturePage() {
             )}
           </div>
         </div>
-        <div className="no-print" style={{ maxWidth: 620, margin: '10px auto 0' }}>
+        <div className="no-print" style={{ maxWidth: 620, margin: '24px auto 0' }}>
           <button onClick={() => download(inv)} disabled={busy !== null} aria-label={`Télécharger le PDF : ${sectionTitle(inv)}`} style={{
-            width: '100%', minHeight: 44, border: 'none', padding: 12, borderRadius: 999, cursor: 'pointer',
-            background: '#fff', color: '#0B8374', fontFamily: 'Quicksand, sans-serif',
-            fontWeight: 700, fontSize: 14, boxShadow: '0 0 0 1px #DCE5E3',
+            width: '100%', minHeight: 54, border: 'none', padding: 14, borderRadius: 16, cursor: 'pointer',
+            background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif',
+            fontWeight: 700, fontSize: 17,
             opacity: busy === inv.number ? .6 : 1,
           }}>{busy === inv.number ? 'Génération…' : 'Télécharger le PDF'}</button>
         </div>
         </section>
         ))}
 
-        {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B4402C', fontSize: 12.5 }}>{err}</p>}
+        {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B2432E', fontSize: 15 }}>{err}</p>}
         <div className="no-print" style={{ maxWidth: 620, margin: '0 auto' }}>
           {userId && (isBuyer || isSeller) && <TransferCard transactionId={String(params.id)} userId={userId} />}
           <AvanceImmediateCard transactionId={String(params.id)} isSeller={isSeller} />
         </div>
 
-        <div className="no-print" style={{ maxWidth: 620, margin: '16px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="no-print" style={{ maxWidth: 620, margin: '8px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button onClick={() => window.print()} style={{
-            width: '100%', border: 'none', padding: 14, borderRadius: 999, cursor: 'pointer',
-            background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif',
-            fontWeight: 700, fontSize: 14.5, boxShadow: '0 0 0 1px #DCE5E3',
+            width: '100%', border: 'none', padding: 14, borderRadius: 16, cursor: 'pointer', minHeight: 52,
+            background: 'none', color: '#0B8374', fontFamily: 'Quicksand, sans-serif',
+            fontWeight: 700, fontSize: 16,
           }}>Imprimer</button>
         </div>
 
         {isBuyer && (
-          <div className="no-print" style={{ maxWidth: 620, margin: '14px auto 0', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="no-print" style={{ maxWidth: 620, margin: '16px auto 0', display: 'flex', gap: 8, flexDirection: 'column' }}>
             {!reviewed && (
               <button onClick={() => router.push(`/mission/${params.id}/chat?avis`)} style={{
-                flex: '1 1 200px', border: 'none', padding: 13, borderRadius: 999, cursor: 'pointer',
-                background: 'rgba(18,179,156,.1)', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14,
+                border: 'none', padding: 13, borderRadius: 16, cursor: 'pointer', minHeight: 52,
+                background: 'none', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
               }}>Laisser un avis</button>
             )}
             <button onClick={() => router.push(`/mission/${params.id}/chat?signaler`)} style={{
-              flex: '1 1 200px', border: 'none', padding: 13, borderRadius: 999, cursor: 'pointer',
-              background: '#fff', color: '#8a6520', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 0 0 1px #DCE5E3',
+              border: 'none', padding: 13, borderRadius: 16, cursor: 'pointer', minHeight: 52,
+              background: 'none', color: '#6F4F12', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
             }}>Signaler un problème</button>
           </div>
         )}

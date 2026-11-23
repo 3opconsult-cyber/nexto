@@ -58,7 +58,7 @@ function Wheel({ options, index, onChange, width }: { options: string[]; index: 
             style={{
               height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
               scrollSnapAlign: 'center', fontFamily: 'Quicksand, sans-serif',
-              fontWeight: i === index ? 700 : 600, fontSize: i === index ? 16 : 14.5,
+              fontWeight: i === index ? 700 : 600, fontSize: i === index ? 17 : 15,
               color: i === index ? '#123644' : '#B7C2C6', cursor: 'pointer', transition: 'color .15s, font-size .15s',
             }}>
             {opt}

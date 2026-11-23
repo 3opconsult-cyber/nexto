@@ -6,14 +6,15 @@ import { createClient } from '@/lib/supabase/client'
 import NavDrawer from '@/components/NavDrawer'
 import Modal from '@/components/Modal'
 import DocCaptureSheet from '@/components/DocCaptureSheet'
+import '../../aere.css'
 
 type DocRow = { status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string; rejection_reason?: string | null }
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
   valid: { label: 'Fournie', bg: 'rgba(18,179,156,.14)', fg: '#0B8374' },
   pending: { label: 'Reçue — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#8A6520' },
-  rejected: { label: 'Refusée — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
-  expired: { label: 'Expirée — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
+  rejected: { label: 'Refusée — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#9A3722' },
+  expired: { label: 'Expirée — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#9A3722' },
 }
 
 export default function ClientDocumentsPage() {
@@ -77,48 +78,44 @@ export default function ClientDocumentsPage() {
   const st = row ? STATUS_LABEL[row.status] : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
+    <div className="aere" style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
       <DocCaptureSheet open={capture} title="Pièce d'identité" accept=".pdf,.jpg,.jpeg,.png" onClose={() => setCapture(false)} onFile={f => handleFile(f)} />
 
-      <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ padding: '14px 20px', background: '#123644', display: 'flex', alignItems: 'center', gap: 14 }}>
         <NavDrawer />
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>Mes documents &amp; identité</span>
+        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>Mes documents &amp; identité</span>
       </div>
 
-      <div style={{ padding: 16, maxWidth: 560, margin: '0 auto' }}>
-        <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, marginBottom: 16 }}>
-          Une pièce d&apos;identité renseignée rassure les prestataires que vous contactez. Visible
-          uniquement par vous et l&apos;équipe PING — jamais par les prestataires.
-        </p>
+      <div className="a-page" style={{ maxWidth: 560, margin: '0 auto' }}>
+        {/* Une question : ma pièce d'identité est-elle fournie ? Un état, une action. */}
+        <div className="a-block">
+          <h1 className="a-title">Pièce d&apos;identité</h1>
+          {st
+            ? <span className="a-pill" style={{ background: st.bg, color: st.fg, alignSelf: 'flex-start' }}>{st.label}</span>
+            : <p className="a-info" style={{ fontWeight: 600 }}>Non fournie</p>}
+          <p className="a-info">
+            Une pièce d&apos;identité renseignée rassure les prestataires que vous contactez. Visible
+            uniquement par vous et l&apos;équipe PING — jamais par les prestataires.
+          </p>
+        </div>
 
-        <div style={{ background: '#fff', borderRadius: 16, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div onClick={view} style={{ width: 46, height: 46, borderRadius: 13, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: row ? 'pointer' : 'default' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={1.6}><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="8" cy="12" r="2.2" /><path d="M13 10.5h6M13 13.5h4" /></svg>
-          </div>
-          <div onClick={view} style={{ flex: 1, minWidth: 0, cursor: row ? 'pointer' : 'default' }}>
-            <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Pièce d&apos;identité</div>
-            {st ? (
-              <span style={{ display: 'inline-block', marginTop: 4, padding: '2px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: st.bg, color: st.fg }}>{st.label}</span>
-            ) : (
-              <div style={{ fontSize: 11.5, color: '#6E8592', fontWeight: 600, marginTop: 4 }}>Non fournie</div>
-            )}
-          </div>
-          <button onClick={() => setCapture(true)} disabled={uploading}
-            style={{ padding: '0 16px', minHeight: 44, borderRadius: 999, border: 'none', background: row ? '#F3F6F5' : '#123644', color: row ? '#123644' : '#fff', fontSize: 11.5, fontWeight: 700, flexShrink: 0 }}>
+        <div className="a-block">
+          <button type="button" className={row ? 'a-btn sec' : 'a-btn'} onClick={() => setCapture(true)} disabled={uploading}>
             {uploading ? 'Envoi…' : row ? 'Remplacer' : 'Ajouter'}
           </button>
+          {row && <button type="button" className="a-link" onClick={view}>Voir le document</button>}
         </div>
+
         {row?.status === 'rejected' && (
-          <div role="status" style={{ marginTop: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,122,102,.1)', color: '#A8432F', fontSize: 12.5, fontWeight: 600, lineHeight: 1.45 }}>
-            Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Envoyez une nouvelle pièce : elle repart en contrôle.
-            <button type="button" onClick={() => setCapture(true)} disabled={uploading}
-              style={{ display: 'block', marginTop: 8, minHeight: 44, padding: '0 18px', border: 'none', borderRadius: 999, background: '#123644', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-              Renvoyer une pièce
-            </button>
+          <div className="a-block" role="status">
+            <p className="a-info" style={{ color: '#9A3722', fontWeight: 600 }}>
+              Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Envoyez une nouvelle pièce : elle repart en contrôle.
+            </p>
+            <button type="button" className="a-btn" onClick={() => setCapture(true)} disabled={uploading}>Renvoyer une pièce</button>
           </div>
         )}
-        {err && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, marginTop: 10 }}>{err}</p>}
-        <p style={{ fontSize: 11, color: '#6E8592', marginTop: 10 }}>PDF, JPG ou PNG · 10 Mo maximum.</p>
+        {err && <p className="a-info" style={{ color: '#B2432E', fontWeight: 600 }}>{err}</p>}
+        <p className="a-info" style={{ marginTop: 20 }}>PDF, JPG ou PNG · 10 Mo maximum.</p>
       </div>
 
       <Modal open={!!viewing} onClose={() => setViewing(null)} title="Pièce d'identité">

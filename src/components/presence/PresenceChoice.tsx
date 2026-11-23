@@ -11,8 +11,10 @@ import { setClientPresence, type ClientPresence } from '@/lib/presence'
  * `toggle` (audit ergonomie 19/11, correction 12) : une réponse est déjà donnée ; la réponse courante et un
  * seul bouton « Changer ma réponse » qui bascule directement sur l'autre choix (1 appui, sans passer par /commande).
  */
-export default function PresenceChoice({ txId, presence, proName, onChange, compact = false, toggle = false }: {
+export default function PresenceChoice({ txId, presence, proName, onChange, compact = false, toggle = false, airy = false }: {
   txId: string; presence: ClientPresence | null | undefined; proName?: string; onChange: (p: ClientPresence) => void; compact?: boolean; toggle?: boolean
+  /** Lecture aérée (particulier, 24/11) : deux lignes avec pastille, sans cases encadrées ; mêmes textes, même enregistrement. */
+  airy?: boolean
 }) {
   const [busy, setBusy] = useState<ClientPresence | null>(null)
   const [err, setErr] = useState('')
@@ -66,6 +68,31 @@ export default function PresenceChoice({ txId, presence, proName, onChange, comp
           ))}
         </div>
         {err && <p role="alert" style={{ color: '#B3402F', fontSize: 12, margin: '6px 0 0' }}>{err}</p>}
+      </div>
+    )
+  }
+
+  if (airy) {
+    return (
+      <div>
+        {opts.map((o, i) => {
+          const on = presence === o.v
+          return (
+            <button key={o.v} type="button" onClick={() => choose(o.v)} disabled={!!busy} aria-pressed={on} style={{
+              display: 'flex', alignItems: 'flex-start', gap: 14, width: '100%', textAlign: 'left', minHeight: 72, padding: '18px 0', cursor: 'pointer',
+              border: 'none', borderTop: i ? '1px solid #E3EAE8' : 'none', background: 'none',
+            }}>
+              <span aria-hidden style={{ width: 24, height: 24, marginTop: 2, borderRadius: '50%', border: `2px solid ${on ? '#0B8374' : '#9FB3AE'}`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                {on && <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#0B8374' }} />}
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 18, lineHeight: 1.4, color: '#123644' }}>{busy === o.v ? 'Enregistrement…' : o.t}</b>
+                <span style={{ display: 'block', fontSize: 15, color: '#4E6470', lineHeight: 1.55, marginTop: 4 }}>{o.s}</span>
+              </span>
+            </button>
+          )
+        })}
+        {err && <p role="alert" style={{ color: '#B2432E', fontSize: 15, margin: '0 0 8px' }}>{err}</p>}
       </div>
     )
   }
