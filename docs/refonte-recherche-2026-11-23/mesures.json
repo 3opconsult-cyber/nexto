@@ -135,10 +135,10 @@
       "k": "point de départ lu",
       "v": {
         "dot": {
-          "x": 195,
-          "y": 358
+          "x": 142,
+          "y": 156
         },
-        "pins": 2
+        "pins": 3
       },
       "ok": true
     },
@@ -153,8 +153,8 @@
     {
       "k": "pincement : zoom autour du point touché (rapport > 1,5, direction conservée)",
       "v": {
-        "rapport": 2.17,
-        "ecartAngleDeg": 3.9
+        "rapport": 2.01,
+        "ecartAngleDeg": 4.1
       },
       "ok": true
     },
@@ -212,7 +212,7 @@
     },
     {
       "k": "bouton >= 44 px",
-      "v": "358x48",
+      "v": "358x56",
       "ok": true
     },
     {

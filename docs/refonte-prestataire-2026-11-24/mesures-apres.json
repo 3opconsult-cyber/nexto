@@ -1,5 +1,5 @@
 {
- "base": "http://localhost:3000",
+ "base": "https://nexto-eta.vercel.app",
  "phase": "apres",
  "checks": [
   {
