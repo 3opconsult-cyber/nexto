@@ -34,7 +34,20 @@ function PingBaseLayer() {
         layer = gl
         gl.addTo(map)
         const glMap = gl.getMaplibreMap()
-        glMap.on('load', () => { loaded = true; window.clearTimeout(timer); map.getContainer().dataset.basemap = 'ping' })
+        // « load » part même quand AUCUNE tuile n'a pu être lue (réseau mobile, bloqueur de contenu, serveur de tuiles
+        // indisponible) : on voit alors un fond vide (capture iPhone du 23/11). Contrôle réel : au moins un objet
+        // dessiné (route, eau, parc) dans les 14 s après le chargement, sinon retour à la carte OpenStreetMap.
+        let probes = 0
+        const probe = () => {
+          if (cancelled) return
+          let n = 0
+          try { n = glMap.queryRenderedFeatures().length } catch { /* contexte perdu */ }
+          if (n > 0) return
+          probes += 1
+          if (probes >= 7) { if (!cancelled) setFallback(true); return }
+          window.setTimeout(probe, 2000)
+        }
+        glMap.on('load', () => { loaded = true; window.clearTimeout(timer); map.getContainer().dataset.basemap = 'ping'; window.setTimeout(probe, 1500) })
         // Une erreur isolée (une tuile, une police, un coup de réseau sur mobile) ne doit PAS faire revenir à l'ancienne
         // carte : seule l'absence totale de chargement au bout de STYLE_TIMEOUT_MS ou la perte du contexte WebGL le font.
         glMap.on('error', (e: any) => { if (!loaded && /style|sprite|\.json/i.test(String(e?.error?.url || e?.error?.message || '')) && (e?.error?.status === 404 || e?.error?.status === 403)) fail() })
