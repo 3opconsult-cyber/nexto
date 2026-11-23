@@ -24,3 +24,9 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- cancel_booking : variable `kind` ambiguë avec une colonne (056, corrigé par 060) ; toujours préfixer les variables PL/pgSQL par v_.
+- Annulation après l'arrivée : les gardes 014 (guard_payment_status) et 027 (guard_transaction_core) sont assouplies par le drapeau de session `ping.cancel_rpc` posé par cancel_booking seule ; frais totaux + alerte cancel_after_arrival.
+- Alertes admin : 062 (non collée au 23/11) fait alimenter admin_notifications par payment_alerts et disputes, libellés français (src/lib/adminAlerts.ts) ; ajoute messages à la publication Realtime.
+- Devis dans le chat et adresse « à valider » : aucun délai ni sortie (à décider : délai de 24 h ou texte).
+- Le bon de commande (/commande) montre l'état d'attente de l'autre partie ; « Modifier l'adresse » : écriture non testée en production.

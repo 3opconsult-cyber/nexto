@@ -25,3 +25,8 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- L'étiquette prod-2026-11-21 existe seulement en local : le push d'un tag est refusé (403) ; la créer via GitHub > Releases sur le commit 9b4ffc5 ou proposer une branche de repère.
+- Retours arrière des migrations 052 à 062 : toujours « [à compléter] » dans PLAN-DE-REPRISE.md (A-009) ; des fonctions sont réécrites plusieurs fois (unread_counts, mark_overdue_transfers, enforce_incident_window) : recoller une ancienne migration ramène une ancienne version.
+- `.claude/worktrees/` est ignoré par git ; il occupe ~13 Go en local (copies de travail des agents) : sans effet sur le dépôt.
+- Ordre de collage des SQL : voir supabase/a_coller/README.md ; 061 puis 062 attendent Romain au 23/11.

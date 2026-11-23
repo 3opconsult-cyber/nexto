@@ -24,3 +24,10 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- Parcours A et B : à lancer en journée (avant ~17 h Paris) ; le soir le créneau est le lendemain et « Je pars » est refusé (038) : pas une régression.
+- Nouveaux scripts : reservation-litige (TA, TB), annulations (37), pieces-position (11), virement-non-recu (13), comptes-ui (43, requêtes d'auth interceptées), CANCEL_AFTER_ARRIVAL=1 sur parcours A.
+- Après `npm uninstall`, recréer le lien : ln -sfn /opt/node22/lib/node_modules/playwright node_modules/playwright.
+- Positions simulées : Grasse (43.6588, 6.9226) pour voir les annonces d'un client audit ; Nice les cache (15 km).
+- Le chat n'était pas en direct (message visible après rechargement) : correctif 062 (publication Realtime) à coller puis retester avec deux comptes.
+- L'audit des écrans de l'admin est impossible sans compte administrateur : NON VÉRIFIÉ, ne pas le masquer.

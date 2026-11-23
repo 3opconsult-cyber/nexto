@@ -28,3 +28,7 @@ Ajouter une ligne à chaque mise en production (date, identifiant, résumé en u
 
 ## Étiquettes de production
 Aucune étiquette `prod-AAAA-MM-JJ` n'existe encore (vérifié le 21/11/2026 : `git tag` vide). Première étiquette proposée : `prod-2026-11-21` sur 9b4ffc5, à créer avec l'accord de Romain.
+
+## Ajouts du 22-23/11/2026
+| 22/11 | 9 (cfef3bb..b4c6437) | Carte variante Waze (cfef3bb) ; 3 essais du build GitHub (251c49b) ; bon de commande depuis le chat (04e7109) ; vérifications de recette et captures ; 3 animations courtes + audit (1db5f89) ; alertes admin lisibles et chat en direct, 062 non collée (b4c6437) |
+| 23/11 | gardien-fidelite | Agent gardien-fidelite, DEMANDES.md, BRIEF-AGENT.md, maquettes dans docs/maquette/, contrat de fidélité (branche claude/gardien-fidelite, PR en brouillon, non fusionnée) ; mémoire des 13 agents mise à jour avec les leçons du 21-22/11 |

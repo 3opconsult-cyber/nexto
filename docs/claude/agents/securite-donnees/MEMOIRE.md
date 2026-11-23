@@ -24,3 +24,9 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- events.path ne garde plus les paramètres (jeton ?token= du QR, ?code= de connexion) : `safePath()` dans src/lib/tracking.ts (73bf766) ; anciennes lignes à nettoyer SEULEMENT avec accord de Romain.
+- Contrôle de nuit SQL prêt (061) mais non collé le 23/11 ; il lira droits anon, RLS, intégrité, pg_cron, dérive du schéma.
+- npm audit : 18 failles (2 critiques : next 14.2.35, maplibre-gl 5.24.0) ; 8 dépendances inutilisées retirées (e59afad) ; montée de version = chantier séparé.
+- Mots de passe des comptes de test en clair dans le dépôt (HISTORIQUE.md, scripts e2e) : A-TRANCHER l, décision de Romain attendue.
+- Aucune purge des journaux (events, notification_log, payment_alerts) : durées à fixer (A-033).
