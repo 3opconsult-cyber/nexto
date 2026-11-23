@@ -730,6 +730,9 @@ export default function ChatPage() {
         )}
       </div>
 
+      {/* Bandeau de la maquette (docs/maquette/maquette-ping-v11.html, .maskb) : texte copié tel quel. */}
+      <div style={{ background: 'rgba(18,179,156,.1)', color: '#0B8374', fontSize: 11.5, fontWeight: 600, textAlign: 'center', padding: '8px 16px' }}>Téléphone et e-mail restent masqués : tout passe par PING</div>
+
       {tx && tx.buyer_id === tx.seller_id && (
         <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(229,72,77,.08)', color: '#C0503A', fontSize: 12.5, fontWeight: 600, lineHeight: 1.5 }}>
           Mission de test invalide : vous êtes à la fois le client et le prestataire. Elle ne correspond à aucun vrai parcours et sera supprimée.

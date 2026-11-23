@@ -150,6 +150,9 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
+        <Link href="/bienvenue" style={{ alignSelf: 'flex-start', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 700, fontSize: 13, minHeight: 44, textDecoration: 'none' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg> Retour
+        </Link>
         <Link href="/" style={{ marginBottom: 28, display: 'flex', justifyContent: 'center' }}><Sign size={48} pulse /></Link>
 
         <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '28px 26px', boxShadow: '0 24px 60px rgba(0,0,0,.35)' }}>
@@ -169,11 +172,15 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer', minHeight: 44 }}>
-              <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}
-                style={{ width: 24, height: 24, accentColor: '#12B39C' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
+              <button type="button" role="switch" aria-checked={rememberMe} aria-label="Rester connecté" onClick={() => setRememberMe(v => !v)}
+                style={{ width: 44, height: 44, border: 'none', background: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+                <span style={{ position: 'relative', width: 40, height: 24, borderRadius: 99, background: rememberMe ? '#0B8374' : '#C9D5D2', transition: 'background .2s', display: 'block' }}>
+                  <span style={{ position: 'absolute', top: 3, left: rememberMe ? 19 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s', boxShadow: '0 1px 3px rgba(0,0,0,.25)' }} />
+                </span>
+              </button>
               <span style={{ fontSize: 13, fontWeight: 600, color: '#4E6470' }}>Rester connecté</span>
-            </label>
+            </div>
             <button type="button" onClick={resetPassword}
               style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
               {resetBusy ? 'Envoi du lien…' : 'Mot de passe oublié ?'}
@@ -195,7 +202,7 @@ export default function LoginPage() {
           </form>
           <p style={{ textAlign: 'center', fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 18 }}>
             Pas encore de compte ?{' '}
-            <Link href={next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup'} style={{ color: '#0C8F7E', fontWeight: 700 }}>S&apos;inscrire</Link>
+            <Link href={next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup'} style={{ color: '#0C8F7E', fontWeight: 700 }}>Créer un compte</Link>
           </p>
         </div>
       </div>

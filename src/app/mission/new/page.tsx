@@ -9,7 +9,7 @@ import { trackEvent } from '@/lib/tracking'
 import { getRates, DEFAULT_BUYER_RATE, DEFAULT_SELLER_RATE } from '@/lib/pricing'
 import { geocodeAddress } from '@/lib/geocode'
 import { startCheckout, usePaymentsActive } from '@/lib/paymentsClient'
-import NavDrawer from '@/components/NavDrawer'
+import { shortName } from '@/lib/ratePrompt'
 import { TRADES, cesuEligible } from '@/lib/trades'
 import { EUR } from '@/lib/invoice-pdf'
 import { fetchSlots, dayLabel, hhmm, slotEnd, type Slot } from '@/lib/slots'
@@ -53,6 +53,7 @@ function MissionForm() {
   const proId = params.get('pro')
   const serviceParam = params.get('service')
   const [pro, setPro] = useState<any>(null)
+  const [proName, setProName] = useState('')
   // Prestations visibles du catalogue (table services) ; `selId` = celle réservée (null = métier
   // principal, provider_profiles). Le client choisit ici ; ?service= présélectionne depuis la fiche.
   const [catalog, setCatalog] = useState<Prestation[] | null>(null)
@@ -104,6 +105,9 @@ function MissionForm() {
     if (!proId) return
     createClient().from('provider_profiles').select('*').eq('id', proId).single()
       .then(({ data }) => { setPro(data) })
+    // Nom affiché par la fonction dédiée (profiles est en lecture personnelle : jamais d'embed).
+    createClient().rpc('provider_public_name', { provider_id: proId })
+      .then(({ data }) => { const n = Array.isArray(data) ? data[0]?.full_name : null; if (n && String(n).trim()) setProName(shortName(n)) }, () => { })
     fetchSlots(createClient(), proId, 21).then(list => {
       const free = list ? list.filter(x => !x.transaction_id) : null
       setSlots(free)
@@ -346,14 +350,15 @@ function missingRpc(e: { code?: string; message?: string } | null) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#123644' }}>
-      <div style={{ padding: '28px 20px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-          <NavDrawer />
-          <button onClick={() => router.back()} style={{ color: '#fff', background: 'none', border: 'none', fontSize: 13, fontWeight: 700, minHeight: 44, padding: '0 8px' }}>← Retour</button>
+    <div style={{ minHeight: '100vh', background: '#fff' }}>
+      <div style={{ padding: '10px 20px 12px', borderBottom: '1px solid #E7EDEB', background: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button type="button" onClick={() => router.back()} aria-label="Retour" style={{ color: '#123644', background: 'none', border: 'none', width: 44, height: 44, marginLeft: -12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+          <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 20, color: '#123644', margin: 0 }}>{proName ? `Réserver ${proName}` : 'Réserver'}</h1>
         </div>
-        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 22, color: '#fff' }}>Réserver</h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>
+        <p style={{ fontSize: 13, color: '#4E6470', margin: '2px 0 0' }}>
           {pricing
             ? hasOvertime
               ? `${article ? prestationName(article) : TRADES[pro.trade] || pro.trade} — ${EUR(pricing.base_price_cents)} (${pricing.included_hours} h incluse${pricing.included_hours > 1 ? 's' : ''}), puis ${EUR(pricing.hourly_rate_cents)}/h au-delà`
@@ -363,7 +368,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
         </p>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '24px 20px', minHeight: 'calc(100vh - 110px)' }}>
+      <div style={{ background: '#fff', padding: '20px 20px', minHeight: 'calc(100vh - 110px)' }}>
         {/* Choix de la prestation : son prix et sa manière de tarifer sont figés sur la réservation. */}
         {options.length > 1 && (
           <div style={{ marginBottom: 18 }}>

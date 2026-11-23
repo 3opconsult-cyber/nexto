@@ -53,7 +53,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const router = useRouter()
   // Puces et filtres de la carte : services non masqués du catalogue (repli : tous ceux de trades.ts).
   const catalog = useCatalog()
-  const tradeKeys = catalog.visible.map(s => s.key)
+  // « Vitres » reste en base mais n'est pas proposé (REGLES-METIER) : pas de puce tant qu'il n'est pas activé au catalogue.
+  const tradeKeys = catalog.visible.filter(s => s.active || s.key !== 'vitres').map(s => s.key)
   const svcIc = (k: string) => { const ic = catalog.get(k)?.icon; return ic && ICON[ic] ? ic : svcIconKey(k) }
   const [view, setViewState] = useState(initialView)
   const [prevView, setPrevView] = useState('v_map')

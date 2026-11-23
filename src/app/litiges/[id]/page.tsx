@@ -244,7 +244,7 @@ export default function LitigePage() {
               ) : (
                 <button type="button" onClick={requestMediation} disabled={medBusy}
                   style={{ ...linkBtn, width: '100%', marginTop: 10, border: '1.5px solid #123644', color: '#123644', cursor: medBusy ? 'default' : 'pointer', opacity: medBusy ? .6 : 1, fontFamily: 'inherit' }}>
-                  Demander l’intervention de PING
+                  Demander la médiation de PING
                 </button>
               )
             )}

@@ -103,6 +103,8 @@
   .cta svg{width:20px; height:20px; flex-shrink:0;}
   .cta.a{background:var(--teal); color:#fff;}
   .cta.b{background:#fff; color:var(--navy);}
+  .cover .sentence{font-size:13px; line-height:1.45; color:rgba(255,255,255,.8); max-width:30ch; margin:2px 0 0; text-align:center;}
+  .cover .have{display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0 16px; color:#fff; font-weight:700; font-size:14px; text-decoration:underline; text-underline-offset:3px;}
   .deck .cta:focus-visible{outline:3px solid var(--gold); outline-offset:3px;}
   .betaw h2{font-size:25px; max-width:20ch;}
   .betaw p{max-width:34ch; font-size:15px; line-height:1.55; color:rgba(255,255,255,.85);}
@@ -141,7 +143,9 @@
       <div class="choices">
         <button type="button" class="cta a" data-role="particulier"><span>Je cherche un prestataire</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
         <button type="button" class="cta b" data-role="pro"><span>Je suis prestataire</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+        <a class="have" href="/auth/login">J'ai déjà un compte</a>
       </div>
+      <p class="sentence">Ménage, repassage et nettoyage, près de chez vous.</p>
     </div>
 </template>
 <template id="t-choice">

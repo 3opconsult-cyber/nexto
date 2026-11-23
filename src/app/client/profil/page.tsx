@@ -99,6 +99,22 @@ export default function ClientProfil() {
                 <div className="lrow"><span className="s">Téléphone</span><span className="v">{phoneMasked}</span></div>
                 <div className="lrow"><span className="s">E-mail</span><span className="v">{email}{email && emailOk ? ' ✓' : email ? ' · à confirmer' : ''}</span></div>
               </div>
+              {/* Barre de la maquette : calculée sur des données existantes (e-mail confirmé, téléphone, adresse, pièce d'identité). */}
+              {(() => {
+                const steps: [string, boolean][] = [['E-mail confirmé', !!emailOk], ['Téléphone', !!profile?.phone_enc], ['Adresse', !!profile?.address], ['Pièce d’identité', hasId]]
+                const done = steps.filter(x => x[1]).length
+                const todo = steps.filter(x => !x[1]).map(x => x[0]).join(', ')
+                return (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12.5 }}>
+                      <b>Profil complet : {done} sur 4</b><span style={{ color: 'var(--slate)', textAlign: 'right' }}>{todo || 'tout est fait'}</span>
+                    </div>
+                    <div role="progressbar" aria-valuemin={0} aria-valuemax={4} aria-valuenow={done} style={{ marginTop: 6, height: 6, borderRadius: 3, background: 'var(--line)', overflow: 'hidden' }}>
+                      <i style={{ display: 'block', height: '100%', width: `${done * 25}%`, background: 'var(--teal)' }} />
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
 
             {/* Même rubriques et même présentation que « Mon entreprise » côté prestataire. */}
@@ -111,9 +127,9 @@ export default function ClientProfil() {
             </HubGroup>
 
             <HubGroup title="Paiements">
-              <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures et reçus" onClick={() => router.push('/documents')} />
+              <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
               <HubRow icon={HUB_ICONS.euro} label="Crédit d'impôt immédiat" sub="Ne payez que 50 % du ménage et du repassage" onClick={() => router.push('/client/avance-immediate')} />
-              <HubRow icon={HUB_ICONS.card} label="Moyens de paiement" sub="Bientôt disponible" />
+              <HubRow icon={HUB_ICONS.card} label="Paiements" sub="Virement sur facture" />
             </HubGroup>
 
             <HubGroup title="Mon compte">

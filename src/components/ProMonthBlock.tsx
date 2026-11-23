@@ -15,6 +15,37 @@ const UPCOMING = ['pending', 'held', 'arrived']
 type Props = {
   pro: { id: string; rating?: number | null; reviews_count?: number | null; lat?: number | null; lng?: number | null; trade?: string | null; service_radius_km?: number | null }
   transactions: any[] // missions vendues par ce pro (déjà chargées par la page)
+  /** L'alerte litige est alors affichée plus haut par <ProDisputeAlert /> (ordre de la maquette). */
+  hideDispute?: boolean
+}
+
+/** Alerte litige ouvert (même texte et même lien que dans le bloc du mois), placée sous la fiche comme la maquette. */
+export function ProDisputeAlert({ transactions }: { transactions: any[] }) {
+  const router = useRouter()
+  const [dispute, setDispute] = useState<{ id: string; count: number } | null>(null)
+  const allKey = transactions.map(t => t.id).join(',')
+  useEffect(() => {
+    if (!allKey) return
+    let alive = true
+    createClient().from('disputes').select('id, transaction_id').eq('status', 'open').in('transaction_id', allKey.split(',')).then(({ data }) => {
+      if (alive) setDispute(data && data.length ? { id: data[0].id, count: data.length } : null)
+    })
+    return () => { alive = false }
+  }, [allKey])
+  if (!dispute) return null
+  return (
+    <div onClick={() => router.push(`/litiges/${dispute.id}`)} role="button"
+      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', minHeight: 44, borderRadius: 14, background: '#FEE2E2', border: '1px solid #FCA5A5', cursor: 'pointer' }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0503A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2 2 21h20z" /><path d="M12 9v5M12 18h.01" /></svg>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: '#C0503A' }}>
+          {dispute.count > 1 ? `${dispute.count} litiges ouverts` : 'Un litige est ouvert'} sur vos missions
+        </div>
+        <div style={{ fontSize: 11.5, color: '#C0503A', marginTop: 2 }}>Répondez dans le dossier pour que PING puisse trancher.</div>
+      </div>
+      <span style={{ color: '#C0503A' }}>›</span>
+    </div>
+  )
 }
 
 function when(iso: string) {
@@ -24,7 +55,7 @@ function when(iso: string) {
   return `${day} · ${hm}`
 }
 
-export default function ProMonthBlock({ pro, transactions }: Props) {
+export default function ProMonthBlock({ pro, transactions, hideDispute }: Props) {
   const router = useRouter()
   const [names, setNames] = useState<Record<string, string>>({})
   const [nearby, setNearby] = useState<number | null>(null) // null = inconnu / pas de position
@@ -57,14 +88,14 @@ export default function ProMonthBlock({ pro, transactions }: Props) {
         setNames(m)
       })
     }
-    if (allKey) {
+    if (allKey && !hideDispute) {
       supabase.from('disputes').select('id, transaction_id').eq('status', 'open').in('transaction_id', allKey.split(',')).then(({ data }) => {
         if (!alive) return
         setDispute(data && data.length ? { id: data[0].id, count: data.length } : null)
       })
     }
     return () => { alive = false }
-  }, [nextKey, allKey])
+  }, [nextKey, allKey, hideDispute])
 
   useEffect(() => {
     let alive = true
@@ -83,7 +114,7 @@ export default function ProMonthBlock({ pro, transactions }: Props) {
     <div style={{ marginTop: 18 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 8px 2px' }}>Mon activité du mois</div>
 
-      {dispute && (
+      {dispute && !hideDispute && (
         <div onClick={() => router.push(`/litiges/${dispute.id}`)} role="button"
           style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 14, background: '#FEE2E2', border: '1px solid #FCA5A5', cursor: 'pointer', marginBottom: 9 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0503A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2 2 21h20z" /><path d="M12 9v5M12 18h.01" /></svg>

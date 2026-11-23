@@ -336,7 +336,7 @@ export default function AgendaPage() {
                 <button type="button" onClick={() => router.push('/client/demandes')}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', background: offersWaiting ? '#FFF7ED' : '#fff', border: offersWaiting ? '1.5px solid #F2A93B' : '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px', marginBottom: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes demandes</span>
+                    <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes demandes en ligne</span>
                     <span style={{ display: 'block', fontSize: 12, color: offersWaiting ? '#8a6520' : '#4E6470', fontWeight: offersWaiting ? 700 : 400, marginTop: 2 }}>
                       {offersWaiting
                         ? `${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} de tarif à examiner`

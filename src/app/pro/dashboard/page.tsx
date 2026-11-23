@@ -14,7 +14,7 @@ import { writeMode } from '@/lib/mode'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 import { documentAlerts, type DocRowFull } from '@/lib/pieces'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
-import ProMonthBlock from '@/components/ProMonthBlock'
+import ProMonthBlock, { ProDisputeAlert } from '@/components/ProMonthBlock'
 import { usePendingBookings, deadlineLeft } from '@/lib/booking'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { readScreenCache, sessionUserId } from '@/lib/screenCache'
@@ -290,9 +290,34 @@ export default function ProDashboard() {
               </div>
             )}
 
-            <LiveZoneCard />
+            {/* Ordre de la maquette : alerte litige, puis « Il vous reste n éléments à ajouter », puis l'activité. */}
+            <ProDisputeAlert transactions={transactions} />
 
-            <ProMonthBlock pro={pro} transactions={transactions} />
+            {(() => {
+              const todo: { label: string; sub: string }[] = []
+              if (!idOk) todo.push({ label: 'Pièce d’identité', sub: 'Une photo suffit' })
+              if (!rcOk) todo.push({ label: 'Assurance responsabilité civile', sub: 'Conseillée · une photo suffit' })
+              if (!todo.length) return null
+              return (
+                <div style={{ padding: '12px 14px', borderRadius: 14, background: '#fff', border: '1.5px solid #F2A93B' }}>
+                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginBottom: 4 }}>Il vous reste {todo.length} élément{todo.length > 1 ? 's' : ''} à ajouter</div>
+                  {todo.map(t => (
+                    <button key={t.label} type="button" onClick={() => router.push('/pro/documents')}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', minHeight: 48, border: 'none', background: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <b style={{ display: 'block', fontSize: 13.5, color: '#123644' }}>{t.label}</b>
+                        <small style={{ display: 'block', fontSize: 12, color: '#4E6470' }}>{t.sub}</small>
+                      </span>
+                      <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2}><path d="M9 6l6 6-6 6" /></svg>
+                    </button>
+                  ))}
+                </div>
+              )
+            })()}
+
+            <ProMonthBlock pro={pro} transactions={transactions} hideDispute />
+
+            <LiveZoneCard />
 
             {/* Tout ce qui sortait du menu latéral est rangé ici, par rubrique (même présentation que
                 « Mon profil » côté particulier). */}
