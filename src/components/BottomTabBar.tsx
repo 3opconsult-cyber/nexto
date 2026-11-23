@@ -127,7 +127,7 @@ export default function BottomTabBar() {
                 <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" /></svg>
                 {today.urgent && <span aria-label="Action attendue" style={{ position: 'absolute', top: -2, right: -2, width: 13, height: 13, borderRadius: '50%', background: '#E5484D', border: '2px solid #fff' }} />}
               </span>
-              <span style={{ fontSize: 10.5, fontWeight: 700 }}>Mission</span>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>Mission</span>
             </button>
           ) : null
           const on = pathname === t.path || pathname.startsWith(t.path + '/')
@@ -138,7 +138,7 @@ export default function BottomTabBar() {
                 <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{ICONS[t.icon]}</svg>
                 {t.icon === 'msg' && <UnreadBadge n={unread} absolute />}
               </span>
-              <span style={{ fontSize: 10.5, fontWeight: 700 }}>{t.label}</span>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>{t.label}</span>
             </button>
           )]
         })}

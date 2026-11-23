@@ -1,0 +1,74 @@
+{
+ "base": "http://localhost:3218",
+ "label": "avant-fs",
+ "ecrans": {
+  "findsheet-besoin": {
+   "racine": "div",
+   "blocs": 3,
+   "bordures": 3,
+   "separateursTraits": 0,
+   "texteMin": 14,
+   "sous15": 1,
+   "exemplesSous15": [
+    "14px Plusieurs services"
+   ],
+   "espaceMin": 12,
+   "espaceOu": "De quoi avez-vous  / Ménage Repassage N",
+   "margeOu": "BUTTON",
+   "margeMin": 8,
+   "interlOu": "Ménage",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 831
+  },
+  "findsheet-moment": {
+   "racine": "div",
+   "blocs": 4,
+   "bordures": 3,
+   "separateursTraits": 0,
+   "texteMin": 12.5,
+   "sous15": 4,
+   "exemplesSous15": [
+    "13.5px Ménage",
+    "12.5px Aujourd’hui à partir de 08 h",
+    "12.5px Choisissez l’heure",
+    "12.5px Jour et heure"
+   ],
+   "espaceMin": 8,
+   "espaceOu": "Quand ? / Ménage",
+   "margeOu": "BUTTON",
+   "margeMin": 8,
+   "interlOu": "Voir les prestataires",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 831
+  },
+  "findsheet-choix": {
+   "racine": "div",
+   "blocs": 6,
+   "bordures": 2,
+   "separateursTraits": 0,
+   "texteMin": 12,
+   "sous15": 6,
+   "exemplesSous15": [
+    "13px Ménage · dès que possible",
+    "13px ☆☆☆☆☆★★★★★ 5 (42) · à 0 m",
+    "12px ☆☆☆☆☆",
+    "12px ★★★★★",
+    "12px Nouveau · pièces en cours de",
+    "13.5px Déposer une demande à la pla"
+   ],
+   "espaceMin": 4,
+   "espaceOu": "Voir les autres (4 / Déposer une demand",
+   "margeOu": "BUTTON",
+   "margeMin": 8,
+   "interlOu": "Nouveau · pièces en cour",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 831
+  }
+ }
+}

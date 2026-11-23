@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Modal from '@/components/Modal'
-import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
+import { HUB_ICONS } from '@/components/Hub'
 import OrdersInProgress from '@/components/OrdersInProgress'
+import { AereRow } from '@/components/AereRow'
+import '../../aere.css'
 import { writeMode } from '@/lib/mode'
 
-const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '12px 0 5px' }
-const fieldInput: React.CSSProperties = { width: '100%', padding: '11px 13px', border: '1.5px solid #E7EDEB', borderRadius: 12, fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644', outline: 'none', boxSizing: 'border-box' }
+const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 15, fontWeight: 600, color: '#123644', margin: '16px 0 8px' }
+const fieldInput: React.CSSProperties = { width: '100%', padding: '12px 16px', minHeight: 52, border: '1.5px solid #CFDAD7', borderRadius: 14, fontSize: 16, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644', outline: 'none', boxSizing: 'border-box' }
 
 export default function ClientProfil() {
   const router = useRouter()
@@ -84,91 +86,90 @@ export default function ClientProfil() {
   const todo = steps.filter(x => !x[1]).map(x => x[0]).join(', ')
 
   return (
-    <div className="stage" id="stage">
+    <div className="stage aere" id="stage">
       <div className="device"><div className="frame"><div className="screen" style={{ background: 'var(--paper)' }}>
         <section className="view on" id="v_profile" data-tab="profile">
           {/* Racine d'onglet : pas de flèche ni de « ← Carte » (la barre du bas et le menu mènent à la carte). */}
-          <div className="appbar">
-            <b>Mon profil</b>
+          <div className="appbar" style={{ height: 56, padding: '0 20px' }}>
+            <b style={{ fontSize: 20 }}>Mon profil</b>
           </div>
-          <div className="body">
-            {/* Une ligne : nom et ville ; adresse, téléphone, e-mail et « Modifier » derrière un appui. */}
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <button type="button" onClick={() => setCoord(o => !o)} aria-expanded={coord} aria-label={`${displayName} : mes coordonnées`}
-                style={{ display: 'flex', gap: 12, alignItems: 'center', width: '100%', minHeight: 64, padding: '10px 14px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <span aria-hidden style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--coral)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 18, flex: '0 0 auto' }}>{initial}</span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="nm" style={{ display: 'block', fontSize: 15 }}>{displayName}</span>
-                  <span className="ds" style={{ display: 'block' }}>{profile?.city || 'Particulier'}</span>
+          <div className="body a-page" style={{ top: 56, padding: '24px 20px 48px' }}>
+            {/* Bloc 1 : qui je suis, sur une ligne (nom, ville) ; adresse, téléphone, e-mail et « Modifier » derrière un appui. */}
+            <div className="a-block">
+              <button type="button" onClick={() => setCoord(o => !o)} aria-expanded={coord} aria-label={`${displayName} : mes coordonnées`} className="a-row" style={{ padding: '4px 0', minHeight: 72 }}>
+                <span aria-hidden style={{ width: 56, height: 56, borderRadius: 18, background: 'var(--coral)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 22, flex: '0 0 auto' }}>{initial}</span>
+                <span className="a-tx">
+                  <span className="a-t" style={{ fontSize: 20 }}>{displayName}</span>
+                  <span className="a-s">{profile?.city || 'Particulier'}</span>
                 </span>
-                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" strokeWidth={2.2} style={{ flexShrink: 0, transform: coord ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
+                <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" strokeWidth={2.2} style={{ flexShrink: 0, transform: coord ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
               </button>
               {coord && (
-                <div style={{ borderTop: '1px solid var(--line)', padding: '8px 14px 12px' }}>
-                  <div className="lrow"><span className="s">Adresse</span><span className="v" style={{ fontWeight: 600, textAlign: 'right', maxWidth: '62%' }}>{profile?.address || 'Non renseignée'}</span></div>
-                  <div className="lrow"><span className="s">Téléphone</span><span className="v">{phoneMasked}</span></div>
-                  <div className="lrow"><span className="s">E-mail</span><span className="v">{email}{email && emailOk ? ' ✓' : email ? ' · à confirmer' : ''}</span></div>
-                  <button type="button" onClick={openEdit}
-                    style={{ width: '100%', minHeight: 48, marginTop: 8, borderRadius: 14, border: '1.5px solid var(--teal)', background: '#fff', color: 'var(--teal)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
-                    Modifier mes informations
-                  </button>
+                <div className="a-list" style={{ marginTop: 8 }}>
+                  <div style={{ padding: '12px 0' }}><span className="a-info" style={{ display: 'block' }}>Adresse</span><span className="a-strong" style={{ display: 'block' }}>{profile?.address || 'Non renseignée'}</span></div>
+                  <div style={{ padding: '12px 0' }}><span className="a-info" style={{ display: 'block' }}>Téléphone</span><span className="a-strong" style={{ display: 'block' }}>{phoneMasked}</span></div>
+                  <div style={{ padding: '12px 0' }}><span className="a-info" style={{ display: 'block' }}>E-mail</span><span className="a-strong" style={{ display: 'block', overflowWrap: 'anywhere' }}>{email}{email && emailOk ? ' ✓' : email ? ' · à confirmer' : ''}</span></div>
+                  <button type="button" onClick={openEdit} className="a-btn sec" style={{ marginTop: 8 }}>Modifier mes informations</button>
                 </div>
               )}
             </div>
             <OrdersInProgress role="particulier" title="Mes commandes en cours" topGap={28} />
+
+            {/* Bloc 2 (seulement s'il manque quelque chose) : une phrase, pas de barre. */}
             {done < 4 && (
-              <div style={{ margin: '10px 2px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12.5 }}>
-                  <b>Profil complet : {done} sur 4</b><span style={{ color: 'var(--slate)', textAlign: 'right' }}>{todo}</span>
-                </div>
-                <div role="progressbar" aria-valuemin={0} aria-valuemax={4} aria-valuenow={done} style={{ marginTop: 6, height: 6, borderRadius: 3, background: 'var(--line)', overflow: 'hidden' }}>
-                  <i style={{ display: 'block', height: '100%', width: `${done * 25}%`, background: 'var(--teal)' }} />
-                </div>
+              <div className="a-block">
+                <p className="a-info"><b className="a-strong">Profil complet : {done} sur 4.</b> Il reste : {todo}.</p>
               </div>
             )}
 
-            {/* Deux accès en tête (demandes, paiements) ; le reste derrière « Voir plus » (un appui). */}
-            <HubGroup title="Mon activité">
-              <HubRow icon={HUB_ICONS.list} label="Mes demandes" onClick={() => router.push('/client/demandes')} />
-              <HubRow icon={HUB_ICONS.card} label="Paiements" sub={toPay > 0 ? `${toPay} à régler` : undefined} onClick={() => router.push('/client/paiements')} />
-              {!hasId && <HubRow icon={HUB_ICONS.id} label="Pièce d'identité" badge={{ text: 'à fournir', tone: 'todo' }} onClick={() => router.push('/client/documents')} />}
-              {more && <>
-                <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
-                <HubRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
-                <HubRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Prestataires gardés" onClick={() => router.push('/client/favoris')} />
-              </>}
-            </HubGroup>
+            {/* Bloc 3 : l'activité, en liste aérée ; le reste derrière « Voir plus ». */}
+            <div className="a-block">
+              <h2 className="a-h2">Mon activité</h2>
+              <div className="a-list">
+                <AereRow icon={HUB_ICONS.list} label="Mes demandes" onClick={() => router.push('/client/demandes')} />
+                <AereRow icon={HUB_ICONS.card} label="Paiements" sub={toPay > 0 ? `${toPay} à régler` : undefined} onClick={() => router.push('/client/paiements')} />
+                {!hasId && <AereRow icon={HUB_ICONS.id} label="Pièce d'identité" badge={{ text: 'à fournir', tone: 'todo' }} onClick={() => router.push('/client/documents')} />}
+              </div>
+              {!more && <button type="button" onClick={() => setMore(true)} aria-expanded={false} className="a-btn sec" style={{ marginTop: 28 }}>Voir plus : factures, compte, aide</button>}
+              {!more && <div className="a-center" style={{ marginTop: 20 }}><button type="button" onClick={logout} className="a-link" style={{ color: 'var(--slate)' }}>Se déconnecter</button></div>}
+            </div>
 
-            {!more && (
-              <button type="button" onClick={() => setMore(true)} aria-expanded={false}
-                style={{ width: '100%', minHeight: 48, marginTop: 16, borderRadius: 14, border: '1.5px solid var(--teal)', background: '#fff', color: 'var(--teal)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
-                Voir plus : factures, compte, aide
-              </button>
-            )}
             {more && <>
-            <HubGroup title="Mon compte">
-              {hasId && <HubRow icon={HUB_ICONS.id} label="Pièce d'identité" sub="Déposée sur PING, chiffrée et masquée"
-                badge={{ text: 'fournie', tone: 'ok' }}
-                onClick={() => router.push('/client/documents')} />}
-              <HubRow icon={HUB_ICONS.lock} label="Coordonnées et confidentialité" sub="Masquées jusqu'à la mission confirmée" onClick={() => router.push('/client/confidentialite')} />
-              {/* Libellés de bascule décidés par Romain : « Espace prestataire » pour un compte qui a déjà une
-                  activité prestataire, « Devenir prestataire » sinon. */}
-              {profile?.is_pro
-                ? <HubRow icon={HUB_ICONS.swap} label="Espace prestataire" sub="Mes demandes, mes missions, mon entreprise" onClick={() => { writeMode('pro'); router.push('/pro/carte') }} />
-                : <HubRow icon={HUB_ICONS.swap} label="Devenir prestataire" sub="Proposer mes services : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />}
-            </HubGroup>
-
-            <HubGroup title="Plus">
-              <HubRow icon={HUB_ICONS.doc} label="Déposer une demande" sub="Une annonce à votre adresse" onClick={() => router.push('/client/demandes/new')} />
-              <HubRow icon={HUB_ICONS.star} label="Avis publiés" onClick={() => router.push('/client/avis')} />
-              <HubRow icon={HUB_ICONS.euro} label="Crédit d'impôt immédiat" sub="Ne payez que 50 % du ménage et du repassage" onClick={() => router.push('/client/avance-immediate')} />
-              <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />
-              <HubRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
-              <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
-            </HubGroup>
+              <div className="a-block">
+                <div className="a-list">
+                  <AereRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
+                  <AereRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
+                  <AereRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Prestataires gardés" onClick={() => router.push('/client/favoris')} />
+                </div>
+              </div>
+              <div className="a-block">
+                <h2 className="a-h2">Mon compte</h2>
+                <div className="a-list">
+                  {hasId && <AereRow icon={HUB_ICONS.id} label="Pièce d'identité" sub="Déposée sur PING, chiffrée et masquée"
+                    badge={{ text: 'fournie', tone: 'ok' }}
+                    onClick={() => router.push('/client/documents')} />}
+                  <AereRow icon={HUB_ICONS.lock} label="Coordonnées et confidentialité" sub="Masquées jusqu'à la mission confirmée" onClick={() => router.push('/client/confidentialite')} />
+                  {/* Libellés de bascule décidés par Romain : « Espace prestataire » pour un compte qui a déjà une
+                      activité prestataire, « Devenir prestataire » sinon. */}
+                  {profile?.is_pro
+                    ? <AereRow icon={HUB_ICONS.swap} label="Espace prestataire" sub="Mes demandes, mes missions, mon entreprise" onClick={() => { writeMode('pro'); router.push('/pro/carte') }} />
+                    : <AereRow icon={HUB_ICONS.swap} label="Devenir prestataire" sub="Proposer mes services : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />}
+                </div>
+              </div>
+              <div className="a-block">
+                <h2 className="a-h2">Plus</h2>
+                <div className="a-list">
+                  <AereRow icon={HUB_ICONS.doc} label="Déposer une demande" sub="Une annonce à votre adresse" onClick={() => router.push('/client/demandes/new')} />
+                  <AereRow icon={HUB_ICONS.star} label="Avis publiés" onClick={() => router.push('/client/avis')} />
+                  <AereRow icon={HUB_ICONS.euro} label="Crédit d'impôt immédiat" sub="Ne payez que 50 % du ménage et du repassage" onClick={() => router.push('/client/avance-immediate')} />
+                  <AereRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />
+                  <AereRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
+                  <AereRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
+                </div>
+              </div>
             </>}
 
-            <div onClick={logout} style={{ textAlign: 'center', marginTop: 16, color: 'var(--slate)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>Se déconnecter</div>
+            {more && <div className="a-center"><button type="button" onClick={logout} className="a-link" style={{ color: 'var(--slate)' }}>Se déconnecter</button></div>}
           </div>
         </section>
       </div></div></div>
@@ -184,7 +185,7 @@ export default function ClientProfil() {
         <input style={fieldInput} value={f.address} autoComplete="street-address" onChange={e => setF({ ...f, address: e.target.value })} />
         <label style={fieldLabel}>Ville</label>
         <input style={fieldInput} value={f.city} autoComplete="address-level2" onChange={e => setF({ ...f, city: e.target.value })} />
-        <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '10px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
+        <p style={{ fontSize: 14, color: '#4E6470', lineHeight: 1.55, margin: '14px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
         {editErr && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, margin: '10px 0 0' }}>{editErr}</p>}
         <button onClick={saveEdit} disabled={saving}
           style={{ width: '100%', marginTop: 16, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>

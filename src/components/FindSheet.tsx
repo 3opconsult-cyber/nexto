@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ProviderNearby } from '@/lib/services'
 import { Ic, Stars, r1 } from './PingIcons'
 import DayTimePicker, { firstFreeTime } from './DayTimePicker'
+import '../app/aere.css'
 
 /**
  * « Trouver un prestataire » : parcours en feuille de la carte du particulier, pensé comme un réflexe.
@@ -104,21 +105,21 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
   if (!open) return null
   const back: Record<Step, Step | null> = { need: null, when: 'need', result: 'when', list: 'result' }
   const iconBtn: React.CSSProperties = { width: 44, height: 44, border: 0, background: 'none', color: C.navy, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderRadius: 12 }
-  const bigBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 56, border: 0, borderRadius: 999, background: C.teal, color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer', boxShadow: '0 8px 20px rgba(12,143,126,.28)' }
-  const ghostBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 48, border: `1.5px solid ${C.line}`, borderRadius: 999, background: '#fff', color: C.navy, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+  const bigBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 56, border: 0, borderRadius: 16, background: C.teal, color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer', boxShadow: '0 8px 20px rgba(12,143,126,.28)' }
+  const ghostBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 52, border: `1.5px solid ${C.line}`, borderRadius: 16, background: '#fff', color: C.navy, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, cursor: 'pointer' }
   const title = step === 'need' ? 'De quoi avez-vous besoin ?' : step === 'when' ? 'Quand ?' : step === 'result' ? 'Le meilleur choix pour vous' : 'Les autres prestataires'
 
   const whenOpt = (v: When, label: string, sub: string, disabled = false) => (
     <button key={v} type="button" role="radio" aria-checked={when === v} disabled={disabled}
       onClick={() => { setWhen(v); if (v === 'today') setDateVal(firstToday); if (v === 'date' && !dateVal) setDateVal(firstAny) }}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 60, padding: '8px 14px', borderRadius: 16, textAlign: 'left', cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit',
-        border: when === v ? `2px solid ${C.tealBright}` : `2px solid ${C.line}`, background: when === v ? 'rgba(18,179,156,.07)' : disabled ? C.soft : '#fff', opacity: disabled ? .6 : 1 }}>
-      <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${when === v ? C.tealBright : '#B9C7C4'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-        {when === v && <span style={{ width: 12, height: 12, borderRadius: '50%', background: C.tealBright }} />}
+      style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', minHeight: 72, padding: '14px 0', textAlign: 'left', cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit',
+        border: 0, borderTop: v === 'asap' ? 0 : `1px solid ${C.line}`, background: 'none', opacity: disabled ? .6 : 1 }}>
+      <span aria-hidden="true" style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${when === v ? C.teal : '#9FB3AE'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+        {when === v && <span style={{ width: 12, height: 12, borderRadius: '50%', background: C.teal }} />}
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: C.navy }}>{label}</b>
-        {sub && <small style={{ display: 'block', fontSize: 12.5, color: C.slate, marginTop: 1 }}>{sub}</small>}
+        <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 18, lineHeight: 1.4, color: C.navy }}>{label}</b>
+        {sub && <small style={{ display: 'block', fontSize: 15, lineHeight: 1.5, color: C.slate, marginTop: 2 }}>{sub}</small>}
       </span>
     </button>
   )
@@ -128,17 +129,17 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
     const price = priceOf(p, sel.length === 1 ? sel[0] : null)
     const isNew = newIds.has(p.id)
     return (
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <span aria-hidden="true" style={{ width: big ? 56 : 46, height: big ? 56 : 46, borderRadius: 16, background: 'linear-gradient(160deg,#12B39C,#0C8F7E)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: big ? 22 : 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>{nm.charAt(0).toUpperCase()}</span>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <span aria-hidden="true" style={{ width: big ? 56 : 48, height: big ? 56 : 46, borderRadius: 16, background: 'linear-gradient(160deg,#12B39C,#0C8F7E)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: big ? 22 : 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>{nm.charAt(0).toUpperCase()}</span>
         <span style={{ flex: 1, minWidth: 0 }}>
-          <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: big ? 18 : 15.5, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nm}</b>
-          <small style={{ display: 'block', fontSize: 13, color: C.slate }}>
+          <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: big ? 20 : 17, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nm}</b>
+          <small style={{ display: 'block', fontSize: 15, lineHeight: 1.6, color: C.slate, marginTop: 2 }}>
             {p.rating > 0 ? <><Stars r={p.rating} /> {r1(p.rating)} ({p.reviews_count || 0})</> : <b style={{ color: '#8A6520' }}>Nouveau</b>}
-            {' · '}à {distLabel(p.distance_m)}
+            {' · '}<span style={{ whiteSpace: 'nowrap' }}>à {distLabel(p.distance_m)}</span>
           </small>
-          {isNew && <small style={{ display: 'block', fontSize: 12, color: '#8A6520', fontWeight: 600 }}>Nouveau · pièces en cours de contrôle</small>}
+          {isNew && <small style={{ display: 'block', fontSize: 15, lineHeight: 1.5, color: '#6F4F12', fontWeight: 600, marginTop: 4 }}>Nouveau · pièces en cours de contrôle</small>}
         </span>
-        {price && <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: big ? 18 : 15, color: C.navy, whiteSpace: 'nowrap' }}>{price}</b>}
+        {price && <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: big ? 20 : 17, color: C.navy, whiteSpace: 'nowrap' }}>{price}</b>}
       </div>
     )
   }
@@ -146,8 +147,8 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
   const bestPrice = best ? priceOf(best, sel.length === 1 ? sel[0] : null) : ''
 
   const boxStyle: React.CSSProperties = embedded
-    ? { outline: 'none', width: '100%', height: '100%', background: '#fff', padding: '8px 16px 16px', overflowY: 'auto', boxSizing: 'border-box' }
-    : { outline: 'none', width: '100%', maxWidth: 520, background: '#fff', borderRadius: '22px 22px 0 0', padding: '8px 16px calc(16px + env(safe-area-inset-bottom))', maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' }
+    ? { outline: 'none', width: '100%', height: '100%', background: '#fff', padding: '8px 20px 24px', overflowY: 'auto', boxSizing: 'border-box' }
+    : { outline: 'none', width: '100%', maxWidth: 520, background: '#fff', borderRadius: '22px 22px 0 0', padding: '8px 20px calc(24px + env(safe-area-inset-bottom))', maxHeight: '92vh', overflowY: 'auto', boxSizing: 'border-box' }
   const wrapStyle: React.CSSProperties = embedded
     ? { height: '100%' }
     : { position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(18,54,68,.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }
@@ -156,21 +157,21 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
     <div role={embedded ? 'region' : 'dialog'} aria-modal={embedded ? undefined : true} aria-label="Trouver un prestataire" data-find-sheet={step} data-find-embedded={embedded ? '' : undefined}
       onClick={embedded ? undefined : e => { e.stopPropagation(); if (e.target === e.currentTarget) onClose() }}
       style={wrapStyle}>
-      <div ref={boxRef} tabIndex={-1} style={boxStyle}>
+      <div ref={boxRef} tabIndex={-1} className="aere a-lift" style={boxStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: -8, marginRight: -8 }}>
           {back[step] ? <button type="button" style={iconBtn} aria-label="Retour" onClick={() => setStep(back[step] as Step)}><Ic name="back" size={20} /></button> : <span style={{ width: 8 }} />}
-          <h2 style={{ flex: 1, margin: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: C.navy }}>{title}</h2>
+          <h2 style={{ flex: 1, margin: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, lineHeight: 1.5, color: C.navy }}>{title}</h2>
           <button type="button" style={iconBtn} aria-label="Fermer" onClick={onClose}><Ic name="close" size={20} /></button>
         </div>
 
         {step === 'need' && (
           <>
-            <div role="group" aria-label="Services" style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(3, Math.max(1, services.length))}, 1fr)`, gap: 10, margin: '12px 0 10px' }}>
+            <div role="group" aria-label="Services" style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(3, Math.max(1, services.length))}, 1fr)`, gap: 12, margin: '24px 0 20px' }}>
               {services.map(s => {
                 const on = sel.includes(s.key)
                 return (
                   <button key={s.key} type="button" aria-pressed={multi ? on : undefined} onClick={() => pick(s.key)}
-                    style={{ minHeight: 112, padding: '10px 4px', borderRadius: 18, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: C.navy,
+                    style={{ minHeight: 112, padding: '10px 4px', borderRadius: 18, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: C.navy,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
                       border: on ? `2px solid ${C.tealBright}` : `2px solid ${C.line}`, background: on ? 'rgba(18,179,156,.09)' : '#fff' }}>
                     <span aria-hidden="true" style={{ width: 52, height: 52, borderRadius: 16, background: on ? C.tealBright : 'rgba(18,179,156,.12)', color: on ? '#fff' : C.teal, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><Ic name={s.icon} size={30} /></span>
@@ -180,7 +181,7 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
               })}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, minHeight: 48 }}>
-              <span style={{ fontSize: 14, color: C.slate, fontWeight: 600 }}>Plusieurs services</span>
+              <span style={{ fontSize: 16, color: C.slate, fontWeight: 600 }}>Plusieurs services</span>
               <button type="button" role="switch" aria-checked={multi} aria-label="Plusieurs services" onClick={() => { setMulti(m => !m); setSel([]) }}
                 style={{ width: 60, minHeight: 44, border: 0, background: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                 <span style={{ width: 48, height: 28, borderRadius: 999, background: multi ? C.tealBright : '#B9C7C4', position: 'relative', transition: 'background .15s' }}>
@@ -196,18 +197,22 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
 
         {step === 'when' && (
           <>
-            <p style={{ margin: '8px 0 12px', fontSize: 13.5, color: C.slate }}>{labels.join(' + ')}</p>
-            <div role="radiogroup" aria-label="Moment" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div>
+            <p style={{ margin: '16px 0 12px', fontSize: 16, color: C.slate }}>{labels.join(' + ')}</p>
+            <div role="radiogroup" aria-label="Moment" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {whenOpt('asap', 'Dès que possible', asapTxt)}
               {whenOpt('today', 'Aujourd’hui', firstToday ? 'Choisissez l’heure' : 'Plus d’horaire libre aujourd’hui', !firstToday)}
               {whenOpt('date', 'Choisir une date', dateVal && when === 'date' ? '' : 'Jour et heure')}
             </div>
             {(when === 'today' || when === 'date') && (
-              <div style={{ marginTop: 10 }}>
+              <div style={{ marginTop: 16 }}>
                 <DayTimePicker value={whenValue} onChange={v => setDateVal(v)} days={when === 'today' ? 1 : 21} />
               </div>
             )}
-            <button type="button" style={{ ...bigBtn, marginTop: 14, opacity: whenValue ? 1 : .5 }} disabled={!whenValue} onClick={() => setStep('result')}>Voir les prestataires</button>
+            </div>
+            <div>
+            <button type="button" style={{ ...bigBtn, marginTop: 24, opacity: whenValue ? 1 : .5 }} disabled={!whenValue} onClick={() => setStep('result')}>Voir les prestataires</button>
+            </div>
           </>
         )}
 
@@ -215,32 +220,36 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
           <>
             {best ? (
               <>
-                <p style={{ margin: '6px 0 10px', fontSize: 13, color: C.slate }}>
+                <div>
+                <p style={{ margin: '10px 0 16px', fontSize: 16, lineHeight: 1.5, color: C.slate }}>
                   {labels.join(' + ')}{whenValue ? ` · ${when === 'asap' ? 'dès que possible' : new Date(whenValue).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}` : ''}
                 </p>
-                <div style={{ border: `2px solid ${C.tealBright}`, borderRadius: 20, padding: 14, background: 'rgba(18,179,156,.05)' }}>
+                <div style={{ borderRadius: 20, padding: 20, background: 'rgba(18,179,156,.08)' }}>
                   {proCard(best, true)}
-                  {partial && <p style={{ margin: '8px 0 0', fontSize: 12.5, color: '#8A6520', fontWeight: 600 }}>Ne fait pas tout : l’écran suivant précise le service réservé.</p>}
+                  {partial && <p style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#6F4F12', fontWeight: 600 }}>Ne fait pas tout : l’écran suivant précise le service réservé.</p>}
                 </div>
-                <button type="button" data-find-reserve style={{ ...bigBtn, marginTop: 12 }} onClick={() => reserve(best)}>{bestDevis ? 'Demander un devis' : `Réserver${bestPrice ? ` · ${bestPrice}` : ''}`}</button>
-                {others.length > 0 && <button type="button" style={{ ...ghostBtn, marginTop: 8 }} onClick={() => setStep('list')}>Voir les autres ({others.length})</button>}
+                </div>
+                <div>
+                <button type="button" data-find-reserve style={{ ...bigBtn, marginTop: 20 }} onClick={() => reserve(best)}>{bestDevis ? 'Demander un devis' : `Réserver${bestPrice ? ` · ${bestPrice}` : ''}`}</button>
+                {others.length > 0 && <button type="button" style={{ ...ghostBtn, marginTop: 12 }} onClick={() => setStep('list')}>Voir les autres ({others.length})</button>}
+                <button type="button" onClick={onDeposit} style={{ display: 'block', width: '100%', minHeight: 52, marginTop: 16, border: 0, background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>Déposer une demande à la place</button>
+                </div>
               </>
             ) : (
               <>
-                <p style={{ margin: '14px 0 12px', fontSize: 15, color: C.navy, lineHeight: 1.5 }}>Personne n’est en ligne pour ce choix près de vous pour le moment. Déposez une demande : les prestataires proches la verront.</p>
+                <p style={{ margin: '20px 0 20px', fontSize: 16, color: C.navy, lineHeight: 1.6 }}>Personne n’est en ligne pour ce choix près de vous pour le moment. Déposez une demande : les prestataires proches la verront.</p>
                 <button type="button" style={bigBtn} onClick={onDeposit}>Déposer une demande</button>
               </>
             )}
-            {best && <button type="button" onClick={onDeposit} style={{ display: 'block', width: '100%', minHeight: 44, marginTop: 4, border: 0, background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: 'inherit' }}>Déposer une demande à la place</button>}
           </>
         )}
 
         {step === 'list' && (
           <div style={{ marginTop: 6 }}>
             {others.map(p => (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', borderBottom: `1px solid ${C.line}` }}>
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 0', borderBottom: `1px solid ${C.line}` }}>
                 <div style={{ flex: 1, minWidth: 0 }}>{proCard(p, false)}</div>
-                <button type="button" onClick={() => reserve(p)} style={{ minHeight: 44, padding: '0 16px', border: 0, borderRadius: 999, background: C.teal, color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', flex: '0 0 auto' }}>{p.pricing_type === 'devis' ? 'Devis' : 'Réserver'}</button>
+                <button type="button" onClick={() => reserve(p)} style={{ minHeight: 48, padding: '0 18px', border: 0, borderRadius: 14, background: C.teal, color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, cursor: 'pointer', flex: '0 0 auto' }}>{p.pricing_type === 'devis' ? 'Devis' : 'Réserver'}</button>
               </div>
             ))}
           </div>

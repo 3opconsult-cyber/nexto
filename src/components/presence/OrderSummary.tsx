@@ -10,8 +10,10 @@ const pct = (fee: number | null | undefined, sub: number | null | undefined) =>
  * que chacun paie ou perçoit. Chacun ne voit que SA part : frais de service côté client, commission côté pro.
  * Tarif horaire : le montant se calcule à la fin (heure entamée, heure due au-delà du seuil).
  */
-export default function OrderSummary({ tx, asSeller, counterpart, payOn, threshold = 15, compact = false }: {
+export default function OrderSummary({ tx, asSeller, counterpart, payOn, threshold = 15, compact = false, airy = false }: {
   tx: any; asSeller: boolean; counterpart?: string; payOn?: boolean; threshold?: number; compact?: boolean
+  /** Lecture aérée (écrans du particulier, 24/11) : sans cadre, textes de 15 à 20 px, mêmes montants et mêmes phrases. */
+  airy?: boolean
 }) {
   const hourlyOnly = tx.hourly_rate_cents != null && tx.included_hours == null && tx.base_forfait_cents == null
   const plus = tx.hourly_rate_cents != null && tx.included_hours != null
@@ -28,6 +30,14 @@ export default function OrderSummary({ tx, asSeller, counterpart, payOn, thresho
     )
   }
 
+  const arow = (l: string, v: string, s?: string, strong?: boolean) => (
+    <div className="a-sumrow" style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', padding: '14px 0', minHeight: 56, borderTop: '1px solid #E3EAE8' }}>
+      <span style={{ fontSize: 16, lineHeight: 1.5, color: '#123644', fontWeight: strong ? 700 : 500 }}>
+        {l}{s && <small style={{ display: 'block', fontSize: 15, lineHeight: 1.5, color: '#4E6470', fontWeight: 400, marginTop: 2 }}>{s}</small>}
+      </span>
+      <b style={{ fontSize: strong ? 20 : 17, color: '#123644', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{v}</b>
+    </div>
+  )
   const row = (l: string, v: string, s?: string, strong?: boolean) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', padding: '8px 0', minHeight: 44, borderTop: '1px solid #EEF2F1' }}>
       <span style={{ fontSize: 13, color: strong ? '#123644' : '#3d5560', fontWeight: strong ? 700 : 500 }}>
@@ -37,6 +47,35 @@ export default function OrderSummary({ tx, asSeller, counterpart, payOn, thresho
     </div>
   )
   const timeNote = `au temps réel : heure entamée due au-delà de ${threshold} min`
+
+  if (airy) {
+    return (
+      <div>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, lineHeight: 1.4, color: '#123644' }}>Récapitulatif du paiement</div>
+        <div style={{ fontSize: 15, lineHeight: 1.5, color: '#4E6470', margin: '4px 0 10px' }}>{contractLabel(tx)} · prix figé</div>
+        {asSeller ? (
+          <>
+            {arow('Prestation, facturée à votre en-tête', hourlyOnly ? `${EUR(tx.hourly_rate_cents)} / h` : EUR(sub), hourlyOnly ? timeNote : plus ? 'heures au-delà au temps réel' : undefined)}
+            {arow(`Commission PING ${pct(tx.seller_fee_cents, sub)}`, hourlyOnly ? pct(tx.seller_fee_cents, sub) : `− ${EUR(tx.seller_fee_cents)}`, 'à virer à PING après la mission')}
+            {arow('Vous percevez', hourlyOnly ? `${pct(tx.payout_cents, sub)} du montant` : EUR(tx.payout_cents), undefined, true)}
+          </>
+        ) : (
+          <>
+            {arow(`Prestation, à ${who}`, hourlyOnly ? `${EUR(tx.hourly_rate_cents)} / h` : EUR(sub), hourlyOnly ? timeNote : plus ? 'heures au-delà au temps réel' : undefined)}
+            {arow(`Frais de service PING ${pct(tx.buyer_fee_cents, sub)}`, hourlyOnly ? pct(tx.buyer_fee_cents, sub) : EUR(tx.buyer_fee_cents), 'facturés à part par PING')}
+            {arow('Total', hourlyOnly ? 'calculé à la fin' : EUR(tx.total_charged_cents), undefined, true)}
+          </>
+        )}
+        <p style={{ fontSize: 16, color: '#4E6470', lineHeight: 1.55, margin: '14px 0 0' }}>
+          {payOn
+            ? (asSeller ? 'Paiement en ligne : vous êtes payé après la fin de la mission.' : 'Paiement en ligne : réglez depuis l’écran de paiement. Le prestataire est payé après la fin de la mission.')
+            : asSeller
+              ? <><b>Virement sur facture.</b> Rien n’est encaissé par PING pour vous : {who} vous vire la prestation à réception de votre facture. Vous virez la commission à PING.</>
+              : <><b>Virement sur facture.</b> Rien n’est prélevé aujourd’hui. Après la mission : la prestation à {who}, vos frais de service à PING.</>}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: '12px 14px' }}>

@@ -22,6 +22,7 @@ import { openConversation } from '@/lib/services'
 import { pricingShort, pricingSummary } from '@/lib/servicePricing'
 import { markFirstAction } from '@/lib/firstAction'
 import { bookingAvailable } from '@/lib/booking'
+import '../../aere.css'
 
 // Passe à « Remplacé » (offer_status declined + message système) les devis en attente des
 // conversations non confirmées entre ce client et ce prestataire, autres que la réservation
@@ -439,15 +440,15 @@ function MissionForm() {
     if (next.every(x => x.status === 'ok')) { const f = next.find(x => x.txId); if (f?.txId) goAfter(f.txId) }
   }
 
-  const sectionTitle: React.CSSProperties = { font: '700 11px Inter, sans-serif', color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px 2px' }
-  const chip = (on: boolean): React.CSSProperties => ({ display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '8px 15px', borderRadius: 999, border: on ? '1px solid #123644' : '1px solid #DCE5E3', background: on ? '#123644' : '#fff', color: on ? '#fff' : '#123644', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' })
-  const card: React.CSSProperties = { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 12 }
+  const sectionTitle: React.CSSProperties = { font: '700 18px/1.5 Quicksand, sans-serif', color: '#123644', margin: '36px 0 14px' }
+  const chip = (on: boolean): React.CSSProperties => ({ display: 'inline-flex', alignItems: 'center', minHeight: 48, padding: '10px 20px', borderRadius: 999, border: on ? '1px solid #123644' : '1px solid #CFDAD7', background: on ? '#123644' : '#fff', color: on ? '#fff' : '#123644', fontWeight: 600, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' })
+  const card: React.CSSProperties = { marginBottom: 12 }
   // Étape repliée : la valeur déjà connue (venue de la carte ou du profil) en une ligne, « Modifier » la rouvre.
   const folded = (value: string, onOpen: (() => void) | null, what: string) => (
-    <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 8, padding: '4px 4px 4px 14px', minHeight: 52 }}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M5 12l5 5 9-10" /></svg>
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600, color: '#123644', overflowWrap: 'anywhere' }}>{value}</span>
-      {onOpen && <button type="button" onClick={onOpen} aria-label={`Modifier : ${what}`} style={{ minHeight: 44, minWidth: 44, border: 'none', background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', flexShrink: 0 }}>Modifier</button>}
+    <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, padding: '6px 0', minHeight: 56 }}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="M5 12l5 5 9-10" /></svg>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 17, lineHeight: 1.5, fontWeight: 700, color: '#123644', overflowWrap: 'anywhere' }}>{value}</span>
+      {onOpen && <button type="button" onClick={onOpen} aria-label={`Modifier : ${what}`} style={{ minHeight: 48, minWidth: 48, border: 'none', background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>Modifier</button>}
     </div>
   )
   const svcLabel = article ? prestationName(article) : (pro ? (TRADES[pro.trade] || pro.trade) : '')
@@ -459,8 +460,8 @@ function MissionForm() {
   const nOk = results ? results.filter(r => r.status === 'ok').length : 0
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff' }}>
-      <div style={{ padding: '10px 20px 12px', borderBottom: '1px solid #E7EDEB', background: '#fff' }}>
+    <div className="aere a-lift" style={{ minHeight: '100vh', background: '#fff' }}>
+      <div style={{ padding: '10px 20px 12px', background: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <button type="button" onClick={() => router.back()} aria-label="Retour" style={{ color: '#123644', background: 'none', border: 'none', width: 44, height: 44, marginLeft: -12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
@@ -469,31 +470,31 @@ function MissionForm() {
         </div>
       </div>
 
-      <div style={{ background: '#fff', padding: '4px 20px 20px', minHeight: 'calc(100vh - 110px)' }}>
-        <div style={sectionTitle}>1. Prestation</div>
+      <div style={{ background: '#fff', padding: '4px 20px 24px', minHeight: 'calc(100vh - 110px)' }}>
+        <div style={{ ...sectionTitle, marginTop: 16 }}>1. Prestation</div>
         {missingService && (
-          <div style={{ padding: 13, borderRadius: 12, background: '#FFF4DD', fontSize: 12.5, color: '#8A5A00', marginBottom: 12, lineHeight: 1.5 }}>
+          <div style={{ padding: 16, borderRadius: 14, background: '#FFF4DD', fontSize: 15, color: '#7A4D00', marginBottom: 16, lineHeight: 1.55 }}>
             Cette prestation n&apos;est plus proposée par ce prestataire.{options.length > 1 ? ' Choisissez-en une autre ci-dessous.' : ''}
           </div>
         )}
         {svcFolded ? folded(`${svcLabel}${pricing ? ` · ${isDevis ? 'sur devis' : (pricingShort(pricing) ?? '')}` : ''}`, options.length > 1 ? () => setOpenSvc(true) : null, 'prestation') : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {options.map(o => {
               const on = !missingService && (o.id ?? null) === (article ? article.id : null)
               const photo = prestationPhotoUrl(o.photo_path)
               return (
                 <button key={o.id ?? 'primary'} type="button" aria-pressed={on} onClick={() => { setSelId(o.id); setError('') }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 52, textAlign: 'left', padding: '10px 12px', borderRadius: 12, cursor: 'pointer', border: on ? '2px solid #12B39C' : '2px solid #E7EDEB', background: on ? 'rgba(18,179,156,.06)' : '#fff' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 64, textAlign: 'left', padding: '14px 14px', borderRadius: 14, cursor: 'pointer', border: on ? '2px solid #12B39C' : '2px solid transparent', background: on ? 'rgba(18,179,156,.07)' : '#F6F9F8' }}>
                   {photo && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt="" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
                       style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0, background: '#F3F6F5' }} />
                   )}
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{o.name}</span>
-                    <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{pricingSummary(o.cols)}</span>
+                    <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>{o.name}</span>
+                    <span style={{ display: 'block', fontSize: 15, color: '#4E6470', marginTop: 2 }}>{pricingSummary(o.cols)}</span>
                   </span>
-                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(o.cols) ?? ''}</span>
+                  <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(o.cols) ?? ''}</span>
                 </button>
               )
             })}
@@ -502,45 +503,45 @@ function MissionForm() {
 
         {isDevis ? (
           <div style={{ marginTop: 16, marginBottom: 16 }}>
-            <div style={{ padding: 14, borderRadius: 12, background: '#F3F6F5', fontSize: 13, color: '#123644', lineHeight: 1.55, marginBottom: 14 }}>
+            <div style={{ padding: 18, borderRadius: 14, background: '#F6F9F8', fontSize: 16, color: '#123644', lineHeight: 1.6, marginBottom: 20 }}>
               <b>Prestation sur devis.</b> Pas de prix à l&apos;avance : décrivez votre besoin dans la conversation,
               le prestataire vous envoie un tarif que vous acceptez ou non. Rien n&apos;est réservé tant que vous
               n&apos;avez pas accepté son tarif.
             </div>
-            {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
+            {error && <p style={{ color: '#B2432E', fontSize: 15, marginBottom: 12 }}>{error}</p>}
             <button onClick={askQuote} disabled={devisBusy}
-              style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: devisBusy ? 0.7 : 1 }}>
+              style={{ width: '100%', minHeight: 54, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 15, borderRadius: 16, opacity: devisBusy ? 0.7 : 1 }}>
               {devisBusy ? 'Ouverture…' : 'Demander un devis'}
             </button>
           </div>
         ) : (<>
-        <div style={sectionTitle}>2. Quand ? {proName && <span style={{ textTransform: 'none', fontWeight: 500 }}>créneaux ouverts par {proName}</span>}</div>
+        <div style={sectionTitle}>2. Quand ? {proName && <span style={{ display: 'block', font: '500 15px/1.5 Inter, sans-serif', color: '#4E6470', marginTop: 4 }}>créneaux ouverts par {proName}</span>}</div>
         <div id={needsSlot ? 'mn-slot' : 'mn-date'}>
           {whenFolded ? folded(whenText, () => setOpenWhen(true), 'date et heure') : needsSlot ? (
             <div style={card}>
               <Calendar events={slotEvents} views={['week', 'day']} defaultView="week" initialDate={slotEvents[0]?.start} />
-              <div style={{ fontSize: 11.5, color: chosen ? '#0B8374' : '#6E8592', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
+              <div style={{ fontSize: 15, color: chosen ? '#0B6F63' : '#4E6470', fontWeight: chosen ? 700 : 400, marginTop: 12 }}>
                 {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
               </div>
-              {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
+              {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#B2432E', fontSize: 15, fontWeight: 600, margin: '8px 0 0' }}>{fieldErr.msg}</p>}
             </div>
           ) : (
             <div style={card}>
-              <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Date et heure souhaitées</span>
-              <div style={{ marginTop: 6 }}><DayTimePicker value={wantedAt} onChange={v => { setWantedAt(v); if (fieldErr?.field === 'date') setFieldErr(null) }} /></div>
-              {fieldErr?.field === 'date' && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
+              <span style={{ fontSize: 16, color: '#123644', fontWeight: 600 }}>Date et heure souhaitées</span>
+              <div style={{ marginTop: 12 }}><DayTimePicker value={wantedAt} onChange={v => { setWantedAt(v); if (fieldErr?.field === 'date') setFieldErr(null) }} /></div>
+              {fieldErr?.field === 'date' && <p role="alert" style={{ color: '#B2432E', fontSize: 15, fontWeight: 600, margin: '8px 0 0' }}>{fieldErr.msg}</p>}
             </div>
           )}
         </div>
 
         <div style={sectionTitle}>3. Fréquence</div>
         <div style={card} data-step="frequence">
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {([['once', 'Une fois'], ['weekly', 'Chaque semaine (4 semaines)']] as const).map(([k, l]) => (
               <button key={k} type="button" aria-pressed={(k === 'weekly') === weekly} onClick={() => { setWeekly(k === 'weekly'); setResults(null) }} style={chip((k === 'weekly') === weekly)}>{l}</button>
             ))}
           </div>
-          {weekly && <p style={{ color: '#4E6470', fontSize: 12.5, margin: '8px 0 0' }}>Même jour, même heure, pendant 4 semaines : une mission (et une facture) par passage. Les semaines où le créneau est déjà pris sont signalées.</p>}
+          {weekly && <p style={{ color: '#4E6470', fontSize: 15, lineHeight: 1.55, margin: '12px 0 0' }}>Même jour, même heure, pendant 4 semaines : une mission (et une facture) par passage. Les semaines où le créneau est déjà pris sont signalées.</p>}
         </div>
 
         <div style={sectionTitle}>4. Adresse</div>
@@ -558,33 +559,33 @@ function MissionForm() {
             <div style={sectionTitle}>5. Paiement</div>
             <div style={card}>
               {cesuOk ? (<>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   {([[false, 'Virement sur facture'], [true, 'Payer en CESU préfinancé']] as const).map(([v, l]) => (
                     <button key={String(v)} type="button" aria-pressed={payCesu === v} onClick={() => setPayCesu(v)} style={chip(payCesu === v)}>{l}</button>
                   ))}
                 </div>
-                <p style={{ color: '#4E6470', fontSize: 12.5, margin: '8px 0 0' }}>
+                <p style={{ color: '#4E6470', fontSize: 15, lineHeight: 1.55, margin: '12px 0 0' }}>
                   {payCesu ? `Vous remettez vos titres CESU (ou e-CESU) à ${pro?.company_name || 'votre prestataire'} ; vos frais de service PING se règlent par virement. ` : ''}
                   Service éligible au crédit d&apos;impôt de 50 % : vous le déclarez vous-même.
                 </p>
               </>) : (
-                <p style={{ color: '#4E6470', fontSize: 12.5, margin: 0 }}>Virement sur facture : {pro?.company_name || 'ce prestataire'} n&apos;accepte pas le CESU préfinancé.</p>
+                <p style={{ color: '#4E6470', fontSize: 15, lineHeight: 1.55, margin: 0 }}>Virement sur facture : {pro?.company_name || 'ce prestataire'} n&apos;accepte pas le CESU préfinancé.</p>
               )}
             </div>
           </>
         )}
 
-        <label style={{ display: 'block', marginTop: 12, marginBottom: 16 }}>
-          <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Description (facultatif)</span>
+        <label style={{ display: 'block', marginTop: 36, marginBottom: 24 }}>
+          <span style={{ fontSize: 16, color: '#123644', fontWeight: 600 }}>Description (facultatif)</span>
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2}
-            style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 13.5, fontFamily: 'inherit', boxSizing: 'border-box' }} />
+            style={{ display: 'block', width: '100%', marginTop: 10, border: '1.5px solid #CFDAD7', borderRadius: 14, padding: '14px 16px', fontSize: 16, lineHeight: 1.5, fontFamily: 'inherit', boxSizing: 'border-box' }} />
         </label>
 
         {hasFlat && hasHourly && !hasOvertime && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             {(['forfait', 'horaire'] as const).map(t => (
               <button key={t} onClick={() => setMode(t)}
-                style={{ flex: 1, minHeight: 44, padding: '12px 0', borderRadius: 12, border: mode === t ? '2px solid #12B39C' : '2px solid #E7EDEB', background: mode === t ? 'rgba(18,179,156,.06)' : '#fff', fontWeight: 700, fontSize: 14, color: '#123644' }}>
+                style={{ flex: 1, minHeight: 56, padding: '12px 8px', borderRadius: 14, border: mode === t ? '2px solid #12B39C' : '2px solid transparent', background: mode === t ? 'rgba(18,179,156,.07)' : '#F6F9F8', fontWeight: 700, fontSize: 16, color: '#123644' }}>
                 {t === 'forfait' ? `Forfait — ${EUR(pricing.base_price_cents)}` : `À l'heure — ${EUR(pricing.hourly_rate_cents)}/h`}
               </button>
             ))}
@@ -592,80 +593,80 @@ function MissionForm() {
         )}
 
         {hasOvertime && (
-          <div style={{ padding: 13, borderRadius: 12, background: 'rgba(242,169,59,.1)', fontSize: 12.5, color: '#8a6520', marginBottom: 16, lineHeight: 1.5 }}>
+          <div style={{ padding: 16, borderRadius: 14, background: 'rgba(242,169,59,.12)', fontSize: 16, color: '#6F4F12', marginBottom: 24, lineHeight: 1.6 }}>
             Forfait de {EUR(pricing.base_price_cents)} incluant {pricing.included_hours} h. Au-delà,
             {' '}{EUR(pricing.hourly_rate_cents)}/h supplémentaire — ajusté automatiquement au scan de sortie selon la durée réelle.
           </div>
         )}
 
         {mode === 'horaire' && !hasOvertime && (
-          <label id="mn-hours" style={{ display: 'block', marginBottom: 16 }}>
-            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
+          <label id="mn-hours" style={{ display: 'block', marginBottom: 24 }}>
+            <span style={{ fontSize: 16, color: '#123644', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
             <input type="number" value={estimatedHours} onChange={e => { setEstimatedHours(e.target.value); if (fieldErr?.field === 'hours') setFieldErr(null) }} min="0.5" step="0.5"
-              style={{ display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, boxSizing: 'border-box' }} />
-            {fieldErr?.field === 'hours' && <span role="alert" style={{ display: 'block', color: '#c0503a', fontSize: 12.5, fontWeight: 600, marginTop: 6 }}>{fieldErr.msg}</span>}
+              style={{ display: 'block', width: '100%', minHeight: 52, marginTop: 10, border: '1.5px solid #CFDAD7', borderRadius: 14, padding: '12px 16px', fontSize: 16, boxSizing: 'border-box' }} />
+            {fieldErr?.field === 'hours' && <span role="alert" style={{ display: 'block', color: '#B2432E', fontSize: 15, fontWeight: 600, marginTop: 6 }}>{fieldErr.msg}</span>}
           </label>
         )}
 
         {/* Prix figé : un seul montant à l'écran ; les montants envoyés en base ne changent pas. */}
-        <div style={{ background: 'rgba(18,179,156,.08)', border: '1px solid rgba(18,179,156,.4)', borderRadius: 14, padding: 16, marginBottom: 14 }}>
+        <div style={{ background: 'rgba(18,179,156,.08)', borderRadius: 16, padding: 20, marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Prix figé</span>
-            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }} data-testid="prix-un">{EUR(totalTtc)}</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644' }}>Prix figé</span>
+            <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644' }} data-testid="prix-un">{EUR(totalTtc)}</span>
           </div>
-          <div style={{ fontSize: 11, color: '#4E6470', marginTop: 4 }}>{totalTtc > 0 ? `${EUR(subtotalCents)} + frais de service PING ${EUR(buyerFee)}, facturés à part. ` : ''}Plus de renégociation après la confirmation.</div>
+          <div style={{ fontSize: 15, lineHeight: 1.55, color: '#4E6470', marginTop: 8 }}>{totalTtc > 0 ? `${EUR(subtotalCents)} + frais de service PING ${EUR(buyerFee)}, facturés à part. ` : ''}Plus de renégociation après la confirmation.</div>
           {weekly && totalTtc > 0 && planOk > 0 && (
-            <div data-testid="rep-total" style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', fontSize: 13.5, fontWeight: 700, color: '#123644' }}>
+            <div data-testid="rep-total" style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #D5E5E1', fontSize: 16, fontWeight: 700, color: '#123644' }}>
               {planOk} réservations de {EUR(totalTtc)} = total {EUR(totalTtc * planOk)}
             </div>
           )}
           {weekly && plan.filter(x => x.skip).map(x => (
-            <div key={x.idx} style={{ marginTop: 6, fontSize: 12, color: '#8a6520' }}>Semaine {x.idx + 1} ({x.label}) : {x.skip}</div>
+            <div key={x.idx} style={{ marginTop: 8, fontSize: 15, color: '#6F4F12' }}>Semaine {x.idx + 1} ({x.label}) : {x.skip}</div>
           ))}
           {/* Paiement (ex-fenêtre PaymentPendingModal) : dit AVANT que le client valide, sans fenêtre. */}
-          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #D5E5E1', fontSize: 15, color: '#123644', lineHeight: 1.6 }}>
             {paymentsOn
               ? 'Paiement sécurisé par carte à l’étape suivante.'
               : <><b>Rien n&apos;est débité à la réservation.</b> Vous réglez après l&apos;intervention, sur facture, par virement : la prestation directement à {pro?.company_name || 'votre prestataire'}, vos frais de service à PING.{(hasOvertime || mode === 'horaire') ? ' Montant recalculé sur la durée réelle, relevée par les codes d’arrivée et de fin.' : ''}</>}
           </div>
           {AVANCE_IMMEDIATE_ACTIVE && pro?.sap_number && isEligible(pro?.trade) && (
-            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span style={{ fontSize: 12.5, color: '#0B8374', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #D5E5E1', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: 15, color: '#0B6F63', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
               <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#0B8374' }}>{EUR(partClientCents(totalTtc))}</span>
             </div>
           )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.07)', marginBottom: 14 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
-          <span style={{ fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '4px 0', marginBottom: 24 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true"><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
+          <span style={{ fontSize: 15, color: '#123644', lineHeight: 1.6 }}>
             {needsAccept && <><b>Le prestataire accepte votre réservation sous 24 h</b> (au plus tard 2 h avant le rendez-vous), sinon la réservation est annulée sans frais. </>}
             Annulation gratuite tant que le prestataire n'est pas en route — des frais s'appliquent au-delà. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
           </span>
         </div>
 
-        {error && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
+        {error && <p role="alert" style={{ color: '#B2432E', fontSize: 15, marginBottom: 12 }}>{error}</p>}
 
         {results && (
-          <div id="mn-results" role="status" style={{ ...card, borderColor: '#F2A93B' }}>
-            <b style={{ fontSize: 14, color: '#123644' }}>{nOk} réservation{nOk > 1 ? 's' : ''} envoyée{nOk > 1 ? 's' : ''} sur {results.length}</b>
-            <p style={{ fontSize: 12, color: '#4E6470', margin: '4px 0 8px' }}>Chacune est indépendante : les réservations envoyées ne sont pas annulées.</p>
+          <div id="mn-results" role="status" style={{ ...card, background: '#FFF7ED', borderRadius: 16, padding: 18 }}>
+            <b style={{ fontSize: 17, color: '#123644' }}>{nOk} réservation{nOk > 1 ? 's' : ''} envoyée{nOk > 1 ? 's' : ''} sur {results.length}</b>
+            <p style={{ fontSize: 15, lineHeight: 1.55, color: '#4E6470', margin: '6px 0 10px' }}>Chacune est indépendante : les réservations envoyées ne sont pas annulées.</p>
             {results.map(r => (
-              <div key={r.idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderTop: '1px solid #EEF2F1', minHeight: 44 }}>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#123644' }}>
+              <div key={r.idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', borderTop: '1px solid #F0DFC6', minHeight: 52 }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 15, lineHeight: 1.55, color: '#123644' }}>
                   <b>Semaine {r.idx + 1}</b> · {r.label}<br />
                   <span style={{ color: r.status === 'ok' ? '#097A6C' : '#8A5A00' }}>{r.status === 'ok' ? '✓ Envoyée' : r.status === 'skipped' ? `Non créée : ${r.msg}` : `Échec : ${r.msg || 'réessayez'}`}</span>
                 </span>
-                {r.status !== 'ok' && <button type="button" disabled={creating} onClick={() => retryOne(r.idx)} style={{ minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1px solid #12B39C', background: '#fff', color: '#097A6C', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Réessayer</button>}
+                {r.status !== 'ok' && <button type="button" disabled={creating} onClick={() => retryOne(r.idx)} style={{ minHeight: 48, padding: '0 16px', borderRadius: 999, border: '1px solid #12B39C', background: '#fff', color: '#097A6C', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Réessayer</button>}
               </div>
             ))}
-            {nOk > 0 && <button type="button" onClick={() => goAfter(results.find(r => r.txId)!.txId!)} style={{ width: '100%', minHeight: 44, marginTop: 8, border: 'none', background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Continuer vers la commande</button>}
+            {nOk > 0 && <button type="button" onClick={() => goAfter(results.find(r => r.txId)!.txId!)} style={{ width: '100%', minHeight: 48, marginTop: 8, border: 'none', background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Continuer vers la commande</button>}
           </div>
         )}
 
         {/* Bouton collant au-dessus de la barre du bas : jamais sous le pli (audit 19/11, correction 10). */}
-        <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '10px 20px calc(10px + env(safe-area-inset-bottom, 0px))', background: '#fff', borderTop: '1px solid #EEF2F1' }}>
-          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService || !!results} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, opacity: creating || results ? 0.7 : 1 }}>
+        <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))', background: '#fff', boxShadow: '0 -1px 0 #EEF2F1' }}>
+          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService || !!results} style={{ width: '100%', minHeight: 56, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 14, borderRadius: 16, opacity: creating || results ? 0.7 : 1 }}>
             {creating ? 'Confirmation…' : weekly && planOk > 1 && totalTtc > 0 ? `Confirmer les ${planOk} réservations · ${EUR(totalTtc * planOk)}` : `Confirmer la réservation${totalTtc > 0 ? ` · ${EUR(totalTtc)}` : ''}`}
           </button>
         </div>

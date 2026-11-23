@@ -8,15 +8,16 @@ import { Sign } from '@/components/Brand'
 import DateWheelPicker from '@/components/DateWheelPicker'
 import WelcomeCarousel, { welcomeSeen } from '@/components/WelcomeCarousel'
 import { rememberReferral, flushReferral } from '@/lib/referral'
+import '../../aere.css'
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '12px 13px', border: '1.5px solid #E7EDEB', borderRadius: 13,
-  fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644',
+  width: '100%', minHeight: 56, padding: '14px 16px', border: '1.5px solid #CFDAD7', borderRadius: 14,
+  fontSize: 17, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644',
   outline: 'none', background: '#fff',
 }
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 10.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase',
-  letterSpacing: '.04em', marginBottom: 5,
+  display: 'block', fontSize: 16, fontWeight: 600, color: '#123644',
+  marginBottom: 8,
 }
 
 function EyeIcon({ off }: { off: boolean }) {
@@ -221,16 +222,16 @@ function SignupForm() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 24px' }}>
-        <Link href="/" style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}><Sign size={40} /></Link>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px 40px' }}>
+        <Link href="/" aria-label="ping" style={{ marginBottom: 24, display: "flex", justifyContent: "center", alignItems: "center", minWidth: 48, minHeight: 48 }}><Sign size={40} /></Link>
 
-        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 999, marginBottom: 20, background: 'rgba(255,255,255,.1)' }}>
+        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 999, marginBottom: 24, background: 'rgba(255,255,255,.1)' }}>
           {(['client', 'pro'] as const).map(r => (
             <button key={r} type="button" onClick={() => setRole(r)}
               style={{
-                padding: '9px 20px', borderRadius: 999, border: 'none', cursor: 'pointer',
-                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13,
-                background: role === r ? '#12B39C' : 'transparent', color: role === r ? '#fff' : 'rgba(255,255,255,.6)',
+                padding: '0 22px', minHeight: 48, borderRadius: 999, border: 'none', cursor: 'pointer',
+                fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
+                background: role === r ? '#12B39C' : 'transparent', color: role === r ? '#fff' : 'rgba(255,255,255,.85)',
                 transition: 'background .2s',
               }}>
               {r === 'client' ? 'Particulier' : 'Professionnel'}
@@ -238,11 +239,11 @@ function SignupForm() {
           ))}
         </div>
 
-        <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '26px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)', overflowX: 'hidden' }}
+        <div className="aere" style={{ width: '100%', maxWidth: 400, background: '#fff', borderRadius: 24, padding: '28px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)', overflowX: 'hidden' }}
           onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
             <button type="button" onClick={() => setStep(1)} disabled={step === 1} aria-label="Étape précédente"
-              style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: step === 2 ? '#F3F6F5' : 'transparent', color: '#123644', fontSize: 14, fontWeight: 700, flexShrink: 0, visibility: step === 2 ? 'visible' : 'hidden' }}>←</button>
+              style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: step === 2 ? '#F3F6F5' : 'transparent', color: '#123644', fontSize: 18, fontWeight: 700, flexShrink: 0, visibility: step === 2 ? 'visible' : 'hidden' }}>←</button>
             <div style={{ display: 'flex', gap: 6, flex: 1 }}>
               {[1, 2].map(s => (
                 <div key={s} style={{ flex: 1, height: 4, borderRadius: 999, background: s <= step ? '#12B39C' : '#E7EDEB', transition: 'background .2s' }} />
@@ -250,15 +251,15 @@ function SignupForm() {
             </div>
           </div>
           <div key={step} className={step === 2 ? 'ob-slide-r' : 'ob-slide-l'}>
-          <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', marginBottom: 2 }}>
+          <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, lineHeight: 1.4, color: '#123644', marginBottom: 4 }}>
             {step === 1 ? 'Vos informations' : 'Finaliser'}
           </h1>
-          <p style={{ fontSize: 11.5, color: '#4E6470', fontWeight: 700, marginBottom: 18 }}>Étape {step} sur 2</p>
+          <p style={{ fontSize: 16, color: '#4E6470', fontWeight: 600, marginBottom: 24 }}>Étape {step} sur 2</p>
 
-          <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+          <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {step === 1 ? (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
                   <div>
                     <label style={labelStyle}>Prénom</label>
                     <input type="text" autoComplete="given-name" value={form.firstName} onChange={e => update('firstName', e.target.value)}
@@ -273,7 +274,7 @@ function SignupForm() {
                 <div>
                   <label style={labelStyle}>Date de naissance</label>
                   <DateWheelPicker value={form.birthdate} onChange={v => update('birthdate', v)} />
-                  <p style={{ fontSize: 11, color: form.birthdate ? '#0B8374' : '#4E6470', fontWeight: 600, margin: '5px 0 0' }}>
+                  <p style={{ fontSize: 15, lineHeight: 1.55, color: form.birthdate ? '#0B6F63' : '#4E6470', fontWeight: 600, margin: '8px 0 0' }}>
                     {form.birthdate ? 'Date enregistrée.' : 'Facultatif : faites défiler pour l’indiquer (utile pour le crédit d’impôt).'}
                   </p>
                 </div>
@@ -299,32 +300,32 @@ function SignupForm() {
                   <label style={labelStyle}>Mot de passe</label>
                   <div style={{ position: 'relative' }}>
                     <input type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={form.password} onChange={e => update('password', e.target.value)}
-                      style={{ ...inputStyle, paddingRight: 42 }} minLength={8} required />
+                      style={{ ...inputStyle, paddingRight: 56 }} minLength={8} required />
                     <button type="button" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-                      style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 32, height: 32, border: 'none', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 48, height: 48, border: 'none', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                       <EyeIcon off={showPassword} />
                     </button>
                   </div>
                 </div>
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 13, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: 16, borderRadius: 14, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
                   <input type="checkbox" required checked={cguOk} onChange={e => setCguOk(e.target.checked)} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: '#0B8374', lineHeight: 1.4 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: '#0B6F63', lineHeight: 1.55 }}>
                     J&apos;accepte les <a href="/cgu" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Conditions Générales</a> et la{' '}
                     <a href="/confidentialite" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Politique de confidentialité</a> de PING
                   </span>
                 </label>
               </>
             )}
-            {error && <p role="alert" style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
+            {error && <p role="alert" style={{ color: '#B2432E', fontSize: 16, lineHeight: 1.55, fontWeight: 600, margin: 0 }}>{error}</p>}
             <button type="submit" disabled={loading}
-              style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+              style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, minHeight: 56, padding: 15, borderRadius: 16, cursor: 'pointer', opacity: loading ? .6 : 1 }}>
               {loading ? 'Création…' : step === 1 ? 'Continuer →' : 'Créer mon compte'}
             </button>
           </form>
           </div>
-          <p style={{ textAlign: 'center', fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 16 }}>
+          <p style={{ textAlign: 'center', fontSize: 16, color: '#4E6470', fontWeight: 600, marginTop: 28 }}>
             Déjà un compte ?{' '}
-            <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'} style={{ color: '#0B8374', fontWeight: 700 }}>Se connecter</Link>
+            <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'} style={{ color: '#0B8374', fontWeight: 700, display: 'inline-flex', alignItems: 'center', minHeight: 48 }}>Se connecter</Link>
           </p>
         </div>
       </div>
