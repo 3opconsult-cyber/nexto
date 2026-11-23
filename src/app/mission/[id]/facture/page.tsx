@@ -30,9 +30,8 @@ export default function FacturePage() {
   const params = useParams()
   const router = useRouter()
   const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [active, setActive] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<string | null>(null)
   const [err, setErr] = useState('')
   const [isSeller, setIsSeller] = useState(false)
   const [isBuyer, setIsBuyer] = useState(false)
@@ -59,21 +58,25 @@ export default function FacturePage() {
       const snap = await loadFactureSnap(supabase, uid, txId)
       if (!alive) return
       setTxInfo(snap.txInfo); setIsSeller(snap.isSeller); setIsBuyer(snap.isBuyer); setReviewed(snap.reviewed)
-      // L'onglet choisi est gardé si la liste n'a pas changé de longueur (relecture après le cache).
-      setInvoices(snap.invoices); setActive(a => (cached && cached.invoices.length === snap.invoices.length ? a : 0)); setLoading(false)
+      setInvoices(snap.invoices); setLoading(false)
     }
     load()
     return () => { alive = false }
   }, [params.id])
 
-  const inv = invoices[active]
+  // Un seul défilement (maquette) : la prestation d'abord, puis la commission PING de CE lecteur.
+  // Les documents viennent de la même lecture qu'avant (RLS : chaque partie ne reçoit que les siens).
+  const ordered = [...invoices].sort((a, b) => Number(a.template === 'commission') - Number(b.template === 'commission'))
+  const part = ordered.some(v => v.template === 'recapitulatif')
+  const sectionTitle = (v: Invoice) => v.template === 'commission'
+    ? (isSeller && !isBuyer ? 'Commission PING' : 'Frais de service PING')
+    : (isSeller && !isBuyer ? (v.template === 'recapitulatif' ? 'Votre récapitulatif' : 'Votre facture') : 'Prestation')
 
-  async function download() {
-    if (!inv) return
-    setBusy(true); setErr('')
-    try { await downloadInvoicePdf(inv) }
+  async function download(v: Invoice) {
+    setBusy(v.number); setErr('')
+    try { await downloadInvoicePdf(v) }
     catch { setErr("Le PDF n'a pas pu être généré. Vous pouvez utiliser l'impression de votre navigateur.") }
-    setBusy(false)
+    setBusy(null)
   }
 
   const shell = (children: React.ReactNode) => (
@@ -84,7 +87,7 @@ export default function FacturePage() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
         <NavDrawer />
-        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#fff' }}>Facturation</span>
+        <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#fff', margin: 0 }}>{part ? 'Récapitulatif' : 'Facture'}</h1>
       </div>
       {children}
     </div>
@@ -130,20 +133,10 @@ export default function FacturePage() {
         @page { size: A4; margin: 0 }
       `}</style>
 
-      {invoices.length > 1 && (
-        <div className="no-print" style={{ display: 'flex', gap: 7, padding: '13px 16px 0', overflowX: 'auto' }}>
-          {invoices.map((v, i) => (
-            <button key={v.number} onClick={() => setActive(i)} style={{
-              flexShrink: 0, border: 'none', cursor: 'pointer', minHeight: 44, padding: '0 15px', borderRadius: 999,
-              fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 12.5,
-              background: i === active ? '#123644' : '#fff', color: i === active ? '#fff' : '#123644',
-              boxShadow: i === active ? 'none' : '0 0 0 1px #DCE5E3',
-            }}>{KIND_LABEL[v.kind]}</button>
-          ))}
-        </div>
-      )}
-
       <div style={{ padding: 16 }}>
+        {ordered.map(inv => (
+        <section key={inv.number} aria-label={sectionTitle(inv)} style={{ marginBottom: 18 }}>
+        <h2 className="no-print" style={{ font: '700 11px Inter, sans-serif', color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '4px auto 8px', maxWidth: 620, padding: '0 2px' }}>{sectionTitle(inv)}</h2>
         {/* La prévisualisation EST la page : ce qu'on voit est ce qui s'imprime. */}
         <div className="sheet" style={{
           background: '#fff', borderRadius: 14, padding: 22,
@@ -321,6 +314,16 @@ export default function FacturePage() {
             )}
           </div>
         </div>
+        <div className="no-print" style={{ maxWidth: 620, margin: '10px auto 0' }}>
+          <button onClick={() => download(inv)} disabled={busy !== null} aria-label={`Télécharger le PDF : ${sectionTitle(inv)}`} style={{
+            width: '100%', minHeight: 44, border: 'none', padding: 12, borderRadius: 999, cursor: 'pointer',
+            background: '#fff', color: '#0B8374', fontFamily: 'Quicksand, sans-serif',
+            fontWeight: 700, fontSize: 14, boxShadow: '0 0 0 1px #DCE5E3',
+            opacity: busy === inv.number ? .6 : 1,
+          }}>{busy === inv.number ? 'Génération…' : 'Télécharger le PDF'}</button>
+        </div>
+        </section>
+        ))}
 
         {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B4402C', fontSize: 12.5 }}>{err}</p>}
         <div className="no-print" style={{ maxWidth: 620, margin: '0 auto' }}>
@@ -329,12 +332,6 @@ export default function FacturePage() {
         </div>
 
         <div className="no-print" style={{ maxWidth: 620, margin: '16px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <button onClick={download} disabled={busy} style={{
-            width: '100%', border: 'none', padding: 14, borderRadius: 999, cursor: 'pointer',
-            background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif',
-            fontWeight: 700, fontSize: 14.5, boxShadow: '0 8px 18px rgba(18,179,156,.28)',
-            opacity: busy ? .6 : 1,
-          }}>{busy ? 'Génération…' : 'Télécharger le PDF'}</button>
           <button onClick={() => window.print()} style={{
             width: '100%', border: 'none', padding: 14, borderRadius: 999, cursor: 'pointer',
             background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif',

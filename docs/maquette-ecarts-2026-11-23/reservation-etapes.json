@@ -1,0 +1,85 @@
+{
+ "base": "http://localhost:3010",
+ "checks": [
+  {
+   "k": "étapes 1 à 4 numérotées, dans l’ordre de la maquette",
+   "v": [
+    18,
+    47,
+    563,
+    613
+   ],
+   "ok": true
+  },
+  {
+   "k": "libellés « Une fois » et « Chaque semaine (4 semaines) »",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "bouton « Confirmer la réservation · prix »",
+   "v": "Confirmer la réservation · 108,00 € ",
+   "ok": true
+  },
+  {
+   "k": "étapes connues repliées avec « Modifier »",
+   "v": 2,
+   "ok": true
+  },
+  {
+   "k": "bouton Chaque semaine présent (hors devis)",
+   "v": 1,
+   "ok": true
+  },
+  {
+   "k": "cible >= 44 px",
+   "v": "222x44",
+   "ok": true
+  },
+  {
+   "k": "ligne « N réservations de X € = total Y € »",
+   "v": "4 réservations de 108,00 € = total 432,00 €",
+   "ok": true
+  },
+  {
+   "k": "X = prix affiché pour une réservation",
+   "v": "10800 / 10800",
+   "ok": true
+  },
+  {
+   "k": "total = N × X",
+   "v": "4 x 10800 = 43200",
+   "ok": true
+  },
+  {
+   "k": "4 réservations quand les 4 semaines existent",
+   "v": 4,
+   "ok": true
+  },
+  {
+   "k": "bouton de confirmation affiche le total",
+   "v": "Confirmer les 4 réservations · 432,00 €",
+   "ok": true
+  },
+  {
+   "k": "« Une fois » retire la ligne de total",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "cibles < 44 px sur l’écran",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "aucune réservation créée (book_service / book_slot jamais envoyés)",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "erreurs de page",
+   "v": [],
+   "ok": true
+  }
+ ]
+}

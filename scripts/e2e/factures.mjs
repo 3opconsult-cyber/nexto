@@ -30,16 +30,15 @@ for (const [who, email, mode] of [['client', 'audit.client.claude@ping-demo.inva
   await p.goto(`${B}/mission/${MISSION}/facture`); await p.waitForTimeout(5000)
   const t = (await p.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ')
   check(/FACT-|RECAP-/.test(t), 'la page Facturation affiche la facture du prestataire')
-  // Deux onglets : la prestation, puis SA commission (client : « Frais de service », pro : « Commission PING »).
+  // Un seul défilement à deux sections (23/11) : la prestation, puis SA commission (client : « Frais de service PING », pro : « Commission PING »).
   await grab(() => p.getByRole('button', { name: 'Télécharger le PDF' }).first().click(), 'PDF de la prestation depuis la mission')
   const tab = who === 'client' ? 'Frais de service' : 'Commission PING'
   const other = who === 'client' ? 'Commission PING' : 'Frais de service'
-  check(await p.getByRole('button', { name: tab }).count() > 0, `onglet « ${tab} » présent`)
-  check(await p.getByRole('button', { name: other, exact: true }).count() === 0, `pas d’onglet « ${other} » (commission de l’autre partie)`)
-  await p.getByRole('button', { name: tab }).first().click(); await p.waitForTimeout(800)
+  check(await p.getByRole('heading', { name: tab }).count() > 0, `section « ${tab} » présente`)
+  check(await p.getByRole('heading', { name: other }).count() === 0, `pas de section « ${other} » (commission de l’autre partie)`)
   const t2 = (await p.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ')
   check(who === 'client' ? /PING-C-/.test(t2) && !/PING-V-/.test(t2) : /PING-V-/.test(t2) && !/PING-C-/.test(t2), 'chacun ne voit que SA commission')
-  await grab(() => p.getByRole('button', { name: 'Télécharger le PDF' }).first().click(), `PDF de « ${tab} »`)
+  await grab(() => p.getByRole('button', { name: new RegExp('Télécharger le PDF : ' + tab) }).first().click(), `PDF de « ${tab} »`)
 
   await p.goto(`${B}/documents`); await p.waitForTimeout(5000)
   await p.getByText('Partager', { exact: false }).first().click(); await p.waitForTimeout(800)
