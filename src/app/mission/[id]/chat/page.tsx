@@ -10,7 +10,7 @@ import dynamic from 'next/dynamic'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { createClient } from '@/lib/supabase/client'
 import { markRead } from '@/lib/unread'
-import { notifyOther } from '@/lib/notify'
+import { notifyOther, alertAdminNow } from '@/lib/notify'
 import { incidentOpen, incidentDeadlineLabel, INCIDENT_WINDOW_H } from '@/lib/incident'
 import { createDispute, EMPTY_DISPUTE, type DisputeExtra } from '@/lib/dispute'
 import { CLIENT_TAGS } from '@/lib/clientTags'
@@ -594,6 +594,7 @@ export default function ChatPage() {
       body: 'Litige ouvert sur cette mission : le paiement est bloqué jusqu’à la résolution du litige. La discussion continue dans le dossier du litige.',
     })
     notifyOther(transactionId, 'dispute')
+    alertAdminNow(transactionId, 'dispute_open')
     setReportReason(''); setReportExtra(EMPTY_DISPUTE)
     router.push(`/litiges/${dsp.id}`)
   }

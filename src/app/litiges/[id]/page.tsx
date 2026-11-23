@@ -6,7 +6,7 @@ import { EUR } from '@/lib/invoice-pdf'
 import { filterMessage } from '@/lib/chatFilter'
 import { categoryLabel } from '@/lib/dispute'
 import AmicableSettlement from '@/components/AmicableSettlement'
-import { notifyOther } from '@/lib/notify'
+import { notifyOther, alertAdminNow } from '@/lib/notify'
 
 /**
  * Dossier d'un litige, comme le centre de résolution d'Airbnb (Romain 31/10) : un fil de discussion
@@ -103,7 +103,7 @@ export default function LitigePage() {
     const { error } = await createClient().rpc('request_ping_mediation', { p_dispute: id })
     setMedBusy(false)
     if (error) { setErr(error.message || 'Demande non envoyée. Réessayez.'); return }
-    if (d?.transaction_id) notifyOther(d.transaction_id, 'dispute_mediation', id)
+    if (d?.transaction_id) { notifyOther(d.transaction_id, 'dispute_mediation', id); alertAdminNow(d.transaction_id, 'dispute_mediation') }
     reloadDispute()
   }
 

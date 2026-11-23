@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
-import { notifyOther } from '@/lib/notify'
+import { notifyOther, alertAdminNow } from '@/lib/notify'
 import { TRANSFER_STATUS, formatIban, hasNotReceived, pingBank, transferDue, transferState, transfersFor, type PingBank, type Transfer } from '@/lib/transfers'
 
 /**
@@ -95,6 +95,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
       setNote(''); setAsking(null)
       if (fn === 'transfer_report_not_received') notifyOther(t.transaction_id, 'transfer_not_received')
       else notifyOther(t.transaction_id, 'transfer_reaffirmed')
+      alertAdminNow(t.transaction_id, 'transfer')
     }
     await load(); setBusy(null)
   }
@@ -125,7 +126,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
       <div key={t.id} style={{ borderTop: `1px solid ${C.line}`, paddingTop: 10, marginTop: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
           <div style={{ fontWeight: 700, fontSize: 13.5, color: C.navy }}>
-            {toPro ? 'La prestation, au prestataire' : t.payer_role === 'client' ? 'Vos frais de service, à PING' : 'Votre commission, à PING'}
+            {toPro ? 'La prestation, au prestataire' : t.payer_role === 'client' ? 'Vos frais de service PING' : 'Votre commission, à PING'}
           </div>
           <Badge t={t} />
         </div>

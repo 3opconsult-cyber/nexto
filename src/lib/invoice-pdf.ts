@@ -65,9 +65,12 @@ export const invoiceCredit = (inv: Invoice) =>
 export const EUR = (c: number) =>
   (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 
+/** Nom unique des frais du client dans toute l'interface (écrans, bon de commande, devis, facture, PDF). */
+export const CLIENT_FEE_NAME = 'Frais de service PING'
+
 export const KIND_LABEL: Record<Invoice['kind'], string> = {
   prestation: 'Prestation',
-  commission_client: 'Frais de service',
+  commission_client: CLIENT_FEE_NAME,
   commission_pro: 'Commission PING',
 }
 
@@ -87,10 +90,36 @@ export const TITLE: Record<Invoice['template'], string> = {
  */
 export const docTitle = (inv: Invoice) => {
   if (inv.template === 'commission') {
+    if (inv.kind === 'commission_client') return inv.issuer_snapshot?.siret ? 'Facture' : 'Relevé de frais de service PING'
     return inv.issuer_snapshot?.siret ? 'Facture' : 'Relevé de frais de mise en relation'
   }
   return TITLE[inv.template] ?? 'Document'
 }
+
+/**
+ * Présentation seule des lignes d'un document de frais PING (le contenu enregistré en base ne change pas) :
+ * - frais du client : nom unique « Frais de service PING » ;
+ * - « Prélevés sur l'intervention du … » est inexact (rien n'est prélevé, le règlement se fait par virement) :
+ *   « À régler par virement, intervention du … ».
+ */
+export function displayLine(inv: Invoice, l: Record<string, any>): { libelle: string; detail: string | null } {
+  let libelle = String(l.libelle ?? 'Frais')
+  if (inv.kind === 'commission_client' && /^frais de (mise en relation|service)/i.test(libelle)) libelle = CLIENT_FEE_NAME
+  let detail: string | null = l.detail ? String(l.detail) : null
+  if (detail) detail = detail.replace(/^Prélevés?\s+sur\s+l['\u2019]intervention/i, "À régler par virement, intervention")
+  return { libelle, detail }
+}
+
+/**
+ * Orthographe des mentions légales : la base les a enregistrées sans accents (migration 006). On les
+ * affiche avec leurs accents, mot pour mot et sans rien changer au fond (police standard : é è ê à ç ô passent).
+ */
+export const accentuer = (s: string | null | undefined) =>
+  String(s ?? '')
+    .replace(/\bpenalites\b/g, 'pénalités').replace(/\bPenalites\b/g, 'Pénalités')
+    .replace(/\binteret legal\b/g, 'intérêt légal').replace(/\binteret\b/g, 'intérêt')
+    .replace(/\bprealable\b/g, 'préalable').replace(/\banticipe\b/g, 'anticipé')
+    .replace(/\bIndemnite\b/g, 'Indemnité').replace(/\bindemnite\b/g, 'indemnité')
 
 export function durationLabel(min?: number | null) {
   if (!min) return null
@@ -192,14 +221,18 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
     page.drawRectangle({ x: M, y: yy, width: W - M * 2, height: 0.7, color: c })
   const wrap = (s: string, max: number, size: number, f = reg) => {
     const out: string[] = []; let cur = ''
-    for (const w of pdfSafe(s).split(' ')) {
+    for (const w of pdfSafe(s).split(' ').filter(Boolean)) {
       const t = cur ? cur + ' ' + w : w
-      if (f.widthOfTextAtSize(t, size) > max) { out.push(cur); cur = w } else cur = t
+      if (cur && f.widthOfTextAtSize(t, size) > max) { out.push(cur); cur = w } else cur = t
     }
     if (cur) out.push(cur); return out
   }
   const para = (s: string, size = 8, c = SLATE, lead = 11) => {
     for (const l of wrap(s, W - M * 2, size)) { txt(l, M, y, size, reg, c); y -= lead }
+  }
+  // Ligne de désignation : retour à la ligne dans la largeur disponible (hors colonne du montant si besoin).
+  const wrapped = (s: string, size: number, c = SLATE, lead = 12, f = reg, maxW = W - M * 2) => {
+    for (const l of wrap(s, maxW, size, f)) { txt(l, M, y, size, f, c); y -= lead }
   }
 
   // ---------- en-tête ----------
@@ -285,25 +318,30 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
   if (isCommission) {
     // Sobre : une ligne, un total. Rien à décortiquer.
     for (const l of inv.lines || []) {
-      txt(String(l.libelle ?? 'Frais'), M, y, 10.5, bold)
+      const dl = displayLine(inv, l)
+      txt(dl.libelle, M, y, 10.5, bold)
       right(EUR(Number(l.montant_cents ?? 0)), W - M, y, 10.5, bold)
       y -= 13
-      if (l.detail) { txt(String(l.detail), M, y, 8.5, reg, SLATE); y -= 13 }
+      if (dl.detail) wrapped(dl.detail, 8.5, SLATE, 12)
       y -= 4
     }
-    if (inv.legal?.taux) { txt(tauxLabel(inv.legal.taux), M, y, 8.5, reg, SLATE); y -= 15 }
+    if (inv.legal?.taux) { wrapped(tauxLabel(inv.legal.taux), 8.5, SLATE, 12); y -= 3 }
   } else {
     // Sobre aussi : une ligne, et dessous ce qu'il faut pour refaire le calcul.
     // Pas de tableau à six lignes — le lecteur veut un montant, pas un formulaire.
     const l = (inv.lines || [])[0] || {}
     const titre = [l.prestation, durationLabel(l.duree_min)].filter(Boolean).join(' — ')
-    txt(titre || 'Prestation', M, y, 10.5, bold)
-    right(EUR(Number(l.montant_cents ?? inv.net_cents)), W - M, y, 10.5, bold)
-    y -= 14
+    const amountW = bold.widthOfTextAtSize(pdfSafe(EUR(Number(l.montant_cents ?? inv.net_cents))), 10.5) + 14
+    const titreLines = wrap(titre || 'Prestation', W - M * 2 - amountW, 10.5, bold)
+    titreLines.forEach((tl, i) => {
+      txt(tl, M, y, 10.5, bold)
+      if (i === 0) right(EUR(Number(l.montant_cents ?? inv.net_cents)), W - M, y, 10.5, bold)
+      y -= 14
+    })
 
     const sous = prestationSous(l)
-    if (sous) { txt(sous, M, y, 8.5, reg, SLATE); y -= 12 }
-    if (l.adresse) { txt(String(l.adresse), M, y, 8.5, reg, SLATE); y -= 12 }
+    if (sous) wrapped(sous, 8.5)
+    if (l.adresse) wrapped(String(l.adresse), 8.5)
     y -= 6
   }
 
@@ -332,21 +370,23 @@ export async function buildInvoicePdf(inv: Invoice): Promise<Blob> {
   // ---------- mentions ----------
   if (inv.template === 'recapitulatif') {
     txt('DÉCLARATION', M, y, 7.5, bold, SLATE); y -= 15
-    if (inv.legal?.declaration) { para(inv.legal.declaration); y -= 4 }
+    if (inv.legal?.declaration) { para(accentuer(inv.legal.declaration)); y -= 4 }
   } else if (!isCommission) {
     txt('MENTIONS LÉGALES', M, y, 7.5, bold, SLATE); y -= 15
     for (const m of [
       inv.legal?.categorie_operation ? `Catégorie de l'opération : ${inv.legal.categorie_operation}.` : null,
       inv.legal?.penalites, inv.legal?.indemnite_recouvrement, inv.legal?.escompte,
       'Règlement à réception.',
-    ].filter(Boolean) as string[]) { para(m); y -= 2 }
+    ].filter(Boolean).map(accentuer) as string[]) { para(m); y -= 2 }
   } else {
     para('Règlement à réception. Document émis par PING au titre de la mise en relation.')
   }
 
   // ---------- pied ----------
-  const foot = "Les heures d'arrivée et de départ sont horodatées dans l'application à partir d'une preuve fournie par le client (QR, code ou confirmation). "
-             + 'Ce relevé fait foi en cas de contestation.'
+  // « Ce relevé fait foi » : seulement sur le relevé de commission PING tant que PING n'a pas de SIRET
+  // (jamais sur la facture du prestataire).
+  const foot = "Les heures d'arrivée et de départ sont horodatées dans l'application à partir d'une preuve fournie par le client (QR, code ou confirmation)."
+             + (isCommission && !inv.issuer_snapshot?.siret ? ' Ce relevé fait foi en cas de contestation.' : '')
   let fy = M + 22
   for (const l of wrap(foot, W - M * 2, 7.5)) { txt(l, M, fy, 7.5, reg, SLATE); fy -= 10 }
 

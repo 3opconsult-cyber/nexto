@@ -9,7 +9,7 @@ import { loadFactureSnap, factureCacheKey, type FactureSnap } from '@/lib/screen
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import TransferCard from '@/components/TransferCard'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
-         PLATFORM_PENDING, tauxLabel, prestationSous, invoiceCredit, type Invoice } from '@/lib/invoice-pdf'
+         PLATFORM_PENDING, tauxLabel, displayLine, accentuer, prestationSous, invoiceCredit, type Invoice } from '@/lib/invoice-pdf'
 
 /**
  * Facturation — les trois documents d'une mission.
@@ -237,18 +237,18 @@ export default function FacturePage() {
           <hr style={{ border: 0, borderTop: '1px solid #DCE5E3', margin: '18px 0' }} />
 
           {inv.template === 'commission' ? (
-            (inv.lines || []).map((l, i) => (
+            (inv.lines || []).map((l, i) => { const dl = displayLine(inv, l); return (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 14 }}>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 13.5 }}>{l.libelle}</div>
-                  {l.detail && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{l.detail}</div>}
+                  <div style={{ fontWeight: 600, fontSize: 13.5 }}>{dl.libelle}</div>
+                  {dl.detail && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2 }}>{dl.detail}</div>}
                   {inv.legal?.taux && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>{tauxLabel(inv.legal.taux)}</div>}
                 </div>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>
                   {EUR(Number(l.montant_cents ?? 0))}
                 </div>
               </div>
-            ))
+            ) })
           ) : (() => {
             // Sobre : une ligne, et dessous ce qu'il faut pour refaire le calcul.
             const l = (inv.lines || [])[0] || {}
@@ -313,25 +313,14 @@ export default function FacturePage() {
             ) : (
               <>
                 {inv.legal?.categorie_operation && <p style={{ margin: '0 0 5px' }}>Catégorie de l'opération : {inv.legal.categorie_operation}.</p>}
-                {inv.legal?.penalites && <p style={{ margin: '0 0 5px' }}>{inv.legal.penalites}</p>}
-                {inv.legal?.indemnite_recouvrement && <p style={{ margin: '0 0 5px' }}>{inv.legal.indemnite_recouvrement}</p>}
-                {inv.legal?.escompte && <p style={{ margin: '0 0 5px' }}>{inv.legal.escompte}</p>}
+                {inv.legal?.penalites && <p style={{ margin: '0 0 5px' }}>{accentuer(inv.legal.penalites)}</p>}
+                {inv.legal?.indemnite_recouvrement && <p style={{ margin: '0 0 5px' }}>{accentuer(inv.legal.indemnite_recouvrement)}</p>}
+                {inv.legal?.escompte && <p style={{ margin: '0 0 5px' }}>{accentuer(inv.legal.escompte)}</p>}
                 <p style={{ margin: 0 }}>Règlement à réception.</p>
               </>
             )}
           </div>
         </div>
-
-        {inv.template === 'commission' && !inv.issuer_snapshot?.siret && (
-          <p className="no-print" style={{
-            maxWidth: 620, margin: '12px auto 0', padding: 12, borderRadius: 11,
-            background: 'rgba(242,169,59,.13)', color: '#8A6520', fontSize: 11.5, lineHeight: 1.55,
-          }}>
-            PING n'est pas encore immatriculée : le document le mentionne tel quel. Dès que le
-            SIRET existe, il se saisit dans l'admin et apparaît sur les documents émis ensuite —
-            ceux déjà émis gardent l'instantané de leur date, c'est voulu.
-          </p>
-        )}
 
         {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B4402C', fontSize: 12.5 }}>{err}</p>}
         <div className="no-print" style={{ maxWidth: 620, margin: '0 auto' }}>

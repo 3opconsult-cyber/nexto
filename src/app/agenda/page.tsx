@@ -33,7 +33,7 @@ const TABS: [Tab, string][] = [['cours', 'En cours'], ['calendrier', 'Calendrier
 // de service ; en prestataire, la facture émise et SA commission. Jamais la commission de l'autre partie.
 const MODE_KINDS = { particulier: ['prestation', 'commission_client'], pro: ['prestation', 'commission_pro'] }
 const INV_TITLE: Record<string, string> = { recapitulatif: "Récapitulatif d'intervention", facture: 'Facture', commission: 'Frais de mise en relation' }
-const INV_KIND: Record<string, string> = { prestation: 'Prestation', commission_client: 'Frais de service', commission_pro: 'Commission PING' }
+const INV_KIND: Record<string, string> = { prestation: 'Prestation', commission_client: 'Frais de service PING', commission_pro: 'Commission PING' }
 
 // Dernier état connu de l'agenda, par compte (cache de l'onglet, src/lib/agendaLoader.ts), affiché pendant le rechargement.
 

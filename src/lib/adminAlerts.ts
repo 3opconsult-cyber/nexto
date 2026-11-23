@@ -44,3 +44,16 @@ export function sortPaymentAlerts<T extends { kind: string; created_at: string }
 // Kinds de admin_notifications posés par 062.
 export const ADMIN_NOTIF_PAYMENT = 'payment_alert'
 export const ADMIN_NOTIF_DISPUTE = ['dispute_open', 'dispute_mediation'] as const
+
+// Alertes envoyées à PING en quasi-immédiat (route POST /api/admin/alerte-immediate, appelée par l'application juste
+// après l'action). `kind` = ce que l'écran déclare ; `notif` = kind de la ligne admin_notifications (migration 062) ;
+// `payment` = codes `payment_alerts.kind` acceptés. Aucun texte libre : seuls ces titres partent par e-mail.
+export type ImmediateKind = 'cancellation' | 'provider_no_show' | 'transfer' | 'dispute_open' | 'dispute_mediation'
+export const IMMEDIATE_ALERTS: Record<ImmediateKind, { notif: string; payment?: readonly string[]; title: string }> = {
+  cancellation: { notif: 'payment_alert', payment: ['cancel_after_arrival', 'late_cancellation_fees'], title: '' },
+  provider_no_show: { notif: 'payment_alert', payment: ['provider_no_show'], title: '' },
+  transfer: { notif: 'payment_alert', payment: ['transfer_not_received', 'transfer_disagreement'], title: '' },
+  dispute_open: { notif: 'dispute_open', title: 'Litige ouvert' },
+  dispute_mediation: { notif: 'dispute_mediation', title: 'Intervention de PING demandée' },
+}
+export const isImmediateKind = (k: unknown): k is ImmediateKind => typeof k === 'string' && Object.prototype.hasOwnProperty.call(IMMEDIATE_ALERTS, k)

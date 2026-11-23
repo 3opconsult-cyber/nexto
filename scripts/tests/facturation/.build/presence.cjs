@@ -45,17 +45,41 @@ function presenceAvailable(supabase) {
     })();
     return available;
 }
-async function getPresenceState(supabase, txId) {
-    const { data, error } = await supabase.rpc('presence_state', { p_transaction: txId });
-    if (error || !data)
-        return null;
-    return data;
+// Lectures simultanées de la même mission : une seule requête partagée (la barre du bas, le menu et la page
+// l'interrogeaient chacun, audit 21/11). Rien n'est gardé une fois la réponse reçue : un rechargement après
+// une action relit toujours la base.
+const presenceInFlight = new Map();
+function getPresenceState(supabase, txId) {
+    const hit = presenceInFlight.get(txId);
+    if (hit)
+        return hit;
+    const p = (async () => {
+        const { data, error } = await supabase.rpc('presence_state', { p_transaction: txId });
+        if (error || !data)
+            return null;
+        return data;
+    })().finally(() => { if (presenceInFlight.get(txId) === p)
+        presenceInFlight.delete(txId); });
+    presenceInFlight.set(txId, p);
+    return p;
 }
-async function getMissionProof(supabase, txId, phase) {
-    const { data, error } = await supabase.rpc('get_mission_proof', { p_transaction: txId, p_phase: phase ?? null });
-    if (error)
-        return { proof: null, error: error.message };
-    return { proof: data };
+// Deux demandes simultanées du QR d'une même mission créeraient deux codes (le dernier écrase le premier : l'écran
+// afficherait un code périmé). Une seule requête partagée tant qu'elle n'a pas répondu.
+const proofInFlight = new Map();
+function getMissionProof(supabase, txId, phase) {
+    const key = txId + ':' + (phase ?? '');
+    const hit = proofInFlight.get(key);
+    if (hit)
+        return hit;
+    const p = (async () => {
+        const { data, error } = await supabase.rpc('get_mission_proof', { p_transaction: txId, p_phase: phase ?? null });
+        if (error)
+            return { proof: null, error: error.message };
+        return { proof: data };
+    })().finally(() => { if (proofInFlight.get(key) === p)
+        proofInFlight.delete(key); });
+    proofInFlight.set(key, p);
+    return p;
 }
 async function validatePresence(supabase, txId, phase, proof) {
     const { data, error } = await supabase.rpc('validate_presence', { p_transaction: txId, p_phase: phase, p_proof: proof });
