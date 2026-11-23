@@ -187,13 +187,30 @@ async function pdf() {
     assert.ok(!/\bFACTURE\b/.test(text), 'le mot FACTURE en titre')
   })
   await ta('relevé PING (société non immatriculée) : « Immatriculation en cours », jamais de SIRET inventé, producteur PING', async () => {
-    assert.strictEqual(docTitle(commission), 'Relevé de frais de mise en relation')
+    assert.strictEqual(docTitle(commission), 'Relevé de frais de service PING')
     const { doc, text } = await textOf(await buildInvoicePdf(commission))
     assert.ok(!/SIRET/.test(text), 'SIRET inventé'); assert.ok(/Immatriculation en cours/.test(text)); assert.ok(text.includes('8,80'))
     assert.strictEqual(doc.getProducer(), 'PING')
   })
   await ta('le même relevé PING avec un SIRET devient une « Facture »', async () => {
     assert.strictEqual(docTitle({ ...commission, issuer_snapshot: { nom: 'PING SAS', siret: '999 999 999 00019' } }), 'Facture')
+  })
+  await ta('forme : désignation longue coupée à la ligne, accents des mentions légales, pied « fait foi » réservé au relevé PING, « Prélevés » remplacé', async () => {
+    const long = { ...lineF, date: '20/11/2026', forfait_cents: 9000, heures_incluses: 3, taux_horaire_cents: 2500, arrivee: '2026-11-20T08:00:00Z', depart: '2026-11-20T13:00:00Z' }
+    const legal = { ...facture.legal, penalites: 'En cas de retard de paiement, penalites au taux de 3 fois le taux d\'interet legal, exigibles sans rappel prealable.',
+      indemnite_recouvrement: 'Indemnite forfaitaire pour frais de recouvrement : 40 EUR.', escompte: 'Pas d\'escompte pour paiement anticipe. é è ê à ç ô' }
+    const f = await textOf(await buildInvoicePdf({ ...facture, lines: [long], legal }))
+    if (process.env.PDF_DUMP) console.log(f.text)
+    assert.ok(/puis\n25,00 .? de l'heure/.test(f.text), 'fin de la ligne de tarif absente (coupée ?)')
+    assert.ok(f.text.includes('pénalités') && f.text.includes('intérêt légal') && f.text.includes('préalable') && f.text.includes('Indemnité') && f.text.includes('anticipé'), 'accents')
+    assert.ok(f.text.includes('é è ê à ç ô'), 'é è ê à ç ô non imprimés')
+    assert.ok(!/fait foi/.test(f.text), '« fait foi » sur la facture du prestataire')
+    const c = await textOf(await buildInvoicePdf({ ...commission, lines: [{ libelle: 'Frais de mise en relation', detail: 'Prélevés sur l\'intervention du 20/11/2026', montant_cents: 880 }] }))
+    assert.ok(/fait foi/.test(c.text), '« fait foi » absent du relevé PING sans SIRET')
+    assert.ok(!/Prélev/.test(c.text) && c.text.includes('À régler par virement, intervention du 20/11/2026'), c.text)
+    assert.ok(c.text.includes('Frais de service PING'))
+    const cs = await textOf(await buildInvoicePdf({ ...commission, issuer_snapshot: { nom: 'PING SAS', siret: '999 999 999 00019' } }))
+    assert.ok(!/fait foi/.test(cs.text), '« fait foi » sur une facture PING avec SIRET')
   })
   await ta('facture >= 1 000 EUR (espace fine des milliers) : le PDF se construit et affiche 1 234,56', async () => {
     const { text } = await textOf(await buildInvoicePdf({ ...facture, net_cents: 123456, lines: [{ ...lineF, montant_cents: 123456 }] }))

@@ -87,5 +87,5 @@ export async function transfersFor(db: SupabaseClient, transactionId: string): P
 
 export const TRANSFER_LABEL = (t: Transfer, viewerIsPayer: boolean) =>
   t.payee === 'pro' ? (viewerIsPayer ? 'Prestation, au prestataire' : 'Paiement du client')
-  : t.payer_role === 'client' ? 'Frais de service, à PING'
+  : t.payer_role === 'client' ? 'Frais de service PING'
   : 'Commission PING'

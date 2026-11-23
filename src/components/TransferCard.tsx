@@ -126,7 +126,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
       <div key={t.id} style={{ borderTop: `1px solid ${C.line}`, paddingTop: 10, marginTop: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
           <div style={{ fontWeight: 700, fontSize: 13.5, color: C.navy }}>
-            {toPro ? 'La prestation, au prestataire' : t.payer_role === 'client' ? 'Vos frais de service, à PING' : 'Votre commission, à PING'}
+            {toPro ? 'La prestation, au prestataire' : t.payer_role === 'client' ? 'Vos frais de service PING' : 'Votre commission, à PING'}
           </div>
           <Badge t={t} />
         </div>

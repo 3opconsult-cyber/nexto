@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pdfSafe = exports.tauxLabel = exports.PLATFORM_PENDING = exports.docTitle = exports.TITLE = exports.KIND_LABEL = exports.EUR = exports.invoiceCredit = void 0;
+exports.pdfSafe = exports.tauxLabel = exports.PLATFORM_PENDING = exports.accentuer = exports.docTitle = exports.TITLE = exports.KIND_LABEL = exports.CLIENT_FEE_NAME = exports.EUR = exports.invoiceCredit = void 0;
+exports.displayLine = displayLine;
 exports.durationLabel = durationLabel;
 exports.prestationSous = prestationSous;
 exports.withProTaxStatus = withProTaxStatus;
@@ -16,9 +17,11 @@ const invoiceCredit = (inv) => inv.kind === 'prestation' && (inv.credit_cents ??
 exports.invoiceCredit = invoiceCredit;
 const EUR = (c) => (c / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 exports.EUR = EUR;
+/** Nom unique des frais du client dans toute l'interface (écrans, bon de commande, devis, facture, PDF). */
+exports.CLIENT_FEE_NAME = 'Frais de service PING';
 exports.KIND_LABEL = {
     prestation: 'Prestation',
-    commission_client: 'Frais de service',
+    commission_client: exports.CLIENT_FEE_NAME,
     commission_pro: 'Commission PING',
 };
 exports.TITLE = {
@@ -36,11 +39,38 @@ exports.TITLE = {
  */
 const docTitle = (inv) => {
     if (inv.template === 'commission') {
+        if (inv.kind === 'commission_client')
+            return inv.issuer_snapshot?.siret ? 'Facture' : 'Relevé de frais de service PING';
         return inv.issuer_snapshot?.siret ? 'Facture' : 'Relevé de frais de mise en relation';
     }
     return exports.TITLE[inv.template] ?? 'Document';
 };
 exports.docTitle = docTitle;
+/**
+ * Présentation seule des lignes d'un document de frais PING (le contenu enregistré en base ne change pas) :
+ * - frais du client : nom unique « Frais de service PING » ;
+ * - « Prélevés sur l'intervention du … » est inexact (rien n'est prélevé, le règlement se fait par virement) :
+ *   « À régler par virement, intervention du … ».
+ */
+function displayLine(inv, l) {
+    let libelle = String(l.libelle ?? 'Frais');
+    if (inv.kind === 'commission_client' && /^frais de (mise en relation|service)/i.test(libelle))
+        libelle = exports.CLIENT_FEE_NAME;
+    let detail = l.detail ? String(l.detail) : null;
+    if (detail)
+        detail = detail.replace(/^Prélevés?\s+sur\s+l['\u2019]intervention/i, "À régler par virement, intervention");
+    return { libelle, detail };
+}
+/**
+ * Orthographe des mentions légales : la base les a enregistrées sans accents (migration 006). On les
+ * affiche avec leurs accents, mot pour mot et sans rien changer au fond (police standard : é è ê à ç ô passent).
+ */
+const accentuer = (s) => String(s ?? '')
+    .replace(/\bpenalites\b/g, 'pénalités').replace(/\bPenalites\b/g, 'Pénalités')
+    .replace(/\binteret legal\b/g, 'intérêt légal').replace(/\binteret\b/g, 'intérêt')
+    .replace(/\bprealable\b/g, 'préalable').replace(/\banticipe\b/g, 'anticipé')
+    .replace(/\bIndemnite\b/g, 'Indemnité').replace(/\bindemnite\b/g, 'indemnité');
+exports.accentuer = accentuer;
 function durationLabel(min) {
     if (!min)
         return null;
@@ -133,9 +163,9 @@ async function buildInvoicePdf(inv) {
     const wrap = (s, max, size, f = reg) => {
         const out = [];
         let cur = '';
-        for (const w of (0, exports.pdfSafe)(s).split(' ')) {
+        for (const w of (0, exports.pdfSafe)(s).split(' ').filter(Boolean)) {
             const t = cur ? cur + ' ' + w : w;
-            if (f.widthOfTextAtSize(t, size) > max) {
+            if (cur && f.widthOfTextAtSize(t, size) > max) {
                 out.push(cur);
                 cur = w;
             }
@@ -149,6 +179,13 @@ async function buildInvoicePdf(inv) {
     const para = (s, size = 8, c = SLATE, lead = 11) => {
         for (const l of wrap(s, W - M * 2, size)) {
             txt(l, M, y, size, reg, c);
+            y -= lead;
+        }
+    };
+    // Ligne de désignation : retour à la ligne dans la largeur disponible (hors colonne du montant si besoin).
+    const wrapped = (s, size, c = SLATE, lead = 12, f = reg, maxW = W - M * 2) => {
+        for (const l of wrap(s, maxW, size, f)) {
+            txt(l, M, y, size, f, c);
             y -= lead;
         }
     };
@@ -250,18 +287,17 @@ async function buildInvoicePdf(inv) {
     if (isCommission) {
         // Sobre : une ligne, un total. Rien à décortiquer.
         for (const l of inv.lines || []) {
-            txt(String(l.libelle ?? 'Frais'), M, y, 10.5, bold);
+            const dl = displayLine(inv, l);
+            txt(dl.libelle, M, y, 10.5, bold);
             right((0, exports.EUR)(Number(l.montant_cents ?? 0)), W - M, y, 10.5, bold);
             y -= 13;
-            if (l.detail) {
-                txt(String(l.detail), M, y, 8.5, reg, SLATE);
-                y -= 13;
-            }
+            if (dl.detail)
+                wrapped(dl.detail, 8.5, SLATE, 12);
             y -= 4;
         }
         if (inv.legal?.taux) {
-            txt((0, exports.tauxLabel)(inv.legal.taux), M, y, 8.5, reg, SLATE);
-            y -= 15;
+            wrapped((0, exports.tauxLabel)(inv.legal.taux), 8.5, SLATE, 12);
+            y -= 3;
         }
     }
     else {
@@ -269,18 +305,19 @@ async function buildInvoicePdf(inv) {
         // Pas de tableau à six lignes — le lecteur veut un montant, pas un formulaire.
         const l = (inv.lines || [])[0] || {};
         const titre = [l.prestation, durationLabel(l.duree_min)].filter(Boolean).join(' — ');
-        txt(titre || 'Prestation', M, y, 10.5, bold);
-        right((0, exports.EUR)(Number(l.montant_cents ?? inv.net_cents)), W - M, y, 10.5, bold);
-        y -= 14;
+        const amountW = bold.widthOfTextAtSize((0, exports.pdfSafe)((0, exports.EUR)(Number(l.montant_cents ?? inv.net_cents))), 10.5) + 14;
+        const titreLines = wrap(titre || 'Prestation', W - M * 2 - amountW, 10.5, bold);
+        titreLines.forEach((tl, i) => {
+            txt(tl, M, y, 10.5, bold);
+            if (i === 0)
+                right((0, exports.EUR)(Number(l.montant_cents ?? inv.net_cents)), W - M, y, 10.5, bold);
+            y -= 14;
+        });
         const sous = prestationSous(l);
-        if (sous) {
-            txt(sous, M, y, 8.5, reg, SLATE);
-            y -= 12;
-        }
-        if (l.adresse) {
-            txt(String(l.adresse), M, y, 8.5, reg, SLATE);
-            y -= 12;
-        }
+        if (sous)
+            wrapped(sous, 8.5);
+        if (l.adresse)
+            wrapped(String(l.adresse), 8.5);
         y -= 6;
     }
     rule(y);
@@ -314,7 +351,7 @@ async function buildInvoicePdf(inv) {
         txt('DÉCLARATION', M, y, 7.5, bold, SLATE);
         y -= 15;
         if (inv.legal?.declaration) {
-            para(inv.legal.declaration);
+            para((0, exports.accentuer)(inv.legal.declaration));
             y -= 4;
         }
     }
@@ -325,7 +362,7 @@ async function buildInvoicePdf(inv) {
             inv.legal?.categorie_operation ? `Catégorie de l'opération : ${inv.legal.categorie_operation}.` : null,
             inv.legal?.penalites, inv.legal?.indemnite_recouvrement, inv.legal?.escompte,
             'Règlement à réception.',
-        ].filter(Boolean)) {
+        ].filter(Boolean).map(exports.accentuer)) {
             para(m);
             y -= 2;
         }
@@ -334,8 +371,10 @@ async function buildInvoicePdf(inv) {
         para('Règlement à réception. Document émis par PING au titre de la mise en relation.');
     }
     // ---------- pied ----------
-    const foot = "Les heures d'arrivée et de départ sont horodatées dans l'application à partir d'une preuve fournie par le client (QR, code ou confirmation). "
-        + 'Ce relevé fait foi en cas de contestation.';
+    // « Ce relevé fait foi » : seulement sur le relevé de commission PING tant que PING n'a pas de SIRET
+    // (jamais sur la facture du prestataire).
+    const foot = "Les heures d'arrivée et de départ sont horodatées dans l'application à partir d'une preuve fournie par le client (QR, code ou confirmation)."
+        + (isCommission && !inv.issuer_snapshot?.siret ? ' Ce relevé fait foi en cas de contestation.' : '');
     let fy = M + 22;
     for (const l of wrap(foot, W - M * 2, 7.5)) {
         txt(l, M, fy, 7.5, reg, SLATE);
