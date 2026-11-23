@@ -12,7 +12,7 @@ import { pickMapStyle, MAP_ATTRIBUTION, hasWebGL } from '@/lib/mapStyle'
 // Leaflet via @maplibre/maplibre-gl-leaflet — Leaflet garde la main sur les gestes, les
 // épingles et les clics. Repli automatique sur les tuiles raster OpenStreetMap si WebGL est
 // absent, si le style ou ses tuiles ne chargent pas, ou si le contexte WebGL est perdu.
-const STYLE_TIMEOUT_MS = 10000
+const STYLE_TIMEOUT_MS = 25000
 function PingBaseLayer() {
   const map = useMap()
   const [fallback, setFallback] = useState(false)
@@ -35,7 +35,9 @@ function PingBaseLayer() {
         gl.addTo(map)
         const glMap = gl.getMaplibreMap()
         glMap.on('load', () => { loaded = true; window.clearTimeout(timer); map.getContainer().dataset.basemap = 'ping' })
-        glMap.on('error', fail)
+        // Une erreur isolée (une tuile, une police, un coup de réseau sur mobile) ne doit PAS faire revenir à l'ancienne
+        // carte : seule l'absence totale de chargement au bout de STYLE_TIMEOUT_MS ou la perte du contexte WebGL le font.
+        glMap.on('error', (e: any) => { if (!loaded && /style|sprite|\.json/i.test(String(e?.error?.url || e?.error?.message || '')) && (e?.error?.status === 404 || e?.error?.status === 403)) fail() })
         gl.getCanvas()?.addEventListener('webglcontextlost', () => { loaded = false; fail() })
       } catch {
         fail()
