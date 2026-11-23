@@ -221,8 +221,9 @@ export function pickMapStyle(): any {
     const q = new URLSearchParams(window.location.search).get('carte')
     if (q === 'waze' || q === 'ping') localStorage.setItem('ping_map_style', q)
     const v = q || localStorage.getItem('ping_map_style')
-    if (v === 'waze') return buildWazeStyle()
-  } catch { /* style par défaut */ }
+    // Décision de Romain (23/11) : le style Waze est le style par défaut ; ?carte=ping garde l'ancien style clair.
+    if (v !== 'ping') return buildWazeStyle()
+  } catch { return buildWazeStyle() }
   return PING_MAP_STYLE
 }
 
