@@ -51,6 +51,7 @@ export default function MessagesPage() {
   const [query, setQuery] = useState('')
   const [sortMode, setSortMode] = useState<'date' | 'client'>('date')
   const [uid, setUid] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const [unread, setUnread] = useState<Record<string, number>>({})
   const [isPro, setIsPro] = useState<boolean | null>(null)
   const [mode, setMode] = useMode(isPro)
@@ -107,7 +108,7 @@ export default function MessagesPage() {
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher"
               style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '11px 14px 11px 36px', borderRadius: 12, border: '1px solid #E7EDEB', background: '#fff', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
           </div>
-          <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+          {visible.length > 6 && <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             {(['date', 'client'] as const).map(m => (
               <button key={m} onClick={() => setSortMode(m)} style={{
                 minHeight: 44, padding: '0 15px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -116,7 +117,7 @@ export default function MessagesPage() {
                 boxShadow: sortMode === m ? 'none' : '0 0 0 1px #E7EDEB',
               }}>{m === 'date' ? 'Trier par date' : mode === 'pro' ? 'Trier par client' : 'Trier par prestataire'}</button>
             ))}
-          </div>
+          </div>}
         </div>
       )}
 
@@ -135,6 +136,10 @@ export default function MessagesPage() {
             const name = t.kind === 'support' ? 'Support PING' : t.counterpart
             return (name || '').toLowerCase().includes(q) || (t.lastMessage?.body || '').toLowerCase().includes(q) || (t.kind === 'mission' && missionLine(t).toLowerCase().includes(q))
           }) : visible
+          // Liste longue : les 8 plus récentes, le reste un appui plus loin (recherche : tout).
+          const LIMIT = 8
+          const capped = !q && !showAll && filtered.length > LIMIT
+          const shown = capped ? filtered.slice(0, LIMIT) : filtered
 
           if (filtered.length === 0) {
             return (
@@ -150,7 +155,7 @@ export default function MessagesPage() {
             // alphabétiquement) — utile dès qu'un même client/pro revient
             // plusieurs fois et que la vue par date éparpille son historique.
             const byName = new Map<string, any[]>()
-            filtered.forEach(t => {
+            shown.forEach(t => {
               const name = t.kind === 'support' ? 'Support PING' : (t.counterpart || '?')
               if (!byName.has(name)) byName.set(name, [])
               byName.get(name)!.push(t)
@@ -162,7 +167,7 @@ export default function MessagesPage() {
             // Sections type messagerie (Aujourd'hui / Hier / Cette semaine / …) :
             // regroupe les lignes déjà triées par activité, sans casser l'ordre.
             sections = []
-            filtered.forEach(t => {
+            shown.forEach(t => {
               const d = new Date(t.lastMessage?.created_at || t.created_at)
               const label = sectionLabel(d)
               const current = sections[sections.length - 1]
@@ -171,7 +176,7 @@ export default function MessagesPage() {
             })
           }
 
-          return sections.map(section => (
+          const list = sections.map(section => (
             <div key={section.label} style={{ marginBottom: 6 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', textTransform: 'uppercase', letterSpacing: 0.4, padding: '6px 2px' }}>
                 {section.label}
@@ -211,6 +216,11 @@ export default function MessagesPage() {
               })}
             </div>
           ))
+          return <>{list}{capped && (
+            <button type="button" onClick={() => setShowAll(true)} style={{ width: '100%', minHeight: 48, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+              Voir les {filtered.length - LIMIT} autres conversations
+            </button>
+          )}</>
         })()}
       </div>
     </div>

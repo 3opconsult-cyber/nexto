@@ -498,6 +498,14 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
 
       <!-- OVERVIEW -->
       <section class="section on" id="s_overview">
+          <div class="card" id="ovTodoNow" style="margin-bottom:16px;border-color:var(--teal)"><h3>À traiter maintenant</h3>
+            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b> <span class="npill" id="pillOv" role="status" aria-label="Alertes pièces à valider" style="margin-left:8px"></span><small>Pièces déposées par les prestataires : aperçu, puis valider ou refuser</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b> <span class="npill" id="pillOvLit" role="status" aria-label="Alertes de litige à traiter" style="margin-left:8px"></span><small id="ovDisputes2S">Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
+            <div class="qrow" id="ovPayAlert" style="display:none"><div class="who"><div class="av coral">€</div></div><div class="m"><b id="ovPayAlertL">0 alerte de paiement à traiter</b> <span class="npill" id="pillOvPay" role="status" aria-label="Alertes de paiement à traiter" style="margin-left:8px"></span><small id="ovPayAlertS">Annulations, absences, virements, commissions, suspensions</small></div><a class="link" style="text-decoration:none" href="/admin/paiements" target="_blank" rel="noopener">Voir</a></div>
+            <div class="qrow"><div class="who"><div class="av">R</div></div><div class="m"><b id="ovFbL">— retour de testeur à traiter</b><small>Commentaires laissés dans la bulle verte de l'application</small></div><span class="link" onclick="nav('retours')">Voir</span></div>
+            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="overviewExpiryL">0 assurance à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026</b><small>À brancher avant janvier 2027</small></div><span class="link" onclick="nav('dac7')">Voir</span></div>
+          </div>
         <div class="ashub" role="group" aria-label="Voir l'application comme chaque profil">
           <button type="button" class="asv" data-as="admin" aria-current="page" onclick="asOpen('admin')"><span class="rico" style="color:var(--ink)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg></span><b>Admin</b><small>Vous êtes ici</small></button>
           <button type="button" class="asv" data-as="pro" onclick="asOpen('pro')"><span class="rico" style="color:var(--gold)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg></span><b>Prestataire</b><small>Voir l'espace prestataire</small></button>
@@ -520,6 +528,10 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v" id="ovProviders">—</div><div class="d" id="ovProvidersD">actifs sur le total inscrit</div></div>
           <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#c0503a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Litiges ouverts</div><div class="v" id="ovDisputes">—</div><div class="d" id="ovDisputesD">à traiter</div></div>
         </div>
+        <div class="card mt"><h3>Derniers inscrits <span class="muted" id="ovSignupsN">les plus récents d'abord</span><span class="link" onclick="nav('users')">Tous les utilisateurs</span></h3>
+          <table class="tbl" data-noenh="1"><thead><tr><th>Nom</th><th>Rôle</th><th>Inscrit le</th><th>Ville</th><th>Pièces</th></tr></thead><tbody id="ovSignupsBody"></tbody></table>
+          <p class="muted" id="ovSignupsEmpty" style="padding:18px 0;text-align:center;display:none">Aucune inscription pour l'instant.</p>
+        </div>
         <div class="card mt" id="liveMapCard"><h3>Carte des prestataires <span class="muted">position enregistrée à l'inscription</span></h3>
           <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px;margin:4px 0 14px">
             <div class="kpi click" onclick="showMapPeople('online')"><div class="l">Actifs sur la carte</div><div class="v" id="mapKpiConnected" style="color:var(--tealD)">0</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
@@ -534,22 +546,10 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           </div>
           <p class="note">Positions enregistrées par les prestataires (pas de suivi GPS en direct) — clique un point pour ouvrir la fiche. Le statut « en prestation » vient du scan d'arrivée.</p>
         </div>
-        <div class="split mt">
+        <div class="split mt" style="grid-template-columns:1fr">
           <div class="card"><h3><span>Volume &amp; commissions <span class="muted">évolution mensuelle</span></span><span class="link" onclick="nav('tx')">Voir les transactions</span></h3>
             <p class="muted" style="padding:34px 0;text-align:center;font-weight:600">Données disponibles au lancement</p>
           </div>
-          <div class="card"><h3>À traiter</h3>
-            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b> <span class="npill" id="pillOv" role="status" aria-label="Alertes pièces à valider" style="margin-left:8px"></span><small>Pièces déposées par les prestataires : aperçu, puis valider ou refuser</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b> <span class="npill" id="pillOvLit" role="status" aria-label="Alertes de litige à traiter" style="margin-left:8px"></span><small id="ovDisputes2S">Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
-            <div class="qrow" id="ovPayAlert" style="display:none"><div class="who"><div class="av coral">€</div></div><div class="m"><b id="ovPayAlertL">0 alerte de paiement à traiter</b> <span class="npill" id="pillOvPay" role="status" aria-label="Alertes de paiement à traiter" style="margin-left:8px"></span><small id="ovPayAlertS">Annulations, absences, virements, commissions, suspensions</small></div><a class="link" style="text-decoration:none" href="/admin/paiements" target="_blank" rel="noopener">Voir</a></div>
-            <div class="qrow"><div class="who"><div class="av">R</div></div><div class="m"><b id="ovFbL">— retour de testeur à traiter</b><small>Commentaires laissés dans la bulle verte de l'application</small></div><span class="link" onclick="nav('retours')">Voir</span></div>
-            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="overviewExpiryL">0 assurance à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026</b><small>À brancher avant janvier 2027</small></div><span class="link" onclick="nav('dac7')">Voir</span></div>
-          </div>
-        </div>
-        <div class="card mt"><h3>Derniers inscrits <span class="muted" id="ovSignupsN">les plus récents d'abord</span><span class="link" onclick="nav('users')">Tous les utilisateurs</span></h3>
-          <table class="tbl" data-noenh="1"><thead><tr><th>Nom</th><th>Rôle</th><th>Inscrit le</th><th>Ville</th><th>Pièces</th></tr></thead><tbody id="ovSignupsBody"></tbody></table>
-          <p class="muted" id="ovSignupsEmpty" style="padding:18px 0;text-align:center;display:none">Aucune inscription pour l'instant.</p>
         </div>
         <div class="card mt"><h3>Transactions récentes <span class="link" onclick="nav('tx')">Tout voir</span></h3>
           <table class="tbl" data-noenh="1"><thead><tr><th>Date / heure</th><th>Mission</th><th>Statut</th><th>Sous-total</th><th>Commission</th><th>Total client</th></tr></thead><tbody id="ovTxBody"></tbody></table>

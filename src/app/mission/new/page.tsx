@@ -492,7 +492,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
           <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
             {paymentsOn
               ? 'Paiement sécurisé par carte à l’étape suivante.'
-              : <><b>Rien n&apos;est débité à la réservation.</b> Vous réglez après l&apos;intervention, sur facture, par virement : la prestation directement à {pro?.company_name || 'votre prestataire'}, vos frais de service à PING.{(hasOvertime || mode === 'horaire') ? ' Montant recalculé sur la durée réelle, relevée par les codes d&apos;arrivée et de fin.' : ''}</>}
+              : <><b>Rien n&apos;est débité à la réservation.</b> Vous réglez après l&apos;intervention, sur facture, par virement : la prestation directement à {pro?.company_name || 'votre prestataire'}, vos frais de service à PING.{(hasOvertime || mode === 'horaire') ? ' Montant recalculé sur la durée réelle, relevée par les codes d’arrivée et de fin.' : ''}</>}
           </div>
           {AVANCE_IMMEDIATE_ACTIVE && pro?.sap_number && isEligible(pro?.trade) && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>

@@ -1,0 +1,170 @@
+{
+ "client-profil": {
+  "mots": 119,
+  "motsPage": 173,
+  "boutons": 15,
+  "boutonsPage": 21,
+  "hauteur": 964,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/client/profil",
+  "erreurs": 0
+ },
+ "client-agenda": {
+  "mots": 122,
+  "motsPage": 306,
+  "boutons": 20,
+  "boutonsPage": 37,
+  "hauteur": 2473,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/agenda",
+  "erreurs": 0
+ },
+ "client-messages": {
+  "mots": 297,
+  "motsPage": 3515,
+  "boutons": 18,
+  "boutonsPage": 123,
+  "hauteur": 11681,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/messages",
+  "erreurs": 0
+ },
+ "client-commande": {
+  "mots": 172,
+  "motsPage": 236,
+  "boutons": 7,
+  "boutonsPage": 13,
+  "hauteur": 1642,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/mission/[id]/commande",
+  "erreurs": 0
+ },
+ "client-jour": {
+  "mots": 82,
+  "motsPage": 89,
+  "boutons": 11,
+  "boutonsPage": 14,
+  "hauteur": 1172,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/mission/[id]/jour",
+  "erreurs": 0
+ },
+ "client-reservation": {
+  "mots": 178,
+  "motsPage": 270,
+  "boutons": 36,
+  "boutonsPage": 36,
+  "hauteur": 1348,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/mission/new?pro=b9f8cd9a-16de-4a36-afd8-10a2135ab970",
+  "erreurs": 0
+ },
+ "pro-entreprise": {
+  "mots": 86,
+  "motsPage": 373,
+  "boutons": 17,
+  "boutonsPage": 41,
+  "hauteur": 3139,
+  "petitesCibles": 1,
+  "petitesListe": [
+   "Changer le logo"
+  ],
+  "url": "/pro/dashboard",
+  "erreurs": 0
+ },
+ "pro-agenda": {
+  "mots": 114,
+  "motsPage": 279,
+  "boutons": 18,
+  "boutonsPage": 31,
+  "hauteur": 2329,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/agenda",
+  "erreurs": 0
+ },
+ "pro-messages": {
+  "mots": 249,
+  "motsPage": 3332,
+  "boutons": 16,
+  "boutonsPage": 116,
+  "hauteur": 11113,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/messages",
+  "erreurs": 0
+ },
+ "pro-documents": {
+  "mots": 105,
+  "motsPage": 269,
+  "boutons": 17,
+  "boutonsPage": 41,
+  "hauteur": 2863,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/pro/documents",
+  "erreurs": 0
+ },
+ "pro-revenus": {
+  "mots": 169,
+  "motsPage": 207,
+  "boutons": 11,
+  "boutonsPage": 14,
+  "hauteur": 1237,
+  "petitesCibles": 2,
+  "petitesListe": [
+   "NUMÉRO DE DÉCLARATION SAP",
+   "NUMÉRO FISCAL (13 CHIFFRES)"
+  ],
+  "url": "/pro/revenus",
+  "erreurs": 0
+ },
+ "pro-tarifs": {
+  "mots": 77,
+  "motsPage": 77,
+  "boutons": 10,
+  "boutonsPage": 10,
+  "hauteur": 908,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/pro/tarifs",
+  "erreurs": 0
+ },
+ "pro-annonce": {
+  "mots": 107,
+  "motsPage": 312,
+  "boutons": 15,
+  "boutonsPage": 37,
+  "hauteur": 2722,
+  "petitesCibles": 27,
+  "petitesListe": [
+   "Retour à Mon entreprise",
+   "Compléter",
+   "Compléter",
+   "Compléter",
+   "Modifier",
+   "Aperçu client",
+   "INPUT",
+   "Matériel fourni"
+  ],
+  "url": "/pro/annonce",
+  "erreurs": 0
+ },
+ "pro-disponibilites": {
+  "mots": 110,
+  "motsPage": 110,
+  "boutons": 52,
+  "boutonsPage": 52,
+  "hauteur": 954,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "url": "/pro/disponibilites",
+  "erreurs": 0
+ }
+}

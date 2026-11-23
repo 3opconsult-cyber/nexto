@@ -134,6 +134,7 @@ export default function AgendaPage() {
   const later = upcoming.filter(t => !isTodayMission(t) && !isStale(t))
   const stale = upcoming.filter(t => isStale(t)).sort((a, b) => txDate(b).getTime() - txDate(a).getTime())
   const [showStale, setShowStale] = useState(false)
+  const [allLater, setAllLater] = useState(false)
   const mineById = new Map(mine.map(t => [t.id, t]))
   const shownInvoices = mode ? invoices.filter(r => mineById.has(r.transaction_id) && MODE_KINDS[mode].includes(r.kind)) : []
   const invoicedIds = new Set(invoices.map(r => r.transaction_id))
@@ -357,7 +358,13 @@ export default function AgendaPage() {
                 </>
               )}
               <div style={sectionTitle}>À venir</div>
-              {later.length ? later.map(t => card(t, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
+              {later.length ? (allLater ? later : later.slice(0, 2)).map(t => card(t, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
+              {!allLater && later.length > 2 && (
+                <button type="button" onClick={() => setAllLater(true)}
+                  style={{ width: '100%', minHeight: 48, marginBottom: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                  Voir les {later.length - 2} autres rendez-vous
+                </button>
+              )}
               {stale.length > 0 && (
                 <>
                   <button type="button" onClick={() => setShowStale(v => !v)} aria-expanded={showStale}

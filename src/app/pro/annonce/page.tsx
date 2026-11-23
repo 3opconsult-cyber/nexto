@@ -246,7 +246,7 @@ export default function MonAnnoncePage() {
               <div style={{ fontSize: 13, fontWeight: 700, color: NAVY }}>{c.label}</div>
               {!c.done && <div style={{ fontSize: 12, color: SLATE, marginTop: 1 }}>{c.hint}</div>}
             </div>
-            {!c.done && (c.href || c.anchor) && <button style={{ ...link, fontSize: 12.5, flexShrink: 0 }} onClick={() => goComplete(c)}>Compléter</button>}
+            {!c.done && (c.href || c.anchor) && <button style={{ ...link, fontSize: 12.5, flexShrink: 0, minHeight: 44, minWidth: 44, padding: '0 6px' }} onClick={() => goComplete(c)}>Compléter</button>}
           </div>
         ))}
       </div>
@@ -407,7 +407,7 @@ export default function MonAnnoncePage() {
       <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
       <div style={{ padding: '20px 20px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
         <div onClick={() => router.push('/pro/dashboard')} role="button" aria-label="Retour à Mon entreprise"
-          style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,.1)', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,.1)', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
         </div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>Mon annonce</div>
@@ -425,7 +425,7 @@ export default function MonAnnoncePage() {
           <div className="ann-seg" style={{ background: '#E9EFED', borderRadius: 12, padding: 4, gap: 4 }}>
             {(['edit', 'preview'] as const).map(v => (
               <button key={v} type="button" onClick={() => setView(v)}
-                style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5,
+                style={{ flex: 1, minHeight: 44, padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5,
                   background: view === v ? '#fff' : 'transparent', color: view === v ? NAVY : SLATE, boxShadow: view === v ? '0 1px 3px rgba(18,54,68,.12)' : 'none' }}>
                 {v === 'edit' ? 'Modifier' : 'Aperçu client'}
               </button>

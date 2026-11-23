@@ -87,6 +87,7 @@ export default function ProDocumentsPage() {
   const [siret, setSiret] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [openAdd, setOpenAdd] = useState<Record<string, boolean>>({})
   const [toRemove, setToRemove] = useState<Piece | null>(null)
   const [adding, setAdding] = useState<{ kind: Kind; type: string } | null>(null)
   const [viewing, setViewing] = useState<{ piece: Piece; url: string } | null>(null)
@@ -201,8 +202,7 @@ export default function ProDocumentsPage() {
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '18px 0 4px' }}>Mon entreprise</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes pièces</div>
         <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', marginTop: 6, maxWidth: '46ch', lineHeight: 1.5 }}>
-          Visibles uniquement par vous et l&apos;équipe PING, jamais par les clients. Elles rassurent vos clients (« pièce fournie »,
-          « assurance renseignée » sur votre profil). Photo ou fichier PDF, JPG, PNG — 10 Mo maximum.
+          Visibles par vous et l&apos;équipe PING seulement. PDF, JPG ou PNG, 10 Mo maximum.
         </p>
       </div>
 
@@ -305,9 +305,14 @@ export default function ProDocumentsPage() {
               )}
 
               {/* Ajouter une pièce : choisir son type, puis photo ou fichier. */}
+              {/* Repliée quand la rubrique a déjà une pièce ou est facultative : un appui pour l'ouvrir. */}
+              {(() => { const fold = (mine.length > 0 || r.optional) && !openAdd[r.kind]; return (
               <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 6 }}>Ajouter une pièce</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <button type="button" onClick={() => setOpenAdd(o => ({ ...o, [r.kind]: !o[r.kind] }))} aria-expanded={!fold}
+                  style={{ display: fold ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 44, borderRadius: 999, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+                  Ajouter une pièce
+                </button>
+                <div style={{ display: fold ? 'none' : 'flex', flexDirection: 'column', gap: 6 }}>
                   {r.types.map(t => (
                     <div key={t.key} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ flex: '1 1 160px', fontSize: 12.5, color: '#123644', fontWeight: 600 }}>{t.label}</span>
@@ -326,6 +331,7 @@ export default function ProDocumentsPage() {
                 </div>
                 {busy === r.kind && <div style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 8 }}>Envoi en cours…</div>}
               </div>
+              ) })()}
             </div>
           )
         })}

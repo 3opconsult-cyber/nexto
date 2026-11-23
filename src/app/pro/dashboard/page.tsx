@@ -66,6 +66,7 @@ export default function ProDashboard() {
   const [payOn, setPayOn] = useState(false)
   const [taxId, setTaxId] = useState<string | null>(null)
   const [hasIban, setHasIban] = useState(false)
+  const [more, setMore] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -191,7 +192,7 @@ export default function ProDashboard() {
                         <div style={{ width: `${listingPct}%`, height: '100%', background: '#12B39C', borderRadius: 999 }} />
                       </div>
                       <small style={{ display: 'block', fontSize: 11.5, color: '#4E6470', lineHeight: 1.45 }}>
-                        Complète à {listingPct} %{listingPct < 100 ? ' · voir ce qui manque' : ''} · plus vos pièces sont validées, plus vous apparaissez en tête
+                        Complète à {listingPct} %{listingPct < 100 ? ' · voir ce qui manque' : ''}
                       </small>
                     </>
                   )}
@@ -227,7 +228,7 @@ export default function ProDashboard() {
                   <input id="logo-input" type="file" accept="image/*" style={{ display: 'none' }}
                     onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('logo', f) }} />
                   <label htmlFor="logo-input" aria-label="Changer le logo" style={{
-                    position: 'absolute', right: -10, bottom: -10, width: 36, height: 36, borderRadius: '50%',
+                    position: 'absolute', right: -14, bottom: -14, width: 44, height: 44, borderRadius: '50%',
                     background: '#12B39C', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                   }}>
                     {uploading === 'logo'
@@ -246,22 +247,11 @@ export default function ProDashboard() {
                 <p style={{ marginTop: 4, fontSize: 13, color: '#123644' }}>
                   {pro.rating > 0 ? <><Stars r={pro.rating} size={13} /> <b>{r1(pro.rating)}</b> <span style={{ color: '#4E6470' }}>({pro.reviews_count || 0} avis)</span></> : <span style={{ color: '#4E6470' }}>Nouveau, pas encore d&apos;avis</span>}
                 </p>
-                {/* Raccourcis (audit 19/11, correction 16) : pièces et revenus sans défiler. */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
-                  <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
-                    <Ic name="eye" size={18} />Ma fiche publique
-                  </button>
-                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/tarifs')} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
-                    <Ic name="tag" size={18} />Mes tarifs
-                  </button>
-                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/documents')} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
-                    <Ic name="id" size={18} />Mes pièces{piecesTodo && <span aria-label="À compléter" style={{ width: 9, height: 9, borderRadius: '50%', background: '#E5484D', position: 'absolute', top: 8, right: 10 }} />}
-                  </button>
-                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/revenus')} style={{ minHeight: 44, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, position: 'relative' }}>
-                    <Ic name="card" size={18} />Mes revenus
-                  </button>
-                </div>
-                <button type="button" onClick={() => router.push('/pro/onboarding')} className="btn ghost" style={{ width: '100%', minHeight: 44, marginTop: 10, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>Modifier mes informations</button>
+                {/* Une seule action propre à ce bloc : la fiche publique. Tarifs, pièces, revenus et coordonnées
+                    sont des lignes du Hub plus bas (chaque accès une seule fois, refonte 23/11). */}
+                <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ width: '100%', minHeight: 44, marginTop: 10, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                  <Ic name="eye" size={18} />Ma fiche publique
+                </button>
               </div>
             </div>
 
@@ -297,7 +287,7 @@ export default function ProDashboard() {
               const todo: { label: string; sub: string }[] = []
               if (!idOk) todo.push({ label: 'Pièce d’identité', sub: 'Une photo suffit' })
               if (!rcOk) todo.push({ label: 'Assurance responsabilité civile', sub: 'Conseillée · une photo suffit' })
-              if (!todo.length) return null
+              if (!todo.length || docAlerts.length > 0) return null
               return (
                 <div style={{ padding: '12px 14px', borderRadius: 14, background: '#fff', border: '1.5px solid #F2A93B' }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginBottom: 4 }}>Il vous reste {todo.length} élément{todo.length > 1 ? 's' : ''} à ajouter</div>
@@ -333,6 +323,20 @@ export default function ProDashboard() {
               <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
             </HubGroup>
 
+            <HubGroup title="Mon entreprise">
+              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
+              <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
+                badge={docAlerts.length ? { text: 'à mettre à jour', tone: 'todo' } : idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
+                onClick={() => router.push('/pro/documents')} />
+            </HubGroup>
+
+            {!more && (
+              <button type="button" onClick={() => setMore(true)} aria-expanded={false}
+                style={{ minHeight: 48, marginTop: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                Voir plus : paiements, fiscalité, aide
+              </button>
+            )}
+            {more && <>
             <HubGroup title="Paiements et fiscalité">
               <HubRow icon={HUB_ICONS.card} label="IBAN pour être payé par virement" sub="Vos clients vous paient par virement après l'intervention, sur facture"
                 badge={hasIban ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/paiements')} />
@@ -350,15 +354,6 @@ export default function ProDashboard() {
                 badge={pro.cgv_accepted_at && pro.cgv_version === CGV_VERSION ? { text: 'accepté', tone: 'ok' } : pro.cgv_accepted_at ? { text: 'nouvelle version', tone: 'todo' } : { text: 'à accepter', tone: 'todo' }} onClick={() => router.push('/cgu#prestataires')} />
             </HubGroup>
 
-            <HubGroup title="Mon entreprise">
-              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
-              <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
-                badge={docAlerts.length ? { text: 'à mettre à jour', tone: 'todo' } : idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
-                onClick={() => router.push('/pro/documents')} />
-              <HubRow icon={HUB_ICONS.eye} label="Mon annonce" sub="Photos, présentation, points forts, mise en ligne"
-                badge={listingPct === 100 ? { text: 'complète', tone: 'ok' } : listingPct != null ? { text: `${listingPct} %`, tone: 'todo' } : undefined}
-                onClick={() => router.push('/pro/annonce')} />
-            </HubGroup>
 
             <HubGroup title="Plus">
               <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez d'autres prestataires" onClick={() => router.push('/client/parrainage')} />
@@ -366,6 +361,8 @@ export default function ProDashboard() {
               <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
               <HubRow icon={HUB_ICONS.swap} label="Espace client" onClick={() => { writeMode('particulier'); router.push('/map') }} />
             </HubGroup>
+
+            </>}
 
             <button type="button" onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
               style={{ alignSelf: 'center', minHeight: 44, padding: '0 16px', marginTop: 12, border: 'none', background: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>

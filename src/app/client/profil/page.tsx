@@ -18,6 +18,7 @@ export default function ClientProfil() {
   const [emailOk, setEmailOk] = useState(false)
   const [uid, setUid] = useState('')
   const [editing, setEditing] = useState(false)
+  const [more, setMore] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editErr, setEditErr] = useState('')
   const [f, setF] = useState({ first_name: '', last_name: '', phone: '', address: '', city: '' })
@@ -90,7 +91,7 @@ export default function ClientProfil() {
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--coral)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 19, flex: '0 0 auto' }}>{initial}</div>
                 <div style={{ flex: 1 }}>
                   <div className="nm" style={{ fontSize: 15 }}>{displayName}</div>
-                  <div className="ds">Particulier · {city}</div>
+                  <div className="ds">Particulier{profile?.city ? ` · ${profile.city}` : ''}</div>
                 </div>
                 <span className="edit" onClick={openEdit} style={{ color: 'var(--teal)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Modifier</span>
               </div>
@@ -104,10 +105,11 @@ export default function ClientProfil() {
                 const steps: [string, boolean][] = [['E-mail confirmé', !!emailOk], ['Téléphone', !!profile?.phone_enc], ['Adresse', !!profile?.address], ['Pièce d’identité', hasId]]
                 const done = steps.filter(x => x[1]).length
                 const todo = steps.filter(x => !x[1]).map(x => x[0]).join(', ')
+                if (!todo) return null
                 return (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12.5 }}>
-                      <b>Profil complet : {done} sur 4</b><span style={{ color: 'var(--slate)', textAlign: 'right' }}>{todo || 'tout est fait'}</span>
+                      <b>Profil complet : {done} sur 4</b><span style={{ color: 'var(--slate)', textAlign: 'right' }}>{todo}</span>
                     </div>
                     <div role="progressbar" aria-valuemin={0} aria-valuemax={4} aria-valuenow={done} style={{ marginTop: 6, height: 6, borderRadius: 3, background: 'var(--line)', overflow: 'hidden' }}>
                       <i style={{ display: 'block', height: '100%', width: `${done * 25}%`, background: 'var(--teal)' }} />
@@ -119,17 +121,11 @@ export default function ClientProfil() {
 
             {/* Même rubriques et même présentation que « Mon entreprise » côté prestataire. */}
             <HubGroup title="Mon activité">
-              <HubRow icon={HUB_ICONS.doc} label="Déposer une demande" sub="Une annonce à votre adresse : service, heures, fréquence, paiement" onClick={() => router.push('/client/demandes/new')} />
-              <HubRow icon={HUB_ICONS.list} label="Mes demandes" sub="Vos demandes publiées et les propositions reçues" onClick={() => router.push('/client/demandes')} />
+              <HubRow icon={HUB_ICONS.doc} label="Déposer une demande" sub="Une annonce à votre adresse" onClick={() => router.push('/client/demandes/new')} />
+              <HubRow icon={HUB_ICONS.list} label="Mes demandes" sub="Demandes publiées et propositions" onClick={() => router.push('/client/demandes')} />
               <HubRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
-              <HubRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Les prestataires que vous avez gardés" onClick={() => router.push('/client/favoris')} />
+              <HubRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Prestataires gardés" onClick={() => router.push('/client/favoris')} />
               <HubRow icon={HUB_ICONS.star} label="Avis publiés" onClick={() => router.push('/client/avis')} />
-            </HubGroup>
-
-            <HubGroup title="Paiements">
-              <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
-              <HubRow icon={HUB_ICONS.euro} label="Crédit d'impôt immédiat" sub="Ne payez que 50 % du ménage et du repassage" onClick={() => router.push('/client/avance-immediate')} />
-              <HubRow icon={HUB_ICONS.card} label="Paiements" sub="Virement sur facture" />
             </HubGroup>
 
             <HubGroup title="Mon compte">
@@ -137,18 +133,33 @@ export default function ClientProfil() {
                 badge={hasId ? { text: 'fournie', tone: 'ok' } : { text: 'à fournir', tone: 'todo' }}
                 onClick={() => router.push('/client/documents')} />
               <HubRow icon={HUB_ICONS.lock} label="Coordonnées et confidentialité" sub="Masquées jusqu'à la mission confirmée" onClick={() => router.push('/client/confidentialite')} />
-            </HubGroup>
-
-            <HubGroup title="Plus">
-              <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />
-              <HubRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
-              <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
               {/* Libellés de bascule décidés par Romain : « Espace prestataire » pour un compte qui a déjà une
                   activité prestataire, « Devenir prestataire » sinon. */}
               {profile?.is_pro
                 ? <HubRow icon={HUB_ICONS.swap} label="Espace prestataire" sub="Mes demandes, mes missions, mon entreprise" onClick={() => { writeMode('pro'); router.push('/pro/carte') }} />
                 : <HubRow icon={HUB_ICONS.swap} label="Devenir prestataire" sub="Proposer mes services : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />}
             </HubGroup>
+
+
+            {!more && (
+              <button type="button" onClick={() => setMore(true)} aria-expanded={false}
+                style={{ width: '100%', minHeight: 48, marginTop: 16, borderRadius: 14, border: '1.5px solid var(--teal)', background: '#fff', color: 'var(--teal)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                Voir plus : factures, crédit d&apos;impôt, aide
+              </button>
+            )}
+            {more && <>
+            <HubGroup title="Paiements">
+              <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
+              <HubRow icon={HUB_ICONS.euro} label="Crédit d'impôt immédiat" sub="Ne payez que 50 % du ménage et du repassage" onClick={() => router.push('/client/avance-immediate')} />
+              <HubRow icon={HUB_ICONS.card} label="Paiements" sub="Virement sur facture" />
+            </HubGroup>
+
+            <HubGroup title="Plus">
+              <HubRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />
+              <HubRow icon={HUB_ICONS.help} label="Comment ça marche" sub="Une courte animation par rubrique" onClick={() => router.push('/aide')} />
+              <HubRow icon={HUB_ICONS.help} label="Support PING" onClick={() => router.push('/support')} />
+            </HubGroup>
+            </>}
 
             <div onClick={logout} style={{ textAlign: 'center', marginTop: 16, color: 'var(--slate)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>Se déconnecter</div>
           </div>
