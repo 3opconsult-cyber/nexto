@@ -78,12 +78,12 @@
     },
     {
       "k": "moment prérempli affiché",
-      "v": "Date et heure souhaitées ",
+      "v": "(créneaux du prestataire : à choisir)",
       "ok": true
     },
     {
       "k": "service prérempli (Ménage)",
-      "v": "Ménage — 100,00 € (3 h incluses), puis 25,00 €/h au-delà Adresse d",
+      "v": "Ménage · 100 € 2",
       "ok": true
     },
     {
