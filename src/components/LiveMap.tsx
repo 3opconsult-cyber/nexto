@@ -274,7 +274,7 @@ function FocusPts({ pts, focusKey, inset }: { pts: { lat: number; lng: number }[
     done.current = focusKey
     map.invalidateSize({ pan: false })
     const b = L.latLngBounds(pts.map(x => [x.lat, x.lng] as [number, number]))
-    map.fitBounds(b, { paddingTopLeft: [40, 110], paddingBottomRight: [40, 90 + inset], maxZoom: 13, animate: false })
+    map.fitBounds(b, { paddingTopLeft: [40, 110], paddingBottomRight: [40, 90 + inset], maxZoom: 15, animate: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusKey, pts.length, map])
   return null

@@ -302,9 +302,13 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
         : laterCount > 0 ? `Personne en ligne maintenant · ${laterCount} disponible${laterCount > 1 ? 's' : ''} plus tard`
           : 'Aucun prestataire pour ce choix'
   const liveByTrade = tradeKeys.map(k => ({ k, n: rawPros.filter(p => p.is_active && actsOf(p).includes(k)).length })).filter(x => x.n > 0)
-  // Les plus proches (au plus 5) cadrés une fois quand la liste a dû être élargie.
-  const focusPts = wide ? [{ lat: userPos.lat, lng: userPos.lng }, ...[...rawPros].sort((a, b) => a.distance_m - b.distance_m).slice(0, 5).filter(p => p.lat != null && p.lng != null).map(p => ({ lat: p.lat, lng: p.lng }))] : undefined
-  const focusKey = wide && rawPros.length ? `w|${userPos.lat.toFixed(3)}|${userPos.lng.toFixed(3)}|${rawPros.length}` : undefined
+  // Les 3 prestataires les plus proches sont TOUJOURS cadrés une fois à l'ouverture (dès que la liste arrive), avec la
+  // position : sans cela, la carte reste au zoom de quartier et affiche un fond vide quand les prestataires sont à
+  // quelques kilomètres (capture iPhone du 23/11 : « 10 en ligne » mais aucune épingle à l'écran). Ensuite l'utilisateur
+  // garde la main : la clé ne change que si la position change de plus d'un kilomètre ou si la liste passe de vide à pleine.
+  const nearest3 = [...rawPros].filter(p => p.lat != null && p.lng != null).sort((a, b) => a.distance_m - b.distance_m).slice(0, 3)
+  const focusPts = nearest3.length ? [{ lat: userPos.lat, lng: userPos.lng }, ...nearest3.map(p => ({ lat: p.lat, lng: p.lng }))] : undefined
+  const focusKey = nearest3.length ? `${wide ? 'w' : 'n'}|${userPos.lat.toFixed(2)}|${userPos.lng.toFixed(2)}` : undefined
   // « Réserver » depuis la feuille : la réservation existante, préremplie (service, moment, description si plusieurs services).
   function reserveFromFind(p: ProviderNearby, o: { trades: string[]; labels: string[]; when: string }) {
     const q = new URLSearchParams({ pro: p.id })
