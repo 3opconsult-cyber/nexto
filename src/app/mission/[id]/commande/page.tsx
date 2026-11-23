@@ -172,6 +172,9 @@ export default function Commande() {
           <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, color: '#0A6F62', background: '#DDF5F0', borderRadius: 999, padding: '3px 9px' }}>Tarif validé · prix figé</span>
         </div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#123644', marginTop: 8 }}>{[trade, pn].filter(Boolean).join(' · ')}</div>
+        <div style={{ fontSize: 12.5, color: '#3d5560', marginTop: 4, lineHeight: 1.5 }}>
+          Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir.
+        </div>
       </div>
 
       {/* Réservation en attente : qui doit répondre, dans quel délai, et la suite. */}
