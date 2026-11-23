@@ -1,0 +1,815 @@
+{
+ "client-mission-ouverture": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages, 55 non lus",
+   "Zoom in",
+   "Zoom out",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "CESU préfinancé",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 15,
+  "sheet": 1,
+  "sheetItems": [
+   "Afficher la liste"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 632,
+   "bottom": 780,
+   "h": 148
+  },
+  "barTop": 729,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ],
+  "snap": "peek"
+ },
+ "client-mission-poignee": {
+  "w": 390,
+  "h": 55
+ },
+ "client-mission-appui1": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages, 55 non lus",
+   "Zoom in",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "CESU préfinancé",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 14,
+  "sheet": 4,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 729,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-mission-appui2": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages, 55 non lus"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 729,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-mission-appui-sequence": [
+  "peek",
+  "half",
+  "full",
+  "peek"
+ ],
+ "client-mission-doigt-haut": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages, 55 non lus",
+   "Zoom in",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "CESU préfinancé",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 14,
+  "sheet": 4,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 729,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-mission-doigt-plein": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages, 55 non lus"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 6,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 729,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-mission-glissements": [
+  {
+   "de": "peek"
+  },
+  {
+   "apresGlisserHautModere": "half"
+  },
+  {
+   "apresGlisserBas": "peek"
+  },
+  {
+   "apresGlisserHautGrand": "full"
+  },
+  {
+   "apresSourisBas": "peek"
+  }
+ ],
+ "client-mission-avant-rechargement": {
+  "snap": "peek"
+ },
+ "client-mission-apres-rechargement": {
+  "snap": "peek"
+ },
+ "client-mission-erreurs": [],
+ "pro-mission-ouverture": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages, 33 non lus",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 11,
+  "sheet": 4,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 5,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": [],
+  "snap": "half"
+ },
+ "pro-mission-poignee": {
+  "w": 390,
+  "h": 55
+ },
+ "pro-mission-appui1": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages, 33 non lus"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 5,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-mission-appui2": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages, 33 non lus",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 11,
+  "sheet": 1,
+  "sheetItems": [
+   "Afficher la liste"
+  ],
+  "tabbar": 5,
+  "small": [],
+  "sheetRect": {
+   "top": 716,
+   "bottom": 780,
+   "h": 64
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-mission-appui-sequence": [
+  "half",
+  "full",
+  "peek",
+  "half"
+ ],
+ "pro-mission-doigt-haut": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages, 33 non lus",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 11,
+  "sheet": 4,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 5,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-mission-doigt-plein": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages, 33 non lus"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 5,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-mission-glissements": [
+  {
+   "de": "peek"
+  },
+  {
+   "apresGlisserHautModere": "half"
+  },
+  {
+   "apresGlisserBas": "peek"
+  },
+  {
+   "apresGlisserHautGrand": "full"
+  },
+  {
+   "apresSourisBas": "peek"
+  }
+ ],
+ "pro-mission-avant-rechargement": {
+  "snap": "peek"
+ },
+ "pro-mission-apres-rechargement": {
+  "snap": "half"
+ },
+ "pro-mission-erreurs": [],
+ "client-sans-mission-ouverture": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages",
+   "Zoom in",
+   "Zoom out",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "CESU préfinancé",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 15,
+  "sheet": 2,
+  "sheetItems": [
+   "Afficher la liste",
+   "Laura Fontaine, 25 €"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 632,
+   "bottom": 780,
+   "h": 148
+  },
+  "barTop": 785,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ],
+  "snap": "peek"
+ },
+ "client-sans-mission-poignee": {
+  "w": 390,
+  "h": 55
+ },
+ "client-sans-mission-appui1": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages",
+   "Zoom in",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "CESU préfinancé",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 14,
+  "sheet": 5,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-sans-mission-appui2": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-sans-mission-appui-sequence": [
+  "peek",
+  "half",
+  "full",
+  "peek"
+ ],
+ "client-sans-mission-doigt-haut": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages",
+   "Zoom in",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "CESU préfinancé",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 14,
+  "sheet": 5,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-sans-mission-doigt-plein": {
+  "chrome": [
+   "Menu",
+   "Devenir prestataire",
+   "Messages"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "client-sans-mission-glissements": [
+  {
+   "de": "peek"
+  },
+  {
+   "apresGlisserHautModere": "half"
+  },
+  {
+   "apresGlisserBas": "peek"
+  },
+  {
+   "apresGlisserHautGrand": "full"
+  },
+  {
+   "apresSourisBas": "peek"
+  }
+ ],
+ "client-sans-mission-avant-rechargement": {
+  "snap": "peek"
+ },
+ "client-sans-mission-apres-rechargement": {
+  "snap": "peek"
+ },
+ "client-sans-mission-erreurs": [],
+ "pro-sans-mission-ouverture": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 11,
+  "sheet": 4,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": [],
+  "snap": "half"
+ },
+ "pro-sans-mission-poignee": {
+  "w": 390,
+  "h": 55
+ },
+ "pro-sans-mission-appui1": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-appui2": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 11,
+  "sheet": 1,
+  "sheetItems": [
+   "Afficher la liste"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 716,
+   "bottom": 780,
+   "h": 64
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-appui-sequence": [
+  "half",
+  "full",
+  "peek",
+  "half"
+ ],
+ "pro-sans-mission-doigt-haut": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 11,
+  "sheet": 4,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 429,
+   "bottom": 780,
+   "h": 351
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-doigt-plein": {
+  "chrome": [
+   "Menu",
+   "Espace client",
+   "Messages"
+  ],
+  "nChrome": 3,
+  "sheet": 6,
+  "sheetItems": [
+   "Réduire ou agrandir la liste",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8"
+  ],
+  "tabbar": 4,
+  "small": [],
+  "sheetRect": {
+   "top": 64,
+   "bottom": 780,
+   "h": 716
+  },
+  "barTop": 785,
+  "pinOverlaps": []
+ },
+ "pro-sans-mission-glissements": [
+  {
+   "de": "peek"
+  },
+  {
+   "apresGlisserHautModere": "half"
+  },
+  {
+   "apresGlisserBas": "peek"
+  },
+  {
+   "apresGlisserHautGrand": "full"
+  },
+  {
+   "apresSourisBas": "peek"
+  }
+ ],
+ "pro-sans-mission-avant-rechargement": {
+  "snap": "peek"
+ },
+ "pro-sans-mission-apres-rechargement": {
+  "snap": "half"
+ },
+ "pro-sans-mission-erreurs": [],
+ "client-bureau-1000x800": {
+  "chrome": [
+   "Devenir prestataire",
+   "Messages, 55 non lus",
+   "Zoom out",
+   "Filtrer par service, près de vous",
+   "Tous",
+   "Ménage",
+   "Repassage",
+   "Nettoyage",
+   "PING : actualiser les prestataires autou",
+   "Déposer une demande",
+   "Recentrer sur ma position",
+   "Laura Fontaine, 25 €",
+   "Audit Pro, 100 €",
+   "Fictif 14, 60 €",
+   "Fictif 13, 22 €/h",
+   "Fictif 3, 19 €/h",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 17,
+  "sheet": 0,
+  "sheetItems": [],
+  "tabbar": 0,
+  "small": [],
+  "sheetRect": {
+   "top": 0,
+   "bottom": 0,
+   "h": 0
+  },
+  "barTop": 0,
+  "pinOverlaps": [
+   "25 € · Nouveau / 100 € · Nouveau"
+  ]
+ },
+ "pro-bureau-1000x800": {
+  "chrome": [
+   "Espace client",
+   "Messages, 32 non lus",
+   "Visible · demandes à moins de 15 km Zone",
+   "Tous mes métiers",
+   "Ménage",
+   "Autres métiers (1)",
+   "Zoom in",
+   "Zoom out",
+   "Recentrer sur ma position et les demande",
+   "Disponible maintenant",
+   "Je suis en intervention ici, visible auj",
+   "Ménage 120 € Ménage · à 369 m · il y a 8",
+   "Exemple — Grand ménage de printemps, mai",
+   "Mes interventions (38) 18 à venir, avec ",
+   "Laisser un commentaire sur cette page"
+  ],
+  "nChrome": 15,
+  "sheet": 0,
+  "sheetItems": [],
+  "tabbar": 0,
+  "small": [
+   "Disponible maintenant 52x30"
+  ],
+  "sheetRect": {
+   "top": 0,
+   "bottom": 0,
+   "h": 0
+  },
+  "barTop": 0,
+  "pinOverlaps": []
+ }
+}

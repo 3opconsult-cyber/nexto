@@ -11,8 +11,8 @@ import { TRADES } from '@/lib/trades'
 import { useCatalog } from '@/lib/catalog'
 import NavDrawer from './NavDrawer'
 import ModeSwitchPill from './ModeSwitchPill'
-import MapSheet, { SHEET_LIFT, sheetH, sheetPx, type SheetSnap } from './MapSheet'
-import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight } from '@/lib/mapChrome'
+import MapSheet, { SHEET_LIFT, SheetFeedbackRow, sheetH, sheetPx, useSheetSnap } from './MapSheet'
+import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight, useBannerH } from '@/lib/mapChrome'
 import { useUnreadTotal } from '@/lib/unread'
 import { Ic, Stars, r1, svcIconKey, ICON } from './PingIcons'
 import LocationAsk from './LocationAsk'
@@ -21,10 +21,6 @@ import { useInitialPosition } from '@/lib/location'
 // LiveMap = react-leaflet + tuiles OSM (comme la carte du Super Admin).
 // Chargé côté client uniquement : Leaflet touche window au chargement.
 const LiveMap = dynamic(() => import('./LiveMap'), { ssr: false })
-// Volet replié de /map : poignée + titre + la 1re ligne entière (audit 19/11 bis n° 12), pour qu'elle
-// ne reste pas cachée sous le bas de l'écran. /pro/carte garde le volet replié par défaut (64 px).
-const MAP_PEEK = 148
-
 // ============================================================
 // COQUE /demo — reproduit le mecanisme .view/.view.on d'app.html.
 // (mode, view) = etat ; go/back/setMode = setState. CSS verbatim inchange.
@@ -76,8 +72,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [recenterTick, setRecenterTick] = useState(0)
   // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
   const [pvId, setPvId] = useState<string | null>(null)
-  // Volet de la liste (mobile) : replié, mi-hauteur ou plein.
-  const [sheet, setSheet] = useState<SheetSnap>('peek')
+  // Volet de la liste (mobile) : réduit (poignée + une ligne), mi-hauteur ou plein ; l'état est mémorisé pour cet écran.
+  // La carte s'ouvre au maximum : réduit par défaut.
+  const [sheet, setSheet] = useSheetSnap('map', 'peek')
+  const bannerH = useBannerH()
   const isDesk = useIsDesktop()
   const [wrapEl, setWrapEl] = useState<HTMLDivElement | null>(null)
   const wrapH = useElementHeight(wrapEl)
@@ -284,13 +282,20 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // ouvert sur mobile (comme la maquette). Sur ordinateur, PING et Recentrer se décalent à gauche
   // du panneau de détail au lieu de passer dessous.
   const ctrlHidden = !isDesk && (sheet === 'full' || pvShow)
-  const ctrlBase = isDesk ? `calc(${SHEET_LIFT} + 24px)` : `calc(${sheetH(sheet, MAP_PEEK)} + ${SHEET_LIFT} + 12px)`
+  // Mobile : les trois boutons tiennent sur UNE rangée au-dessus de la feuille (et du bandeau d'action de la
+  // barre du bas) : « Déposer une demande » à gauche, Recentrer puis PING à droite. Ordinateur : comme avant.
+  const deskLift = 'var(--ping-install-lift, 0px)'
+  const ctrlBase = isDesk ? `calc(${deskLift} + 24px)` : `calc(${sheetH(sheet)} + ${SHEET_LIFT} + 12px)`
   // Sur ordinateur, le panneau de droite est permanent (liste, ou fiche du prestataire choisi).
   const ctrlRight = isDesk ? 410 : 14
   // Bulle verte rangée au-dessus de Recentrer (distance au bas de la fenêtre, sans le bandeau).
   const wrapBottomGap = typeof window !== 'undefined' && wrapEl ? Math.max(0, window.innerHeight - wrapEl.getBoundingClientRect().bottom) : 64
-  const bubbleBottom = wrapH ? wrapBottomGap + (isDesk ? 24 : sheetPx(sheet, wrapH, MAP_PEEK) + 12) + 68 + 40 + 12 : null
-  useFeedbackBubbleSlot(view === 'v_map' ? bubbleBottom : null, view === 'v_map' && !isDesk && (pvShow || sheet === 'full'), isDesk ? 412 : null)
+  const bubbleBottom = wrapH ? wrapBottomGap + 24 + 68 + 40 + 12 : null
+  // Mobile : la bulle flottante est masquée (carte libre, doublon de l'onglet Messages) ; son volet reste
+  // ouvert en un appui par « Laisser un commentaire sur cette page » en bas de la feuille. Ordinateur : bulle inchangée.
+  useFeedbackBubbleSlot(view === 'v_map' ? bubbleBottom : null, view === 'v_map' && !isDesk, isDesk ? 412 : null)
+  // Position de l'utilisateur centrée dans la partie visible de la carte (au-dessus de la feuille et du bandeau).
+  const mapInset = isDesk || !wrapH || pvShow ? 0 : sheetPx(sheet === 'full' ? 'half' : sheet, wrapH) + bannerH
 
   // Aperçu mobile : glisser vers le bas pour fermer, à gauche ou à droite pour passer au suivant.
   const pvRef = useRef<HTMLDivElement>(null)
@@ -371,6 +376,18 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
       {searchList.length === 0 && <p className="sub" style={{ color: 'var(--slate)', padding: '10px 0' }}>{flt.size ? 'Aucun prestataire ne correspond à vos filtres. Retirez-en un dans la recherche pour élargir.' : 'Aucun prestataire disponible pour ce choix. Déposez une demande : les prestataires proches la verront.'}</p>}
     </>
   )
+  // Puces de service (Tous, services du catalogue, CESU préfinancé) : sous la barre sur ordinateur, dans la feuille sur mobile.
+  const serviceChips = (o: { top?: number; inSheet?: boolean }) => (
+    <div className="chips noscroll" role="group" aria-label="Services"
+      style={o.inSheet ? { position: 'static', margin: '0 -16px 6px', padding: '2px 16px 4px', zIndex: 'auto' } : { top: o.top }}>
+      <div className={`chip ${sel.length === 0 ? 'on' : ''}`} role="button" aria-pressed={sel.length === 0} onClick={() => setSel([])}>Tous</div>
+      {/* Services choisis en tête (maquette). */}
+      {[...tradeKeys].sort((a, b) => (sel.includes(b) ? 1 : 0) - (sel.includes(a) ? 1 : 0)).map(k => (
+        <div key={k} className={`chip ${sel.includes(k) ? 'on' : ''}`} role="button" aria-pressed={sel.includes(k)} onClick={() => toggleSel(k)}>{lab(k)}</div>
+      ))}
+      <div className={`chip ${cesuOnly ? 'on' : ''}`} role="button" aria-pressed={cesuOnly} onClick={() => { setCesuOnly(c => !c); setPvId(null) }}>CESU préfinancé</div>
+    </div>
+  )
   function tglFlt(f: string) {
     setFlt(s => { const n = new Set(s); n.has(f) ? n.delete(f) : n.add(f); return n })
   }
@@ -385,59 +402,57 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
           <section className={`view ${view === 'v_map' ? 'on' : ''}`} id="v_map" data-tab="map">
             <div className="body full nopad" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
               <div className="mapwrap" ref={setWrapEl}>
-                <div className="topbar">
+                {/* Mobile : une seule ligne en haut (menu + filtre) ; logo, bascule d'espace (dans le menu) et cloche
+                    (doublon de l'onglet Messages) ne sont montrés que sur ordinateur (.map-desk-only, globals.css). */}
+                <div className="topbar map-topbar">
                   <span className="mobile-only"><NavDrawer dark={false} /></span>
-                  <div className="pinglogo">
+                  <div className="pinglogo map-desk-only">
                     <div className="mark">
                       <svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.2" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".38" /><circle cx="13" cy="13" r="7" fill="none" stroke="var(--teal)" strokeWidth={1.3} opacity=".6" /></svg>
                       <span className="d" />
                     </div>
                     <div><div className="wd">ping</div></div>
                   </div>
-                  <div className="sp" />
-                  <ModeSwitchPill to="pro" />
-                  <button type="button" className="tbell" onClick={() => router.push('/messages')} aria-label={unread ? `Messages, ${unread} non lu${unread > 1 ? 's' : ''}` : 'Messages'} style={{ color: 'var(--ink)', padding: 0 }}>
+                  <div className="sp map-desk-only" />
+                  <span className="map-desk-only" style={{ display: 'contents' }}><ModeSwitchPill to="pro" /></span>
+                  <button type="button" className="tbell map-desk-only" onClick={() => router.push('/messages')} aria-label={unread ? `Messages, ${unread} non lu${unread > 1 ? 's' : ''}` : 'Messages'} style={{ color: 'var(--ink)', padding: 0 }}>
                     <Ic name="msg" size={18} />
                     {unread > 0 && <span className="mq-nb">{unread > 9 ? '9+' : unread}</span>}
                   </button>
                 </div>
 
                 <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
-                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} />
+                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} inset={mapInset} />
                 </div>
 
-                <div className="searchbar" role="button" aria-haspopup="dialog" style={{ top: 66 }} onClick={() => go('v_search')}>
+                <div className="searchbar map-search" role="button" aria-haspopup="dialog" style={{ top: 66 }} onClick={() => go('v_search')}>
                   <div className="lg" style={{ background: 'var(--btnFill)', color: '#fff' }}><Ic name="filter" size={15} /></div>
-                  <div className="tx">{sel.length ? selTxt : 'Filtrer par service, près de vous'}</div>
+                  <div className="tx">{sel.length || cesuOnly ? [selTxt, cesuOnly ? 'CESU préfinancé' : ''].filter(Boolean).join(' · ') : 'Filtrer par service, près de vous'}</div>
                   <span className="chv"><Ic name="down" size={20} /></span>
                 </div>
 
-                <div className="chips noscroll" style={{ top: 128 }}>
-                  <div className={`chip ${sel.length === 0 ? 'on' : ''}`} role="button" aria-pressed={sel.length === 0} onClick={() => setSel([])}>Tous</div>
-                  {/* Services choisis en tête (maquette). */}
-                  {[...tradeKeys].sort((a, b) => (sel.includes(b) ? 1 : 0) - (sel.includes(a) ? 1 : 0)).map(k => (
-                    <div key={k} className={`chip ${sel.includes(k) ? 'on' : ''}`} role="button" aria-pressed={sel.includes(k)} onClick={() => toggleSel(k)}>{lab(k)}</div>
-                  ))}
-                  <div className={`chip ${cesuOnly ? 'on' : ''}`} role="button" aria-pressed={cesuOnly} onClick={() => { setCesuOnly(c => !c); setPvId(null) }}>CESU préfinancé</div>
-                </div>
+                {/* Ordinateur : puces sous la barre. Mobile : les mêmes puces sont dans la feuille (et dans l'écran de filtre). */}
+                {isDesk && serviceChips({ top: 128 })}
 
                 {!ctrlHidden && (<>
                   <div className="pingbtn" role="button" aria-label="PING : actualiser les prestataires autour de vous" onClick={() => loadPros()} style={{ bottom: ctrlBase, right: ctrlRight }}><span className="halo" /><span className="lbl">PING</span></div>
                   {/* Déposer une annonce (Romain 31/10 : introuvable depuis la carte). Masqué quand une fiche est ouverte. */}
                   {!pvShow && (
                     <button type="button" onClick={() => router.push('/client/demandes/new')}
-                      style={{ position: 'absolute', left: 14, bottom: ctrlBase, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, minHeight: 48, boxSizing: 'border-box', padding: '0 18px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
+                      style={{ position: 'absolute', left: 14, bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 4px)`, zIndex: 32, display: 'flex', alignItems: 'center', gap: 8, minHeight: 48, boxSizing: 'border-box', padding: '0 18px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
                       <Ic name="plus" size={16} />
                       Déposer une demande
                     </button>
                   )}
-                  <div className="loc" role="button" aria-label="Recentrer sur ma position" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: `calc(${ctrlBase} + 68px)`, right: ctrlRight + 8, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>
+                  <div className="loc" role="button" aria-label="Recentrer sur ma position" onClick={() => setRecenterTick(t => t + 1)} style={isDesk ? { bottom: `calc(${ctrlBase} + 68px)`, right: ctrlRight + 8, color: 'var(--ink)' } : { bottom: `calc(${ctrlBase} + 6px)`, right: ctrlRight + 56 + 10, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>
                 </>)}
 
                 {/* Volet de la liste (mobile) : remplacé par l'aperçu quand un prestataire est choisi. */}
                 {!pvShow && (
-                  <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle} peek={MAP_PEEK}>
+                  <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}>
+                    {!isDesk && serviceChips({ inSheet: true })}
                     {listBody}
+                    <SheetFeedbackRow />
                   </MapSheet>
                 )}
 
