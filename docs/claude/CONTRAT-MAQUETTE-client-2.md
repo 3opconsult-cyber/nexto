@@ -9,7 +9,7 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Conversation | Devis avec accepter / refuser / contre-proposer ; « Vous percevez » côté pro | OK (code) | src/components/MissionRecap.tsx:158 ; Q001 Q132 |
 | Conversation | Rendez-vous et adresse dans la conversation après accord | OK (code) | src/components/AddressChoice.tsx:79 ; Q002 ; adresse masquée sans numéro jusqu'à acceptation |
 | Conversation | Bon de commande ouvert depuis le chat (« Voir la commande ») | OK (code) | src/components/presence/OrderCardLink.tsx:14 ; D-14 ; écritures non testées |
-| Conversation | Retour : l'écran d'arrivée n'est jamais deux fois dans l'historique | OK (code) | src/components/RetourLink.tsx:6 ; Q128 |
+| Conversation | Retour : l'écran d'arrivée n'est jamais deux fois dans l'historique | NON VÉRIFIÉ | RetourLink.tsx:6 est seulement un lien « Retour à la conversation / à mon annonce » (?retour=) ; la propriété d'historique se mesure au navigateur. Statut OK (code) retiré le 23/11. Q128 |
 | Heure entamée | Seuil réglable ; forfait seul jamais ajusté ; horaire min 1 h ; affichée au scan de fin | OK (code) | src/lib/pricing.ts:39 ; Q010 Q091 ; invariant 4 ; seuil 10 min en base (A-TRANCHER q) |
 | Facture | En-tête du prestataire seul ; frais PING séparés | OK (code) | src/components/MissionRecap.tsx:152 ; A13 Q059 Q109 ; 3 factures (invariant 2) |
 | Facture | PDF : espace fine des milliers, taux appliqué | OK (code) | src/lib/invoice-pdf.ts:154 ; Q137 ; A-TRANCHER s (taux affiché sur les PDF) |
@@ -26,7 +26,7 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Litiges | Liste de tous les dossiers, ouverts d'abord ; pluriels justes | OK (code) | src/app/litiges/page.tsx:14 ; A36 Q130 |
 | Litige | Dossier /litiges/[id] : auteur et heure sur chaque message ; statut lu partout | OK (code) | src/app/litiges/[id]/page.tsx:182 ; Q111 Q134 ; D-05 |
 | Litige | Arrangement à l'amiable : un montant, Proposer, accepter / refuser (3 appuis) | OK (code) | src/components/AmicableSettlement.tsx:134 ; Q185 Q186 Q188 ; décision 18/11 (HISTORIQUE.md l.627) ; colonnes d'accord 040 : à coller, non vérifié |
-| Litige | Décision PING par un admin | OK (code) | src/app/litiges/[id]/page.tsx:297 ; D-05 : non jouée faute de compte admin |
+| Litige | Décision PING par un admin | OK (code) | src/app/litiges/[id]/page.tsx:118 (rpc ping_decide_dispute) et :425 ; D-05 : non jouée faute de compte admin |
 | Signaler un problème | Bouton dans l'agenda, 24 h après la fin | OK (code) | src/app/agenda/page.tsx:241 ; Q134 ; D-06 |
 | Avoir | Avoir AVOIR-… visible (écran, facture, PDF), virement ajusté | OK (code) | src/components/TransferCard.tsx:48 ; Q187 ; décision 18/11 |
 | Mon profil | Hub : Mon compte, documents, favoris, parrainage (compteurs seuls) | OK (code) | src/app/client/profil/page.tsx:119 ; A14 Q081 ; invariant 17 |

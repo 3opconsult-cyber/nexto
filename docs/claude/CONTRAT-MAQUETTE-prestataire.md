@@ -20,10 +20,10 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Qualification | Ajout par domaine (bâtiment, nettoyage, garde d'enfants, autre) avec justificatif | OK (code) | src/lib/catalog.ts:62 ; A18 Q050 ; texte « RGE » / « petite enfance » absent de l'interface, catalogue en base non lu |
 | Mon entreprise | Vérifications : statut par ligne (identité, URSSAF, RC Pro, décennale) | OK (code) | src/app/pro/documents/page.tsx:55 ; A17 Q049 Q153 ; seul le bâtiment exige la décennale non confirmé |
 | Mon entreprise | Pièce refusée : motif et « Renvoyer une pièce » | OK (code) | src/app/pro/documents/page.tsx:264 ; Q100 Q035 ; D-09 pastille admin non vue |
-| Mon entreprise | Pièces expirées : alerte à 45 jours, statut expired | OK (code) | src/app/pro/documents/page.tsx:62 ; A27 Q163 ; HISTORIQUE.md l.648 |
+| Mon entreprise | Pièces expirées : alerte à 45 jours, statut expired | OK (code) | src/app/pro/dashboard/page.tsx:59 (commentaire) et src/app/pro/documents/page.tsx:268 (alerte exp.days) ; A27 Q163 ; HISTORIQUE.md l.648 |
 | Mon entreprise | « Il vous reste… » jauge de complétude | OK (code) | src/lib/listing.ts:67 ; Q032 Q153 |
 | Mon entreprise | Hub : Mon annonce, Mes pièces, Mes paiements | OK (code) | src/app/pro/dashboard/page.tsx:14 ; Q081 ; invariant 10 ligne Hub |
-| Fiche publique | Aperçu seul ; seules les pièces validées par un admin figurent | OK (code) | src/components/ProListingPreview.tsx:61 ; Q027 Q028 Q103 |
+| Fiche publique | Aperçu seul ; seules les pièces validées par un admin figurent | OK (code) | src/app/pro/[id]/page.tsx:180 (profil vérifié si pièce validée) ; ProListingPreview.tsx:64 n'affiche que « Pièce d'identité fournie » ; Q027 Q028 Q103 |
 | Mon annonce | Photos, accroche, présentation, points forts, zone, galerie | OK (code) | src/app/pro/annonce/page.tsx:296 ; Q032 ; écran « Photo et présentation » de la maquette devenu « Mon annonce » |
 | Mon annonce | « Voir comme un client » | OK (code) | src/app/pro/annonce/page.tsx:225 ; A21 |
 | Statut, TVA, CESU | Forme juridique, TVA ou art. 293 B, n° SAP, CESU préfinancé | OK (code) | src/app/pro/onboarding/page.tsx:475 ; Q189 Q190 Q195 ; décision 18/11 (HISTORIQUE.md l.628) |
@@ -36,7 +36,7 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Billet de mission | « Client sur place » / « Client absent » sur le billet | OK (code) | src/components/presence/PresenceTag.tsx:8 ; Q200 |
 | Réservation reçue | Accepter (1 appui) / Refuser ; expirée disparaît | OK (code) | src/components/BookingCard.tsx:96 ; D-03 faite ; Q003 |
 | Adresse à valider | Adresse sans numéro ; le pro accepte ou refuse | OK (code) | src/components/AddressChoice.tsx:79 ; Q003 Q095 ; 023 |
-| Je pars | Bouton « Je pars » seulement après acceptation, le jour du rendez-vous | OK (code) | src/components/DepartureBar.tsx:128 ; Q095 Q172 Q151 |
+| Je pars | Bouton « Je pars » seulement après acceptation | OK (code) | src/components/DepartureBar.tsx:60 (bookable = confirmé) et :128 ; « le jour du rendez-vous » : aucune garde de date trouvée dans DepartureBar, voir ligne MANQUE suivante ; Q095 Q172 Q151 |
 | Je pars | Avertissements « Vous partez tôt », « En avance de… », « Rendez-vous dépassé » | MANQUE | Aucun de ces textes dans le code (recherche exacte) ; A41 Q173 |
 | Mission du jour | Une action par étape : Je pars, Scanner le QR du client, Terminer, Voir mes factures | OK (code) | src/components/DepartureBar.tsx:213 ; Q172 A37 |
 | QR | Scanner le QR du client ; viseur intégré ; aucune position aux scans | OK (code) | src/components/presence/QrScanner.tsx:31 ; A40 Q034 Q164 Q165 Q170 Q171 ; invariant 8 ; RPC arrive_with_token en base : non lue |

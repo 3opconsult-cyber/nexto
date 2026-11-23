@@ -1,7 +1,7 @@
 # Contrat de fidélité maquette / application (créé le 23/11/2026, première passe)
 Ce fichier dit, ligne par ligne, si l'application reproduit la maquette. Il est lu par le gardien de fidélité (`.claude/agents/gardien-fidelite.md`) et avant tout chantier de design.
 Maquette : `docs/maquette/maquette-ping-v11.html` (18/11/2026) ; lignes sources : `docs/maquette/data.js` (A01 à A43 = onglet Audit, Q001 à Q205 = Contrôle qualité, numérotés dans l'ordre du fichier) + écrans de la liste « Aller directement à un écran ».
-Les statuts de `data.js` (18/11) NE sont PAS recopiés : chaque ligne a été relue dans `src/` et `public/` au commit b4c6437 (dernier déploiement de production vérifié le 22/11 par l'agent principal ; les commits suivants ne changent que `docs/`).
+Les statuts de `data.js` (18/11) NE sont PAS recopiés : chaque ligne a été relue dans `src/` et `public/` au commit b4c6437 ; la production est le commit 4d87563 (déploiement READY lu dans l'API Vercel le 23/11 par l'agent principal, égal à la tête de main ; écart avec b4c6437 : documentation seulement). Deuxième passe du 23/11 : échantillon de 41 lignes « OK (code) » recontrôlé, 7 références corrigées, 2 statuts retirés, 1 VOULU repassé en MANQUE.
 Un texte est copié du code, jamais retapé ; une ligne ne passe à OK qu'avec une preuve en production (texte, classe CSS ou mesure) ; sinon « OK (code) » + fichier:ligne.
 Un écart n'est VOULU que si Romain l'a décidé (date et source citées) ; un écart non décidé est MANQUE. Mise à jour : le gardien et l'agent principal, après chaque mise en production.
 
@@ -16,12 +16,12 @@ Un écart n'est VOULU que si Romain l'a décidé (date et source citées) ; un �
 | Profil | OK | OK (code) | MANQUE | VOULU | NON VÉRIFIÉ | Total |
 |---|---|---|---|---|---|---|
 | Site public | 0 | 12 | 0 | 0 | 1 | 13 |
-| Particulier | 0 | 72 | 2 | 6 | 2 | 82 |
+| Particulier | 0 | 70 | 3 | 5 | 4 | 82 |
 | Prestataire | 0 | 47 | 3 | 2 | 0 | 52 |
 | Administration | 0 | 27 | 2 | 2 | 4 | 35 |
-| **Total** | 0 | 158 | 7 | 10 | 7 | 182 |
+| **Total** | 0 | 156 | 8 | 9 | 9 | 182 |
 
-Aucune ligne n'est « OK » : la production n'a pas pu être lue (voir « Limites de la preuve »). Les 248 lignes de `data.js` sont regroupées en lignes d'élément (doublons Audit / Contrôle qualité fusionnés, identifiants A / Q rappelés dans chaque note) ; aucune ligne de `data.js` n'est omise.
+Avant la deuxième passe : OK (code) 158, MANQUE 7, VOULU 10, NON VÉRIFIÉ 7. Aucune ligne n'est « OK » : la production n'a pas pu être lue (voir « Limites de la preuve »). Les 248 lignes de `data.js` sont regroupées en lignes d'élément (doublons Audit / Contrôle qualité fusionnés, identifiants A / Q rappelés dans chaque note) ; aucune ligne de `data.js` n'est omise.
 
 ## Fichiers de détail (tableau : Écran ou onglet | Élément | Statut | Note)
 - `CONTRAT-MAQUETTE-public.md` : site public, inscription, connexion, CGU, page introuvable.
@@ -38,9 +38,8 @@ Aucune ligne n'est « OK » : la production n'a pas pu être lue (voir « Limite
 ## VOULU : écarts décidés par Romain
 | Écart avec la maquette | Décision (date, source) | Détail |
 |---|---|---|
-| Carte aux couleurs de l'animation, fond OpenFreeMap ; variante type Waze en essai | Romain 17-18/11/2026, consigne de l'agent principal du 23/11 ; DEMANDES.md D-01 ; pile décrite dans HISTORIQUE.md l.26. Source écrite de la décision elle-même : non trouvée dans HISTORIQUE.md (à y ajouter) | CONTRAT-MAQUETTE-client.md |
 | Vitres absent du catalogue proposé ; fin de chantier et remise en état hors catalogue ; mono-produit ménage / repassage / nettoyage | HISTORIQUE.md l.47 (mono-produit) et l.622 (décision 07/11, services extensibles par catalogue) ; A-TRANCHER n | client, prestataire, admin |
-| Séquestre écrit mais éteint ; virement SEPA d'abord | A-TRANCHER b et d ; HISTORIQUE.md l.336 ; DEMANDES.md D-19 (aucun prestataire de paiement choisi) | client, admin |
+| Séquestre écrit mais éteint ; virement SEPA d'abord | A-TRANCHER b et d ; HISTORIQUE.md l.567 (« Virement SEPA, 31/10 : décision Romain, virement d'abord, séquestre en suspens ») ; DEMANDES.md D-19 (aucun prestataire de paiement choisi). L.336 citée avant est fausse : elle dit l'inverse (A-TRANCHER d) | client, admin |
 | Menu à 4 entrées ; pas de bouton central « Demander » ; entrée « Mission » conservée les jours de mission | Romain 30/10 (HISTORIQUE.md l.36) ; « Navigation validée » 18/11 (l.629) ; A-TRANCHER r | client, prestataire |
 | « Profil vérifié par PING » seulement si pièces validées (maquette : « contrôlée par PING ») | Exception 03/11 (HISTORIQUE.md l.71) ; A-TRANCHER e ; jamais « certifié » ni « garanti » | client |
 | Annulation : 3 paliers et frais totaux après l'arrivée (maquette : 15 % après « en route ») | Romain 20/11 (HISTORIQUE.md l.662-663 et l.679) ; A-TRANCHER a ; DEMANDES.md D-07 | client |
@@ -48,6 +47,7 @@ Aucune ligne n'est « OK » : la production n'a pas pu être lue (voir « Limite
 Écarts cités dans la consigne mais NON retenus comme VOULU : « annonce non modifiable » (DEMANDES.md D-17 dit que Romain veut « modifiable », aucune décision contraire trouvée : ligne MANQUE) ; « nouveau prestataire réservable » (la maquette le montre aussi : OK (code)).
 
 ## MANQUE ouverts (à traiter ou à trancher par Romain)
+- client, Carte : fond OpenFreeMap / variante Waze, aucune décision écrite de Romain (ex-VOULU, repassé MANQUE le 23/11) (détail : CONTRAT-MAQUETTE-client.md)
 - client, Déposer une demande : « Modifier » une annonce déjà publiée (détail : CONTRAT-MAQUETTE-client.md)
 - client, Paiements : Rubrique « Pourboires annoncés » (intention non prélevée) (détail : CONTRAT-MAQUETTE-client-2.md)
 - pro, Création de l'activité : Compte d'abord, 4 étapes exactement (détail : CONTRAT-MAQUETTE-prestataire.md)

@@ -15,6 +15,6 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Choisir une ville | Villes proposées, carte recentrée, distances calculées depuis la ville | OK (code) | src/components/LocationAsk.tsx:12 ; Q116 Q127 ; 7 villes |
 | Connexion | Mot de passe oublié, e-mail contrôlé | OK (code) | src/app/auth/login/page.tsx:53 ; Q080 Q141 |
 | Connexion | Carte blanche sur fond navy, titres Quicksand | OK (code) | src/components/TransferCard.tsx:116 ; Q080 ; rendu non mesuré |
-| Conditions générales | Clause « PING est une plateforme de mise en relation… ne garantit ni la solvabilité ni la qualité » | OK (code) | src/components/DemoShell.tsx:522 ; Q183 ; texte provisoire, validation juridique à faire (A-TRANCHER j) |
+| Conditions générales | Clause « PING est une plateforme de mise en relation… ne garantit ni la solvabilité ni la qualité » | OK (code) | src/app/cgu/page.tsx:25 ; Q183 ; texte provisoire, validation juridique à faire (A-TRANCHER j) |
 | Page introuvable | Vraie page d'erreur avec retour (plus le prototype) | OK (code) | src/app/not-found.tsx:14 ; A24 Q057 |
 | Pages publiques hors maquette | /plaquettes, /animation-courte, /l/ins, /confidentialite, /aide | NON VÉRIFIÉ | Production injoignable depuis cet environnement : 403 Vercel (voir CONTRAT-MAQUETTE.md) |

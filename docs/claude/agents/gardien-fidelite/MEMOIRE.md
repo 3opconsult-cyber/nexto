@@ -20,3 +20,8 @@
 - Ne pas corriger ni proposer du code : consigner l'écart.
 - Ne pas marquer OK sur la seule foi d'un rapport d'agent : vérifier la preuve.
 - Ne pas recopier un mot de passe de test dans un rapport.
+## Leçons de la deuxième passe (23/11/2026, sans production)
+- Échantillon de 41 « OK (code) » : 7 références pointaient la mauvaise ligne ou le mauvais fichier (CGU, Décision PING, pastille, pièces 45 jours, Je pars, fiche publique, aperçu) ; 2 affirmations non prouvées par la ligne citée (Hors ligne retiré de la liste, Retour sans doublon d'historique) : toujours lire la ligne citée, pas seulement le fichier.
+- Un VOULU exige une décision écrite de Romain : la pile technique (HISTORIQUE l.26) n'est pas une décision ; la carte OpenFreeMap est repassée MANQUE. HISTORIQUE l.336 dit l'inverse du séquestre éteint : la décision est l.567.
+- `providers_nearby` en production n'est pas dans le dépôt (058 l.18) : ce que la liste affiche se prouve en production seulement.
+- DEMANDES.md : des chiffres de tests (34/34, 42/42) ne correspondaient pas à ETAT.md (35/35, 41/42) : comparer au dépôt avant de croire une ligne « faite ».

@@ -5,13 +5,13 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 
 | Écran ou onglet | Élément | Statut | Note |
 |---|---|---|---|
-| Carte | Fond de carte aux couleurs de l'animation (OpenFreeMap) ; variante type Waze en essai | VOULU | Décision Romain 17-18/11 (consigne agent principal 23/11 ; DEMANDES D-01 ; pile décrite HISTORIQUE.md l.26) ; variante sur /map?carte=waze (cfef3bb), défaut inchangé ; source écrite de la décision : non trouvée dans HISTORIQUE.md. Q075 Q082 |
+| Carte | Fond de carte aux couleurs de l'animation (OpenFreeMap) ; variante type Waze en essai | MANQUE | Décision Romain 17-18/11 (consigne agent principal 23/11 ; DEMANDES D-01 ; pile décrite HISTORIQUE.md l.26) ; variante sur /map?carte=waze (cfef3bb), défaut inchangé ; AUCUNE décision écrite trouvée (HISTORIQUE.md l.26 décrit seulement la pile technique ; JOURNAL l.33 et DEMANDES D-01 : variante Waze, défaut inchangé) : repassé de VOULU à MANQUE le 23/11, Romain doit la consigner ou la trancher. Q075 Q082 |
 | Carte | Glisser, zoom (molette, boutons), recentrer | OK (code) | src/components/LiveMap.tsx:194 ; Q016 Q143 |
-| Carte | Pastille prestataire : initiale, prix, note, point vert si disponible | OK (code) | src/components/DemoShell.tsx:151 ; Q017 Q078 ; gouttes 40 px non mesurées |
+| Carte | Pastille prestataire : initiale, prix, note, point vert si disponible | OK (code) | src/components/LiveMap.tsx:141-145 ; Q017 Q078 ; gouttes 40 px non mesurées |
 | Carte | Puces de service : Tous, Ménage, Repassage, Nettoyage ; sélection multiple | OK (code) | src/components/DemoShell.tsx:415 ; A06 Q053 Q087 |
 | Carte | Puce « Vitres » (et fin de chantier, autre service) proposée | VOULU | Mono-produit ménage / repassage / nettoyage (+ vitres en base, non proposé) : HISTORIQUE.md l.47 ; catalogue extensible en données, décision 07/11 (l.622) ; A-TRANCHER n. A06 Q053 |
 | Carte | Sélecteur : ceux qui font tout d'abord, puis « Font une partie de vos choix » | OK (code) | src/components/DemoShell.tsx:363 ; Q107 |
-| Carte | Hors ligne retiré de la liste, non réservable | OK (code) | src/components/DemoShell.tsx:151 ; Q087 Q131 |
+| Carte | Hors ligne retiré de la liste, non réservable | NON VÉRIFIÉ | Non réservable : bouton Réserver absent si inactif (src/components/DemoShell.tsx:178) ; épingle grise « Hors ligne » (src/components/LiveMap.tsx:142). Mais le libellé « Hors ligne pour le moment » (DemoShell.tsx:151) montre que ces prestataires restent listés ; la définition de providers_nearby en production n'est pas dans le dépôt (058 l.18). Statut OK (code) retiré le 23/11 ; Q087 Q131 |
 | Carte | Filtre « CESU préfinancé » et mention dans la liste, l'aperçu et la fiche | OK (code) | src/components/DemoShell.tsx:146 ; Q192 |
 | Carte | Volet à 3 positions, poignée « Afficher la liste », glisser distinct du toucher | OK (code) | src/components/MapSheet.tsx:53 ; A07 Q039 Q051 |
 | Carte | Boutons de carte au-dessus du volet, jamais recouverts | NON VÉRIFIÉ | Disposition à mesurer en navigateur : non fait. Q058 |
@@ -35,7 +35,7 @@ Statuts : OK, OK (code), MANQUE, VOULU, NON VÉRIFIÉ. « OK (code) » = texte o
 | Réservation | Réservation à accepter par le prestataire (24 h ou 2 h avant) ; refus / expiration visibles | OK (code) | src/components/BookingCard.tsx:96 ; D-03 ; Q120 |
 | Réservation | Devis en attente « Remplacé » à la réservation ; plus de « Proposer un tarif » | OK (code) | src/app/mission/[id]/chat/page.tsx:1152 ; Q120 ; règle suprême du tarif (invariant 3) |
 | Commande validée | Écran « Commande validée » : prestation, frais PING, total, virement sur facture | OK (code) | src/app/mission/[id]/commande/page.tsx:86 ; A43 Q198 ; D-14 |
-| Commande validée | Séquestre / paiement en ligne actif | VOULU | Écrit mais ÉTEINT : virement SEPA d'abord (A-TRANCHER b et d ; HISTORIQUE.md l.336 ; DEMANDES D-19) |
+| Commande validée | Séquestre / paiement en ligne actif | VOULU | Écrit mais ÉTEINT : virement SEPA d'abord (A-TRANCHER b et d ; HISTORIQUE.md l.567 ; DEMANDES D-19) |
 | Présence | « Je serai sur place » / « Je ne serai pas sur place » juste après la commande | OK (code) | src/components/presence/PresenceChoice.tsx:33 ; A43 Q181 Q199 |
 | Agenda | Onglets En cours, Calendrier, Terminées, Factures ; vues | OK (code) | src/app/agenda/page.tsx:30 ; A11 Q004 Q062 Q197 |
 | Agenda | Billet « Mission du jour » dans Aujourd'hui avec l'action de l'étape | OK (code) | src/app/agenda/page.tsx:206 ; A37 Q179 |
