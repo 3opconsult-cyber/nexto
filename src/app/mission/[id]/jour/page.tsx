@@ -59,9 +59,12 @@ export default function MissionDuJour() {
 
   const load = useCallback(async () => {
     const supabase = createClient()
-    const { data: t } = await supabase.from('transactions')
+    const { data: t, error: loadError } = await supabase.from('transactions')
       .select('*, requests(address, category, title)').eq('id', txId).maybeSingle()
+    // Coupure réseau : on garde l'écran et l'état local tels quels, la relecture suivante (5 s) réessaie.
+    if (loadError) return
     if (!t) { setMissing(true); return }
+    setMissing(false)
     setTx(t)
     const ok = await presenceAvailable(supabase)
     setV2(ok)
