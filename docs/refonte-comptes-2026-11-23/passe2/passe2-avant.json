@@ -1,0 +1,65 @@
+{
+ "client-profil": {
+  "mots": 100,
+  "motsPage": 120,
+  "boutons": 14,
+  "boutonsPage": 15,
+  "hauteur": 908,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "zone": {
+   "mots": 35,
+   "boutons": 1,
+   "hauteurPx": 279
+  }
+ },
+ "client-agenda": {
+  "mots": 104,
+  "motsPage": 429,
+  "boutons": 17,
+  "boutonsPage": 48,
+  "hauteur": 3542,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "zone": {
+   "mots": 18,
+   "boutons": 1,
+   "hauteurPx": 224
+  }
+ },
+ "pro-entreprise": {
+  "mots": 95,
+  "motsPage": 250,
+  "boutons": 15,
+  "boutonsPage": 29,
+  "hauteur": 2352,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "zone": {
+   "entetePx": 138,
+   "carteIdentitePx": 314,
+   "carteIdentiteMots": 18,
+   "carteIdentiteBoutons": 4
+  }
+ },
+ "pro-agenda": {
+  "mots": 111,
+  "motsPage": 415,
+  "boutons": 17,
+  "boutonsPage": 47,
+  "hauteur": 3510,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "zone": {
+   "mots": 29,
+   "boutons": 1,
+   "hauteurPx": 297
+  }
+ },
+ "bureau-1000": {
+  "reserver": 1
+ },
+ "bureau-1440": {
+  "reserver": 1
+ }
+}

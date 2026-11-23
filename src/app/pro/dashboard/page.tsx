@@ -67,6 +67,7 @@ export default function ProDashboard() {
   const [taxId, setTaxId] = useState<string | null>(null)
   const [hasIban, setHasIban] = useState(false)
   const [more, setMore] = useState(false)
+  const [idOpen, setIdOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -147,118 +148,43 @@ export default function ProDashboard() {
   const docAlerts = documentAlerts(docRowsFull)
   const piecesTodo = docAlerts.length > 0 || !(idOk && rcOk)
 
+  const live = available && !pro?.payments_suspended_at
+  // Premier écran compact (passe 2, 23/11) : une ligne par bloc, l'action en attente d'abord ; la fiche
+  // (couverture, logo, fiche publique, tarifs) est derrière un appui sur la ligne de l'entreprise.
+  const identityName = pro ? (pro.company_name || `Entreprise de ${firstName || ''}`.trim()) : ''
+
   return (
     <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
-      <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
-
       {tab === 'hub' ? (
-        <div style={{ padding: '20px 20px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>Mon entreprise</div>
-          <button onClick={toggleAvailable}
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <NavDrawer />
+          <div style={{ flex: 1, minWidth: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff', whiteSpace: 'nowrap' }}>Mon entreprise</div>
+          <button onClick={toggleAvailable} aria-pressed={available}
             style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
             {available ? '● Visible sur la carte' : '○ Masqué'}
           </button>
         </div>
       ) : (
-        <div style={{ padding: '20px 20px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button type="button" aria-label="Retour à Mon entreprise" onClick={() => setTab('hub')} style={{ width: 44, height: 44, borderRadius: 12, border: 'none', background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
-          </button>
-          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff' }}>{TAB_TITLES[tab]}</div>
-        </div>
+        <>
+          <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
+          <div style={{ padding: '20px 20px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button type="button" aria-label="Retour à Mon entreprise" onClick={() => setTab('hub')} style={{ width: 44, height: 44, borderRadius: 12, border: 'none', background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
+            </button>
+            <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff' }}>{TAB_TITLES[tab]}</div>
+          </div>
+        </>
       )}
 
-      <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '22px 18px', minHeight: '70vh' }}>
+      <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '16px 18px 22px', minHeight: '70vh' }}>
         {tab === 'hub' && pro && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <ProSuspensionBanner />
-            {/* « Mon annonce » en tête, comme l'annonce d'un hôte Airbnb : état et complétude. */}
-            {(() => {
-              const live = available && !pro.payments_suspended_at
-              return (
-                // Carte « Mon annonce » de la maquette (.annc) : titre, étiquette d'état, jauge, conseil.
-                <button onClick={() => router.push('/pro/annonce')}
-                  style={{ textAlign: 'left', width: '100%', padding: 14, borderRadius: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                    border: `1px solid ${live ? 'rgba(18,179,156,.45)' : '#E7EDEB'}`, background: live ? 'rgba(18,179,156,.06)' : '#fff' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <b style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Mon annonce</b>
-                    <span className={`mq-tag ${live ? '' : 'warn'}`} style={pro.payments_suspended_at ? { background: '#FEE2E2', color: '#C0503A' } : undefined}>
-                      {pro.payments_suspended_at ? 'Suspendue' : live ? 'En ligne, visible sur la carte' : 'Hors ligne'}
-                    </span>
-                  </div>
-                  {listingPct != null && (
-                    <>
-                      <div style={{ height: 6, borderRadius: 999, background: '#E3EBE9', overflow: 'hidden', margin: '10px 0 4px' }}>
-                        <div style={{ width: `${listingPct}%`, height: '100%', background: '#12B39C', borderRadius: 999 }} />
-                      </div>
-                      <small style={{ display: 'block', fontSize: 11.5, color: '#4E6470', lineHeight: 1.45 }}>
-                        Complète à {listingPct} %{listingPct < 100 ? ' · voir ce qui manque' : ''}
-                      </small>
-                    </>
-                  )}
-                </button>
-              )
-            })()}
-            <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
-              <div style={{
-                height: 110, position: 'relative',
-                background: pro.photo_url ? `url(${pro.photo_url}) center/cover` : 'linear-gradient(160deg,#12B39C,#0B8374)',
-              }}>
-                <input id="cover-input" type="file" accept="image/*" style={{ display: 'none' }}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('cover', f) }} />
-                <label htmlFor="cover-input" aria-label="Changer la photo de couverture" style={{
-                  position: 'absolute', right: 8, top: 8, width: 44, height: 44, borderRadius: '50%',
-                  background: 'rgba(18,54,68,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }}>
-                  {uploading === 'cover'
-                    ? <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>…</span>
-                    : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>}
-                </label>
-              </div>
 
-              <div style={{ padding: '0 16px 16px', marginTop: -32 }}>
-                <div style={{ position: 'relative', width: 64, height: 64 }}>
-                  <div style={{
-                    width: 64, height: 64, borderRadius: 16, border: '3px solid #fff', overflow: 'hidden',
-                    background: pro.logo_url ? `url(${pro.logo_url}) center/cover` : '#12B39C',
-                    display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff',
-                  }}>
-                    {!pro.logo_url && (pro.company_name || firstName || '?').charAt(0).toUpperCase()}
-                  </div>
-                  <input id="logo-input" type="file" accept="image/*" style={{ display: 'none' }}
-                    onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('logo', f) }} />
-                  {/* Un seul « + » dans le cadre (celui de la couverture, comme la maquette) : le logo se change en touchant le logo. */}
-                  <label htmlFor="logo-input" aria-label="Changer le logo" style={{ position: 'absolute', inset: 0, cursor: 'pointer', borderRadius: 16 }}>
-                    {uploading === 'logo' && <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: 'rgba(18,54,68,.45)', borderRadius: 16, color: '#fff', fontSize: 11, fontWeight: 700 }}>…</span>}
-                  </label>
-                </div>
-
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644', marginTop: 10 }}>
-                  {pro.company_name || `Entreprise de ${firstName || ''}`.trim()}
-                </div>
-                <div style={{ fontSize: 12.5, color: '#4E6470', marginTop: 3 }}>
-                  {firstName ? `${firstName} · ` : ''}{legalLabel(pro.legal_status)}{city ? ` · ${city}` : ''}
-                </div>
-                {/* Note (maquette) : étoiles au prorata, ou « Nouveau ». */}
-                <p style={{ marginTop: 4, fontSize: 13, color: '#123644' }}>
-                  {pro.rating > 0 ? <><Stars r={pro.rating} size={13} /> <b>{r1(pro.rating)}</b> <span style={{ color: '#4E6470' }}>({pro.reviews_count || 0} avis)</span></> : <span style={{ color: '#4E6470' }}>Nouveau, pas encore d&apos;avis</span>}
-                </p>
-                {/* Maquette : deux boutons, « Ma fiche publique » et « Mes tarifs » (la ligne Hub « Mes tarifs » est retirée : un seul accès). */}
-                <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                  <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ flex: 1, minHeight: 56, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
-                    <Ic name="eye" size={18} />Ma fiche publique
-                  </button>
-                  <button type="button" className="btn ghost" onClick={() => router.push('/pro/tarifs')} style={{ flex: 1, minHeight: 56, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
-                    <Ic name="tag" size={18} />Mes tarifs
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Réservations directes à accepter (052) : un appui ouvre la conversation, où sont Accepter / Refuser. */}
+            {/* Ce qui attend une réponse passe en premier : réservation à accepter, pièces, litige, éléments manquants. */}
             {bookings.length > 0 && (
               <button type="button" onClick={() => router.push(`/mission/${bookings[0].id}/chat`)}
-                style={{ width: '100%', margin: '0 0 12px', minHeight: 56, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 14, border: '1.5px solid #F2A93B', background: '#FFF7ED', textAlign: 'left', cursor: 'pointer' }}>
+                style={{ width: '100%', minHeight: 56, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 14, border: '1.5px solid #F2A93B', background: '#FFF7ED', textAlign: 'left', cursor: 'pointer' }}>
                 <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', background: '#E8743B', flexShrink: 0 }} />
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>
@@ -271,17 +197,19 @@ export default function ProDashboard() {
             )}
 
             {docAlerts.length > 0 && (
-              <div role="status" style={{ margin: '0 0 12px', padding: '12px 14px', borderRadius: 14, background: '#fff', border: `1px solid ${docAlerts.some(a => a.urgent) ? 'rgba(255,122,102,.45)' : 'rgba(242,169,59,.5)'}` }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', marginBottom: 6 }}>Mes pièces : à mettre à jour</div>
-                {docAlerts.map(a => (
-                  <div key={a.kind} style={{ fontSize: 12.5, color: a.urgent ? '#A8432F' : '#7A5717', fontWeight: 600, lineHeight: 1.5 }}>{a.text}</div>
-                ))}
-                <button type="button" onClick={() => router.push('/pro/documents')} style={{ marginTop: 8, minHeight: 44, width: '100%', border: '1.5px solid #12B39C', borderRadius: 999, background: '#fff', padding: '0 14px', color: '#0B8374', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Ouvrir Mes pièces</button>
-              </div>
+              <button type="button" onClick={() => router.push('/pro/documents')}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', minHeight: 56, padding: '10px 14px', borderRadius: 14, background: '#fff', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', border: `1.5px solid ${docAlerts.some(a => a.urgent) ? 'rgba(255,122,102,.6)' : 'rgba(242,169,59,.6)'}` }}>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes pièces : à mettre à jour</span>
+                  <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, marginTop: 2, color: docAlerts[0].urgent ? '#A8432F' : '#7A5717' }}>
+                    {docAlerts[0].text}{docAlerts.length > 1 ? ` · et ${docAlerts.length - 1} autre${docAlerts.length > 2 ? 's' : ''}` : ''}
+                  </span>
+                </span>
+                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2}><path d="M9 6l6 6-6 6" /></svg>
+              </button>
             )}
 
-            {/* Ordre de la maquette : alerte litige, puis « Il vous reste n éléments à ajouter », puis l'activité. */}
-            <ProDisputeAlert transactions={transactions} />
+            <ProDisputeAlert transactions={transactions} compact />
 
             {(() => {
               const todo: { label: string; sub: string }[] = []
@@ -305,37 +233,112 @@ export default function ProDashboard() {
               )
             })()}
 
+            {/* « Mon annonce » : complétude (même calcul que /pro/annonce). L'état « visible » est déjà dit par le bouton du haut. */}
+            <button onClick={() => router.push('/pro/annonce')}
+              style={{ textAlign: 'left', width: '100%', minHeight: 56, padding: '10px 14px', borderRadius: 16, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                border: `1px solid ${live ? 'rgba(18,179,156,.45)' : '#E7EDEB'}`, background: live ? 'rgba(18,179,156,.06)' : '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <b style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Mon annonce</b>
+                {pro.payments_suspended_at
+                  ? <span className="mq-tag" style={{ background: '#FEE2E2', color: '#C0503A' }}>Suspendue</span>
+                  : !available && <span className="mq-tag warn">Hors ligne</span>}
+                {listingPct != null && <small style={{ fontSize: 12, color: '#4E6470', fontWeight: 600 }}>Complète à {listingPct} %{listingPct < 100 ? ' ›' : ''}</small>}
+              </div>
+              {listingPct != null && (
+                <div style={{ height: 6, borderRadius: 999, background: '#E3EBE9', overflow: 'hidden', marginTop: 8 }}>
+                  <div style={{ width: `${listingPct}%`, height: '100%', background: '#12B39C', borderRadius: 999 }} />
+                </div>
+              )}
+            </button>
+
+            {/* Fiche de l'entreprise : une ligne (nom + note, ou « Nouveau »), le reste derrière un appui. */}
+            <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
+              <button type="button" onClick={() => setIdOpen(o => !o)} aria-expanded={idOpen} aria-label={`${identityName} : photos, fiche publique et tarifs`}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, padding: '8px 14px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <span aria-hidden style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: pro.logo_url ? `url(${pro.logo_url}) center/cover` : '#12B39C', display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>
+                  {!pro.logo_url && (pro.company_name || firstName || '?').charAt(0).toUpperCase()}
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 15, color: '#123644', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{identityName}</b>
+                  <span style={{ display: 'block', fontSize: 12.5, color: '#4E6470' }}>
+                    {pro.rating > 0 ? <><Stars r={pro.rating} size={12} /> <b style={{ color: '#123644' }}>{r1(pro.rating)}</b> ({pro.reviews_count || 0} avis)</> : 'Nouveau, pas encore d’avis'}
+                  </span>
+                </span>
+                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0, transform: idOpen ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
+              </button>
+              {idOpen && (
+                <>
+                  <div style={{ height: 110, position: 'relative', background: pro.photo_url ? `url(${pro.photo_url}) center/cover` : 'linear-gradient(160deg,#12B39C,#0B8374)' }}>
+                    <input id="cover-input" type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('cover', f) }} />
+                    <label htmlFor="cover-input" aria-label="Changer la photo de couverture" style={{
+                      position: 'absolute', right: 8, top: 8, width: 44, height: 44, borderRadius: '50%',
+                      background: 'rgba(18,54,68,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                    }}>
+                      {uploading === 'cover'
+                        ? <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>…</span>
+                        : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>}
+                    </label>
+                  </div>
+                  <div style={{ padding: '0 16px 16px', marginTop: -32 }}>
+                    <div style={{ position: 'relative', width: 64, height: 64 }}>
+                      <div style={{
+                        width: 64, height: 64, borderRadius: 16, border: '3px solid #fff', overflow: 'hidden',
+                        background: pro.logo_url ? `url(${pro.logo_url}) center/cover` : '#12B39C',
+                        display: 'grid', placeItems: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff',
+                      }}>
+                        {!pro.logo_url && (pro.company_name || firstName || '?').charAt(0).toUpperCase()}
+                      </div>
+                      <input id="logo-input" type="file" accept="image/*" style={{ display: 'none' }}
+                        onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('logo', f) }} />
+                      {/* Un seul « + » dans le cadre (celui de la couverture) : le logo se change en touchant le logo. */}
+                      <label htmlFor="logo-input" aria-label="Changer le logo" style={{ position: 'absolute', inset: 0, cursor: 'pointer', borderRadius: 16 }}>
+                        {uploading === 'logo' && <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: 'rgba(18,54,68,.45)', borderRadius: 16, color: '#fff', fontSize: 11, fontWeight: 700 }}>…</span>}
+                      </label>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: '#4E6470', marginTop: 8 }}>
+                      {firstName ? `${firstName} · ` : ''}{legalLabel(pro.legal_status)}{city ? ` · ${city}` : ''}
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                      <button type="button" className="btn ghost" onClick={() => router.push(`/pro/${pro.id}`)} style={{ flex: 1, minHeight: 56, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                        <Ic name="eye" size={18} />Ma fiche publique
+                      </button>
+                      <button type="button" className="btn ghost" onClick={() => router.push('/pro/tarifs')} style={{ flex: 1, minHeight: 56, padding: '10px 8px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14 }}>
+                        <Ic name="tag" size={18} />Mes tarifs
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             <ProMonthBlock pro={pro} transactions={transactions} hideDispute />
 
-            <LiveZoneCard />
-
-            {/* Tout ce qui sortait du menu latéral est rangé ici, par rubrique (même présentation que
-                « Mon profil » côté particulier). */}
-            <HubGroup title="Mon activité">
-              <HubRow icon={HUB_ICONS.agenda} label="Agenda et disponibilités" sub="Vos rendez-vous et les créneaux que les clients réservent" onClick={() => router.push('/pro/disponibilites')} />
-              <HubRow icon={HUB_ICONS.history} label="Historique de mes missions" sub="Statut et montant net, mission par mission" onClick={() => setTab('missions')} />
-              <HubRow icon={HUB_ICONS.alert} label="Litiges" sub="Réclamations ouvertes sur vos missions" onClick={() => router.push('/litiges')} />
-            </HubGroup>
-
-            <HubGroup title="Prix et revenus">
-              <HubRow icon={HUB_ICONS.chart} label="Mes revenus" sub="Récapitulatif et déclaration" onClick={() => router.push('/pro/revenus')} />
-              <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
-            </HubGroup>
-
-            <HubGroup title="Mon entreprise">
-              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
-              <HubRow icon={HUB_ICONS.id} label="Mes pièces" sub="Identité, assurance RC pro, qualification"
+            {/* Trois accès en tête ; tout le reste de la page est derrière « Voir plus » (un appui), rien n'est retiré. */}
+            <HubGroup>
+              <HubRow icon={HUB_ICONS.agenda} label="Agenda et disponibilités" onClick={() => router.push('/pro/disponibilites')} />
+              <HubRow icon={HUB_ICONS.chart} label="Mes revenus" onClick={() => router.push('/pro/revenus')} />
+              <HubRow icon={HUB_ICONS.id} label="Mes pièces"
                 badge={docAlerts.length ? { text: 'à mettre à jour', tone: 'todo' } : idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
                 onClick={() => router.push('/pro/documents')} />
             </HubGroup>
 
             {!more && (
-              <button type="button" onClick={() => setMore(true)} aria-expanded={false}
+              <button type="button" onClick={() => setMore(true)} aria-expanded={false} aria-label="Voir plus : historique, paiements, aide"
                 style={{ minHeight: 48, marginTop: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
-                Voir plus : paiements, fiscalité, aide
+                Voir plus
               </button>
             )}
+
+            <LiveZoneCard />
             {more && <>
+            <HubGroup title="Mon activité">
+              <HubRow icon={HUB_ICONS.history} label="Historique de mes missions" sub="Statut et montant net, mission par mission" onClick={() => setTab('missions')} />
+              <HubRow icon={HUB_ICONS.alert} label="Litiges" sub="Réclamations ouvertes sur vos missions" onClick={() => router.push('/litiges')} />
+              <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
+              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
+            </HubGroup>
+
             <HubGroup title="Paiements et fiscalité">
               <HubRow icon={HUB_ICONS.card} label="IBAN pour être payé par virement" sub="Vos clients vous paient par virement après l'intervention, sur facture"
                 badge={hasIban ? { text: 'renseigné', tone: 'ok' } : { text: 'à renseigner', tone: 'todo' }} onClick={() => router.push('/pro/paiements')} />

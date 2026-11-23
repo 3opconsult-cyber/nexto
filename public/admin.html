@@ -127,6 +127,13 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .ashub .asv .rico{width:40px;height:40px;border-radius:11px;background:var(--paper);display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px}
 .ashub .asv b{font-family:var(--fh);font-size:14px}
 .ashub .asv small{color:var(--slate);font-size:11.5px;line-height:1.35}
+/* Passe 2 (23/11) : une ligne par profil (pictogramme + nom), 44 px de haut ; l'infobulle dit ce que fait chaque bouton. */
+.ashub{gap:8px;margin-bottom:12px}
+.ashub .asv{flex-direction:row;justify-content:center;gap:8px;min-height:44px;padding:6px 10px}
+.ashub .asv[aria-current="page"]{padding:5px 9px}
+.ashub .asv .rico{width:28px;height:28px;margin-bottom:0}
+.qrow .m small:empty{display:none}
+#s_overview .kpi{padding:12px 14px}
 #s_overview.asview > :not(.ashub):not(#asView):not(script){display:none!important}
 #asView{display:none}
 #s_overview.asview #asView{display:block}
@@ -390,7 +397,13 @@ textarea.minput{min-height:120px;resize:vertical}
   .main{width:100%}
   .top{padding:12px 14px;gap:10px;flex-wrap:wrap}
   .top h1{font-size:17px}
-  .search{order:10;width:100%;margin-left:0}
+  /* Passe 2 (23/11) : une seule ligne en haut (menu, titre, loupe, Fictifs) ; la recherche s'ouvre sur toute la largeur au toucher de la loupe. */
+  .top h1{flex:1;min-width:0}
+  .search{margin-left:0}
+  .search:not(:focus-within){order:0;flex:0 0 44px;width:44px;height:44px;box-sizing:border-box;padding:0;justify-content:center;cursor:pointer}
+  .search:not(:focus-within) input{width:0;flex:0 0 0;opacity:0}
+  .search:focus-within{order:10;flex:1 1 100%;width:auto}
+  .period{order:0;min-height:44px;box-sizing:border-box}
   .gsres{left:0;right:auto;width:100%}
   .period{padding:8px 11px;font-size:12px}
   .content{padding:16px 14px 34px;max-width:100%}
@@ -493,23 +506,23 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
   </aside>
 
   <main class="main">
-    <div class="top"><span class="hamburger" onclick="toggleNav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span class="backarrow" id="backArrow" onclick="navBack()" style="display:none" title="Retour"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></span><h1 id="ttl">Vue d'ensemble</h1><div class="search" id="gsBox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="gsInput" type="search" autocomplete="off" placeholder="Rechercher un pro, un client, une transaction…" aria-label="Rechercher un prestataire, un client, une transaction ou un litige" aria-controls="gsRes" oninput="window.gSearch&&window.gSearch(this.value)" onkeydown="window.gSearchKey&&window.gSearchKey(event)" onfocus="window.gSearch&&this.value&&window.gSearch(this.value)"><div class="gsres" id="gsRes" role="listbox" hidden></div></div><label class="period" title="Les comptes et missions de démonstration (colonne fictif, e-mails @ping-demo.invalid) sont exclus par défaut de tous les chiffres et listes"><input type="checkbox" id="gFictif" onchange="window.setFictif&&window.setFictif(this.checked)"> Inclure les fictifs</label></div>
+    <div class="top"><span class="hamburger" onclick="toggleNav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span><span class="backarrow" id="backArrow" onclick="navBack()" style="display:none" title="Retour"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></span><h1 id="ttl">Vue d'ensemble</h1><div class="search" id="gsBox" onclick="document.getElementById('gsInput').focus()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="gsInput" type="search" autocomplete="off" placeholder="Rechercher…" aria-label="Rechercher un prestataire, un client, une transaction ou un litige" aria-controls="gsRes" oninput="window.gSearch&&window.gSearch(this.value)" onkeydown="window.gSearchKey&&window.gSearchKey(event)" onfocus="window.gSearch&&this.value&&window.gSearch(this.value)"><div class="gsres" id="gsRes" role="listbox" hidden></div></div><label class="period" title="Les comptes et missions de démonstration (colonne fictif, e-mails @ping-demo.invalid) sont exclus par défaut de tous les chiffres et listes"><input type="checkbox" id="gFictif" onchange="window.setFictif&&window.setFictif(this.checked)" aria-label="Inclure les fictifs"> Fictifs</label></div>
     <div class="content">
 
       <!-- OVERVIEW -->
       <section class="section on" id="s_overview">
           <div class="card" id="ovTodoNow" style="margin-bottom:16px;border-color:var(--teal)"><h3>À traiter maintenant</h3>
-            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b> <span class="npill" id="pillOv" role="status" aria-label="Alertes pièces à valider" style="margin-left:8px"></span><small>Pièces déposées par les prestataires : aperçu, puis valider ou refuser</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b> <span class="npill" id="pillOvLit" role="status" aria-label="Alertes de litige à traiter" style="margin-left:8px"></span><small id="ovDisputes2S">Dossiers en attente de médiation</small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av gold">Q</div></div><div class="m"><b id="ovDocsL">— pièce à examiner</b> <span class="npill" id="pillOv" role="status" aria-label="Alertes pièces à valider" style="margin-left:8px"></span></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="ovDisputes2L">— litige ouvert</b> <span class="npill" id="pillOvLit" role="status" aria-label="Alertes de litige à traiter" style="margin-left:8px"></span><small id="ovDisputes2S"></small></div><span class="link" onclick="nav('litiges')">Voir</span></div>
             <div class="qrow" id="ovPayAlert" style="display:none"><div class="who"><div class="av coral">€</div></div><div class="m"><b id="ovPayAlertL">0 alerte de paiement à traiter</b> <span class="npill" id="pillOvPay" role="status" aria-label="Alertes de paiement à traiter" style="margin-left:8px"></span><small id="ovPayAlertS">Annulations, absences, virements, commissions, suspensions</small></div><a class="link" style="text-decoration:none" href="/admin/paiements" target="_blank" rel="noopener">Voir</a></div>
-            <div class="qrow"><div class="who"><div class="av">R</div></div><div class="m"><b id="ovFbL">— retour de testeur à traiter</b><small>Commentaires laissés dans la bulle verte de l'application</small></div><span class="link" onclick="nav('retours')">Voir</span></div>
-            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="overviewExpiryL">0 assurance à renouveler sous 45 j</b><small>Selon les dates d'expiration renseignées</small></div><span class="link" onclick="nav('conformite')">Voir</span></div>
-            <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026</b><small>À brancher avant janvier 2027</small></div><span class="link" onclick="nav('dac7')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av">R</div></div><div class="m"><b id="ovFbL">— retour de testeur à traiter</b></div><span class="link" onclick="nav('retours')">Voir</span></div>
+            <div class="qrow" id="overviewExpiryAlert" style="display:none"><div class="who"><div class="av coral">!</div></div><div class="m"><b id="overviewExpiryL">0 assurance à renouveler sous 45 j</b></div><span class="link" onclick="nav('conformite')">Voir</span></div>
+            <div class="qrow"><div class="who"><div class="av">D</div></div><div class="m"><b>Export DAC7 · exercice 2026 <span class="muted" style="font-weight:600">(à brancher avant janvier 2027)</span></b></div><span class="link" onclick="nav('dac7')">Voir</span></div>
           </div>
         <div class="ashub" role="group" aria-label="Voir l'application comme chaque profil">
-          <button type="button" class="asv" data-as="admin" aria-current="page" onclick="asOpen('admin')"><span class="rico" style="color:var(--ink)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg></span><b>Admin</b><small>Vous êtes ici</small></button>
-          <button type="button" class="asv" data-as="pro" onclick="asOpen('pro')"><span class="rico" style="color:var(--gold)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg></span><b>Prestataire</b><small>Voir l'espace prestataire</small></button>
-          <button type="button" class="asv" data-as="client" onclick="asOpen('client')"><span class="rico" style="color:var(--teal)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><b>Client</b><small>Voir l'espace client</small></button>
+          <button type="button" class="asv" data-as="admin" aria-current="page" title="Vous êtes ici" onclick="asOpen('admin')"><span class="rico" style="color:var(--ink)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/><path d="M9 12l2 2 4-4"/></svg></span><b>Admin</b></button>
+          <button type="button" class="asv" data-as="pro" title="Voir l'espace prestataire" onclick="asOpen('pro')"><span class="rico" style="color:var(--gold)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-6h6v6"/></svg></span><b>Prestataire</b></button>
+          <button type="button" class="asv" data-as="client" title="Voir l'espace client" onclick="asOpen('client')"><span class="rico" style="color:var(--teal)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><b>Client</b></button>
         </div>
         <div id="asView" aria-live="polite">
           <div class="asbanner">
@@ -519,14 +532,14 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           <div class="pvbar" role="group" aria-label="Format de l’aperçu"><button type="button" data-asmode="phone" aria-pressed="true" onclick="asRender('phone')">Téléphone</button><button type="button" data-asmode="desktop" aria-pressed="false" onclick="asRender('desktop')">Ordinateur</button></div>
           <div class="pvbody" id="asBody" style="text-align:center"></div>
         </div>
-        <div class="card click" style="margin-bottom:16px" onclick="nav('activite')"><h3>Activité en cours <span class="muted">données réelles · cliquer pour le détail</span></h3>
+        <div class="card click" style="margin-bottom:16px" onclick="nav('activite')"><h3>Activité en cours</h3>
           <div class="grid k4" id="ovPipeline"><div class="muted">Chargement…</div></div>
         </div>
         <div class="grid k4">
-          <div class="kpi click" onclick="nav('tx')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span> Facturé</div><div class="v" id="ovVolume">—</div><div class="d" id="ovVolumeD">prestations des missions terminées</div></div>
-          <div class="kpi click" onclick="nav('commissions')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg></span> Commissions PING</div><div class="v" id="ovCommission">—</div><div class="d" id="ovCommissionD">sur les missions facturées</div></div>
-          <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v" id="ovProviders">—</div><div class="d" id="ovProvidersD">actifs sur le total inscrit</div></div>
-          <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#c0503a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Litiges ouverts</div><div class="v" id="ovDisputes">—</div><div class="d" id="ovDisputesD">à traiter</div></div>
+          <div class="kpi click" onclick="nav('tx')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span> Facturé</div><div class="v" id="ovVolume">—</div><div class="d" id="ovVolumeD"></div></div>
+          <div class="kpi click" onclick="nav('commissions')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg></span> Commissions PING</div><div class="v" id="ovCommission">—</div><div class="d" id="ovCommissionD"></div></div>
+          <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v" id="ovProviders">—</div><div class="d" id="ovProvidersD"></div></div>
+          <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#c0503a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Litiges ouverts</div><div class="v" id="ovDisputes">—</div><div class="d" id="ovDisputesD"></div></div>
         </div>
         <div class="card mt"><h3>Derniers inscrits <span class="muted" id="ovSignupsN">les plus récents d'abord</span><span class="link" onclick="nav('users')">Tous les utilisateurs</span></h3>
           <table class="tbl" data-noenh="1"><thead><tr><th>Nom</th><th>Rôle</th><th>Inscrit le</th><th>Ville</th><th>Pièces</th></tr></thead><tbody id="ovSignupsBody"></tbody></table>
@@ -4544,7 +4557,7 @@ window.loadOverviewStats = async function () {
   setTxt('ovDisputesD', v.late.length ? 'dont ' + pl(v.late.length, 'échéance dépassée', 'échéances dépassées') : 'à traiter')
   setTxt('ovDocsL', pl(v.docsPending.length, 'pièce à examiner', 'pièces à examiner'))
   setTxt('ovDisputes2L', pl(v.open.length, 'litige ouvert', 'litiges ouverts'))
-  setTxt('ovDisputes2S', v.late.length ? pl(v.late.length, 'échéance dépassée', 'échéances dépassées') + ' : à traiter en priorité' : 'Dossiers en attente de médiation')
+  setTxt('ovDisputes2S', v.late.length ? pl(v.late.length, 'échéance dépassée', 'échéances dépassées') + ' : à traiter en priorité' : '')
   setTxt('litOpen', String(v.open.length))
 
   const body = document.getElementById('ovTxBody')

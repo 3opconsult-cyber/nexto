@@ -433,7 +433,8 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   return (
     <div className="stage" id="stage">
       {askLoc && <LocationAsk onChoose={chooseLoc} onClose={dismissLoc} />}
-      <FindSheet open={findOpen} onClose={() => setFindOpen(false)}
+      {/* Mobile : feuille du bas. Bureau : le même parcours est dans le panneau latéral (plus bas), à côté de la carte. */}
+      <FindSheet open={findOpen && !isDesk} onClose={() => setFindOpen(false)}
         services={tradeKeys.map(k => ({ key: k, label: lab(k), icon: svcIc(k) }))}
         pros={rawPros} acts={acts} newIds={newIds} onReserve={reserveFromFind}
         onDeposit={() => { setFindOpen(false); router.push('/client/demandes/new') }} />
@@ -491,7 +492,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 {!ctrlHidden && (<>
                   <div className="pingbtn" role="button" aria-label="PING : actualiser les prestataires autour de vous" onClick={() => loadPros()} style={{ bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 66px)`, right: ctrlRight }}><span className="halo" /><span className="lbl">PING</span></div>
                   {/* Action principale : une seule, grosse, en bas de la carte (« Déposer une demande » est passée dans la feuille). */}
-                  {!pvShow && (
+                  {!pvShow && !(isDesk && findOpen) && (
                     <button type="button" data-find-open onClick={() => setFindOpen(true)}
                       style={{ position: 'absolute', left: 14, right: isDesk ? undefined : 14, width: isDesk ? 340 : undefined, bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 4px)`, zIndex: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 56, boxSizing: 'border-box', padding: '0 22px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, boxShadow: '0 10px 24px rgba(12,143,126,.38)', cursor: 'pointer' }}>
                       <Ic name="search" size={20} />
@@ -545,7 +546,15 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 {/* Panneau ordinateur, permanent comme sur /pro/carte : la liste (titre du volet) tant
                     qu'aucun prestataire n'est choisi, sinon sa carte de présentation (maquette : en-tête
                     teal, étiquettes, vérifications, avis). La carte reste visible et cliquable à côté. */}
-                {isDesk && !pv && (
+                {isDesk && findOpen && (
+                  <div className="detail-panel on" data-find-panel style={pv ? { display: 'none' } : undefined}>
+                    <FindSheet embedded open={findOpen} onClose={() => setFindOpen(false)}
+                      services={tradeKeys.map(k => ({ key: k, label: lab(k), icon: svcIc(k) }))}
+                      pros={rawPros} acts={acts} newIds={newIds} onReserve={reserveFromFind}
+                      onDeposit={() => { setFindOpen(false); router.push('/client/demandes/new') }} />
+                  </div>
+                )}
+                {isDesk && !pv && !findOpen && (
                   <div className="detail-panel on">
                     <div style={{ padding: '14px 16px 6px' }}>
                       <b style={{ fontFamily: 'var(--fh)', fontSize: 16, color: 'var(--ink)' }}>{sheetTitle}</b>

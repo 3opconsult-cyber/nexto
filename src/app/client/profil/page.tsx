@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { BackArrow } from '@/components/BackHeader'
 import Modal from '@/components/Modal'
 import { HubGroup, HubRow, HUB_ICONS } from '@/components/Hub'
 import { writeMode } from '@/lib/mode'
@@ -20,6 +19,7 @@ export default function ClientProfil() {
   const [toPay, setToPay] = useState(0)
   const [editing, setEditing] = useState(false)
   const [more, setMore] = useState(false)
+  const [coord, setCoord] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editErr, setEditErr] = useState('')
   const [f, setF] = useState({ first_name: '', last_name: '', phone: '', address: '', city: '' })
@@ -76,68 +76,78 @@ export default function ClientProfil() {
 
   const displayName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || profile?.full_name || 'Vous'
   const initial = (profile?.first_name || profile?.full_name || '?').charAt(0).toUpperCase()
-  const city = profile?.city || 'ville non renseignée'
   const phoneMasked = profile?.phone_enc ? '•• •• •• •• •• ✓' : 'Non renseigné'
+  // Profil complet (barre de la maquette) : e-mail confirmé, téléphone, adresse, pièce d'identité. Montrée seulement s'il manque quelque chose.
+  const steps: [string, boolean][] = [['E-mail confirmé', !!emailOk], ['Téléphone', !!profile?.phone_enc], ['Adresse', !!profile?.address], ['Pièce d’identité', hasId]]
+  const done = steps.filter(x => x[1]).length
+  const todo = steps.filter(x => !x[1]).map(x => x[0]).join(', ')
 
   return (
     <div className="stage" id="stage">
       <div className="device"><div className="frame"><div className="screen" style={{ background: 'var(--paper)' }}>
         <section className="view on" id="v_profile" data-tab="profile">
+          {/* Racine d'onglet : pas de flèche ni de « ← Carte » (la barre du bas et le menu mènent à la carte). */}
           <div className="appbar">
-            <BackArrow fallback="/map" />
             <b>Mon profil</b>
-            <span style={{ flex: 1 }} />
-            <span onClick={() => router.push('/map')} style={{ color: 'var(--teal)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>← Carte</span>
           </div>
           <div className="body">
-            <div className="card" style={{ padding: 14 }}>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--coral)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 19, flex: '0 0 auto' }}>{initial}</div>
-                <div style={{ flex: 1 }}>
-                  <div className="nm" style={{ fontSize: 15 }}>{displayName}</div>
-                  <div className="ds">{profile?.city || 'Particulier'}</div>
+            {/* Une ligne : nom et ville ; adresse, téléphone, e-mail et « Modifier » derrière un appui. */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <button type="button" onClick={() => setCoord(o => !o)} aria-expanded={coord} aria-label={`${displayName} : mes coordonnées`}
+                style={{ display: 'flex', gap: 12, alignItems: 'center', width: '100%', minHeight: 64, padding: '10px 14px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <span aria-hidden style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--coral)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 18, flex: '0 0 auto' }}>{initial}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="nm" style={{ display: 'block', fontSize: 15 }}>{displayName}</span>
+                  <span className="ds" style={{ display: 'block' }}>{profile?.city || 'Particulier'}</span>
+                </span>
+                <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" strokeWidth={2.2} style={{ flexShrink: 0, transform: coord ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
+              </button>
+              {coord && (
+                <div style={{ borderTop: '1px solid var(--line)', padding: '8px 14px 12px' }}>
+                  <div className="lrow"><span className="s">Adresse</span><span className="v" style={{ fontWeight: 600, textAlign: 'right', maxWidth: '62%' }}>{profile?.address || 'Non renseignée'}</span></div>
+                  <div className="lrow"><span className="s">Téléphone</span><span className="v">{phoneMasked}</span></div>
+                  <div className="lrow"><span className="s">E-mail</span><span className="v">{email}{email && emailOk ? ' ✓' : email ? ' · à confirmer' : ''}</span></div>
+                  <button type="button" onClick={openEdit}
+                    style={{ width: '100%', minHeight: 48, marginTop: 8, borderRadius: 14, border: '1.5px solid var(--teal)', background: '#fff', color: 'var(--teal)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                    Modifier mes informations
+                  </button>
                 </div>
-                <span className="edit" onClick={openEdit} style={{ color: 'var(--teal)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Modifier</span>
-              </div>
-              <div style={{ marginTop: 12, borderTop: '1px solid var(--line)', paddingTop: 8 }}>
-                <div className="lrow"><span className="s">Adresse</span><span className="v" style={{ fontWeight: 600, textAlign: 'right', maxWidth: '62%' }}>{profile?.address || 'Non renseignée'}</span></div>
-                <div className="lrow"><span className="s">Téléphone</span><span className="v">{phoneMasked}</span></div>
-                <div className="lrow"><span className="s">E-mail</span><span className="v">{email}{email && emailOk ? ' ✓' : email ? ' · à confirmer' : ''}</span></div>
-              </div>
-              {/* Barre de la maquette : calculée sur des données existantes (e-mail confirmé, téléphone, adresse, pièce d'identité). */}
-              {(() => {
-                const steps: [string, boolean][] = [['E-mail confirmé', !!emailOk], ['Téléphone', !!profile?.phone_enc], ['Adresse', !!profile?.address], ['Pièce d’identité', hasId]]
-                const done = steps.filter(x => x[1]).length
-                const todo = steps.filter(x => !x[1]).map(x => x[0]).join(', ')
-                return (
-                  <div style={{ marginTop: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12.5 }}>
-                      <b>Profil complet : {done} sur 4</b><span style={{ color: 'var(--slate)', textAlign: 'right' }}>{todo || 'tout est fait'}</span>
-                    </div>
-                    <div role="progressbar" aria-valuemin={0} aria-valuemax={4} aria-valuenow={done} style={{ marginTop: 6, height: 6, borderRadius: 3, background: 'var(--line)', overflow: 'hidden' }}>
-                      <i style={{ display: 'block', height: '100%', width: `${done * 25}%`, background: 'var(--teal)' }} />
-                    </div>
-                  </div>
-                )
-              })()}
+              )}
             </div>
+            {done < 4 && (
+              <div style={{ margin: '10px 2px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12.5 }}>
+                  <b>Profil complet : {done} sur 4</b><span style={{ color: 'var(--slate)', textAlign: 'right' }}>{todo}</span>
+                </div>
+                <div role="progressbar" aria-valuemin={0} aria-valuemax={4} aria-valuenow={done} style={{ marginTop: 6, height: 6, borderRadius: 3, background: 'var(--line)', overflow: 'hidden' }}>
+                  <i style={{ display: 'block', height: '100%', width: `${done * 25}%`, background: 'var(--teal)' }} />
+                </div>
+              </div>
+            )}
 
-            {/* Même rubriques et même présentation que « Mon entreprise » côté prestataire. */}
+            {/* Deux accès en tête (demandes, paiements) ; le reste derrière « Voir plus » (un appui). */}
             <HubGroup title="Mon activité">
-              <HubRow icon={HUB_ICONS.list} label="Mes demandes" sub="Demandes publiées et propositions" onClick={() => router.push('/client/demandes')} />
-              <HubRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
-              <HubRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Prestataires gardés" onClick={() => router.push('/client/favoris')} />
+              <HubRow icon={HUB_ICONS.list} label="Mes demandes" onClick={() => router.push('/client/demandes')} />
+              <HubRow icon={HUB_ICONS.card} label="Paiements" sub={toPay > 0 ? `${toPay} à régler` : undefined} onClick={() => router.push('/client/paiements')} />
+              {!hasId && <HubRow icon={HUB_ICONS.id} label="Pièce d'identité" badge={{ text: 'à fournir', tone: 'todo' }} onClick={() => router.push('/client/documents')} />}
+              {more && <>
+                <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
+                <HubRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
+                <HubRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Prestataires gardés" onClick={() => router.push('/client/favoris')} />
+              </>}
             </HubGroup>
 
-            <HubGroup title="Paiements">
-              <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
-              <HubRow icon={HUB_ICONS.card} label="Paiements" sub={`Virement sur facture${toPay > 0 ? ` · ${toPay} à régler` : ''}`} onClick={() => router.push('/client/paiements')} />
-            </HubGroup>
-
+            {!more && (
+              <button type="button" onClick={() => setMore(true)} aria-expanded={false}
+                style={{ width: '100%', minHeight: 48, marginTop: 16, borderRadius: 14, border: '1.5px solid var(--teal)', background: '#fff', color: 'var(--teal)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                Voir plus : factures, compte, aide
+              </button>
+            )}
+            {more && <>
             <HubGroup title="Mon compte">
-              <HubRow icon={HUB_ICONS.id} label="Pièce d'identité" sub="Déposée sur PING, chiffrée et masquée"
-                badge={hasId ? { text: 'fournie', tone: 'ok' } : { text: 'à fournir', tone: 'todo' }}
-                onClick={() => router.push('/client/documents')} />
+              {hasId && <HubRow icon={HUB_ICONS.id} label="Pièce d'identité" sub="Déposée sur PING, chiffrée et masquée"
+                badge={{ text: 'fournie', tone: 'ok' }}
+                onClick={() => router.push('/client/documents')} />}
               <HubRow icon={HUB_ICONS.lock} label="Coordonnées et confidentialité" sub="Masquées jusqu'à la mission confirmée" onClick={() => router.push('/client/confidentialite')} />
               {/* Libellés de bascule décidés par Romain : « Espace prestataire » pour un compte qui a déjà une
                   activité prestataire, « Devenir prestataire » sinon. */}
@@ -146,14 +156,6 @@ export default function ClientProfil() {
                 : <HubRow icon={HUB_ICONS.swap} label="Devenir prestataire" sub="Proposer mes services : inscription gratuite" onClick={() => router.push('/pro/onboarding')} />}
             </HubGroup>
 
-
-            {!more && (
-              <button type="button" onClick={() => setMore(true)} aria-expanded={false}
-                style={{ width: '100%', minHeight: 48, marginTop: 16, borderRadius: 14, border: '1.5px solid var(--teal)', background: '#fff', color: 'var(--teal)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
-                Voir plus : nouvelle demande, avis, crédit d&apos;impôt, aide
-              </button>
-            )}
-            {more && <>
             <HubGroup title="Plus">
               <HubRow icon={HUB_ICONS.doc} label="Déposer une demande" sub="Une annonce à votre adresse" onClick={() => router.push('/client/demandes/new')} />
               <HubRow icon={HUB_ICONS.star} label="Avis publiés" onClick={() => router.push('/client/avis')} />
