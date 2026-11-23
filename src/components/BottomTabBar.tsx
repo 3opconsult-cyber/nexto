@@ -67,7 +67,9 @@ export default function BottomTabBar() {
   const bookings = usePendingBookings(isPro, pathname)
   // Jamais par-dessus la zone de saisie d'une conversation (audit 21/11 : le bandeau cachait le bouton Envoyer).
   const inChat = /^\/mission\/[^/]+\/chat/.test(pathname)
-  const nextBooking = !callText && !inChat ? bookings.find(b => !pathname.startsWith(`/mission/${b.id}`)) ?? null : null
+  // Sur Mon entreprise, l'encart « Commandes en cours » dit déjà « À accepter » : le bandeau doublonnerait et recouvrirait le bas de l'écran.
+  const onDashboard = pathname.startsWith('/pro/dashboard')
+  const nextBooking = !callText && !inChat && !onDashboard ? bookings.find(b => !pathname.startsWith(`/mission/${b.id}`)) ?? null : null
   // Après la fin d'une mission (correction 14) : « Notez … » ouvre l'avis en un appui, une fois par mission.
   const [rate, rateDone] = useRatePrompt(mode, pathname)
   const rateShown = !callText && !nextBooking && !inChat && !!rate && !pathname.startsWith(`/mission/${rate.id}`)
