@@ -79,8 +79,11 @@ export type MapCache = { center: Point; list: ProviderNearby[]; acts: Record<str
 export const readMapCache = (uid: string | null) => readScreenCache<MapCache>(MAP_CACHE, uid)
 
 /** Prestataires autour d'un point, avec leurs activités et pièces ; mis en cache si `uid` est donné. */
-export async function loadMapPros(center: Point, uid: string | null): Promise<MapCache> {
-  const list = await fetchProvidersNearby(center.lat, center.lng, 15000)
+export const MAP_RADIUS_M = 15000
+/** Rayons essayés, dans l'ordre, quand personne n'est dans le rayon habituel (la carte ne reste jamais vide). */
+export const MAP_WIDER_RADII_M = [30000, 60000]
+export async function loadMapPros(center: Point, uid: string | null, radiusM = MAP_RADIUS_M): Promise<MapCache> {
+  const list = await fetchProvidersNearby(center.lat, center.lng, radiusM)
   const [acts, flags] = await Promise.all([
     fetchProviderActivities(list).catch(() => ({} as Record<string, string[]>)),
     fetchProviderFlags(list.map(p => p.id)).catch(() => ({} as Record<string, ProviderFlags>)),

@@ -106,7 +106,8 @@ function pinPriceLabel(p: { pricing_type: string; base_price_cents: number; hour
 // Leaflet ne la redessine pas (et ne rejoue pas son animation d'apparition) à chaque rendu.
 const PIN_W = 96
 const PIN_H = 78
-type PinState = 'normal' | 'sel' | 'off'
+// live : prestataire en ligne maintenant (goutte pleine, anneau qui pulse doucement) ; off : disponible plus tard (goutte claire).
+type PinState = 'normal' | 'sel' | 'off' | 'live'
 const iconCache = new Map<string, L.DivIcon>()
 function pinIcon(color: string, label: string | null, i = 0, inner = '', state: PinState = 'normal') {
   const key = `${color}|${label}|${inner}|${state}|${Math.min(i, 12)}`
@@ -119,6 +120,10 @@ function pinIcon(color: string, label: string | null, i = 0, inner = '', state: 
     ? `<div style="background:${labBg};color:${labFg};font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3);border:1px solid ${labBd};margin-bottom:2px" class="pin-tag">${label}</div>`
     : ''
   const ring = state === 'sel' ? '0 0 0 4px rgba(18,179,156,.35),' : ''
+  const liveRing = state === 'live' ? '<span class="pin-live"></span>' : ''
+  const light = color === '#CFE8E3'
+  const inFg = light ? '#0C6F61' : '#fff'
+  const dropBd = light ? '#12B39C' : '#fff'
   // Zone tactile (audit 19/11 bis n° 12) : la goutte (40 px, inchangée) est posée dans un carré
   // transparent de 48 px (.pin-hit) ; seuls ce carré et l'étiquette de prix réagissent au toucher,
   // le reste du cadre de 96 × 78 laisse passer le geste à la carte (épingles voisines comprises).
@@ -126,9 +131,10 @@ function pinIcon(color: string, label: string | null, i = 0, inner = '', state: 
     className: 'ping-pin',
     html: `<div style="width:${PIN_W}px;height:${PIN_H}px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;animation:pinIn .45s cubic-bezier(.22,1.2,.36,1) both;animation-delay:${(Math.min(i, 12) * 0.08).toFixed(2)}s;opacity:${state === 'off' ? '.9' : '1'}">
       ${tag}
-      <div class="pin-hit" style="width:48px;height:48px;margin-bottom:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
-      <div style="width:40px;height:40px;flex-shrink:0;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);box-shadow:${ring}0 3px 8px rgba(18,54,68,.35);border:2px solid #fff;box-sizing:border-box;display:flex;align-items:center;justify-content:center">
-        <div style="transform:rotate(45deg);color:#fff;font-family:Quicksand,sans-serif;font-weight:700;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center">${inner || '<div style="width:9px;height:9px;border-radius:50%;background:#fff"></div>'}</div>
+      <div class="pin-hit" style="position:relative;width:48px;height:48px;margin-bottom:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+      ${liveRing}
+      <div style="width:40px;height:40px;flex-shrink:0;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);box-shadow:${ring}0 3px 8px rgba(18,54,68,.35);border:2px solid ${dropBd};box-sizing:border-box;display:flex;align-items:center;justify-content:center">
+        <div style="transform:rotate(45deg);color:${inFg};font-family:Quicksand,sans-serif;font-weight:700;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center">${inner || '<div style="width:9px;height:9px;border-radius:50%;background:currentColor"></div>'}</div>
       </div>
       </div>
     </div>`,
@@ -143,10 +149,11 @@ function pinIcon(color: string, label: string | null, i = 0, inner = '', state: 
 const esc = (t: string) => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string))
 function proIcon(p: ProviderNearby, i = 0, selected = false, isNew = false) {
   const initial = esc(((p.full_name || '').trim().charAt(0) || '?').toUpperCase())
-  if (!p.is_active) return pinIcon('#6E8592', 'Hors ligne', i, initial, selected ? 'sel' : 'off')
+  // Pas en ligne maintenant : « Plus tard » (goutte claire), le détail « Hors ligne pour le moment » reste dans l'aperçu.
+  if (!p.is_active) return pinIcon('#CFE8E3', 'Plus tard', i, initial, selected ? 'sel' : 'off')
   const price = pinPriceLabel(p)
   const label = price ? `${price}${isNew ? ' · Nouveau' : ''}` : (isNew ? 'Nouveau' : null)
-  return pinIcon(isNew ? '#7FA9A1' : '#12B39C', label, i, initial, selected ? 'sel' : 'normal')
+  return pinIcon(isNew ? '#7FA9A1' : '#12B39C', label, i, initial, selected ? 'sel' : 'live')
 }
 function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B', inner = '', selected = false) {
   return pinIcon(color, label ?? null, i, inner, selected ? 'sel' : 'normal')
@@ -177,6 +184,19 @@ function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad, inset
   const live = useRef({ userPos, pts, fitPad })
   live.current = { userPos, pts, fitPad }
   const fittedKey = useRef<string | null>(null)
+  // Recadrage automatique sur la position : seulement à l'ouverture et au bouton « Recentrer » (recenterTick).
+  // Dès que l'utilisateur déplace ou zoome la carte (doigt, souris, molette), ou qu'un cadrage « les plus proches »
+  // a eu lieu, un changement de position (GPS qui se précise, adresse du profil lue) ne la recadre plus.
+  const interacted = useRef(false)
+  const lastTick = useRef(recenterTick)
+  const opening = useRef(true)
+  useEffect(() => {
+    const el = map.getContainer()
+    const mark = () => { interacted.current = true }
+    const evs = ['pointerdown', 'wheel', 'touchstart', 'keydown'] as const
+    evs.forEach(e => el.addEventListener(e, mark, { passive: true, capture: true }))
+    return () => { evs.forEach(e => el.removeEventListener(e, mark, { capture: true })) }
+  }, [map])
   function place() {
     const { userPos: u, pts: p, fitPad: pad } = live.current
     const valid = p.filter(x => x.lat != null && x.lng != null)
@@ -212,8 +232,13 @@ function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad, inset
     if (Math.abs(d) > 1) map.panBy([0, d / 2], { animate: true })
   }, [inset, fit, map])
   useEffect(() => {
+    const tickChanged = lastTick.current !== recenterTick
+    lastTick.current = recenterTick
+    if (tickChanged) interacted.current = false
+    else if (!opening.current && interacted.current) return
+    opening.current = false
     if (place()) fittedKey.current = fitKey ?? ''
-    const t = setTimeout(() => { map.invalidateSize(); if (fit) place() }, 100)
+    const t = setTimeout(() => { map.invalidateSize(); if (fit && !interacted.current) place() }, 100)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPos.lat, userPos.lng, map, recenterTick])
@@ -222,6 +247,40 @@ function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad, inset
     if (place()) fittedKey.current = fitKey ?? ''
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fit, fitKey, pts.length])
+  return null
+}
+
+// Cadre une fois (par `focusKey`) un ensemble de points : utilisé quand personne n'est dans le rayon, pour montrer
+// les prestataires les plus proches même à 20-30 km au lieu d'une carte vide. Jamais répété tant que la clé ne
+// change pas. Un changement de position ensuite recadre à nouveau sur la position (sauf si l'utilisateur a exploré).
+function FocusPts({ pts, focusKey, inset }: { pts: { lat: number; lng: number }[]; focusKey?: string; inset: number }) {
+  const map = useMap()
+  const done = useRef<string | null>(null)
+  useEffect(() => {
+    if (!focusKey || !pts.length || done.current === focusKey) return
+    done.current = focusKey
+    map.invalidateSize({ pan: false })
+    const b = L.latLngBounds(pts.map(x => [x.lat, x.lng] as [number, number]))
+    map.fitBounds(b, { paddingTopLeft: [40, 110], paddingBottomRight: [40, 90 + inset], maxZoom: 13, animate: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusKey, pts.length, map])
+  return null
+}
+
+// Double appui (ou double clic) : zoome d'un cran sur l'endroit touché, pas sur la position de l'utilisateur.
+// Fait ici plutôt que par le double-clic de Leaflet (désactivé) pour que le tactile et la souris se comportent pareil.
+function DoubleTapZoom() {
+  const map = useMap()
+  const last = useRef<{ t: number; x: number; y: number } | null>(null)
+  useMapEvents({
+    click: e => {
+      const now = Date.now(), p = e.containerPoint, l = last.current
+      if (l && now - l.t < 380 && Math.hypot(p.x - l.x, p.y - l.y) < 40) {
+        last.current = null
+        map.setZoomAround(e.latlng, Math.min(map.getZoom() + 1, map.getMaxZoom()))
+      } else last.current = { t: now, x: p.x, y: p.y }
+    },
+  })
   return null
 }
 
@@ -285,6 +344,7 @@ type ReqPin = { id: string; lat: number; lng: number; label?: string | null; col
 export default function LiveMap({
   userPos, pros, onSelect, recenterTick, requests = [], onSelectRequest, youLabel = 'Vous êtes ici', echo = false,
   onMapClick, fit = false, fitKey, fitPad, selectedId = null, newIds, zones = [], onSelectZone, inset = 0,
+  focusPts, focusKey,
 }: {
   userPos: { lat: number; lng: number }
   pros: ProviderNearby[]
@@ -307,6 +367,9 @@ export default function LiveMap({
   onSelectZone?: (providerId: string) => void
   /** Hauteur (px) du bas de la carte cachée par la feuille : la position reste centrée dans la partie visible. */
   inset?: number
+  /** Points à cadrer une fois (prestataires les plus proches quand personne n'est dans le rayon) ; `focusKey` = déclencheur. */
+  focusPts?: { lat: number; lng: number }[]
+  focusKey?: string
 }) {
   return (
     <>
@@ -321,6 +384,9 @@ export default function LiveMap({
         @keyframes pingEcho{0%{transform:scale(1);opacity:.55}100%{transform:scale(6);opacity:0}}
         .leaflet-marker-icon.ping-pin{pointer-events:none !important}
         .ping-pin .pin-hit,.ping-pin .pin-tag{pointer-events:auto;cursor:pointer}
+        @keyframes pinLive{0%{transform:scale(.85);opacity:.55}70%,100%{transform:scale(1.55);opacity:0}}
+        .pin-live{position:absolute;left:4px;top:4px;width:40px;height:40px;border-radius:50%;border:2px solid #12B39C;animation:pinLive 2.6s ease-out infinite;pointer-events:none}
+        @media (prefers-reduced-motion: reduce){.pin-live{animation:none;display:none}}
         .ping-echo{position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;border:2px solid #12B39C;animation:pingEcho 2.2s ease-out infinite;pointer-events:none}
         @media (prefers-reduced-motion: reduce){.ping-echo{animation:none;display:none}}`}</style>
       <MapContainer
@@ -330,6 +396,8 @@ export default function LiveMap({
         // Zoom au doigt (pincement) explicitement actif sur /map et /pro/carte : aucun CSS de l'app
         // ne pose de touch-action sur la carte ; Leaflet gère lui-même les gestes (leaflet.css).
         touchZoom={true}
+        // Zoom libre partout : molette et pincement sur le point touché, double appui géré par DoubleTapZoom.
+        doubleClickZoom={false}
         style={{ width: '100%', height: '100%' }}
         maxZoom={19}
         minZoom={4}
@@ -338,6 +406,8 @@ export default function LiveMap({
         <PingBaseLayer />
         <FitAll userPos={userPos} pts={requests} recenterTick={recenterTick} fit={fit} fitKey={fitKey} fitPad={fitPad} inset={inset} />
         <MapClick onClick={onMapClick} />
+        <DoubleTapZoom />
+        <FocusPts pts={focusPts ?? []} focusKey={focusKey} inset={inset} />
         <DeclutterTags sig={`${pros.length}|${requests.length}|${zones.length}|${selectedId ?? ''}|${requests.map(r => r.label).join(',')}`} />
         {/* Position de l'utilisateur : toujours au-dessus des épingles, jamais cliquable (le toucher passe à l'épingle dessous). */}
         <Marker position={[userPos.lat, userPos.lng]} icon={userIcon(echo)} zIndexOffset={2000} interactive={false} keyboard={false}>
