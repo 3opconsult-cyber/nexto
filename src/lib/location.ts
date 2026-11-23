@@ -36,12 +36,32 @@ export async function geoPermission(): Promise<'granted' | 'denied' | 'prompt' |
   } catch { return 'unknown' }
 }
 
-/** Un seul relevé. Rejette avec un message lisible. */
+/** Incertitude (m) du dernier relevé : sert à dire « position approximative » au lieu de « Vous êtes ici ». */
+let lastAccuracyM: number | null = null
+export const lastPositionAccuracy = () => lastAccuracyM
+
+/**
+ * Relevé précis (GPS), un seul : le relevé rapide ci-dessous est approximatif sur iPhone (Wi-Fi / antennes, parfois à
+ * plusieurs kilomètres : capture du 23/11, « Vous êtes ici » au mauvais endroit). Rejette en cas d'échec ; l'appelant
+ * garde alors le relevé rapide.
+ */
+export function readPositionPrecise(timeout = 12000): Promise<Point & { accuracyM: number }> {
+  return new Promise((resolve, reject) => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) { reject(new Error('Localisation indisponible.')); return }
+    navigator.geolocation.getCurrentPosition(
+      p => { lastAccuracyM = p.coords.accuracy; resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracyM: p.coords.accuracy }) },
+      () => reject(new Error('Position précise indisponible.')),
+      { enableHighAccuracy: true, timeout, maximumAge: 0 },
+    )
+  })
+}
+
+/** Un seul relevé rapide (approximatif possible). Rejette avec un message lisible. */
 export function readPositionOnce(timeout = 8000): Promise<Point> {
   return new Promise((resolve, reject) => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) { reject(new Error('Localisation indisponible sur cet appareil.')); return }
     navigator.geolocation.getCurrentPosition(
-      p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      p => { lastAccuracyM = p.coords.accuracy; resolve({ lat: p.coords.latitude, lng: p.coords.longitude }) },
       e => reject(new Error(e.code === 1
         ? 'Position refusée dans le navigateur. Choisissez une ville, ou autorisez la localisation dans les réglages du navigateur.'
         : 'Position indisponible pour le moment. Choisissez une ville.')),
@@ -102,23 +122,36 @@ export function useInitialPosition(fallback: Point, profile?: 'client' | 'pro') 
   const [pos, setPos] = useState<Point>(fallback)
   const [ask, setAsk] = useState(false)
   const [city, setCity] = useState('')
+  // D'où vient le point : GPS, ville choisie, adresse du profil. Sert à ne plus écrire « Vous êtes ici » quand c'est faux.
+  const [source, setSource] = useState<'fallback' | 'gps' | 'city' | 'profile'>('fallback')
+  const [accuracyM, setAccuracyM] = useState<number | null>(null)
   useEffect(() => {
     let off = false
     const saved = readSavedLocation()
-    if (saved?.kind === 'city') { setPos({ lat: saved.lat, lng: saved.lng }); setCity(saved.label); return }
+    if (saved?.kind === 'city') { setPos({ lat: saved.lat, lng: saved.lng }); setCity(saved.label); setSource('city'); return }
     let dismissed = false
     try { dismissed = sessionStorage.getItem(KEY + '_later') === '1' } catch { }
     // Sans position connue : centre du profil s'il existe, sinon l'encart (sauf « Plus tard »).
     const fromProfile = async (orAsk: boolean) => {
       const c = profileRef.current ? await fetchProfileCenter(profileRef.current) : null
       if (off) return
-      if (c) { setPos(c.point); setCity(c.label); return }
+      if (c) { setPos(c.point); setCity(c.label); setSource('profile'); return }
       if (orAsk) setAsk(true)
     }
     geoPermission().then(state => {
       if (off) return
       if (state === 'granted' || (saved?.kind === 'gps' && state !== 'denied')) {
-        readPositionOnce(5000).then(p => { if (!off) setPos(p) }).catch(() => { fromProfile(!dismissed) })
+        readPositionOnce(5000).then(p => {
+          if (off) return
+          setPos(p); setSource('gps'); setAccuracyM(lastPositionAccuracy())
+          // Affinage : relevé GPS précis ; le point ne bouge que s'il s'écarte de plus de 150 m du relevé rapide.
+          readPositionPrecise(12000).then(q => {
+            if (off) return
+            setAccuracyM(q.accuracyM)
+            const dLat = (q.lat - p.lat) * 111000, dLng = (q.lng - p.lng) * 111000 * Math.cos(p.lat * Math.PI / 180)
+            if (Math.hypot(dLat, dLng) > 150) setPos({ lat: q.lat, lng: q.lng })
+          }).catch(() => { /* on garde le relevé rapide, marqué approximatif */ })
+        }).catch(() => { fromProfile(!dismissed) })
       } else fromProfile(!dismissed)
     })
     return () => { off = true }
@@ -131,5 +164,5 @@ export function useInitialPosition(fallback: Point, profile?: 'client' | 'pro') 
     setAsk(false)
     try { sessionStorage.setItem(KEY + '_later', '1') } catch { }
   }, [])
-  return { pos, ask, setAsk, choose, city, dismiss }
+  return { pos, ask, setAsk, choose, city, dismiss, source, accuracyM }
 }

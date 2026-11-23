@@ -69,7 +69,12 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [flags, setFlags] = useState<Record<string, ProviderFlags>>({})
   // Position : centrée sur l'adresse du profil si possible, sinon encart non bloquant (LocationAsk)
   // avant la fenêtre du navigateur ; repli Grasse.
-  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition(FALLBACK_POS, 'client')
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc, city: posCity, source: posSource, accuracyM: posAccuracy } = useInitialPosition(FALLBACK_POS, 'client')
+  // Le libellé du point dit d'où il vient : plus de « Vous êtes ici » quand la position est une adresse, une ville ou un relevé approximatif.
+  const youLabel = posSource === 'city' ? `Autour de ${posCity || 'la ville choisie'}`
+    : posSource === 'profile' ? 'Adresse de votre profil'
+      : posSource === 'gps' && posAccuracy != null && posAccuracy > 300 ? 'Position approximative'
+        : 'Vous êtes ici'
   const [recenterTick, setRecenterTick] = useState(0)
   // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
   const [pvId, setPvId] = useState<string | null>(null)
@@ -469,7 +474,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 </div>
 
                 <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
-                  <LiveMap userPos={userPos} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} inset={mapInset} focusPts={focusPts} focusKey={focusKey} />
+                  <LiveMap userPos={userPos} youLabel={youLabel} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} inset={mapInset} focusPts={focusPts} focusKey={focusKey} />
                 </div>
 
                 {/* Ligne d'état unique : « 7 en ligne près de vous ». Au toucher : détail par métier et accès au filtre. */}
