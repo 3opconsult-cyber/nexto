@@ -73,7 +73,7 @@ export default function DayTimePicker({ value, onChange, fromHour = 8, toHour = 
         })}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginTop: 8 }}>
-        {times.map(t => {
+        {times.filter(t => !isPast(t) || (selTime === t && selDay === day)).map(t => {
           const disabled = isPast(t); const on = selTime === t && selDay === day
           return (
             <button key={t} type="button" disabled={disabled} onClick={() => onChange(`${day}T${t}`)}

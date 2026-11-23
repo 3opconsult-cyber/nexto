@@ -104,7 +104,7 @@ export default function DepartureBar({
     <div style={{ marginTop: 10, background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '10px 12px' }}>
       <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,.72)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>Adresse du rendez-vous</div>
       <div style={{ fontSize: 13.5, fontWeight: 600, marginTop: 3, color: '#fff' }}>{address}</div>
-      {maps && <a href={maps} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 9, background: '#0C8F7E', color: '#fff', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5 }}>
+      {maps && <a href={maps} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, marginTop: 9, background: '#0C8F7E', color: '#fff', textDecoration: 'none', padding: '8px 14px', borderRadius: 999, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5 }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
         Itinéraire Google Maps
       </a>}
@@ -208,11 +208,11 @@ export default function DepartureBar({
         <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.8)', marginTop: 4 }}>Le client suit votre arrivée. La mission démarrera au scan de son QR d'arrivée.</div>
         <AddressBlock />
         <button onClick={() => router.push(`/mission/${tx.id}/jour?scan`)} style={{
-          width: '100%', marginTop: 10, border: 'none', borderRadius: 999, padding: '11px 0', background: '#0C8F7E', color: '#fff',
+          width: '100%', minHeight: 44, marginTop: 10, border: 'none', borderRadius: 999, padding: '11px 0', background: '#0C8F7E', color: '#fff',
           fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer',
         }}>Scanner le QR du client</button>
         <button onClick={() => router.push(`/mission/${tx.id}/jour?absent`)} style={{
-          width: '100%', marginTop: 7, border: '1px solid rgba(255,255,255,.25)', borderRadius: 999, padding: '9px 0', background: 'transparent', color: '#fff',
+          width: '100%', minHeight: 44, marginTop: 7, border: '1px solid rgba(255,255,255,.25)', borderRadius: 999, padding: '9px 0', background: 'transparent', color: '#fff',
           fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5, cursor: 'pointer',
         }}>Le client n&apos;est pas là</button>
       </div>
@@ -258,7 +258,7 @@ export default function DepartureBar({
         Estimation annoncée au départ. La mission démarrera au scan de votre QR d&apos;arrivée.
       </div>
       <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{
-        width: '100%', marginTop: 10, border: 'none', borderRadius: 999, padding: '10px 0', background: '#0C8F7E', color: '#fff',
+        width: '100%', minHeight: 44, marginTop: 10, border: 'none', borderRadius: 999, padding: '10px 0', background: '#0C8F7E', color: '#fff',
         fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer',
       }}>Afficher mon QR d&apos;arrivée</button>
     </div>

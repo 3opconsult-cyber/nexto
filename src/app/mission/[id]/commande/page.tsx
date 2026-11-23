@@ -118,7 +118,7 @@ export default function Commande() {
     addrNote = aStatus === 'a_valider' ? 'En attente de validation par le prestataire : il la voit sans le numéro. Vous n’avez rien à faire, vous serez prévenu dans la conversation.'
       : aStatus === 'refusee' ? 'Refusée par le prestataire : choisissez une autre adresse avec « Modifier l’adresse ».'
         : aStatus === 'acceptee' ? 'Acceptée par le prestataire.'
-          : addr ? 'Adresse de votre profil.' : ''
+          : ''
   } else if (addrFull) {
     addrLine = addr || 'À fixer par le client'
   } else if (!accepted) {
@@ -172,9 +172,6 @@ export default function Commande() {
           <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, color: '#0A6F62', background: '#DDF5F0', borderRadius: 999, padding: '3px 9px' }}>Tarif validé · prix figé</span>
         </div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#123644', marginTop: 8 }}>{[trade, pn].filter(Boolean).join(' · ')}</div>
-        <div style={{ fontSize: 12.5, color: '#3d5560', marginTop: 4, lineHeight: 1.5 }}>
-          Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir.
-        </div>
       </div>
 
       {/* Réservation en attente : qui doit répondre, dans quel délai, et la suite. */}
@@ -193,7 +190,6 @@ export default function Commande() {
 
       {/* Détails de la commande. */}
       <div style={{ marginTop: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: '6px 14px' }}>
-        {row('Prestation', trade || 'Prestation')}
         {row('Date et heure', tx.scheduled_at ? rdvLabel(tx.scheduled_at) : 'À fixer dans la conversation')}
         {row('Adresse', addrLine, addrNote)}
         {row('Présence du client', presenceText)}

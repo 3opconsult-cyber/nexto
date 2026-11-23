@@ -1,0 +1,327 @@
+{
+ "commande-client": {
+  "mots": 133,
+  "motsPage": 229,
+  "boutons": 7,
+  "hauteur": 1684,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 111,
+  "utileMs": 2099,
+  "erreursConsole": 0,
+  "url": "/mission/a0d834bc-2842-4b62-a989-b964a1f85429/commande",
+  "topRequetes": [
+   "14x SB/rest/v1/transactions",
+   "7x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/rpc/transaction_counterparts",
+   "5x SB/rest/v1/reviews",
+   "5x SB/rest/v1/invoices",
+   "3x SB/rest/v1/messages"
+  ]
+ },
+ "commande-pro": {
+  "mots": 132,
+  "motsPage": 183,
+  "boutons": 6,
+  "hauteur": 1351,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 113,
+  "utileMs": 2003,
+  "erreursConsole": 0,
+  "url": "/mission/a0d834bc-2842-4b62-a989-b964a1f85429/commande",
+  "topRequetes": [
+   "19x SB/rest/v1/transactions",
+   "9x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/invoices",
+   "4x SB/rest/v1/reviews",
+   "3x SB/rest/v1/rpc/transaction_counterparts",
+   "3x /mission/:id/facture"
+  ]
+ },
+ "jour-pro": {
+  "mots": 113,
+  "motsPage": 171,
+  "boutons": 8,
+  "hauteur": 1456,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 112,
+  "utileMs": 2627,
+  "erreursConsole": 0,
+  "url": "/mission/89981c99-eb65-4c9e-a068-3de45d78be7f/jour",
+  "topRequetes": [
+   "20x SB/rest/v1/transactions",
+   "9x SB/rest/v1/provider_profiles",
+   "4x SB/rest/v1/reviews",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/rpc/transaction_counterparts",
+   "3x SB/rest/v1/rpc/presence_state"
+  ]
+ },
+ "chat-client": {
+  "mots": 151,
+  "motsPage": 322,
+  "boutons": 11,
+  "hauteur": 2396,
+  "petitesCibles": 1,
+  "petitesListe": [
+   "Afficher mon QR d'arrivée 358x40"
+  ],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 126,
+  "utileMs": 1735,
+  "erreursConsole": 0,
+  "url": "/mission/89981c99-eb65-4c9e-a068-3de45d78be7f/chat",
+  "topRequetes": [
+   "16x SB/rest/v1/transactions",
+   "8x SB/rest/v1/provider_profiles",
+   "6x SB/rest/v1/reviews",
+   "5x SB/rest/v1/rpc/transaction_counterparts",
+   "5x SB/rest/v1/invoices",
+   "4x SB/rest/v1/messages"
+  ]
+ },
+ "chat-pro": {
+  "mots": 137,
+  "motsPage": 305,
+  "boutons": 10,
+  "hauteur": 2029,
+  "petitesCibles": 3,
+  "petitesListe": [
+   "Itinéraire Google Maps 185x35",
+   "Scanner le QR du client 358x42",
+   "Le client n'est pas là 358x39"
+  ],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 129,
+  "utileMs": 2232,
+  "erreursConsole": 0,
+  "url": "/mission/89981c99-eb65-4c9e-a068-3de45d78be7f/chat",
+  "topRequetes": [
+   "21x SB/rest/v1/transactions",
+   "11x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/reviews",
+   "5x SB/rest/v1/invoices",
+   "3x SB/rest/v1/client_reviews",
+   "3x SB/rest/v1/rpc/presence_state"
+  ]
+ },
+ "agenda-client": {
+  "mots": 149,
+  "motsPage": 392,
+  "boutons": 18,
+  "hauteur": 2622,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 2,
+  "recouvrementsListe": [
+   "Litige en cours · Audit P. Ouvert le 30  <- svg",
+   "Litige en cours · romain c. Ouvert le 28 <- Mission du jour, action attendue"
+  ],
+  "requetes": 101,
+  "utileMs": 2382,
+  "erreursConsole": 0,
+  "url": "/agenda",
+  "topRequetes": [
+   "13x SB/rest/v1/transactions",
+   "7x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/reviews",
+   "4x SB/rest/v1/rpc/transaction_counterparts",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/messages"
+  ]
+ },
+ "agenda-pro": {
+  "mots": 137,
+  "motsPage": 342,
+  "boutons": 16,
+  "hauteur": 2395,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 2,
+  "recouvrementsListe": [
+   "Litige en cours · Audit C. Ouvert le 19  <- SPAN",
+   "Litige en cours · Audit C. Ouvert le 30  <- Mission du jour"
+  ],
+  "requetes": 104,
+  "utileMs": 2695,
+  "erreursConsole": 0,
+  "url": "/agenda",
+  "topRequetes": [
+   "18x SB/rest/v1/transactions",
+   "10x SB/rest/v1/provider_profiles",
+   "4x SB/rest/v1/reviews",
+   "4x SB/rest/v1/invoices",
+   "3x /mission/:id/facture",
+   "2x SB/rest/v1/profiles"
+  ]
+ },
+ "hub-pro": {
+  "mots": 88,
+  "motsPage": 370,
+  "boutons": 15,
+  "hauteur": 3138,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 116,
+  "utileMs": 2300,
+  "erreursConsole": 0,
+  "url": "/pro/dashboard",
+  "topRequetes": [
+   "18x SB/rest/v1/transactions",
+   "12x SB/rest/v1/provider_profiles",
+   "4x SB/rest/v1/reviews",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/provider_private",
+   "3x SB/rest/v1/rpc/transaction_counterparts"
+  ]
+ },
+ "carte-client": {
+  "mots": 72,
+  "motsPage": 151,
+  "boutons": 30,
+  "hauteur": 844,
+  "petitesCibles": 3,
+  "petitesListe": [
+   "OpenFreeMap 64x11",
+   "OpenMapTiles 65x11",
+   "OpenStreetMap 71x11"
+  ],
+  "recouvrements": 6,
+  "recouvrementsListe": [
+   "25 € · Nouveau L <- A",
+   "OpenFreeMap <- SPAN",
+   "OpenMapTiles <- Votre prestataire est arrivé : confirmez",
+   "OpenStreetMap <- Votre prestataire est arrivé : confirmez",
+   "Laura Fontaine, 25 € <- Votre prestataire est arrivé : confirmez",
+   "Audit Pro, 100 € <- SPAN"
+  ],
+  "requetes": 151,
+  "utileMs": 2730,
+  "erreursConsole": 0,
+  "url": "/map",
+  "topRequetes": [
+   "16x SB/rest/v1/provider_profiles",
+   "14x SB/rest/v1/transactions",
+   "8x SB/rest/v1/reviews",
+   "5x SB/rest/v1/services",
+   "5x SB/rest/v1/rpc/provider_docs_status",
+   "5x SB/rest/v1/rpc/provider_trust_stats"
+  ]
+ },
+ "carte-pro": {
+  "mots": 115,
+  "motsPage": 139,
+  "boutons": 26,
+  "hauteur": 844,
+  "petitesCibles": 3,
+  "petitesListe": [
+   "OpenFreeMap 64x11",
+   "OpenMapTiles 65x11",
+   "OpenStreetMap 71x11"
+  ],
+  "recouvrements": 4,
+  "recouvrementsListe": [
+   "OpenFreeMap <- SPAN",
+   "OpenMapTiles <- Exemple — Grand ménage de printemps, mai",
+   "OpenStreetMap <- Exemple — Grand ménage de printemps, mai",
+   "Exemple — Grand ménage de printemps, mai <- SPAN"
+  ],
+  "requetes": 139,
+  "utileMs": 2441,
+  "erreursConsole": 0,
+  "url": "/pro/carte",
+  "topRequetes": [
+   "21x SB/rest/v1/transactions",
+   "14x SB/rest/v1/provider_profiles",
+   "4x SB/rest/v1/provider_private",
+   "4x SB/rest/v1/reviews",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/requests"
+  ]
+ },
+ "fiche-prestataire": {
+  "mots": 165,
+  "motsPage": 402,
+  "boutons": 11,
+  "hauteur": 2423,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 109,
+  "utileMs": 1686,
+  "erreursConsole": 0,
+  "url": "/pro/b9f8cd9a-16de-4a36-afd8-10a2135ab970",
+  "topRequetes": [
+   "13x SB/rest/v1/transactions",
+   "9x SB/rest/v1/provider_profiles",
+   "6x SB/rest/v1/reviews",
+   "4x SB/rest/v1/rpc/transaction_counterparts",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/rpc/provider_trust_stats"
+  ]
+ },
+ "reservation": {
+  "mots": 153,
+  "motsPage": 328,
+  "boutons": 41,
+  "hauteur": 1672,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 12,
+  "recouvrementsListe": [
+   "14 h 00 <- Confirmer la réservation · 108,00 €",
+   "14 h 30 <- Confirmer la réservation · 108,00 €",
+   "15 h 00 <- Confirmer la réservation · 108,00 €",
+   "15 h 30 <- Confirmer la réservation · 108,00 €",
+   "16 h 00 <- Votre prestataire est arrivé : confirmez",
+   "16 h 30 <- Votre prestataire est arrivé : confirmez"
+  ],
+  "requetes": 107,
+  "utileMs": 1056,
+  "erreursConsole": 0,
+  "url": "/mission/new?pro=b9f8cd9a-16de-4a36-afd8-10a2135ab970",
+  "topRequetes": [
+   "13x SB/rest/v1/transactions",
+   "8x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/reviews",
+   "4x SB/rest/v1/rpc/transaction_counterparts",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/messages"
+  ]
+ },
+ "facture-client": {
+  "mots": 152,
+  "motsPage": 301,
+  "boutons": 10,
+  "hauteur": 1993,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 106,
+  "utileMs": 2585,
+  "erreursConsole": 0,
+  "url": "/mission/372696b4-5d93-4816-9a00-270b6606396b/facture",
+  "topRequetes": [
+   "14x SB/rest/v1/transactions",
+   "8x SB/rest/v1/provider_profiles",
+   "6x SB/rest/v1/reviews",
+   "5x SB/rest/v1/invoices",
+   "4x /mission/:id/facture",
+   "4x SB/rest/v1/rpc/transaction_counterparts"
+  ]
+ }
+}

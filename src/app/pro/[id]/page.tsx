@@ -215,7 +215,7 @@ export default function ProDetailPage() {
                 </span>
                 <span className="px">
                   {px}
-                  <button type="button" onClick={() => reserve(a)}>{devis ? 'Demander un devis' : 'Réserver'}</button>
+                  {(articles.length > 1 || devis || !bookable) && <button type="button" onClick={() => reserve(a)}>{devis ? 'Demander un devis' : 'Réserver'}</button>}
                 </span>
               </div>
             )

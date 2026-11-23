@@ -44,6 +44,7 @@ export default function AgendaPage() {
   const [txs, setTxs] = useState<any[]>([])
   const [names, setNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [allDisputes, setAllDisputes] = useState(false)
   const [disputes, setDisputes] = useState<any[]>([])
   const [invoices, setInvoices] = useState<any[]>([])
   const [freeSlots, setFreeSlots] = useState<Slot[] | null>(null)
@@ -259,7 +260,7 @@ export default function AgendaPage() {
         {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} />}
 
         {/* Litige en tête, quel que soit l'onglet. */}
-        {shownDisputes.map(d => (
+        {(allDisputes ? shownDisputes : shownDisputes.slice(0, 2)).map(d => (
           <div key={d.id} role="link" tabIndex={0} onClick={() => router.push(`/mission/${d.transaction_id}/chat`)}
             onKeyDown={e => { if (e.key === 'Enter') router.push(`/mission/${d.transaction_id}/chat`) }}
             style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#FFF7ED', border: '1.5px solid #F2A93B', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer' }}>
@@ -277,6 +278,13 @@ export default function AgendaPage() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
           </div>
         ))}
+
+        {!allDisputes && shownDisputes.length > 2 && (
+          <button type="button" onClick={() => setAllDisputes(true)}
+            style={{ width: '100%', minHeight: 44, marginBottom: 14, borderRadius: 999, border: '1.5px solid #F2A93B', background: '#fff', color: '#8a6520', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            Voir les {shownDisputes.length - 2} autres litiges
+          </button>
+        )}
 
         <div className="ping-tabs" role="tablist" aria-label="Agenda">
           {TABS.map(([k, label]) => (

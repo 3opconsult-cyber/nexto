@@ -1,0 +1,191 @@
+{
+ "commande-client": {
+  "mots": 137,
+  "motsPage": 206,
+  "boutons": 7,
+  "hauteur": 1561,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 111,
+  "utileMs": 1551,
+  "erreursConsole": 0,
+  "url": "/mission/a0d834bc-2842-4b62-a989-b964a1f85429/commande",
+  "topRequetes": [
+   "14x SB/rest/v1/transactions",
+   "7x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/rpc/transaction_counterparts",
+   "5x SB/rest/v1/reviews",
+   "5x SB/rest/v1/invoices",
+   "3x SB/rest/v1/messages"
+  ]
+ },
+ "commande-pro": {
+  "mots": 144,
+  "motsPage": 164,
+  "boutons": 6,
+  "hauteur": 1250,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 113,
+  "utileMs": 1853,
+  "erreursConsole": 0,
+  "url": "/mission/a0d834bc-2842-4b62-a989-b964a1f85429/commande",
+  "topRequetes": [
+   "19x SB/rest/v1/transactions",
+   "9x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/invoices",
+   "4x SB/rest/v1/reviews",
+   "3x SB/rest/v1/rpc/transaction_counterparts",
+   "3x /mission/:id/facture"
+  ]
+ },
+ "chat-client": {
+  "mots": 151,
+  "motsPage": 322,
+  "boutons": 11,
+  "hauteur": 2401,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 126,
+  "utileMs": 1624,
+  "erreursConsole": 0,
+  "url": "/mission/89981c99-eb65-4c9e-a068-3de45d78be7f/chat",
+  "topRequetes": [
+   "16x SB/rest/v1/transactions",
+   "8x SB/rest/v1/provider_profiles",
+   "6x SB/rest/v1/reviews",
+   "5x SB/rest/v1/rpc/transaction_counterparts",
+   "5x SB/rest/v1/invoices",
+   "4x SB/rest/v1/messages"
+  ]
+ },
+ "chat-pro": {
+  "mots": 137,
+  "motsPage": 305,
+  "boutons": 10,
+  "hauteur": 2045,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 129,
+  "utileMs": 1955,
+  "erreursConsole": 0,
+  "url": "/mission/89981c99-eb65-4c9e-a068-3de45d78be7f/chat",
+  "topRequetes": [
+   "21x SB/rest/v1/transactions",
+   "11x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/reviews",
+   "5x SB/rest/v1/invoices",
+   "3x SB/rest/v1/client_reviews",
+   "3x SB/rest/v1/rpc/presence_state"
+  ]
+ },
+ "agenda-client": {
+  "mots": 103,
+  "motsPage": 240,
+  "boutons": 24,
+  "hauteur": 2012,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 4,
+  "recouvrementsListe": [
+   "Audit P., En route <- Mission",
+   "Mission du jour <- Agenda",
+   "Reporter <- 9+ Messages",
+   "Annuler <- Agenda"
+  ],
+  "requetes": 101,
+  "utileMs": 2624,
+  "erreursConsole": 0,
+  "url": "/agenda",
+  "topRequetes": [
+   "13x SB/rest/v1/transactions",
+   "7x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/reviews",
+   "4x SB/rest/v1/rpc/transaction_counterparts",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/messages"
+  ]
+ },
+ "agenda-pro": {
+  "mots": 97,
+  "motsPage": 216,
+  "boutons": 22,
+  "hauteur": 1868,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 3,
+  "recouvrementsListe": [
+   "Audit C., En route <- Mission du jour",
+   "Reporter <- 9+ Messages",
+   "Annuler <- Agenda"
+  ],
+  "requetes": 104,
+  "utileMs": 2347,
+  "erreursConsole": 0,
+  "url": "/agenda",
+  "topRequetes": [
+   "18x SB/rest/v1/transactions",
+   "10x SB/rest/v1/provider_profiles",
+   "4x SB/rest/v1/reviews",
+   "4x SB/rest/v1/invoices",
+   "3x /mission/:id/facture",
+   "2x SB/rest/v1/profiles"
+  ]
+ },
+ "fiche-prestataire": {
+  "mots": 164,
+  "motsPage": 401,
+  "boutons": 10,
+  "hauteur": 2413,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 0,
+  "recouvrementsListe": [],
+  "requetes": 109,
+  "utileMs": 1592,
+  "erreursConsole": 0,
+  "url": "/pro/b9f8cd9a-16de-4a36-afd8-10a2135ab970",
+  "topRequetes": [
+   "13x SB/rest/v1/transactions",
+   "9x SB/rest/v1/provider_profiles",
+   "6x SB/rest/v1/reviews",
+   "4x SB/rest/v1/rpc/transaction_counterparts",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/rpc/provider_trust_stats"
+  ]
+ },
+ "reservation": {
+  "mots": 125,
+  "motsPage": 298,
+  "boutons": 32,
+  "hauteur": 1572,
+  "petitesCibles": 0,
+  "petitesListe": [],
+  "recouvrements": 3,
+  "recouvrementsListe": [
+   "19 h 00 <- Confirmer la réservation · 108,00 €",
+   "19 h 30 <- Confirmer la réservation · 108,00 €",
+   "TEXTAREA <- Mission du jour, action attendue"
+  ],
+  "requetes": 107,
+  "utileMs": 779,
+  "erreursConsole": 0,
+  "url": "/mission/new?pro=b9f8cd9a-16de-4a36-afd8-10a2135ab970",
+  "topRequetes": [
+   "13x SB/rest/v1/transactions",
+   "8x SB/rest/v1/provider_profiles",
+   "5x SB/rest/v1/reviews",
+   "4x SB/rest/v1/rpc/transaction_counterparts",
+   "4x SB/rest/v1/invoices",
+   "3x SB/rest/v1/messages"
+  ]
+ }
+}
