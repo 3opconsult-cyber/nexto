@@ -145,7 +145,7 @@ export default function ProMonthBlock({ pro, transactions, hideDispute }: Props)
           <div style={big}>{nearby != null ? nearby : '—'}</div>
           <div style={lab}>
             {nearby == null ? 'Demandes près de vous' : nearby === 0 ? 'Aucune demande près de vous' : `Demande${nearby > 1 ? 's' : ''} près de vous`}
-            {nearby != null && nearby > 0 && <span style={{ color: '#0C8F7E', fontWeight: 700 }}> · voir ›</span>}
+            {nearby != null && nearby > 0 && <span style={{ color: '#0B8374', fontWeight: 700 }}> · voir ›</span>}
           </div>
         </div>
       </div>

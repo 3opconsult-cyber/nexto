@@ -73,7 +73,7 @@ export default function BookingCard({ tx, userId, counterpart, onChange, compact
   const p: React.CSSProperties = { fontSize: 12.5, color: '#3d5560', lineHeight: 1.5, margin: '3px 0 0' }
   const btn = (primary: boolean, danger = false): React.CSSProperties => ({
     flex: primary ? 1.4 : 1, minHeight: 48, borderRadius: 999, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14,
-    border: primary ? 'none' : '1.5px solid #DCE5E3', background: primary ? (danger ? '#C0503A' : '#0C8F7E') : '#fff', color: primary ? '#fff' : '#123644',
+    border: primary ? 'none' : '1.5px solid #DCE5E3', background: primary ? (danger ? '#C0503A' : '#0B8374') : '#fff', color: primary ? '#fff' : '#123644',
   })
 
   // ---- Prestataire : à accepter ----
@@ -103,7 +103,7 @@ export default function BookingCard({ tx, userId, counterpart, onChange, compact
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
             {REFUSAL_REASONS.map(r => (
               <button key={r} type="button" aria-pressed={reason === r} onClick={e => { stop(e); setReason(x => x === r ? '' : r) }}
-                style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: `1.5px solid ${reason === r ? '#0C8F7E' : '#DCE5E3'}`, background: reason === r ? 'rgba(18,179,156,.1)' : '#fff', color: '#123644', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: `1.5px solid ${reason === r ? '#0B8374' : '#DCE5E3'}`, background: reason === r ? 'rgba(18,179,156,.1)' : '#fff', color: '#123644', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
                 {r}
               </button>
             ))}

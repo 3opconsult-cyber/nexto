@@ -128,7 +128,7 @@ export default function ScanQR() {
           width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px', display: 'grid', placeItems: 'center',
           background: status === 'ok' ? 'rgba(18,179,156,.12)' : status === 'error' ? 'rgba(255,122,102,.12)' : '#F3F6F5',
         }}>
-          {status === 'ok' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.6" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>}
+          {status === 'ok' && <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.6" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>}
           {status === 'error' && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B3402F" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>}
           {status === 'checking' && <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#12B39C', animation: 'pingPulse 1.4s ease-in-out infinite' }} />}
         </div>
@@ -142,7 +142,7 @@ export default function ScanQR() {
         {status !== 'checking' && (
           <>
             <button onClick={() => router.push(done ? `/mission/${params.id}/facture` : `/mission/${params.id}/jour`)}
-              style={{ width: '100%', marginTop: 18, padding: 13, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+              style={{ width: '100%', marginTop: 18, padding: 13, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
               {done ? 'Voir la facture' : 'Mission du jour'}
             </button>
             <button onClick={() => router.push(`/mission/${params.id}/chat`)}

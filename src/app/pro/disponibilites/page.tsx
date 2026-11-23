@@ -141,7 +141,7 @@ export default function Disponibilites() {
 
   const chip = (on: boolean, locked = false): React.CSSProperties => ({
     border: on ? '2px solid #12B39C' : '1.5px solid #E7EDEB', background: locked ? '#123644' : on ? 'rgba(18,179,156,.12)' : '#fff',
-    color: locked ? '#fff' : on ? '#0C8F7E' : '#123644', borderRadius: 14, padding: '12px 8px', fontFamily: 'Quicksand, sans-serif',
+    color: locked ? '#fff' : on ? '#0B8374' : '#123644', borderRadius: 14, padding: '12px 8px', fontFamily: 'Quicksand, sans-serif',
     fontWeight: 700, fontSize: 15, cursor: locked ? 'default' : 'pointer', textAlign: 'center',
   })
 
@@ -169,7 +169,7 @@ export default function Disponibilites() {
 
           {!loading && slots !== null && (
             <>
-              {msg && <p style={{ fontSize: 13, color: msg.ok ? '#0C8F7E' : '#c0503a', margin: '0 0 10px', fontWeight: 600 }}>{msg.text}</p>}
+              {msg && <p style={{ fontSize: 13, color: msg.ok ? '#0B8374' : '#c0503a', margin: '0 0 10px', fontWeight: 600 }}>{msg.text}</p>}
               <Calendar events={events} views={['month']} defaultView="month" bigCells onDayClick={openDay} />
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 12, fontSize: 12, color: '#4E6470' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: 'rgba(18,179,156,.14)', border: '1.5px solid #12B39C' }} />Créneaux libres</span>
@@ -219,7 +219,7 @@ export default function Disponibilites() {
               ))}
             </div>
 
-            <button onClick={save} disabled={busy} style={{ marginTop: 16, width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
+            <button onClick={save} disabled={busy} style={{ marginTop: 16, width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
               {busy ? 'Enregistrement…' : 'Enregistrer'}
             </button>
             <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', margin: '10px 0 0' }}>Un créneau déjà réservé par un client n&apos;est jamais retiré.</p>

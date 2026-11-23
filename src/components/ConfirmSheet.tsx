@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
  * Rien n'est envoyé sans clic explicite sur le bouton de confirmation.
  * Option `input` : un champ texte (remplace prompt()) ; sa valeur est passée à onConfirm.
  */
-const C = { navy: '#123644', danger: '#C0503A', teal: '#0C8F7E', line: '#DCE5E3', slate: '#4E6470' }
+const C = { navy: '#123644', danger: '#C0503A', teal: '#0B8374', line: '#DCE5E3', slate: '#4E6470' }
 const btn = (bg: string, fg: string, border?: string): React.CSSProperties => ({
   flex: 1, minHeight: 44, padding: '0 14px', borderRadius: 999, border: border ? `1.5px solid ${border}` : 'none', background: bg, color: fg,
   fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: 'Inter, sans-serif',

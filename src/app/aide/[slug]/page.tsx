@@ -11,7 +11,7 @@ export default function AideRubrique() {
   if (!r) return (
     <div style={{ padding: 40, textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
       <p style={{ color: '#4E6470' }}>Rubrique introuvable.</p>
-      <button onClick={() => router.push('/aide')} style={{ border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, cursor: 'pointer' }}>Retour aux rubriques</button>
+      <button onClick={() => router.push('/aide')} style={{ border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, cursor: 'pointer' }}>Retour aux rubriques</button>
     </div>
   )
   return <TutoPlayer title={r.title} src={r.src} onClose={() => router.push('/aide')} />

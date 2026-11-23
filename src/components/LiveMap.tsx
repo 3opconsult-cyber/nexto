@@ -155,7 +155,7 @@ function reqIcon(label: string | null | undefined, i = 0, color = '#F2A93B', inn
 // Second repère d'un prestataire qui a activé « Je suis en intervention ici » (058) : secteur flouté à ~500 m,
 // en plus de son domicile. Teal foncé et cible au centre, étiquette « Ici aujourd'hui » (jamais une adresse).
 const ZONE_INNER = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.6" fill="#fff"/></svg>'
-function zoneIcon(i = 0) { return pinIcon('#0C8F7E', 'Ici aujourd’hui', i, ZONE_INNER, 'normal') }
+function zoneIcon(i = 0) { return pinIcon('#0B8374', 'Ici aujourd’hui', i, ZONE_INNER, 'normal') }
 
 type FitPad = { top: number; right: number; bottom: number; left: number }
 function FitAll({ userPos, pts, recenterTick, fit = false, fitKey, fitPad, inset = 0 }: {

@@ -40,7 +40,7 @@ export default function NotFound() {
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 22 }}>
           <Link href="/map" style={{
-            display: 'block', background: '#0C8F7E', color: '#fff', textDecoration: 'none',
+            display: 'block', background: '#0B8374', color: '#fff', textDecoration: 'none',
             fontFamily: 'var(--font-quicksand), Quicksand, sans-serif', fontWeight: 700, fontSize: 15,
             padding: 14, borderRadius: 999, boxShadow: '0 8px 18px rgba(18,179,156,.28)',
           }}>Aller à la carte</Link>
@@ -49,7 +49,7 @@ export default function NotFound() {
             fontFamily: 'var(--font-quicksand), Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5,
             padding: 13, borderRadius: 999, boxShadow: '0 0 0 1px #DCE5E3',
           }}>Je suis prestataire</Link>
-          <Link href="/support" style={{ color: '#0C8F7E', fontWeight: 600, fontSize: 13, marginTop: 6 }}>
+          <Link href="/support" style={{ color: '#0B8374', fontWeight: 600, fontSize: 13, marginTop: 6 }}>
             Contacter le support PING
           </Link>
         </div>

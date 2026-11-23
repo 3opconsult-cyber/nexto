@@ -38,7 +38,7 @@ type Pro = {
 }
 
 const HUES: Record<string, string> = {
-  menage: '#12B39C,#0C8F7E', repassage: '#4E6470,#4c6472', nettoyage: '#F2A93B,#8A6520',
+  menage: '#12B39C,#0B8374', repassage: '#4E6470,#4c6472', nettoyage: '#F2A93B,#8A6520',
   vitres: '#12B39C,#0e7f70', remise: '#FF7A66,#e05f4b',
 }
 // Libellés : catalogue des services (src/lib/catalog.ts, mis à jour dans TRADES au chargement ;

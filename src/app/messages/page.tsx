@@ -127,7 +127,7 @@ export default function MessagesPage() {
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucune conversation pour l'instant</div>
             <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>{mode === 'pro' ? 'Elles apparaissent ici quand un client vous écrit ou répond à une demande.' : 'Contactez un prestataire depuis la carte pour démarrer une conversation.'}</div>
-            <a href={mode === 'pro' ? '/pro/carte' : '/map'} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 22px', marginTop: 14, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>{mode === 'pro' ? 'Voir les demandes' : 'Voir la carte'}</a>
+            <a href={mode === 'pro' ? '/pro/carte' : '/map'} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 22px', marginTop: 14, borderRadius: 999, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>{mode === 'pro' ? 'Voir les demandes' : 'Voir la carte'}</a>
           </div>
         )}
         {!loading && visible.length > 0 && (() => {
@@ -190,7 +190,7 @@ export default function MessagesPage() {
                     <div style={{
                       width: 42, height: 42, borderRadius: 13, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#fff',
-                      background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0C8F7E)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#8A6520)' : 'linear-gradient(160deg,#4E6470,#4c6472)'),
+                      background: t.kind === 'support' ? 'linear-gradient(160deg,#12B39C,#0B8374)' : (t.isSeller ? 'linear-gradient(160deg,#F2A93B,#8A6520)' : 'linear-gradient(160deg,#4E6470,#4c6472)'),
                     }}>{(name || '?').charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
@@ -217,7 +217,7 @@ export default function MessagesPage() {
             </div>
           ))
           return <>{list}{capped && (
-            <button type="button" onClick={() => setShowAll(true)} style={{ width: '100%', minHeight: 48, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+            <button type="button" onClick={() => setShowAll(true)} style={{ width: '100%', minHeight: 48, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
               Voir les {filtered.length - LIMIT} autres conversations
             </button>
           )}</>

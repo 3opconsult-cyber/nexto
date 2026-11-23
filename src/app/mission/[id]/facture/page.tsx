@@ -109,10 +109,10 @@ export default function FacturePage() {
               : 'Les documents sont émis automatiquement à la fin de la mission, dès que la fin est validée avec le client (QR, code ou confirmation) : c\u2019est elle qui fixe la durée réelle, donc le montant.'}
         </p>
         {txInfo?.missing && (
-          <a href="/agenda" style={{ display: 'inline-block', marginTop: 12, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Ouvrir mon agenda</a>
+          <a href="/agenda" style={{ display: 'inline-block', marginTop: 12, color: '#0B8374', fontWeight: 700, fontSize: 13 }}>Ouvrir mon agenda</a>
         )}
         {txInfo?.completed && !txInfo.self && (
-          <a href="/support" style={{ display: 'inline-block', marginTop: 12, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Contacter le support</a>
+          <a href="/support" style={{ display: 'inline-block', marginTop: 12, color: '#0B8374', fontWeight: 700, fontSize: 13 }}>Contacter le support</a>
         )}
       </div>
     </div>
@@ -331,7 +331,7 @@ export default function FacturePage() {
         <div className="no-print" style={{ maxWidth: 620, margin: '16px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button onClick={download} disabled={busy} style={{
             width: '100%', border: 'none', padding: 14, borderRadius: 999, cursor: 'pointer',
-            background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif',
+            background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif',
             fontWeight: 700, fontSize: 14.5, boxShadow: '0 8px 18px rgba(18,179,156,.28)',
             opacity: busy ? .6 : 1,
           }}>{busy ? 'Génération…' : 'Télécharger le PDF'}</button>
@@ -347,7 +347,7 @@ export default function FacturePage() {
             {!reviewed && (
               <button onClick={() => router.push(`/mission/${params.id}/chat?avis`)} style={{
                 flex: '1 1 200px', border: 'none', padding: 13, borderRadius: 999, cursor: 'pointer',
-                background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14,
+                background: 'rgba(18,179,156,.1)', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14,
               }}>Laisser un avis</button>
             )}
             <button onClick={() => router.push(`/mission/${params.id}/chat?signaler`)} style={{

@@ -93,7 +93,7 @@ export default function WelcomeCarousel({ onDone }: { onDone: () => void }) {
           ))}
         </div>
         <button type="button" onClick={() => (last ? finish() : go(i + 1))}
-          style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+          style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
           {last ? 'Découvrir la carte' : 'Suivant'}
         </button>
       </div>

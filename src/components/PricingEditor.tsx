@@ -48,7 +48,7 @@ export default function PricingEditor({
           const on = m.key === value.mode
           return (
             <button key={m.key} type="button" onClick={() => set({ mode: m.key })}
-              style={{ border: 'none', borderRadius: 9, minHeight: 44, padding: '9px 6px', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5, lineHeight: 1.2, background: on ? '#fff' : 'transparent', color: on ? '#0C8F7E' : '#4E6470', boxShadow: on ? '0 1px 4px rgba(18,54,68,.12)' : 'none' }}>
+              style={{ border: 'none', borderRadius: 9, minHeight: 44, padding: '9px 6px', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 12.5, lineHeight: 1.2, background: on ? '#fff' : 'transparent', color: on ? '#0B8374' : '#4E6470', boxShadow: on ? '0 1px 4px rgba(18,54,68,.12)' : 'none' }}>
               {m.label}
             </button>
           )
@@ -69,7 +69,7 @@ export default function PricingEditor({
       )}
 
       {preview && (
-        <div style={{ marginTop: 12, fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>Affiché aux clients : {preview}</div>
+        <div style={{ marginTop: 12, fontSize: 12.5, fontWeight: 700, color: '#0B8374' }}>Affiché aux clients : {preview}</div>
       )}
       {showError && error && <div style={{ marginTop: 10, fontSize: 12, color: '#c0503a', fontWeight: 600 }}>{error}</div>}
     </div>

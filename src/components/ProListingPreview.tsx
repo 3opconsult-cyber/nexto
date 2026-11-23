@@ -95,7 +95,7 @@ export default function ProListingPreview({ pro, name, services, hasIdentity, ha
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="t"><span className="n">{TRADES[a.name] || a.name}</span></div>
                 {a.id && a.description && <p style={{ margin: '2px 0 0' }}>{a.description}</p>}
-                <div style={{ fontSize: 12.5, color: label ? '#0C8F7E' : '#8A6520', fontWeight: 700, marginTop: 4 }}>{label || 'Prix à fixer dans Mes tarifs'}</div>
+                <div style={{ fontSize: 12.5, color: label ? '#0B8374' : '#8A6520', fontWeight: 700, marginTop: 4 }}>{label || 'Prix à fixer dans Mes tarifs'}</div>
               </div>
             </div>
           )

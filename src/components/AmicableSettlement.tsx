@@ -21,7 +21,7 @@ export type SettlementDispute = {
   settlement_status?: 'proposee' | 'acceptee' | 'refusee' | null; agreed_cents?: number | null
 }
 
-const C = { teal: '#12B39C', tealD: '#0C8F7E', navy: '#123644', slate: '#4E6470', line: '#E7EDEB' }
+const C = { teal: '#12B39C', tealD: '#0B8374', navy: '#123644', slate: '#4E6470', line: '#E7EDEB' }
 
 export const settlementAvailable = (d: unknown) => !!d && typeof d === 'object' && 'settlement_status' in (d as object)
 

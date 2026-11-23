@@ -36,9 +36,9 @@ export default function ConfidentialitePage() {
         <p style={p}>L&apos;adresse du rendez-vous n&apos;est visible par le prestataire qu&apos;une fois la mission confirmée. Le détail est présenté dans « Profil » → « Confidentialité » une fois connecté.</p>
 
         <h2 style={h2}>Vos droits</h2>
-        <p style={p}>Vous pouvez demander l&apos;accès, la rectification ou la suppression de vos données en écrivant à <a href="mailto:info@opconsult.co" style={{ color: '#0C8F7E', fontWeight: 700 }}>info@opconsult.co</a>.</p>
+        <p style={p}>Vous pouvez demander l&apos;accès, la rectification ou la suppression de vos données en écrivant à <a href="mailto:info@opconsult.co" style={{ color: '#0B8374', fontWeight: 700 }}>info@opconsult.co</a>.</p>
 
-        <p style={{ ...p, marginTop: 18 }}>Voir aussi les <Link href="/cgu" style={{ color: '#0C8F7E', fontWeight: 700 }}>conditions générales</Link>.</p>
+        <p style={{ ...p, marginTop: 18 }}>Voir aussi les <Link href="/cgu" style={{ color: '#0B8374', fontWeight: 700 }}>conditions générales</Link>.</p>
       </div>
     </div>
   )

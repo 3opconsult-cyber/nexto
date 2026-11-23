@@ -81,7 +81,7 @@ export default function DayTimePicker({ value, onChange, fromHour = 8, toHour = 
           )
         })}
       </div>
-      <div style={{ fontSize: 12.5, color: label && selTime ? '#0C8F7E' : '#4E6470', fontWeight: 700, marginTop: 8, minHeight: 18, textTransform: 'none' }}>
+      <div style={{ fontSize: 12.5, color: label && selTime ? '#0B8374' : '#4E6470', fontWeight: 700, marginTop: 8, minHeight: 18, textTransform: 'none' }}>
         {selTime && label ? `Le ${label}` : 'Choisissez un jour puis une heure.'}
       </div>
     </div>

@@ -28,7 +28,7 @@ export default function ProSuspensionBanner() {
         {s.debt > 0 && <> Montant dû : <b>{(s.debt / 100).toFixed(2).replace('.', ',')} €</b>.</>}
         {' '}Vous n&apos;apparaissez plus sur la carte et aucun versement n&apos;est effectué tant que la situation n&apos;est pas régularisée.
       </p>
-      <a href="/support" style={{ display: 'inline-block', marginTop: 8, fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>Régulariser avec le support PING</a>
+      <a href="/support" style={{ display: 'inline-block', marginTop: 8, fontSize: 12.5, fontWeight: 700, color: '#0B8374' }}>Régulariser avec le support PING</a>
     </div>
   )
 }

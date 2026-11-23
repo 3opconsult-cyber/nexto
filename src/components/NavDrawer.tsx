@@ -133,7 +133,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
             <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #E7EDEB', display: 'flex', alignItems: 'center', gap: 12 }}>
               {loggedIn === false ? (
                 <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 0 }}>
-                  <button onClick={() => go('/auth/login')} style={{ flex: 1, minHeight: 44, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Se connecter</button>
+                  <button onClick={() => go('/auth/login')} style={{ flex: 1, minHeight: 44, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Se connecter</button>
                   <button onClick={() => go('/auth/signup')} style={{ flex: 1, minHeight: 44, border: 'none', borderRadius: 999, padding: '11px 12px', background: '#F3F6F5', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Créer un compte</button>
                 </div>
               ) : (

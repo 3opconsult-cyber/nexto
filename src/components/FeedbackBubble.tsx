@@ -69,7 +69,7 @@ export default function FeedbackBubble() {
           // volets de l'application (z-index 1400 < barre du bas 1500 < fenêtres 2000+).
           position: 'fixed', right: 'var(--ping-fb-right, 16px)', bottom: 'calc(var(--ping-fb-bottom, 132px) + var(--ping-install-lift, 0px) + env(safe-area-inset-bottom, 0px))', zIndex: 1400,
           width: 52, height: 52, borderRadius: 999, border: 'none',
-          background: '#0C8F7E', color: '#fff', boxShadow: '0 8px 20px rgba(18,54,68,.35)',
+          background: '#0B8374', color: '#fff', boxShadow: '0 8px 20px rgba(18,54,68,.35)',
           display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer',
           padding: 0, justifyContent: 'center', overflow: 'hidden',
         }} title="Laisser un commentaire">
@@ -86,7 +86,7 @@ export default function FeedbackBubble() {
       <div onClick={e => e.stopPropagation()}
         style={{ width: '100%', maxWidth: 480, background: '#fff', borderRadius: '20px 20px 0 0', padding: '20px 20px calc(20px + env(safe-area-inset-bottom,0px))', fontFamily: 'Inter, sans-serif' }}>
         {sent ? (
-          <p style={{ textAlign: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#0C8F7E', padding: '10px 0' }}>
+          <p style={{ textAlign: 'center', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#0B8374', padding: '10px 0' }}>
             Merci, c'est noté !
           </p>
         ) : (
@@ -95,7 +95,7 @@ export default function FeedbackBubble() {
             <p style={{ fontSize: 12, color: '#6E8592', marginTop: 4 }}>Ni l'un ni l'autre n'est obligatoire.</p>
 
             <button onClick={validatePage} disabled={sending}
-              style={{ width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              style={{ width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
               Cette page fonctionne bien
             </button>

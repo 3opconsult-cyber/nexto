@@ -625,7 +625,7 @@ export default function ChatPage() {
       <div style={{ maxWidth: 480, margin: '40px auto', background: '#fff', borderRadius: 16, padding: 22, textAlign: 'center' }}>
         <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', margin: 0 }}>Mission introuvable</h2>
         <p style={{ fontSize: 13, color: '#4E6470', marginTop: 6, lineHeight: 1.55 }}>Cette mission n&apos;existe plus ou ne vous concerne pas.</p>
-        <a href="/messages" style={{ display: 'inline-block', marginTop: 12, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Ouvrir mes messages</a>
+        <a href="/messages" style={{ display: 'inline-block', marginTop: 12, color: '#0B8374', fontWeight: 700, fontSize: 13 }}>Ouvrir mes messages</a>
       </div>
     </div>
   )
@@ -802,7 +802,7 @@ export default function ChatPage() {
           <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 8px', lineHeight: 1.5 }}>Le client demande une intervention ailleurs qu&apos;à l&apos;adresse de son profil. Le numéro vous est transmis si vous acceptez.</p>
           <div style={{ fontSize: 14, fontWeight: 700, color: '#123644', marginBottom: 10 }}>{maskAddress(reqAddr)}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
+            <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
             <button onClick={() => answerAddress(false)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
           </div>
         </div>
@@ -833,10 +833,10 @@ export default function ChatPage() {
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 5 }}>Date et heure</label>
               <div style={{ marginTop: 6 }}><DayTimePicker value={rdvAt} onChange={setRdvAt} /></div><div style={{ height: 10 }} />
               {rdvError && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{rdvError}</p>}
-              <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
+              <button onClick={saveRdv} disabled={rdvSaving} style={{ width: '100%', minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', opacity: rdvSaving ? 0.7 : 1 }}>
                 {rdvSaving ? 'Enregistrement…' : 'Confirmer le rendez-vous'}
               </button>
-              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ display: 'block', margin: '8px auto 0', minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>
+              <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ display: 'block', margin: '8px auto 0', minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>
                 Mes codes QR (arrivée et fin)
               </button>
             </div>
@@ -848,11 +848,11 @@ export default function ChatPage() {
         ) : (
           <div style={{ margin: '10px 16px 0', background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
               <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>Rendez-vous {rdvLabel(tx.scheduled_at)}</span>
               {/* Billet de mission : accès rapide à l'écran « Mission du jour » (QR / scanner / client absent / fin). */}
               {!tx.completed_at && (
-                <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ border: 'none', background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '0 14px', minHeight: 44, fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                <button onClick={() => router.push(`/mission/${tx.id}/jour`)} style={{ border: 'none', background: '#0B8374', color: '#fff', borderRadius: 999, padding: '0 14px', minHeight: 44, fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
                   {isTodayMission(tx) ? 'Mission du jour' : userId === tx.buyer_id ? 'Mes codes QR' : 'Voir la mission'}
                 </button>
               )}
@@ -1066,7 +1066,7 @@ export default function ChatPage() {
       )}
 
       {/* Bannière sécurité */}
-      <div style={{ padding: '8px 16px', fontSize: 11.5, fontWeight: 600, textAlign: 'center', background: 'rgba(18,179,156,.1)', color: '#0C8F7E' }}>
+      <div style={{ padding: '8px 16px', fontSize: 11.5, fontWeight: 600, textAlign: 'center', background: 'rgba(18,179,156,.1)', color: '#0B8374' }}>
         Téléphone et e-mail restent masqués : échangez ici, l&apos;adresse s&apos;affiche une fois la mission validée et réglée
       </div>
 
@@ -1078,7 +1078,7 @@ export default function ChatPage() {
           ) : (
             <button onClick={requestInsurance} disabled={insuranceBusy}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999, padding: '0 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>
               {insuranceBusy ? 'Envoi…' : 'Demander l’attestation d’assurance'}
             </button>
           )}
@@ -1125,9 +1125,9 @@ export default function ChatPage() {
                 <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: '16px 18px', boxShadow: '0 4px 16px rgba(18,179,156,.12)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
                   <span style={{ width: 22, height: 22, borderRadius: 7, background: 'rgba(18,179,156,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
                   </span>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0C8F7E', textTransform: 'uppercase', letterSpacing: '.05em' }}>Devis</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0B8374', textTransform: 'uppercase', letterSpacing: '.05em' }}>Devis</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 10, marginBottom: m.body ? 6 : 0 }}>
                   <span style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.4 }}>{m.body}</span>
@@ -1159,17 +1159,17 @@ export default function ChatPage() {
                 {m.offer_status === 'pending' && !priceLocked && !mine && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                     <button onClick={() => counterOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
-                    <button onClick={() => acceptOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
+                    <button onClick={() => acceptOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
                   </div>
                 )}
                 {m.offer_status === 'pending' && !priceLocked && mine && (
                   <div style={{ marginTop: 10 }}>
                     <div style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginBottom: 8 }}>En attente de validation</div>
-                    <button onClick={() => counterOffer(m)} style={{ width: '100%', minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
+                    <button onClick={() => counterOffer(m)} style={{ width: '100%', minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
                   </div>
                 )}
                 {m.offer_status === 'accepted' && (
-                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#0C8F7E' }}>✓ Accepté — appliqué à la mission</div>
+                  <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#0B8374' }}>✓ Accepté — appliqué à la mission</div>
                 )}
                 {m.offer_status === 'declined' && (
                   <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#6E8592' }}>
@@ -1194,7 +1194,7 @@ export default function ChatPage() {
                     <div style={{ fontSize: 11, color: '#4E6470', marginTop: 2 }}>{expired ? 'Lien expiré : demandez-la à nouveau si besoin.' : until ? `Visible des seules parties de cette mission · ${until}` : 'Visible des seules parties de cette mission'}</div>
                     {link && !expired && (
                       <a href={link} target="_blank" rel="noopener noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 8, background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+                        style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 8, background: '#0B8374', color: '#fff', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
                         Ouvrir l&apos;attestation
                       </a>
                     )}
@@ -1227,7 +1227,7 @@ export default function ChatPage() {
             return (
               <Fragment key={m.id}>
                 {datePill}
-                <div style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>
+                <div style={{ alignSelf: 'center', maxWidth: '85%', background: 'rgba(18,179,156,.1)', color: '#0B8374', fontSize: 11.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999, textAlign: 'center' }}>
                   {m.body}
                 </div>
                 {/* Fin annoncée, client absent (048) : « Envoyer mon code de fin » sous le message. */}
@@ -1244,13 +1244,13 @@ export default function ChatPage() {
                       <div style={{ background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 14, padding: '10px 14px' }}>
                         <div style={{ fontSize: 12.5, color: '#123644', fontWeight: 600, lineHeight: 1.5 }}>Vous n&apos;avez pas encore déposé d&apos;attestation d&apos;assurance (ou elle n&apos;est plus valable).</div>
                         <button onClick={() => router.push(`/pro/documents?retour=${encodeURIComponent(`/mission/${transactionId}/chat`)}`)}
-                          style={{ marginTop: 8, minHeight: 44, border: 'none', background: '#0C8F7E', color: '#fff', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                          style={{ marginTop: 8, minHeight: 44, border: 'none', background: '#0B8374', color: '#fff', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
                           Déposer mon attestation
                         </button>
                       </div>
                     ) : (
                       <button onClick={transmitInsurance} disabled={insuranceBusy}
-                        style={{ minHeight: 44, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
+                        style={{ minHeight: 44, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', borderRadius: 999, padding: '0 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
                         {insuranceBusy ? 'Transmission…' : 'Transmettre mon attestation'}
                       </button>
                     )}
@@ -1275,7 +1275,7 @@ export default function ChatPage() {
                     Pour que le prix compte, utilisez Proposer un tarif : seul un tarif validé des deux côtés est facturé (et protégé en cas de litige).
                   </div>
                   <button onClick={openOfferForm}
-                    style={{ marginTop: 2, minHeight: 44, border: 'none', background: 'none', padding: '0 2px', color: '#0C8F7E', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
+                    style={{ marginTop: 2, minHeight: 44, border: 'none', background: 'none', padding: '0 2px', color: '#0B8374', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
                     Proposer un tarif
                   </button>
                 </div>
@@ -1306,7 +1306,7 @@ export default function ChatPage() {
         )}
         {tx && userId === tx.seller_id && !myClientReview && ['completed', 'released'].includes(tx.status) && tx.buyer_id !== tx.seller_id && (
           <button onClick={() => { try { localStorage.removeItem(`ping_client_review_later_${tx.id}`) } catch { } setAskClientReview(true) }}
-            style={{ alignSelf: 'center', minHeight: 44, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '0 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            style={{ alignSelf: 'center', minHeight: 44, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', borderRadius: 999, padding: '0 18px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
             Je note et commente mon client
           </button>
         )}
@@ -1325,7 +1325,7 @@ export default function ChatPage() {
       {tx && userId === tx.seller_id && tx.status === 'pending' && !tx.price_confirmed && !msgs.some(m => m.kind === 'offer' && (m.offer_status === 'pending' || m.offer_status === 'accepted')) && (
         <div style={{ padding: '0 16px 10px' }}>
           <button onClick={openOfferForm}
-            style={{ width: '100%', minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
+            style={{ width: '100%', minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, fontWeight: 700 }}>
             + Proposer un tarif
           </button>
         </div>
@@ -1338,7 +1338,7 @@ export default function ChatPage() {
           style={{ flex: 1, minHeight: 44, boxSizing: 'border-box', padding: '11px 16px', borderRadius: 999, fontSize: 16, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send} aria-label="Envoyer le message"
-          style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0C8F7E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0B8374', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" /></svg>
         </button>
       </div>

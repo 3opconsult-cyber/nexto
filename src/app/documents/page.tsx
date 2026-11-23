@@ -156,11 +156,11 @@ export default function DocumentsPage() {
             <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '8px 0 12px' }}>{annual.note}</p>
             <div style={{ display: 'flex', gap: 8 }}>
               <button type="button" disabled={annualBusy} onClick={() => downloadAnnual('pdf')}
-                style={{ flex: 1.4, padding: 11, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: annualBusy ? .6 : 1 }}>
+                style={{ flex: 1.4, padding: 11, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: annualBusy ? .6 : 1 }}>
                 Télécharger le relevé annuel
               </button>
               <button type="button" disabled={annualBusy} onClick={() => downloadAnnual('csv')}
-                style={{ flex: 1, padding: 11, borderRadius: 999, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: 11, borderRadius: 999, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 CSV
               </button>
             </div>
@@ -195,7 +195,7 @@ export default function DocumentsPage() {
                 <div key={x.n} style={{ background: '#fff', border: '1px dashed #DCE5E3', borderRadius: 14, padding: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>{x.t}</span>
-                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0C8F7E' }}>{EUR(x.a)}</span>
+                    <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0B8374' }}>{EUR(x.a)}</span>
                   </div>
                   <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>{x.n} · exemple</div>
                 </div>
@@ -227,17 +227,17 @@ export default function DocumentsPage() {
                       style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 14, cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', color: '#123644' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
                         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>
-                          {TITLE[r.template] ?? 'Document'}{service ? <span style={{ color: 'var(--teal, #0C8F7E)' }}> · {service}</span> : null}
+                          {TITLE[r.template] ?? 'Document'}{service ? <span style={{ color: 'var(--teal, #0B8374)' }}> · {service}</span> : null}
                         </span>
-                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0C8F7E' }}>{EUR(r.net_cents)}</span>
+                        <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0B8374' }}>{EUR(r.net_cents)}</span>
                       </div>
                       <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>
                         {r.number} · {emis ? 'émis à' : 'reçu de'} {autre || '—'} · {new Date(r.issued_at).toLocaleDateString('fr-FR')}
                       </div>
-                      <div style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', marginTop: 5 }}>Voir l&apos;opération et la facture ›</div>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: '#0B8374', marginTop: 5 }}>Voir l&apos;opération et la facture ›</div>
                     </button>
                     <button type="button" onClick={() => openShare(r)} aria-label={`Transmettre ${r.number}`}
-                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, width: 70, border: 'none', borderLeft: '1px solid #F0F3F2', background: '#FAFCFB', color: '#0C8F7E', fontSize: 10.5, fontWeight: 700, cursor: 'pointer' }}>
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, width: 70, border: 'none', borderLeft: '1px solid #F0F3F2', background: '#FAFCFB', color: '#0B8374', fontSize: 10.5, fontWeight: 700, cursor: 'pointer' }}>
                       <ShareIco />Partager
                     </button>
                     </div>

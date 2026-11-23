@@ -7,7 +7,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 :root{--danger:#C0503A;--danger-bg:rgba(192,80,58,.1);--warn-text:#8A6520;--warn-bg:#FFF7ED;--ink:#123644;--paper:#F3F6F5;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;
---teal:#12B39C;--tealD:#0C8F7E;--btnFill:#0B8374;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
+--teal:#12B39C;--tealD:#0B8374;--btnFill:#0B8374;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
 --fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 /* body vitrine desktop neutralise pendant la bascule (fond sombre + centrage
@@ -67,7 +67,7 @@
 .preview.show{transform:none}
 .pvh{width:38px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 12px}
 .pvrow{display:flex;gap:12px;align-items:flex-start}
-.pvav{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:19px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.pvav{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:19px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0b8374)}
 .pvname{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:16px}
 .pvmeta{font-size:11.5px;color:var(--slate);margin-top:1px}
 .chipset{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -87,7 +87,7 @@
 
 /* rows / lists */
 .row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:9px;cursor:pointer}
-.row .av{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:17px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.row .av{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:17px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0b8374)}
 .row .av.g{background:#6E8592}.row .av.gold{background:linear-gradient(160deg,#f2a93b,#8A6520)}
 .row .m{flex:1;min-width:0}
 .row .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;display:flex;align-items:center;gap:6px}
@@ -100,7 +100,7 @@
 .stars{color:var(--gold);font-size:12px}
 
 /* profile */
-.hero{background:linear-gradient(160deg,#14b39c,#0c8f7e);padding:16px;color:#fff;border-radius:0}
+.hero{background:linear-gradient(160deg,#14b39c,#0b8374);padding:16px;color:#fff;border-radius:0}
 .hero .big{width:52px;height:52px;border-radius:15px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-family:var(--fh);font-weight:700;font-size:21px;border:2px solid rgba(255,255,255,.5)}
 .hero h2{font-family:var(--fh);font-weight:700;font-size:19px;margin-top:9px}
 .hero .meta{opacity:.92;font-size:12px;margin-top:2px}
@@ -267,7 +267,7 @@ svg{display:block}
 .drawer.on{transform:translateX(0)}
 .drawer .dh{padding:18px 16px 14px;border-bottom:1px solid var(--line)}
 .drawer .du{display:flex;align-items:center;gap:10px;margin-top:14px}
-.drawer .du .av2{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0C8F7E);color:#fff;font-family:var(--fh);font-weight:700;font-size:16px}
+.drawer .du .av2{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0B8374);color:#fff;font-family:var(--fh);font-weight:700;font-size:16px}
 .drawer .du .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px}
 .drawer .du .ds{font-size:11px;color:var(--slate)}
 .dnav{flex:1;overflow-y:auto;padding:10px 10px}
@@ -299,7 +299,7 @@ svg{display:block}
 
 /* ---- Bouton PING (rafraichir autour de moi) ---- */
 .pingbtn{position:absolute;right:14px;bottom:172px;z-index:33;width:56px;height:56px;border-radius:50%;
- background:linear-gradient(160deg,#12B39C,#0C8F7E);display:grid;place-items:center;cursor:pointer;
+ background:linear-gradient(160deg,#12B39C,#0B8374);display:grid;place-items:center;cursor:pointer;
  box-shadow:0 10px 26px rgba(18,179,156,.42);border:2.5px solid #fff;transition:transform .16s}
 .pingbtn:active{transform:scale(.92)}
 .pingbtn .lbl{font-family:var(--fh);font-weight:700;font-size:11.5px;color:#fff;letter-spacing:.4px;line-height:1}
@@ -355,7 +355,7 @@ svg{display:block}
 .lev .t{font-size:11.5px;color:var(--slate);line-height:1.5;margin-top:4px}
 .lev .mt2{font-size:9.5px;color:var(--slate);margin-top:7px;padding-top:6px;border-top:1px solid var(--line)}
 .ltag{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:99px}
-.ltag.a{background:#E9F7F4;color:#0C8F7E}
+.ltag.a{background:#E9F7F4;color:#0B8374}
 .ltag.b{background:#FDF3E2;color:#8a6520}
 .ltag.k{background:rgba(18,54,68,.09);color:var(--ink)}
 .lgel{display:flex;align-items:center;gap:9px;background:#FFFBF2;border:1px solid #F5D9A6;border-radius:12px;padding:11px 12px;margin-top:10px}
@@ -410,14 +410,14 @@ svg{display:block}
 
 /* ============================================================
    Accessibilité de base (lot 31, validé par Romain le 18/11/2026)
-   - Boutons pleins : texte blanc sur teal foncé --btnFill (#0B8374, 4,65:1, AA ; #0C8F7E ne faisait que 4,0:1, mesuré le 23/11) ;
+   - Boutons pleins : texte blanc sur teal foncé --btnFill (#0B8374, 4,65:1, AA ; #0B8374 ne faisait que 4,0:1, mesuré le 23/11) ;
      le teal #12B39C reste pour les accents (pictogrammes, bordures, jauges).
    - Focus visible au clavier partout (les « outline: none » en ligne des champs
      sont outrepassés seulement au focus).
    - Cibles tactiles d'au moins 44 px sur les boutons principaux (.btn, .btn.sm, .acc).
    ============================================================ */
 :where(a,button,[role="button"],[role="tab"],[role="link"],input,select,textarea,summary,[tabindex]):focus-visible{
-  outline:3px solid var(--btnFill,#0C8F7E)!important;outline-offset:2px!important;box-shadow:0 0 0 2px #fff}
+  outline:3px solid var(--btnFill,#0B8374)!important;outline-offset:2px!important;box-shadow:0 0 0 2px #fff}
 .acc{min-height:44px}
 
 /* Onglets segmentés (Agenda : En cours, Calendrier, Terminées, Factures) */
@@ -460,7 +460,7 @@ svg{display:block}
 .mq-row b{display:block;font-weight:700;font-size:13.5px}
 .mq-row small{color:var(--slate);font-size:11.5px;display:block;margin-top:2px;line-height:1.4}
 .mq-row .chev{color:var(--slate);display:inline-flex}
-.mq-av{width:44px;height:44px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font:700 17px var(--fh);flex:0 0 auto;background:linear-gradient(160deg,#14B39C,#0C8F7E);background-size:cover;background-position:center}
+.mq-av{width:44px;height:44px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font:700 17px var(--fh);flex:0 0 auto;background:linear-gradient(160deg,#14B39C,#0B8374);background-size:cover;background-position:center}
 .mq-rico{width:34px;height:34px;border-radius:10px;background:var(--paper);display:inline-flex;align-items:center;justify-content:center;color:#097A6C;flex:0 0 auto}
 .mq-hubt{font:700 11px var(--fb);color:var(--slate);text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px 2px}
 

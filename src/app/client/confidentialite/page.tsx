@@ -27,7 +27,7 @@ export default function ClientConfidentialitePage() {
 
         {ROWS.map((r, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: `1px solid ${r.ok ? 'rgba(18,179,156,.4)' : '#E7EDEB'}`, borderRadius: 13, padding: '11px 12px', marginBottom: 8 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 9, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: r.ok ? 'rgba(18,179,156,.12)' : '#F3F6F5', color: r.ok ? '#0C8F7E' : '#6E8592' }}>
+            <div style={{ width: 28, height: 28, borderRadius: 9, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: r.ok ? 'rgba(18,179,156,.12)' : '#F3F6F5', color: r.ok ? '#0B8374' : '#6E8592' }}>
               {r.ok
                 ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" /><circle cx="12" cy="12" r="3" /></svg>
                 : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" /><path d="M4 4l16 16" /></svg>}
@@ -42,7 +42,7 @@ export default function ClientConfidentialitePage() {
         <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginTop: 12 }}>
           <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.5, margin: 0 }}>
             Vous pouvez demander la suppression de vos données à tout moment (RGPD) en contactant le{' '}
-            <span style={{ color: '#0C8F7E', fontWeight: 700, cursor: 'pointer' }} onClick={() => router.push('/support')}>Support PING</span>.
+            <span style={{ color: '#0B8374', fontWeight: 700, cursor: 'pointer' }} onClick={() => router.push('/support')}>Support PING</span>.
           </p>
         </div>
       </div>

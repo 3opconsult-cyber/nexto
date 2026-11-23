@@ -97,7 +97,7 @@ export default function AvanceImmediate() {
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644', marginBottom: 8 }}>Comment ça marche</div>
             {['Vous vous inscrivez une fois, ici.', "L'Urssaf vous envoie un courriel pour activer votre compte.", 'Après chaque prestation, vous validez la demande sur votre espace Urssaf.', "L'Urssaf prélève seulement votre moitié et verse le reste."].map((s, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, fontSize: 13, color: '#123644', marginBottom: 6 }}>
-                <b style={{ color: '#0C8F7E', width: 14 }}>{i + 1}</b><span>{s}</span>
+                <b style={{ color: '#0B8374', width: 14 }}>{i + 1}</b><span>{s}</span>
               </div>
             ))}
             <p style={{ fontSize: 11.5, color: '#6E8592', margin: '8px 0 0', lineHeight: 1.5 }}>
@@ -170,7 +170,7 @@ export default function AvanceImmediate() {
               <label style={lbl}>Titulaire du compte<input style={field} value={f.titulaire} onChange={e => set('titulaire', e.target.value)} /></label>
 
               {err && <p style={{ fontSize: 12.5, color: '#c0503a' }}>{err}</p>}
-              <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
+              <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
                 {busy ? 'Envoi à l’Urssaf…' : "M'inscrire à l'avance immédiate"}
               </button>
             </div>

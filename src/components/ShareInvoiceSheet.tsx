@@ -70,7 +70,7 @@ export default function ShareInvoiceSheet({ open, onClose, title, subject, text,
   const row = (key: string, icon: JSX.Element, label: string, sub: string, onClick: () => void) => (
     <button key={key} type="button" onClick={onClick} disabled={!!busy}
       style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '12px 14px', marginBottom: 8, borderRadius: 13, border: '1px solid #E7EDEB', background: '#fff', cursor: busy ? 'default' : 'pointer', color: '#123644', opacity: busy && busy !== key ? .5 : 1 }}>
-      <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(18,179,156,.1)', color: '#0C8F7E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Ico d={icon} /></span>
+      <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(18,179,156,.1)', color: '#0B8374', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Ico d={icon} /></span>
       <span style={{ flex: 1 }}>
         <span style={{ display: 'block', fontWeight: 700, fontSize: 13.5 }}>{busy === key ? 'Préparation…' : label}</span>
         <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 1 }}>{sub}</span>
@@ -104,7 +104,7 @@ export default function ShareInvoiceSheet({ open, onClose, title, subject, text,
           () => { const c = csv(); downloadBlob(c.blob, c.name); setDone('Récapitulatif téléchargé.') })}
 
         {err && <p style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{err}</p>}
-        {done && <p style={{ color: '#0C8F7E', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{done}</p>}
+        {done && <p style={{ color: '#0B8374', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{done}</p>}
         <button type="button" onClick={onClose}
           style={{ width: '100%', marginTop: 10, padding: 12, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Fermer</button>
       </div>

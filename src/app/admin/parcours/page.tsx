@@ -97,7 +97,7 @@ export default function AdminParcours() {
               <div key={a.user_id + a.created_at} style={{ background: '#fff', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12, color: '#6E8592', minWidth: 100 }}>{fmt(a.created_at)}</span>
                 <span style={{ fontSize: 13.5, fontWeight: 700, color: '#123644' }}>{name || 'Sans nom'}</span>
-                <span style={{ fontSize: 11.5, fontWeight: 700, padding: '2px 9px', borderRadius: 999, background: p?.is_pro ? 'rgba(242,169,59,.15)' : 'rgba(18,179,156,.1)', color: p?.is_pro ? '#8a6520' : '#0C8F7E' }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, padding: '2px 9px', borderRadius: 999, background: p?.is_pro ? 'rgba(242,169,59,.15)' : 'rgba(18,179,156,.1)', color: p?.is_pro ? '#8a6520' : '#0B8374' }}>
                   {p?.is_pro ? 'Pro' : 'Particulier'}
                 </span>
                 <span style={{ fontSize: 12, color: '#4E6470', marginLeft: 'auto' }}>
@@ -127,7 +127,7 @@ export default function AdminParcours() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {evs.filter(e => e.event_type !== 'feedback_note').map(e => (
                     <span key={e.id} title={fmt(e.created_at)}
-                      style={{ fontSize: 11.5, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: e.event_type === 'page_view' ? '#F3F6F5' : 'rgba(18,179,156,.1)', color: e.event_type === 'page_view' ? '#4E6470' : '#0C8F7E' }}>
+                      style={{ fontSize: 11.5, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: e.event_type === 'page_view' ? '#F3F6F5' : 'rgba(18,179,156,.1)', color: e.event_type === 'page_view' ? '#4E6470' : '#0B8374' }}>
                       {e.event_type === 'page_view' ? (e.path || '/') : e.event_type}
                     </span>
                   ))}

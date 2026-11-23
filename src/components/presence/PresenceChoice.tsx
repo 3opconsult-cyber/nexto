@@ -44,7 +44,7 @@ export default function PresenceChoice({ txId, presence, proName, onChange, comp
           </span>
           <button type="button" onClick={() => choose(next)} disabled={!!busy} aria-label={`Changer ma réponse : ${nextLabel}`} style={{
             flexShrink: 0, minHeight: 44, borderRadius: 999, padding: '0 16px', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13,
-            border: '1.5px solid #0C8F7E', background: '#fff', color: '#0C8F7E', opacity: busy ? .6 : 1,
+            border: '1.5px solid #0B8374', background: '#fff', color: '#0B8374', opacity: busy ? .6 : 1,
           }}>{busy ? 'Enregistrement…' : 'Changer ma réponse'}</button>
         </div>
         <p style={{ fontSize: 11.5, color: '#4E6470', margin: '4px 0 0' }}>Un appui : {nextLabel}. {who} est prévenu.</p>
@@ -60,7 +60,7 @@ export default function PresenceChoice({ txId, presence, proName, onChange, comp
           {opts.map((o, i) => (
             <button key={o.v} type="button" onClick={() => choose(o.v)} disabled={!!busy} aria-pressed={presence === o.v} style={{
               flex: 1, minHeight: 48, borderRadius: 999, padding: '0 10px', cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13,
-              border: i === 0 ? 'none' : '1.5px solid #0C8F7E', background: i === 0 ? '#0C8F7E' : '#fff', color: i === 0 ? '#fff' : '#0C8F7E',
+              border: i === 0 ? 'none' : '1.5px solid #0B8374', background: i === 0 ? '#0B8374' : '#fff', color: i === 0 ? '#fff' : '#0B8374',
               opacity: busy && busy !== o.v ? .6 : 1,
             }}>{busy === o.v ? 'Enregistrement…' : o.t}</button>
           ))}
@@ -77,11 +77,11 @@ export default function PresenceChoice({ txId, presence, proName, onChange, comp
         return (
           <button key={o.v} type="button" onClick={() => choose(o.v)} disabled={!!busy} aria-pressed={on} style={{
             display: 'block', width: '100%', textAlign: 'left', minHeight: 64, padding: '13px 16px', marginBottom: 10, borderRadius: 16, cursor: 'pointer',
-            border: on ? '2px solid #0C8F7E' : '1.5px solid #DCE5E3', background: on ? 'rgba(18,179,156,.08)' : '#fff',
+            border: on ? '2px solid #0B8374' : '1.5px solid #DCE5E3', background: on ? 'rgba(18,179,156,.08)' : '#fff',
           }}>
             <b style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Quicksand, sans-serif', fontSize: 15.5, color: '#123644' }}>
-              <span aria-hidden style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${on ? '#0C8F7E' : '#C5D3CF'}`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                {on && <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0C8F7E' }} />}
+              <span aria-hidden style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${on ? '#0B8374' : '#C5D3CF'}`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                {on && <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0B8374' }} />}
               </span>
               {busy === o.v ? 'Enregistrement…' : o.t}
             </b>

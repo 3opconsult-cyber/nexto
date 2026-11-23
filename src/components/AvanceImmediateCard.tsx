@@ -37,11 +37,11 @@ export default function AvanceImmediateCard({ transactionId, isSeller }: { trans
     <div style={{ marginTop: 16, background: 'rgba(18,179,156,.08)', borderRadius: 14, padding: 14 }}>
       <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Crédit d&apos;impôt immédiat</div>
       {demande
-        ? <p style={{ fontSize: 12.5, color: '#0C8F7E', margin: '6px 0 0', fontWeight: 600 }}>{LABEL[demande.statut] || demande.statut}</p>
+        ? <p style={{ fontSize: 12.5, color: '#0B8374', margin: '6px 0 0', fontWeight: 600 }}>{LABEL[demande.statut] || demande.statut}</p>
         : isSeller
           ? <>
               <p style={{ fontSize: 12, color: '#4E6470', margin: '6px 0 10px', lineHeight: 1.5 }}>Transmettez cette facture à l&apos;Urssaf : votre client ne paiera que 50 %.</p>
-              <button onClick={send} disabled={busy} style={{ border: 'none', borderRadius: 999, padding: '10px 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
+              <button onClick={send} disabled={busy} style={{ border: 'none', borderRadius: 999, padding: '10px 18px', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
                 {busy ? 'Transmission…' : "Transmettre à l'Urssaf"}
               </button>
             </>

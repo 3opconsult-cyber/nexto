@@ -29,8 +29,8 @@ export default function ListingExtras({ headline, highlights, gallery, radiusKm,
       {show('top') && chips.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
           {chips.map(k => (
-            <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 999, background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontSize: 12, fontWeight: 700 }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
+            <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 999, background: 'rgba(18,179,156,.1)', color: '#0B8374', fontSize: 12, fontWeight: 700 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
               {highlightLabel(k)}
             </span>
           ))}

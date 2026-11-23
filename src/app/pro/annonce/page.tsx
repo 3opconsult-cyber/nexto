@@ -12,7 +12,7 @@ import {
   canPublish, listingChecks, listingPhotoUrl, listingScore, loadListingFacts, type ListingFacts,
 } from '@/lib/listing'
 
-const NAVY = '#123644', TEAL = '#12B39C', TEAL_D = '#0C8F7E', SLATE = '#4E6470', LINE = '#E7EDEB'
+const NAVY = '#123644', TEAL = '#12B39C', TEAL_D = '#0B8374', SLATE = '#4E6470', LINE = '#E7EDEB'
 const card: React.CSSProperties = { background: '#fff', border: `1px solid ${LINE}`, borderRadius: 16, padding: 16 }
 const h3: React.CSSProperties = { fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: NAVY, margin: '0 0 4px' }
 const sub: React.CSSProperties = { fontSize: 12.5, color: SLATE, margin: '0 0 10px', lineHeight: 1.45 }

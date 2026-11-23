@@ -123,7 +123,7 @@ export default function OfflineSync() {
   }
   if (toast) {
     return (
-      <div role={toast.err ? 'alert' : 'status'} aria-live="polite" data-ping-offline-toast style={{ ...box, background: toast.err ? '#B3402F' : '#0C8F7E', color: '#fff', minHeight: 44 }}>
+      <div role={toast.err ? 'alert' : 'status'} aria-live="polite" data-ping-offline-toast style={{ ...box, background: toast.err ? '#B3402F' : '#0B8374', color: '#fff', minHeight: 44 }}>
         <span style={{ flex: 1, minWidth: 0 }}>{toast.text}</span>
         <button type="button" onClick={() => setToast(null)} aria-label="Fermer le message" style={{ flex: '0 0 auto', minWidth: 44, minHeight: 44, border: 'none', background: 'transparent', color: '#fff', fontSize: 18, cursor: 'pointer' }}>✕</button>
       </div>

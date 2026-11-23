@@ -12,7 +12,7 @@ import { TRANSFER_STATUS, formatIban, hasNotReceived, pingBank, transferDue, tra
  *   Prestataire: « Commission PING à régler » (IBAN de PING) + suivi « Paiement du client », qu'il note reçu.
  * Le payeur annonce son virement ; seul le destinataire le note reçu (PING = l'admin).
  */
-const C = { teal: '#12B39C', tealD: '#0C8F7E', navy: '#123644', slate: '#4E6470', line: '#E7EDEB' }
+const C = { teal: '#12B39C', tealD: '#0B8374', navy: '#123644', slate: '#4E6470', line: '#E7EDEB' }
 type PayeeBank = { holder: string | null; iban: string | null; bic: string | null; enseigne: string | null }
 
 function Copy({ value }: { value: string }) {

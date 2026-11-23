@@ -15,9 +15,9 @@ export default function OrderCardLink({ tx, asSeller, counterpart, payOn }: { tx
       style={{ display: 'block', width: '100%', minHeight: 44, textAlign: 'left', cursor: 'pointer', font: 'inherit', color: 'inherit',
         background: '#F6FAF9', border: '1.5px solid #BFE6DF', borderRadius: 12, padding: '10px 12px' }}>
       <OrderSummary tx={tx} asSeller={asSeller} counterpart={counterpart} payOn={payOn} compact />
-      <span style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, color: '#0C8F7E', fontWeight: 700, fontSize: 13, textDecoration: 'underline' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, color: '#0B8374', fontWeight: 700, fontSize: 13, textDecoration: 'underline' }}>
         Voir la commande
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.4" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.4" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
       </span>
     </button>
   )

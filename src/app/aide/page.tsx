@@ -38,7 +38,7 @@ export default function AidePage() {
             <button key={r.slug} onClick={() => router.push(`/aide/${r.slug}`)}
               style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, cursor: 'pointer', font: 'inherit', width: '100%' }}>
               <span style={{ width: 40, height: 40, borderRadius: 12, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={AIDE_ICONS[r.icon]} /></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={AIDE_ICONS[r.icon]} /></svg>
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, color: '#123644' }}>{r.title}</span>

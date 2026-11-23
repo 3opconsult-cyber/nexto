@@ -149,7 +149,7 @@ export default function ProDocuments() {
         {uploaded[doc.id] ? (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 14, color: '#123644' }}>{uploaded[doc.id]}</div>
-            <div style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 4 }}>Fourni — reçu par PING</div>
+            <div style={{ fontSize: 12, color: '#0B8374', fontWeight: 600, marginTop: 4 }}>Fourni — reçu par PING</div>
             <button onClick={() => inputRef.current?.click()} style={{ marginTop: 14, background: 'none', border: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700, textDecoration: 'underline' }}>
               Remplacer le fichier
             </button>

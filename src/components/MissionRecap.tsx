@@ -16,7 +16,7 @@ import AmicableSettlement, { type SettlementDispute } from '@/components/Amicabl
  * Chaque partie ne voit que SA part des frais (frais de service côté client, commission côté pro).
  * L'adresse n'est passée par le parent que si elle est autorisée (confirmée et réglée pour le pro).
  */
-const C = { teal: '#12B39C', tealD: '#0C8F7E', navy: '#123644', slate: '#4E6470', line: '#E7EDEB', gold: '#F2A93B' }
+const C = { teal: '#12B39C', tealD: '#0B8374', navy: '#123644', slate: '#4E6470', line: '#E7EDEB', gold: '#F2A93B' }
 const DISPUTE_STATUS: Record<string, string> = { open: 'En cours', resolved: 'Résolu', rejected: 'Rejeté' }
 
 type Review = { stars: number; quality_stars: number | null; service_stars: number | null; recommend: boolean | null; tip_cents: number | null; comment: string | null; created_at: string }

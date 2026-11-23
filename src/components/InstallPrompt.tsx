@@ -109,12 +109,12 @@ export default function InstallPrompt() {
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, lineHeight: 1.25 }}>Installer le raccourci PING</div>
-            <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 0, background: 'transparent', padding: '0 4px 0 0', minHeight: 44, color: '#0C8F7E', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
+            <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ border: 0, background: 'transparent', padding: '0 4px 0 0', minHeight: 44, color: '#0B8374', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
               {open ? 'Masquer les étapes' : 'Comment faire'}
             </button>
           </div>
           {canInstall && (
-            <button onClick={install} style={{ flexShrink: 0, minHeight: 44, padding: '0 14px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Installer</button>
+            <button onClick={install} style={{ flexShrink: 0, minHeight: 44, padding: '0 14px', border: 0, borderRadius: 999, background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Installer</button>
           )}
           <button onClick={close} aria-label="Plus tard" title="Plus tard" style={{ flexShrink: 0, width: 44, height: 44, border: 0, borderRadius: '50%', background: '#F3F6F5', color: '#4E6470', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>

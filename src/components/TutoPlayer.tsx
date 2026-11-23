@@ -43,7 +43,7 @@ export default function TutoPlayer({ title, src, onClose }: { title: string; src
             <div style={{ background: '#fff', borderRadius: 18, padding: 22, width: '100%', maxWidth: 340, textAlign: 'center' }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>Fin de la rubrique</div>
               <div style={{ fontSize: 12.5, color: '#4E6470', margin: '6px 0 16px' }}>{title}</div>
-              <button onClick={replay} style={{ ...btn, width: '100%', background: '#0C8F7E', color: '#fff' }}>Revoir</button>
+              <button onClick={replay} style={{ ...btn, width: '100%', background: '#0B8374', color: '#fff' }}>Revoir</button>
               <button onClick={onClose} style={{ ...btn, width: '100%', background: '#F3F6F5', color: '#123644', marginTop: 8 }}>Retour aux rubriques</button>
             </div>
           </div>

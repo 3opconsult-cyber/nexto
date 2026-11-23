@@ -16,7 +16,7 @@ import { notifyOther, alertAdminNow } from '@/lib/notify'
  */
 const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
   open: { label: 'En cours', bg: '#FFF7ED', fg: '#8a6520' },
-  resolved: { label: 'Résolu', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' },
+  resolved: { label: 'Résolu', bg: 'rgba(18,179,156,.12)', fg: '#0B8374' },
   rejected: { label: 'Non retenu', bg: '#EEF2F1', fg: '#4E6470' },
 }
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
@@ -179,7 +179,7 @@ export default function LitigePage() {
       <div style={{ maxWidth: 480, margin: '40px auto', background: '#fff', borderRadius: 16, padding: 22, textAlign: 'center' }}>
         <h2 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', margin: 0 }}>Litige introuvable</h2>
         <p style={{ fontSize: 13, color: '#4E6470' }}>Ce litige n’existe plus ou ne vous concerne pas.</p>
-        <a href="/litiges" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, color: '#0C8F7E', fontWeight: 700, fontSize: 13 }}>Mes litiges</a>
+        <a href="/litiges" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, color: '#0B8374', fontWeight: 700, fontSize: 13 }}>Mes litiges</a>
       </div>
     </div>
   )
@@ -230,7 +230,7 @@ export default function LitigePage() {
                 ))}
               </div>
             )}
-            {d.resolution && <div style={{ fontSize: 13, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Décision : {d.resolution}</div>}
+            {d.resolution && <div style={{ fontSize: 13, color: '#0B8374', marginTop: 6, fontWeight: 600 }}>Décision : {d.resolution}</div>}
             {tx && uid && <AmicableSettlement dispute={d} buyerId={tx.buyer_id} sellerId={tx.seller_id} userId={uid}
               ceilingCents={tx.subtotal_cents} onChange={reloadDispute} />}
             {/* Intervention de PING (054) : visible des deux parties tant que le litige est ouvert. */}
@@ -263,7 +263,7 @@ export default function LitigePage() {
           const med = m.kind === 'mediation'
           return (
             <div key={m.id} style={{ alignSelf: med ? 'stretch' : mine ? 'flex-end' : 'flex-start', maxWidth: med ? '100%' : '82%' }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: med ? '#0C8F7E' : '#4E6470', margin: '0 4px 3px', textAlign: mine ? 'right' : 'left' }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: med ? '#0B8374' : '#4E6470', margin: '0 4px 3px', textAlign: mine ? 'right' : 'left' }}>
                 {who(m)} · {new Date(m.created_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </div>
               <div style={{
@@ -294,11 +294,11 @@ export default function LitigePage() {
       {admin && open && d && !('decided_at' in d) && (
         <div style={{ padding: '0 16px 10px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
           <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', marginBottom: 6 }}>Médiation PING (visible par vous seul)</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#0B8374', marginBottom: 6 }}>Médiation PING (visible par vous seul)</div>
             <textarea value={decision} onChange={e => setDecision(e.target.value)} rows={2} aria-label="Décision de PING"
               style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 13 }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button onClick={() => close('resolved')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
+              <button onClick={() => close('resolved')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
               <button onClick={() => close('rejected')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
             </div>
           </div>
@@ -313,7 +313,7 @@ export default function LitigePage() {
               aria-label={admin ? 'Message de PING aux deux parties' : 'Votre message sur ce litige'}
               style={{ flex: 1, minWidth: 0, minHeight: 44, padding: '12px 14px', borderRadius: 999, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', background: '#F3F6F5' }} />
             <button onClick={() => send(admin ? 'mediation' : 'text')} disabled={sending || !input.trim()}
-              style={{ minHeight: 44, padding: '0 18px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
+              style={{ minHeight: 44, padding: '0 18px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer', opacity: sending || !input.trim() ? .5 : 1 }}>Envoyer</button>
           </div>
         ) : (
           <div style={{ textAlign: 'center', fontSize: 12.5, color: '#4E6470' }}>Litige clos : le fil reste consultable.</div>
@@ -325,7 +325,7 @@ export default function LitigePage() {
 
 const linkBtn: React.CSSProperties = {
   flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 14px', borderRadius: 999,
-  border: '1.5px solid #DCE5E3', background: '#fff', color: '#0C8F7E', fontSize: 13, fontWeight: 700, textDecoration: 'none',
+  border: '1.5px solid #DCE5E3', background: '#fff', color: '#0B8374', fontSize: 13, fontWeight: 700, textDecoration: 'none',
 }
 
 const PAY: Record<string, string> = {
@@ -356,7 +356,7 @@ function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, 
       <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Argent de la mission</div>
       <div style={{ fontSize: 13, color: '#123644', lineHeight: 1.55 }}>{PAY[ps] || ps}</div>
       {open && ps !== 'released' && (
-        <div style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 700, marginTop: 6, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 12.5, color: '#0B8374', fontWeight: 700, marginTop: 6, lineHeight: 1.5 }}>
           Le paiement est bloqué jusqu’à la résolution du litige{online ? ' : rien n’est versé au prestataire.' : ' : le virement de la prestation est suspendu, sans relance de retard.'}
         </div>
       )}
@@ -459,7 +459,7 @@ function DecisionPanel({ ceiling, requested, refund, setRefund, reason, setReaso
         {confirm ? (
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             <button type="button" disabled={busy} onClick={onApply}
-              style={{ flex: 1, minHeight: 44, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? .6 : 1, fontFamily: 'inherit' }}>
+              style={{ flex: 1, minHeight: 44, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? .6 : 1, fontFamily: 'inherit' }}>
               {busy ? 'Application…' : `Confirmer : ${valid ? EUR(cents as number) : '—'} au client, ${payout != null ? EUR(payout) : '—'} au prestataire`}
             </button>
             <button type="button" disabled={busy} onClick={() => setConfirm(false)}
@@ -467,7 +467,7 @@ function DecisionPanel({ ceiling, requested, refund, setRefund, reason, setReaso
           </div>
         ) : (
           <button type="button" disabled={!valid || !reason.trim()} onClick={() => setConfirm(true)}
-            style={{ width: '100%', marginTop: 10, minHeight: 44, borderRadius: 999, border: 'none', background: valid && reason.trim() ? '#0C8F7E' : '#DCE5E3', color: '#fff', fontWeight: 700, cursor: valid && reason.trim() ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+            style={{ width: '100%', marginTop: 10, minHeight: 44, borderRadius: 999, border: 'none', background: valid && reason.trim() ? '#0B8374' : '#DCE5E3', color: '#fff', fontWeight: 700, cursor: valid && reason.trim() ? 'pointer' : 'default', fontFamily: 'inherit' }}>
             Appliquer la décision
           </button>
         )}

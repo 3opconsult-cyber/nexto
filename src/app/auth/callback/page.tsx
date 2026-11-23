@@ -65,7 +65,7 @@ export default function AuthCallbackPage() {
             <p role="alert" style={{ color: '#4E6470', fontSize: 14, lineHeight: 1.55, margin: '0 0 16px' }}>
               {failed} Demandez un nouveau lien depuis la page de connexion, ou connectez-vous avec votre mot de passe.
             </p>
-            <Link href="/auth/login" style={{ display: 'block', textAlign: 'center', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
+            <Link href="/auth/login" style={{ display: 'block', textAlign: 'center', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
               Retour à la connexion
             </Link>
           </>

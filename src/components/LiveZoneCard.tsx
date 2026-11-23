@@ -117,14 +117,14 @@ export default function LiveZoneCard({ compact = false }: { compact?: boolean })
           </span>
         </button>
       </div>
-      {busy && <div role="status" style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 6 }}>Un instant…</div>}
+      {busy && <div role="status" style={{ fontSize: 12, color: '#0B8374', fontWeight: 600, marginTop: 6 }}>Un instant…</div>}
       {stopQueued && <div role="status" style={{ fontSize: 12.5, color: '#8a6520', fontWeight: 600, marginTop: 6, lineHeight: 1.45 }}>
         Arrêt en attente : pas de connexion. Votre secteur reste visible des clients jusqu’au retour du réseau, puis l’arrêt s’applique tout seul.
       </div>}
       {err && <div role="alert" style={{ fontSize: 12.5, color: '#A8432F', fontWeight: 600, marginTop: 6, lineHeight: 1.45, whiteSpace: 'pre-line' }}>{err}</div>}
       {err && posFail && (
         <button type="button" onClick={activate} disabled={busy}
-          style={{ marginTop: 6, minHeight: 44, padding: '0 18px', borderRadius: 999, border: '1.5px solid #0C8F7E', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+          style={{ marginTop: 6, minHeight: 44, padding: '0 18px', borderRadius: 999, border: '1.5px solid #0B8374', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
           Réessayer
         </button>
       )}

@@ -152,7 +152,7 @@ export default function Commande() {
   }
 
   const go = (path: string) => router.push(`/mission/${tx.id}/${path}`)
-  const ghost: React.CSSProperties = { ...primary, marginTop: 8, background: '#fff', color: '#0C8F7E', border: '1.5px solid #0C8F7E' }
+  const ghost: React.CSSProperties = { ...primary, marginTop: 8, background: '#fff', color: '#0B8374', border: '1.5px solid #0B8374' }
   const row = (label: string, value: React.ReactNode, note?: React.ReactNode) => (
     <div style={{ padding: '9px 0', minHeight: 44, borderTop: '1px solid #EEF2F1' }}>
       <div style={{ fontSize: 11.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em' }}>{label}</div>
@@ -202,7 +202,7 @@ export default function Commande() {
         <div style={{ marginTop: 12, background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 14, padding: 14 }}>
           <div style={h3}>Adresse à valider</div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button disabled={addrBusy} onClick={() => answerAddress(true)} style={{ flex: 1, minHeight: 44, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
+            <button disabled={addrBusy} onClick={() => answerAddress(true)} style={{ flex: 1, minHeight: 44, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
             <button disabled={addrBusy} onClick={() => answerAddress(false)} style={{ flex: 1, minHeight: 44, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
           </div>
           {addrErr && <p role="alert" style={{ ...muted, color: '#C0503A', fontWeight: 600, marginTop: 8 }}>{addrErr}</p>}
@@ -278,7 +278,7 @@ export default function Commande() {
 const muted: React.CSSProperties = { fontSize: 13, color: '#4E6470', lineHeight: 1.5, margin: 0 }
 const h3: React.CSSProperties = { fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }
 const primary: React.CSSProperties = {
-  width: '100%', minHeight: 50, border: 'none', borderRadius: 999, background: '#0C8F7E', color: '#fff',
+  width: '100%', minHeight: 50, border: 'none', borderRadius: 999, background: '#0B8374', color: '#fff',
   fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, cursor: 'pointer', marginTop: 12,
 }
 

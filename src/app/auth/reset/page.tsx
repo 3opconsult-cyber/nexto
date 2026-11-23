@@ -75,7 +75,7 @@ export default function ResetPage() {
             <input type="password" autoComplete="new-password" placeholder="Nouveau mot de passe" value={pw} onChange={e => setPw(e.target.value)} style={{ ...inputStyle, marginBottom: 10 }} />
             <input type="password" autoComplete="new-password" placeholder="Confirmer le mot de passe" value={pw2} onChange={e => setPw2(e.target.value)} style={inputStyle} />
             {error && <p role="alert" style={{ color: '#B3261E', fontSize: 13, fontWeight: 600, margin: '10px 0 0' }}>{error}</p>}
-            <button type="submit" disabled={loading} style={{ marginTop: 16, width: '100%', padding: 14, border: 0, borderRadius: 14, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+            <button type="submit" disabled={loading} style={{ marginTop: 16, width: '100%', padding: 14, border: 0, borderRadius: 14, background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
               {loading ? 'Enregistrement…' : 'Enregistrer'}
             </button>
           </form>

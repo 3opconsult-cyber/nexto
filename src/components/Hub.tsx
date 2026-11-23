@@ -23,14 +23,14 @@ export function HubRow({ icon, label, sub, badge, onClick }: {
       onKeyDown={onClick ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
       style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, boxSizing: 'border-box', padding: '11px 14px', borderTop: '1px solid #EEF2F1', cursor: onClick ? 'pointer' : 'default', marginTop: -1 }}>
       <div style={{ width: 34, height: 34, borderRadius: 10, background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{label}</div>
         {sub && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
       </div>
       {badge && (
-        <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0, background: badge.tone === 'ok' ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: badge.tone === 'ok' ? '#0C8F7E' : '#8A6520' }}>{badge.text}</span>
+        <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0, background: badge.tone === 'ok' ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: badge.tone === 'ok' ? '#0B8374' : '#8A6520' }}>{badge.text}</span>
       )}
       {onClick && <span style={{ color: '#6E8592', flexShrink: 0 }}>›</span>}
     </div>

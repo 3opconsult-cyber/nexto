@@ -51,7 +51,7 @@ export default function MissionTimeline({ current, times, steps = STEPS, compact
             }}>
               {done && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>}
             </span>
-            <span style={{ fontSize: compact ? 9.5 : 9.5, fontWeight: on ? 700 : 600, color: on ? '#123644' : done ? '#0C8F7E' : '#6E8592', marginTop: 4, textAlign: 'center', lineHeight: 1.2 }}>
+            <span style={{ fontSize: compact ? 9.5 : 9.5, fontWeight: on ? 700 : 600, color: on ? '#123644' : done ? '#0B8374' : '#6E8592', marginTop: 4, textAlign: 'center', lineHeight: 1.2 }}>
               {s}{done ? <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}> (fait)</span> : null}
             </span>
             {times?.[i] && <span style={{ fontSize: 9, color: '#6E8592', fontVariantNumeric: 'tabular-nums' }}>{times[i]}</span>}

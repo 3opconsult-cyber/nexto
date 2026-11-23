@@ -48,7 +48,7 @@ export const transferDue = (t: Transfer) =>
 export const TRANSFER_STATUS: Record<TransferState, { t: string; fg: string; bg: string }> = {
   a_payer: { t: 'À régler', fg: '#8A6520', bg: 'rgba(242,169,59,.15)' },
   declare_paye: { t: 'Virement annoncé', fg: '#2C6E8F', bg: 'rgba(44,110,143,.12)' },
-  recu: { t: 'Reçu', fg: '#0C8F7E', bg: 'rgba(18,179,156,.12)' },
+  recu: { t: 'Reçu', fg: '#0B8374', bg: 'rgba(18,179,156,.12)' },
   en_retard: { t: 'En retard', fg: '#c0503a', bg: 'rgba(192,80,58,.12)' },
   non_recu: { t: 'Non reçu', fg: '#c0503a', bg: 'rgba(192,80,58,.12)' },
   desaccord: { t: 'Désaccord', fg: '#8A3E2A', bg: 'rgba(192,80,58,.2)' },

@@ -78,14 +78,14 @@
 .ping-preview-bg.open { opacity: 1; pointer-events: auto; }
 
 /* ---------- Avatar ---------- */
-.ping-av { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; color: #fff; font-family: var(--fh); font-weight: 700; font-size: 17px; flex: 0 0 auto; background: linear-gradient(160deg, #14b39c, #0c8f7e); }
+.ping-av { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; color: #fff; font-family: var(--fh); font-weight: 700; font-size: 17px; flex: 0 0 auto; background: linear-gradient(160deg, #14b39c, #0b8374); }
 .ping-av.sm { width: 40px; height: 40px; font-size: 15px; border-radius: 12px; }
 
 /* ---------- Badges de qualification ---------- */
 .ping-attest { display: flex; align-items: center; gap: 6px; background: rgba(18,179,156,.1); color: var(--tealD); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 
 /* ---------- Boutons ---------- */
-.ping-btn { background: var(--btnFill, #0C8F7E); color: #fff; font-family: var(--fh); font-weight: 700; font-size: 15px; text-align: center; padding: 14px; border-radius: 14px; cursor: pointer; border: none; width: 100%; }
+.ping-btn { background: var(--btnFill, #0B8374); color: #fff; font-family: var(--fh); font-weight: 700; font-size: 15px; text-align: center; padding: 14px; border-radius: 14px; cursor: pointer; border: none; width: 100%; }
 .ping-btn.ghost { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
 
 /* ---------- Carte prestataire (liste) ---------- */
@@ -95,7 +95,7 @@
 .ping-provcard .pr { font-family: var(--fh); font-weight: 700; font-size: 14px; text-align: right; }
 
 /* ---------- Hero fiche pro ---------- */
-.ping-hero { background: linear-gradient(160deg, #14b39c, #0c8f7e); padding: 16px; color: #fff; }
+.ping-hero { background: linear-gradient(160deg, #14b39c, #0b8374); padding: 16px; color: #fff; }
 
 /* ---------- Chat ---------- */
 .ping-msg { max-width: 82%; padding: 9px 12px; border-radius: 15px; font-size: 13px; line-height: 1.35; }

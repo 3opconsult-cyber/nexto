@@ -134,7 +134,7 @@ function Virements() {
             </div>
             <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: s.bg, color: s.fg }}>{s.t}</span>
             {t.payee === 'ping' && t.status !== 'recu' && (
-              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#0C8F7E')}>Reçu</button>
+              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#0B8374')}>Reçu</button>
             )}
             {t.payee === 'ping' && t.declared_at && t.status !== 'recu' && 'not_received_at' in t && transferState(t) !== 'non_recu' && (
               <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'non', t })} style={btn('#c0503a')}>Non reçu</button>
@@ -142,7 +142,7 @@ function Virements() {
             {t.payee === 'pro' && t.not_received_at && t.status !== 'recu' && (
               <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#6E8592')}>Trancher : reçu</button>
             )}
-            <a href={`/mission/${t.transaction_id}/facture`} style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E' }}>Mission</a>
+            <a href={`/mission/${t.transaction_id}/facture`} style={{ fontSize: 12, fontWeight: 700, color: '#0B8374' }}>Mission</a>
           </div>
         )
       })}
@@ -232,7 +232,7 @@ export default function AdminPaiementsPage() {
         </p>
 
         <div style={box}>
-          <b style={{ fontFamily: 'Quicksand, sans-serif' }}>Réglage {r.actif ? <span style={{ color: '#0C8F7E' }}>· actif ({r.actif})</span> : <span style={{ color: '#8A6520' }}>· éteint</span>}</b>
+          <b style={{ fontFamily: 'Quicksand, sans-serif' }}>Réglage {r.actif ? <span style={{ color: '#0B8374' }}>· actif ({r.actif})</span> : <span style={{ color: '#8A6520' }}>· éteint</span>}</b>
           <ul style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.8, margin: '8px 0 0', paddingLeft: 18 }}>
             <li>PAYMENT_PROVIDER : {r.choisi || 'non choisi'}</li>
             {r.prestataires.map(p => <li key={p.nom}>{p.label} : clés {p.cles ? 'renseignées' : 'absentes'}</li>)}
@@ -281,7 +281,7 @@ export default function AdminPaiementsPage() {
                   {typeof a.detail?.reference === 'string' && <div style={{ fontSize: 12, color: '#4E6470' }}>Référence {a.detail.reference}</div>}
                   {typeof a.detail?.transactionId === 'string' && (
                     <div style={{ fontSize: 12 }}>
-                      <a href={`/mission/${a.detail.transactionId}/facture`} style={{ fontWeight: 700, color: '#0C8F7E' }}>Mission {a.detail.transactionId.slice(0, 8).toUpperCase()}</a>
+                      <a href={`/mission/${a.detail.transactionId}/facture`} style={{ fontWeight: 700, color: '#0B8374' }}>Mission {a.detail.transactionId.slice(0, 8).toUpperCase()}</a>
                     </div>
                   )}
                 </div>
@@ -306,7 +306,7 @@ export default function AdminPaiementsPage() {
           <div key={m.id} style={box}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
               <b style={{ fontFamily: 'monospace', fontSize: 13 }}>{m.id.slice(0, 8).toUpperCase()}</b>
-              <span style={{ fontSize: 12, fontWeight: 700, color: m.alerte || m.litige ? '#c0503a' : '#0C8F7E' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: m.alerte || m.litige ? '#c0503a' : '#0B8374' }}>
                 {STATUT[m.payment_status] || m.payment_status}{m.litige ? ' · litige ouvert' : ''}{m.status === 'cancelled' ? ' · annulée' : ''}
               </span>
             </div>

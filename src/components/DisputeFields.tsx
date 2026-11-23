@@ -31,7 +31,7 @@ export default function DisputeFields({ value, onChange }: { value: DisputeExtra
             return (
               <button key={c.key} type="button" role="radio" aria-checked={on} onClick={() => onChange({ ...value, category: c.key })}
                 style={{ padding: '8px 14px', minHeight: 44, borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                  border: on ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: on ? 'rgba(18,179,156,.12)' : '#fff', color: on ? '#0C8F7E' : '#123644' }}>
+                  border: on ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: on ? 'rgba(18,179,156,.12)' : '#fff', color: on ? '#0B8374' : '#123644' }}>
                 {c.label}
               </button>
             )
@@ -58,7 +58,7 @@ export default function DisputeFields({ value, onChange }: { value: DisputeExtra
             </span>
           ))}
           {value.photos.length < MAX_PHOTOS && (
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, boxSizing: 'border-box', padding: '8px 14px', borderRadius: 999, border: '1.5px dashed #12B39C', color: '#0C8F7E', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, boxSizing: 'border-box', padding: '8px 14px', borderRadius: 999, border: '1.5px dashed #12B39C', color: '#0B8374', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
               Ajouter une photo
               <input type="file" accept="image/jpeg,image/png,image/webp" multiple style={{ display: 'none' }}

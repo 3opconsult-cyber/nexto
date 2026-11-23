@@ -204,7 +204,7 @@ function SignupForm() {
       </div>
       <div style={{ width: '100%', maxWidth: 380, background: '#fff', borderRadius: 24, padding: '28px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)', textAlign: 'center' }}>
         <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(18,179,156,.12)', display: 'grid', placeItems: 'center', margin: '0 auto 14px' }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
         </div>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', margin: '0 0 8px' }}>Vérifiez votre boîte mail</h1>
         <p style={{ fontSize: 13.5, color: '#4E6470', lineHeight: 1.55, margin: 0 }}>
@@ -212,7 +212,7 @@ function SignupForm() {
           votre compte, puis connectez-vous. Pensez à regarder dans les spams.
         </p>
         <Link href={afterLogin ? `/auth/login?next=${encodeURIComponent(afterLogin)}` : '/auth/login'}
-          style={{ display: 'block', marginTop: 20, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
+          style={{ display: 'block', marginTop: 20, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, textDecoration: 'none' }}>
           Aller à la connexion
         </Link>
       </div>
@@ -273,7 +273,7 @@ function SignupForm() {
                 <div>
                   <label style={labelStyle}>Date de naissance</label>
                   <DateWheelPicker value={form.birthdate} onChange={v => update('birthdate', v)} />
-                  <p style={{ fontSize: 11, color: form.birthdate ? '#0C8F7E' : '#4E6470', fontWeight: 600, margin: '5px 0 0' }}>
+                  <p style={{ fontSize: 11, color: form.birthdate ? '#0B8374' : '#4E6470', fontWeight: 600, margin: '5px 0 0' }}>
                     {form.birthdate ? 'Date enregistrée.' : 'Facultatif : faites défiler pour l’indiquer (utile pour le crédit d’impôt).'}
                   </p>
                 </div>
@@ -308,7 +308,7 @@ function SignupForm() {
                 </div>
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 13, background: 'rgba(18,179,156,.08)', cursor: 'pointer' }}>
                   <input type="checkbox" required checked={cguOk} onChange={e => setCguOk(e.target.checked)} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: '#0C8F7E', lineHeight: 1.4 }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: '#0B8374', lineHeight: 1.4 }}>
                     J&apos;accepte les <a href="/cgu" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Conditions Générales</a> et la{' '}
                     <a href="/confidentialite" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>Politique de confidentialité</a> de PING
                   </span>
@@ -317,14 +317,14 @@ function SignupForm() {
             )}
             {error && <p role="alert" style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
             <button type="submit" disabled={loading}
-              style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+              style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
               {loading ? 'Création…' : step === 1 ? 'Continuer →' : 'Créer mon compte'}
             </button>
           </form>
           </div>
           <p style={{ textAlign: 'center', fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 16 }}>
             Déjà un compte ?{' '}
-            <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'} style={{ color: '#0C8F7E', fontWeight: 700 }}>Se connecter</Link>
+            <Link href={nextPath() ? `/auth/login?next=${encodeURIComponent(nextPath()!)}` : '/auth/login'} style={{ color: '#0B8374', fontWeight: 700 }}>Se connecter</Link>
           </p>
         </div>
       </div>

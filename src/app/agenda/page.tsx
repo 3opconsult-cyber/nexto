@@ -146,10 +146,10 @@ export default function AgendaPage() {
       : t.booking_status === 'expiree' ? { label: 'Expirée', bg: '#EEF2F1', fg: '#4E6470' }
         : { label: 'Annulée', bg: '#EEF2F1', fg: '#4E6470' }
     if (bookingPending(t)) return t.seller_id === uid ? { label: 'À accepter', bg: '#FFF7ED', fg: '#8a6520' } : { label: 'En attente du prestataire', bg: '#FFF7ED', fg: '#8a6520' }
-    if (DONE.includes(t.status)) return { label: 'Effectuée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
-    if (t.status === 'arrived') return { label: 'En cours', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
+    if (DONE.includes(t.status)) return { label: 'Effectuée', bg: 'rgba(18,179,156,.12)', fg: '#0B8374' }
+    if (t.status === 'arrived') return { label: 'En cours', bg: 'rgba(18,179,156,.12)', fg: '#0B8374' }
     if (t.en_route_at) return { label: 'En route', bg: 'rgba(47,208,110,.15)', fg: '#1a7a43' }
-    if (t.price_confirmed) return { label: 'Confirmé', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
+    if (t.price_confirmed) return { label: 'Confirmé', bg: 'rgba(18,179,156,.12)', fg: '#0B8374' }
     return { label: 'Tarif à valider', bg: '#FFF7ED', fg: '#8a6520' }
   }
 
@@ -187,7 +187,7 @@ export default function AgendaPage() {
             {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
           </div>
           <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests?.description || '—'}</div>
-          <div style={{ fontSize: 11, color: t.scheduled_at && UPCOMING.includes(t.status) ? '#0C8F7E' : '#4E6470', fontWeight: t.scheduled_at && UPCOMING.includes(t.status) ? 700 : 400, marginTop: 3 }}>
+          <div style={{ fontSize: 11, color: t.scheduled_at && UPCOMING.includes(t.status) ? '#0B8374' : '#4E6470', fontWeight: t.scheduled_at && UPCOMING.includes(t.status) ? 700 : 400, marginTop: 3 }}>
             {t.scheduled_at && UPCOMING.includes(t.status)
               ? `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`
               : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
@@ -204,12 +204,12 @@ export default function AgendaPage() {
           </span>
           {isTodayMission(t) && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
-              border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+              border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Mission du jour</button>
           )}
           {!muted && !isTodayMission(t) && !bookingPending(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/commande`) }} style={{
-              border: '1.5px solid #0C8F7E', borderRadius: 999, padding: '0 12px', minHeight: 44, background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+              border: '1.5px solid #0B8374', borderRadius: 999, padding: '0 12px', minHeight: 44, background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Répondre</button>
           )}
         </div>
@@ -233,7 +233,7 @@ export default function AgendaPage() {
         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
           {!rated.has(t.id) && (
             <button type="button" onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat?avis`) }}
-              style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
               {mode === 'pro' ? 'Noter le client' : 'Noter'}
             </button>
           )}
@@ -313,7 +313,7 @@ export default function AgendaPage() {
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', margin: '22px 0 6px' }}>
                     <div style={{ ...sectionTitle, flex: 1, marginBottom: 0 }}>Mes créneaux libres</div>
-                    <button onClick={() => router.push('/pro/disponibilites')} style={{ border: 'none', background: 'none', minHeight: 44, padding: '0 4px', fontSize: 12.5, fontWeight: 700, color: '#0C8F7E', cursor: 'pointer' }}>Gérer</button>
+                    <button onClick={() => router.push('/pro/disponibilites')} style={{ border: 'none', background: 'none', minHeight: 44, padding: '0 4px', fontSize: 12.5, fontWeight: 700, color: '#0B8374', cursor: 'pointer' }}>Gérer</button>
                   </div>
                   {freeSlots.filter(x => new Date(x.starts_at) > new Date()).length ? freeSlots.filter(x => new Date(x.starts_at) > new Date()).slice(0, 3).map(x => (
                     <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px dashed #B8C9C5', borderRadius: 13, padding: '10px 14px', marginBottom: 8 }}>
@@ -321,7 +321,7 @@ export default function AgendaPage() {
                       <span style={{ fontSize: 12, color: '#4E6470' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
                     </div>
                   )) : (
-                    <button onClick={() => router.push('/pro/disponibilites')} style={{ border: 'none', background: 'none', padding: 0, minHeight: 44, textAlign: 'left', fontSize: 12.5, color: '#0C8F7E', fontWeight: 600, cursor: 'pointer' }}>Publiez vos disponibilités pour être réservé en un clic.</button>
+                    <button onClick={() => router.push('/pro/disponibilites')} style={{ border: 'none', background: 'none', padding: 0, minHeight: 44, textAlign: 'left', fontSize: 12.5, color: '#0B8374', fontWeight: 600, cursor: 'pointer' }}>Publiez vos disponibilités pour être réservé en un clic.</button>
                   )}
                 </>
               )}
@@ -352,7 +352,7 @@ export default function AgendaPage() {
               )}
               {todayList.length > 0 && (
                 <>
-                  <div style={{ ...sectionTitle, color: '#0C8F7E' }}>Aujourd&apos;hui</div>
+                  <div style={{ ...sectionTitle, color: '#0B8374' }}>Aujourd&apos;hui</div>
                   {todayList.map(t => card(t, true))}
                   <div style={{ height: 10 }} />
                 </>
@@ -361,7 +361,7 @@ export default function AgendaPage() {
               {later.length ? (allLater ? later : later.slice(0, 2)).map(t => card(t, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
               {!allLater && later.length > 2 && (
                 <button type="button" onClick={() => setAllLater(true)}
-                  style={{ width: '100%', minHeight: 48, marginBottom: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                  style={{ width: '100%', minHeight: 48, marginBottom: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
                   Voir les {later.length - 2} autres rendez-vous
                 </button>
               )}
@@ -395,7 +395,7 @@ export default function AgendaPage() {
                     <button key={r.id} onClick={() => router.push(`/mission/${r.transaction_id}/facture`)}
                       style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', border: 'none', borderTop: i ? '1px solid #EEF2F1' : 'none', background: '#fff', padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
                       <span aria-hidden style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(18,179,156,.12)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></svg>
                       </span>
                       <span style={{ flex: 1, minWidth: 0 }}>
                         <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, color: '#123644' }}>

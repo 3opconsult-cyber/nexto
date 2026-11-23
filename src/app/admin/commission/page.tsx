@@ -172,7 +172,7 @@ export default function AdminCommissionPage() {
 
           <button onClick={save} disabled={saving} style={{
             width: '100%', padding: 14, borderRadius: 999, border: 'none', cursor: 'pointer',
-            background: saved ? '#0C8F7E' : '#12B39C', color: '#fff',
+            background: saved ? '#0B8374' : '#12B39C', color: '#fff',
             fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: saving ? 0.7 : 1,
           }}>
             {saving ? 'Enregistrement…' : saved ? '✓ Enregistré' : 'Enregistrer'}

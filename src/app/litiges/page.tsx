@@ -67,7 +67,7 @@ export default function LitigesPage() {
         {/* PING (admin) : tous les litiges ouverts de la plateforme, pour la médiation. */}
         {!loading && isAdmin && rows.some((d: any) => d.status === 'open' && d.transactions?.buyer_id !== userId && d.transactions?.seller_id !== userId) && (
           <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12, marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#0C8F7E', marginBottom: 8 }}>Médiation PING · litiges ouverts sur la plateforme</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#0B8374', marginBottom: 8 }}>Médiation PING · litiges ouverts sur la plateforme</div>
             {rows.filter((d: any) => d.status === 'open' && d.transactions?.buyer_id !== userId && d.transactions?.seller_id !== userId).map((d: any) => (
               <div key={d.id} onClick={() => router.push(`/litiges/${d.id}`)} role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/litiges/${d.id}`) } }} style={{ padding: '8px 0', borderTop: '1px solid #E7EDEB', cursor: 'pointer', fontSize: 12.5, color: '#123644' }}>
                 {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} · {d.reason}
@@ -104,11 +104,11 @@ export default function LitigesPage() {
                       </span>
                     </div>
                     <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>
-                      {cat ? <b style={{ color: '#0C8F7E' }}>{TRAD[cat] || cat} · </b> : null}
+                      {cat ? <b style={{ color: '#0B8374' }}>{TRAD[cat] || cat} · </b> : null}
                       {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                     </div>
                     <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>{d.reason}</div>
-                    {d.resolution && <div style={{ fontSize: 11.5, color: '#0C8F7E', marginTop: 6, fontWeight: 600 }}>Résolution : {d.resolution}</div>}
+                    {d.resolution && <div style={{ fontSize: 11.5, color: '#0B8374', marginTop: 6, fontWeight: 600 }}>Résolution : {d.resolution}</div>}
                   </div>
                 )
               })}

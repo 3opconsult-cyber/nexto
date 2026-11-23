@@ -35,8 +35,8 @@ const legalLabel = (k?: string | null) => !k ? '' : LEGAL_STATUS_LABELS[k] || (k
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   pending:   { label: 'En attente',      color: '#8a6520', bg: '#FFF7ED' },
-  held:      { label: 'Confirmée',       color: '#0C8F7E', bg: 'rgba(18,179,156,.1)' },
-  arrived:   { label: 'En cours',        color: '#0C8F7E', bg: 'rgba(18,179,156,.1)' },
+  held:      { label: 'Confirmée',       color: '#0B8374', bg: 'rgba(18,179,156,.1)' },
+  arrived:   { label: 'En cours',        color: '#0B8374', bg: 'rgba(18,179,156,.1)' },
   completed: { label: 'Terminée',        color: '#123644', bg: '#F3F6F5' },
   released:  { label: 'Réglée',          color: '#15803D', bg: '#DCFCE7' },
   disputed:  { label: 'En litige',       color: '#C0503A', bg: '#FEE2E2' },
@@ -202,7 +202,7 @@ export default function ProDashboard() {
             <div style={{ borderRadius: 16, overflow: 'hidden', background: '#F3F6F5' }}>
               <div style={{
                 height: 110, position: 'relative',
-                background: pro.photo_url ? `url(${pro.photo_url}) center/cover` : 'linear-gradient(160deg,#12B39C,#0C8F7E)',
+                background: pro.photo_url ? `url(${pro.photo_url}) center/cover` : 'linear-gradient(160deg,#12B39C,#0B8374)',
               }}>
                 <input id="cover-input" type="file" accept="image/*" style={{ display: 'none' }}
                   onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage('cover', f) }} />
@@ -276,7 +276,7 @@ export default function ProDashboard() {
                 {docAlerts.map(a => (
                   <div key={a.kind} style={{ fontSize: 12.5, color: a.urgent ? '#A8432F' : '#7A5717', fontWeight: 600, lineHeight: 1.5 }}>{a.text}</div>
                 ))}
-                <button type="button" onClick={() => router.push('/pro/documents')} style={{ marginTop: 8, minHeight: 44, width: '100%', border: '1.5px solid #12B39C', borderRadius: 999, background: '#fff', padding: '0 14px', color: '#0C8F7E', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Ouvrir Mes pièces</button>
+                <button type="button" onClick={() => router.push('/pro/documents')} style={{ marginTop: 8, minHeight: 44, width: '100%', border: '1.5px solid #12B39C', borderRadius: 999, background: '#fff', padding: '0 14px', color: '#0B8374', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Ouvrir Mes pièces</button>
               </div>
             )}
 
@@ -332,7 +332,7 @@ export default function ProDashboard() {
 
             {!more && (
               <button type="button" onClick={() => setMore(true)} aria-expanded={false}
-                style={{ minHeight: 48, marginTop: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                style={{ minHeight: 48, marginTop: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
                 Voir plus : paiements, fiscalité, aide
               </button>
             )}
@@ -388,7 +388,7 @@ export default function ProDashboard() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                     <span style={{ fontSize: 12.5, color: '#4E6470' }}>{t.requests?.category ? (TRADES[t.requests.category] || 'Prestation') : 'Prestation'}</span>
-                    {(t.payout_cents || 0) > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: '#0C8F7E' }}>{EUR(t.payout_cents)} net</span>}
+                    {(t.payout_cents || 0) > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: '#0B8374' }}>{EUR(t.payout_cents)} net</span>}
                   </div>
                 </button>
               )

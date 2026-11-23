@@ -26,7 +26,7 @@ function YesNo({ value, onChange }: { value: boolean | null; onChange: (v: boole
         <button key={String(o.v)} type="button" onClick={() => onChange(o.v)}
           style={{ flex: 1, padding: '10px 0', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer',
             border: value === o.v ? '2px solid #12B39C' : '2px solid #E7EDEB',
-            background: value === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: value === o.v ? '#0C8F7E' : '#4E6470' }}>
+            background: value === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: value === o.v ? '#0B8374' : '#4E6470' }}>
           {o.label}
         </button>
       ))}
@@ -71,7 +71,7 @@ export default function EssaiAvis() {
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,.8)', marginTop: 10, maxWidth: 300, lineHeight: 1.5 }}>
           Votre avis est enregistré. Si vous n'avez pas encore invité de proches à tester, c'est le bon moment.
         </p>
-        <a href="/essai" style={{ marginTop: 24, padding: '14px 28px', borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+        <a href="/essai" style={{ marginTop: 24, padding: '14px 28px', borderRadius: 999, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
           Revenir à l'écran de partage
         </a>
       </div>
@@ -93,7 +93,7 @@ export default function EssaiAvis() {
               <button key={o.v} type="button" onClick={() => setRole(o.v as any)}
                 style={{ flex: 1, padding: '10px 4px', borderRadius: 12, fontWeight: 700, fontSize: 12.5, cursor: 'pointer',
                   border: role === o.v ? '2px solid #12B39C' : '2px solid #E7EDEB',
-                  background: role === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: role === o.v ? '#0C8F7E' : '#4E6470' }}>
+                  background: role === o.v ? 'rgba(18,179,156,.08)' : '#fff', color: role === o.v ? '#0B8374' : '#4E6470' }}>
                 {o.l}
               </button>
             ))}

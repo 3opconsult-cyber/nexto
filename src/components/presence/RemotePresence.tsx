@@ -117,7 +117,7 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
           Votre position sera relevée une seule fois, uniquement pour {phase === 'arrivee' ? 'votre arrivée' : 'la fin de mission'} en l&apos;absence du client
           (pas de suivi). Elle est enregistrée avec la mission et consultable en cas de litige.
           <div style={{ display: 'flex', gap: 8, marginTop: 9 }}>
-            <button onClick={send} style={{ ...ghost, background: '#0C8F7E', color: '#fff', border: 'none' }}>J&apos;accepte</button>
+            <button onClick={send} style={{ ...ghost, background: '#0B8374', color: '#fff', border: 'none' }}>J&apos;accepte</button>
             <button onClick={() => setConsent(false)} style={ghost}>Annuler</button>
           </div>
         </div>
@@ -134,19 +134,19 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
               inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" aria-label="Code du client"
               style={{ flex: 1, minWidth: 0, borderRadius: 10, border: '1.5px solid #DCE5E3', padding: '9px 10px', fontSize: 17, letterSpacing: 4, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
             <button onClick={submitCode} disabled={busy || code.length !== 6} style={{
-              border: 'none', borderRadius: 999, padding: '9px 16px', background: '#0C8F7E', color: '#fff', fontWeight: 700,
+              border: 'none', borderRadius: 999, padding: '9px 16px', background: '#0B8374', color: '#fff', fontWeight: 700,
               opacity: code.length === 6 && !busy ? 1 : .6, cursor: 'pointer',
             }}>Valider</button>
           </div>
           {remote?.etat === 'refusee' && <p style={{ fontSize: 12, color: '#B3402F', margin: '8px 0 0' }}>Le client a indiqué que ce n&apos;était pas normal. Échangez avec lui dans la conversation.</p>}
-          <button onClick={() => setConsent(true)} disabled={busy} style={{ marginTop: 8, width: '100%', border: 'none', background: 'none', color: '#0C8F7E', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
+          <button onClick={() => setConsent(true)} disabled={busy} style={{ marginTop: 8, width: '100%', border: 'none', background: 'none', color: '#0B8374', fontSize: 12, fontWeight: 700, textDecoration: 'underline', cursor: 'pointer' }}>
             Prévenir à nouveau le client
           </button>
         </>
       )}
       {info && <div role="status" style={{ marginTop: 7, fontSize: 12, color: '#123644', lineHeight: 1.45, whiteSpace: 'pre-line' }}>{info}</div>}
       {posFail && !busy && (
-        <button type="button" onClick={send} style={{ ...ghost, marginTop: 8, background: '#0C8F7E', color: '#fff', border: 'none' }}>Réessayer</button>
+        <button type="button" onClick={send} style={{ ...ghost, marginTop: 8, background: '#0B8374', color: '#fff', border: 'none' }}>Réessayer</button>
       )}
     </div>
   )

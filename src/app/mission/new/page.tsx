@@ -412,7 +412,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
             </div>
             {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginBottom: 12 }}>{error}</p>}
             <button onClick={askQuote} disabled={devisBusy}
-              style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: devisBusy ? 0.7 : 1 }}>
+              style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 15, borderRadius: 999, opacity: devisBusy ? 0.7 : 1 }}>
               {devisBusy ? 'Ouverture…' : 'Demander un devis'}
             </button>
           </div>
@@ -470,7 +470,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
               <Calendar events={slotEvents} views={['week', 'day']} defaultView="week"
                 initialDate={slotEvents[0]?.start} />
             </div>
-            <div style={{ fontSize: 11.5, color: chosen ? '#0C8F7E' : '#6E8592', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
+            <div style={{ fontSize: 11.5, color: chosen ? '#0B8374' : '#6E8592', fontWeight: chosen ? 700 : 400, marginTop: 8 }}>
               {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
             </div>
             {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{fieldErr.msg}</p>}
@@ -496,8 +496,8 @@ function missingRpc(e: { code?: string; message?: string } | null) {
           </div>
           {AVANCE_IMMEDIATE_ACTIVE && pro?.sap_number && isEligible(pro?.trade) && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #E2ECEA', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span style={{ fontSize: 12.5, color: '#0C8F7E', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#0C8F7E' }}>{EUR(partClientCents(totalTtc))}</span>
+              <span style={{ fontSize: 12.5, color: '#0B8374', fontWeight: 600 }}>Avec le crédit d&apos;impôt immédiat</span>
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#0B8374' }}>{EUR(partClientCents(totalTtc))}</span>
             </div>
           )}
         </div>
@@ -519,7 +519,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
             l'annulation est donc réellement gratuite jusqu'à l'arrivée, ce n'est
             pas une promesse en avance sur la fonctionnalité. */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.07)', marginBottom: 14 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
           <span style={{ fontSize: 12, color: '#123644', lineHeight: 1.5 }}>
             {needsAccept && <><b>Le prestataire accepte votre réservation sous 24 h</b> (au plus tard 2 h avant le rendez-vous), sinon la réservation est annulée sans frais. </>}
             Annulation gratuite tant que le prestataire n'est pas en route — des frais s'appliquent au-delà. Pas satisfait ? Vous pouvez ouvrir une réclamation après la prestation.
@@ -530,7 +530,7 @@ function missingRpc(e: { code?: string; message?: string } | null) {
 
         {/* Bouton collant au-dessus de la barre du bas : jamais sous le pli (audit 19/11, correction 10). */}
         <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '10px 20px calc(10px + env(safe-area-inset-bottom, 0px))', background: '#fff', borderTop: '1px solid #EEF2F1' }}>
-          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
+          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, opacity: creating ? 0.7 : 1 }}>
             {creating ? 'Confirmation…' : `${chosen ? `Confirmer · ${dayLabel(chosen.starts_at, { weekday: 'short', day: 'numeric' })} ${hhmm(chosen.starts_at)}` : 'Confirmer la réservation'}${totalTtc > 0 ? ` · ${EUR(totalTtc)}` : ''}`}
           </button>
         </div>

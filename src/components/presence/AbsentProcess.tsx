@@ -38,10 +38,10 @@ function Step({ n, state, title, children }: { n: number; state: StepState; titl
 }
 
 const primary: React.CSSProperties = {
-  width: '100%', minHeight: 48, border: 'none', borderRadius: 999, padding: '0 16px', background: '#0C8F7E', color: '#fff',
+  width: '100%', minHeight: 48, border: 'none', borderRadius: 999, padding: '0 16px', background: '#0B8374', color: '#fff',
   fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginTop: 8,
 }
-const ghost: React.CSSProperties = { ...primary, background: '#fff', color: '#0C8F7E', border: '1.5px solid #0C8F7E' }
+const ghost: React.CSSProperties = { ...primary, background: '#fff', color: '#0B8374', border: '1.5px solid #0B8374' }
 const p: React.CSSProperties = { fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '3px 0 0' }
 // Bouton d'action principal collant en bas de l'écran, au-dessus de la barre d'onglets (audit ergonomie 19/11,
 // correction 13) : « Envoyer la photo », « Clôturer avec le code de fin »… visibles sans défiler.
@@ -62,7 +62,7 @@ function StickyCta({ children, onClick, disabled, above }: { children: React.Rea
     </>
   )
 }
-const link: React.CSSProperties = { display: 'block', margin: '8px auto 0', minHeight: 44, border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }
+const link: React.CSSProperties = { display: 'block', margin: '8px auto 0', minHeight: 44, border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }
 
 /**
  * Prestataire, client absent (migration 048), démarche numérotée de la maquette du 18/11.
@@ -222,7 +222,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
     </>
   )
 
-  const msg = info && <p role={info.err ? 'alert' : 'status'} style={{ ...p, color: info.err ? '#B3402F' : '#0C8F7E', fontWeight: 600, whiteSpace: 'pre-line' }}>{info.text}</p>
+  const msg = info && <p role={info.err ? 'alert' : 'status'} style={{ ...p, color: info.err ? '#B3402F' : '#0B8374', fontWeight: 600, whiteSpace: 'pre-line' }}>{info.text}</p>
 
   if (phase === 'arrivee') {
     const sentAt = pending ? remote?.requested_at : null

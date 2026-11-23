@@ -183,7 +183,7 @@ export default function MissionDuJour() {
   if (!bookingAccepted(tx)) return (
     <Shell onBack={() => router.push(`/mission/${tx.id}/chat`)} title="Mission">
       <BookingCard tx={tx} userId={uid} counterpart={name} onChange={patch => setTx((t: any) => ({ ...t, ...patch }))} />
-      <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ width: '100%', minHeight: 48, marginTop: 12, borderRadius: 999, border: '1.5px solid #0C8F7E', background: '#fff', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}>Ouvrir la conversation</button>
+      <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ width: '100%', minHeight: 48, marginTop: 12, borderRadius: 999, border: '1.5px solid #0B8374', background: '#fff', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}>Ouvrir la conversation</button>
     </Shell>
   )
 
@@ -212,11 +212,11 @@ export default function MissionDuJour() {
   const rateBuyer = tx.subtotal_cents ? (tx.buyer_fee_cents || 0) / tx.subtotal_cents : null
 
   const primary: React.CSSProperties = {
-    width: '100%', border: 'none', borderRadius: 999, padding: '14px 0', background: '#0C8F7E', color: '#fff',
+    width: '100%', border: 'none', borderRadius: 999, padding: '14px 0', background: '#0B8374', color: '#fff',
     fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, cursor: 'pointer',
   }
   // Liens texte à 44 px de haut (Itinéraire, Comment ça marche, Noter le client…), audit ergonomie 19/11.
-  const link: React.CSSProperties = { border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, padding: '0 6px' }
+  const link: React.CSSProperties = { border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, padding: '0 6px' }
   const block: React.CSSProperties = { marginTop: 12 }
 
   return (
@@ -245,7 +245,7 @@ export default function MissionDuJour() {
       </div>
 
       {msg && (
-        <div role="status" style={{ ...block, padding: '10px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: msg.kind === 'ok' ? 'rgba(18,179,156,.12)' : 'rgba(229,72,77,.1)', color: msg.kind === 'ok' ? '#0C8F7E' : '#B3402F' }}>{msg.text}</div>
+        <div role="status" style={{ ...block, padding: '10px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600, background: msg.kind === 'ok' ? 'rgba(18,179,156,.12)' : 'rgba(229,72,77,.1)', color: msg.kind === 'ok' ? '#0B8374' : '#B3402F' }}>{msg.text}</div>
       )}
 
       {/* Annuler, reporter, absence du prestataire, clôture sur preuve (056). */}

@@ -74,9 +74,9 @@ export default function MesDemandesPage() {
   function badge(r: any) {
     const group = txByRequest[r.id] || []
     if (r.status === 'cancelled') return { label: 'Annulée', bg: '#F3F6F5', fg: '#4E6470' }
-    if (group.some(t => DONE.includes(t.status))) return { label: 'Terminée', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
-    if (group.some(t => t.price_confirmed && t.status !== 'cancelled')) return { label: 'Prestataire choisi', bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
-    if (group.length > 0) return { label: `${group.length} proposition${group.length > 1 ? 's' : ''}`, bg: 'rgba(18,179,156,.12)', fg: '#0C8F7E' }
+    if (group.some(t => DONE.includes(t.status))) return { label: 'Terminée', bg: 'rgba(18,179,156,.12)', fg: '#0B8374' }
+    if (group.some(t => t.price_confirmed && t.status !== 'cancelled')) return { label: 'Prestataire choisi', bg: 'rgba(18,179,156,.12)', fg: '#0B8374' }
+    if (group.length > 0) return { label: `${group.length} proposition${group.length > 1 ? 's' : ''}`, bg: 'rgba(18,179,156,.12)', fg: '#0B8374' }
     if (r.status === 'open') return { label: 'En attente', bg: '#FFF7ED', fg: '#8a6520' }
     return { label: STATUS[r.status] || 'En cours', bg: '#F3F6F5', fg: '#4E6470' }
   }
@@ -192,7 +192,7 @@ export default function MesDemandesPage() {
           Comme une annonce : service, heures ou kilos de linge, fréquence, foyer, paiement. Les prestataires à proximité vous font une proposition chiffrée.
         </p>
         <button onClick={() => router.push('/client/demandes/new')}
-          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
+          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
           + Déposer une demande
         </button>
 
@@ -223,7 +223,7 @@ export default function MesDemandesPage() {
                       <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{r.title || TRAD[r.category] || r.category || 'Demande'}</span>
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: b.bg, color: b.fg, flexShrink: 0, whiteSpace: 'nowrap' }}>{b.label}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#0C8F7E', fontWeight: 700, marginTop: 3 }}>{TRAD[r.category] || r.category}</div>
+                    <div style={{ fontSize: 11, color: '#0B8374', fontWeight: 700, marginTop: 3 }}>{TRAD[r.category] || r.category}</div>
                     {r.description && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>{r.description}</div>}
                     <RequestDetails request={r} compact />
                     <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
@@ -238,7 +238,7 @@ export default function MesDemandesPage() {
                         const p = t.providerId ? pros[t.providerId] : undefined
                         const km = p ? distanceKm(r.lat, r.lng, p.lat, p.lng) : null
                         const cancelled = t.status === 'cancelled'
-                        const tag = { fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0C8F7E' } as const
+                        const tag = { fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0B8374' } as const
                         return (
                           <div key={t.id} style={{ padding: 12, borderRadius: 12, background: '#F3F6F5', border: '1px solid #E7EDEB', opacity: cancelled ? .6 : 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
@@ -282,7 +282,7 @@ export default function MesDemandesPage() {
                                 </button>
                                 {t.hasPendingOffer && !t.price_confirmed && confirming !== t.id && (
                                   <button onClick={() => askAccept(t, r)} disabled={busy === t.id}
-                                    style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', opacity: busy === t.id ? .6 : 1 }}>
+                                    style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', opacity: busy === t.id ? .6 : 1 }}>
                                     Accepter ce prestataire
                                   </button>
                                 )}
@@ -311,7 +311,7 @@ export default function MesDemandesPage() {
                                     Annuler
                                   </button>
                                   <button type="button" onClick={() => acceptPro(t, r)} disabled={busy === t.id || (hasAddr(r) && !rdvAt)}
-                                    style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: busy === t.id || (hasAddr(r) && !rdvAt) ? .55 : 1 }}>
+                                    style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: busy === t.id || (hasAddr(r) && !rdvAt) ? .55 : 1 }}>
                                     {busy === t.id ? 'Acceptation…' : `Confirmer · ${euroFr(t.offer.offer_cents)}`}
                                   </button>
                                 </div>

@@ -94,7 +94,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
     <Modal open={open && !suppressed} onClose={later} title="Je note et commente mon client" footer={<>
       {error && <p role="alert" style={{ color: '#c0503a', fontSize: 12.5, margin: 0 }}>{error}</p>}
       <button type="button" onClick={submit} disabled={busy || missing > 0}
-        style={{ width: '100%', minHeight: 48, padding: 14, borderRadius: 999, border: 'none', cursor: missing ? 'default' : 'pointer', background: missing ? '#A9DED5' : '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+        style={{ width: '100%', minHeight: 48, padding: 14, borderRadius: 999, border: 'none', cursor: missing ? 'default' : 'pointer', background: missing ? '#A9DED5' : '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
         {busy ? 'Enregistrement…' : isPublic ? 'Publier mon avis' : 'Enregistrer mon avis (non publié)'}
       </button>
       {missing > 0 && <div role="status" style={{ fontSize: 12, color: '#4E6470', textAlign: 'center' }}>Il manque : votre note (touchez une étoile).</div>}
@@ -125,7 +125,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
           const on = tags.includes(t.key)
           return (
             <button key={t.key} onClick={() => setTags(on ? tags.filter(x => x !== t.key) : [...tags, t.key])} aria-pressed={on}
-              style={{ padding: '7px 12px', minHeight: 44, borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, border: on ? '1.5px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.1)' : '#fff', color: on ? '#0C8F7E' : '#4E6470' }}>
+              style={{ padding: '7px 12px', minHeight: 44, borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, border: on ? '1.5px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.1)' : '#fff', color: on ? '#0B8374' : '#4E6470' }}>
               {t.label}
             </button>
           )

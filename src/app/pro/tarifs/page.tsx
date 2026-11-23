@@ -33,7 +33,7 @@ const input: React.CSSProperties = {
 }
 const chip = (on: boolean): React.CSSProperties => ({
   minHeight: 44, padding: '0 16px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13,
-  border: on ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? 'rgba(18,179,156,.08)' : '#fff', color: on ? '#0C8F7E' : '#4E6470',
+  border: on ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: on ? 'rgba(18,179,156,.08)' : '#fff', color: on ? '#0B8374' : '#4E6470',
 })
 const DESC_MAX = 280
 const OTHER = '__autre'
@@ -221,7 +221,7 @@ export default function ProTarifsPage() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{title}</span>
-            {opts.tag && <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '2px 7px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0C8F7E' }}>{opts.tag}</span>}
+            {opts.tag && <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '2px 7px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0B8374' }}>{opts.tag}</span>}
             {opts.trade && TRADES[opts.trade] !== title && <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#F3F6F5', color: '#4E6470' }}>{TRADES[opts.trade]}</span>}
             {opts.row?.hidden && <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '2px 7px', borderRadius: 999, background: '#FFF4DD', color: '#8A5A00' }}>Masquée</span>}
           </div>
@@ -230,12 +230,12 @@ export default function ProTarifsPage() {
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(cols) ?? 'À compléter'}</div>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: '#0C8F7E', marginTop: 2 }}>modifier</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: '#0B8374', marginTop: 2 }}>modifier</div>
         </div>
       </div>
       {opts.row && ext && (
         <button type="button" onClick={() => toggleHidden(opts.row!)}
-          style={{ marginTop: 4, minHeight: 44, padding: '0 4px 0 0', border: 'none', background: 'none', fontSize: 13, fontWeight: 700, color: opts.row.hidden ? '#0C8F7E' : '#4E6470', cursor: 'pointer' }}>
+          style={{ marginTop: 4, minHeight: 44, padding: '0 4px 0 0', border: 'none', background: 'none', fontSize: 13, fontWeight: 700, color: opts.row.hidden ? '#0B8374' : '#4E6470', cursor: 'pointer' }}>
           {opts.row.hidden ? 'Afficher sur ma fiche' : 'Masquer de ma fiche'}
         </button>
       )}
@@ -277,11 +277,11 @@ export default function ProTarifsPage() {
               <button key={k} type="button" onClick={() => openSheet({ kind: 'new' }, k)}
                 style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'transparent', border: '1.5px dashed #B9CBC7', borderRadius: 14, padding: '13px 16px', marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
                 <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{TRADES[k]}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0C8F7E' }}>+ Fixer un prix</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0B8374' }}>+ Fixer un prix</span>
               </button>
             ))}
             <button onClick={() => openSheet({ kind: 'new' })}
-              style={{ display: 'block', width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+              style={{ display: 'block', width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
               + Ajouter une prestation
             </button>
           </>
@@ -379,7 +379,7 @@ export default function ProTarifsPage() {
               <button type="button" onClick={close}
                 style={{ flex: 1, minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
               <button type="button" onClick={save} disabled={saving}
-                style={{ flex: 1.4, minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
+                style={{ flex: 1.4, minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </div>

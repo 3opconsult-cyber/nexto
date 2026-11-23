@@ -75,11 +75,11 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
       confirmLabel="Oui, signaler" cancelLabel="Non, revenir" onConfirm={() => decline()} onCancel={() => setAskNo(false)} />
   )
   const primary: React.CSSProperties = {
-    width: '100%', minHeight: 50, marginTop: 12, border: 'none', borderRadius: 999, background: '#0C8F7E', color: '#fff',
+    width: '100%', minHeight: 50, marginTop: 12, border: 'none', borderRadius: 999, background: '#0B8374', color: '#fff',
     fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, cursor: 'pointer', opacity: busy ? .7 : 1,
   }
   const second: React.CSSProperties = {
-    display: 'block', width: '100%', minHeight: 44, marginTop: 6, border: 'none', background: 'none', color: '#0C8F7E',
+    display: 'block', width: '100%', minHeight: 44, marginTop: 6, border: 'none', background: 'none', color: '#0B8374',
     fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer',
   }
   const codeBlock = shown && (

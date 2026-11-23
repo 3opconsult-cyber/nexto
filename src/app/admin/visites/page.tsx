@@ -101,7 +101,7 @@ export default function AdminVisites() {
                   {v.name || `Visiteur anonyme (${v.sid.slice(0, 8)})`}
                 </span>
                 {v.role && (
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 999, background: v.role === 'Pro' ? 'rgba(242,169,59,.15)' : 'rgba(18,179,156,.1)', color: v.role === 'Pro' ? '#8a6520' : '#0C8F7E' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 999, background: v.role === 'Pro' ? 'rgba(242,169,59,.15)' : 'rgba(18,179,156,.1)', color: v.role === 'Pro' ? '#8a6520' : '#0B8374' }}>
                     {v.role}
                   </span>
                 )}

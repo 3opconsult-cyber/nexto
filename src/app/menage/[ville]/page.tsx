@@ -84,7 +84,7 @@ export default function VillePage({ params }: { params: { ville: string } }) {
             { t: 'Facture automatique', d: 'Émise dès la fin de l’intervention, prête pour votre déclaration.' },
           ].map(f => (
             <div key={f.t} style={{ display: 'flex', gap: 10, padding: 14, borderRadius: 14, background: '#F3F6F5' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M20 6L9 17l-5-5" /></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M20 6L9 17l-5-5" /></svg>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{f.t}</div>
                 <div style={{ fontSize: 12, color: '#4E6470', marginTop: 2 }}>{f.d}</div>
@@ -98,7 +98,7 @@ export default function VillePage({ params }: { params: { ville: string } }) {
         </Link>
         <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>
           Vous êtes prestataire de ménage à {city.name} ?{' '}
-          <Link href="/auth/signup" style={{ color: '#0C8F7E', fontWeight: 700 }}>Inscrivez-vous gratuitement</Link>.
+          <Link href="/auth/signup" style={{ color: '#0B8374', fontWeight: 700 }}>Inscrivez-vous gratuitement</Link>.
         </p>
       </div>
     </div>

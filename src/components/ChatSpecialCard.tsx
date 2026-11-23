@@ -9,7 +9,7 @@ import { isPingMessage, type ChatMsgLike, type ChatTxLike } from '@/lib/chatPing
  *  - message du fil d'un litige recopié dans la conversation : carte « Litige » repliable, avec le lien vers
  *    le dossier (/litiges/[id]), où la discussion continue.
  */
-const C = { navy: '#123644', slate: '#4E6470', teal: '#0C8F7E', amber: '#8A6520' }
+const C = { navy: '#123644', slate: '#4E6470', teal: '#0B8374', amber: '#8A6520' }
 
 export default function ChatSpecialCard({ m, tx, userId, kind }: {
   m: ChatMsgLike & { id: string; body: string; created_at: string }

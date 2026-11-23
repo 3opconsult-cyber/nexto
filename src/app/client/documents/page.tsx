@@ -9,7 +9,7 @@ import Modal from '@/components/Modal'
 type DocRow = { status: 'pending' | 'valid' | 'expired' | 'rejected'; storage_path: string | null; created_at: string; rejection_reason?: string | null }
 
 const STATUS_LABEL: Record<string, { label: string; bg: string; fg: string }> = {
-  valid: { label: 'Fournie', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
+  valid: { label: 'Fournie', bg: 'rgba(18,179,156,.14)', fg: '#0B8374' },
   pending: { label: 'Reçue — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#8A6520' },
   rejected: { label: 'Refusée — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
   expired: { label: 'Expirée — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
@@ -130,7 +130,7 @@ export default function ClientDocumentsPage() {
               <iframe src={viewing.url} style={{ width: '100%', height: 420, border: '1px solid #E7EDEB', borderRadius: 12 }} />
             )}
             <a href={viewing.url} download target="_blank" rel="noreferrer"
-              style={{ display: 'block', textAlign: 'center', marginTop: 14, padding: 13, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'none' }}>
+              style={{ display: 'block', textAlign: 'center', marginTop: 14, padding: 13, borderRadius: 999, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'none' }}>
               Télécharger le document
             </a>
           </div>

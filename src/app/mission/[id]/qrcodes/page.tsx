@@ -150,7 +150,7 @@ export default function MissionQrCodes() {
               </div>
             </div>
 
-            <button onClick={() => router.push('/aide/apres-commande')} style={{ marginTop: 14, border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline' }}>Voir comment ça marche</button>
+            <button onClick={() => router.push('/aide/apres-commande')} style={{ marginTop: 14, border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline' }}>Voir comment ça marche</button>
 
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, color: '#6E8592', fontWeight: 600 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', animation: 'pingPulse 1.4s ease-in-out infinite' }} />
@@ -212,7 +212,7 @@ export default function MissionQrCodes() {
         {step === 3 && (
           <>
             <div className="ping-success" style={{ marginTop: 20 }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2.6" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.6" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>
             </div>
             <div className="ping-h1" style={{ textAlign: 'center' }}>Prestation terminée</div>
             <p className="ping-sub" style={{ textAlign: 'center' }}>

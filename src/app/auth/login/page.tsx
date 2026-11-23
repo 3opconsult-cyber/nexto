@@ -182,27 +182,27 @@ export default function LoginPage() {
               <span style={{ fontSize: 13, fontWeight: 600, color: '#4E6470' }}>Rester connecté</span>
             </div>
             <button type="button" onClick={resetPassword}
-              style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0, color: '#0C8F7E', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+              style={{ alignSelf: 'flex-start', border: 'none', background: 'none', padding: 0, color: '#0B8374', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
               {resetBusy ? 'Envoi du lien…' : 'Mot de passe oublié ?'}
             </button>
             {error && <p role="alert" style={{ color: '#C0503A', fontSize: 13, fontWeight: 600, margin: 0 }}>{error}</p>}
-            {info && <p role="status" style={{ color: '#0C8F7E', fontSize: 13, fontWeight: 600, margin: 0 }}>{info}</p>}
+            {info && <p role="status" style={{ color: '#0B8374', fontSize: 13, fontWeight: 600, margin: 0 }}>{info}</p>}
             <button type="submit" disabled={loading}
-              style={{ width: '100%', border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
+              style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, padding: 15, borderRadius: 999, cursor: 'pointer', opacity: loading ? .6 : 1, boxShadow: '0 8px 20px rgba(18,179,156,.3)' }}>
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#6E8592', fontSize: 12, fontWeight: 600 }}>
               <span style={{ flex: 1, height: 1, background: '#E7EDEB' }} />ou<span style={{ flex: 1, height: 1, background: '#E7EDEB' }} />
             </div>
             <button type="button" onClick={sendMagicLink} disabled={magicBusy}
-              style={{ width: '100%', border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0C8F7E', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: magicBusy ? .6 : 1 }}>
+              style={{ width: '100%', border: '1.5px solid #12B39C', background: 'rgba(18,179,156,.06)', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: magicBusy ? .6 : 1 }}>
               {magicBusy ? 'Envoi du lien…' : 'Recevoir un lien de connexion par e-mail'}
             </button>
             <p style={{ fontSize: 11.5, color: '#4E6470', margin: '-6px 0 0', lineHeight: 1.45, textAlign: 'center' }}>Sans mot de passe : saisissez votre email, puis ouvrez le lien reçu.</p>
           </form>
           <p style={{ textAlign: 'center', fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 18 }}>
             Pas encore de compte ?{' '}
-            <Link href={next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup'} style={{ color: '#0C8F7E', fontWeight: 700 }}>Créer un compte</Link>
+            <Link href={next ? `/auth/signup?next=${encodeURIComponent(next)}` : '/auth/signup'} style={{ color: '#0B8374', fontWeight: 700 }}>Créer un compte</Link>
           </p>
         </div>
       </div>

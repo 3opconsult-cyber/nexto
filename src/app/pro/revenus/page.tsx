@@ -92,7 +92,7 @@ export default function ProRevenusPage() {
             <ProSuspensionBanner />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
               <div style={{ padding: 16, borderRadius: 16, background: 'rgba(18,179,156,.08)' }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#0C8F7E' }}>{eur(monthCents)}</div>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#0B8374' }}>{eur(monthCents)}</div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Ce mois</div>
               </div>
               <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
@@ -110,7 +110,7 @@ export default function ProRevenusPage() {
             </div>
 
             <button onClick={() => router.push('/pro/paiements')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20M6 15h4" /></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20M6 15h4" /></svg>
               <span style={{ flex: 1 }}>
                 <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Mes versements</span>
                 <span style={{ display: 'block', fontSize: 12, color: '#4E6470', marginTop: 2 }}>Compte de versement et IBAN, pour le paiement en ligne</span>
@@ -130,7 +130,7 @@ export default function ProRevenusPage() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input id="sap-number" value={sap} onChange={e => { typed.current.sap = true; setSap(e.target.value) }}
                     style={{ flex: 1, minWidth: 0, minHeight: 44, boxSizing: 'border-box', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif' }} />
-                  <button onClick={saveSap} style={{ minHeight: 44, border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                  <button onClick={saveSap} style={{ minHeight: 44, border: 'none', borderRadius: 999, padding: '0 18px', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                     {sapSaved ? 'Enregistré' : 'Enregistrer'}
                   </button>
                 </div>
@@ -153,7 +153,7 @@ export default function ProRevenusPage() {
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input id="tax-id" value={taxId} onChange={e => { typed.current.tax = true; setTaxId(e.target.value) }} inputMode="numeric"
                       style={{ flex: 1, minWidth: 0, minHeight: 44, boxSizing: 'border-box', border: '1.5px solid #E7EDEB', borderRadius: 11, padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif' }} />
-                    <button onClick={saveTax} style={{ minHeight: 44, border: 'none', borderRadius: 999, padding: '0 18px', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                    <button onClick={saveTax} style={{ minHeight: 44, border: 'none', borderRadius: 999, padding: '0 18px', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                       {taxSaved ? 'Enregistré' : 'Enregistrer'}
                     </button>
                   </div>

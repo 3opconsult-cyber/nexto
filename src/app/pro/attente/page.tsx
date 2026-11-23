@@ -97,7 +97,7 @@ export default function ProAttente() {
           Compléter mes documents
         </button>
         <button onClick={() => router.push('/pro/annonce')}
-          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
           Voir et lancer mon annonce
         </button>
         <button onClick={() => router.push('/pro/dashboard')}

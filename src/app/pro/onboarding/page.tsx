@@ -378,7 +378,7 @@ export default function ProOnboarding() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {SERVICES.filter(t => !services.includes(t.key)).map(t => (
                 <button key={t.key} type="button" onClick={() => setServices(sv => sv.includes(t.key) ? sv : [...sv, t.key])}
-                  style={{ border: '1.5px dashed #12B39C', background: '#fff', color: '#0C8F7E', borderRadius: 999, padding: '8px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                  style={{ border: '1.5px dashed #12B39C', background: '#fff', color: '#0B8374', borderRadius: 999, padding: '8px 14px', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                   + {t.label}
                 </button>
               ))}
@@ -438,7 +438,7 @@ export default function ProOnboarding() {
           </div>
         )}
         {selectedCompany && (
-          <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: 'rgba(18,179,156,.08)', fontSize: 12.5, color: '#0C8F7E', fontWeight: 600 }}>
+          <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: 'rgba(18,179,156,.08)', fontSize: 12.5, color: '#0B8374', fontWeight: 600 }}>
             SIRET {selectedCompany.siret || '—'} · pré-rempli, à valider aux étapes suivantes
           </div>
         )}
@@ -519,10 +519,10 @@ export default function ProOnboarding() {
         ctaDisabled={(!coords && !address.trim()) || (phoneTouched && !phoneValid(phone)) || (prefilled && !confirmedInfo)}>
         {/* Position expliquée avant la fenêtre du navigateur (qc-production B2). */}
         {coords ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.1)', color: '#0C8F7E', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '12px 14px', borderRadius: 12, background: 'rgba(18,179,156,.1)', color: '#0B8374', fontWeight: 700, fontSize: 14, marginBottom: 14 }}>
             <span style={{ flex: 1 }}>✓ Position enregistrée</span>
             <button type="button" onClick={() => { setCoords(null); setGeocodeError('') }}
-              style={{ background: 'none', border: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>Modifier</button>
+              style={{ background: 'none', border: 'none', color: '#0B8374', fontWeight: 700, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>Modifier</button>
           </div>
         ) : (
           <div style={{ marginBottom: 14 }}>
@@ -537,7 +537,7 @@ export default function ProOnboarding() {
         </label>
         {!coords && (
           <button onClick={searchAddress} disabled={!address.trim() || geocoding}
-            style={{ width: '100%', marginTop: 10, padding: 12, borderRadius: 12, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 13.5, opacity: (!address.trim() || geocoding) ? .5 : 1 }}>
+            style={{ width: '100%', marginTop: 10, padding: 12, borderRadius: 12, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 13.5, opacity: (!address.trim() || geocoding) ? .5 : 1 }}>
             {geocoding ? 'Recherche…' : 'Retrouver cette adresse sur la carte'}
           </button>
         )}
@@ -586,7 +586,7 @@ export default function ProOnboarding() {
       <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: cgvOk ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: cgvOk ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
         <input type="checkbox" checked={cgvOk} onChange={e => { setCgvOk(e.target.checked); setError('') }} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
         <span style={{ fontSize: 12.5, color: '#123644', lineHeight: 1.5 }}>
-          J&apos;accepte les <a href="/cgu#prestataires" target="_blank" rel="noreferrer" style={{ color: '#0C8F7E', fontWeight: 700 }}>CGV prestataires et le contrat de commission</a> :
+          J&apos;accepte les <a href="/cgu#prestataires" target="_blank" rel="noreferrer" style={{ color: '#0B8374', fontWeight: 700 }}>CGV prestataires et le contrat de commission</a> :
           commission PING retenue sur mes versements, prélèvement SEPA des commissions non retenues, suspension en cas d&apos;impayé.
         </span>
       </label>

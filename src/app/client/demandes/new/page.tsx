@@ -229,7 +229,7 @@ export default function NewOpenRequestPage() {
           <div role="status" data-draft-note style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #DCE5E3', borderRadius: 12, padding: '8px 12px', marginBottom: 12, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>
             <span style={{ flex: 1 }}>Votre brouillon a été repris : il est gardé sur ce téléphone jusqu’à la publication.</span>
             <button type="button" onClick={() => { if (draftUid) clearDraft(draftUid); window.location.reload() }}
-              style={{ minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer' }}>Repartir de zéro</button>
+              style={{ minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer' }}>Repartir de zéro</button>
           </div>
         )}
         <Section title="Quel service ?">
@@ -391,7 +391,7 @@ export default function NewOpenRequestPage() {
         {/* « Publier » collant au-dessus de la barre du bas (audit 19/11, correction 18). */}
         <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -16px', padding: '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))', background: '#F3F6F5', borderTop: '1px solid #E7EDEB' }}>
           {error && <p role="alert" style={{ color: '#c0503a', fontSize: 13, fontWeight: 600, margin: '0 0 8px' }}>{error}</p>}
-          <button onClick={() => submit()} disabled={creating} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
+          <button onClick={() => submit()} disabled={creating} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
             {creating ? 'Publication…' : 'Publier mon annonce'}
           </button>
         </div>

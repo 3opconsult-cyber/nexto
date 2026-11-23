@@ -47,7 +47,7 @@ export default function CguPage() {
         <CgvAccept />
 
         <h2 style={h2}>Contact</h2>
-        <p style={p}>Pour toute question : <a href="mailto:info@opconsult.co" style={{ color: '#0C8F7E', fontWeight: 700 }}>info@opconsult.co</a>. Voir aussi la <Link href="/confidentialite" style={{ color: '#0C8F7E', fontWeight: 700 }}>politique de confidentialité</Link>.</p>
+        <p style={p}>Pour toute question : <a href="mailto:info@opconsult.co" style={{ color: '#0B8374', fontWeight: 700 }}>info@opconsult.co</a>. Voir aussi la <Link href="/confidentialite" style={{ color: '#0B8374', fontWeight: 700 }}>politique de confidentialité</Link>.</p>
       </div>
     </div>
   )

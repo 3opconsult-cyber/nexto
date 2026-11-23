@@ -56,7 +56,7 @@ type DocRow = { kind: Kind; status: 'pending' | 'valid' | 'expired' | 'rejected'
 
 const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
   // « Contrôlé par PING » : la pièce a été validée par un admin (exception de langage du 03/11).
-  valid: { label: 'Contrôlé par PING', bg: 'rgba(18,179,156,.14)', fg: '#0C8F7E' },
+  valid: { label: 'Contrôlé par PING', bg: 'rgba(18,179,156,.14)', fg: '#0B8374' },
   pending: { label: 'Reçu — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#8A6520' },
   rejected: { label: 'Refusé — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
   expired: { label: 'Expiré — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
@@ -73,7 +73,7 @@ function StatusLine({ label, ok, okText, missing }: { label: string; ok: boolean
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontSize: 12, lineHeight: 1.45 }}>
       <span style={{ fontWeight: 700, color: '#123644', minWidth: 128 }}>{label}</span>
-      <span style={{ color: ok ? '#0C8F7E' : '#4E6470', fontWeight: ok ? 700 : 500 }}>{ok ? <>✓ {okText}</> : missing}</span>
+      <span style={{ color: ok ? '#0B8374' : '#4E6470', fontWeight: ok ? 700 : 500 }}>{ok ? <>✓ {okText}</> : missing}</span>
     </div>
   )
 }
@@ -279,7 +279,7 @@ export default function ProDocumentsPage() {
               {r.kind === 'kbis' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
                   <StatusLine label="SIRET" ok={!!siret} okText={siret ? `Renseigné · ${siret.replace(/\D/g, '').replace(/^(\d{3})(\d{3})(\d{3})(\d{5})$/, '$1 $2 $3 $4')}` : ''}
-                    missing={<>Non renseigné · <a href="/pro/onboarding" style={{ color: '#0C8F7E', fontWeight: 700 }}>compléter</a> (facultatif pour un particulier)</>} />
+                    missing={<>Non renseigné · <a href="/pro/onboarding" style={{ color: '#0B8374', fontWeight: 700 }}>compléter</a> (facultatif pour un particulier)</>} />
                   <StatusLine label="Attestation URSSAF" ok={mine.some(p => p.type === 'urssaf')} okText="Déposée" missing="À déposer ci-dessous" />
                 </div>
               )}
@@ -288,14 +288,14 @@ export default function ProDocumentsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
                   {mine.map(p => (
                     <div key={p.path} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 4px 4px 11px', borderRadius: 11, background: '#F7F9F8' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" strokeWidth={2} style={{ flexShrink: 0 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth={2} style={{ flexShrink: 0 }}>
                         {isImage(p.path) ? <><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="11" r="2" /><path d="M21 17l-5-5-9 9" /></> : <><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /></>}
                       </svg>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{typeLabel(r, p)}</div>
                         {p.at > 0 && <div style={{ fontSize: 11, color: '#6E8592' }}>Déposée le {new Date(p.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
                       </div>
-                      <button onClick={() => open(p)} style={{ minWidth: 56, minHeight: 44, padding: '0 10px', border: 'none', borderRadius: 10, background: 'none', color: '#0C8F7E', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Voir</button>
+                      <button onClick={() => open(p)} style={{ minWidth: 56, minHeight: 44, padding: '0 10px', border: 'none', borderRadius: 10, background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Voir</button>
                       <button onClick={() => setToRemove(p)} aria-label={`Supprimer ${typeLabel(r, p)}`} style={{ width: 44, height: 44, border: 'none', borderRadius: 10, background: 'none', color: '#4E6470', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
                       </button>
@@ -309,7 +309,7 @@ export default function ProDocumentsPage() {
               {(() => { const fold = (mine.length > 0 || r.optional) && !openAdd[r.kind]; return (
               <div style={{ marginTop: 12 }}>
                 <button type="button" onClick={() => setOpenAdd(o => ({ ...o, [r.kind]: !o[r.kind] }))} aria-expanded={!fold}
-                  style={{ display: fold ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 44, borderRadius: 999, border: '1.5px solid #12B39C', background: '#fff', color: '#0C8F7E', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+                  style={{ display: fold ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 44, borderRadius: 999, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
                   Ajouter une pièce
                 </button>
                 <div style={{ display: fold ? 'none' : 'flex', flexDirection: 'column', gap: 6 }}>
@@ -329,7 +329,7 @@ export default function ProDocumentsPage() {
                     </div>
                   ))}
                 </div>
-                {busy === r.kind && <div style={{ fontSize: 12, color: '#0C8F7E', fontWeight: 600, marginTop: 8 }}>Envoi en cours…</div>}
+                {busy === r.kind && <div style={{ fontSize: 12, color: '#0B8374', fontWeight: 600, marginTop: 8 }}>Envoi en cours…</div>}
               </div>
               ) })()}
             </div>
@@ -345,7 +345,7 @@ export default function ProDocumentsPage() {
               ? <img src={viewing.url} alt="Pièce" style={{ width: '100%', borderRadius: 12, border: '1px solid #E7EDEB', display: 'block' }} />
               : <iframe src={viewing.url} style={{ width: '100%', height: 420, border: '1px solid #E7EDEB', borderRadius: 12 }} />}
             <a href={viewing.url} download target="_blank" rel="noreferrer"
-              style={{ display: 'block', textAlign: 'center', marginTop: 14, padding: 13, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'none' }}>
+              style={{ display: 'block', textAlign: 'center', marginTop: 14, padding: 13, borderRadius: 999, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textDecoration: 'none' }}>
               Télécharger
             </a>
           </div>

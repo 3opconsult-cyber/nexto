@@ -81,7 +81,7 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, modal =
           style={{ position: 'absolute', top: 4, right: 4, width: 44, height: 44, border: 'none', background: 'transparent', color: '#4E6470', cursor: 'pointer', fontSize: 18 }}>✕</button>
       )}
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', paddingRight: onClose ? 34 : 0 }}>
-        <span style={{ flex: '0 0 auto', width: 40, height: 40, borderRadius: 12, background: 'rgba(18,179,156,.12)', color: 'var(--tealD, #0C8F7E)', display: 'grid', placeItems: 'center' }}>
+        <span style={{ flex: '0 0 auto', width: 40, height: 40, borderRadius: 12, background: 'rgba(18,179,156,.12)', color: 'var(--tealD, #0B8374)', display: 'grid', placeItems: 'center' }}>
           <Ic name="loc" size={22} />
         </span>
         <div>
@@ -92,7 +92,7 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, modal =
 
       {!cityMode || !allowCity ? (
         <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
-          <button type="button" onClick={useGps} disabled={busy} style={{ ...btn, background: 'var(--btnFill, #0C8F7E)', color: '#fff' }}>
+          <button type="button" onClick={useGps} disabled={busy} style={{ ...btn, background: 'var(--btnFill, #0B8374)', color: '#fff' }}>
             <Ic name="loc" size={18} /> {busy ? 'Localisation…' : gpsLabel}
           </button>
           {allowCity ? (
@@ -120,12 +120,12 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, modal =
           <form onSubmit={e => { e.preventDefault(); searchCity() }} style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Autre ville ou code postal" aria-label="Ville ou code postal"
               style={{ flex: 1, minWidth: 0, minHeight: 44, border: '1.5px solid var(--line, #E7EDEB)', borderRadius: 12, padding: '0 12px', fontSize: 15, color: 'var(--ink, #123644)' }} />
-            <button type="submit" disabled={busy} style={{ ...btn, width: 'auto', padding: '0 16px', background: 'var(--btnFill, #0C8F7E)', color: '#fff' }}>
+            <button type="submit" disabled={busy} style={{ ...btn, width: 'auto', padding: '0 16px', background: 'var(--btnFill, #0B8374)', color: '#fff' }}>
               {busy ? '…' : 'OK'}
             </button>
           </form>
           <button type="button" onClick={useGps} disabled={busy}
-            style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--tealD, #0C8F7E)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', padding: 0, minHeight: 44 }}>
+            style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--tealD, #0B8374)', fontWeight: 600, fontSize: 13.5, cursor: 'pointer', padding: 0, minHeight: 44 }}>
             {gpsLabel} plutôt
           </button>
         </div>
