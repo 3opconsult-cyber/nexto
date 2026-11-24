@@ -16,6 +16,7 @@ import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import PresenceTag from '@/components/presence/PresenceTag'
 import { rowHasPresence } from '@/lib/presence'
 import BookingCard from '@/components/BookingCard'
+import FacturesList from '@/components/FacturesList'
 import MissionActions from '@/components/MissionActions'
 import '../aere.css'
 import '../aere-pro.css'
@@ -469,33 +470,10 @@ export default function AgendaPage() {
             done.length ? done.map(t => card(t, false, true)) : empty('Aucune prestation terminée pour l’instant.')
           )}
 
-          {tab === 'factures' && !loading && (
-            <>
-              {shownInvoices.length ? (
-                <div style={{ background: '#fff', border: A ? 'none' : '1px solid #E7EDEB', borderRadius: 14, overflow: 'hidden', marginBottom: 14 }}>
-                  {shownInvoices.map((r, i) => (
-                    <button key={r.id} onClick={() => router.push(`/mission/${r.transaction_id}/facture`)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: z(56, 68), textAlign: 'left', border: 'none', borderTop: i ? '1px solid #EEF2F1' : 'none', background: '#fff', padding: A ? '14px 0' : '10px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      <span aria-hidden style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(18,179,156,.12)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></svg>
-                      </span>
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: z(13.5, 16), color: '#123644' }}>
-                          {INV_TITLE[r.template] || 'Document'} · {eur(r.net_cents)}
-                        </b>
-                        <small style={{ display: 'block', fontSize: z(11.5, 15), color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {[r.number, new Date(r.issued_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }), INV_KIND[r.kind], r.kind === 'prestation' ? names[r.transaction_id] : null, mode === 'pro' && r.kind === 'prestation' && r.issuer_id === uid ? 'émise à votre en-tête' : null].filter(Boolean).join(' · ')}
-                        </small>
-                      </span>
-                      <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
-                    </button>
-                  ))}
-                </div>
-              ) : empty('Aucune facture pour l’instant. Elles apparaissent ici à la fin de chaque mission.')}
-              <button onClick={() => router.push('/documents')} style={{ display: 'block', width: '100%', minHeight: 44, border: '1px solid #DCE5E3', background: '#fff', borderRadius: 999, padding: '0 16px', fontWeight: 700, fontSize: z(13, 16), color: '#123644', cursor: 'pointer' }}>
-                Relevé annuel, export et partage
-              </button>
-            </>
+          {tab === 'factures' && !loading && mode && (
+            // Onglet Factures (24/11/2026) : composant dédié, facture du prestataire au premier plan, frais PING repliés en bas.
+            <FacturesList mode={mode} uid={uid} rows={shownInvoices} names={names} docsLink
+              services={Object.fromEntries(mine.filter(t => t.requests?.category).map(t => [t.id, TRAD[t.requests.category] || t.requests.category]))} />
           )}
         </div>
       </div>

@@ -42,7 +42,7 @@ const CLIENT_SCREENS = [
   ['c-litige', 'Après', 'Réclamation', 'Un souci ? La réclamation s’ouvre depuis la conversation, avec le fil complet.', `/mission/${M.dispute}/chat`, later],
   ['c-agenda', 'Mon espace', 'Agenda', 'Vos rendez-vous en vue mois, semaine ou jour.', '/agenda'],
   ['c-operations', 'Mon espace', 'Mes opérations', 'Factures classées par mois, relevé annuel pour le crédit d’impôt.', '/documents', null, true],
-  ['c-partage', 'Mon espace', 'Partager une facture', 'E-mail, WhatsApp, SMS ou téléchargement du PDF.', '/documents', p => clickText(p, 'Partager')],
+  ['c-partage', 'Mon espace', 'Partager une facture', 'E-mail, WhatsApp, SMS ou téléchargement du PDF.', '/documents', p => clickText(p, 'Envoyer')],
   ['c-profil', 'Mon espace', 'Mon profil', 'Mon activité, paiements, mon compte : même organisation que l’espace prestataire.', '/client/profil', null, true],
   ['c-avance', 'Mon espace', 'Crédit d’impôt immédiat', 'L’avance immédiate de l’Urssaf : ne payer que 50 % (bientôt).', '/client/avance-immediate', null, true],
 ]

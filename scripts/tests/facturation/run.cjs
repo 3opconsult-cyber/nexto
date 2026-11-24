@@ -12,7 +12,9 @@ const out = path.join(__dirname, '.build'); fs.mkdirSync(out, { recursive: true 
 const tr = (f, rewrite = s => s) => ts.transpileModule(rewrite(fs.readFileSync(path.join(root, f), 'utf8')),
   { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText
 fs.writeFileSync(path.join(out, 'billing.cjs'), tr('src/lib/billing.ts'))
-fs.writeFileSync(path.join(out, 'presence.cjs'), tr('src/lib/presence.ts'))
+// presence.ts importe '@/lib/netError' depuis le 23/11 : transpilé à côté, chemin réécrit (24/11).
+fs.writeFileSync(path.join(out, 'netError.cjs'), tr('src/lib/netError.ts'))
+fs.writeFileSync(path.join(out, 'presence.cjs'), tr('src/lib/presence.ts', s => s.replace("from '@/lib/netError'", "from './netError.cjs'")))
 fs.writeFileSync(path.join(out, 'proStatus.cjs'), tr('src/lib/proStatus.ts'))
 fs.writeFileSync(path.join(out, 'invoice-pdf.cjs'), tr('src/lib/invoice-pdf.ts',
   s => s.replace("from './presence'", "from './presence.cjs'").replace("from './proStatus'", "from './proStatus.cjs'")))

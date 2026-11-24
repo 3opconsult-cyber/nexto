@@ -9,6 +9,8 @@ import { readScreenCache, sessionUserId } from '@/lib/screenCache'
 import { loadFactureSnap, factureCacheKey, type FactureSnap } from '@/lib/screenLoaders'
 import AvanceImmediateCard from '@/components/AvanceImmediateCard'
 import TransferCard from '@/components/TransferCard'
+import ShareInvoiceSheet from '@/components/ShareInvoiceSheet'
+import { invoiceFile, invoiceShareText, invoiceLink } from '@/lib/invoiceShare'
 import { EUR, KIND_LABEL, TITLE, docTitle, durationLabel, downloadInvoicePdf,
          PLATFORM_PENDING, tauxLabel, displayLine, accentuer, prestationSous, invoiceCredit, type Invoice } from '@/lib/invoice-pdf'
 
@@ -39,6 +41,21 @@ export default function FacturePage() {
   const [reviewed, setReviewed] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [txInfo, setTxInfo] = useState<{ self: boolean; completed: boolean; missing?: boolean } | null>(null)
+  // Imprimer un seul document (24/11/2026) : les autres sections sont masquées à l'impression.
+  // « ?imprimer=<numéro> » (depuis la liste des factures) lance l'impression à l'ouverture.
+  const [printOnly, setPrintOnly] = useState<string | null>(null)
+  const [sending, setSending] = useState<Invoice | null>(null)
+  const [autoPrint, setAutoPrint] = useState<string | null>(null)
+  useEffect(() => {
+    try { setAutoPrint(new URLSearchParams(window.location.search).get('imprimer')) } catch { /* rien */ }
+    const after = () => setPrintOnly(null)
+    window.addEventListener('afterprint', after)
+    return () => window.removeEventListener('afterprint', after)
+  }, [])
+  function printOne(number: string) {
+    setPrintOnly(number)
+    setTimeout(() => { try { window.print() } catch { /* impression indisponible */ } }, 250)
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -64,6 +81,12 @@ export default function FacturePage() {
     load()
     return () => { alive = false }
   }, [params.id])
+
+  useEffect(() => {
+    if (!autoPrint || loading || !invoices.some(v => v.number === autoPrint)) return
+    setAutoPrint(null)
+    printOne(autoPrint)
+  }, [autoPrint, loading, invoices])
 
   // Un seul défilement (maquette) : la prestation d'abord, puis la commission PING de CE lecteur.
   // Les documents viennent de la même lecture qu'avant (RLS : chaque partie ne reçoit que les siens).
@@ -136,7 +159,7 @@ export default function FacturePage() {
 
       <div style={{ padding: '24px 20px 16px' }}>
         {ordered.map(inv => (
-        <section key={inv.number} aria-label={sectionTitle(inv)} style={{ marginBottom: 40 }}>
+        <section key={inv.number} aria-label={sectionTitle(inv)} className={printOnly && printOnly !== inv.number ? 'no-print' : undefined} style={{ marginBottom: 40 }}>
         <h2 className="no-print" style={{ font: '700 20px/1.4 Quicksand, sans-serif', color: '#123644', margin: '4px auto 16px', maxWidth: 620 }}>{sectionTitle(inv)}</h2>
         {/* La prévisualisation EST la page : ce qu'on voit est ce qui s'imprime. */}
         <div className="sheet" style={{
@@ -322,6 +345,17 @@ export default function FacturePage() {
             fontWeight: 700, fontSize: 17,
             opacity: busy === inv.number ? .6 : 1,
           }}>{busy === inv.number ? 'Génération…' : 'Télécharger le PDF'}</button>
+          {/* Mêmes actions que la liste des factures (24/11/2026) : imprimer ce document seul, l'envoyer. */}
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <button type="button" onClick={() => printOne(inv.number)} aria-label={`Imprimer : ${sectionTitle(inv)}`} style={{
+              flex: 1, minHeight: 52, borderRadius: 16, border: 'none', cursor: 'pointer', background: 'rgba(18,179,156,.10)',
+              color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
+            }}>Imprimer</button>
+            <button type="button" onClick={() => setSending(inv)} aria-label={`Envoyer : ${sectionTitle(inv)}`} style={{
+              flex: 1, minHeight: 52, borderRadius: 16, border: 'none', cursor: 'pointer', background: 'rgba(18,179,156,.10)',
+              color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
+            }}>Envoyer</button>
+          </div>
         </div>
         </section>
         ))}
@@ -333,11 +367,11 @@ export default function FacturePage() {
         </div>
 
         <div className="no-print" style={{ maxWidth: 620, margin: '8px auto 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <button onClick={() => window.print()} style={{
+          <button onClick={() => { setPrintOnly(null); window.print() }} style={{
             width: '100%', border: 'none', padding: 14, borderRadius: 16, cursor: 'pointer', minHeight: 52,
             background: 'none', color: '#0B8374', fontFamily: 'Quicksand, sans-serif',
             fontWeight: 700, fontSize: 16,
-          }}>Imprimer</button>
+          }}>Tout imprimer</button>
         </div>
 
         {isBuyer && (
@@ -355,6 +389,12 @@ export default function FacturePage() {
           </div>
         )}
       </div>
+      <ShareInvoiceSheet open={!!sending} onClose={() => setSending(null)}
+        title={sending ? `Envoyer ${sending.template === 'recapitulatif' ? 'le récapitulatif' : 'le document'} ${sending.number}` : ''}
+        subject={sending ? `${docTitle(sending)} ${sending.number}` : ''}
+        text={sending ? invoiceShareText(sending, String(params.id)) : ''}
+        link={invoiceLink(String(params.id))}
+        getFiles={async () => sending ? [await invoiceFile(sending)] : []} />
     </>
   )
 }
