@@ -41,7 +41,8 @@ for (const [who, email, mode] of [['client', 'audit.client.claude@ping-demo.inva
   await grab(() => p.getByRole('button', { name: new RegExp('Télécharger le PDF : ' + tab) }).first().click(), `PDF de « ${tab} »`)
 
   await p.goto(`${B}/documents`); await p.waitForTimeout(5000)
-  await p.getByText('Partager', { exact: false }).first().click(); await p.waitForTimeout(800)
+  // 24/11 : « Partager » devient « Envoyer » (Voir, Imprimer, Envoyer sur chaque document).
+  await p.getByRole('button', { name: /^Envoyer (FACT|RECAP|PING)-/ }).first().click(); await p.waitForTimeout(800)
   const sheet = (await p.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ')
   check(/WhatsApp/.test(sheet) && /SMS/.test(sheet) && /E-mail|e-mail/.test(sheet), 'la fenêtre de partage propose WhatsApp, SMS, e-mail')
   await grab(() => p.getByText('Télécharger le PDF').last().click(), 'PDF depuis Mes opérations')
