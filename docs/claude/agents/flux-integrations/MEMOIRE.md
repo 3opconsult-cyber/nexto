@@ -22,3 +22,9 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- Chaque envoi sur main crée DEUX déploiements de production (Vercel Git + deploy.yml) : confirmé le 21/11 sur c13d631 (A-036) ; neutraliser deploy.yml demande l'accord de Romain.
+- Resend, SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET, NOTIFY_FROM, ADMIN_NOTIFY_EMAIL : non posés (non vérifié) ; sans eux aucun e-mail ne part, tout est tracé dans l'app et l'admin.
+- Cron Vercel quotidien (offre gratuite) : /api/bookings/expire (5 h 43 UTC) expire les réservations, envoie les alertes de pièces et de paiement, appelle expire_documents.
+- controles.yml : le chargement des polices Google par next/font échoue parfois sur GitHub ; 3 essais ajoutés (251c49b).
+- Un tag git ne peut pas être poussé depuis cette session (403) : créer prod-AAAA-MM-JJ via GitHub > Releases.
