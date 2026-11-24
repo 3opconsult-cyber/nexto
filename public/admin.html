@@ -4761,6 +4761,7 @@ window.openDecision = async function (disputeId) {
     '<p class="muted" style="font-size:12.5px;margin:-4px 0 10px">' + esc(c.name(t.buyer_id)) + ' (client) et ' + esc(c.name(t.seller_id)) + ' (prestataire) · prix de la prestation <b style="color:var(--ink)">' + esc(euros(ceiling)) + '</b>' +
     (d.claimed_cents != null ? ' · réclamé ' + esc(euros(d.claimed_cents)) : '') + (d.mediation_requested_at ? ' · intervention demandée le ' + esc(dateTimeY(d.mediation_requested_at)) : '') + '<br>Motif du litige : ' + esc(motif) + '</p>' +
     '<label style="font-size:12px;font-weight:700">Montant rendu au client (€)</label><input class="minput" id="decRefund" inputmode="decimal" autocomplete="off">' +
+    '<input type="range" id="decRange" min="0" max="' + Math.max(0, Math.round(ceiling / 100)) + '" step="1" value="0" aria-label="Montant rendu au client" style="width:100%;height:44px;margin:2px 0 4px;accent-color:var(--teal)">' +
     '<div style="display:flex;gap:6px;margin:-4px 0 8px;flex-wrap:wrap">' + [[0, 'Rien'], [.25, '25 %'], [.5, '50 %'], [1, 'Tout']].map(([f, l]) => '<button class="btn ghost" type="button" style="font-size:11px;padding:5px 10px" data-q="' + Math.round(ceiling * f) + '">' + l + '</button>').join('') + '</div>' +
     '<div style="font-size:13px;margin-bottom:10px">Versé au prestataire : <b id="decPayout">—</b></div>' +
     '<label style="font-size:12px;font-weight:700">Motif (lu par les deux parties)</label><textarea class="minput" id="decReason" maxlength="1000" style="min-height:80px"></textarea>' +
@@ -4774,9 +4775,11 @@ window.openDecision = async function (disputeId) {
   const cents = () => { const v = String(inp.value || '').trim(); if (!v) return null; const n = Math.round(Number(v.replace(',', '.').replace(/\s/g, '')) * 100); return Number.isFinite(n) ? n : NaN }
   let armed = false
   const refresh = () => { const x = cents(); out.textContent = x != null && x >= 0 && x <= ceiling ? euros(ceiling - x) : '—'; armed = false; go.textContent = 'Appliquer la décision' }
-  inp.oninput = refresh
+  const rng = m.querySelector('#decRange')
+  inp.oninput = () => { refresh(); const x = cents(); if (x != null && x >= 0 && x <= ceiling) rng.value = Math.round(x / 100) }
+  rng.oninput = () => { const e = Number(rng.value); const x = Math.min(ceiling, e * 100); inp.value = (x / 100).toString().replace('.', ','); refresh() }
   m.querySelector('#decReason').oninput = () => { armed = false; go.textContent = 'Appliquer la décision' }
-  m.querySelectorAll('[data-q]').forEach(b => { b.onclick = () => { inp.value = (Number(b.getAttribute('data-q')) / 100).toString().replace('.', ','); refresh() } })
+  m.querySelectorAll('[data-q]').forEach(b => { b.onclick = () => { inp.value = (Number(b.getAttribute('data-q')) / 100).toString().replace('.', ','); rng.value = Math.round(Number(b.getAttribute('data-q')) / 100); refresh() } })
   go.onclick = async () => {
     const x = cents(), why = String(m.querySelector('#decReason').value || '').trim()
     err.textContent = ''
