@@ -8,6 +8,8 @@ import { addDays, atMinutes, hm, minutesOfDay, sameDay, startOfDay, startOfWeek 
 import { fetchSlotsBetween, slotEnd, type Slot } from '@/lib/slots'
 import { TRADES } from '@/lib/trades'
 import RetourLink from '@/components/RetourLink'
+import '../../aere.css'
+import '../../aere-pro.css'
 import { DONE, isConfirmed, durationMinutes, txEnd } from '@/lib/agenda'
 
 // Mes disponibilités — façon calendrier d'hôte Airbnb, sans glisser ni petite grille horaire
@@ -146,18 +148,18 @@ export default function Disponibilites() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
+    <div className="aere aere-pro a-lift" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#fff', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
       <RetourLink />
-      <div style={{ background: '#123644', padding: '16px 20px 22px' }}>
+      <div className="a-head" style={{ background: '#123644', padding: '16px 20px 26px' }}>
         <NavDrawer />
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '18px 0 4px' }}>Espace prestataire</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes disponibilités</div>
-        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', marginTop: 6, maxWidth: '52ch' }}>
+        <p style={{ fontSize: 15, lineHeight: 1.55, color: 'rgba(255,255,255,.85)', marginTop: 8, maxWidth: '52ch' }}>
           Touchez un jour pour choisir vos horaires. Vos clients réservent ensuite l&apos;un de ces créneaux, sans aller-retour.
         </p>
       </div>
 
-      <div style={{ flex: 1, padding: '16px 12px 40px' }}>
+      <div style={{ flex: 1, padding: '24px 16px 40px' }}>
         <div style={{ maxWidth: 820, margin: '0 auto' }}>
           {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
@@ -170,8 +172,8 @@ export default function Disponibilites() {
           {!loading && slots !== null && (
             <>
               {msg && <p style={{ fontSize: 13, color: msg.ok ? '#0B8374' : '#c0503a', margin: '0 0 10px', fontWeight: 600 }}>{msg.text}</p>}
-              <Calendar events={events} views={['month']} defaultView="month" bigCells onDayClick={openDay} />
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 12, fontSize: 12, color: '#4E6470' }}>
+              <Calendar aere events={events} views={['month']} defaultView="month" bigCells onDayClick={openDay} />
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 20, fontSize: 15, color: '#4E6470' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: 'rgba(18,179,156,.14)', border: '1.5px solid #12B39C' }} />Créneaux libres</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: '#123644' }} />Rendez-vous</span>
               </div>
@@ -188,20 +190,20 @@ export default function Disponibilites() {
               <b style={{ flex: 1, fontFamily: 'Quicksand, sans-serif', fontSize: 18, color: '#123644', textTransform: 'capitalize' }}>
                 {day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </b>
-              <button onClick={() => setDay(null)} aria-label="Fermer" style={{ border: 'none', background: '#F3F6F5', width: 34, height: 34, borderRadius: 999, cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+              <button onClick={() => setDay(null)} aria-label="Fermer" style={{ border: 'none', background: '#F3F6F5', width: 44, height: 44, borderRadius: 999, cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth={2.2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>
             </div>
 
-            <div onClick={toggleAll} style={{ ...chip(allOpen), marginBottom: 10 }}>
+            <div className="a-keep" onClick={toggleAll} style={{ ...chip(allOpen), marginBottom: 12 }}>
               Journée complète · {hm(BANDS[0].a)} – {hm(BANDS[BANDS.length - 1].b)}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
               {BANDS.map((b, i) => {
                 const st = bandState(day, i)
                 const past = bandPast(day, i)
                 return (
-                  <div key={i} onClick={() => !past && toggle(i)} style={{ ...chip(picked.has(i), st === 'booked'), opacity: past ? .4 : 1, cursor: past || st === 'booked' ? 'default' : 'pointer' }}>
+                  <div key={i} className="a-keep" onClick={() => !past && toggle(i)} style={{ ...chip(picked.has(i), st === 'booked'), opacity: past ? .4 : 1, cursor: past || st === 'booked' ? 'default' : 'pointer' }}>
                     {b.a / 60} h – {b.b / 60} h
                     {st === 'booked' && <div style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: 600, opacity: .8 }}>Réservé</div>}
                   </div>
@@ -212,7 +214,7 @@ export default function Disponibilites() {
             <div style={{ fontSize: 11.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px' }}>Appliquer à</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {([['day', 'Ce jour seulement'], ['week', 'Toute la semaine, mêmes horaires'], ['weekday', `Tous les ${weekdayName}s pendant ${WEEKS} semaines`]] as const).map(([k, label]) => (
-                <div key={k} onClick={() => setScope(k)} style={{ display: 'flex', alignItems: 'center', gap: 10, border: scope === k ? '2px solid #12B39C' : '1.5px solid #E7EDEB', borderRadius: 13, padding: '11px 13px', cursor: 'pointer', background: scope === k ? 'rgba(18,179,156,.06)' : '#fff' }}>
+                <div key={k} className="a-keep" onClick={() => setScope(k)} style={{ display: 'flex', alignItems: 'center', gap: 10, border: scope === k ? '2px solid #12B39C' : '1.5px solid #E7EDEB', borderRadius: 13, padding: '11px 13px', cursor: 'pointer', background: scope === k ? 'rgba(18,179,156,.06)' : '#fff' }}>
                   <span style={{ width: 18, height: 18, borderRadius: 999, border: scope === k ? '6px solid #12B39C' : '2px solid #B8C9C5', boxSizing: 'border-box', flexShrink: 0 }} />
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#123644' }}>{label}</span>
                 </div>

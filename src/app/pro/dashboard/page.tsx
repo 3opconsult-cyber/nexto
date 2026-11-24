@@ -19,6 +19,8 @@ import OrdersInProgress from '@/components/OrdersInProgress'
 import MonAnnonceCard from '@/components/MonAnnonceCard'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { readScreenCache, sessionUserId } from '@/lib/screenCache'
+import '../../aere.css'
+import '../../aere-pro.css'
 import { loadDashboardSnap, loadDashboardListing, type DashboardSnap } from '@/lib/screenLoaders'
 
 const LEGAL_STATUS_LABELS: Record<string, string> = {
@@ -155,13 +157,13 @@ export default function ProDashboard() {
   const identityName = pro ? (pro.company_name || `Entreprise de ${firstName || ''}`.trim()) : ''
 
   return (
-    <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
+    <div className="aere aere-pro a-lift a-navy" style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
       {tab === 'hub' ? (
-        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <NavDrawer />
-          <div style={{ flex: 1, minWidth: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff', whiteSpace: 'nowrap' }}>Mon entreprise</div>
+          <div style={{ flex: '1 1 auto', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff', whiteSpace: 'nowrap' }}>Mon entreprise</div>
           <button onClick={toggleAvailable} aria-pressed={available}
-            style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: 'none', fontSize: 14, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
+            style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: 'none', fontSize: 15, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
             {available ? '● Visible sur la carte' : '○ Masqué'}
           </button>
         </div>
@@ -177,7 +179,7 @@ export default function ProDashboard() {
         </>
       )}
 
-      <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '16px 18px 22px', minHeight: '70vh' }}>
+      <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '24px 20px 28px', minHeight: '70vh' }}>
         {tab === 'hub' && pro && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '4px 2px 0' }}>
             <ProSuspensionBanner />
@@ -286,8 +288,6 @@ export default function ProDashboard() {
               )
             })()}
 
-            <ProMonthBlock pro={pro} transactions={transactions} hideDispute />
-
             {/* Trois accès en tête ; tout le reste de la page est derrière « Voir plus » (un appui), rien n'est retiré. */}
             <HubGroup>
               <HubRow icon={HUB_ICONS.eye} label="Mon annonce" sub="Modifier, mettre en pause, aperçu" onClick={() => router.push('/pro/annonce')} />
@@ -298,9 +298,12 @@ export default function ProDashboard() {
                 onClick={() => router.push('/pro/documents')} />
             </HubGroup>
 
+            {/* Maquette : « Mon activité » vient après l'annonce, la fiche et les éléments à ajouter ; le résumé du mois suit. */}
+            <ProMonthBlock pro={pro} transactions={transactions} hideDispute />
+
             {!more && (
               <button type="button" onClick={() => setMore(true)} aria-expanded={false} aria-label="Voir plus : historique, paiements, aide"
-                style={{ minHeight: 48, marginTop: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                style={{ minHeight: 52, marginTop: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
                 Voir plus
               </button>
             )}
@@ -342,21 +345,21 @@ export default function ProDashboard() {
             </>}
 
             <button type="button" onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); router.push('/') }}
-              style={{ alignSelf: 'center', minHeight: 44, padding: '0 16px', marginTop: 12, border: 'none', background: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ alignSelf: 'center', minHeight: 44, padding: '0 16px', marginTop: 12, border: 'none', background: 'none', color: '#4E6470', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
               Se déconnecter
             </button>
           </div>
         )}
 
         {tab === 'missions' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {transactions.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Aucune mission pour l'instant</div>
             ) : transactions.map(t => {
               const st = STATUS_LABELS[t.status] || STATUS_LABELS.pending
               return (
                 <button key={t.id} onClick={() => router.push(`/mission/${t.id}/chat`)}
-                  style={{ textAlign: 'left', padding: 14, borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff' }}>
+                  style={{ textAlign: 'left', padding: '16px 0', borderRadius: 0, border: 'none', borderBottom: '1px solid #E3EAE8', background: 'transparent' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, color: '#123644' }}>
                       {new Date(t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}

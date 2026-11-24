@@ -17,6 +17,8 @@ import PresenceTag from '@/components/presence/PresenceTag'
 import { rowHasPresence } from '@/lib/presence'
 import BookingCard from '@/components/BookingCard'
 import MissionActions from '@/components/MissionActions'
+import '../aere.css'
+import '../aere-pro.css'
 import { bookingPending, bookingEnded, bookingLapsed, expireBookings } from '@/lib/booking'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
@@ -299,7 +301,8 @@ export default function AgendaPage() {
   const empty = (text: string) => <p style={{ fontSize: z(12.5, 16), lineHeight: 1.55, color: '#4E6470', marginBottom: 20 }}>{text}</p>
 
   return (
-    <div className={A ? 'aere a-lift' : undefined} style={{ minHeight: '100vh', background: A ? '#fff' : '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
+    // Lecture aérée du 24/11 : particulier (A) et prestataire (mode pro) ont chacun leurs classes.
+    <div className={A ? 'aere a-lift' : mode === 'pro' ? 'aere aere-pro a-lift' : undefined} style={{ minHeight: '100vh', background: A ? '#fff' : '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: A ? 70 : 100 }}>
       {/* Racine d'onglet : titre sur une ligne, décompte des missions de l'espace à droite (plus de bandeau séparé). */}
       <div style={{ padding: '0 16px', minHeight: z(52, 56), background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
         {A && (
@@ -314,7 +317,7 @@ export default function AgendaPage() {
         )}
       </div>
 
-      <div style={{ padding: A ? '20px 20px 16px' : '12px 16px 16px', maxWidth: 980, margin: '0 auto' }}>
+      <div style={{ padding: A ? '20px 20px 16px' : mode === 'pro' ? '24px 16px 16px' : '12px 16px 16px', maxWidth: 980, margin: '0 auto' }}>
         {/* Maquette : « N missions dans votre espace particulier » en bandeau de lecture (le décompte n'est plus dans l'en-tête). */}
         {A && !loading && (
           <p className="a-info" style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 24px', fontSize: 16 }}>
@@ -372,7 +375,7 @@ export default function AgendaPage() {
           {tab === 'calendrier' && (
             <>
               <div style={{ marginBottom: 20 }}>
-                <Calendar events={events} onDayClick={d => setDayPick(p => p && p.toDateString() === d.toDateString() ? null : d)}
+                <Calendar aere={mode === 'pro'} events={events} onDayClick={d => setDayPick(p => p && p.toDateString() === d.toDateString() ? null : d)}
                   selection={dayPick ? { type: 'days', days: [dayPick] } : null}
                   emptyHint={mode === 'pro' ? 'Aucun rendez-vous ni créneau pour l’instant. Publiez vos disponibilités pour être réservé en un clic.' : 'Aucun rendez-vous pour l’instant.'} />
               </div>
@@ -404,7 +407,7 @@ export default function AgendaPage() {
                     <button onClick={() => router.push('/pro/disponibilites')} style={{ border: 'none', background: 'none', minHeight: 44, padding: '0 4px', fontSize: 12.5, fontWeight: 700, color: '#0B8374', cursor: 'pointer' }}>Gérer</button>
                   </div>
                   {freeSlots.filter(x => new Date(x.starts_at) > new Date()).length ? freeSlots.filter(x => new Date(x.starts_at) > new Date()).slice(0, 3).map(x => (
-                    <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1.5px dashed #B8C9C5', borderRadius: 13, padding: '10px 14px', marginBottom: 8 }}>
+                    <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, border: 'none', borderBottom: '1px solid #E3EAE8', borderRadius: 0, padding: '14px 0', marginBottom: 0 }}>
                       <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 14, color: '#4E6470', width: 46 }}>{hhmm(x.starts_at)}</b>
                       <span style={{ fontSize: 12, color: '#4E6470' }}>{dayLabel(x.starts_at)} · disponible à la réservation</span>
                     </div>

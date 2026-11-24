@@ -7,20 +7,22 @@ import ProListingPreview from '@/components/ProListingPreview'
 import { TRADES } from '@/lib/trades'
 import { pricingShort } from '@/lib/servicePricing'
 import { dayLabel, hhmm } from '@/lib/slots'
+import '../../aere.css'
+import '../../aere-pro.css'
 import {
   BIO_MIN, GALLERY_MAX, HEADLINE_MAX, HIGHLIGHTS, LISTING_BUCKET, RADIUS_CHOICES,
   canPublish, listingChecks, listingPhotoUrl, listingScore, loadListingFacts, type ListingFacts,
 } from '@/lib/listing'
 
 const NAVY = '#123644', TEAL = '#12B39C', TEAL_D = '#0B8374', SLATE = '#4E6470', LINE = '#E7EDEB'
-const card: React.CSSProperties = { background: '#fff', border: `1px solid ${LINE}`, borderRadius: 16, padding: 16 }
-const h3: React.CSSProperties = { fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: NAVY, margin: '0 0 4px' }
-const sub: React.CSSProperties = { fontSize: 12.5, color: SLATE, margin: '0 0 10px', lineHeight: 1.45 }
+const card: React.CSSProperties = { background: 'transparent', padding: 0 }
+const h3: React.CSSProperties = { fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, lineHeight: 1.5, color: NAVY, margin: '0 0 4px' }
+const sub: React.CSSProperties = { fontSize: 15, color: SLATE, margin: '0 0 14px', lineHeight: 1.55 }
 const input: React.CSSProperties = {
-  display: 'block', width: '100%', boxSizing: 'border-box', border: `1.5px solid ${LINE}`, borderRadius: 11,
-  padding: '10px 12px', fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none', color: NAVY, background: '#fff',
+  display: 'block', width: '100%', boxSizing: 'border-box', border: '1.5px solid #CFDAD7', borderRadius: 14, minHeight: 52,
+  padding: '12px 16px', fontSize: 16, fontFamily: 'Inter, sans-serif', outline: 'none', color: NAVY, background: '#fff',
 }
-const link: React.CSSProperties = { background: 'none', border: 'none', padding: 0, color: TEAL_D, fontWeight: 700, fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }
+const link: React.CSSProperties = { background: 'none', border: 'none', padding: 0, color: TEAL_D, fontWeight: 700, fontSize: 15, minHeight: 44, cursor: 'pointer', textDecoration: 'underline' }
 
 /**
  * « Mon annonce » (Romain 31/10) : comme un hôte Airbnb, le prestataire voit son annonce telle que
@@ -200,11 +202,11 @@ export default function MonAnnoncePage() {
   const gallery: string[] = pro.gallery_paths || []
 
   const statusBox = (
-    <div style={{ ...card, borderColor: online ? 'rgba(18,179,156,.45)' : LINE }}>
+    <div style={{ ...card, background: online ? 'rgba(18,179,156,.08)' : '#F3F6F5', borderRadius: 18, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, background: suspended ? '#C0503A' : online ? TEAL : '#A5B3B9', boxShadow: online ? '0 0 0 4px rgba(18,179,156,.18)' : 'none' }} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: NAVY }}>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: NAVY }}>
             {suspended ? 'Suspendue' : online ? 'En ligne · visible sur la carte' : 'En pause'}
           </div>
           <div style={{ fontSize: 12.5, color: SLATE, marginTop: 2 }}>
@@ -214,7 +216,7 @@ export default function MonAnnoncePage() {
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
         {online ? (
           <button className="ping-btn ghost" style={{ flex: 1, minWidth: 160 }} disabled={publishing} onClick={() => setOnline(false)}>
             {publishing ? 'Un instant…' : 'Mettre en pause'}
@@ -224,7 +226,7 @@ export default function MonAnnoncePage() {
             {publishing ? 'Mise en ligne…' : 'Mettre mon annonce en ligne'}
           </button>
         )}
-        <button className="ping-btn ghost" style={{ width: 'auto', padding: '12px 16px' }} onClick={() => router.push(`/pro/${pro.id}`)}>Voir comme un client</button>
+        <button className="ping-btn ghost" style={{ width: 'auto', padding: '12px 18px' }} onClick={() => router.push(`/pro/${pro.id}`)}>Voir comme un client</button>
       </div>
     </div>
   )
@@ -238,7 +240,7 @@ export default function MonAnnoncePage() {
       <div style={{ height: 8, borderRadius: 999, background: '#EEF3F2', overflow: 'hidden', margin: '8px 0 12px' }}>
         <div style={{ width: `${score}%`, height: '100%', background: TEAL, borderRadius: 999, transition: 'width .3s' }} />
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {checks.map(c => (
           <div key={c.key} style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
             <span style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'grid', placeItems: 'center', background: c.done ? TEAL : '#fff', border: c.done ? 'none' : '1.5px solid #C9D5D2' }}>
@@ -257,7 +259,7 @@ export default function MonAnnoncePage() {
   )
 
   const editor = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
       <div id="ann-photos" style={{ ...card, scrollMarginTop: 16 }}>
         <div style={h3}>Photos principales</div>
         <p style={sub}>La photo de couverture et votre logo ou portrait, en tête de l’annonce.</p>
@@ -297,13 +299,13 @@ export default function MonAnnoncePage() {
       <div style={card}>
         <div style={h3}>Points forts</div>
         <p style={sub}>Ce que vous proposez en plus. Ce sont des informations que vous déclarez.</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+        <div className="a-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {HIGHLIGHTS.map(h => {
             const on = highlights.includes(h.key)
             return (
               <button key={h.key} type="button" aria-pressed={on}
                 onClick={() => edit(setHighlights)(on ? highlights.filter(k => k !== h.key) : [...highlights, h.key])}
-                style={{ padding: '7px 12px', borderRadius: 999, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                style={{ padding: '8px 16px', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                   border: on ? 'none' : `1px solid #DCE5E3`, background: on ? TEAL : '#fff', color: on ? '#fff' : NAVY }}>
                 {h.label}
               </button>
@@ -315,10 +317,10 @@ export default function MonAnnoncePage() {
       <div style={card}>
         <div style={h3}>Zone d’intervention</div>
         <p style={sub}>Jusqu’où vous vous déplacez depuis votre adresse.</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+        <div className="a-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {RADIUS_CHOICES.map(km => (
             <button key={km} type="button" aria-pressed={radius === km} onClick={() => edit(setRadius)(km)}
-              style={{ padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+              style={{ padding: '8px 18px', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                 border: radius === km ? 'none' : `1px solid #DCE5E3`, background: radius === km ? TEAL : '#fff', color: radius === km ? '#fff' : NAVY }}>
               {km} km
             </button>
@@ -335,9 +337,9 @@ export default function MonAnnoncePage() {
           <div style={h3}>Prestations et prix</div>
           <button style={link} onClick={() => router.push('/pro/tarifs?retour=%2Fpro%2Fannonce')}>Gérer mes tarifs</button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
           {priced.map(p => (
-            <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13.5, padding: '8px 0', borderBottom: `1px solid ${LINE}` }}>
+            <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 16, padding: '12px 0', borderBottom: `1px solid ${LINE}` }}>
               <span style={{ color: NAVY, fontWeight: 600 }}>{p.name}</span>
               <span style={{ color: p.price ? TEAL_D : '#8A6520', fontWeight: 700 }}>{p.price || 'prix à fixer'}</span>
             </div>
@@ -376,7 +378,7 @@ export default function MonAnnoncePage() {
           {gallery.map(p => (
             <div key={p} style={{ position: 'relative', paddingTop: '75%', borderRadius: 10, background: `#F3F6F5 url(${listingPhotoUrl(p)}) center/cover` }}>
               <button type="button" aria-label="Retirer la photo" onClick={() => removeGallery(p)}
-                style={{ position: 'absolute', top: 5, right: 5, width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'rgba(18,54,68,.7)', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>
+                style={{ position: 'absolute', top: 2, right: 2, width: 44, height: 44, borderRadius: '50%', border: 'none', background: 'rgba(18,54,68,.7)', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>
             </div>
@@ -395,7 +397,7 @@ export default function MonAnnoncePage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: NAVY, fontFamily: 'Inter, sans-serif' }}>
+    <div className="aere aere-pro a-lift a-navy" style={{ minHeight: '100vh', background: NAVY, fontFamily: 'Inter, sans-serif' }}>
       <style>{`
         .ann-grid{display:block}
         .ann-seg{display:flex}
@@ -415,8 +417,8 @@ export default function MonAnnoncePage() {
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff' }}>Mon annonce</div>
       </div>
 
-      <div style={{ background: '#F6F9F8', borderRadius: '18px 18px 0 0', padding: '18px 16px', minHeight: '75vh', paddingBottom: dirty ? 110 : 40 }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '28px 20px', minHeight: '75vh', paddingBottom: dirty ? 160 : 110 }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
           {statusBox}
           {msg && (
             <div role="status" style={{ padding: '11px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.45,

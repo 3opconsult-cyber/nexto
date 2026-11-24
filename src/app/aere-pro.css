@@ -1,0 +1,48 @@
+/* Lecture aérée du prestataire (24/11/2026) : complète aere.css (classes .aere et .a-lift) pour les écrans
+   en styles intégrés de l'espace prestataire. Posé sur la racine de l'écran (classe .aere-pro) ; rien d'autre
+   n'est touché. Repères : texte >= 15 px (13 px pour .a-mini), interligne 1,55, cibles >= 44 px,
+   28 px entre blocs, filets fins plutôt que cadres. Aucun texte, aucun calcul, aucune règle n'est modifié. */
+.aere-pro{background:#fff!important;font-size:16px;line-height:1.55;color:#123644}
+.aere-pro .a-stack{display:block}
+.aere-pro .a-stack>*+*{margin-top:28px!important}
+.aere-pro .a-stack>.a-tight{margin-top:12px!important}
+/* Titres de blocs : phrase normale, pas de petites capitales. */
+.aere-pro .a-h{font:700 18px/1.5 Quicksand,sans-serif;color:#123644;margin:0 0 6px}
+.aere-pro .a-note{font-size:15px;line-height:1.55;color:#4E6470;margin:0}
+/* Champs, cases et boutons du prestataire : 48 px au moins, texte 16 px (pas de zoom automatique sur mobile). */
+.aere-pro input:not([type=checkbox]):not([type=radio]):not([type=file]),.aere-pro select,.aere-pro textarea{font-size:16px!important;min-height:48px}
+.aere-pro textarea{line-height:1.5}
+.aere-pro button:not(.a-keepsize),.aere-pro [role=button]:not(.a-keepsize){min-height:48px}
+.aere-pro .a-chips{display:flex;flex-wrap:wrap;gap:12px}
+.aere-pro .a-chips>*{min-height:48px!important}
+/* Un détail ne se replie plus dans un cadre : filet fin. */
+.aere-pro .a-sep>*+*{border-top:1px solid #E3EAE8}
+.aere-pro .a-row-simple{display:flex;align-items:center;gap:14px;min-height:64px;padding:14px 0}
+/* Pastilles d'état : 13 px minimum, jamais en dessous. */
+.aere-pro .a-lift-pill,.aere-pro .a-pill{font-size:13px!important;line-height:1.5!important}
+.aere-pro .a-mini{font-size:13px!important;line-height:1.5!important}
+/* Les petites capitales du design d'origine deviennent des phrases normales. */
+.aere-pro [style*="text-transform: uppercase"]{text-transform:none!important;letter-spacing:.01em!important}
+/* Bandeau marine du haut : texte d'aide lisible. */
+.aere-pro .a-head p,.aere-pro .a-head small{font-size:15px!important;line-height:1.55!important}
+/* Les cases du prestataire (interrupteurs, cases à cocher) gardent leur taille propre. */
+.aere-pro .a-keepsize{min-height:0}
+.aere-pro .a-stack>div:not(.a-keep-pad){padding-top:0!important;padding-bottom:0!important}
+/* Écrans à fond marine (bandeau du haut sur toute la largeur) : le fond blanc forcé ne s'applique pas. */
+.aere-pro.a-navy{background:#123644!important}
+/* Champs de saisie : contour net conservé (la règle .a-lift retire les cadres des blocs, pas ceux des champs). */
+.aere.aere-pro.a-lift input[style],.aere.aere-pro.a-lift textarea[style],.aere.aere-pro.a-lift select[style]{border:1.5px solid #CFDAD7!important;border-radius:14px!important;background:#fff!important;padding:12px 16px!important;min-height:52px}
+/* Lignes du Hub (Mon entreprise) : plus hautes, texte sur deux lignes si besoin. */
+.aere-pro [role=button][style*="min-height: 56px"]{min-height:68px!important;padding:14px 0!important}
+.aere-pro [role=button][style*="min-height: 56px"] div[style*="white-space: nowrap"]{white-space:normal!important}
+.aere-pro [role=button][style*="min-height: 56px"]>div:first-child{width:44px!important;height:44px!important;border-radius:14px!important}
+/* Rendu serveur : le navigateur reçoit les styles sans espace (font-size:12.5px) ; après hydratation, avec espace. Les deux formes sont couvertes. */
+.aere-pro [style*="font-size: 9"],.aere-pro [style*="font-size:9"],.aere-pro [style*="font-size: 10"],.aere-pro [style*="font-size:10"],.aere-pro [style*="font-size: 11"],.aere-pro [style*="font-size:11"],.aere-pro [style*="font-size: 12"],.aere-pro [style*="font-size:12"],.aere-pro [style*="font-size: 13"],.aere-pro [style*="font-size:13"],.aere-pro [style*="font-size: 14"],.aere-pro [style*="font-size:14"]{font-size:15px!important;line-height:1.55!important}
+.aere-pro .a-pill[style],.aere-pro .a-mini[style],.aere-pro .a-lift-pill[style]{font-size:13px!important;line-height:1.5!important}
+.aere-pro [style*="border: 1px solid rgb(231, 237, 235)"]:not(button):not(input):not(textarea):not(select):not(.a-keep),.aere-pro [style*="border: 1.5px solid rgb(231, 237, 235)"]:not(button):not(input):not(textarea):not(select):not(.a-keep),.aere-pro [style*="border: 1px solid rgb(220, 229, 227)"]:not(button):not(input):not(textarea):not(select):not(.a-keep),.aere-pro [style*="border:1px solid #E7EDEB"]:not(button):not(input):not(textarea):not(select):not(.a-keep),.aere-pro [style*="border:1.5px solid #E7EDEB"]:not(button):not(input):not(textarea):not(select):not(.a-keep),.aere-pro [style*="border:1px solid #DCE5E3"]:not(button):not(input):not(textarea):not(select):not(.a-keep){border:0!important;background:transparent!important;border-radius:0!important;padding-left:0!important;padding-right:0!important}
+.aere-pro .a-stack>[style*="background:#fff"],.aere-pro .a-stack>[style*="background: rgb(255, 255, 255)"]{background:transparent!important}
+.aere-pro button,.aere-pro [role=button]{min-height:48px}
+.aere-pro [style*="text-transform:uppercase"]{text-transform:none!important;letter-spacing:.01em!important}
+/* Onglets de l'agenda du prestataire : deux par ligne, texte 15 px, cible 48 px. */
+.aere-pro .ping-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;height:auto!important}
+.aere-pro .ping-tabs button{font-size:15px!important;min-height:48px;white-space:nowrap}

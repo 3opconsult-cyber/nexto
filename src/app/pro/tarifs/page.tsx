@@ -8,6 +8,8 @@ import { TRADES, tradeOfServiceName } from '@/lib/trades'
 import { useCatalog } from '@/lib/catalog'
 import RetourLink from '@/components/RetourLink'
 import ConfirmSheet from '@/components/ConfirmSheet'
+import '../../aere.css'
+import '../../aere-pro.css'
 import { type PricingDraft, draftFromColumns, emptyDraft, pricingShort, pricingSummary, toColumns, validateDraft } from '@/lib/servicePricing'
 import {
   type Prestation, fetchPrestations, prestationName, prestationPhotoUrl, removePrestationPhoto, uploadPrestationPhoto,
@@ -215,22 +217,22 @@ export default function ProTarifsPage() {
   }
 
   const line = (key: string, title: string, cols: Cols, onEdit: () => void, opts: { tag?: string; trade?: string | null; desc?: string | null; photo?: string | null; row?: Prestation } = {}) => (
-    <div key={key} style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '12px 14px', marginBottom: 8, opacity: opts.row?.hidden ? .6 : 1 }}>
+    <div key={key} style={{ background: '#fff', border: 'none', borderBottom: '1px solid #E3EAE8', borderRadius: 0, padding: '18px 0', marginBottom: 0, opacity: opts.row?.hidden ? .6 : 1 }}>
       <div onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
         {thumb(opts.photo ?? null)}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>{title}</span>
-            {opts.tag && <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '2px 7px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0B8374' }}>{opts.tag}</span>}
-            {opts.trade && TRADES[opts.trade] !== title && <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#F3F6F5', color: '#4E6470' }}>{TRADES[opts.trade]}</span>}
-            {opts.row?.hidden && <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '2px 7px', borderRadius: 999, background: '#FFF4DD', color: '#8A5A00' }}>Masquée</span>}
+            {opts.tag && <span className="a-pill" style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: 'rgba(18,179,156,.12)', color: '#0B8374' }}>{opts.tag}</span>}
+            {opts.trade && TRADES[opts.trade] !== title && <span className="a-pill" style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#F3F6F5', color: '#4E6470' }}>{TRADES[opts.trade]}</span>}
+            {opts.row?.hidden && <span className="a-pill" style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#FFF4DD', color: '#8A5A00' }}>Masquée</span>}
           </div>
           <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3 }}>{pricingSummary(cols)}</div>
           {opts.desc && <div style={{ fontSize: 12, color: '#6E8592', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opts.desc}</div>}
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(cols) ?? 'À compléter'}</div>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: '#0B8374', marginTop: 2 }}>modifier</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#0B8374', marginTop: 2 }}>modifier</div>
         </div>
       </div>
       {opts.row && ext && (
@@ -245,17 +247,17 @@ export default function ProTarifsPage() {
   const shownPhoto = photoPreview || (!photoRemoved ? prestationPhotoUrl(photoPath) : null)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
+    <div className="aere aere-pro a-lift" style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', paddingBottom: 110 }}>
       <RetourLink />
-      <div style={{ background: '#123644', padding: '16px 20px 20px' }}>
+      <div className="a-head" style={{ background: '#123644', padding: '16px 20px 24px' }}>
         <NavDrawer />
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '16px 0 4px' }}>Espace prestataire</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes tarifs</div>
       </div>
 
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '20px 16px 40px' }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644' }}>Mes prestations</div>
-        <p style={{ fontSize: 12.5, color: '#4E6470', margin: '4px 0 18px', lineHeight: 1.5 }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '28px 20px 40px' }}>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>Mes prestations</div>
+        <p style={{ fontSize: 15, color: '#4E6470', margin: '8px 0 24px', lineHeight: 1.55 }}>
           Autant de prestations que vous voulez, chacune avec son prix : forfait, forfait avec heures incluses,
           à l&apos;heure, ou sur devis. Vos clients réservent directement celle de leur choix ; « sur devis »
           ouvre une conversation pour chiffrer.
@@ -269,19 +271,19 @@ export default function ProTarifsPage() {
             {primary && line('primary', TRADES[primary.trade] || primary.trade, primary, () => openSheet({ kind: 'primary' }), { tag: 'Principal' })}
             {rows.map(r => line(r.id, prestationName(r), r, () => openSheet({ kind: 'row', id: r.id }), { trade: r.trade, desc: r.description, photo: r.photo_path, row: r }))}
             {!primary && rows.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 20, background: '#fff', borderRadius: 14, border: '1px solid #E7EDEB', fontSize: 12.5, color: '#4E6470' }}>
+              <div style={{ textAlign: 'center', padding: 20, background: '#fff', fontSize: 15, color: '#4E6470' }}>
                 Aucune prestation pour l&apos;instant : ajoutez la première.
               </div>
             )}
             {freeTrades.map(k => (
               <button key={k} type="button" onClick={() => openSheet({ kind: 'new' }, k)}
-                style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'transparent', border: '1.5px dashed #B9CBC7', borderRadius: 14, padding: '13px 16px', marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
+                style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'transparent', border: 'none', borderBottom: '1px solid #E3EAE8', borderRadius: 0, padding: '16px 0', marginBottom: 0, cursor: 'pointer', textAlign: 'left' }}>
                 <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{TRADES[k]}</span>
                 <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0B8374' }}>+ Fixer un prix</span>
               </button>
             ))}
             <button onClick={() => openSheet({ kind: 'new' })}
-              style={{ display: 'block', width: '100%', marginTop: 14, padding: 14, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+              style={{ display: 'block', width: '100%', marginTop: 28, padding: 14, minHeight: 54, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
               + Ajouter une prestation
             </button>
           </>

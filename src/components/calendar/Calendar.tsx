@@ -26,6 +26,8 @@ export type CalEvent = {
   tone?: 'pending' | 'live'
   selected?: boolean
   onClick?: () => void
+  /** Billet de regroupement (vue Jour aérée) : nombre de billets simultanés et leurs éléments. */
+  group?: CalEvent[]
 }
 
 export type CalSelection =
@@ -65,7 +67,7 @@ function Chevron({ dir }: { dir: 'l' | 'r' }) {
 
 export default function Calendar({
   events, views = ['day', 'week', 'month'], defaultView, initialDate, selectable = false, selection = null, onSelect,
-  minHour = 7, maxHour = 21, stepMinutes = 30, emptyHint, onDayClick, bigCells = false,
+  minHour = 7, maxHour = 21, stepMinutes = 30, emptyHint, onDayClick, bigCells = false, aere = false,
 }: {
   events: CalEvent[]
   views?: CalView[]
@@ -82,6 +84,8 @@ export default function Calendar({
   onDayClick?: (d: Date) => void
   // Vue Mois à grandes cases (page des disponibilités).
   bigCells?: boolean
+  // Lecture aérée (24/11, espace prestataire seulement) : texte >= 15 px, cases >= 44 px, billets simultanés regroupés.
+  aere?: boolean
 }) {
   const root = useRef<HTMLDivElement>(null)
   const measured = useNarrow(root)
@@ -137,10 +141,10 @@ export default function Calendar({
       ? `${days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} – ${days[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}`
       : cursor.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 
-  const btn: React.CSSProperties = { border: `1px solid ${C.line}`, background: '#fff', color: C.ink, borderRadius: 12, height: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '0 10px', fontSize: 12.5, fontWeight: 700, fontFamily: 'Inter, sans-serif' }
+  const btn: React.CSSProperties = { border: aere ? 'none' : `1px solid ${C.line}`, background: aere ? '#F1F5F4' : '#fff', color: C.ink, borderRadius: 12, height: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: '0 10px', fontSize: aere ? 15 : 12.5, fontWeight: 700, fontFamily: 'Inter, sans-serif' }
 
   return (
-    <div ref={root} style={{ background: '#fff', borderRadius: 18, padding: '16px 8px', fontFamily: 'Inter, sans-serif', color: C.ink, minWidth: 0 }}>
+    <div ref={root} style={{ background: '#fff', borderRadius: 18, padding: aere ? '16px 0' : '16px 8px', fontFamily: 'Inter, sans-serif', color: C.ink, minWidth: 0 }}>
       {/* En-tête : navigation + choix de la vue */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -148,12 +152,12 @@ export default function Calendar({
           <button type="button" onClick={() => setCursor(startOfDay(new Date()))} style={btn}>Aujourd&apos;hui</button>
           <button type="button" aria-label="Suivant" onClick={() => move(1)} style={btn}><Chevron dir="r" /></button>
         </div>
-        <b style={{ flex: 1, minWidth: 140, fontFamily: 'Quicksand, sans-serif', fontSize: 18, textTransform: 'capitalize' }}>{ready ? title : "\u00a0"}</b>
+        <b style={{ flex: aere ? '1 1 100%' : 1, order: aere ? -1 : undefined, minWidth: 140, fontFamily: 'Quicksand, sans-serif', fontSize: aere ? 20 : 18, lineHeight: aere ? 1.4 : undefined, textTransform: 'capitalize' }}>{ready ? title : "\u00a0"}</b>
         {views.length > 1 && (
           <div style={{ display: 'flex', background: C.paper, borderRadius: 11, padding: 3 }}>
             {views.map(x => (
               <button key={x} type="button" onClick={() => setView(x)} style={{
-                border: 'none', borderRadius: 9, minHeight: 44, padding: '0 12px', fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                border: 'none', borderRadius: 9, minHeight: 44, padding: aere ? '0 14px' : '0 12px', fontSize: aere ? 15 : 12.5, fontWeight: 700, cursor: 'pointer',
                 background: x === v ? '#fff' : 'transparent', color: x === v ? C.ink : C.slate,
                 boxShadow: x === v ? '0 1px 3px rgba(18,54,68,.15)' : 'none',
               }}>{VIEW_LABEL[x]}</button>
@@ -164,23 +168,56 @@ export default function Calendar({
 
       {v === 'month'
         ? <MonthGrid cursor={cursor} events={events} now={now} selectable={selectable} selection={selection} onSelect={onSelect}
-            bigCells={bigCells}
+            bigCells={bigCells} aere={aere}
             onOpenDay={d => { if (onDayClick) { onDayClick(d); return } setCursor(d); if (views.includes('day')) setView('day') }} />
         : <TimeGrid days={days} events={events} now={now} h0={h0} h1={h1} step={stepMinutes} narrow={narrow && v === 'week'}
-            selectable={selectable} selection={selection} onSelect={onSelect} />}
+            selectable={selectable} selection={selection} onSelect={onSelect} aere={aere} />}
 
       {emptyHint && events.length === 0 && (
-        <p style={{ fontSize: 12, color: C.slate, margin: '10px 2px 0', lineHeight: 1.5 }}>{emptyHint}</p>
+        <p style={{ fontSize: aere ? 15 : 12, color: C.slate, margin: '10px 2px 0', lineHeight: aere ? 1.55 : 1.5 }}>{emptyHint}</p>
       )}
     </div>
   )
 }
 
 // ---------- Jour / Semaine ----------
-function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selection, onSelect }: {
+// Billets qui se chevauchent (même nature) regroupés en un seul (vue Jour aérée) : « 9 rendez-vous à 07:00 »
+// quand ils commencent tous à la même heure, sinon « 5 rendez-vous de 07:00 à 10:30 » ; dépliable.
+// Un billet seul reste tel quel.
+function groupSimultaneous(list: CalEvent[]): CalEvent[] {
+  const out: CalEvent[] = []
+  ;(['busy', 'free'] as const).forEach(kind => {
+    const sorted = list.filter(e => e.kind === kind).sort((a, b) => a.start.getTime() - b.start.getTime())
+    let cur: CalEvent[] = []
+    let curEnd = 0
+    const flush = () => {
+      if (cur.length === 1) out.push(cur[0])
+      else if (cur.length > 1) {
+        const first = cur[0].start, last = cur[cur.length - 1].start
+        const same = first.getTime() === last.getTime()
+        const noun = kind === 'free' ? 'créneaux libres' : 'rendez-vous'
+        out.push({
+          id: `grp-${kind}-${first.getTime()}`, start: first, end: new Date(Math.max(...cur.map(e => e.end.getTime()))), kind, group: cur,
+          title: `${cur.length} ${noun} ${same ? `à ${timeLabel(first)}` : `de ${timeLabel(first)} à ${timeLabel(last)}`}`,
+          tone: cur.some(e => e.tone === 'pending') ? 'pending' : undefined,
+        })
+      }
+      cur = []
+    }
+    sorted.forEach(e => {
+      if (cur.length && e.start.getTime() >= curEnd) flush()
+      cur.push(e); curEnd = Math.max(cur.length === 1 ? 0 : curEnd, e.end.getTime())
+    })
+    flush()
+  })
+  return out
+}
+
+function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selection, onSelect, aere = false }: {
   days: Date[]; events: CalEvent[]; now: Date; h0: number; h1: number; step: number; narrow: boolean
-  selectable: boolean; selection: CalSelection | null; onSelect?: (s: CalSelection | null) => void
+  selectable: boolean; selection: CalSelection | null; onSelect?: (s: CalSelection | null) => void; aere?: boolean
 }) {
+  const [openGroup, setOpenGroup] = useState<string | null>(null)
   const height = (h1 - h0) * PX_PER_MIN
   const hours = Array.from({ length: (h1 - h0) / 60 + 1 }, (_, i) => h0 + i * 60)
   const [drag, setDrag] = useState<{ day: Date; a: number; b: number } | null>(null)
@@ -222,8 +259,8 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
           const today = sameDay(d, now)
           return (
             <div key={d.getTime()} style={{ textAlign: 'center', minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: C.slate, fontWeight: 600 }}>{narrow ? WD[(d.getDay() + 6) % 7].slice(0, 1).toUpperCase() : WD[(d.getDay() + 6) % 7]}</div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, marginTop: 2, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, background: today ? C.teal : 'transparent', color: today ? '#fff' : C.ink }}>{d.getDate()}</div>
+              <div style={{ fontSize: aere ? 15 : 12, color: C.slate, fontWeight: 600 }}>{narrow ? WD[(d.getDay() + 6) % 7].slice(0, 1).toUpperCase() : WD[(d.getDay() + 6) % 7]}</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: aere ? 36 : 28, height: aere ? 36 : 28, borderRadius: 999, marginTop: 2, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: aere ? 16 : 14, background: today ? C.teal : 'transparent', color: today ? '#fff' : C.ink }}>{d.getDate()}</div>
             </div>
           )
         })}
@@ -234,11 +271,11 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
         <div style={{ display: 'grid', gridTemplateColumns: cols, position: 'relative', height }}>
           <div style={{ position: 'relative' }}>
             {hours.slice(0, -1).map(h => (
-              <div key={h} style={{ position: 'absolute', top: (h - h0) * PX_PER_MIN - 6, right: 6, fontSize: 10, color: C.slate }}>{narrow ? `${h / 60}` : `${String(h / 60).padStart(2, '0')}:00`}</div>
+              <div key={h} className={aere ? 'a-mini' : undefined} style={{ position: 'absolute', top: (h - h0) * PX_PER_MIN - 6, right: 6, fontSize: aere ? 13 : 10, color: C.slate }}>{narrow ? `${h / 60}` : `${String(h / 60).padStart(2, '0')}:00`}</div>
             ))}
           </div>
           {days.map(d => {
-            const dayEvents = layout(events.filter(e => sameDay(e.start, d)))
+            const dayEvents = layout(aere ? groupSimultaneous(events.filter(e => sameDay(e.start, d))) : events.filter(e => sameDay(e.start, d)))
             const past = startOfDay(d) < startOfDay(now)
             const dragHere = drag && sameDay(drag.day, d) ? drag : null
             const selHere = sel && sameDay(sel.start, d) ? sel : null
@@ -270,7 +307,7 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
                 {dayEvents.map(({ e, lane, lanes }) => {
                   const top = (Math.max(minutesOfDay(e.start), h0) - h0) * PX_PER_MIN
                   const endMin = sameDay(e.start, e.end) ? minutesOfDay(e.end) : 24 * 60
-                  const h = Math.max(18, (Math.min(endMin, h1) - Math.max(minutesOfDay(e.start), h0)) * PX_PER_MIN - 2)
+                  const h = e.group ? 52 : Math.max(aere ? 44 : 18, (Math.min(endMin, h1) - Math.max(minutesOfDay(e.start), h0)) * PX_PER_MIN - 2)
                   const free = e.kind === 'free'
                   const pending = e.tone === 'pending', live = e.tone === 'live'
                   const bg = e.selected ? C.gold : free ? 'rgba(18,179,156,.14)' : pending ? '#FFF7ED' : live ? C.tealD : C.ink
@@ -278,16 +315,18 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
                   return (
                     <div key={e.id} {...(pending ? { 'data-pending-event': '' } : {})}
                       onPointerDown={ev => ev.stopPropagation()} onPointerUp={ev => ev.stopPropagation()}
-                      onClick={ev => { ev.stopPropagation(); e.onClick?.() }}
+                      onClick={ev => { ev.stopPropagation(); if (e.group) setOpenGroup(g => g === e.id ? null : e.id); else e.onClick?.() }}
                       title={`${timeLabel(e.start)} – ${timeLabel(e.end)}${e.title ? ' · ' + e.title : ''}`}
                       style={{
                         position: 'absolute', top: top + 1, height: h, left: `calc(${(lane / lanes) * 100}% + 2px)`, width: `calc(${100 / lanes}% - 4px)`,
                         background: bg, color: fg, border: pending ? `1.5px dashed ${C.gold}` : free && !e.selected ? `1.5px solid ${C.teal}` : 'none', borderRadius: 8,
-                        padding: narrow ? '2px 3px' : '3px 6px', overflow: 'hidden', cursor: e.onClick ? 'pointer' : 'default', zIndex: 2,
-                        fontSize: narrow ? 10.5 : 12, lineHeight: 1.3, boxSizing: 'border-box',
+                        padding: narrow ? '2px 3px' : '3px 6px', overflow: 'hidden', cursor: e.onClick || e.group ? 'pointer' : 'default', zIndex: 2,
+                        fontSize: aere ? 15 : narrow ? 10.5 : 12, lineHeight: aere ? 1.4 : 1.3, boxSizing: 'border-box',
                       }}>
-                      <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{timeLabel(e.start)}</div>
-                      {!narrow && e.title && <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>}
+                      {e.group
+                        ? <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '38px' }} aria-expanded={openGroup === e.id}>{e.title} {openGroup === e.id ? '−' : '+'}</div>
+                        : <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{timeLabel(e.start)}</div>}
+                      {!narrow && !e.group && e.title && <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>}
                       {!narrow && e.subtitle && h > 44 && <div style={{ opacity: .85, fontWeight: e.tone ? 700 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.subtitle}</div>}
                       {narrow && lanes === 1 && e.tone && e.subtitle && <div style={{ fontWeight: 700, lineHeight: 1.2, wordBreak: 'break-word' }}>{e.subtitle}</div>}
                     </div>
@@ -308,6 +347,25 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
           })}
         </div>
       </div>
+
+      {/* Billets simultanés dépliés : une ligne par rendez-vous, cible de 52 px. */}
+      {aere && openGroup && (() => {
+        const g = groupSimultaneous(events.filter(e => days.some(d => sameDay(d, e.start)))).find(x => x.id === openGroup)?.group
+        if (!g) return null
+        return (
+          <div role="list" aria-label={`${g.length} billets à ${timeLabel(g[0].start)}`} style={{ marginTop: 16 }}>
+            {g.map((e, i) => (
+              <button key={e.id} type="button" role="listitem" onClick={() => e.onClick?.()}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, padding: '10px 4px', background: 'none', border: 0, borderTop: i ? `1px solid ${C.line}` : 'none', textAlign: 'left', cursor: e.onClick ? 'pointer' : 'default', fontFamily: 'Inter, sans-serif', color: C.ink, fontSize: 16, lineHeight: 1.45 }}>
+                <b style={{ flexShrink: 0 }}>{timeLabel(e.start)}</b>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  {e.title}{e.subtitle ? <span style={{ display: 'block', fontSize: 15, color: C.slate }}>{e.subtitle}</span> : null}
+                </span>
+              </button>
+            ))}
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -327,8 +385,8 @@ function layout(list: CalEvent[]) {
 }
 
 // ---------- Mois ----------
-function MonthGrid({ cursor, events, now, selectable, selection, onSelect, onOpenDay, bigCells }: {
-  cursor: Date; events: CalEvent[]; now: Date; selectable: boolean; bigCells?: boolean
+function MonthGrid({ cursor, events, now, selectable, selection, onSelect, onOpenDay, bigCells, aere = false }: {
+  cursor: Date; events: CalEvent[]; now: Date; selectable: boolean; bigCells?: boolean; aere?: boolean
   selection: CalSelection | null; onSelect?: (s: CalSelection | null) => void; onOpenDay: (d: Date) => void
 }) {
   const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1)
@@ -356,10 +414,10 @@ function MonthGrid({ cursor, events, now, selectable, selection, onSelect, onOpe
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, marginBottom: 6 }}>
-        {WD.map(w => <div key={w} style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: C.slate, textTransform: 'capitalize' }}>{w.slice(0, 3)}</div>)}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: aere ? 4 : 6, marginBottom: 6 }}>
+        {WD.map(w => <div key={w} style={{ textAlign: 'center', fontSize: aere ? 15 : 12, fontWeight: 700, color: C.slate, textTransform: 'capitalize' }}>{w.slice(0, 3)}</div>)}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: aere ? 4 : 6 }}>
         {cells.map(d => {
           const inMonth = d.getMonth() === cursor.getMonth()
           const dayEv = events.filter(e => sameDay(e.start, d))
@@ -373,15 +431,15 @@ function MonthGrid({ cursor, events, now, selectable, selection, onSelect, onOpe
             <button key={d.getTime()} type="button" onClick={e => click(d, e.shiftKey)} {...(pend > 0 ? { 'data-pending-day': '' } : {})}
               aria-label={`${d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}${past ? ', passé' : ''}${busy ? `, ${busy} rendez-vous` : ''}${pend ? `, ${pend} en attente de réponse` : ''}`}
               style={{
-                minHeight: bigCells ? 76 : 60, borderRadius: 12, padding: '6px 3px', cursor: selectable && past ? 'default' : 'pointer', textAlign: 'left',
+                minHeight: bigCells ? 76 : aere ? 64 : 60, borderRadius: 12, padding: aere ? '6px 2px' : '6px 3px', cursor: selectable && past ? 'default' : 'pointer', textAlign: 'left',
                 border: on ? `2px solid ${C.gold}` : today ? `2px solid ${C.teal}` : 'none',
                 background: on ? 'rgba(242,169,59,.18)' : past ? 'transparent' : C.paper, opacity: inMonth ? 1 : .45,
                 display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0, fontFamily: 'Inter, sans-serif',
               }}>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: today ? C.tealD : past ? '#6E8592' : C.ink }}>{d.getDate()}</span>
-              {busy > 0 && <span style={{ fontSize: 10.5, fontWeight: 700, color: '#fff', background: past ? '#8A9BA3' : C.ink, borderRadius: 999, padding: '1px 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{busy} RDV</span>}
-              {pend > 0 && <span style={{ fontSize: 10.5, fontWeight: 700, color: '#7A5717', background: '#FFF7ED', border: `1.5px dashed ${C.gold}`, borderRadius: 999, padding: '0 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{pend} RDV</span>}
-              {free > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: C.tealD, background: 'rgba(18,179,156,.14)', borderRadius: 999, padding: '1px 5px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{free} libre{free > 1 ? 's' : ''}</span>}
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: aere ? 16 : 14, color: today ? C.tealD : past ? '#6E8592' : C.ink }}>{d.getDate()}</span>
+              {busy > 0 && <span style={{ fontSize: aere ? 12 : 10.5, fontWeight: 700, color: '#fff', background: past ? '#8A9BA3' : C.ink, borderRadius: 999, padding: aere ? '1px 2px' : '1px 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{busy} RDV</span>}
+              {pend > 0 && <span style={{ fontSize: aere ? 12 : 10.5, fontWeight: 700, color: '#7A5717', background: '#FFF7ED', border: `1.5px dashed ${C.gold}`, borderRadius: 999, padding: aere ? '0 2px' : '0 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{pend} RDV</span>}
+              {free > 0 && <span style={{ fontSize: aere ? 12 : 11, fontWeight: 700, color: C.tealD, background: 'rgba(18,179,156,.14)', borderRadius: 999, padding: aere ? '1px 2px' : '1px 5px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{free} libre{free > 1 ? 's' : ''}</span>}
             </button>
           )
         })}

@@ -108,6 +108,7 @@ export default function ProDocuments() {
 
   return (
     <OnboardingStep
+      aere
       step={stepIndex}
       total={docTypes.length}
       title={doc.question}
@@ -123,7 +124,7 @@ export default function ProDocuments() {
         onChange={e => { if (e.target.files?.[0]) { handleFile(e.target.files[0]); e.target.value = '' } }} />
 
       {doc.kind !== 'diplome' && (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: 14, borderRadius: 16, background: 'rgba(18,179,156,.1)', border: '1px solid rgba(18,179,156,.35)', marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '18px 16px', borderRadius: 16, background: 'rgba(18,179,156,.1)', border: 'none', marginBottom: 24 }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#12B39C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
           <div>
             <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Rassurez vos futurs clients</div>
@@ -133,7 +134,7 @@ export default function ProDocuments() {
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 6 }} aria-label="Formats acceptés">
         {['PDF', 'JPG', 'PNG', '10 Mo maximum'].map(c => (
-          <span key={c} style={{ padding: '5px 12px', borderRadius: 999, background: '#F3F6F5', border: '1px solid #E7EDEB', color: '#123644', fontSize: 12, fontWeight: 700 }}>{c}</span>
+          <span key={c} className="a-pill" style={{ padding: '5px 12px', borderRadius: 999, background: '#F3F6F5', border: 'none', color: '#123644', fontSize: 13, fontWeight: 700 }}>{c}</span>
         ))}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 10 }}>
@@ -141,7 +142,7 @@ export default function ProDocuments() {
           width: 92, height: 92, borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 40, marginBottom: 22,
           background: uploaded[doc.id] ? 'rgba(18,179,156,.12)' : '#F3F6F5',
-          border: uploaded[doc.id] ? '2px solid #12B39C' : '2px solid #E7EDEB',
+          border: uploaded[doc.id] ? '2px solid #12B39C' : 'none',
         }}>
           {uploaded[doc.id] ? <span style={{ color: '#12B39C', fontSize: 32 }}>✓</span> : ICONS[doc.kind]}
         </div>
@@ -150,13 +151,13 @@ export default function ProDocuments() {
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontWeight: 700, fontSize: 14, color: '#123644' }}>{uploaded[doc.id]}</div>
             <div style={{ fontSize: 12, color: '#0B8374', fontWeight: 600, marginTop: 4 }}>Fourni — reçu par PING</div>
-            <button onClick={() => inputRef.current?.click()} style={{ marginTop: 14, background: 'none', border: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700, textDecoration: 'underline' }}>
+            <button onClick={() => inputRef.current?.click()} style={{ marginTop: 14, background: 'none', border: 'none', color: '#4E6470', fontSize: 15, fontWeight: 700, textDecoration: 'underline', minHeight: 48 }}>
               Remplacer le fichier
             </button>
           </div>
         ) : (
           <button onClick={() => inputRef.current?.click()} disabled={uploading}
-            style={{ padding: '13px 26px', borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+            style={{ padding: '13px 26px', minHeight: 54, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17 }}>
             {uploading ? 'Envoi…' : 'Télécharger le document'}
           </button>
         )}
