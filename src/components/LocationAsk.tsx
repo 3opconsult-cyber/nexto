@@ -3,7 +3,8 @@ import { useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { Ic } from './PingIcons'
 import { geocodeAddress } from '@/lib/geocode'
-import { readPositionOnce, saveLocationChoice, type Point } from '@/lib/location'
+import { readPositionOnce, saveLocationChoice, accuracyText, type Point } from '@/lib/location'
+import { geoMessage, APPROX_ACCURACY_M, type GeoFail } from '@/lib/position'
 
 // Encart affiché AVANT la fenêtre de localisation du navigateur (qc-production B2) :
 // pourquoi PING demande la position, ce qu'il n'en fait pas, et une issue sans GPS (choisir une ville).
@@ -18,7 +19,47 @@ const CITIES: { label: string; lat: number; lng: number }[] = [
   { label: 'Fréjus', lat: 43.4331, lng: 6.7370 },
 ]
 
-export const LOCATION_WHY = 'Pour vous montrer ce qui est près de vous, PING a besoin de votre position (jamais suivie, jamais partagée).'
+type LocateResult = { ok: true; accuracyM: number } | { ok: false; reason: GeoFail }
+
+/**
+ * « Utiliser ma position » dans la feuille de la carte (24/11) : un relevé précis unique (jamais de suivi), la précision
+ * affichée telle quelle (« ±40 m »), ou « Position approximative » avec où réactiver « Position précise » sur le téléphone.
+ */
+export function MyPositionRow({ onLocate, initialAccuracyM = null }: { onLocate: () => Promise<LocateResult>; initialAccuracyM?: number | null }) {
+  const [busy, setBusy] = useState(false)
+  const [res, setRes] = useState<LocateResult | null>(null)
+  async function go() {
+    setBusy(true); setRes(null)
+    const r = await onLocate()
+    setBusy(false); setRes(r)
+  }
+  const acc = res ? (res.ok === true ? res.accuracyM : null) : initialAccuracyM
+  const approx = acc != null && acc > APPROX_ACCURACY_M
+  return (
+    <div data-my-position style={{ margin: '0 0 24px' }}>
+      <button type="button" onClick={go} disabled={busy} data-use-position
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', minHeight: 52, border: 'none', borderRadius: 14, background: '#E8F6F3', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, cursor: busy ? 'wait' : 'pointer' }}>
+        <Ic name="loc" size={20} />{busy ? 'Localisation en cours…' : res && res.ok !== true ? 'Réessayer ma position' : 'Utiliser ma position'}
+      </button>
+      {res && res.ok !== true && (
+        <p role="alert" style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#A8432F', whiteSpace: 'pre-line' }}>{geoMessage(res.reason)}</p>
+      )}
+      {acc != null && !approx && (
+        <p role="status" data-position-precision style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#123644' }}>Position trouvée ({accuracyText(acc)}). Un seul relevé, jamais suivie ni partagée.</p>
+      )}
+      {acc != null && approx && (
+        <div role="status" data-position-precision style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#123644' }}>
+          <b>Position approximative ({accuracyText(acc)}) : activez Position précise dans Réglages.</b>
+          <span style={{ display: 'block', marginTop: 6, color: '#4E6470' }}>iPhone : Réglages, Confidentialité et sécurité, Service de localisation, votre navigateur (Safari…), puis « Position précise ».</span>
+          <span style={{ display: 'block', marginTop: 6, color: '#4E6470' }}>Android (Chrome) : Paramètres, Position, « Utiliser la position précise ». Puis touchez « Utiliser ma position ».</span>
+        </div>
+      )}
+      {acc == null && !res && <p style={{ margin: '10px 0 0', fontSize: 15, lineHeight: 1.5, color: '#4E6470' }}>Un seul relevé, jamais suivie ni partagée.</p>}
+    </div>
+  )
+}
+
+export const LOCATION_WHY ='Pour vous montrer ce qui est près de vous, PING a besoin de votre position (jamais suivie, jamais partagée).'
 
 export default function LocationAsk({ onChoose, onClose, overlay = true, modal = false, allowCity = true, title = 'Où êtes-vous ?', text = LOCATION_WHY, gpsLabel = 'Utiliser ma position', remember = true }: {
   onChoose: (p: Point, label?: string) => void

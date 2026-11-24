@@ -4,7 +4,10 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { geocodeAddress } from '@/lib/geocode'
-import LocationAsk from '@/components/LocationAsk'
+import LocationAsk, { MyPositionRow } from '@/components/LocationAsk'
+import SessionBadge from '@/components/SessionBadge'
+import VisibilitySwitch, { useVisibility } from '@/components/VisibilitySwitch'
+import { usePingFeedback } from '@/lib/pingFeedback'
 import { useInitialPosition } from '@/lib/location'
 import ModeSwitchPill from '@/components/ModeSwitchPill'
 import NavDrawer from '@/components/NavDrawer'
@@ -61,7 +64,7 @@ export default function ProCartePage() {
   const unread = useUnreadTotal('pro', 'pro-carte')
   // Position : expliquée avant la fenêtre du navigateur (LocationAsk), repli Grasse.
   // Position déclarée du prestataire (onboarding) avant toute fenêtre ; encart non bloquant sinon.
-  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc } = useInitialPosition(FALLBACK_POS, 'pro')
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc, locate, source: posSource, accuracyM: posAccuracy } = useInitialPosition(FALLBACK_POS, 'pro')
   const [allReqs, setAllReqs] = useState<RequestNearby[]>([])
   // boot : compte lu dans la session locale et cache appliqué (quelques ms) ; loaded : une liste
   // (cache ou lecture) est affichée, « 0 demande » ne s'écrit plus pendant la première lecture.
@@ -143,13 +146,10 @@ export default function ProCartePage() {
     return () => { off = true }
   }, [])
 
-  async function toggleAvailable() {
-    if (!proId) return
-    const next = !available
-    setAvailable(next)
-    const { error } = await createClient().from('provider_profiles').update({ is_active: next }).eq('id', proId)
-    if (error) setAvailable(!next)
-  }
+  // Visible / Masqué : vraie écriture de provider_profiles.is_active, avec les garde-fous de /pro/annonce
+  // (compte suspendu, tarif ou position manquants : message clair). src/components/VisibilitySwitch.tsx.
+  const vis = useVisibility({ proId, active: available, setActive: setAvailable })
+  const toggleAvailable = vis.toggle
 
   useEffect(() => {
     if (!proId) return
@@ -216,12 +216,9 @@ export default function ProCartePage() {
   }, [center.lat, center.lng, radiusKm])
   useEffect(() => { if (boot) load(true) }, [load, boot])
   // Bouton PING (comme sur la carte du client) : relit les demandes autour de moi, en un appui.
-  const [pinging, setPinging] = useState(false)
-  const pingNow = () => {
-    if (pinging) return
-    setPinging(true)
-    Promise.resolve(load(false)).catch(() => { }).finally(() => setTimeout(() => setPinging(false), 700))
-  }
+  // Onde, puis ligne « N demandes autour de vous » pendant 3 s (src/lib/pingFeedback.ts) ; la relecture est requests_nearby.
+  const ping = usePingFeedback()
+  const pingNow = () => { ping.run(() => Promise.resolve(load(false))) }
   // Mémorise la dernière liste (et les compteurs) pour la prochaine ouverture ; pas une zone
   // choisie par ville (elle n'est pas gardée à la réouverture).
   useEffect(() => {
@@ -329,13 +326,10 @@ export default function ProCartePage() {
   // Action principale du prestataire sur la carte (mobile) : être visible ou non des clients, en un appui,
   // posée à gauche au-dessus de la feuille (la ligne « Disponible maintenant » de la feuille n'existe plus sur mobile).
   const availPill = (
-    <button type="button" role="switch" aria-checked={available} aria-label={available ? 'Disponible maintenant : appuyer pour passer hors ligne' : 'Hors ligne : appuyer pour être visible des clients'} onClick={toggleAvailable}
-      style={{ position: 'absolute', left: 14, bottom: `calc(${SHEET_H[sheet]} + ${SHEET_LIFT} + 14px)`, zIndex: 32, display: 'flex', alignItems: 'center', gap: 10, minHeight: 48, boxSizing: 'border-box', padding: '0 14px 0 18px', borderRadius: 999, border: available ? 'none' : '1.5px solid #CBD7D4', background: available ? '#F2A93B' : '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, boxShadow: '0 8px 20px rgba(20,50,60,.25)', cursor: 'pointer' }}>
-      {available ? 'Disponible maintenant' : 'Hors ligne'}
-      <span aria-hidden style={{ width: 40, height: 24, borderRadius: 999, background: available ? 'rgba(255,255,255,.55)' : '#cdd6d3', position: 'relative', flex: '0 0 auto' }}>
-        <span style={{ position: 'absolute', top: 3, left: available ? 19 : 3, width: 18, height: 18, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'left .2s' }} />
-      </span>
-    </button>
+    <div style={{ position: 'absolute', left: 14, bottom: `calc(${SHEET_H[sheet]} + ${SHEET_LIFT} + 14px)`, zIndex: 32, maxWidth: 'calc(100% - 150px)' }}>
+      {vis.msg && <p role="alert" data-visibility-msg style={{ margin: '0 0 8px', fontSize: 15, lineHeight: 1.45, color: '#8E2F1D', background: '#fff', border: '1px solid #F1C9C0', borderRadius: 12, padding: '10px 12px', boxShadow: '0 6px 16px rgba(20,50,60,.18)' }}>{vis.msg}</p>}
+      <VisibilitySwitch active={available} busy={vis.busy} onToggle={toggleAvailable} />
+    </div>
   )
   // Puces de métiers (Tous mes métiers, chacun, autres métiers) : sous la barre de zone sur ordinateur, dans la feuille sur mobile.
   const tradeChips = (inSheet: boolean) => view === 'demandes' && myTrades.length > 0 && (
@@ -371,6 +365,10 @@ export default function ProCartePage() {
       ) : showAll ? (
         <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--slate)', margin: '0 0 16px' }}>{available ? 'Les clients vous voient sur la carte.' : 'Les clients ne vous voient plus sur la carte.'}</p>
       ) : null}
+      {(isDesk || sheet !== 'peek') && (
+        <MyPositionRow initialAccuracyM={posSource === 'gps' ? posAccuracy : null} onLocate={async () => { const r = await locate(); if (r.ok === true) setRecenterTick(t => t + 1); return r }} />
+      )}
+      {isDesk && vis.msg && <p role="alert" style={{ margin: '0 0 16px', fontSize: 15, lineHeight: 1.45, color: '#8E2F1D' }}>{vis.msg}</p>}
       {showAll && <LiveZoneCard compact />}
       <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--ink)', margin: '0 0 16px' }}>
         {!loaded ? 'Recherche des demandes autour de vous…' : showAll ? <>{reqs.length} demande{reqs.length > 1 ? 's' : ''} ouverte{reqs.length > 1 ? 's' : ''} · {urgentCount} urgente{urgentCount > 1 ? 's' : ''}</> : null}
@@ -518,11 +516,12 @@ export default function ProCartePage() {
   // cette page » en bas de la feuille ouvre le même volet) ; sur ordinateur, à gauche du panneau permanent.
   useFeedbackBubbleSlot(wrapH ? wrapBottomGap + 24 + 40 + 12 : null, !isDesk, isDesk ? 412 : null)
   const reqWord = `demande${reqs.length > 1 ? 's' : ''}`
+  const pingLine = ping.shown ? (ping.failed ? 'Actualisation impossible : vérifiez le réseau' : `${reqs.length} demande${reqs.length > 1 ? 's' : ''} autour de vous`) : null
   const sheetTitle = view === 'interventions'
     ? `${missions.length} intervention${missions.length > 1 ? 's' : ''} à venir`
     : selected ? (selected.title || TRADES[selected.category] || 'Demande')
       : !loaded ? 'Demandes autour de vous'
-      : available ? `${reqs.length} ${reqWord} autour de vous` : `Hors ligne · ${reqs.length} ${reqWord}`
+      : available ? `${reqs.length} ${reqWord} autour de vous` : `Masqué · ${reqs.length} ${reqWord}`
 
   return (
     <div className="procarte-screen">
@@ -549,10 +548,13 @@ export default function ProCartePage() {
             </button>
           </div>
 
+          {/* Pastille de session : en haut à droite, sous la ligne d'en-tête (menu + zone, qui occupe toute la largeur), seulement si le compte a les deux espaces. */}
+          <div className="mobile-only" style={{ position: 'absolute', top: 64, right: 12, zIndex: 25 }}><SessionBadge space="pro" /></div>
+
           {/* Barre de zone (maquette, .searchbar.pro) : soleil doré, état et rayon, « Zone » */}
           <div className="searchbar map-search" role="button" aria-expanded={zoneOpen} onClick={() => setZoneOpen(o => !o)} style={{ background: '#fff', top: 66, padding: '11px 14px', minHeight: 44 }}>
             <Ic name="sun" size={20} style={{ color: '#F2A93B' }} />
-            <span style={{ flex: 1, minWidth: 0, color: 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{`${available ? 'Visible' : 'Hors ligne'} · ${isDesk ? 'demandes à moins de' : 'à moins de'} ${radiusKm} km${available && zoneCenter ? ' de ' + (zoneCity || 'la ville') : ''}`}</span>
+            <span role="status" data-ping-line={pingLine ? '1' : undefined} style={{ flex: 1, minWidth: 0, color: pingLine && !ping.failed ? '#0B8374' : 'var(--slate)', fontWeight: 600, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pingLine || `${available ? 'Visible' : 'Masqué'} · ${isDesk ? 'demandes à moins de' : 'à moins de'} ${radiusKm} km${available && zoneCenter ? ' de ' + (zoneCity || 'la ville') : ''}`}</span>
             <span style={{ color: '#8A6520', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', paddingLeft: 8 }}>Zone</span>
           </div>
 
@@ -617,8 +619,8 @@ export default function ProCartePage() {
           )}
 
  {!locHidden && (
-            <div className={`pingbtn${pinging ? ' busy' : ''}`} role="button" aria-label="PING : actualiser les demandes autour de moi" onClick={pingNow}
-              style={{ bottom: `calc(${locBottom} - 6px)`, right: pingRight }}><span className="halo" /><span className="lbl">PING</span></div>
+            <button type="button" className={`pingbtn${ping.busy ? ' busy' : ''}`} aria-label="PING : actualiser les demandes autour de moi" aria-busy={ping.busy} onClick={pingNow}
+              style={{ bottom: `calc(${locBottom} - 6px)`, right: pingRight, padding: 0 }}><span className="halo" /><span className="lbl">PING</span></button>
           )}
           {!locHidden && (
             <div className="loc" role="button" aria-label="Recentrer sur ma position et les demandes" onClick={() => setRecenterTick(t => t + 1)} style={{ bottom: locBottom, right: locRight, color: 'var(--ink)' }}><Ic name="loc" size={20} /></div>

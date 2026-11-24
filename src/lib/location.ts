@@ -47,13 +47,22 @@ export const lastPositionAccuracy = () => lastAccuracyM
  */
 export function readPositionPrecise(timeout = 12000): Promise<Point & { accuracyM: number }> {
   return new Promise((resolve, reject) => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) { reject(new Error('Localisation indisponible.')); return }
+    // `reason` (même vocabulaire que src/lib/position.ts, GeoFail) : permet d'afficher le bon message (geoMessage).
+    const fail = (m: string, reason: 'denied' | 'timeout' | 'unavailable' | 'unsupported') => reject(Object.assign(new Error(m), { reason }))
+    if (typeof navigator === 'undefined' || !navigator.geolocation) { fail('Localisation indisponible.', 'unsupported'); return }
     navigator.geolocation.getCurrentPosition(
       p => { lastAccuracyM = p.coords.accuracy; resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracyM: p.coords.accuracy }) },
-      () => reject(new Error('Position précise indisponible.')),
+      e => fail('Position précise indisponible.', e.code === 1 ? 'denied' : e.code === 3 ? 'timeout' : 'unavailable'),
       { enableHighAccuracy: true, timeout, maximumAge: 0 },
     )
   })
+}
+
+/** Texte de précision : « ±40 m » (relevé précis) ou « ±3 km » ; au-delà de 100 m la position est dite approximative. */
+export function accuracyText(m: number): string {
+  if (m < 1000) return `±${Math.max(5, Math.round(m / 5) * 5)} m`
+  const km = m >= 10000 ? String(Math.round(m / 1000)) : (Math.round(m / 100) / 10).toFixed(1).replace(/\.0$/, '').replace('.', ',')
+  return `±${km} km`
 }
 
 /** Un seul relevé rapide (approximatif possible). Rejette avec un message lisible. */
@@ -156,13 +165,26 @@ export function useInitialPosition(fallback: Point, profile?: 'client' | 'pro') 
     })
     return () => { off = true }
   }, [])
-  const choose = useCallback((p: Point, label?: string) => {
+  const choose = useCallback((p: Point, label?: string, src?: 'gps' | 'city' | 'profile') => {
     setPos(p); setAsk(false); setCity(label || '')
+    if (src) setSource(src)
+  }, [])
+  // « Utiliser ma position » (feuille de la carte) : UN relevé précis sur demande, jamais de suivi. Le point devient
+  // la position de la carte (source GPS) ; la précision est rendue à l'appelant pour l'afficher honnêtement.
+  const locate = useCallback(async (): Promise<{ ok: true; accuracyM: number } | { ok: false; reason: 'denied' | 'timeout' | 'unavailable' | 'unsupported' }> => {
+    try {
+      const q = await readPositionPrecise(15000)
+      saveLocationChoice({ kind: 'gps' })
+      setPos({ lat: q.lat, lng: q.lng }); setAsk(false); setSource('gps'); setAccuracyM(q.accuracyM)
+      return { ok: true, accuracyM: q.accuracyM }
+    } catch (e: any) {
+      return { ok: false, reason: e?.reason || 'unavailable' }
+    }
   }, [])
   // « Plus tard » (croix) : l'encart ne revient pas avant la prochaine session du navigateur.
   const dismiss = useCallback(() => {
     setAsk(false)
     try { sessionStorage.setItem(KEY + '_later', '1') } catch { }
   }, [])
-  return { pos, ask, setAsk, choose, city, dismiss, source, accuracyM }
+  return { pos, ask, setAsk, choose, city, dismiss, source, accuracyM, locate }
 }

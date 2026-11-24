@@ -15,7 +15,10 @@ import MapSheet, { SHEET_LIFT, SheetFeedbackRow, sheetH, sheetPx, useSheetSnap }
 import { useFeedbackBubbleSlot, useIsDesktop, useElementHeight, useBannerH } from '@/lib/mapChrome'
 import { useUnreadTotal } from '@/lib/unread'
 import { Ic, Stars, r1, svcIconKey, ICON } from './PingIcons'
-import LocationAsk from './LocationAsk'
+import LocationAsk, { MyPositionRow } from './LocationAsk'
+import SessionBadge from './SessionBadge'
+import { ReferenceAddressLine, useReferenceAddress } from './AddressReferenceSheet'
+import { usePingFeedback } from '@/lib/pingFeedback'
 import FindSheet from './FindSheet'
 import { useInitialPosition } from '@/lib/location'
 
@@ -69,13 +72,16 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const [flags, setFlags] = useState<Record<string, ProviderFlags>>({})
   // Position : centrée sur l'adresse du profil si possible, sinon encart non bloquant (LocationAsk)
   // avant la fenêtre du navigateur ; repli Grasse.
-  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc, city: posCity, source: posSource, accuracyM: posAccuracy } = useInitialPosition(FALLBACK_POS, 'client')
+  const { pos: userPos, ask: askLoc, dismiss: dismissLoc, choose: chooseLoc, city: posCity, source: posSource, accuracyM: posAccuracy, locate } = useInitialPosition(FALLBACK_POS, 'client')
   // Le libellé du point dit d'où il vient : plus de « Vous êtes ici » quand la position est une adresse, une ville ou un relevé approximatif.
   const youLabel = posSource === 'city' ? `Autour de ${posCity || 'la ville choisie'}`
-    : posSource === 'profile' ? 'Adresse de votre profil'
+    : posSource === 'profile' ? 'Adresse de référence'
       : posSource === 'gps' && posAccuracy != null && posAccuracy > 300 ? 'Position approximative'
         : 'Vous êtes ici'
   const [recenterTick, setRecenterTick] = useState(0)
+  // Bouton PING : relit les prestataires autour de soi, onde puis ligne « Actualisé : N ... » pendant 3 s (src/lib/pingFeedback.ts).
+  const ping = usePingFeedback()
+  const refAddr = useReferenceAddress('client')
   // Aperçu d'un prestataire (fiche du bas sur mobile, panneau latéral sur ordinateur).
   const [pvId, setPvId] = useState<string | null>(null)
   // Volet de la liste (mobile) : réduit (poignée + une ligne), mi-hauteur ou plein ; l'état est mémorisé pour cet écran.
@@ -122,14 +128,15 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // Zones « en intervention ici aujourd'hui » (058) : second repère à côté du domicile, tableau vide avant la migration.
   const [zones, setZones] = useState<LiveZonePin[]>([])
   const loadSeq = useRef(0)
-  const loadPros = useCallback(() => {
+  const loadPros = useCallback((): Promise<unknown> | undefined => {
     if (!boot) return
     // Liste en cache lue ailleurs que sur le repli : on attend la vraie position au lieu d'afficher
     // un instant les prestataires autour de Grasse.
     if (isFallbackPos(userPos) && boot.center && !isFallbackPos(boot.center)) return
     const seq = ++loadSeq.current
     const here = { lat: userPos.lat, lng: userPos.lng }
-    loadMapPros(here, boot.uid).then(async (d: MapCache) => {
+    fetchLiveZones(userPos.lat, userPos.lng).then(z => { if (seq === loadSeq.current) setZones(z) }).catch(() => { })
+    return loadMapPros(here, boot.uid).then(async (d: MapCache) => {
       if (seq !== loadSeq.current) return
       if (d.list.length === 0) {
         // Carte jamais vide : personne à moins de 15 km, on élargit (30 puis 60 km) sans toucher au cache de la carte.
@@ -141,8 +148,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
       }
       setWide(null)
       setRawPros(d.list); setActs(d.acts); setFlags(d.flags); setLoaded(true)
-    }).catch(() => { })
-    fetchLiveZones(userPos.lat, userPos.lng).then(z => { if (seq === loadSeq.current) setZones(z) }).catch(() => { })
+    })
   }, [userPos, boot])
   const actsOf = useCallback((x: { id: string; trade: string }) => acts[x.id] || (x.trade ? [x.trade] : []), [acts])
   const hitsOf = useCallback((x: { id: string; trade: string }) => {
@@ -151,7 +157,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   function toggleSel(k: string) {
     setSel(s => s.includes(k) ? s.filter(x => x !== k) : [...s, k])
   }
-  useEffect(() => { loadPros() }, [loadPros])
+  useEffect(() => { loadPros()?.catch(() => { }) }, [loadPros])
 
   // Forme d'affichage (fiche + liste) dérivée des vraies lignes.
   const pros: Pro[] = useMemo(() => rawPros.map(x => {
@@ -300,7 +306,10 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const liveCount = rawVisible.filter(p => p.is_active).length
   const laterCount = rawVisible.length - liveCount
   const nearestKm = rawPros.length ? Math.max(1, Math.round(Math.min(...rawPros.map(p => p.distance_m)) / 1000)) : 0
-  const statusText = wide && rawPros.length
+  const pingLine = ping.shown
+    ? (ping.failed ? 'Actualisation impossible : vérifiez le réseau' : `Actualisé : ${liveCount} prestataire${liveCount > 1 ? 's' : ''} en ligne`)
+    : null
+  const statusText = pingLine ? pingLine : wide && rawPros.length
     ? `Aucun prestataire à moins de ${wide.radiusKm} km : les plus proches sont à ${nearestKm} km`
     : !loaded ? 'Recherche des prestataires…'
       : liveCount > 0 ? `${liveCount} en ligne près de vous`
@@ -473,6 +482,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   </button>
                 </div>
 
+                {/* Pastille de session : en haut à droite, sous la ligne d'en-tête (menu + état, qui occupe toute la largeur), seulement si le compte a les deux espaces. */}
+                <div className="mobile-only" style={{ position: 'absolute', top: 64, right: 12, zIndex: 25 }}><SessionBadge space="particulier" /></div>
+
                 <div className="mapscene" id="mapscene" style={{ isolation: 'isolate' }}>
                   <LiveMap userPos={userPos} youLabel={youLabel} pros={rawVisible} onSelect={onSelectPro} recenterTick={recenterTick} onMapClick={closePreview} selectedId={pvId} newIds={newIds} zones={zonesVisible} onSelectZone={onSelectZone} inset={mapInset} focusPts={focusPts} focusKey={focusKey} />
                 </div>
@@ -480,7 +492,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 {/* Ligne d'état unique : « 7 en ligne près de vous ». Au toucher : détail par métier et accès au filtre. */}
                 <div className="searchbar map-search" role="button" aria-haspopup="true" aria-expanded={statusOpen} data-map-status style={{ top: 66, height: 'auto' }} onClick={() => setStatusOpen(o => !o)}>
                   <div className="lg" style={{ background: liveCount > 0 ? 'var(--btnFill)' : '#6E8592', color: '#fff' }}><Ic name="loc" size={15} /></div>
-                  <div className="tx" style={{ fontWeight: 700, color: 'var(--ink)', whiteSpace: wide ? 'normal' : 'nowrap', lineHeight: 1.25, padding: wide ? '6px 0' : 0 }}>{statusText}</div>
+                  <div className="tx" data-ping-line={pingLine ? '1' : undefined} role="status" style={{ fontWeight: 700, color: pingLine && !ping.failed ? '#0B8374' : 'var(--ink)', whiteSpace: wide || pingLine ? 'normal' : 'nowrap', lineHeight: 1.25, padding: wide || pingLine ? '6px 0' : 0 }}>{statusText}</div>
                   <span className="chv" style={{ transform: statusOpen ? 'rotate(180deg)' : 'none' }}><Ic name="down" size={20} /></span>
                 </div>
                 {statusOpen && (
@@ -499,7 +511,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 {isDesk && serviceChips({ top: 128 })}
 
                 {!ctrlHidden && (<>
-                  <div className="pingbtn" role="button" aria-label="PING : actualiser les prestataires autour de vous" onClick={() => loadPros()} style={{ bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 66px)`, right: ctrlRight }}><span className="halo" /><span className="lbl">PING</span></div>
+                  <button type="button" className={`pingbtn${ping.busy ? ' busy' : ''}`} aria-label="PING : actualiser les prestataires autour de vous" aria-busy={ping.busy} onClick={() => ping.run(async () => { await loadPros() })} style={{ bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 66px)`, right: ctrlRight, padding: 0 }}><span className="halo" /><span className="lbl">PING</span></button>
                   {/* Action principale : une seule, grosse, en bas de la carte (« Déposer une demande » est passée dans la feuille). */}
                   {!pvShow && !(isDesk && findOpen) && (
                     <button type="button" data-find-open onClick={() => setFindOpen(true)}
@@ -515,6 +527,11 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 {!pvShow && (
                   <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}
                     footer={<button type="button" onClick={() => router.push('/client/demandes/new')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, border: '1.5px solid #DCE5E3', borderRadius: 999, background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}><Ic name="plus" size={16} />Déposer une demande</button>}>
+                    {sheet !== 'peek' && (<>
+                      <div style={{ margin: '0 0 20px' }}><ReferenceAddressLine kind="client" address={refAddr.address} uid={refAddr.uid} loaded={refAddr.loaded}
+                        onSaved={(l, pt) => { refAddr.setAddress(l); chooseLoc(pt, undefined, 'profile'); setRecenterTick(t => t + 1) }} /></div>
+                      <MyPositionRow initialAccuracyM={posSource === 'gps' ? posAccuracy : null} onLocate={async () => { const r = await locate(); if (r.ok === true) setRecenterTick(t => t + 1); return r }} />
+                    </>)}
                     {!isDesk && serviceChips({ inSheet: true })}
                     {listBody}
                     <SheetFeedbackRow />

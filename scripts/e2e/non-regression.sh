@@ -18,6 +18,7 @@ run parcours-rapide "node parcours-rapide.mjs"
 run reservation-etapes "node reservation-etapes.mjs"
 run facture-sections "node facture-sections.mjs"
 run prestataire-ecrans "node prestataire-ecrans.mjs"
+run carte-identite "node carte-identite.mjs"
 if [ "$HEURE" -lt 17 ]; then
   run hors-ligne "node hors-ligne.mjs"
   run parcours-A-B "node parcours.mjs"

@@ -17,6 +17,9 @@ import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import ProMonthBlock from '@/components/ProMonthBlock'
 import OrdersInProgress from '@/components/OrdersInProgress'
 import MonAnnonceCard from '@/components/MonAnnonceCard'
+import SessionBadge from '@/components/SessionBadge'
+import VisibilitySwitch, { useVisibility } from '@/components/VisibilitySwitch'
+import { ReferenceAddressLine, useReferenceAddress } from '@/components/AddressReferenceSheet'
 import { paymentsActive } from '@/lib/paymentsClient'
 import { readScreenCache, sessionUserId } from '@/lib/screenCache'
 import '../../aere.css'
@@ -106,14 +109,13 @@ export default function ProDashboard() {
     return () => { alive = false }
   }, [router])
 
-  async function toggleAvailable() {
-    if (!pro) return
-    const supabase = createClient()
-    const newVal = !available
-    setAvailable(newVal)
-    const { error } = await supabase.from('provider_profiles').update({ is_active: newVal }).eq('id', pro.id)
-    if (error) setAvailable(!newVal)
-  }
+  // Visible / Masqué : vraie écriture de provider_profiles.is_active avec les garde-fous de /pro/annonce
+  // (compte suspendu, tarif ou position manquants : message clair). src/components/VisibilitySwitch.tsx.
+  const vis = useVisibility({
+    proId: pro?.id ?? null, active: available, pro, suspended: !!pro?.payments_suspended_at,
+    setActive: v => { setAvailable(v); setPro((p: any) => ({ ...p, is_active: v })) },
+  })
+  const refAddr = useReferenceAddress('pro')
 
   // Couverture + logo de la fiche établissement (façon fiche Google) : le
   // bucket `avatars` existait déjà, configuré (public en lecture, upload
@@ -162,10 +164,12 @@ export default function ProDashboard() {
         <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <NavDrawer />
           <div style={{ flex: '1 1 auto', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#fff', whiteSpace: 'nowrap' }}>Mon entreprise</div>
-          <button onClick={toggleAvailable} aria-pressed={available}
-            style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: 'none', fontSize: 15, fontWeight: 700, background: available ? '#12B39C' : 'rgba(255,255,255,.12)', color: available ? '#fff' : 'rgba(255,255,255,.6)' }}>
-            {available ? '● Visible sur la carte' : '○ Masqué'}
-          </button>
+          <SessionBadge space="pro" onDark />
+          {/* Interrupteur très visible, en haut : une ligne entière sous le titre (les clients vous voient / vous êtes masqué). */}
+          <div style={{ flex: '1 1 100%', marginTop: 4 }}>
+            <VisibilitySwitch active={available} busy={vis.busy} onToggle={vis.toggle} onDark style={{ width: '100%', justifyContent: 'space-between' }} />
+            {vis.msg && <p role="alert" data-visibility-msg style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#fff', background: 'rgba(192,80,58,.35)', borderRadius: 12, padding: '10px 14px' }}>{vis.msg}</p>}
+          </div>
         </div>
       ) : (
         <>
@@ -190,6 +194,9 @@ export default function ProDashboard() {
             {/* Mon annonce : état, complétude, actions à un appui (mise en pause, remise en ligne, modifier, aperçu). */}
             <MonAnnonceCard pro={pro} pct={listingPct} canPublishNow={listingOk}
               onActive={v => { setAvailable(v); setPro((p: any) => ({ ...p, is_active: v })) }} />
+
+            {/* Adresse de référence : celle qui place le prestataire sur la carte des clients ; modifiable avec aperçu du point. */}
+            <ReferenceAddressLine kind="pro" address={refAddr.address} uid={refAddr.uid} loaded={refAddr.loaded} onSaved={l => refAddr.setAddress(l)} />
 
             {/* Fiche de l'entreprise : une ligne (nom + note, ou « Nouveau »), le reste derrière un appui. */}
             <div>
