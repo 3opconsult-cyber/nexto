@@ -8,6 +8,8 @@ import OrdersInProgress from '@/components/OrdersInProgress'
 import { AereRow } from '@/components/AereRow'
 import '../../aere.css'
 import { writeMode } from '@/lib/mode'
+import SessionBadge from '@/components/SessionBadge'
+import { ReferenceAddressLine } from '@/components/AddressReferenceSheet'
 
 const fieldLabel: React.CSSProperties = { display: 'block', fontSize: 15, fontWeight: 600, color: '#123644', margin: '16px 0 8px' }
 const fieldInput: React.CSSProperties = { width: '100%', padding: '12px 16px', minHeight: 52, border: '1.5px solid #CFDAD7', borderRadius: 14, fontSize: 16, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#123644', outline: 'none', boxSizing: 'border-box' }
@@ -95,6 +97,7 @@ export default function ClientProfil() {
               <svg aria-hidden width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6" /></svg>
             </button>
             <b style={{ fontSize: 20 }}>Mon profil</b>
+            <span style={{ marginLeft: 'auto' }}><SessionBadge space="particulier" /></span>
           </div>
           <div className="body a-page" style={{ top: 56, padding: '24px 20px 48px' }}>
             {/* Bloc 1 : qui je suis, sur une ligne (nom, ville) ; adresse, téléphone, e-mail et « Modifier » derrière un appui. */}
@@ -116,6 +119,9 @@ export default function ClientProfil() {
                 </div>
               )}
             </div>
+            {/* Adresse de référence : celle qui centre la carte et est proposée dans une demande ; modifiable avec aperçu du point. */}
+            <div className="a-block"><ReferenceAddressLine kind="client" address={profile ? (profile.address || '').trim() || null : null} uid={uid || null} loaded={!!profile}
+              onSaved={l => setProfile((p: any) => ({ ...p, address: l }))} /></div>
             <div style={{ marginBottom: 28 }}><OrdersInProgress role="particulier" title="Mes commandes en cours" topGap={28} /></div>
 
             {/* Bloc 2 : toujours visible, une phrase et une barre à 4 segments (maquette : « Profil complet : n sur 4 »). */}

@@ -1,0 +1,339 @@
+{
+ "base": "http://localhost:3100",
+ "phase": "apres",
+ "checks": [
+  {
+   "k": "carte client : pastille « Particulier » en haut à droite",
+   "v": {
+    "n": 1,
+    "txt": "Particulier",
+    "box": {
+     "x": 254.859375,
+     "y": 64,
+     "width": 123.140625,
+     "height": 44
+    }
+   },
+   "ok": true
+  },
+  {
+   "k": "pastille : explique et renvoie au menu",
+   "v": "Vous êtes dans votre espace particulier\n\nVotre compte a deux espaces : Particulier (vous réservez) et Prestataire (vous proposez vos services). Ici, vous êtes e",
+   "ok": true
+  },
+  {
+   "k": "pastille : le menu s’ouvre (bascule uniquement dans le menu)",
+   "v": 2,
+   "ok": true
+  },
+  {
+   "k": "pastille : le mode n’a pas changé",
+   "v": "particulier",
+   "ok": true
+  },
+  {
+   "k": "PING client : providers_nearby repart",
+   "v": {
+    "avant": 4,
+    "apres": 5
+   },
+   "ok": true
+  },
+  {
+   "k": "PING client : « Actualisé : N prestataires en ligne » puis texte normal",
+   "v": {
+    "avant": "5 en ligne près de vous",
+    "pendant": "Actualisé : 5 prestataires en ligne"
+   },
+   "ok": true
+  },
+  {
+   "k": "PING client : la ligne disparaît après 3 s",
+   "v": "5 en ligne près de vous",
+   "ok": true
+  },
+  {
+   "k": "carte client : « Adresse de référence : … » + Modifier",
+   "v": "Adresse de référence : 1 rue de l Audit, Grasse\n\nModifier",
+   "ok": true
+  },
+  {
+   "k": "Utiliser ma position : précision affichée (±30 m)",
+   "v": "Position trouvée (±30 m). Un seul relevé, jamais suivie ni partagée.",
+   "ok": true
+  },
+  {
+   "k": "adresse : propositions d’autocomplétion",
+   "v": 3,
+   "ok": true
+  },
+  {
+   "k": "adresse : une ville seule est signalée AVANT de valider",
+   "v": "Ville seule : le point est au centre de la ville, pas devant chez vous. Ajoutez le numéro et la rue pour être plus précis.",
+   "ok": true
+  },
+  {
+   "k": "adresse : mini-carte et point trouvé affichés",
+   "v": "Point trouvé : 2 Rue de l’Audit, 06130 Grasse\nAdresse trouvée\nOpenFreeMap © OpenMapTiles © OpenStreetMap\nCe n’est pas la bonne : revoir les propositions",
+   "ok": true
+  },
+  {
+   "k": "adresse précise : aucune alerte",
+   "v": 0,
+   "ok": true
+  },
+  {
+   "k": "adresse : écriture profiles.address interceptée (aucune donnée modifiée)",
+   "v": [
+    {
+     "m": "PATCH",
+     "t": "provider_profiles",
+     "body": "{\"lat\":43.6612,\"lng\":6.9301,\"location\":\"SRID=4326;POINT(6.9301 43.6612)\"}"
+    },
+    {
+     "m": "PATCH",
+     "t": "profiles",
+     "body": "{\"address\":\"2 Rue de l’Audit, 06130 Grasse\"}"
+    },
+    {
+     "m": "POST",
+     "t": "events",
+     "body": "{\"session_id\":\"3d5b2900-f51f-40e2-a551-a842942dddd7\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+    }
+   ],
+   "ok": true
+  },
+  {
+   "k": "adresse : la ligne affiche la nouvelle adresse",
+   "v": "2 Rue de l’Audit, 06130 Grasse",
+   "ok": true
+  },
+  {
+   "k": "aucune erreur de page (carte client)",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "Utiliser ma position (approx) : message honnête",
+   "v": "Utiliser ma position | Position approximative (±3 km) : activez Position précise dans Réglages. | iPhone : Réglages, Confidentialité et sécurité, Service de localisation, votre navigateur (Safari…), puis « Position précise ». | Android (Chrome) : Paramètres, P",
+   "ok": true
+  },
+  {
+   "k": "Utiliser ma position (refusee) : message honnête",
+   "v": "Réessayer ma position | La localisation est refusée pour PING. Pour la réactiver : | iPhone : Réglages, Confidentialité et sécurité, Service de localisation, puis votre navigateur (Safari…) : « Lors de l’utilisation ». | Android (Chrome) : touchez le cadenas à",
+   "ok": true
+  },
+  {
+   "k": "carte prestataire : pastille « Prestataire » en haut à droite",
+   "v": {
+    "txt": "Prestataire",
+    "bb": {
+     "x": 248,
+     "y": 64,
+     "width": 130,
+     "height": 44
+    }
+   },
+   "ok": true
+  },
+  {
+   "k": "carte prestataire : interrupteur « Visible » + texte d’état",
+   "v": "Visible\nLes clients vous voient",
+   "ok": true
+  },
+  {
+   "k": "interrupteur >= 44 px de haut, texte >= 15 px",
+   "v": {
+    "h": 75.390625,
+    "font": 15
+   },
+   "ok": true
+  },
+  {
+   "k": "Masquer : provider_profiles.is_active=false (écriture interceptée)",
+   "v": [
+    {
+     "m": "PATCH",
+     "t": "provider_profiles",
+     "body": "{\"lat\":43.6612,\"lng\":6.9301,\"location\":\"SRID=4326;POINT(6.9301 43.6612)\"}"
+    },
+    {
+     "m": "PATCH",
+     "t": "profiles",
+     "body": "{\"address\":\"2 Rue de l’Audit, 06130 Grasse\"}"
+    },
+    {
+     "m": "POST",
+     "t": "events",
+     "body": "{\"session_id\":\"3d5b2900-f51f-40e2-a551-a842942dddd7\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+    }
+   ],
+   "ok": true
+  },
+  {
+   "k": "Masquer : « Masqué » / « Vous êtes masqué »",
+   "v": "Masqué\nVous êtes masqué",
+   "ok": true
+  },
+  {
+   "k": "PING prestataire : requests_nearby repart",
+   "v": {
+    "avant": 1,
+    "apres": 2
+   },
+   "ok": true
+  },
+  {
+   "k": "PING prestataire : « N demandes autour de vous » puis texte normal",
+   "v": {
+    "avant": "Masqué · à moins de 15 km\nZone",
+    "pendant": "2 demandes autour de vous\nZone"
+   },
+   "ok": true
+  },
+  {
+   "k": "PING prestataire : la ligne disparaît après 3 s",
+   "v": "Masqué · à moins de 15 km\nZone",
+   "ok": true
+  },
+  {
+   "k": "pastille prestataire : explication",
+   "v": "Vous êtes dans votre espace prestataire\n\nVotre compte a deux espaces : Particulier (vous réservez) et Prestataire (vous ",
+   "ok": true
+  },
+  {
+   "k": "carte prestataire : précision de la position affichée",
+   "v": "Position trouvée (±30 m). Un seul relevé, jamais suivie ni partagée.",
+   "ok": true
+  },
+  {
+   "k": "aucune erreur de page (carte prestataire)",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "compte suspendu : message clair, aucune écriture",
+   "v": {
+    "msg": "Votre compte est suspendu : vous ne pouvez pas être remis en ligne. Contactez le support PING.",
+    "w": 0
+   },
+   "ok": true
+  },
+  {
+   "k": "Mon entreprise : pastille Prestataire",
+   "v": "Prestataire",
+   "ok": true
+  },
+  {
+   "k": "Mon entreprise : interrupteur Visible / Masqué en haut",
+   "v": "Visible\nLes clients vous voient",
+   "ok": true
+  },
+  {
+   "k": "Mon entreprise : l’interrupteur est dans le premier écran",
+   "v": 80,
+   "ok": true
+  },
+  {
+   "k": "Mon entreprise : Masquer = écriture is_active=false interceptée",
+   "v": [
+    {
+     "m": "PATCH",
+     "t": "provider_profiles",
+     "body": "{\"lat\":43.6612,\"lng\":6.9301,\"location\":\"SRID=4326;POINT(6.9301 43.6612)\"}"
+    },
+    {
+     "m": "PATCH",
+     "t": "profiles",
+     "body": "{\"address\":\"2 Rue de l’Audit, 06130 Grasse\"}"
+    },
+    {
+     "m": "POST",
+     "t": "events",
+     "body": "{\"session_id\":\"3d5b2900-f51f-40e2-a551-a842942dddd7\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+    }
+   ],
+   "ok": true
+  },
+  {
+   "k": "Mon entreprise : « Adresse de référence : … » + Modifier",
+   "v": "Adresse de référence : 1 rue de l Audit, Grasse\n\nModifier",
+   "ok": true
+  },
+  {
+   "k": "Mon entreprise : adresse = provider_profiles.lat/lng + profiles.address (interceptés)",
+   "v": [
+    {
+     "m": "PATCH",
+     "t": "provider_profiles",
+     "body": "{\"lat\":43.6612,\"lng\":6.9301,\"location\":\"SRID=4326;POINT(6.9301 43.6612)\"}"
+    },
+    {
+     "m": "PATCH",
+     "t": "profiles",
+     "body": "{\"address\":\"2 Rue de l’Audit, 06130 Grasse\"}"
+    },
+    {
+     "m": "POST",
+     "t": "events",
+     "body": "{\"session_id\":\"3d5b2900-f51f-40e2-a551-a842942dddd7\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+    }
+   ],
+   "ok": true
+  },
+  {
+   "k": "aucune erreur de page (Mon entreprise)",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "Mon profil : pastille Particulier",
+   "v": "Particulier",
+   "ok": true
+  },
+  {
+   "k": "Mon profil : « Adresse de référence : … » + Modifier",
+   "v": "Adresse de référence : 1 rue de l Audit, Grasse\n\nModifier",
+   "ok": true
+  }
+ ],
+ "writes": [
+  {
+   "m": "PATCH",
+   "t": "provider_profiles",
+   "body": "{\"lat\":43.6612,\"lng\":6.9301,\"location\":\"SRID=4326;POINT(6.9301 43.6612)\"}"
+  },
+  {
+   "m": "PATCH",
+   "t": "profiles",
+   "body": "{\"address\":\"2 Rue de l’Audit, 06130 Grasse\"}"
+  },
+  {
+   "m": "POST",
+   "t": "events",
+   "body": "{\"session_id\":\"3d5b2900-f51f-40e2-a551-a842942dddd7\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+  }
+ ],
+ "mesures": {
+  "carteClient": {
+   "ciblesSous44": [
+    "64x11 OpenFreeMap",
+    "65x11 OpenMapTiles",
+    "71x11 OpenStreetMap"
+   ]
+  },
+  "carteProScr1": {
+   "ciblesSous44": [
+    "64x11 OpenFreeMap",
+    "65x11 OpenMapTiles",
+    "71x11 OpenStreetMap"
+   ]
+  },
+  "monEntreprise": {
+   "ciblesSous44": []
+  },
+  "monProfil": {
+   "ciblesSous44": []
+  }
+ }
+}

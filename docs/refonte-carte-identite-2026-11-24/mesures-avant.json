@@ -1,0 +1,65 @@
+{
+ "base": "https://nexto-eta.vercel.app",
+ "phase": "avant",
+ "checks": [
+  {
+   "k": "aucune erreur de page (carte client)",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "aucune erreur de page (carte prestataire)",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "aucune erreur de page (Mon entreprise)",
+   "v": [],
+   "ok": true
+  }
+ ],
+ "writes": [
+  {
+   "m": "POST",
+   "t": "events",
+   "body": "{\"session_id\":\"1ef6164c-df74-4042-bbbe-23ed39af2756\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/map\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+  },
+  {
+   "m": "POST",
+   "t": "events",
+   "body": "{\"session_id\":\"161d3408-3c55-4325-8f98-ae38776857e5\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/pro/carte\",\"qr_code\":null,\"metadata\":{\"mode\":\"pro\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+  },
+  {
+   "m": "POST",
+   "t": "events",
+   "body": "{\"session_id\":\"cc9a330f-dd02-446a-a3bd-a533543f239b\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/pro/dashboard\",\"qr_code\":null,\"metadata\":{\"mode\":\"pro\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+  },
+  {
+   "m": "POST",
+   "t": "events",
+   "body": "{\"session_id\":\"578dfe59-a51e-45cf-999c-92889d63ce84\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+  }
+ ],
+ "mesures": {
+  "carteClient": {
+   "ciblesSous44": [
+    "64x11 OpenFreeMap",
+    "65x11 OpenMapTiles",
+    "71x11 OpenStreetMap"
+   ]
+  },
+  "carteProScr1": {
+   "ciblesSous44": [
+    "64x11 OpenFreeMap",
+    "65x11 OpenMapTiles",
+    "71x11 OpenStreetMap"
+   ]
+  },
+  "monEntreprise": {
+   "ciblesSous44": []
+  },
+  "monProfil": {
+   "ciblesSous44": []
+  }
+ }
+}
