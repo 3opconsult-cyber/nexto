@@ -1,4 +1,5 @@
 "use client"
+import '../../aere.css'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { loadProDetail, openConversation, readProDetailCache, type ProDetail } from '@/lib/services'
@@ -150,7 +151,7 @@ export default function ProDetailPage() {
   ].filter(Boolean).join(' · ')
 
   return (
-    <div className="ping-screen" style={{ paddingBottom: 0 }}>
+    <div className={uid !== proId ? 'ping-screen aere a-lift fiche-aere' : 'ping-screen'} style={{ paddingBottom: 0 }}>
       <div className="ping-appbar">
         <button type="button" className="ic" onClick={() => router.push('/map')} aria-label="Retour à la carte" style={{ border: 0, background: 'none', width: 44, height: 44, marginLeft: -6 }}>
           <Ic name="back" />
@@ -180,17 +181,17 @@ export default function ProDetailPage() {
           {/* Lot 21 : « Profil vérifié par PING » seulement si un admin a validé la pièce d'identité
               (et qu'elle n'est pas expirée, migration 042) — exception de langage du 03/11. */}
           {docsChecked === true && (
-            <div className="mq-tags"><span className="mq-tag"><Ic name="shield" size={12} />Profil vérifié par PING</span></div>
+            <div className="mq-tags"><span className="mq-tag a-mini"><Ic name="shield" size={12} />Profil vérifié par PING</span></div>
           )}
           {docsChecked === false && (
-            <div className="mq-tags"><span className="mq-tag warn">Nouveau · pièces en cours de contrôle</span></div>
+            <div className="mq-tags"><span className="mq-tag warn a-mini">Nouveau · pièces en cours de contrôle</span></div>
           )}
           {/* « Mon annonce » (migration 026) : accroche et points forts, puis photos et zone. */}
           <ListingExtras part="top" headline={pro.headline} highlights={pro.highlights} />
           {pro.bio && (
             <>
               <div className="mq-sect">À propos</div>
-              <p style={{ color: 'var(--slate)', fontSize: 13.5, lineHeight: 1.5 }}>{pro.bio}</p>
+              <p style={{ color: 'var(--slate)', fontSize: 15, lineHeight: 1.55 }}>{pro.bio}</p>
             </>
           )}
           <ListingExtras part="gallery" gallery={pro.gallery_paths} />
@@ -220,11 +221,11 @@ export default function ProDetailPage() {
               </div>
             )
           })}
-          <p className="mq-muted" style={{ fontSize: 11.5, marginTop: 4 }}>Le prix est figé à l&apos;accord. Seul un litige peut le rouvrir.</p>
+          <p className="mq-muted" style={{ fontSize: 15, marginTop: 4 }}>Le prix est figé à l&apos;accord. Seul un litige peut le rouvrir.</p>
 
           {statut && (<>
             <div className="mq-sect">Statut et paiement</div>
-            <p style={{ color: 'var(--slate)', fontSize: 13 }}>{statut}{pro.accepts_cesu_prefinance === true && <> · <b style={{ color: '#097A6C' }}>Accepte le CESU préfinancé</b></>}{pro.sap_number ? ' · service à la personne déclaré (n° SAP renseigné)' : ''}</p>
+            <p style={{ color: 'var(--slate)', fontSize: 15, lineHeight: 1.55 }}>{statut}{pro.accepts_cesu_prefinance === true && <> · <b style={{ color: '#097A6C' }}>Accepte le CESU préfinancé</b></>}{pro.sap_number ? ' · service à la personne déclaré (n° SAP renseigné)' : ''}</p>
           </>)}
 
           {/* Vérifications (maquette) : « Validée » seulement pour une pièce contrôlée par un admin PING. */}
@@ -265,11 +266,11 @@ export default function ProDetailPage() {
           )}
 
           <div className="mq-sect">Avis</div>
-          {reviews.length === 0 && <p style={{ color: '#6E8592', fontSize: 13 }}>Nouveau, pas encore d&apos;avis.</p>}
+          {reviews.length === 0 && <p style={{ color: '#4E6470', fontSize: 15, lineHeight: 1.55 }}>Nouveau, pas encore d&apos;avis.</p>}
           {reviews.map((r: any, i: number) => (
-            <div key={i} style={{ padding: '8px 0', borderTop: '1px solid #EEF2F1' }}>
-              <Stars r={r.stars || 0} size={13} /> <small style={{ color: '#6E8592' }}>{r.profiles?.full_name?.trim() || 'Client'}</small>
-              <p style={{ color: 'var(--slate)', fontSize: 13, marginTop: 2 }}>{r.comment ? `« ${r.comment} »` : 'Sans commentaire'}</p>
+            <div key={i} className="fa-avis" style={uid === proId ? { padding: '8px 0', borderTop: '1px solid #EEF2F1' } : undefined}>
+              <Stars r={r.stars || 0} size={uid === proId ? 13 : 18} /> <small style={{ color: '#4E6470' }}>{r.profiles?.full_name?.trim() || 'Client'}</small>
+              <p style={{ color: 'var(--slate)', fontSize: 15, marginTop: 2 }}>{r.comment ? `« ${r.comment} »` : 'Sans commentaire'}</p>
             </div>
           ))}
         </div>
@@ -278,7 +279,7 @@ export default function ProDetailPage() {
       {/* Desktop : la barre reste dans la colonne de contenu, à droite de la barre latérale (236 px). */}
       <style>{`@media (min-width:1000px){.pro-foot{left:236px !important;max-width:none !important;margin:0 !important}.pro-foot>div{max-width:640px;margin:0 auto}}`}</style>
       <div className="ping-foot pro-foot" style={{ position: 'fixed', bottom: 'var(--tabbar-h, 0px)', left: 0, right: 0, maxWidth: 480, zIndex: 20, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
-        {actionErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px', textAlign: 'center' }}>{actionErr}</p>}
+        {actionErr && <p style={{ color: '#c0503a', fontSize: 15, margin: '0 0 8px', textAlign: 'center' }}>{actionErr}</p>}
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="ping-btn ghost" style={{ flex: 1 }} onClick={() => contact()}>Contacter</button>
           <button className="ping-btn" style={{ flex: 1.4 }} onClick={() => reserve()}>

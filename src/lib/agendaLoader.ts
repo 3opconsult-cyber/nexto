@@ -45,7 +45,7 @@ export async function loadAgendaSnap(supabase: SupabaseClient, uid: string): Pro
     const [{ data: rows }, { data: ds }, { data: inv }, { data: offers }] = await Promise.all([
       supabase.rpc('transaction_counterparts', { p_transaction_ids: ids }),
       supabase.from('disputes')
-        .select('id, transaction_id, reason, status, created_at')
+        .select('id, transaction_id, reason, status, created_at, deadline_at')
         .in('transaction_id', ids)
         .eq('status', 'open')
         .order('created_at', { ascending: false }),

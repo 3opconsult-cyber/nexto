@@ -70,3 +70,33 @@
 @media print{.a-lift [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr 1fr!important}}
 /* Cases de jour et d'heure : fond doux, pas de contour (le choix se lit à la couleur pleine). */
 .a-lift button[style*="border: 1px solid rgb(220, 229, 227)"]{border-color:transparent!important;background:#F1F5F4!important}
+
+/* Conversation (24/11) : bulles, barre du haut et zone de saisie en 15 px au moins ; seulement quand la racine porte .chat-aere. */
+.chat-aere .msg{font-size:15px;line-height:1.5;padding:12px 16px;max-width:86%}
+.chat-aere .ping-chatbar b{font-size:18px}
+.chat-aere .ping-chatbar{min-height:60px}
+.chat-aere input,.chat-aere textarea{font-size:16px}
+.chat-aere button{font-size:max(15px,1em)}
+
+/* Fiche prestataire vue par un client (24/11) : prestations, vérifications et avis en liste aérée, sans cadres. */
+.fiche-aere{font-size:16px;line-height:1.55}
+.fiche-aere .mq-hero b.nm{font-size:22px}
+.fiche-aere .mq-hero div{font-size:15px!important;line-height:1.5}
+.fiche-aere .mq-tag{font-size:13px;padding:5px 12px;line-height:1.5}
+.fiche-aere .mq-sect{font-size:20px;margin:32px 0 12px;line-height:1.5}
+.fiche-aere .mq-prest{border:0;background:transparent;border-radius:0;padding:16px 0;margin:0;border-top:1px solid #E3EAE8}
+.fiche-aere .mq-prest .nm b{font-size:18px;line-height:1.5}
+.fiche-aere .mq-prest .nm small{font-size:15px;line-height:1.5;margin-top:2px}
+.fiche-aere .mq-prest .px{font-size:20px}
+.fiche-aere .mq-prest .px button{font-size:15px;min-height:48px}
+.fiche-aere .mq-vr{border:0;border-radius:0;background:transparent;padding:16px 0;margin:0;gap:14px;flex-wrap:wrap;border-top:1px solid #E3EAE8}
+.fiche-aere .mq-vr .vi{width:36px;height:36px;border-radius:11px}
+.fiche-aere .mq-vr b{font-size:16px;line-height:1.5}
+.fiche-aere .mq-vr small{font-size:15px;line-height:1.5;margin-top:2px}
+.fiche-aere .mq-vr .vs{flex-basis:100%;margin-left:50px;font-size:15px;line-height:1.5}
+.fiche-aere .mq-muted{font-size:15px;line-height:1.55;margin-top:14px}
+.fiche-aere .ping-sub{font-size:15px;line-height:1.55}
+.fiche-aere .fa-avis{padding:18px 0;border-top:1px solid #E3EAE8}
+.fiche-aere .fa-avis p{font-size:16px;line-height:1.55;margin:6px 0 0}
+.fiche-aere .fa-avis small{font-size:15px}
+.fiche-aere .ping-btn{min-height:54px;font-size:17px}

@@ -33,6 +33,12 @@ const SCREENS = [
   ['pieces', '/client/documents'],
   ['facture', `/mission/${TX_DONE}/facture`],
   ['litige', `/litiges/${DISPUTE}`],
+  ['agenda', '/agenda'],
+  ['chat', `/mission/${TX_LIVE}/chat`],
+  ['fiche', `/pro/${PRO_ID}`],
+  ['deposer', '/client/demandes/new'],
+  ['demandes', '/client/demandes'],
+  ['bienvenue', '/bienvenue.html', 'anon'],
   ['connexion', '/auth/login', 'anon'],
   ['accueil', '/auth/signup', 'anon'],
 ]

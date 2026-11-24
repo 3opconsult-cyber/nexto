@@ -1,4 +1,5 @@
 "use client"
+import '../../aere.css'
 import RequestDetails from '@/components/RequestDetails'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -174,39 +175,42 @@ export default function MesDemandesPage() {
     setBusy('')
   }
 
-  const groups = rows.reduce((acc, r) => {
+  // Lecture aérée (24/11) : les 5 plus récentes d'abord, le reste derrière « Voir les autres ».
+  const [showAll, setShowAll] = useState(false)
+  const shownRows = showAll ? rows : rows.slice(0, 5)
+  const groups = shownRows.reduce((acc, r) => {
     const key = new Date(r.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
     ;(acc[key] ||= []).push(r); return acc
   }, {} as Record<string, any[]>)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
+    <div className="aere a-lift" style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       <div style={{ padding: '14px 16px', background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
         <NavDrawer />
         <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', flex: 1 }}>Mes demandes</span>
       </div>
 
-      <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644', marginBottom: 4 }}>Déposez une demande</div>
-        <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14, lineHeight: 1.5 }}>
+      <div style={{ padding: '24px 20px', maxWidth: 720, margin: '0 auto' }}>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, lineHeight: 1.5, color: '#123644', marginBottom: 4 }}>Déposez une demande</div>
+        <p style={{ fontSize: 15, color: '#4E6470', marginBottom: 20, lineHeight: 1.55 }}>
           Comme une annonce : service, heures ou kilos de linge, fréquence, foyer, paiement. Les prestataires à proximité vous font une proposition chiffrée.
         </p>
         <button onClick={() => router.push('/client/demandes/new')}
-          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', marginBottom: 18 }}>
+          style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer', marginBottom: 32, minHeight: 54 }}>
           + Déposer une demande
         </button>
 
-        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: 15 }}>Chargement…</div>}
 
         {!loading && rows.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 32, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
-            <div style={{ fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Aucune demande pour l&apos;instant</div>
+          <div style={{ textAlign: 'center', padding: 32 }}>
+            <div style={{ fontWeight: 700, fontSize: 16, color: '#123644' }}>Aucune demande pour l&apos;instant</div>
           </div>
         )}
 
         {!loading && Object.entries(groups).map(([mois, list]: [string, any[]]) => (
-          <div key={mois} style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
+          <div key={mois} style={{ marginBottom: 28 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#4E6470', textTransform: 'capitalize', letterSpacing: '.01em', margin: '0 0 8px' }}>{mois}</div>
             {list.map(r => {
               const b = badge(r)
               const group = txByRequest[r.id] || []
@@ -217,23 +221,23 @@ export default function MesDemandesPage() {
                 ? `${eur(r.budget_min_cents) || '0 €'} – ${eur(r.budget_max_cents) || eur(r.budget_min_cents)}`
                 : (r.budget_cents ? eur(r.budget_cents) : null)
               return (
-                <div key={r.id} style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, opacity: busy === r.id ? .5 : 1 }}>
+                <div key={r.id} style={{ background: 'transparent', borderTop: '1px solid #E3EAE8', padding: '20px 0', marginBottom: 0, opacity: busy === r.id ? .5 : 1 }}>
                   <div onClick={() => group.length ? setExpanded(isOpen ? null : r.id) : undefined} style={{ cursor: group.length ? 'pointer' : 'default' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                      <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{r.title || TRAD[r.category] || r.category || 'Demande'}</span>
-                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: b.bg, color: b.fg, flexShrink: 0, whiteSpace: 'nowrap' }}>{b.label}</span>
+                      <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>{r.title || TRAD[r.category] || r.category || 'Demande'}</span>
+                      <span className="a-mini" style={{ alignSelf: 'flex-start', fontSize: 13, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: b.bg, color: b.fg, flexShrink: 0, whiteSpace: 'nowrap' }}>{b.label}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#0B8374', fontWeight: 700, marginTop: 3 }}>{TRAD[r.category] || r.category}</div>
-                    {r.description && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>{r.description}</div>}
+                    <div style={{ fontSize: 15, color: '#0B8374', fontWeight: 700, marginTop: 4 }}>{TRAD[r.category] || r.category}</div>
+                    {r.description && <div style={{ fontSize: 15, lineHeight: 1.5, color: '#4E6470', marginTop: 4 }}>{r.description}</div>}
                     <RequestDetails request={r} compact />
-                    <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: 15, color: '#4E6470', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
                       <span>{new Date(r.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
                       {budgetTxt ? <b style={{ color: '#123644' }}>{budgetTxt}</b> : null}
                     </div>
                   </div>
 
                   {isOpen && group.length > 0 && (
-                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #F1F5F4', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ marginTop: 12, paddingTop: 4, display: 'flex', flexDirection: 'column', gap: 16 }}>
                       {group.map(t => {
                         const p = t.providerId ? pros[t.providerId] : undefined
                         const km = p ? distanceKm(r.lat, r.lng, p.lat, p.lng) : null
@@ -327,10 +331,10 @@ export default function MesDemandesPage() {
                     </div>
                   )}
 
-                  <div style={{ display: 'flex', gap: 14, marginTop: 10, paddingTop: 10, borderTop: '1px solid #F1F5F4' }}>
-                    {canCancel && <button type="button" onClick={() => cancel(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#8a6520', cursor: 'pointer' }}>Annuler</button>}
-                    <button type="button" onClick={() => remove(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#c0503a', cursor: 'pointer', marginLeft: 'auto' }}>{delAsk === r.id ? 'Confirmer la suppression' : 'Supprimer'}</button>
-                    {delAsk === r.id && <button type="button" onClick={() => setDelAsk(null)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 12.5, fontWeight: 700, color: '#4E6470', cursor: 'pointer' }}>Garder</button>}
+                  <div style={{ display: 'flex', gap: 14, marginTop: 10, paddingTop: 10, borderTop: 'none' }}>
+                    {canCancel && <button type="button" onClick={() => cancel(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 15, fontWeight: 700, color: '#8a6520', cursor: 'pointer' }}>Annuler</button>}
+                    <button type="button" onClick={() => remove(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 15, fontWeight: 700, color: '#c0503a', cursor: 'pointer', marginLeft: 'auto' }}>{delAsk === r.id ? 'Confirmer la suppression' : 'Supprimer'}</button>
+                    {delAsk === r.id && <button type="button" onClick={() => setDelAsk(null)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 15, fontWeight: 700, color: '#4E6470', cursor: 'pointer' }}>Garder</button>}
                   </div>
                   {rowErr[r.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 4 }}>{rowErr[r.id]}</div>}
                 </div>
@@ -339,8 +343,14 @@ export default function MesDemandesPage() {
           </div>
         ))}
 
+        {!loading && !showAll && rows.length > 5 && (
+          <button type="button" onClick={() => setShowAll(true)} className="a-link" style={{ width: '100%', justifyContent: 'center', minHeight: 52, marginBottom: 20 }}>
+            Voir les {rows.length - 5} autres
+          </button>
+        )}
+
         {!loading && rows.length > 0 && (
-          <p style={{ fontSize: 10.5, color: '#6E8592', lineHeight: 1.5, textAlign: 'center', marginTop: 4 }}>
+          <p style={{ fontSize: 15, color: '#4E6470', lineHeight: 1.55, textAlign: 'center', marginTop: 4 }}>
             Votre adresse exacte reste masquée tant que vous n&apos;avez pas accepté une proposition.
           </p>
         )}

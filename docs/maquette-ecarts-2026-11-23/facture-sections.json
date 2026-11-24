@@ -1,5 +1,5 @@
 {
- "base": "https://nexto-eta.vercel.app",
+ "base": "http://localhost:3217",
  "checks": [
   {
    "k": "client : deux sections empilées dans l'ordre",

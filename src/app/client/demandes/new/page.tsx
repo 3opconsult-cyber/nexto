@@ -1,4 +1,5 @@
 "use client"
+import '../../../aere.css'
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { filterMessage } from '@/lib/chatFilter'
 import { useRouter } from 'next/navigation'
@@ -27,10 +28,10 @@ const KILOS = [2, 4, 6, 8, 10, 15]
 // le focus du champ en cours de saisie.
 function Section({ title: t, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 12 }}>
-      <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>{t}</div>
-      {hint && <div style={{ fontSize: 12, color: '#4E6470', marginTop: 2 }}>{hint}</div>}
-      <div style={{ marginTop: 12 }}>{children}</div>
+    <div style={{ padding: '0 0 28px', marginBottom: 28, borderBottom: '1px solid #E3EAE8' }}>
+      <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, lineHeight: 1.5, color: '#123644' }}>{t}</div>
+      {hint && <div style={{ fontSize: 15, lineHeight: 1.55, color: '#4E6470', marginTop: 4 }}>{hint}</div>}
+      <div style={{ marginTop: 16 }}>{children}</div>
     </div>
   )
 }
@@ -204,32 +205,32 @@ export default function NewOpenRequestPage() {
     router.push('/client/demandes')
   }
 
-  const fieldStyle: CSSProperties = { display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, background: '#fff', boxSizing: 'border-box' }
-  const labelStyle: CSSProperties = { fontSize: 12.5, color: '#4E6470', fontWeight: 600 }
+  const fieldStyle: CSSProperties = { display: 'block', width: '100%', marginTop: 6, border: '1.5px solid #CFDAD7', borderRadius: 14, padding: '12px 16px', minHeight: 52, fontSize: 16, lineHeight: 1.4, background: '#fff', boxSizing: 'border-box' }
+  const labelStyle: CSSProperties = { fontSize: 15, lineHeight: 1.5, color: '#123644', fontWeight: 600 }
   const chip = (on: boolean): CSSProperties => ({
-    minHeight: 44, padding: '0 15px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 13, color: '#123644',
-    border: on ? '2px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.08)' : '#fff',
+    minHeight: 48, padding: '0 18px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontSize: 15, color: on ? '#fff' : '#123644',
+    border: 'none', background: on ? '#0B8374' : '#EEF3F2',
   })
 
   return (
-    <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
+    <div className="aere a-lift" style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
         <NavDrawer />
-        <button onClick={() => router.back()} style={{ color: '#fff', background: 'rgba(255,255,255,.1)', border: 'none', borderRadius: 12, minHeight: 44, padding: '0 14px', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+        <button onClick={() => router.back()} style={{ color: '#fff', background: 'rgba(255,255,255,.1)', border: 'none', borderRadius: 12, minHeight: 48, padding: '0 16px', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
       </div>
       <div style={{ padding: '20px 20px 16px' }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Déposer une demande</div>
-        <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)', marginTop: 6, maxWidth: '40ch' }}>
+        <p style={{ fontSize: 15, lineHeight: 1.55, color: 'rgba(255,255,255,.9)', marginTop: 8, maxWidth: '40ch' }}>
           Votre annonce est visible des prestataires à proximité, sans votre adresse exacte. Ils vous font une proposition chiffrée, à négocier dans la conversation.
         </p>
       </div>
 
-      <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh', maxWidth: 640, margin: '0 auto' }}>
+      <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '28px 20px', minHeight: '60vh', maxWidth: 640, margin: '0 auto' }}>
         {draftRestored && (
-          <div role="status" data-draft-note style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1px solid #DCE5E3', borderRadius: 12, padding: '8px 12px', marginBottom: 12, fontSize: 12.5, color: '#123644', fontWeight: 600 }}>
+          <div role="status" data-draft-note style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'transparent', border: 'none', borderRadius: 12, padding: '0 0 8px', marginBottom: 20, fontSize: 15, lineHeight: 1.55, color: '#123644', fontWeight: 600 }}>
             <span style={{ flex: 1 }}>Votre brouillon a été repris : il est gardé sur ce téléphone jusqu’à la publication.</span>
             <button type="button" onClick={() => { if (draftUid) clearDraft(draftUid); window.location.reload() }}
-              style={{ minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline', cursor: 'pointer' }}>Repartir de zéro</button>
+              style={{ minHeight: 44, padding: '0 12px', border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 15, textDecoration: 'underline', cursor: 'pointer' }}>Repartir de zéro</button>
           </div>
         )}
         <Section title="Quel service ?">
@@ -284,10 +285,10 @@ export default function NewOpenRequestPage() {
                 <span style={labelStyle}>Nombre de pièces</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
                   <button type="button" aria-label="Moins de pièces" disabled={pieces <= 0} onClick={() => setPieces(Math.max(0, pieces - 1))}
-                    style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces <= 0 ? .45 : 1 }}>−</button>
-                  <span aria-live="polite" style={{ minWidth: 28, textAlign: 'center', fontWeight: 700, fontSize: 16, color: '#123644' }}>{pieces || '–'}</span>
+                    style={{ width: 44, height: 44, borderRadius: 12, border: 'none', background: '#EEF3F2', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces <= 0 ? .45 : 1 }}>−</button>
+                  <span aria-live="polite" style={{ minWidth: 28, textAlign: 'center', fontWeight: 700, fontSize: 18, color: '#123644' }}>{pieces || '–'}</span>
                   <button type="button" aria-label="Plus de pièces" disabled={pieces >= 30} onClick={() => setPieces(Math.min(30, pieces + 1))}
-                    style={{ width: 44, height: 44, borderRadius: 12, border: '1px solid #DCE5E3', background: '#fff', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces >= 30 ? .45 : 1 }}>+</button>
+                    style={{ width: 44, height: 44, borderRadius: 12, border: 'none', background: '#EEF3F2', fontSize: 20, fontWeight: 700, color: '#123644', cursor: 'pointer', opacity: pieces >= 30 ? .45 : 1 }}>+</button>
                 </div>
               </div>
               )}
@@ -316,30 +317,30 @@ export default function NewOpenRequestPage() {
             {FREQUENCIES.map(f => <button key={f.key} type="button" onClick={() => setFrequency(f.key)} style={chip(frequency === f.key)}>{f.label}</button>)}
           </div>
           <span style={labelStyle}>{frequency === 'ponctuel' ? 'Jour souhaité' : 'À partir du'}</span>
-          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '8px 0 6px' }}>
+          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '10px 0 10px' }}>
             {days.map((d, i) => {
               const k = iso(d); const on = desiredDate === k
               return (
                 <button key={k} type="button" onClick={() => setDesiredDate(on ? '' : k)}
-                  style={{ ...chip(on), flex: '0 0 auto', width: 58, padding: '8px 0', textAlign: 'center', borderRadius: 12, background: on ? '#12B39C' : '#fff', color: on ? '#fff' : '#123644', border: on ? 'none' : '1px solid #DCE5E3' }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'capitalize' }}>{i === 0 ? 'Auj.' : d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')}</div>
-                  <div style={{ fontSize: 17, lineHeight: 1.2 }}>{d.getDate()}</div>
-                  <div style={{ fontSize: 10, fontWeight: 600 }}>{d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}</div>
+                  style={{ ...chip(on), flex: '0 0 auto', width: 66, minHeight: 80, padding: '8px 0', textAlign: 'center', borderRadius: 14, background: on ? '#0B8374' : '#EEF3F2', color: on ? '#fff' : '#123644', border: 'none' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, textTransform: 'capitalize' }}>{i === 0 ? 'Auj.' : d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')}</div>
+                  <div style={{ fontSize: 18, lineHeight: 1.3 }}>{d.getDate()}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}</div>
                 </button>
               )
             })}
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+          <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
             {SLOTS.map(s => <button key={s.key} type="button" onClick={() => setDesiredSlot(s.key)} style={{ ...chip(desiredSlot === s.key), flex: 1 }}>{s.label}</button>)}
           </div>
           <button type="button" onClick={() => setUrgent(!urgent)} aria-pressed={urgent}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '12px 14px', marginTop: 14, borderRadius: 14, cursor: 'pointer', border: urgent ? '2px solid #E8743B' : '1px solid #DCE5E3', background: urgent ? 'rgba(232,116,59,.07)' : '#fff' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '14px 16px', marginTop: 20, minHeight: 64, borderRadius: 16, cursor: 'pointer', border: 'none', background: urgent ? 'rgba(232,116,59,.12)' : '#EEF3F2' }}>
             <span style={{ width: 38, height: 22, borderRadius: 999, background: urgent ? '#E8743B' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
               <span style={{ position: 'absolute', top: 2, left: urgent ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
             </span>
             <span>
-              <span style={{ display: 'block', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>C’est urgent</span>
-              <span style={{ display: 'block', fontSize: 12, color: '#4E6470' }}>Votre annonce passe en tête et s’affiche en orange chez les prestataires.</span>
+              <span style={{ display: 'block', fontWeight: 700, fontSize: 16, color: '#123644' }}>C’est urgent</span>
+              <span style={{ display: 'block', fontSize: 15, lineHeight: 1.5, color: '#4E6470' }}>Votre annonce passe en tête et s’affiche en orange chez les prestataires.</span>
             </span>
           </button>
         </Section>
@@ -355,23 +356,23 @@ export default function NewOpenRequestPage() {
               <input type="number" value={budgetMax} onChange={e => setBudgetMax(e.target.value)} min="0" step="1" style={fieldStyle} />
             </label>
           </div>
-          <p style={{ fontSize: 11.5, color: '#4E6470', margin: '6px 0 0' }}>Indicatif seulement : les propositions reçues peuvent différer, vous restez libre de refuser.</p>
+          <p style={{ fontSize: 15, lineHeight: 1.55, color: '#4E6470', margin: '10px 0 0' }}>Indicatif seulement : les propositions reçues peuvent différer, vous restez libre de refuser.</p>
           {more && <>
           <div style={{ height: 14 }} />
           <span style={labelStyle}>Mode de paiement souhaité</span>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
             {paymentChoices.map(p => <button key={p.key} type="button" onClick={() => setPayment(p.key)} style={chip(payment === p.key)}>{p.label}</button>)}
           </div>
-          {cesuOk && <p style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8 }}>Le CESU préfinancé (titres remis par un employeur ou un comité d’entreprise) n’est possible qu’avec un prestataire qui l’accepte : c’est indiqué sur son profil. Vous gérez vous-même votre crédit d’impôt.</p>}
+          {cesuOk && <p style={{ fontSize: 15, lineHeight: 1.55, color: '#4E6470', marginTop: 10 }}>Le CESU préfinancé (titres remis par un employeur ou un comité d’entreprise) n’est possible qu’avec un prestataire qui l’accepte : c’est indiqué sur son profil. Vous gérez vous-même votre crédit d’impôt.</p>}
           </>}
         </Section>
 
         {/* Précisions facultatives repliées (foyer, types de linge, mode de paiement dont CESU). */}
         <button type="button" onClick={() => setMore(m => !m)} aria-expanded={more}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%', minHeight: 48, marginBottom: 12, padding: '0 16px', borderRadius: 16, border: '1px dashed #B9CBC7', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%', minHeight: 56, marginBottom: 28, padding: '0 0', borderRadius: 16, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
           <span>
-            <span style={{ display: 'block', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>{more ? 'Masquer les précisions' : 'Ajouter des précisions (facultatif)'}</span>
-            {!more && <span style={{ display: 'block', fontSize: 12, color: '#4E6470' }}>{[linenService && has('linen_types') ? 'types de linge' : null, has('household_size') ? 'foyer' : null, cesuOk ? 'paiement, CESU' : 'mode de paiement'].filter(Boolean).join(', ')}</span>}
+            <span style={{ display: 'block', fontWeight: 700, fontSize: 16, color: '#0B8374' }}>{more ? 'Masquer les précisions' : 'Ajouter des précisions (facultatif)'}</span>
+            {!more && <span style={{ display: 'block', fontSize: 15, color: '#4E6470' }}>{[linenService && has('linen_types') ? 'types de linge' : null, has('household_size') ? 'foyer' : null, cesuOk ? 'paiement, CESU' : 'mode de paiement'].filter(Boolean).join(', ')}</span>}
           </span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2.2" aria-hidden="true" style={{ transform: more ? 'rotate(180deg)' : 'none', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
         </button>
@@ -389,9 +390,9 @@ export default function NewOpenRequestPage() {
         )}
 
         {/* « Publier » collant au-dessus de la barre du bas (audit 19/11, correction 18). */}
-        <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -16px', padding: '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))', background: '#F3F6F5', borderTop: '1px solid #E7EDEB' }}>
-          {error && <p role="alert" style={{ color: '#c0503a', fontSize: 13, fontWeight: 600, margin: '0 0 8px' }}>{error}</p>}
-          <button onClick={() => submit()} disabled={creating} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, padding: 14, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
+        <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))', background: '#F3F6F5', borderTop: 'none' }}>
+          {error && <p role="alert" style={{ color: '#c0503a', fontSize: 15, lineHeight: 1.5, fontWeight: 600, margin: '0 0 8px' }}>{error}</p>}
+          <button onClick={() => submit()} disabled={creating} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 14, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
             {creating ? 'Publication…' : 'Publier mon annonce'}
           </button>
         </div>
