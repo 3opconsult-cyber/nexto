@@ -14,6 +14,7 @@ run() { # nom commande
   if timeout 1800 bash -c "$2" > "/tmp/nr-$1.out" 2>&1 && ! grep -q "^KO" "/tmp/nr-$1.out" && ! grep -qE "^=== [AB] : [0-9]+ OK, [1-9]" "/tmp/nr-$1.out"; then echo "   VERT"; else echo "   ROUGE (voir /tmp/nr-$1.out)"; rouge=1; fi
 }
 run inscription-erreurs "node inscription-erreurs.mjs"
+run champs-visibles "node champs-visibles.mjs"
 run parcours-rapide "node parcours-rapide.mjs"
 run reservation-etapes "node reservation-etapes.mjs"
 run facture-sections "node facture-sections.mjs"
