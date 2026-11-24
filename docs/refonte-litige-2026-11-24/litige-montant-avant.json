@@ -1,0 +1,51 @@
+{
+ "base": "http://localhost:3000",
+ "mode": "avant",
+ "checks": [
+  {
+   "k": "panneau Décision PING visible (admin simulé)",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "clavier simulé (508 px visibles) : qui reçoit le tap",
+   "v": [
+    "Rien y=282 vh=508 dessus=pastille",
+    "25 % y=282 vh=508 dessus=pastille",
+    "50 % y=282 vh=508 dessus=pastille",
+    "Tout y=282 vh=508 dessus=pastille"
+   ],
+   "ok": true
+  },
+  {
+   "k": "tap 25 % clavier :  -> 18,88",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "tap Tout clavier : 18,88 -> 75,5",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "aucune écriture réelle partie vers la base",
+   "v": [
+    "POST events (ÉCRITURE BLOQUÉE)"
+   ],
+   "ok": true
+  },
+  {
+   "k": "erreurs de page",
+   "v": [],
+   "ok": true
+  }
+ ],
+ "decide": [],
+ "blocked": [
+  "POST rpc/unread_counts (simulé, non envoyé)",
+  "POST events (ÉCRITURE BLOQUÉE)",
+  "POST rpc/presence_state (simulé, non envoyé)",
+  "POST rpc/presence_state (simulé, non envoyé)",
+  "POST rpc/presence_state (simulé, non envoyé)"
+ ]
+}

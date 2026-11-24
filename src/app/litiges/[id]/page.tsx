@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { EUR } from '@/lib/invoice-pdf'
 import { filterMessage } from '@/lib/chatFilter'
-import { categoryLabel } from '@/lib/dispute'
+import { categoryLabel, refundFieldCents, centsToField } from '@/lib/dispute'
 import AmicableSettlement from '@/components/AmicableSettlement'
 import { notifyOther, alertAdminNow } from '@/lib/notify'
 import '../../aere.css'
@@ -427,56 +427,112 @@ function Countdown({ to }: { to: string }) {
   )
 }
 
-/** Décision PING (admin, 054) : montant rendu au client (0 à prix de la prestation), reste au prestataire, motif. */
+/**
+ * Décision PING (admin, 054) : montant rendu au client (0 à prix de la prestation), reste au prestataire, motif.
+ * Refonte 24/11 (remarque de Romain sur iPhone) : un curseur au pas de 1 € et un champ chiffré synchronisés
+ * (l'un met à jour l'autre) remplacent les pastilles en pourcentage ; « Rien », « La moitié », « Tout » restent en
+ * raccourcis. Le montant part toujours par `refund` (texte en euros) et la conversion en centimes d'applyDecision.
+ */
+const DEC_CSS = `
+.dec-range{-webkit-appearance:none;appearance:none;width:100%;height:48px;margin:0;background:transparent;touch-action:manipulation;cursor:pointer}
+.dec-range:focus{outline:none}
+.dec-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(18,179,156,.35)}
+.dec-range::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(to right,#12B39C 0,#12B39C var(--p),#DCE5E3 var(--p),#DCE5E3 100%)}
+.dec-range::-webkit-slider-thumb{-webkit-appearance:none;width:44px;height:44px;margin-top:-17px;border-radius:50%;background:#fff;border:3px solid #0B8374;box-shadow:0 2px 8px rgba(18,54,68,.25)}
+.dec-range::-moz-range-track{height:10px;border-radius:999px;background:#DCE5E3}
+.dec-range::-moz-range-progress{height:10px;border-radius:999px;background:#12B39C}
+.dec-range::-moz-range-thumb{width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid #0B8374;box-sizing:border-box}
+`
 function DecisionPanel({ ceiling, requested, refund, setRefund, reason, setReason, confirm, setConfirm, busy, onApply }: {
   ceiling: number; requested?: string | null; refund: string; setRefund: (v: string) => void
   reason: string; setReason: (v: string) => void; confirm: boolean; setConfirm: (v: boolean) => void
   busy: boolean; onApply: () => void
 }) {
-  const cents = refund.trim() === '' ? null : Math.round(Number(refund.replace(',', '.').replace(/\s/g, '')) * 100)
+  const cents = refundFieldCents(refund)
   const valid = cents != null && Number.isFinite(cents) && cents >= 0 && cents <= ceiling
   const payout = valid ? ceiling - (cents as number) : null
-  const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 12px', borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 14 }
-  const quick = (c: number) => setRefund((c / 100).toString().replace('.', ','))
+  const reasonOk = reason.trim().length >= 10
+  const canApply = valid && reasonOk && ceiling > 0
+  // Position du curseur : le montant valide, sinon la borne la plus proche (le champ garde ce qui a été tapé).
+  const sliderCents = valid ? (cents as number) : cents != null && Number.isFinite(cents) && cents > ceiling ? ceiling : 0
+  const pct = ceiling > 0 ? Math.min(100, Math.max(0, (sliderCents / ceiling) * 100)) : 0
+  // Clavier ouvert (iPhone) : le champ et le bouton restent au-dessus de la barre d'envoi et de la barre du bas.
+  const keepVisible = (e: React.FocusEvent<HTMLElement>) => { const el = e.currentTarget; setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300) }
+  const pill = (on: boolean): React.CSSProperties => ({
+    flex: 1, minHeight: 48, padding: '0 6px', borderRadius: 999, border: `1.5px solid ${on ? '#0B8374' : '#CFDAD7'}`,
+    background: on ? 'rgba(18,179,156,.12)' : '#fff', color: '#123644', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', touchAction: 'manipulation', whiteSpace: 'nowrap',
+  })
+  const quick: [string, number][] = [['Rien', 0], ['La moitié', Math.round(ceiling / 2)], ['Tout', ceiling]]
+  const bad = cents != null && !valid
+  // « Appliquer » -> « Confirmer » : le bouton de confirmation est amené au milieu de l'écran (jamais sous la barre d'envoi).
+  const confRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => { if (confirm) confRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }) }, [confirm])
+  const nb = (c: number) => EUR(c).replace(/ €$/, ' €')
   return (
-    <div style={{ padding: '0 16px 10px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
-      <div style={{ background: '#fff', border: '1.5px solid #12B39C', borderRadius: 14, padding: 14 }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Décision PING</div>
-        <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.5 }}>
-          {requested ? `Intervention demandée le ${new Date(requested).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}. ` : ''}
-          Prix de la prestation : <b>{EUR(ceiling)}</b>. Frais de service et commission PING inchangés.
+    <div style={{ padding: '0 20px 28px', maxWidth: 640, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
+      <style>{DEC_CSS}</style>
+      <div data-dec-panel style={{ background: '#fff', border: '1.5px solid #12B39C', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 20, color: '#123644' }}>Décision PING</div>
+          <div style={{ fontSize: 15, color: '#4E6470', marginTop: 6, lineHeight: 1.55 }}>
+            {requested ? `Intervention demandée le ${new Date(requested).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}. ` : ''}
+            Prix de la prestation : <b style={{ color: '#123644' }}>{EUR(ceiling)}</b>. Frais de service et commission PING inchangés.
+          </div>
         </div>
-        <label htmlFor="dec-refund" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#123644', margin: '12px 0 6px' }}>Montant rendu au client (€)</label>
-        <input id="dec-refund" value={refund} onChange={e => setRefund(e.target.value)} inputMode="decimal" autoComplete="off" style={field} />
-        <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
-          {[0, 0.25, 0.5, 1].map(f => (
-            <button key={f} type="button" onClick={() => quick(Math.round(ceiling * f))}
-              style={{ minHeight: 36, padding: '0 12px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-              {f === 0 ? 'Rien' : f === 1 ? 'Tout' : `${f * 100} %`}
-            </button>
-          ))}
+
+        <div>
+          <label htmlFor="dec-refund" style={{ display: 'block', fontSize: 16, fontWeight: 700, color: '#123644', marginBottom: 10 }}>Montant rendu au client (€)</label>
+          <input type="range" className="dec-range" min={0} max={ceiling} step={100} value={sliderCents} disabled={busy || ceiling <= 0}
+            aria-label="Montant rendu au client, curseur" aria-valuetext={EUR(sliderCents)}
+            onChange={e => setRefund(centsToField(Number(e.target.value)))}
+            style={{ ['--p' as string]: `${pct}%` } as React.CSSProperties} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, color: '#4E6470', marginTop: 2 }}>
+            <span>0 €</span><span>{EUR(ceiling)}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
+            <input id="dec-refund" className="a-input" value={refund} onChange={e => setRefund(e.target.value)} onFocus={keepVisible}
+              inputMode="decimal" autoComplete="off" enterKeyHint="done" placeholder="Saisir un montant" aria-describedby="dec-split" aria-invalid={bad}
+              style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 700, borderColor: bad ? '#C0503A' : undefined, scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }} />
+            <span aria-hidden style={{ fontSize: 18, fontWeight: 700, color: '#123644' }}>€</span>
+          </div>
+          {bad && (
+            <div role="alert" style={{ fontSize: 15, color: '#B2432E', marginTop: 8 }}>Montant entre 0 et {EUR(ceiling)} (chiffres, 2 décimales au plus).</div>
+          )}
+          <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+            {quick.map(([label, c]) => (
+              <button key={label} type="button" disabled={busy} onClick={() => setRefund(centsToField(c))} style={pill(valid && cents === c)}>{label}</button>
+            ))}
+          </div>
         </div>
-        <div style={{ fontSize: 13, color: '#123644', marginTop: 8 }}>
-          Versé au prestataire : <b>{payout != null ? EUR(payout) : '—'}</b>{cents != null && !valid ? <span style={{ color: '#C0503A' }}> · entre 0 et {EUR(ceiling)}</span> : null}
+
+        <div id="dec-split" data-dec-split aria-live="polite" style={{ display: 'grid', gap: 8, padding: '14px 16px', borderRadius: 14, background: '#F3F7F6', fontSize: 17, color: '#123644' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><span>Rendu au client :</span><b>{valid ? EUR(cents as number) : '—'}</b></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><span>Versé au prestataire :</span><b>{payout != null ? EUR(payout) : '—'}</b></div>
         </div>
-        <label htmlFor="dec-reason" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#123644', margin: '12px 0 6px' }}>Motif (lu par les deux parties)</label>
-        <textarea id="dec-reason" value={reason} onChange={e => setReason(e.target.value)} rows={3} maxLength={1000} style={{ ...field, minHeight: 72 }} />
+
+        <div>
+          <label htmlFor="dec-reason" style={{ display: 'block', fontSize: 16, fontWeight: 700, color: '#123644', marginBottom: 10 }}>Motif (lu par les deux parties)</label>
+          <textarea id="dec-reason" className="a-input" value={reason} onChange={e => setReason(e.target.value)} onFocus={keepVisible} rows={3} maxLength={1000}
+            style={{ width: '100%', minHeight: 96, fontFamily: 'inherit', resize: 'vertical', scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 160px)' }} />
+          {!reasonOk && <div style={{ fontSize: 15, color: '#4E6470', marginTop: 6 }}>10 caractères au moins ({reason.trim().length}/10).</div>}
+        </div>
+
         {confirm ? (
-          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-            <button type="button" disabled={busy} onClick={onApply}
-              style={{ flex: 1, minHeight: 44, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? .6 : 1, fontFamily: 'inherit' }}>
-              {busy ? 'Application…' : `Confirmer : ${valid ? EUR(cents as number) : '—'} au client, ${payout != null ? EUR(payout) : '—'} au prestataire`}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button ref={confRef} type="button" disabled={busy || !canApply} onClick={onApply}
+              style={{ width: '100%', minHeight: 52, padding: '10px 16px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontSize: 16, fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? .6 : 1, fontFamily: 'inherit' }}>
+              {busy ? 'Application…' : `Confirmer : ${valid ? nb(cents as number) : '—'} au client, ${payout != null ? nb(payout) : '—'} au prestataire`}
             </button>
             <button type="button" disabled={busy} onClick={() => setConfirm(false)}
-              style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Retour</button>
+              style={{ width: '100%', minHeight: 48, borderRadius: 999, border: '1.5px solid #CFDAD7', background: '#fff', color: '#123644', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Retour</button>
           </div>
         ) : (
-          <button type="button" disabled={!valid || !reason.trim()} onClick={() => setConfirm(true)}
-            style={{ width: '100%', marginTop: 10, minHeight: 44, borderRadius: 999, border: 'none', background: valid && reason.trim() ? '#0B8374' : '#DCE5E3', color: '#fff', fontWeight: 700, cursor: valid && reason.trim() ? 'pointer' : 'default', fontFamily: 'inherit' }}>
+          <button type="button" disabled={!canApply} onClick={() => setConfirm(true)}
+            style={{ width: '100%', minHeight: 52, borderRadius: 999, border: 'none', background: canApply ? '#0B8374' : '#DCE5E3', color: canApply ? '#fff' : '#4E6470', fontSize: 16, fontWeight: 700, cursor: canApply ? 'pointer' : 'default', fontFamily: 'inherit', scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }}>
             Appliquer la décision
           </button>
         )}
-        <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 8, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 15, color: '#4E6470', lineHeight: 1.55 }}>
           Le litige est clos, un avoir est émis sur la facture si un montant est rendu, le virement est ajusté (ou, paiement en ligne : remboursement puis versement du reste) et les deux parties sont prévenues.
         </div>
       </div>

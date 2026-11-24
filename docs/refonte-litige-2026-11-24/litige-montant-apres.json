@@ -1,0 +1,211 @@
+{
+ "base": "http://localhost:3742",
+ "mode": "apres",
+ "checks": [
+  {
+   "k": "panneau Décision PING visible (admin simulé)",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "curseur présent",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "curseur de 0 au prix de la prestation, pas de 1 €",
+   "v": {
+    "min": "0",
+    "max": "7550",
+    "step": "100"
+   },
+   "ok": true
+  },
+  {
+   "k": "tap « Tout » : champ 75,50, curseur 7500",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "tap « La moitié » : champ 37,75, curseur 3800",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "tap « Rien » : champ 0, curseur 0",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "poignée du curseur : zone tactile >= 44 px de haut",
+   "v": 48,
+   "ok": true
+  },
+  {
+   "k": "curseur -> champ (tap à 60 %) : curseur 4700, champ 47",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "curseur au clavier +1 € : 4700 -> 4800, champ 48",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "champ -> curseur (20,40 €)",
+   "v": 2000,
+   "ok": true
+  },
+  {
+   "k": "affichage en direct",
+   "v": "Rendu au client : 20,40 € Versé au prestataire : 55,10 €",
+   "ok": true
+  },
+  {
+   "k": "clavier ouvert (508 px visibles) : champ et curseur visibles, non recouverts",
+   "v": {
+    "champ": {
+     "y": 136,
+     "bas": 188,
+     "libre": true
+    },
+    "curseur": {
+     "y": 42,
+     "bas": 90,
+     "libre": true
+    },
+    "haut": 508
+   },
+   "ok": true
+  },
+  {
+   "k": "clavier ouvert sur le motif : zone de saisie non recouverte",
+   "v": {
+    "y": 94,
+    "bas": 190,
+    "libre": true
+   },
+   "ok": true
+  },
+  {
+   "k": "montant > total : refusé (bouton inactif, message)",
+   "v": "Rendu au client : — Versé au prestataire : —",
+   "ok": true
+  },
+  {
+   "k": "montant négatif : refusé",
+   "v": "-5",
+   "ok": true
+  },
+  {
+   "k": "texte non numérique : refusé",
+   "v": "abc",
+   "ok": true
+  },
+  {
+   "k": "plus de 2 décimales : refusé",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "motif < 10 caractères : bouton inactif",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "motif >= 10 et montant valide : bouton actif",
+   "v": "",
+   "ok": true
+  },
+  {
+   "k": "bouton Appliquer : cible >= 44 px",
+   "v": 52,
+   "ok": true
+  },
+  {
+   "k": "panneau : aucun texte < 15 px",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "panneau : aucune cible < 44 px",
+   "v": [],
+   "ok": true
+  },
+  {
+   "k": "confirmation en 2 appuis avec les montants",
+   "v": 1,
+   "ok": true
+  },
+  {
+   "k": "bouton Confirmer amené à l'écran, non recouvert par la barre d'envoi",
+   "v": {
+    "y": 387,
+    "bas": 457,
+    "libre": true
+   },
+   "ok": true
+  },
+  {
+   "k": "ping_decide_dispute intercepté : centimes exacts",
+   "v": [
+    {
+     "p_dispute": "00000000-0000-4000-8000-0000000a1171",
+     "p_refund_cents": 2040,
+     "p_reason": "QA simulation : partie du ménage non faite"
+    },
+    {
+     "p_dispute": "00000000-0000-4000-8000-0000000a1171",
+     "p_refund_cents": 7550,
+     "p_reason": "QA simulation : rien n a été fait"
+    }
+   ],
+   "ok": true
+  },
+  {
+   "k": "« Tout » envoie le prix exact en centimes (7550)",
+   "v": [
+    2040,
+    7550
+   ],
+   "ok": true
+  },
+  {
+   "k": "aucune écriture réelle partie vers la base",
+   "v": [
+    "POST events (ÉCRITURE BLOQUÉE)",
+    "POST events (ÉCRITURE BLOQUÉE)"
+   ],
+   "ok": true
+  },
+  {
+   "k": "erreurs de page",
+   "v": [],
+   "ok": true
+  }
+ ],
+ "decide": [
+  {
+   "p_dispute": "00000000-0000-4000-8000-0000000a1171",
+   "p_refund_cents": 2040,
+   "p_reason": "QA simulation : partie du ménage non faite"
+  },
+  {
+   "p_dispute": "00000000-0000-4000-8000-0000000a1171",
+   "p_refund_cents": 7550,
+   "p_reason": "QA simulation : rien n a été fait"
+  }
+ ],
+ "blocked": [
+  "POST rpc/unread_counts (simulé, non envoyé)",
+  "POST events (ÉCRITURE BLOQUÉE)",
+  "POST rpc/presence_state (simulé, non envoyé)",
+  "POST rpc/presence_state (simulé, non envoyé)",
+  "POST rpc/presence_state (simulé, non envoyé)",
+  "POST rpc/unread_counts (simulé, non envoyé)",
+  "POST events (ÉCRITURE BLOQUÉE)",
+  "POST rpc/presence_state (simulé, non envoyé)",
+  "POST rpc/presence_state (simulé, non envoyé)",
+  "POST rpc/presence_state (simulé, non envoyé)"
+ ]
+}

@@ -30,6 +30,23 @@ export function amountToCents(v: string): number | null {
   return v.trim() && isFinite(n) && n >= 0 ? Math.round(n * 100) : null
 }
 
+/**
+ * Saisie du « Montant rendu au client » (Décision PING, 24/11) : lecture stricte du champ en euros.
+ * null = champ vide ; NaN = refusé (texte, signe moins, plus de 2 décimales) ; sinon centimes entiers.
+ * Seule l'interface s'en sert pour valider ; l'envoi garde sa conversion d'origine (même résultat pour tout montant accepté ici).
+ */
+export function refundFieldCents(v: string): number | null {
+  const s = v.replace(/[\s  ]/g, '').replace(',', '.')
+  if (!s) return null
+  if (!/^\d+(\.\d{0,2})?$/.test(s)) return NaN
+  return Math.round(Number(s) * 100)
+}
+
+/** Centimes -> texte du champ en euros : « 37,75 », « 75 », « 0 ». */
+export function centsToField(c: number): string {
+  return c % 100 ? (c / 100).toFixed(2).replace('.', ',') : String(c / 100)
+}
+
 /** Ouvre le litige : photos d'abord (l'id du litige est choisi ici pour fixer leur chemin), puis la ligne. */
 export async function createDispute(
   supabase: SupabaseClient,
