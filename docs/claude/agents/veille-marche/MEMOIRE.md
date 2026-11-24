@@ -22,3 +22,5 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- Passe 1 (21/11) : sources secondaires, pages non ouvertes : tout point juridique à faire valider ; à lire en entier : CNIL localisation 2026-06, DPI-DAC7, BOFIP 12/08/2026, DGCCRF mandataire (A-040).

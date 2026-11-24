@@ -18,3 +18,5 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- Passe 1 (21/11) : A-026 à A-029 ; A-027 et A-028 faites. À scruter ensuite : mission/new (appuis), onboarding pro, navigation clavier ; ne pas reproposer sans nouvelle preuve.

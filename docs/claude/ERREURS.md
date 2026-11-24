@@ -30,3 +30,12 @@ Source : CLAUDE.md (HISTORIQUE.md), `docs/audit-ergonomie-2026-11-21.md`, sessio
 - Une relecture de code ne remplace pas un scénario réel avec de vrais comptes de test.
 - Toute migration : rejouable, testée collée deux fois, appels interdits refusés.
 - 21/11/2026 | `parcours.mjs` A et B échouent au « Je pars » en soirée | le sélecteur de créneau n'offre que des heures du jour à +30 min dans les horaires d'ouverture ; tard dans la journée il propose le lendemain, et la base refuse « Je pars » avant le jour du rendez-vous (038) | ce n'est pas une régression du produit | rejouer ces deux parcours en journée (avant ~17 h heure de Paris), ou avec la clé service pour fixer un rendez-vous du jour
+
+## Ajouts du 22-23/11/2026
+- Chat visible chez l'autre partie seulement après rechargement | cause probable (non vérifiée côté base) : `messages` absent de la publication supabase_realtime | 062 l'ajoute ; le code relit après envoi, au retour sur l'onglet et toutes les 20 s | tester avec deux comptes après collage.
+- Jetons de QR et codes de connexion dans events.path | `trackEvent` gardait pathname + search | `safePath()` (73bf766) | contrôle : aucune requête de suivi avec ?token= ; anciennes lignes à traiter avec accord.
+- Étiquette de version impossible à pousser | le push d'un tag est refusé (403) depuis cette session | création par Romain via Releases | ne pas insister.
+- Workflow « Contrôles automatiques » rouge sans faute du code | chargement des polices Google par next/font échoué sur GitHub | 3 essais (251c49b) | relancer avant de chercher dans le code.
+- Parcours A/B rouges le soir | créneau du lendemain, « Je pars » refusé | rejouer en journée | ne pas conclure à une régression.
+- Fenêtres d'annulation sous la barre du bas sur mobile | z-index 80 contre 1500 | z-index 3000 (21/11) | mesurer les boutons au navigateur.
+- Romain a dû répondre deux fois aux mêmes questions (écarts maquette, SIRET de Baïta) | le principal a relayé les « décisions attendues » d'un agent au lieu d'appliquer la règle déjà posée (maquette = référence) et n'a pas cherché l'information dans les outils connectés (Notion) | règle écrite dans BRIEF-AGENT et MEMOIRE du gardien ; chercher dans Notion, Drive, dépôt, base avant de demander (23/11) | une question à Romain n'est posée qu'après ces recherches et seulement pour argent, juridique, authentification, suppression.
