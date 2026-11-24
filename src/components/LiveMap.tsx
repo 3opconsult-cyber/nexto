@@ -44,7 +44,9 @@ function PingBaseLayer() {
           try { n = glMap.queryRenderedFeatures().length } catch { /* contexte perdu */ }
           if (n > 0) return
           probes += 1
-          if (probes >= 7) { if (!cancelled) setFallback(true); return }
+          // Réseau mobile intermittent : une fois, on recharge le style (nouveau lot de tuiles) avant de renoncer.
+          if (probes === 3) { try { glMap.setStyle(pickMapStyle()) } catch { /* sans objet */ } }
+          if (probes >= 8) { if (!cancelled) setFallback(true); return }
           window.setTimeout(probe, 2000)
         }
         glMap.on('load', () => { loaded = true; window.clearTimeout(timer); map.getContainer().dataset.basemap = 'ping'; window.setTimeout(probe, 1500) })
