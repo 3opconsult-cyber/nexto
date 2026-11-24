@@ -12,6 +12,18 @@ Un écart n'est VOULU que si Romain l'a décidé (date et source citées) ; un �
 - **VOULU** : écart décidé par Romain, décision citée (voir la section en bas).
 - **NON VÉRIFIÉ** : preuve impossible pour l'instant, raison écrite dans la note (compte administrateur, base, mesure à faire).
 
+## Décompte au 24/11/2026 matin, quatrième passe visuelle (212 lignes)
+Production : déploiement GitHub du commit b3a7e24 (« success » le 24/11 à 00:07 UTC, égal à la tête de main). Écrans comparés à 390x844, maquette (file://, `showView` / `jump`, inchangée) contre production (Playwright, comptes `audit.*@ping-demo.invalid`, lecture seule) ; captures `*-6.png` dans `docs/maquette-ecarts-2026-11-23/`.
+| Profil | OK | OK (code) | MANQUE | VOULU | NON VÉRIFIÉ | Total |
+|---|---|---|---|---|---|---|
+| Site public | 6 | 8 | 0 | 0 | 1 | 15 |
+| Particulier | 41 | 39 | 4 | 8 | 4 | 96 |
+| Prestataire | 11 | 41 | 8 | 3 | 2 | 65 |
+| Administration | 0 | 27 | 2 | 2 | 5 | 36 |
+| **Total** | 58 | 115 | 14 | 13 | 12 | 212 |
+Fidélité : 58 lignes OK sur 212 (27,4 %), contre 37 sur 201 (18,4 %) à la passe 3 ; 173 sur 212 (81,6 %) avec « OK (code) » ; parmi les 72 lignes tranchées en production (OK ou MANQUE), 58 OK (81 %). 13 VOULU hors calcul d'écart. Changements : 10 lignes MANQUE passées OK (contraste du bouton #0B8374 mesuré, accueil, connexion, réservation en 5 étapes, Paiements client avec pourboires, facture à défilement unique, Messages client et pro, pièces client, Paiements pro), 6 lignes OK (code) passées OK, 10 lignes ajoutées (Commandes en cours côté client et pro, Trouver un prestataire en 4 appuis, Mon annonce, calendrier avec réservations en attente, IBAN, 4 écarts de lecture aérée / cibles / calendrier), 1 VOULU ajouté (Mon profil derrière « Voir plus »).
+Non prouvable sans écriture ni compte : IBAN affiché avec « Modifier », variante « Récapitulatif » de la facture, dernier appui « Réserver » du parcours Trouver un prestataire, envoi d'une pièce, tout l'admin.
+
 ## Décompte au 23/11/2026 soir, troisième passe visuelle (201 lignes)
 Production du 23/11 soir (alignement maquette, refonte de la carte, simplification des comptes) : 15 écrans + Messages (client et pro), Mes pièces (client et pro), Mon entreprise, Paiements pro, Mon profil client, comparés à 390x844 (captures `*-3.png`).
 | Profil | OK | OK (code) | MANQUE | VOULU | NON VÉRIFIÉ | Total |
@@ -49,24 +61,25 @@ Avant la deuxième passe : OK (code) 158, MANQUE 7, VOULU 10, NON VÉRIFIÉ 7. A
 | Vitres absent du catalogue proposé ; fin de chantier et remise en état hors catalogue ; mono-produit ménage / repassage / nettoyage | HISTORIQUE.md l.47 (mono-produit) et l.622 (décision 07/11, services extensibles par catalogue) ; A-TRANCHER n | client, prestataire, admin |
 | Séquestre écrit mais éteint ; virement SEPA d'abord | A-TRANCHER b et d ; HISTORIQUE.md l.567 (« Virement SEPA, 31/10 : décision Romain, virement d'abord, séquestre en suspens ») ; DEMANDES.md D-19 (aucun prestataire de paiement choisi). L.336 citée avant est fausse : elle dit l'inverse (A-TRANCHER d) | client, admin |
 | Carte mobile = objet central, style Waze : UNE ligne en haut (menu + filtre/zone), feuille du bas à 3 états réduite par défaut ; donc logo, cloche, puces de service, zoom + / − et bulle de commentaire du haut de carte de la maquette VOULUS absents du premier écran mobile (puces dans la feuille, filtre dans le menu / la feuille) | Romain, 23/11, message sur la carte centrale | client (Carte), prestataire (Demandes autour de moi) |
+| Carte du particulier : parcours « Trouver un prestataire » en 4 appuis, résultat « Le meilleur choix pour vous » (maquette : liste puis fiche) | Romain, 23/11 (« c'est l'Uber, c'est la simplicité ») | client (Carte) |
+| Lecture AÉRÉE : moins de cadres, plus d'espace, texte >= 15 px ; hub de Mon profil réduit à Mes demandes / Paiements puis « Voir plus » | Romain, 24/11, message « la lecture aérée demandée » (la cible >= 15 px n'est PAS atteinte partout : voir les lignes MANQUE « Lecture aérée ») | client |
 | Menu à 4 entrées ; pas de bouton central « Demander » ; entrée « Mission » conservée les jours de mission | Romain 30/10 (HISTORIQUE.md l.36) ; « Navigation validée » 18/11 (l.629) ; A-TRANCHER r | client, prestataire |
 | « Profil vérifié par PING » seulement si pièces validées (maquette : « contrôlée par PING ») | Exception 03/11 (HISTORIQUE.md l.71) ; A-TRANCHER e ; jamais « certifié » ni « garanti » | client |
 | Annulation : 3 paliers et frais totaux après l'arrivée (maquette : 15 % après « en route ») | Romain 20/11 (HISTORIQUE.md l.662-663 et l.679) ; A-TRANCHER a ; DEMANDES.md D-07 | client |
 
 Écarts cités dans la consigne mais NON retenus comme VOULU : « annonce non modifiable » (DEMANDES.md D-17 dit que Romain veut « modifiable », aucune décision contraire trouvée : ligne MANQUE) ; « nouveau prestataire réservable » (la maquette le montre aussi : OK (code)).
 
-## MANQUE ouverts au 23/11/2026 soir (20 lignes ; ordre = ordre de correction proposé, détail dans les fichiers de profil)
-1. Paiements client : l'écran « Paiements » de la maquette (À régler, Réglé, pourboires) n'existe pas ; la ligne « Paiements · Virement sur facture » du profil n'ouvre rien (client-2)
-2. Messages (liste, client et pro) : filtres « Tous / Non lus », bandeau de décompte, flèche retour, aperçu du dernier message (client-2, prestataire)
-3. Réservation : 5 étapes numérotées, choix « Fréquence » (client)
-4. Mon profil client : barre « Profil complet : 3 sur 4 », flèche retour (client-2)
-5. Facture : un seul défilement au lieu d'onglets (client-2)
-6. Paiements pro : écran « Comment vous êtes payé », IBAN affiché + « Modifier », « Commissions à régler » ; en production : « Mes versements » avec champs IBAN (prestataire)
-7. Mon entreprise pro : ordre des blocs, boutons « + » du cadre, texte de jauge (prestataire)
-8. Mes pièces (client et pro) : écran de prise de vue « Cadrez le document en entier » (client-2, prestataire)
-9. Agenda client : un seul bandeau litige, flèche retour (client)
-10. Contraste du bouton principal #0C8F7E (4,0:1) contre #0B8374 (client)
-Autres : accueil /bienvenue (logo « ping », accroche), connexion (logo « ping »), « Modifier » une annonce, création de l'activité en 4 étapes, avertissements « Je pars », rayon 40 m du client absent, « Voir comme », export CSV admin.
+## MANQUE ouverts au 24/11/2026 matin (14 lignes ; ordre de correction proposé)
+1. Lecture aérée, espace prestataire : texte sous 15 px presque partout (Paiements 295 éléments sur 305, Mes pièces 68 sur 76, Mon annonce 79 sur 105, Agenda 47 sur 55) (prestataire)
+2. Lecture aérée, particulier : écrans non repris (agenda 46, chat 78, fiche prestataire 111, déposer une demande 86, mes demandes 574) et pastilles / horaires de 10,5 à 14 px sur les écrans repris (client)
+3. Mon annonce : 20 cibles tactiles sous 44 px (puces de points forts 35 px, rayons 38 px, trois liens 19-20 px) (prestataire)
+4. Calendrier pro du jour : 9 billets simultanés tronqués, pas de regroupement (prestataire)
+5. Mes pièces pro : pas d'écran « Cadrez le document en entier » (le client l'a) (prestataire)
+6. Mon entreprise pro : ordre des blocs de la maquette (jauge Mon annonce, fiche, « Ma fiche publique » / « Mes tarifs », alerte litige, « Il vous reste 2 éléments ») (prestataire)
+7. Mon profil client : barre « Profil complet : 3 sur 4 », ville, flèche retour (client-2)
+8. Agenda client : « N missions dans votre espace particulier » (l'app dit « 144 missions »), sous-texte « Échéance dépassée » (client)
+9. Fiche à compléter : « Modifier » une annonce de demande (client), création de l'activité en 4 étapes, avertissements « Je pars », rayon 40 m du client absent, « Voir comme » admin, export CSV admin
+Fermés depuis la passe 3 : contraste du bouton (#0B8374 en production), Paiements client, Messages (client et pro), réservation en 5 étapes, facture à défilement unique, Paiements pro, pièces client, accueil, connexion.
 
 ## Rappels
 Aucun emoji, jamais « certifié » ni « garanti » ; aucune donnée inventée. Les écrans de `docs/maquette/` n'ont pas été modifiés. Autres écarts de forme (rayon d'arrivée 300 m, assistant de création en 5 ou 7 étapes, pourboires) : voir les lignes MANQUE.
