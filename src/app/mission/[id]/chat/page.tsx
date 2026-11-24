@@ -1,4 +1,5 @@
 "use client"
+import '../../../aere.css'
 import { useState, useEffect, useRef, Fragment } from 'react'
 import { createPortal } from 'react-dom'
 import DayTimePicker from '@/components/DayTimePicker'
@@ -685,8 +686,10 @@ export default function ChatPage() {
       : `Vous paierez ${EUR(total)}, frais de service inclus${shape}`
   })()
 
+  // Lecture aérée (24/11) : espace particulier seulement (le client de la mission) ; le prestataire garde ses tailles.
+  const A = !!tx && !!userId && userId === tx.buyer_id
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
+    <div className={A ? 'aere a-lift chat-aere' : undefined} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: A ? '#fff' : '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
       {/* Header — style /demo v_chat */}
       <div className="ping-chatbar">
         <button type="button" className="ic" aria-label="Retour" style={{ width: 44, height: 44, minWidth: 44, borderRadius: 12, display: 'grid', placeItems: 'center', cursor: 'pointer', border: 'none', background: 'transparent', padding: 0, marginLeft: -6 }} onClick={() => router.back()}>
@@ -704,9 +707,9 @@ export default function ChatPage() {
                 : `${EUR(tx.subtotal_cents)} · à valider`}
           </span>
         )}
-        <button type="button" onClick={openReporting} aria-label="Signaler un problème" style={{ border: 'none', background: 'none', minHeight: 44, padding: '0 4px 0 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, flexShrink: 0, cursor: 'pointer', color: '#4E6470' }}>
+        <button type="button" onClick={openReporting} aria-label="Signaler un problème" style={{ border: 'none', background: 'none', minHeight: 44, minWidth: 44, padding: '0 4px 0 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, flexShrink: 0, cursor: 'pointer', color: '#4E6470' }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2" aria-hidden="true"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>
-          <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1 }}>Signaler</span>
+          {!A && <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1 }}>Signaler</span>}
         </button>
         {canCancel && (
           <span style={{ position: 'relative', flexShrink: 0 }}>
@@ -731,7 +734,7 @@ export default function ChatPage() {
       </div>
 
       {/* Bandeau de la maquette (docs/maquette/maquette-ping-v11.html, .maskb) : texte copié tel quel. */}
-      <div style={{ background: 'rgba(18,179,156,.1)', color: '#0B8374', fontSize: 11.5, fontWeight: 600, textAlign: 'center', padding: '8px 16px' }}>Téléphone et e-mail restent masqués : tout passe par PING</div>
+      <div style={{ background: 'rgba(18,179,156,.1)', color: '#0B6F63', fontSize: A ? 15 : 11.5, lineHeight: A ? 1.5 : undefined, fontWeight: 600, textAlign: 'center', padding: A ? '12px 20px' : '8px 16px' }}>Téléphone et e-mail restent masqués : tout passe par PING</div>
 
       {tx && tx.buyer_id === tx.seller_id && (
         <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(229,72,77,.08)', color: '#C0503A', fontSize: 12.5, fontWeight: 600, lineHeight: 1.5 }}>
@@ -779,7 +782,10 @@ export default function ChatPage() {
 
       {/* Récapitulatif de la demande : ce que le client a demandé, visible des deux côtés. */}
       {tx && req && (req.title || req.description || req.desired_date || req.budget_max_cents || req.budget_min_cents) && (
-        <div style={{ margin: '10px 16px 0', background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
+        <details className="a-more" open={!A} style={{ margin: '10px 16px 0', background: '#fff', border: A ? 'none' : '1px solid #E7EDEB', borderRadius: 14, padding: A ? 0 : '10px 14px' }}>
+          <summary style={{ display: A ? 'flex' : 'none', minHeight: 48, gap: 8, fontSize: 15, color: '#123644', fontWeight: 700, overflow: 'hidden' }}>
+            <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Demande{req.category ? ` · ${TRADES[req.category] || req.category}` : ''}{(req.title || req.description) ? ` : ${req.title || req.description}` : ''}</span>
+          </summary>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em' }}>
             Demande{req.category ? ` · ${TRADES[req.category] || req.category}` : ''}
           </div>
@@ -792,7 +798,7 @@ export default function ChatPage() {
               (req.budget_min_cents || req.budget_max_cents) ? `Budget ${req.budget_min_cents ? EUR(req.budget_min_cents) : ''}${req.budget_min_cents && req.budget_max_cents ? ' – ' : ''}${req.budget_max_cents ? EUR(req.budget_max_cents) : ''}` : null,
             ].filter(Boolean).join(' · ')}
           </div>
-        </div>
+        </details>
       )}
 
       {/* Autre adresse proposée par le client : le prestataire la voit sans le numéro et l'accepte ou non. */}
@@ -858,7 +864,7 @@ export default function ChatPage() {
               )}
             </div>
             {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
-            <div style={{ marginTop: 8 }}><MissionSuivi tx={tx} compact /></div>
+            <div style={{ marginTop: 8 }}><MissionSuivi tx={tx} compact airy={A} /></div>
             {/* Commande validée (maquette 18/11) : ce que chacun paie ou perçoit, puis la présence du client (048). */}
             {!tx.arrived_at && tx.status === 'pending' && (
               <div style={{ marginTop: 10, borderTop: '1px solid #EEF2F1', paddingTop: 10 }}>
@@ -893,7 +899,7 @@ export default function ChatPage() {
       {/* Mission terminée : la frise reste visible, toutes étapes cochées (la facture est posée à la fin). */}
       {tx && tx.price_confirmed && ['completed', 'released'].includes(tx.status) && (
         <div style={{ margin: '10px 16px 0', background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px' }}>
-          <MissionSuivi tx={tx} compact />
+          <MissionSuivi tx={tx} compact airy={A} />
         </div>
       )}
 
@@ -1066,9 +1072,15 @@ export default function ChatPage() {
       )}
 
       {/* Bannière sécurité */}
+      {A ? (
+        <p style={{ padding: '16px 20px 0', margin: 0, fontSize: 15, lineHeight: 1.55, color: '#4E6470', textAlign: 'center' }}>
+          Échangez ici : l&apos;adresse s&apos;affiche une fois la mission validée et réglée.
+        </p>
+      ) : (
       <div style={{ padding: '8px 16px', fontSize: 11.5, fontWeight: 600, textAlign: 'center', background: 'rgba(18,179,156,.1)', color: '#0B8374' }}>
         Téléphone et e-mail restent masqués : échangez ici, l&apos;adresse s&apos;affiche une fois la mission validée et réglée
       </div>
+      )}
 
       {/* Client : demander l'attestation d'assurance du prestataire (transmise dans ce fil, lien de 7 jours). */}
       {txOpen && userId && userId === tx.buyer_id && tx.buyer_id !== tx.seller_id && (
@@ -1333,9 +1345,9 @@ export default function ChatPage() {
 
       {/* Input */}
       <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, padding: '12px 16px', background: '#fff', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #E7EDEB' }}>
-        <input value={input} onChange={e => setInput(e.target.value)}
+        <input className="a-keep" placeholder="Votre message" value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          style={{ flex: 1, minHeight: 44, boxSizing: 'border-box', padding: '11px 16px', borderRadius: 999, fontSize: 16, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
+          style={{ flex: 1, boxSizing: 'border-box', padding: '12px 18px', minHeight: 48, borderRadius: 999, fontSize: 16, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send} aria-label="Envoyer le message"
           style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0B8374', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

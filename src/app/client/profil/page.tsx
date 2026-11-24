@@ -89,8 +89,11 @@ export default function ClientProfil() {
     <div className="stage aere" id="stage">
       <div className="device"><div className="frame"><div className="screen" style={{ background: 'var(--paper)' }}>
         <section className="view on" id="v_profile" data-tab="profile">
-          {/* Racine d'onglet : pas de flèche ni de « ← Carte » (la barre du bas et le menu mènent à la carte). */}
-          <div className="appbar" style={{ height: 56, padding: '0 20px' }}>
+          {/* Flèche de retour vers la carte, comme la maquette (24/11). */}
+          <div className="appbar" style={{ height: 56, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button type="button" onClick={() => router.push('/map')} aria-label="Retour à la carte" style={{ width: 44, height: 44, border: 'none', background: 'none', display: 'grid', placeItems: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
+              <svg aria-hidden width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6" /></svg>
+            </button>
             <b style={{ fontSize: 20 }}>Mon profil</b>
           </div>
           <div className="body a-page" style={{ top: 56, padding: '24px 20px 48px' }}>
@@ -100,7 +103,7 @@ export default function ClientProfil() {
                 <span aria-hidden style={{ width: 56, height: 56, borderRadius: 18, background: 'var(--coral)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: 'Quicksand,sans-serif', fontWeight: 700, fontSize: 22, flex: '0 0 auto' }}>{initial}</span>
                 <span className="a-tx">
                   <span className="a-t" style={{ fontSize: 20 }}>{displayName}</span>
-                  <span className="a-s">{profile?.city || 'Particulier'}</span>
+                  <span className="a-s">{profile?.city || 'Ville non renseignée'}</span>
                 </span>
                 <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--slate)" strokeWidth={2.2} style={{ flexShrink: 0, transform: coord ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
               </button>
@@ -115,12 +118,13 @@ export default function ClientProfil() {
             </div>
             <div style={{ marginBottom: 28 }}><OrdersInProgress role="particulier" title="Mes commandes en cours" topGap={28} /></div>
 
-            {/* Bloc 2 (seulement s'il manque quelque chose) : une phrase, pas de barre. */}
-            {done < 4 && (
-              <div className="a-block">
-                <p className="a-info"><b className="a-strong">Profil complet : {done} sur 4.</b> Il reste : {todo}.</p>
+            {/* Bloc 2 : toujours visible, une phrase et une barre à 4 segments (maquette : « Profil complet : n sur 4 »). */}
+            <div className="a-block">
+              <p className="a-info"><b className="a-strong">Profil complet : {done} sur 4.</b>{done < 4 ? ` Il reste : ${todo}.` : ''}</p>
+              <div role="progressbar" aria-valuemin={0} aria-valuemax={4} aria-valuenow={done} aria-label={`Profil complet : ${done} sur 4`} style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+                {[0, 1, 2, 3].map(i => <span key={i} style={{ flex: 1, height: 8, borderRadius: 999, background: i < done ? 'var(--teal)' : '#E3EAE8' }} />)}
               </div>
-            )}
+            </div>
 
             {/* Bloc 3 : l'activité, en liste aérée ; le reste derrière « Voir plus ». */}
             <div className="a-block">
@@ -185,10 +189,10 @@ export default function ClientProfil() {
         <input style={fieldInput} value={f.address} autoComplete="street-address" onChange={e => setF({ ...f, address: e.target.value })} />
         <label style={fieldLabel}>Ville</label>
         <input style={fieldInput} value={f.city} autoComplete="address-level2" onChange={e => setF({ ...f, city: e.target.value })} />
-        <p style={{ fontSize: 14, color: '#4E6470', lineHeight: 1.55, margin: '14px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
-        {editErr && <p style={{ color: '#C0503A', fontSize: 12.5, fontWeight: 600, margin: '10px 0 0' }}>{editErr}</p>}
+        <p style={{ fontSize: 15, color: '#4E6470', lineHeight: 1.55, margin: '14px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
+        {editErr && <p style={{ color: '#C0503A', fontSize: 15, fontWeight: 600, margin: '10px 0 0' }}>{editErr}</p>}
         <button onClick={saveEdit} disabled={saving}
-          style={{ width: '100%', marginTop: 16, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+          style={{ width: '100%', marginTop: 16, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 14, minHeight: 52, borderRadius: 999, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
           {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </Modal>

@@ -72,7 +72,7 @@ function SignupForm() {
         if (d && typeof d === 'object') {
           if (d.form && typeof d.form === 'object') setForm(f => ({ ...f, ...pickText(d.form), password: '' }))
           if (!params.get('role') && (d.role === 'client' || d.role === 'pro')) setRole(d.role)
-          if (d.step === 1 || d.step === 2) setStep(d.step)
+          if (d.step === 1 || d.step === 2 || d.step === 3) setStep(d.step)
         }
       }
     } catch { }
@@ -137,13 +137,13 @@ function SignupForm() {
     const dx = e.changedTouches[0].clientX - touchX.current
     touchX.current = null
     if (Math.abs(dx) < 60) return
-    if (dx < 0 && step === 1) { if (step1Ok()) setStep(2) }
-    else if (dx > 0 && step === 2) setStep(1)
+    if (dx < 0 && step < 3) { if (step !== 1 || step1Ok()) setStep(step + 1) }
+    else if (dx > 0 && step > 1) setStep(step - 1)
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (step === 1) { if (step1Ok()) setStep(2); return }
+    if (step < 3) { if (step !== 1 || step1Ok()) setStep(step + 1); return }
     if (!step2Ok()) return
     setLoading(true)
     setError('')
@@ -198,7 +198,7 @@ function SignupForm() {
     <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 24px', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: 380, marginBottom: 12 }}>
         {/* Rouvre le formulaire tel qu'il était rempli, sur l'étape de l'e-mail. */}
-        <button type="button" onClick={() => { setCheckMail(false); setStep(2); setError('') }}
+        <button type="button" onClick={() => { setCheckMail(false); setStep(3); setError('') }}
           style={{ border: 'none', background: 'rgba(255,255,255,.1)', color: '#fff', borderRadius: 999, padding: '10px 16px', minHeight: 44, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
           ← Changer d&apos;e-mail
         </button>
@@ -242,19 +242,19 @@ function SignupForm() {
         <div className="aere" style={{ width: '100%', maxWidth: 400, background: '#fff', borderRadius: 24, padding: '28px 24px', boxShadow: '0 24px 60px rgba(0,0,0,.35)', overflowX: 'hidden' }}
           onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <button type="button" onClick={() => setStep(1)} disabled={step === 1} aria-label="Étape précédente"
-              style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: step === 2 ? '#F3F6F5' : 'transparent', color: '#123644', fontSize: 18, fontWeight: 700, flexShrink: 0, visibility: step === 2 ? 'visible' : 'hidden' }}>←</button>
+            <button type="button" onClick={() => setStep(step - 1)} disabled={step === 1} aria-label="Étape précédente"
+              style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: step > 1 ? '#F3F6F5' : 'transparent', color: '#123644', fontSize: 18, fontWeight: 700, flexShrink: 0, visibility: step > 1 ? 'visible' : 'hidden' }}>←</button>
             <div style={{ display: 'flex', gap: 6, flex: 1 }}>
-              {[1, 2].map(s => (
+              {[1, 2, 3].map(s => (
                 <div key={s} style={{ flex: 1, height: 4, borderRadius: 999, background: s <= step ? '#12B39C' : '#E7EDEB', transition: 'background .2s' }} />
               ))}
             </div>
           </div>
-          <div key={step} className={step === 2 ? 'ob-slide-r' : 'ob-slide-l'}>
+          <div key={step} className={step > 1 ? 'ob-slide-r' : 'ob-slide-l'}>
           <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, lineHeight: 1.4, color: '#123644', marginBottom: 4 }}>
-            {step === 1 ? 'Vos informations' : 'Finaliser'}
+            {step === 1 ? 'Vos informations' : step === 2 ? 'Votre adresse' : 'Finaliser'}
           </h1>
-          <p style={{ fontSize: 16, color: '#4E6470', fontWeight: 600, marginBottom: 24 }}>Étape {step} sur 2</p>
+          <p style={{ fontSize: 16, color: '#4E6470', fontWeight: 600, marginBottom: 24 }}>Étape {step} sur 3</p>
 
           <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {step === 1 ? (
@@ -272,16 +272,19 @@ function SignupForm() {
                   </div>
                 </div>
                 <div>
+                  <label style={labelStyle}>Téléphone</label>
+                  <input type="tel" autoComplete="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
+                    style={inputStyle} required />
+                </div>
+              </>
+            ) : step === 2 ? (
+              <>
+                <div>
                   <label style={labelStyle}>Date de naissance</label>
                   <DateWheelPicker value={form.birthdate} onChange={v => update('birthdate', v)} />
                   <p style={{ fontSize: 15, lineHeight: 1.55, color: form.birthdate ? '#0B6F63' : '#4E6470', fontWeight: 600, margin: '8px 0 0' }}>
                     {form.birthdate ? 'Date enregistrée.' : 'Facultatif : faites défiler pour l’indiquer (utile pour le crédit d’impôt).'}
                   </p>
-                </div>
-                <div>
-                  <label style={labelStyle}>Téléphone</label>
-                  <input type="tel" autoComplete="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
-                    style={inputStyle} required />
                 </div>
                 <div>
                   <label style={labelStyle}>Adresse</label>
@@ -319,7 +322,7 @@ function SignupForm() {
             {error && <p role="alert" style={{ color: '#B2432E', fontSize: 16, lineHeight: 1.55, fontWeight: 600, margin: 0 }}>{error}</p>}
             <button type="submit" disabled={loading}
               style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, minHeight: 56, padding: 15, borderRadius: 16, cursor: 'pointer', opacity: loading ? .6 : 1 }}>
-              {loading ? 'Création…' : step === 1 ? 'Continuer →' : 'Créer mon compte'}
+              {loading ? 'Création…' : step < 3 ? 'Continuer →' : 'Créer mon compte'}
             </button>
           </form>
           </div>

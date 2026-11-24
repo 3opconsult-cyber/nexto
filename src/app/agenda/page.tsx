@@ -1,4 +1,5 @@
 "use client"
+import '../aere.css'
 import { incidentOpen } from '@/lib/incident'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -49,6 +50,12 @@ export default function AgendaPage() {
   const [isPro, setIsPro] = useState<boolean | null>(null)
   const [uid, setUid] = useState('')
   const [mode] = useMode(isPro)
+  // Lecture aérée (24/11) : espace particulier seulement ; l'espace prestataire garde ses tailles (autre chantier).
+  const A = mode === 'particulier'
+  const z = (old: number, nw: number) => A ? nw : old
+  const sectionTitle: React.CSSProperties = A
+    ? { fontSize: 15, fontWeight: 700, color: '#4E6470', letterSpacing: '.01em', margin: '28px 0 12px' }
+    : { fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 10 }
   const [tab, setTab] = useState<Tab>('cours')
   // Accès direct à « Mes demandes » (audit ergonomie 18/11, amélioration 7) : demandes publiées
   // ouvertes et propositions de tarif reçues en attente (pastille).
@@ -194,14 +201,14 @@ export default function AgendaPage() {
     return (
     <div key={t.id} role="link" tabIndex={0} onClick={() => lean === 'more' ? router.push(`/mission/${t.id}/jour`) : open(t)} aria-label={`${names[t.id] || 'Mission'}, ${badge(t).label}`}
       onKeyDown={e => { if (e.key === 'Enter' && e.target === e.currentTarget) { lean === 'more' ? router.push(`/mission/${t.id}/jour`) : open(t) } }}
-      style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer', opacity: muted ? .75 : 1 }}>
+      style={A ? { background: 'transparent', borderTop: '1px solid #E3EAE8', padding: '20px 0', marginBottom: 0, cursor: 'pointer', opacity: muted ? .75 : 1 } : { background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, padding: 14, marginBottom: 10, cursor: 'pointer', opacity: muted ? .75 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
+          <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: z(13.5, 17), color: '#123644' }}>
             {names[t.id] || 'Conversation'}{t.requests?.category ? ` · ${TRAD[t.requests.category] || t.requests.category}` : ''}
           </div>
-          {t.requests?.description && <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests.description}</div>}
-          <div style={{ fontSize: 11, color: t.scheduled_at && UPCOMING.includes(t.status) ? '#0B8374' : '#4E6470', fontWeight: t.scheduled_at && UPCOMING.includes(t.status) ? 700 : 400, marginTop: 3 }}>
+          {t.requests?.description && <div style={{ fontSize: z(11.5, 15), color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.requests.description}</div>}
+          <div style={{ fontSize: z(11, 15), color: t.scheduled_at && UPCOMING.includes(t.status) ? '#0B8374' : '#4E6470', fontWeight: t.scheduled_at && UPCOMING.includes(t.status) ? 700 : 400, marginTop: 3 }}>
             {t.scheduled_at && UPCOMING.includes(t.status)
               ? (lean ? hhmm(t.scheduled_at) : `${dayLabel(t.scheduled_at)} · ${hhmm(t.scheduled_at)}`)
               : txDate(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
@@ -213,17 +220,17 @@ export default function AgendaPage() {
           )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: badge(t).bg, color: badge(t).fg }}>
+          <span className="a-mini" style={{ fontSize: z(10.5, 13), fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: badge(t).bg, color: badge(t).fg }}>
             {badge(t).label}
           </span>
           {isTodayMission(t) && lean !== 'more' && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
-              border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+              border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: z(12, 15), cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Mission du jour</button>
           )}
           {!muted && !isTodayMission(t) && !bookingPending(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/commande`) }} style={{
-              border: '1.5px solid #0B8374', borderRadius: 999, padding: '0 12px', minHeight: 44, background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+              border: '1.5px solid #0B8374', borderRadius: 999, padding: '0 12px', minHeight: 44, background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: z(12, 15), cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Répondre</button>
           )}
         </div>
@@ -241,10 +248,10 @@ export default function AgendaPage() {
           onChange={patch => setTxs(list => list.map(x => x.id === t.id ? { ...x, ...patch } : x))} />
       )}
       {/* Frise de suivi (lot 30) : Confirmée → En route → Sur place → Terminée → Facturée. */}
-      {withSuivi && shown && !lean && !bookingPending(t) && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact /></div>}
+      {withSuivi && shown && !lean && !bookingPending(t) && <div style={{ marginTop: 10 }}><MissionSuivi tx={t} invoiced={invoicedIds.has(t.id)} compact airy={A} /></div>}
       {foldable && (
         <button type="button" aria-expanded={shown} onClick={e => { e.stopPropagation(); setOpenCards(set => { const n = new Set(set); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n }) }}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 44, marginTop: 8, border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 44, marginTop: 8, border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: z(13, 15), cursor: 'pointer', fontFamily: 'inherit' }}>
           {shown ? 'Masquer' : 'Reporter, annuler, suivi'}
           <svg aria-hidden width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} style={{ transform: shown ? 'rotate(-90deg)' : 'rotate(90deg)' }}><path d="M9 6l6 6-6 6" /></svg>
         </button>
@@ -254,13 +261,13 @@ export default function AgendaPage() {
         <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
           {!rated.has(t.id) && (
             <button type="button" onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat?avis`) }}
-              style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: z(13, 15), cursor: 'pointer' }}>
               {mode === 'pro' ? 'Noter le client' : 'Noter'}
             </button>
           )}
 {incidentOpen(t) && (
           <button type="button" onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat?signaler`) }}
-            style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: z(13, 15), cursor: 'pointer' }}>
             Signaler un problème
           </button>
           )}
@@ -273,35 +280,48 @@ export default function AgendaPage() {
   // Mes demandes sans passer par Profil (espace client seulement) : en tête s'il y a une proposition à examiner, sinon après les rendez-vous.
   const demandesRow = mode === 'particulier' ? (
             <button type="button" onClick={() => router.push('/client/demandes')}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', background: offersWaiting ? '#FFF7ED' : '#fff', border: offersWaiting ? '1.5px solid #F2A93B' : '1px solid #E7EDEB', borderRadius: 14, padding: '10px 14px', marginBottom: 16, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', background: offersWaiting ? '#FFF7ED' : (A ? 'transparent' : '#fff'), border: offersWaiting ? '1.5px solid #F2A93B' : (A ? 'none' : '1px solid #E7EDEB'), borderTop: A && !offersWaiting ? '1px solid #E3EAE8' : undefined, borderRadius: 14, padding: A ? '16px 14px 16px 0' : '10px 14px', marginBottom: 16, marginTop: A ? 12 : 0, cursor: 'pointer', fontFamily: 'inherit' }}>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Mes demandes en ligne</span>
-                <span style={{ display: 'block', fontSize: 12, color: offersWaiting ? '#8a6520' : '#4E6470', fontWeight: offersWaiting ? 700 : 400, marginTop: 2 }}>
+                <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: z(14, 17), color: '#123644' }}>Mes demandes en ligne</span>
+                <span style={{ display: 'block', fontSize: z(12, 15), color: offersWaiting ? '#8a6520' : '#4E6470', fontWeight: offersWaiting ? 700 : 400, marginTop: 2 }}>
                   {offersWaiting
                     ? `${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} de tarif à examiner`
                     : openRequests ? `${openRequests} demande${openRequests > 1 ? 's' : ''} publiée${openRequests > 1 ? 's' : ''}, en attente de propositions` : 'Vos annonces et les propositions reçues'}
                 </span>
               </span>
               {offersWaiting > 0 && (
-                <span aria-hidden="true" style={{ minWidth: 22, height: 22, lineHeight: '22px', padding: '0 6px', borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 12, fontWeight: 700, textAlign: 'center' }}>{offersWaiting > 9 ? '9+' : offersWaiting}</span>
+                <span aria-hidden="true" style={{ minWidth: 22, height: 22, lineHeight: '22px', padding: '0 6px', borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center' }}>{offersWaiting > 9 ? '9+' : offersWaiting}</span>
               )}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth={2.2} style={{ flexShrink: 0 }} aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
             </button>
   ) : null
 
-  const empty = (text: string) => <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 20 }}>{text}</p>
+  const empty = (text: string) => <p style={{ fontSize: z(12.5, 16), lineHeight: 1.55, color: '#4E6470', marginBottom: 20 }}>{text}</p>
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
+    <div className={A ? 'aere a-lift' : undefined} style={{ minHeight: '100vh', background: A ? '#fff' : '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 70 }}>
       {/* Racine d'onglet : titre sur une ligne, décompte des missions de l'espace à droite (plus de bandeau séparé). */}
-      <div style={{ padding: '0 16px', minHeight: 52, background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <h1 style={{ flex: 1, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', margin: 0 }}>Agenda</h1>
-        {mode && !loading && (
-          <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,.8)' }} aria-label={`${mine.length} mission${mine.length > 1 ? 's' : ''} dans votre espace ${mode === 'pro' ? 'prestataire' : 'particulier'}`}>{mine.length} mission{mine.length > 1 ? 's' : ''}</span>
+      <div style={{ padding: '0 16px', minHeight: z(52, 56), background: '#123644', display: 'flex', alignItems: 'center', gap: 12 }}>
+        {A && (
+          <button type="button" onClick={() => router.push('/map')} aria-label="Retour à la carte"
+            style={{ width: 44, height: 44, marginLeft: -8, border: 'none', borderRadius: 14, background: 'rgba(255,255,255,.12)', color: '#fff', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6" /></svg>
+          </button>
+        )}
+        <h1 style={{ flex: 1, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: z(17, 20), color: '#fff', margin: 0 }}>Agenda</h1>
+        {mode && mode !== 'particulier' && !loading && (
+          <span style={{ fontSize: z(12.5, 15), color: 'rgba(255,255,255,.8)' }} aria-label={`${mine.length} mission${mine.length > 1 ? 's' : ''} dans votre espace ${mode === 'pro' ? 'prestataire' : 'particulier'}`}>{mine.length} mission{mine.length > 1 ? 's' : ''}</span>
         )}
       </div>
 
-      <div style={{ padding: '12px 16px 16px', maxWidth: 980, margin: '0 auto' }}>
+      <div style={{ padding: A ? '20px 20px 16px' : '12px 16px 16px', maxWidth: 980, margin: '0 auto' }}>
+        {/* Maquette : « N missions dans votre espace particulier » en bandeau de lecture (le décompte n'est plus dans l'en-tête). */}
+        {A && !loading && (
+          <p className="a-info" style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 24px', fontSize: 16 }}>
+            <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ flexShrink: 0 }}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+            <span>{mine.length} mission{mine.length > 1 ? 's' : ''} dans votre espace particulier</span>
+          </p>
+        )}
         {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} compact />}
 
         {/* Un seul bandeau litige, quel que soit l'onglet (maquette) : un litige ouvre son dossier, plusieurs ouvrent la liste. */}
@@ -312,16 +332,20 @@ export default function AgendaPage() {
           return (
             <div role="link" tabIndex={0} onClick={() => router.push(href)}
               onKeyDown={e => { if (e.key === 'Enter') router.push(href) }}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, background: '#FFF7ED', border: 'none', borderRadius: 16, padding: '8px 14px', marginBottom: 16, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, background: '#FFF7ED', border: 'none', borderRadius: 16, padding: A ? '14px 16px' : '8px 14px', marginBottom: A ? 28 : 16, cursor: 'pointer' }}>
               <div style={{ width: 32, height: 32, borderRadius: 10, background: '#F2A93B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l9 16H3z" /><path d="M12 10v4M12 17h.01" /></svg>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
+                <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: z(13.5, 17), color: '#123644' }}>
                   {n} litige{n > 1 ? 's' : ''} en cours
                 </div>
-                {n === 1 && <div style={{ fontSize: 11.5, color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {n === 1 ? <div style={{ fontSize: z(11.5, 15), color: '#8a6520', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {'Ouvert le ' + new Date(first.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) + (names[first.transaction_id] ? ` · ${names[first.transaction_id]}` : '')}
+                </div> : A && <div style={{ fontSize: 15, color: '#8a6520', marginTop: 2 }}>Ouvrir la liste des litiges</div>}
+                {/* Maquette : « Échéance dépassée : lun. 16 nov. » (échéance du dossier, lue en base). */}
+                {A && first.deadline_at && <div style={{ fontSize: 15, color: '#8a6520', marginTop: 2 }}>
+                  {(new Date(first.deadline_at).getTime() < Date.now() ? 'Échéance dépassée : ' : 'Échéance : ') + new Date(first.deadline_at).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </div>}
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6520" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
@@ -336,7 +360,7 @@ export default function AgendaPage() {
               {k === 'cours' && todayList.length > 0 ? ` (${todayList.length})` : ''}
               {k === 'cours' && mode === 'particulier' && offersWaiting > 0 && (
                 <span aria-label={`${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} reçue${offersWaiting > 1 ? 's' : ''}`}
-                  style={{ display: 'inline-block', minWidth: 18, height: 18, lineHeight: '18px', padding: '0 5px', marginLeft: 6, borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 11, fontWeight: 700, textAlign: 'center', verticalAlign: 1 }}>
+                  style={{ display: 'inline-block', minWidth: 18, height: 18, lineHeight: '18px', padding: '0 5px', marginLeft: 6, borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center', verticalAlign: 1 }}>
                   {offersWaiting > 9 ? '9+' : offersWaiting}
                 </span>
               )}
@@ -392,7 +416,7 @@ export default function AgendaPage() {
             </>
           )}
 
-          {tab !== 'calendrier' && loading && <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+          {tab !== 'calendrier' && loading && <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: z(13, 15) }}>Chargement…</div>}
 
           {tab === 'cours' && !loading && (
             <>
@@ -404,7 +428,7 @@ export default function AgendaPage() {
                   {(allToday ? todayList : todayList.slice(0, 2)).map((t, i) => card(t, false, false, false, i === 0 ? 'first' : 'more'))}
                   {!allToday && todayList.length > 2 && (
                     <button type="button" onClick={() => setAllToday(true)}
-                      style={{ width: '100%', minHeight: 48, marginBottom: 10, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                      style={{ width: '100%', minHeight: 52, marginBottom: 10, borderRadius: 14, border: A ? 'none' : '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: z(14, 16), cursor: 'pointer' }}>
                       Voir les {todayList.length - 2} autres du jour
                     </button>
                   )}
@@ -415,14 +439,14 @@ export default function AgendaPage() {
               {later.length ? (allLater ? later : later.slice(0, 2)).map(t => card(t, true, false, false, false, true)) : empty(todayList.length ? 'Rien d’autre de prévu.' : 'Rien de prévu pour l’instant.')}
               {!allLater && later.length > 2 && (
                 <button type="button" onClick={() => setAllLater(true)}
-                  style={{ width: '100%', minHeight: 48, marginBottom: 14, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                  style={{ width: '100%', minHeight: 52, marginBottom: 14, borderRadius: 14, border: A ? 'none' : '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: z(14, 16), cursor: 'pointer' }}>
                   Voir les {later.length - 2} autres rendez-vous
                 </button>
               )}
               {stale.length > 0 && (
                 <>
                   <button type="button" onClick={() => setShowStale(v => !v)} aria-expanded={showStale}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '10px 14px', marginBottom: 10, fontSize: 12.5, fontWeight: 600, color: '#4E6470', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, textAlign: 'left', border: A ? 'none' : '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '10px 14px', marginBottom: 10, fontSize: z(12.5, 15), fontWeight: 600, color: '#4E6470', cursor: 'pointer', fontFamily: 'inherit' }}>
                     <span style={{ flex: 1 }}>{stale.length} mission{stale.length > 1 ? 's' : ''} passée{stale.length > 1 ? 's' : ''} sans clôture</span>
                     <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} style={{ transform: showStale ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
                   </button>
@@ -430,7 +454,7 @@ export default function AgendaPage() {
                 </>
               )}
               {pendingTalks > 0 && (
-                <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', minHeight: 44, textAlign: 'left', border: '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: 12.5, color: '#4E6470', cursor: 'pointer' }}>
+                <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', minHeight: 44, textAlign: 'left', border: A ? 'none' : '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: z(12.5, 15), lineHeight: 1.5, color: '#4E6470', cursor: 'pointer' }}>
                   {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
                 </button>
               )}
@@ -445,18 +469,18 @@ export default function AgendaPage() {
           {tab === 'factures' && !loading && (
             <>
               {shownInvoices.length ? (
-                <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 14, overflow: 'hidden', marginBottom: 14 }}>
+                <div style={{ background: '#fff', border: A ? 'none' : '1px solid #E7EDEB', borderRadius: 14, overflow: 'hidden', marginBottom: 14 }}>
                   {shownInvoices.map((r, i) => (
                     <button key={r.id} onClick={() => router.push(`/mission/${r.transaction_id}/facture`)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, textAlign: 'left', border: 'none', borderTop: i ? '1px solid #EEF2F1' : 'none', background: '#fff', padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: z(56, 68), textAlign: 'left', border: 'none', borderTop: i ? '1px solid #EEF2F1' : 'none', background: '#fff', padding: A ? '14px 0' : '10px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
                       <span aria-hidden style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(18,179,156,.12)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></svg>
                       </span>
                       <span style={{ flex: 1, minWidth: 0 }}>
-                        <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 13.5, color: '#123644' }}>
+                        <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: z(13.5, 16), color: '#123644' }}>
                           {INV_TITLE[r.template] || 'Document'} · {eur(r.net_cents)}
                         </b>
-                        <small style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <small style={{ display: 'block', fontSize: z(11.5, 15), color: '#4E6470', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {[r.number, new Date(r.issued_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }), INV_KIND[r.kind], r.kind === 'prestation' ? names[r.transaction_id] : null, mode === 'pro' && r.kind === 'prestation' && r.issuer_id === uid ? 'émise à votre en-tête' : null].filter(Boolean).join(' · ')}
                         </small>
                       </span>
@@ -465,7 +489,7 @@ export default function AgendaPage() {
                   ))}
                 </div>
               ) : empty('Aucune facture pour l’instant. Elles apparaissent ici à la fin de chaque mission.')}
-              <button onClick={() => router.push('/documents')} style={{ display: 'block', width: '100%', minHeight: 44, border: '1px solid #DCE5E3', background: '#fff', borderRadius: 999, padding: '0 16px', fontWeight: 700, fontSize: 13, color: '#123644', cursor: 'pointer' }}>
+              <button onClick={() => router.push('/documents')} style={{ display: 'block', width: '100%', minHeight: 44, border: '1px solid #DCE5E3', background: '#fff', borderRadius: 999, padding: '0 16px', fontWeight: 700, fontSize: z(13, 16), color: '#123644', cursor: 'pointer' }}>
                 Relevé annuel, export et partage
               </button>
             </>

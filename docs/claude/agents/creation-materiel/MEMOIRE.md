@@ -22,3 +22,10 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- Audit des animations (docs/audit-animations-2026-11-22.md) : seuil de lecture = 1 s + max(mots/2,5 ; signes/17) ; la cause du « trop vite » est la densité (6 à 21 mots sur 1,6 à 4 s) plus que la vitesse.
+- Nouvelles vidéos courtes : brand/anim-courte (scenarios.py = source unique), pages /animation-courte, -client, -prestataire ; 4 mots max par écran, 2,5 s min par texte, sous-titres et transcription ; vitesse 1x.
+- Voix off : script minuté prêt, Piper (siwis, CC-BY 4.0) testé pour la durée mais jamais écouté ; public/brand/files/voix-courte*.mp3 absents : le lecteur reste muet et sous-titré.
+- Bug connu : /aide pointe encore /animation-ping (redirigée vers /animation-client, scène 4).
+- Le séquestre est montré actif dans les vidéos alors qu'il est éteint (A-TRANCHER d) : à réaligner avant lancement public.
+- Carte : variante « Waze » dans src/lib/mapStyle.ts (buildWazeStyle), essai avec ?carte=waze ; défaut = style des couleurs de l'animation.

@@ -1,5 +1,5 @@
 {
-  "base": "https://nexto-eta.vercel.app",
+  "base": "http://localhost:3217",
   "taps": [
     "Trouver un prestataire",
     "tuile Ménage",

@@ -23,3 +23,5 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- Passe 1 (21/11) : A-030 à A-034 ; A-032 faite. Index inconnus (tables créées hors dépôt) : lire pg_indexes avant toute proposition ; chat 220 ko dont 65 propres ; presence_state ~7 appels au chargement.

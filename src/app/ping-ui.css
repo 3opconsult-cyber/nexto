@@ -422,6 +422,8 @@ svg{display:block}
 
 /* Onglets segmentés (Agenda : En cours, Calendrier, Terminées, Factures) */
 .ping-tabs{display:flex;background:#E7EDEB;border-radius:12px;padding:3px;gap:2px;margin:0 0 14px}
+.ping-tabs{overflow-x:auto}
+.aere .ping-tabs button{font-size:15px;flex:1 0 auto;padding:0 7px;min-height:48px;text-overflow:clip}
 .ping-tabs button{flex:1;min-width:0;min-height:44px;border:none;background:transparent;border-radius:9px;font-family:var(--fb);font-weight:700;font-size:12.5px;color:var(--slate);cursor:pointer;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ping-tabs button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(18,54,68,.15)}
 

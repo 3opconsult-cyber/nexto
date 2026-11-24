@@ -1,13 +1,13 @@
 {
- "base": "https://nexto-eta.vercel.app",
+ "base": "http://localhost:3217",
  "checks": [
   {
    "k": "étapes 1 à 4 numérotées, dans l’ordre de la maquette",
    "v": [
     18,
     47,
-    563,
-    613
+    417,
+    467
    ],
    "ok": true
   },

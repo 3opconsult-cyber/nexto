@@ -26,3 +26,10 @@
 - Règles : docs/claude/REGLES-METIER.md et REGLES-TECH.md. Contradictions : A-TRANCHER.md. Erreurs passées : ERREURS.md.
 - Aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée ([à compléter]).
 - Seul l'agent principal écrit dans les fichiers de docs/claude ; proposer des lignes de mémoire dans le rapport.
+## Appris le 22-23/11/2026 (vérifié le 23/11/2026)
+- Confirmation : toujours `ConfirmSheet` (src/components/ConfirmSheet.tsx), jamais confirm()/alert()/prompt() ; plus aucun natif dans src/ (grep du 21/11).
+- Les fenêtres doivent passer au-dessus de la barre du bas (z-index 3000) : en dessous, « Annuler quand même » était inutilisable sur mobile (audit 21/11).
+- La carte de commande du chat est un bouton unique `OrderCardLink` vers /mission/[id]/commande, bon de commande à actions selon le rôle ; jamais de modification de prix (04e7109).
+- Charger des fenêtres à la demande ne gagne que 5 ko sur le chat (226 vers 221 ko) : l'essentiel est dans des blocs partagés ; les constantes se mettent dans src/lib, pas dans un composant.
+- Contraste : le gris #6E8592 est sous AA (~3,9:1) ; texte secondaire #4E6470 (A-029). « Messages » vide : toujours une action (faite).
+- Tout bouton de décision >= 44 px ; mesurer au navigateur, pas par calcul (A-027 faite, non vue à l'écran).

@@ -18,6 +18,9 @@ vers le détail. `HISTORIQUE.md` garde CLAUDE.md mot pour mot (rien n'est suppri
 | A-TRANCHER.md | Contradictions entre documents : Romain décide |
 | AMELIORATIONS.md | Carnet d'améliorations (seul l'agent principal y écrit) |
 | CIBLES.md | Prospection : renvois |
+| DEMANDES.md | Carnet des demandes de Romain (statut et preuve) |
+| CONTRAT-MAQUETTE.md (+ -public, -client, -prestataire, -admin) | Contrat de fidélité maquette / application (statuts OK, MANQUE, VOULU, NON VÉRIFIÉ) |
+| BRIEF-AGENT.md | Brief donné à tout agent au démarrage (économie de jetons) |
 | agents/<nom>/MEMOIRE.md, SOURCES.md | Mémoire et sources de chaque agent (13 agents) |
 | HISTORIQUE.md | Copie intégrale de l'ancien CLAUDE.md |
 | CLAUDE.index.md | Version courte prévue de CLAUDE.md (Romain la relit avant remplacement) |
