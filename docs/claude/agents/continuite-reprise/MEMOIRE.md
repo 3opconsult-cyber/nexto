@@ -30,3 +30,9 @@
 - Retours arrière des migrations 052 à 062 : toujours « [à compléter] » dans PLAN-DE-REPRISE.md (A-009) ; des fonctions sont réécrites plusieurs fois (unread_counts, mark_overdue_transfers, enforce_incident_window) : recoller une ancienne migration ramène une ancienne version.
 - `.claude/worktrees/` est ignoré par git ; il occupe ~13 Go en local (copies de travail des agents) : sans effet sur le dépôt.
 - Ordre de collage des SQL : voir supabase/a_coller/README.md ; 061 puis 062 attendent Romain au 23/11.
+
+## Historique et règles anti-régression (poussé le 24/11/2026 par l'agent principal, à relire à chaque mission)
+- Lire AVANT de commencer : docs/claude/REGRESSIONS.md (registre des régressions et 8 règles d'or), docs/claude/ERREURS.md, docs/claude/BRIEF-AGENT.md.
+- APRÈS chaque lot : `scripts/e2e/non-regression.sh` (production, A et B avant 17 h Paris) doit être vert ; regarder les captures une par une ; mettre à jour les scripts de test cités par un libellé modifié ; lister qui utilise chaque composant partagé touché.
+- Décisions de Romain à respecter : la maquette est la référence ; carte Waze centrale, feuille à 3 états, une ligne en haut ; « Trouver un prestataire » en 4 appuis ; lecture AÉRÉE (>= 20 px entre blocs, texte >= 15 px, cibles >= 44 px, <= 4 bordures au premier écran) ; aucune question déjà tranchée ; « fait » = vu sur capture de la production ; séquestre éteint (vidéos en version virement) ; BAITA EURL émettrice (SIRET 512 026 907 00018, migration 063).
+- Pièges propres à ton rôle : tout retour arrière passe par un commit de revert sur main, jamais de réécriture d'historique ; les migrations sont rejouables ; consigner chaque régression dans docs/claude/REGRESSIONS.md le jour même.

@@ -17,7 +17,7 @@ Envoyer quoi que ce soit ; toucher src/ ou supabase/ ; marque tierce dans un sup
 Toujours : aucun secret, aucune suppression sans accord, aucun accès admin créé, aucune donnée inventée.
 
 ## Lecture préalable
-docs/claude/README.md, docs/claude/REGLES-METIER.md, docs/claude/REGLES-TECH.md, docs/claude/agents/creation-materiel/MEMOIRE.md
+OBLIGATOIRE avant tout travail : docs/claude/REGRESSIONS.md (registre et règles d'or anti-régression) ; après tout lot : scripts/e2e/non-regression.sh vert. docs/claude/README.md, docs/claude/REGLES-METIER.md, docs/claude/REGLES-TECH.md, docs/claude/agents/creation-materiel/MEMOIRE.md
 
 ## Fini veut dire
 Preuve en production (commande, test, capture, déploiement) ou la mention « non vérifié ». Pas de « build OK » présenté comme validation du rendu.

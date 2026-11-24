@@ -31,3 +31,9 @@
 - Positions simulées : Grasse (43.6588, 6.9226) pour voir les annonces d'un client audit ; Nice les cache (15 km).
 - Le chat n'était pas en direct (message visible après rechargement) : correctif 062 (publication Realtime) à coller puis retester avec deux comptes.
 - L'audit des écrans de l'admin est impossible sans compte administrateur : NON VÉRIFIÉ, ne pas le masquer.
+
+## Historique et règles anti-régression (poussé le 24/11/2026 par l'agent principal, à relire à chaque mission)
+- Lire AVANT de commencer : docs/claude/REGRESSIONS.md (registre des régressions et 8 règles d'or), docs/claude/ERREURS.md, docs/claude/BRIEF-AGENT.md.
+- APRÈS chaque lot : `scripts/e2e/non-regression.sh` (production, A et B avant 17 h Paris) doit être vert ; regarder les captures une par une ; mettre à jour les scripts de test cités par un libellé modifié ; lister qui utilise chaque composant partagé touché.
+- Décisions de Romain à respecter : la maquette est la référence ; carte Waze centrale, feuille à 3 états, une ligne en haut ; « Trouver un prestataire » en 4 appuis ; lecture AÉRÉE (>= 20 px entre blocs, texte >= 15 px, cibles >= 44 px, <= 4 bordures au premier écran) ; aucune question déjà tranchée ; « fait » = vu sur capture de la production ; séquestre éteint (vidéos en version virement) ; BAITA EURL émettrice (SIRET 512 026 907 00018, migration 063).
+- Pièges propres à ton rôle : un déploiement pendant un test l'invalide ; A et B échouent le soir (créneau du lendemain) ; le test local est instable, la production en journée fait foi ; rejouer un échec seul avant de conclure ; les scripts doivent être mis à jour quand l'interface change (comptes-ui, étape 3 de l'inscription) ; noms des scripts : scripts/e2e/*.mjs et non-regression.sh.

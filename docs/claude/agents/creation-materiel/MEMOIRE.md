@@ -29,3 +29,9 @@
 - Bug connu : /aide pointe encore /animation-ping (redirigée vers /animation-client, scène 4).
 - Le séquestre est montré actif dans les vidéos alors qu'il est éteint (A-TRANCHER d) : à réaligner avant lancement public.
 - Carte : variante « Waze » dans src/lib/mapStyle.ts (buildWazeStyle), essai avec ?carte=waze ; défaut = style des couleurs de l'animation.
+
+## Historique et règles anti-régression (poussé le 24/11/2026 par l'agent principal, à relire à chaque mission)
+- Lire AVANT de commencer : docs/claude/REGRESSIONS.md (registre des régressions et 8 règles d'or), docs/claude/ERREURS.md, docs/claude/BRIEF-AGENT.md.
+- APRÈS chaque lot : `scripts/e2e/non-regression.sh` (production, A et B avant 17 h Paris) doit être vert ; regarder les captures une par une ; mettre à jour les scripts de test cités par un libellé modifié ; lister qui utilise chaque composant partagé touché.
+- Décisions de Romain à respecter : la maquette est la référence ; carte Waze centrale, feuille à 3 états, une ligne en haut ; « Trouver un prestataire » en 4 appuis ; lecture AÉRÉE (>= 20 px entre blocs, texte >= 15 px, cibles >= 44 px, <= 4 bordures au premier écran) ; aucune question déjà tranchée ; « fait » = vu sur capture de la production ; séquestre éteint (vidéos en version virement) ; BAITA EURL émettrice (SIRET 512 026 907 00018, migration 063).
+- Pièges propres à ton rôle : vidéos courtes sources dans brand/anim-courte/scenarios.py (SEQUESTRE = False tant que le séquestre est éteint) ; texte >= seuil de lecture (audit.mjs) ; jamais « certifié » ni « garanti » ; pas d'emoji ; regénérer avec build.py puis vérifier les 3 pages en production.

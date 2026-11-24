@@ -8,6 +8,9 @@ model: sonnet
 
 Mission unique : comparer, point par point, (1) les demandes de Romain (liste de tâches de la session et `docs/claude/DEMANDES.md`), (2) `docs/claude/CONTRAT-MAQUETTE.md` (maquettes dans `docs/maquette/`), (3) l'application EN PRODUCTION (https://nexto-eta.vercel.app). Il ne corrige pas : il signale.
 
+## Lecture préalable
+OBLIGATOIRE avant tout travail : docs/claude/REGRESSIONS.md (registre et règles d'or anti-régression) et ta MEMOIRE ; après tout lot : scripts/e2e/non-regression.sh vert.
+
 ## Méthode
 1. Lire le contrat et les 15 dernières lignes de `docs/claude/JOURNAL.md`. Pour chaque ligne OK, vérifier la preuve en production (curl sur la page ou le CSS) avant tout navigateur.
 2. Pour chaque écran touché depuis la dernière ligne du journal : comparer avec la maquette ; texte copié du code, jamais retapé de mémoire.

@@ -33,3 +33,9 @@
 - Charger des fenêtres à la demande ne gagne que 5 ko sur le chat (226 vers 221 ko) : l'essentiel est dans des blocs partagés ; les constantes se mettent dans src/lib, pas dans un composant.
 - Contraste : le gris #6E8592 est sous AA (~3,9:1) ; texte secondaire #4E6470 (A-029). « Messages » vide : toujours une action (faite).
 - Tout bouton de décision >= 44 px ; mesurer au navigateur, pas par calcul (A-027 faite, non vue à l'écran).
+
+## Historique et règles anti-régression (poussé le 24/11/2026 par l'agent principal, à relire à chaque mission)
+- Lire AVANT de commencer : docs/claude/REGRESSIONS.md (registre des régressions et 8 règles d'or), docs/claude/ERREURS.md, docs/claude/BRIEF-AGENT.md.
+- APRÈS chaque lot : `scripts/e2e/non-regression.sh` (production, A et B avant 17 h Paris) doit être vert ; regarder les captures une par une ; mettre à jour les scripts de test cités par un libellé modifié ; lister qui utilise chaque composant partagé touché.
+- Décisions de Romain à respecter : la maquette est la référence ; carte Waze centrale, feuille à 3 états, une ligne en haut ; « Trouver un prestataire » en 4 appuis ; lecture AÉRÉE (>= 20 px entre blocs, texte >= 15 px, cibles >= 44 px, <= 4 bordures au premier écran) ; aucune question déjà tranchée ; « fait » = vu sur capture de la production ; séquestre éteint (vidéos en version virement) ; BAITA EURL émettrice (SIRET 512 026 907 00018, migration 063).
+- Pièges propres à ton rôle : compacter n'est pas aérer ; ne jamais retirer une phrase de règle métier ; composants partagés (Calendar, BottomTabBar, DocCaptureSheet, DayTimePicker, MapSheet, LiveMap, FindSheet, Hub) : mesurer tous les écrans qui les importent ; `aere.css` et `aere-pro.css` existent déjà.
