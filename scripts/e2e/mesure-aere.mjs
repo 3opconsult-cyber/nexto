@@ -14,16 +14,29 @@ import fs from 'fs'
 
 const BASE = process.env.BASE || 'http://localhost:3217'
 const LABEL = process.env.LABEL || 'apres'
-const CLIENT = 'audit.client.claude@ping-demo.invalid'
+const PRO = process.env.WHO === 'pro'   // WHO=pro : écrans du prestataire (24/11), dossier docs/refonte-aeree-prestataire-2026-11-24/
+const CLIENT = PRO ? 'audit.pro.claude@ping-demo.invalid' : 'audit.client.claude@ping-demo.invalid'
 const PWD = process.env.AUDIT_PWD || fs.readFileSync(new URL('./parcours.mjs', import.meta.url), 'utf8').match(/PWD = '([^']+)'/)[1]
-const OUT = new URL(`../../docs/refonte-aeree-2026-11-24/${LABEL}/`, import.meta.url).pathname
+const OUT = new URL(`../../docs/refonte-aeree${PRO ? '-prestataire' : ''}-2026-11-24/${LABEL}/`, import.meta.url).pathname
 fs.mkdirSync(OUT, { recursive: true })
 // Données de test du compte audit (missions « QA », reconnaissables) ; surchargeables.
 const TX_LIVE = process.env.TX_LIVE || 'a0d834bc-2842-4b62-a989-b964a1f85429'
 const TX_DONE = process.env.TX_DONE || 'ef36ae11-a288-44bf-8227-7ed21eeb380a'
 const DISPUTE = process.env.DISPUTE || '2d34559a-506d-4803-9534-d8db0fa53be0'
 const PRO_ID = 'b9f8cd9a-16de-4a36-afd8-10a2135ab970'
-const SCREENS = [
+const SCREENS_PRO = [
+  ['paiements', '/pro/paiements'],
+  ['pieces', '/pro/documents'],
+  ['annonce', '/pro/annonce'],
+  ['agenda-jour', '/agenda?onglet=calendrier', 'pro', 'jour'],
+  ['agenda-mois', '/agenda?onglet=calendrier', 'pro', 'mois'],
+  ['entreprise', '/pro/dashboard'],
+  ['revenus', '/pro/revenus'],
+  ['tarifs', '/pro/tarifs'],
+  ['disponibilites', '/pro/disponibilites'],
+  ['documents-onboarding', '/pro/onboarding/documents'],
+]
+const SCREENS = PRO ? SCREENS_PRO : [
   ['profil', '/client/profil'],
   ['messages', '/messages'],
   ['commande', `/mission/${TX_LIVE}/commande`],
@@ -37,8 +50,8 @@ const SCREENS = [
   ['accueil', '/auth/signup', 'anon'],
 ]
 
-function measure(rootSel) {
-  const VH = innerHeight, VW = innerWidth
+function measure(rootSel, full) {
+  const VH = full ? 1e6 : innerHeight, VW = innerWidth
   const vis = e => { const r = e.getBoundingClientRect(), s = getComputedStyle(e); return r.width > 1 && r.height > 1 && s.visibility !== 'hidden' && s.display !== 'none' && +s.opacity > 0.05 && r.bottom > 0 && r.top < VH }
   const inTabbar = e => !!e.closest('.app-bottom-bar, .tabbar, [data-tabbar], nav[aria-label], .bubble, [data-feedback]')
   const root = (() => {
@@ -146,18 +159,21 @@ try {
   await page.locator('input[type=password]').fill(PWD)
   await page.locator('button[type=submit], button:has-text("connecter")').first().click()
   await page.waitForTimeout(4000)
-  await page.evaluate(() => localStorage.setItem('ping_mode', 'particulier'))
-  for (const [name, url, who] of SCREENS) {
+  await page.evaluate(m => localStorage.setItem('ping_mode', m), PRO ? 'pro' : 'particulier')
+  for (const [name, url, who, view] of SCREENS) {
     if (process.env.ONLY && !process.env.ONLY.split(',').includes(name)) continue
     const p = who === 'anon' ? anon : page
     await p.goto(BASE + url, { waitUntil: 'networkidle', timeout: 60000 }).catch(() => { })
     await p.addStyleTag({ content: 'nextjs-portal{display:none!important}' }).catch(() => { })
     await p.waitForTimeout(2500)
+    if (view) { await p.getByRole('button', { name: new RegExp('^' + view, 'i') }).first().tap().catch(() => { }); await p.waitForTimeout(1200) }
     await p.screenshot({ path: `${OUT}${name}.jpg`, quality: 70, type: 'jpeg' })
+    if (PRO) await p.screenshot({ path: `${OUT}${name}-page.jpg`, quality: 55, type: 'jpeg', fullPage: true, clip: { x: 0, y: 0, width: 390, height: Math.min(3000, await p.evaluate(() => document.documentElement.scrollHeight)) } }).catch(() => { })
     const m = await p.evaluate(measure)
+    if (PRO) { const f = await p.evaluate(`(${measure})(null, true)`); m.page = { sous15: f.sous15, texteMin: f.texteMin, cibles44: f.cibles44, listeCibles: f.listeCibles.slice(0, 6), exemples: f.exemplesSous15 } }
     res.ecrans[name] = m
     console.log(name.padEnd(12), JSON.stringify({ ...m, exemplesSous15: undefined, listeCibles: m.listeCibles.slice(0, 3) }))
   }
-  if (!process.env.ONLY || process.env.ONLY.split(',').includes('findsheet')) Object.assign(res.ecrans, await findSheetSteps(browser))
+  if (!PRO && (!process.env.ONLY || process.env.ONLY.split(',').includes('findsheet'))) Object.assign(res.ecrans, await findSheetSteps(browser))
 } finally { await browser.close() }
 fs.writeFileSync(`${OUT}../mesures-${LABEL}.json`, JSON.stringify(res, null, 1))

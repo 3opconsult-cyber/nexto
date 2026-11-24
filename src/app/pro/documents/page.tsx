@@ -11,6 +11,8 @@ import ConfirmSheet from '@/components/ConfirmSheet'
 import DocCaptureSheet from '@/components/DocCaptureSheet'
 import { useCatalog, docsForServices } from '@/lib/catalog'
 import { fetchProviderActivities } from '@/lib/services'
+import '../../aere.css'
+import '../../aere-pro.css'
 import { fetchMyDocuments, expiryOf, expiryText } from '@/lib/pieces'
 
 /**
@@ -191,12 +193,12 @@ export default function ProDocumentsPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
+    <div className="aere aere-pro a-lift" style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', paddingBottom: 110 }}>
       <RetourLink />
       <DocCaptureSheet open={capture && !!adding} title={(() => { const r = adding && RUBRIQUES.find(x => x.kind === adding.kind); const t = r && r.types.find(y => y.key === adding!.type); return t?.label || r?.title || 'Pièce' })()}
         onClose={() => setCapture(false)} onFile={f => upload(f)} />
 
-      <div style={{ background: '#123644', padding: '16px 20px 22px' }}>
+      <div className="a-head" style={{ background: '#123644', padding: '16px 20px 26px' }}>
         <NavDrawer />
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', margin: '18px 0 4px' }}>Mon entreprise</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes pièces</div>
@@ -205,7 +207,7 @@ export default function ProDocumentsPage() {
         </p>
       </div>
 
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '28px 20px 0', display: 'flex', flexDirection: 'column', gap: 36 }}>
         {error && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#c0503a', fontSize: 12.5, fontWeight: 600 }}>{error}</div>}
 
         {asked.length > 0 && (
@@ -223,7 +225,7 @@ export default function ProDocumentsPage() {
                       <div style={{ fontSize: 11, color: '#6E8592' }}>Demandée pour {a.services.join(', ').toLowerCase()}{rub ? ` · rubrique ${rub.title}` : ''}</div>
                     </div>
                     {given
-                      ? <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: STATUS.valid.bg, color: STATUS.valid.fg }}>Fournie</span>
+                      ? <span className="a-pill" style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: STATUS.valid.bg, color: STATUS.valid.fg }}>Fournie</span>
                       : <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592' }}>{a.required ? 'À fournir' : 'Facultatif'}</span>}
                   </div>
                 )
@@ -247,7 +249,7 @@ export default function ProDocumentsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, color: '#123644' }}>{r.title}</span>
                     {st
-                      ? <span style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: st.bg, color: st.fg, whiteSpace: 'nowrap', maxWidth: '100%' }}>{st.label}</span>
+                      ? <span className="a-pill" style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: st.bg, color: st.fg, whiteSpace: 'nowrap', maxWidth: '100%' }}>{st.label}</span>
                       : <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592' }}>{r.optional ? 'Facultatif' : 'À fournir'}</span>}
                   </div>
                   <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>

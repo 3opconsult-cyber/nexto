@@ -6,6 +6,8 @@ import NavDrawer from '@/components/NavDrawer'
 import { EUR } from '@/lib/invoice-pdf'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import { readScreenCache, sessionUserId } from '@/lib/screenCache'
+import '../../aere.css'
+import '../../aere-pro.css'
 import { loadRevenusSnap, type RevenusSnap } from '@/lib/screenLoaders'
 
 
@@ -77,20 +79,20 @@ export default function ProRevenusPage() {
   }, [router])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 40 }}>
+    <div className="aere aere-pro a-lift a-navy" style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 110 }}>
       <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
       <div style={{ padding: '20px 20px 16px' }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', color: 'rgba(255,255,255,.72)', marginBottom: 4 }}>Espace prestataire</div>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#fff' }}>Mes revenus &amp; déclaration</div>
       </div>
 
-      <div style={{ background: '#F3F6F5', borderRadius: '20px 20px 0 0', padding: '20px 16px', minHeight: '60vh' }}>
+      <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '28px 20px', minHeight: '60vh' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
         ) : (
-          <>
+          <div className="a-stack">
             <ProSuspensionBanner />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '20px 16px' }}>
               <div style={{ padding: 16, borderRadius: 16, background: 'rgba(18,179,156,.08)' }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#0B8374' }}>{eur(monthCents)}</div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Ce mois</div>
@@ -109,7 +111,7 @@ export default function ProRevenusPage() {
               </div>
             </div>
 
-            <button onClick={() => router.push('/pro/paiements')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14, cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif' }}>
+            <button onClick={() => router.push('/pro/paiements')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 0, padding: '14px 0', cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M2 10h20M6 15h4" /></svg>
               <span style={{ flex: 1 }}>
                 <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Mes versements</span>
@@ -119,7 +121,7 @@ export default function ProRevenusPage() {
             </button>
 
             {sapReady && (
-              <div id="sap" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14 }}>
+              <div id="sap" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644', marginBottom: 6 }}>Crédit d&apos;impôt de vos clients (numéro SAP)</div>
                 <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.55, margin: '0 0 10px' }}>
                   Avec votre numéro de déclaration de services à la personne (gratuit sur le portail NOVA), vos clients
@@ -138,7 +140,7 @@ export default function ProRevenusPage() {
               </div>
             )}
 
-            <div id="fiscal" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginBottom: 14 }}>
+            <div id="fiscal" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644', marginBottom: 6 }}>Déclaration des revenus (DAC7)</div>
               <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.55, margin: 0 }}>
                 Les revenus perçus via une plateforme comme PING pour des prestations de services sont
@@ -163,11 +165,11 @@ export default function ProRevenusPage() {
               )}
             </div>
 
-            <p style={{ fontSize: 10.5, color: '#6E8592', lineHeight: 1.5 }}>
+            <p className="a-mini" style={{ fontSize: 13, color: '#4E6470', lineHeight: 1.5 }}>
               Montants nets, après commission PING — cohérents avec vos factures dans « Mes opérations ».
               Ce récapitulatif ne remplace pas un conseil comptable.
             </p>
-          </>
+          </div>
         )}
       </div>
     </div>

@@ -1,11 +1,13 @@
 "use client"
 import { ReactNode, useEffect, useRef, useState } from 'react'
+import '@/app/aere.css'
+import '@/app/aere-pro.css'
 
 export default function OnboardingStep({
   step, total, title, subtitle, children,
   onBack, onSkip, skipLabel = 'Passer cette étape',
   ctaLabel = 'Continuer', onCta, ctaDisabled = false, ctaLoading = false,
-  onLater, laterNote,
+  onLater, laterNote, aere = false,
 }: {
   step: number
   total: number
@@ -23,6 +25,8 @@ export default function OnboardingStep({
   onLater?: () => void
   /** Courte mention sous le compteur d'étapes (ex. « Brouillon enregistré »). */
   laterNote?: string
+  /** Lecture aérée (24/11, espace prestataire) : texte >= 15 px, cibles >= 44 px, espaces plus grands. */
+  aere?: boolean
 }) {
   // Sens de la glisse "carrousel" : déduit de la comparaison avec l'étape
   // précédente, pas d'un choix explicite de l'appelant (les pages n'ont pas
@@ -46,12 +50,12 @@ export default function OnboardingStep({
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+    <div className={aere ? 'aere aere-pro a-lift a-navy' : undefined} style={{ minHeight: '100vh', background: '#123644', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
       <div style={{ padding: '20px 20px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
         <button
           onClick={onBack}
           disabled={!onBack}
-          style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: onBack ? 'rgba(255,255,255,.1)' : 'transparent', color: '#fff', fontSize: 15, fontWeight: 700, flexShrink: 0, visibility: onBack ? 'visible' : 'hidden' }}
+          style={{ width: aere ? 44 : 30, height: aere ? 44 : 30, borderRadius: '50%', border: 'none', background: onBack ? 'rgba(255,255,255,.1)' : 'transparent', color: '#fff', fontSize: 15, fontWeight: 700, flexShrink: 0, visibility: onBack ? 'visible' : 'hidden' }}
         >←</button>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <div style={{ display: 'flex', gap: 5 }}>
@@ -70,14 +74,14 @@ export default function OnboardingStep({
       </div>
 
       <div
-        style={{ flex: 1, background: '#fff', borderRadius: '24px 24px 0 0', padding: '30px 22px 22px', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}
+        style={{ flex: 1, background: '#fff', borderRadius: '24px 24px 0 0', padding: aere ? '32px 20px 28px' : '30px 22px 22px', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
         <div key={step} className={dir === 'r' ? 'ob-slide-r' : 'ob-slide-l'} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-          <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', lineHeight: 1.3 }}>{title}</h1>
-          {subtitle && <p style={{ fontSize: 13, color: '#4E6470', marginTop: 8, lineHeight: 1.5 }}>{subtitle}</p>}
-          <div style={{ flex: 1, marginTop: 22 }}>{children}</div>
+          <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 21, color: '#123644', lineHeight: aere ? 1.5 : 1.3 }}>{title}</h1>
+          {subtitle && <p style={{ fontSize: aere ? 16 : 13, color: '#4E6470', marginTop: 8, lineHeight: aere ? 1.55 : 1.5 }}>{subtitle}</p>}
+          <div style={{ flex: 1, marginTop: aere ? 28 : 22 }}>{children}</div>
         </div>
         <div style={{ marginTop: 20 }}>
           <button
@@ -90,7 +94,7 @@ export default function OnboardingStep({
             }}
           >{ctaLoading ? '…' : ctaLabel}</button>
           {onSkip && (
-            <button onClick={onSkip} style={{ width: '100%', padding: '12px 0 0', background: 'none', border: 'none', color: '#4E6470', fontSize: 12.5, fontWeight: 700 }}>
+            <button onClick={onSkip} style={{ width: '100%', padding: aere ? '12px 0' : '12px 0 0', marginTop: aere ? 8 : 0, background: 'none', border: 'none', color: '#4E6470', fontSize: aere ? 16 : 12.5, fontWeight: 700 }}>
               {skipLabel}
             </button>
           )}

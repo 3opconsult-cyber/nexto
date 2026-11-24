@@ -6,6 +6,8 @@ import BackHeader from '@/components/BackHeader'
 import { getRates } from '@/lib/pricing'
 import ProSuspensionBanner from '@/components/ProSuspensionBanner'
 import { EUR } from '@/lib/invoice-pdf'
+import '../../aere.css'
+import '../../aere-pro.css'
 import { TRANSFER_STATUS, pingBank, transferState, bicValid, cleanIban, formatIban, ibanValid, type Transfer } from '@/lib/transfers'
 
 // Paiements du prestataire.
@@ -138,20 +140,20 @@ export default function ProPaiementsPage() {
     : c ? { t: 'En cours de contrôle', bg: 'rgba(242,169,59,.15)', fg: '#8A6520' } : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', paddingBottom: 90 }}>
+    <div className="aere aere-pro a-lift" style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
       <BackHeader title="Paiements" fallback="/pro/dashboard" />
-      <div style={{ padding: '16px 16px 20px' }}>
-        <div style={{ maxWidth: 560, margin: '0 auto' }}>
+      <div style={{ padding: '24px 20px 28px' }}>
+        <div className="a-stack" style={{ maxWidth: 560, margin: '0 auto' }}>
           <ProSuspensionBanner />
 
-          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
             <h2 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Comment vous êtes payé</h2>
             <p style={{ fontSize: 13, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>
               Le client vous vire la prestation directement, avec la référence de la facture. Vous virez votre commission à PING{rate !== null ? ` (${String(Math.round(rate * 1000) / 10).replace('.', ',')} % pour les nouvelles réservations ; chaque mission garde son taux)` : ''}.
             </p>
           </div>
 
-          <div id="virement" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+          <div id="virement" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
             <h2 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644' }}>Votre IBAN</h2>
             <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '4px 0 0' }}>
               Donné seulement au client d&apos;une mission terminée et facturée. PING ne touche pas à cet argent ; votre IBAN n&apos;apparaît jamais sur votre fiche publique.
@@ -186,14 +188,15 @@ export default function ProPaiementsPage() {
             )}
           </div>
 
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px 2px' }}>Commissions à régler à PING</div>
+          <div>
+          <div className="a-h" style={{ margin: '0 0 6px' }}>Commissions à régler à PING</div>
           <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, overflow: 'hidden' }}>
             {owed.length === 0 && <div style={{ padding: 16, fontSize: 12.5, color: '#4E6470' }}>Rien à régler.</div>}
             {owed.map((t, i) => {
               const sst = transferState(t)
               const open = sst === 'a_payer' || sst === 'en_retard'
               return (
-                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 56, padding: '12px 14px', borderTop: i ? '1px solid #EEF2F1' : 'none' }}>
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 64, padding: '14px 0', borderTop: i ? '1px solid #E3EAE8' : 'none' }}>
                   <a href={`/mission/${t.transaction_id}/facture`} style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: '#123644' }}>
                     <b style={{ display: 'block', fontSize: 13.5 }}>{t.reference} · {EUR(t.amount_cents)}</b>
                     <small style={{ color: '#4E6470', fontSize: 12 }}>{sst === 'en_retard' ? 'en retard' : `avant le ${new Date(t.due_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`}</small>
@@ -205,8 +208,8 @@ export default function ProPaiementsPage() {
               )
             })}
           </div>
-          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginTop: 10 }}>
-            <b style={{ fontSize: 13, color: '#123644' }}>Virer à PING</b>
+          <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14, marginTop: 20 }}>
+            <b style={{ fontSize: 15, color: '#123644' }}>Virer à PING</b>
             {pingIban?.iban ? (
               <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '4px 0 0' }}>
                 {pingIban.beneficiary} · IBAN {formatIban(pingIban.iban)}{pingIban.bic ? ` · BIC ${pingIban.bic}` : ''}
@@ -219,11 +222,14 @@ export default function ProPaiementsPage() {
             )}
           </div>
 
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '18px 0 8px 2px' }}>Virements de vos clients à vérifier</div>
+          </div>
+
+          <div>
+          <div className="a-h" style={{ margin: '0 0 6px' }}>Virements de vos clients à vérifier</div>
           <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, overflow: 'hidden' }}>
             {toConfirm.length === 0 && <div style={{ padding: 16, fontSize: 12.5, color: '#4E6470' }}>Tout est reçu.</div>}
             {toConfirm.map((t, i) => (
-              <a key={t.id} href={`/mission/${t.transaction_id}/facture`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, minHeight: 56, fontSize: 12.5, color: '#123644', padding: '12px 14px', borderTop: i ? '1px solid #EEF2F1' : 'none', textDecoration: 'none' }}>
+              <a key={t.id} href={`/mission/${t.transaction_id}/facture`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, minHeight: 64, fontSize: 12.5, color: '#123644', padding: '14px 0', borderTop: i ? '1px solid #E3EAE8' : 'none', textDecoration: 'none' }}>
                 <span>{t.reference} · annoncé le {t.declared_at ? new Date(t.declared_at).toLocaleDateString('fr-FR') : ''}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <b>{EUR(t.amount_cents)}</b>
@@ -232,7 +238,8 @@ export default function ProPaiementsPage() {
               </a>
             ))}
           </div>
-          <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 2px 14px' }}>Le client a annoncé son virement : ouvrez la ligne, notez « Reçu » dès qu’il apparaît sur votre compte, ou « Non reçu » s’il manque.</p>
+          <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '12px 0 0' }}>Le client a annoncé son virement : ouvrez la ligne, notez « Reçu » dès qu’il apparaît sur votre compte, ou « Non reçu » s’il manque.</p>
+          </div>
           {!st ? (
             <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
           ) : !st.actif ? (
@@ -248,7 +255,7 @@ export default function ProPaiementsPage() {
             </div>
           ) : (
             <>
-              <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginBottom: 14 }}>
+              <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                   <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Compte de versement · {st.prestataire}</div>
                   {badge && <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, background: badge.bg, color: badge.fg, whiteSpace: 'nowrap' }}>{badge.t}</span>}
@@ -310,7 +317,7 @@ export default function ProPaiementsPage() {
           )}
 
           {st && (
-            <div id="mandat" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16, marginTop: 14 }}>
+            <div id="mandat" style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644' }}>Prélèvement automatique des commissions</div>
                 <span style={{ fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 999, whiteSpace: 'nowrap', ...(st.actif ? { background: (MANDAT[mandat] || MANDAT.none).bg, color: (MANDAT[mandat] || MANDAT.none).fg } : { background: '#EEF2F1', color: '#4E6470' }) }}>
@@ -335,7 +342,7 @@ export default function ProPaiementsPage() {
           )}
 
           {debts.length > 0 && (
-            <div style={{ background: '#fff', border: '1.5px solid rgba(192,80,58,.35)', borderRadius: 16, padding: 16, marginTop: 14 }}>
+            <div style={{ background: '#fff', border: '1.5px solid rgba(192,80,58,.35)', borderRadius: 16, padding: 16 }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#a8402c' }}>Commissions à régulariser</div>
               {debts.map(d => (
                 <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5, color: '#123644', padding: '8px 0', borderTop: '1px solid #E7EDEB' }}>

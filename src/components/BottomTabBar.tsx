@@ -87,7 +87,7 @@ export default function BottomTabBar() {
     <div className="app-bottom-bar" style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 1500, display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
       {callText && today && (
         <button type="button" onClick={() => router.push(`/mission/${today.id}/jour`)}
-          style={{ pointerEvents: 'auto', width: 'calc(100% - 24px)', maxWidth: 456, minHeight: 48, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', border: 'none', borderRadius: 14, background: '#C0503A', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textAlign: 'left', cursor: 'pointer', boxShadow: '0 8px 20px rgba(192,80,58,.3)' }}>
+          style={{ pointerEvents: 'auto', width: 'calc(100% - 24px)', maxWidth: 456, minHeight: 48, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', border: 'none', borderRadius: 14, background: '#C0503A', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, textAlign: 'left', cursor: 'pointer', boxShadow: '0 8px 20px rgba(192,80,58,.3)' }}>
           <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
           <span role="status" style={{ flex: 1, minWidth: 0 }}>{callText}</span>
           <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M9 6l6 6-6 6" /></svg>
@@ -95,7 +95,7 @@ export default function BottomTabBar() {
       )}
       {nextBooking && (
         <button type="button" onClick={() => router.push(`/mission/${nextBooking.id}/chat`)}
-          style={{ pointerEvents: 'auto', width: 'calc(100% - 24px)', maxWidth: 456, minHeight: 48, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', border: 'none', borderRadius: 14, background: '#8A6520', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textAlign: 'left', cursor: 'pointer', boxShadow: '0 8px 20px rgba(138,101,32,.3)' }}>
+          style={{ pointerEvents: 'auto', width: 'calc(100% - 24px)', maxWidth: 456, minHeight: 48, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', border: 'none', borderRadius: 14, background: '#8A6520', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, textAlign: 'left', cursor: 'pointer', boxShadow: '0 8px 20px rgba(138,101,32,.3)' }}>
           <span aria-hidden style={{ width: 9, height: 9, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
           <span role="status" style={{ flex: 1, minWidth: 0 }}>
             {bookings.length > 1 ? `${bookings.length} nouvelles réservations : accepter` : 'Nouvelle réservation : accepter'}
@@ -107,7 +107,7 @@ export default function BottomTabBar() {
       {rateShown && rate && (
         <div style={{ pointerEvents: 'auto', width: 'calc(100% - 24px)', maxWidth: 456, minHeight: 48, marginBottom: 8, display: 'flex', alignItems: 'stretch', borderRadius: 14, background: '#0B8374', color: '#fff', boxShadow: '0 8px 20px rgba(11,131,116,.3)', overflow: 'hidden' }}>
           <button type="button" onClick={() => { rateDone('open'); router.push(`/mission/${rate.id}/chat?avis`) }}
-            style={{ flex: 1, minWidth: 0, minHeight: 48, display: 'flex', alignItems: 'center', gap: 10, padding: '0 6px 0 14px', border: 'none', background: 'none', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, textAlign: 'left', cursor: 'pointer' }}>
+            style={{ flex: 1, minWidth: 0, minHeight: 48, display: 'flex', alignItems: 'center', gap: 10, padding: '0 6px 0 14px', border: 'none', background: 'none', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, textAlign: 'left', cursor: 'pointer' }}>
             <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} style={{ flexShrink: 0 }}><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" /></svg>
             <span role="status" style={{ flex: 1, minWidth: 0 }}>Notez {rate.name} · mission terminée</span>
             <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M9 6l6 6-6 6" /></svg>
@@ -127,7 +127,7 @@ export default function BottomTabBar() {
                 <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" /></svg>
                 {today.urgent && <span aria-label="Action attendue" style={{ position: 'absolute', top: -2, right: -2, width: 13, height: 13, borderRadius: '50%', background: '#E5484D', border: '2px solid #fff' }} />}
               </span>
-              <span style={{ fontSize: 12, fontWeight: 700 }}>Mission</span>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>Mission</span>
             </button>
           ) : null
           const on = pathname === t.path || pathname.startsWith(t.path + '/')
@@ -138,7 +138,7 @@ export default function BottomTabBar() {
                 <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{ICONS[t.icon]}</svg>
                 {t.icon === 'msg' && <UnreadBadge n={unread} absolute />}
               </span>
-              <span style={{ fontSize: 12, fontWeight: 700 }}>{t.label}</span>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>{t.label}</span>
             </button>
           )]
         })}

@@ -1,0 +1,408 @@
+{
+ "base": "http://localhost:3217",
+ "label": "avant",
+ "ecrans": {
+  "paiements": {
+   "racine": "div",
+   "blocs": 4,
+   "bordures": 4,
+   "separateursTraits": 6,
+   "texteMin": 11,
+   "sous15": 20,
+   "exemplesSous15": [
+    "13px Le client vous vire la prest",
+    "12.5px Donné seulement au client d'",
+    "14px Aucun IBAN : le client ne pe",
+    "13.5px Ajouter",
+    "11px Commissions à régler à PING",
+    "13.5px PING-V-2026-00034 · 11,90 €"
+   ],
+   "espaceMin": 8,
+   "espaceOu": "COMMISSIONS À RÉGL / PING-V-2026-00034 ",
+   "margeOu": "Comment vous êtes pa",
+   "margeMin": 16,
+   "interlOu": "Le client vous vire la p",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 7609,
+   "page": {
+    "sous15": 292,
+    "texteMin": 10.5,
+    "cibles44": 0,
+    "listeCibles": [],
+    "exemples": [
+     "13px Le client vous vire la prest",
+     "12.5px Donné seulement au client d'",
+     "14px Aucun IBAN : le client ne pe",
+     "13.5px Ajouter",
+     "11px Commissions à régler à PING",
+     "13.5px PING-V-2026-00034 · 11,90 €"
+    ]
+   }
+  },
+  "pieces": {
+   "racine": "div",
+   "blocs": 2,
+   "bordures": 5,
+   "separateursTraits": 0,
+   "texteMin": 10.5,
+   "sous15": 24,
+   "exemplesSous15": [
+    "11px Mon entreprise",
+    "12.5px Visibles par vous et l'équip",
+    "14.5px Identité",
+    "10.5px Reçu — en cours de traitemen",
+    "12px Carte d’identité (recto et v",
+    "12.5px Passeport"
+   ],
+   "espaceMin": 16,
+   "espaceOu": "MON ENTREPRISE Mes / Identité Reçu — en",
+   "margeOu": "IdentitéReçu — en co",
+   "margeMin": 16,
+   "interlOu": "Carte d’identité (recto ",
+   "interlMin": 1.45,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 1719,
+   "page": {
+    "sous15": 44,
+    "texteMin": 10.5,
+    "cibles44": 0,
+    "listeCibles": [],
+    "exemples": [
+     "11px Mon entreprise",
+     "12.5px Visibles par vous et l'équip",
+     "14.5px Identité",
+     "10.5px Reçu — en cours de traitemen",
+     "12px Carte d’identité (recto et v",
+     "12.5px Passeport"
+    ]
+   }
+  },
+  "annonce": {
+   "racine": "div",
+   "blocs": 3,
+   "bordures": 2,
+   "separateursTraits": 0,
+   "texteMin": 12,
+   "sous15": 16,
+   "exemplesSous15": [
+    "12.5px Les clients proches voient v",
+    "13px Une photo",
+    "12px Une photo de couverture ou u",
+    "12.5px Compléter",
+    "13px Une présentation d’au moins ",
+    "12px 44 / 80 caractères pour l’in"
+   ],
+   "espaceMin": 14,
+   "espaceOu": "Mon annonce / En ligne · visible",
+   "margeOu": "En ligne · visible s",
+   "margeMin": 16,
+   "interlOu": "Minimum pour être en lig",
+   "interlMin": 1.45,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 2802,
+   "page": {
+    "sous15": 52,
+    "texteMin": 11.5,
+    "cibles44": 21,
+    "listeCibles": [
+     "Votre accroche 324x43",
+     "Matériel fourni 116x35",
+     "Produits ménagers fourni 188x35",
+     "Produits écologiques 155x35",
+     "Repassage à domicile 158x35",
+     "Linge récupéré et rappor 188x35"
+    ],
+    "exemples": [
+     "12.5px Les clients proches voient v",
+     "13px Une photo",
+     "12px Une photo de couverture ou u",
+     "12.5px Compléter",
+     "13px Une présentation d’au moins ",
+     "12px 44 / 80 caractères pour l’in"
+    ]
+   }
+  },
+  "agenda-jour": {
+   "racine": "div",
+   "blocs": 2,
+   "bordures": 4,
+   "separateursTraits": 3,
+   "texteMin": 10,
+   "sous15": 69,
+   "exemplesSous15": [
+    "12.5px 140 missions",
+    "12.5px 1 mission dans votre espace ",
+    "12.5px 1 mission",
+    "13.5px 9 litiges en cours",
+    "12.5px En cours (10)",
+    "12.5px Calendrier"
+   ],
+   "espaceMin": 12,
+   "espaceOu": "Agenda 140 mission / 1 mission dans vot",
+   "margeOu": "Agenda",
+   "margeMin": 16,
+   "interlOu": "1 mission dans votre esp",
+   "interlMin": 1.45,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 1290,
+   "page": {
+    "sous15": 82,
+    "texteMin": 10,
+    "cibles44": 1,
+    "listeCibles": [
+     "Gérer 42x44"
+    ],
+    "exemples": [
+     "12.5px 140 missions",
+     "12.5px 1 mission dans votre espace ",
+     "12.5px 1 mission",
+     "13.5px 9 litiges en cours",
+     "12.5px En cours (10)",
+     "12.5px Calendrier"
+    ]
+   }
+  },
+  "agenda-mois": {
+   "racine": "div",
+   "blocs": 2,
+   "bordures": 7,
+   "separateursTraits": 0,
+   "texteMin": 10.5,
+   "sous15": 62,
+   "exemplesSous15": [
+    "12.5px 140 missions",
+    "12.5px 1 mission dans votre espace ",
+    "12.5px 1 mission",
+    "13.5px 9 litiges en cours",
+    "12.5px En cours (10)",
+    "12.5px Calendrier"
+   ],
+   "espaceMin": 12,
+   "espaceOu": "Agenda 140 mission / 1 mission dans vot",
+   "margeOu": "Agenda",
+   "margeMin": 16,
+   "interlOu": "1 mission dans votre esp",
+   "interlMin": 1.45,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 1196,
+   "page": {
+    "sous15": 67,
+    "texteMin": 10.5,
+    "cibles44": 1,
+    "listeCibles": [
+     "Gérer 42x44"
+    ],
+    "exemples": [
+     "12.5px 140 missions",
+     "12.5px 1 mission dans votre espace ",
+     "12.5px 1 mission",
+     "13.5px 9 litiges en cours",
+     "12.5px En cours (10)",
+     "12.5px Calendrier"
+    ]
+   }
+  },
+  "entreprise": {
+   "racine": "div",
+   "blocs": 2,
+   "bordures": 1,
+   "separateursTraits": 2,
+   "texteMin": 14,
+   "sous15": 1,
+   "exemplesSous15": [
+    "14px ● Visible sur la carte"
+   ],
+   "espaceMin": 12,
+   "espaceOu": "Mon entreprise ● V / Commandes en cours",
+   "margeOu": "BUTTON",
+   "margeMin": 16,
+   "interlOu": "● Visible sur la carte",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 1939,
+   "page": {
+    "sous15": 19,
+    "texteMin": 10.5,
+    "cibles44": 0,
+    "listeCibles": [],
+    "exemples": [
+     "14px ● Visible sur la carte",
+     "14px ☆☆☆☆☆",
+     "14px ★★★★★",
+     "11px Mon activité du mois",
+     "11px Chiffre d'affaires (net)",
+     "11px Interventions"
+    ]
+   }
+  },
+  "revenus": {
+   "racine": "div",
+   "blocs": 3,
+   "bordures": 6,
+   "separateursTraits": 0,
+   "texteMin": 11,
+   "sous15": 13,
+   "exemplesSous15": [
+    "11px Espace prestataire",
+    "11px Ce mois",
+    "11px Depuis janvier",
+    "11px Prestations cette année",
+    "11px 44 avis",
+    "13.5px Mes versements"
+   ],
+   "espaceMin": 16,
+   "espaceOu": "ESPACE PRESTATAIRE / 3 506,75 € CE MOIS",
+   "margeOu": "3 944,95 €Depuis jan",
+   "margeMin": 16,
+   "interlOu": "Prestations cette année",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 1293,
+   "page": {
+    "sous15": 17,
+    "texteMin": 10.5,
+    "cibles44": 0,
+    "listeCibles": [],
+    "exemples": [
+     "11px Espace prestataire",
+     "11px Ce mois",
+     "11px Depuis janvier",
+     "11px Prestations cette année",
+     "11px 44 avis",
+     "13.5px Mes versements"
+    ]
+   }
+  },
+  "tarifs": {
+   "racine": "div",
+   "blocs": 2,
+   "bordures": 3,
+   "separateursTraits": 0,
+   "texteMin": 10,
+   "sous15": 8,
+   "exemplesSous15": [
+    "11px Espace prestataire",
+    "12.5px Autant de prestations que vo",
+    "14px Ménage",
+    "10px Principal",
+    "12px Forfait 3 h incluses, puis 2",
+    "11.5px modifier"
+   ],
+   "espaceMin": 20,
+   "espaceOu": "ESPACE PRESTATAIRE / Mes prestations  A",
+   "margeOu": "Mes prestations",
+   "margeMin": 16,
+   "interlOu": "Autant de prestations qu",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 964,
+   "page": {
+    "sous15": 8,
+    "texteMin": 10,
+    "cibles44": 0,
+    "listeCibles": [],
+    "exemples": [
+     "11px Espace prestataire",
+     "12.5px Autant de prestations que vo",
+     "14px Ménage",
+     "10px Principal",
+     "12px Forfait 3 h incluses, puis 2",
+     "11.5px modifier"
+    ]
+   }
+  },
+  "disponibilites": {
+   "racine": "div",
+   "blocs": 2,
+   "bordures": 4,
+   "separateursTraits": 0,
+   "texteMin": 10.5,
+   "sous15": 54,
+   "exemplesSous15": [
+    "11px Espace prestataire",
+    "12.5px Touchez un jour pour choisir",
+    "12.5px Aujourd'hui",
+    "12px lun",
+    "12px mar",
+    "12px mer"
+   ],
+   "espaceMin": 16,
+   "espaceOu": "ESPACE PRESTATAIRE / Aujourd'hui Novemb",
+   "margeOu": "Créneaux libres",
+   "margeMin": 12,
+   "interlOu": "Touchez un jour pour cho",
+   "interlMin": 1.5,
+   "cibles44": 0,
+   "listeCibles": [],
+   "hauteurPage": 1005,
+   "page": {
+    "sous15": 54,
+    "texteMin": 10.5,
+    "cibles44": 0,
+    "listeCibles": [],
+    "exemples": [
+     "11px Espace prestataire",
+     "12.5px Touchez un jour pour choisir",
+     "12.5px Aujourd'hui",
+     "12px lun",
+     "12px mar",
+     "12px mer"
+    ]
+   }
+  },
+  "documents-onboarding": {
+   "racine": "div",
+   "blocs": 2,
+   "bordures": 6,
+   "separateursTraits": 0,
+   "texteMin": 11,
+   "sous15": 11,
+   "exemplesSous15": [
+    "11px Étape 1 sur 4",
+    "13px Facultatif pour apparaître s",
+    "12.5px Votre pièce apparaîtra aux c",
+    "12px PDF",
+    "12px JPG",
+    "12px PNG"
+   ],
+   "espaceMin": 19,
+   "espaceOu": "Étape 1 sur 4 / Avez-vous une pièc",
+   "margeOu": "Étape 1 sur 4",
+   "margeMin": 20,
+   "interlOu": "Avez-vous une pièce d’id",
+   "interlMin": 1.3,
+   "cibles44": 2,
+   "listeCibles": [
+    "Remplacer le fichier 122x19",
+    "Passer, je le ferai plus 346x31"
+   ],
+   "hauteurPage": 844,
+   "page": {
+    "sous15": 11,
+    "texteMin": 11,
+    "cibles44": 2,
+    "listeCibles": [
+     "Remplacer le fichier 122x19",
+     "Passer, je le ferai plus 346x31"
+    ],
+    "exemples": [
+     "11px Étape 1 sur 4",
+     "13px Facultatif pour apparaître s",
+     "12.5px Votre pièce apparaîtra aux c",
+     "12px PDF",
+     "12px JPG",
+     "12px PNG"
+    ]
+   }
+  }
+ }
+}
