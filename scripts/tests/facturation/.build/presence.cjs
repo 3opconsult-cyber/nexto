@@ -16,7 +16,7 @@ exports.parseScanned = parseScanned;
 exports.uploadPresencePhoto = uploadPresencePhoto;
 exports.presencePhotoUrl = presencePhotoUrl;
 exports.presenceTagLabel = presenceTagLabel;
-const netError_1 = require("@/lib/netError");
+const netError_cjs_1 = require("./netError.cjs");
 /** Process de commande (migration 048) : présence annoncée, photo d'arrivée, codes envoyés par le client. */
 const hasProcess = (st) => !!st && Number(st.v) >= 48;
 exports.hasProcess = hasProcess;
@@ -115,7 +115,7 @@ async function requestRemotePresence(txId, phase, pos, photoPath, dryRun = false
         return await r.json();
     }
     catch {
-        return { ok: false, error: 'network', message: netError_1.OFFLINE_TEXT };
+        return { ok: false, error: 'network', message: netError_cjs_1.OFFLINE_TEXT };
     }
 }
 // Libellés (facture, récapitulatif, frise). Ancien arrival_method (033) accepté en repli. La phase précise le mode
@@ -216,7 +216,7 @@ async function uploadPresencePhoto(supabase, uid, txId, file) {
     const path = `${uid}/${txId}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from(exports.PRESENCE_PHOTO_BUCKET).upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' });
     if (error)
-        return { error: (0, netError_1.isNetworkMessage)(error.message) ? netError_1.OFFLINE_TEXT : 'Photo non envoyée : réessayez.', network: (0, netError_1.isNetworkMessage)(error.message) };
+        return { error: (0, netError_cjs_1.isNetworkMessage)(error.message) ? netError_cjs_1.OFFLINE_TEXT : 'Photo non envoyée : réessayez.', network: (0, netError_cjs_1.isNetworkMessage)(error.message) };
     return { path };
 }
 async function presencePhotoUrl(supabase, path) {

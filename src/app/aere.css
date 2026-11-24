@@ -57,8 +57,9 @@
 /* Liste de détails : filet fin entre deux lignes. */
 .aere .a-details>*+*{border-top:1px solid var(--a-sep)}
 .aere .a-sumrow{border-top-color:var(--a-sep)}
-.a-lift [style*="border: 1px solid rgb(231, 237, 235)"]:not(button):not(.a-keep),.a-lift [style*="border: 1.5px solid rgb(231, 237, 235)"]:not(button):not(.a-keep),
-.a-lift [style*="border: 1px solid rgb(220, 229, 227)"]:not(button):not(.a-keep){border:0!important;background:transparent!important;border-radius:0!important;padding-left:0!important;padding-right:0!important}
+.a-lift [style*="border: 1px solid rgb(231, 237, 235)"]:not(button):not(input):not(textarea):not(select):not(.a-keep),.a-lift [style*="border: 1.5px solid rgb(231, 237, 235)"]:not(button):not(input):not(textarea):not(select):not(.a-keep),
+.a-lift [style*="border: 1px solid rgb(220, 229, 227)"]:not(button):not(input):not(textarea):not(select):not(.a-keep){border:0!important;background:transparent!important;border-radius:0!important;padding-left:0!important;padding-right:0!important}
+/* Les champs de saisie (input, textarea, select) gardent TOUJOURS bordure et fond : la règle ci-dessus les rendait invisibles (montant et motif du litige, 24/11). */
 /* Choix du jour et de l'heure : trois colonnes, 12 px entre les cases (au lieu de quatre serrées). */
 .a-lift [style*="repeat(4, minmax(0px, 1fr))"]{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
 .a-lift [style*="overflow-x: auto"]{gap:10px!important}
