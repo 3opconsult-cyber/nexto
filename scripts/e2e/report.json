@@ -1,5 +1,5 @@
 {
- "started": "2026-11-24T09:11:16.058Z",
+ "started": "2026-11-24T09:16:45.410Z",
  "scenarios": {
   "setup": {
    "steps": [
@@ -11,16 +11,16 @@
    ],
    "errors": []
   },
-  "A": {
+  "B": {
    "steps": [
     {
      "k": "Contacter → conversation",
-     "v": "/mission/0121abb5-f250-4dc5-95ae-0a1fbd5a8207/chat",
+     "v": "/mission/c2e18931-fa24-409d-8464-c47ea71ed9a8/chat",
      "ok": true
     },
     {
      "k": "demande titrée « QA parcours »",
-     "v": "QA parcours A — client sur place 2026-11-24 09:11",
+     "v": "QA parcours B — client absent 2026-11-24 09:17",
      "ok": true
     },
     {
@@ -90,292 +90,8 @@
      "ok": true
     },
     {
-     "k": "/commande client : « Commande validée » + présence notée",
-     "v": "Commande validée Ménage · Audit P. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:00 Adresse 2 rue ",
-     "ok": true
-    },
-    {
-     "k": "présence en base",
-     "v": "sur_place",
-     "ok": true
-    },
-    {
-     "k": "/commande pro : « Commande reçue », présence, « Vous percevez »",
-     "v": "Commande reçue Ménage · Audit C. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:00 Adresse 2 rue de",
-     "ok": true
-    },
-    {
-     "k": "pro : bouton « Mission du jour » dans la barre du bas",
-     "v": 1,
-     "ok": true
-    },
-    {
-     "k": "pro : Mission du jour (présence sur le billet)",
-     "v": "Client sur place",
-     "ok": true
-    },
-    {
-     "k": "« Je pars » enregistré",
-     "v": {
-      "en_route_at": "2026-11-24T09:12:22.254+00:00",
-      "eta_minutes": 10
-     },
-     "ok": true
-    },
-    {
-     "k": "client : « Votre prestataire arrive dans … »",
-     "v": "arrive dans 10 min",
-     "ok": true
-    },
-    {
-     "k": "client : QR d’arrivée affiché",
-     "v": 16,
-     "ok": true
-    },
-    {
-     "k": "client : code de secours sous le QR",
-     "v": "809562",
-     "ok": true
-    },
-    {
-     "k": "pro : arrivée validée (scanner intégré)",
-     "v": "Arrivée validée. Plus de 30 min avant l’heure du rendez-vous. Annuler Intervention en cours Arrivée à 10:12 ",
-     "ok": true
-    },
-    {
-     "k": "client : QR de fin affiché",
-     "v": true,
-     "ok": true
-    },
-    {
-     "k": "get_mission_proof(fin) côté client",
-     "v": {
-      "token": true,
-      "code": true
-     },
-     "ok": true
-    },
-    {
-     "k": "pro : écran de scan de fin",
-     "v": "Fin validée. Moins de 5 min sur place. 0 min sur place · prestation 90,00 € Ce relevé fait foi en cas de litige. Voir la factureRetour à la conversation 4 nouve",
-     "ok": true
-    },
-    {
-     "k": "mission terminée en base (preuves)",
-     "v": {
-      "status": "completed",
-      "arrived_at": "2026-11-24T09:12:38.786025+00:00",
-      "completed_at": "2026-11-24T09:12:46.476936+00:00",
-      "duration_minutes": 0,
-      "arrival_proof": "code",
-      "completion_proof": "qr",
-      "arrival_method": "qr_client",
-      "arrival_photo_path": null,
-      "subtotal_cents": 9000,
-      "buyer_fee_cents": 720,
-      "seller_fee_cents": 1530,
-      "total_charged_cents": 9720,
-      "payout_cents": 7470
-     },
-     "ok": true
-    },
-    {
-     "k": "montant : forfait inchangé (durée < 3 h incluses)",
-     "v": {
-      "prestation": "90,00 €",
-      "frais": "7,20 €",
-      "commission": "15,30 €",
-      "total": "97,20 €",
-      "percu": "74,70 €"
-     },
-     "ok": true
-    },
-    {
-     "k": "3 factures (montants)",
-     "v": [
-      {
-       "number": "PING-C-2026-00089",
-       "kind": "commission_client",
-       "net": "7,20 €"
-      },
-      {
-       "number": "PING-V-2026-00089",
-       "kind": "commission_pro",
-       "net": "15,30 €"
-      },
-      {
-       "number": "FACT-2026-00089",
-       "kind": "prestation",
-       "net": "90,00 €"
-      }
-     ],
-     "ok": true
-    },
-    {
-     "k": "facture : preuves dans la ligne",
-     "v": {
-      "arrivee": "code",
-      "depart": "qr"
-     },
-     "ok": true
-    },
-    {
-     "k": "facture (écran) : mention du mode de validation",
-     "v": "10:12 — 10:12 (arrivée : code du client saisi sur place ; fin : QR du client scanné sur place) · forfait 90,00 ",
-     "ok": true
-    },
-    {
-     "k": "facture (écran) : montant de la prestation",
-     "v": "90,00 €",
-     "ok": true
-    },
-    {
-     "k": "facture : « J’ai fait le virement » (client)",
-     "v": 2,
-     "ok": true
-    },
-    {
-     "k": "virements (client) annoncés",
-     "v": [
-      {
-       "payer_role": "client",
-       "payee": "pro",
-       "reference": "FACT-2026-00089",
-       "status": "declare_paye",
-       "amount_cents": 9000
-      },
-      {
-       "payer_role": "client",
-       "payee": "ping",
-       "reference": "PING-C-2026-00089",
-       "status": "declare_paye",
-       "amount_cents": 720
-      }
-     ],
-     "ok": true
-    },
-    {
-     "k": "avis du client enregistré",
-     "v": [
-      {
-       "stars": 5,
-       "comment": "Test QA parcours A (compte audit)."
-      }
-     ],
-     "ok": true
-    },
-    {
-     "k": "pro : récapitulatif « Vous percevez »",
-     "v": "Vous percevez 74,70 €",
-     "ok": true
-    },
-    {
-     "k": "erreurs console / réseau",
-     "v": [
-      "[client] 404 GET /bienvenue?_rsc=1q5z7",
-      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
-      "[pro] 404 GET /bienvenue?_rsc=1q5z7",
-      "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login"
-     ],
-     "ok": null
-    }
-   ],
-   "errors": [
-    "[client] 404 GET /bienvenue?_rsc=1q5z7",
-    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
-    "[pro] 404 GET /bienvenue?_rsc=1q5z7",
-    "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login"
-   ],
-   "tx": "0121abb5-f250-4dc5-95ae-0a1fbd5a8207",
-   "invoices": [
-    {
-     "number": "PING-C-2026-00089",
-     "kind": "commission_client",
-     "net": "7,20 €"
-    },
-    {
-     "number": "PING-V-2026-00089",
-     "kind": "commission_pro",
-     "net": "15,30 €"
-    },
-    {
-     "number": "FACT-2026-00089",
-     "kind": "prestation",
-     "net": "90,00 €"
-    }
-   ]
-  },
-  "B": {
-   "steps": [
-    {
-     "k": "Contacter → conversation",
-     "v": "/mission/bca704b3-8e8c-44d9-bd71-c5d7795d735e/chat",
-     "ok": true
-    },
-    {
-     "k": "demande titrée « QA parcours »",
-     "v": "QA parcours B — client absent 2026-11-24 09:13",
-     "ok": true
-    },
-    {
-     "k": "pro : « + Proposer un tarif » visible",
-     "v": 1,
-     "ok": true
-    },
-    {
-     "k": "pro : « Vous percevez » dans le formulaire",
-     "v": "Vous percevez 74,70 €",
-     "ok": true
-    },
-    {
-     "k": "client : « Accepter » visible",
-     "v": 1,
-     "ok": true
-    },
-    {
-     "k": "tarif validé en base",
-     "v": {
-      "price_confirmed": true,
-      "subtotal_cents": 9000,
-      "buyer_fee_cents": 720,
-      "seller_fee_cents": 1530,
-      "base_forfait_cents": 9000,
-      "included_hours": 3,
-      "hourly_rate_cents": 2500
-     },
-     "ok": true
-    },
-    {
-     "k": "client : carte « Fixez le rendez-vous »",
-     "v": 0,
-     "ok": false
-    },
-    {
-     "k": "RDV enregistré (adresse du profil, statut « profil »)",
-     "v": {
-      "scheduled_at": null,
-      "address_status": "profil",
-      "requests": {
-       "lat": null,
-       "lng": null,
-       "address": null
-      }
-     },
-     "ok": false
-    },
-    {
-     "k": "adresse géocodée à la prise de RDV",
-     "v": "non (lat/lng nuls)",
-     "ok": null
-    },
-    {
-     "k": "chat : billet « Commande validée. Serez-vous sur place ? »",
-     "v": false,
-     "ok": false
-    },
-    {
      "k": "/commande client : « Commande validée » + « Serez-vous sur place ? »",
-     "v": "Commande validée Ménage · Audit P. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 10:18 Adresse À fixer dans la conversati",
+     "v": "Commande validée Ménage · Audit P. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:00 Adresse 2 rue de l Audit, Grasse P",
      "ok": true
     },
     {
@@ -395,7 +111,7 @@
     },
     {
      "k": "/commande pro : « Commande reçue », présence, « Vous percevez »",
-     "v": "Commande reçue Ménage · Audit C. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 10:18 Adresse À fixer ",
+     "v": "Commande reçue Ménage · Audit C. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:00 Adresse 2 rue de",
      "ok": true
     },
     {
@@ -411,7 +127,7 @@
     {
      "k": "« Je pars » enregistré",
      "v": {
-      "en_route_at": "2026-11-24T09:14:47.157+00:00",
+      "en_route_at": "2026-11-24T09:17:50.031+00:00",
       "eta_minutes": 10
      },
      "ok": true
@@ -433,13 +149,13 @@
     },
     {
      "k": "pro : photo envoyée, en attente du client",
-     "v": "Position relevée une fois : à 74 m de l’adresse.",
+     "v": "",
      "ok": true
     },
     {
      "k": "messagerie client : message avec photo (base)",
      "v": [
-      "Photo d'arrivée du prestataire, 10:15 — position à 74 m de l'adresse du rendez-vous, relevée une fois avec son accord. Confirmez son arrivée"
+      "Photo d'arrivée du prestataire, 10:18 — position à 74 m de l'adresse du rendez-vous, relevée une fois avec son accord. Confirmez son arrivée"
      ],
      "ok": true
     },
@@ -450,12 +166,12 @@
     },
     {
      "k": "client : « … indique être sur place » + distance",
-     "v": "Photo reçue à 10:15, à 74 m de votre adresse.",
+     "v": "Photo reçue à 10:18, à 74 m de votre adresse.",
      "ok": true
     },
     {
      "k": "pro : arrivée validée par la confirmation du client",
-     "v": "Arrivée à 10:15 · client absent, arrivée confirmée par le client Si vous terminez maintenant : prestation ",
+     "v": "Arrivée à 10:18 · client absent, arrivée confirmée par le client Si vous terminez maintenant : prestation ",
      "ok": true
     },
     {
@@ -465,18 +181,18 @@
     },
     {
      "k": "client : « … indique avoir terminé » + durée et montant",
-     "v": "Fin annoncée à 10:15 : 0 min sur place → forfait, sans dépassement, 90,00 € + frais de service 7,20 €.",
+     "v": "Fin annoncée à 10:18 : 0 min sur place → forfait, sans dépassement, 90,00 € + frais de service 7,20 €.",
      "ok": true
     },
     {
      "k": "client : code de fin affiché",
-     "v": "805456",
+     "v": "691010",
      "ok": true
     },
     {
      "k": "code de fin posté dans la messagerie",
      "v": [
-      "Mon code de fin : 805 456 (à saisir dans « Mission du jour », valable jusqu'à 10:45)."
+      "Mon code de fin : 691 010 (à saisir dans « Mission du jour », valable jusqu'à 10:48)."
      ],
      "ok": true
     },
@@ -494,13 +210,13 @@
      "k": "mission terminée en base (preuves)",
      "v": {
       "status": "completed",
-      "arrived_at": "2026-11-24T09:15:02.497874+00:00",
-      "completed_at": "2026-11-24T09:15:23.44795+00:00",
+      "arrived_at": "2026-11-24T09:18:11.172327+00:00",
+      "completed_at": "2026-11-24T09:18:34.483088+00:00",
       "duration_minutes": 0,
       "arrival_proof": "distance_confirmation",
       "completion_proof": "distance_code",
       "arrival_method": "geoloc_code",
-      "arrival_photo_path": "b9f8cd9a-16de-4a36-afd8-10a2135ab970/bca704b3-8e8c-44d9-bd71-c5d7795d735e/1795511700548.jpg",
+      "arrival_photo_path": "b9f8cd9a-16de-4a36-afd8-10a2135ab970/c2e18931-fa24-409d-8464-c47ea71ed9a8/1795511889575.jpg",
       "subtotal_cents": 9000,
       "buyer_fee_cents": 720,
       "seller_fee_cents": 1530,
@@ -524,17 +240,17 @@
      "k": "3 factures (montants)",
      "v": [
       {
-       "number": "PING-C-2026-00090",
+       "number": "PING-C-2026-00091",
        "kind": "commission_client",
        "net": "7,20 €"
       },
       {
-       "number": "PING-V-2026-00090",
+       "number": "PING-V-2026-00091",
        "kind": "commission_pro",
        "net": "15,30 €"
       },
       {
-       "number": "FACT-2026-00090",
+       "number": "FACT-2026-00091",
        "kind": "prestation",
        "net": "90,00 €"
       }
@@ -552,7 +268,7 @@
     },
     {
      "k": "facture (écran) : mention du mode de validation",
-     "v": "10:15 — 10:15 (arrivée : client absent, photo et position envoyées, arrivée confirmée par le client ; fin : client absent, code de fin envoyé par le client et saisi par le prestataire) · forfait 90,00 ",
+     "v": "10:18 — 10:18 (arrivée : client absent, photo et position envoyées, arrivée confirmée par le client ; fin : client absent, code de fin envoyé par le client et saisi par le prestataire) · forfait 90,00 ",
      "ok": true
     },
     {
@@ -570,20 +286,20 @@
      "v": [
       {
        "payer_role": "client",
-       "payee": "ping",
-       "reference": "PING-C-2026-00090",
-       "status": "a_payer",
-       "amount_cents": 720
+       "payee": "pro",
+       "reference": "FACT-2026-00091",
+       "status": "declare_paye",
+       "amount_cents": 9000
       },
       {
        "payer_role": "client",
-       "payee": "pro",
-       "reference": "FACT-2026-00090",
+       "payee": "ping",
+       "reference": "PING-C-2026-00091",
        "status": "declare_paye",
-       "amount_cents": 9000
+       "amount_cents": 720
       }
      ],
-     "ok": false
+     "ok": true
     },
     {
      "k": "avis du client enregistré",
@@ -617,20 +333,20 @@
     "[pro] 404 GET /bienvenue?_rsc=1q5z7",
     "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login"
    ],
-   "tx": "bca704b3-8e8c-44d9-bd71-c5d7795d735e",
+   "tx": "c2e18931-fa24-409d-8464-c47ea71ed9a8",
    "invoices": [
     {
-     "number": "PING-C-2026-00090",
+     "number": "PING-C-2026-00091",
      "kind": "commission_client",
      "net": "7,20 €"
     },
     {
-     "number": "PING-V-2026-00090",
+     "number": "PING-V-2026-00091",
      "kind": "commission_pro",
      "net": "15,30 €"
     },
     {
-     "number": "FACT-2026-00090",
+     "number": "FACT-2026-00091",
      "kind": "prestation",
      "net": "90,00 €"
     }
