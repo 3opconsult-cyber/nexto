@@ -353,7 +353,7 @@ export default function AgendaPage() {
           )
         })()}
 
-        <div className="ping-tabs" role="tablist" aria-label="Agenda">
+        <div className="ping-tabs ag-tabs" role="tablist" aria-label="Agenda">
           {TABS.map(([k, label]) => (
             <button key={k} role="tab" id={`ag-tab-${k}`} aria-selected={tab === k} aria-controls={`ag-panel-${k}`} onClick={() => pickTab(k)}>
               {label}

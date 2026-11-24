@@ -100,3 +100,7 @@
 .fiche-aere .fa-avis p{font-size:16px;line-height:1.55;margin:6px 0 0}
 .fiche-aere .fa-avis small{font-size:15px}
 .fiche-aere .ping-btn{min-height:54px;font-size:17px}
+
+/* Agenda : les 4 onglets (En cours, Calendrier, Terminées, Factures) tiennent toujours sur 390 px, sans défilement latéral. */
+.ag-tabs{display:flex;gap:2px}
+.ag-tabs button{flex:1 1 0;min-width:0;padding:10px 4px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
