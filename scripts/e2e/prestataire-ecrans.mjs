@@ -138,6 +138,8 @@ try {
     await shot(page, 'agenda-detail-jour-pro')
     const det = await page.locator('[data-day-detail]').count()
     check('Agenda : détail du jour au toucher', det, det >= 1)
+    // La feuille « jour » (24/11) est une fenêtre : on la ferme avant de continuer.
+    await page.getByRole('button', { name: 'Fermer' }).tap().catch(() => { }); await page.waitForTimeout(400)
   }
   // Texte de l'onglet En cours
   await page.getByRole('tab', { name: /En cours/ }).tap(); await page.waitForTimeout(800)

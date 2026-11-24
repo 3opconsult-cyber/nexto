@@ -6,7 +6,7 @@ import { BackArrow } from '@/components/BackHeader'
 import { useMode, roleColumn } from '@/lib/mode'
 import ModeHint from '@/components/ModeHint'
 import { sessionUserId } from '@/lib/screenCache'
-import { readMessagesCache, refreshMessagesCache, type MessagesData } from '@/lib/messagesList'
+import { readMessagesCache, refreshMessagesCache, groupConversations, GROUP_PAGE, type MessagesData } from '@/lib/messagesList'
 import { TRADES } from '@/lib/trades'
 import { isInsuranceSent } from '@/lib/insurance'
 import { rowHasPresence } from '@/lib/presence'
@@ -52,7 +52,7 @@ export default function MessagesPage() {
   const [query, setQuery] = useState('')
   const [sortMode, setSortMode] = useState<'date' | 'client'>('date')
   const [uid, setUid] = useState('')
-  const [showAll, setShowAll] = useState(false)
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set())
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [unread, setUnread] = useState<Record<string, number>>({})
   const [isPro, setIsPro] = useState<boolean | null>(null)
@@ -110,7 +110,7 @@ export default function MessagesPage() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }}>
               <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
             </svg>
-            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher"
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher par nom" aria-label="Rechercher une conversation par nom" type="search"
               style={{ width: '100%', boxSizing: 'border-box', minHeight: 52, padding: '12px 16px 12px 44px', borderRadius: 14, border: '1.5px solid #CFDAD7', background: '#fff', fontSize: 16, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none' }} />
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
@@ -123,6 +123,17 @@ export default function MessagesPage() {
               }}>{l}</button>
             ))}
           </div>
+          {visible.length > 3 && (
+            <div role="group" aria-label="Trier" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 16, color: '#4E6470', fontWeight: 600 }}>Trier :</span>
+              {([['date', 'par date'], ['client', 'par nom']] as const).map(([k, l]) => (
+                <button key={k} type="button" onClick={() => setSortMode(k)} aria-pressed={sortMode === k} style={{
+                  minHeight: 48, padding: '0 18px', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 16,
+                  background: sortMode === k ? '#123644' : '#fff', color: sortMode === k ? '#fff' : '#123644', boxShadow: sortMode === k ? 'none' : '0 0 0 1px #E7EDEB',
+                }}>{l}</button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -142,11 +153,6 @@ export default function MessagesPage() {
             const name = t.kind === 'support' ? 'Support PING' : t.counterpart
             return (name || '').toLowerCase().includes(q) || (t.lastMessage?.body || '').toLowerCase().includes(q) || (t.kind === 'mission' && missionLine(t).toLowerCase().includes(q))
           }) : base
-          // Liste longue : les 8 plus récentes, le reste un appui plus loin (recherche : tout).
-          const LIMIT = 8
-          const capped = !q && !showAll && filtered.length > LIMIT
-          const shown = capped ? filtered.slice(0, LIMIT) : filtered
-
           if (filtered.length === 0) {
             return (
               <div style={{ textAlign: 'center', padding: '40px 8px' }}>
@@ -155,39 +161,12 @@ export default function MessagesPage() {
             )
           }
 
-          let sections: { label: string; items: any[] }[]
-          if (sortMode === 'client') {
-            // Regroupe par interlocuteur (toutes missions confondues, classées
-            // alphabétiquement) — utile dès qu'un même client/pro revient
-            // plusieurs fois et que la vue par date éparpille son historique.
-            const byName = new Map<string, any[]>()
-            shown.forEach(t => {
-              const name = t.kind === 'support' ? 'Support PING' : (t.counterpart || '?')
-              if (!byName.has(name)) byName.set(name, [])
-              byName.get(name)!.push(t)
-            })
-            sections = Array.from(byName.entries())
-              .sort((a, b) => a[0].localeCompare(b[0], 'fr'))
-              .map(([label, items]) => ({ label: items.length > 1 ? `${label} · ${items.length} missions` : label, items }))
-          } else {
-            // Sections type messagerie (Aujourd'hui / Hier / Cette semaine / …) :
-            // regroupe les lignes déjà triées par activité, sans casser l'ordre.
-            // Maquette : un seul intitulé « Les plus récentes d'abord » (liste déjà triée par activité).
-            sections = [{ label: "Les plus récentes d'abord", items: shown }]
-          }
+          const sections = groupConversations(filtered, sortMode === 'client' ? 'name' : 'date')
 
           const list = sections.map(section => (
-            <div key={section.label} style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '0' }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#123644', padding: '8px 0', whiteSpace: 'nowrap' }}>{section.label}</div>
-                {section === sections[0] && visible.length > 6 && (
-                  <button type="button" onClick={() => setSortMode(sortMode === 'date' ? 'client' : 'date')}
-                    style={{ minHeight: 48, padding: '0 4px', background: 'none', border: 'none', color: '#0B8374', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', cursor: 'pointer' }}>
-                    {sortMode === 'date' ? (mode === 'pro' ? 'Trier par client' : 'Trier par prestataire') : 'Trier par date'}
-                  </button>
-                )}
-              </div>
-              {section.items.map(t => {
+            <div key={section.label} style={{ marginBottom: 28 }}>
+              <div data-conv-group={section.label} style={{ fontSize: 15, fontWeight: 700, color: '#123644', padding: '8px 0' }}>{section.label}</div>
+              {(q || openGroups.has(section.label) ? section.items : section.items.slice(0, GROUP_PAGE)).map(t => {
                 const name = t.kind === 'support' ? 'Support PING' : t.counterpart
                 const nUnread = t.kind === 'mission' ? (unread[t.id] || 0) : 0
                 return (
@@ -221,13 +200,14 @@ export default function MessagesPage() {
                   </button>
                 )
               })}
+              {!q && !openGroups.has(section.label) && section.items.length > GROUP_PAGE && (
+                <button type="button" onClick={() => setOpenGroups(g => new Set(g).add(section.label))} className="a-btn sec" style={{ marginTop: 12 }}>
+                  Voir plus ({section.items.length - GROUP_PAGE} autre{section.items.length - GROUP_PAGE > 1 ? 's' : ''})
+                </button>
+              )}
             </div>
           ))
-          return <>{list}{capped && (
-            <button type="button" onClick={() => setShowAll(true)} className="a-btn sec" style={{ marginTop: 16 }}>
-              Voir les {filtered.length - LIMIT} autres conversations
-            </button>
-          )}</>
+          return <>{list}</>
         })()}
       </div>
     </div>

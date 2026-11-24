@@ -91,3 +91,41 @@ export async function refreshMessagesCache(supabase: SupabaseClient, uid: string
 }
 
 export const readMessagesCache = (uid: string | null) => readScreenCache<MessagesData>(MESSAGES_CACHE, uid)
+
+// ---------- Rangement de la liste (24/11, remarque de Romain : pas de liste à défilement infini) ----------
+export const GROUP_PAGE = 15
+export const DATE_GROUPS = ["Aujourd'hui", 'Hier', 'Cette semaine', 'Ce mois-ci', 'Plus ancien'] as const
+
+const dayStart = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+
+// Groupe d'une conversation selon la date de sa dernière activité (dernier message, sinon création).
+export function dateGroupOf(iso: string, now: Date = new Date()): (typeof DATE_GROUPS)[number] {
+  const d = new Date(iso)
+  const n = Math.round((dayStart(now) - dayStart(d)) / 86400000)
+  if (n <= 0) return "Aujourd'hui"
+  if (n === 1) return 'Hier'
+  if (n < 7) return 'Cette semaine'
+  if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) return 'Ce mois-ci'
+  return 'Plus ancien'
+}
+
+export type ConvGroup = { label: string; items: any[] }
+
+// Par date : cinq groupes, la plus récente d'abord ; par nom : une lettre par groupe, ordre alphabétique.
+// Les groupes vides n'existent pas. Aucun filtre ici : la page filtre avant (recherche, non lus).
+export function groupConversations(rows: any[], sort: 'date' | 'name', now: Date = new Date()): ConvGroup[] {
+  const nameOf = (r: any) => (r.kind === 'support' ? 'Support PING' : r.counterpart) || '?'
+  const when = (r: any) => r.lastMessage?.created_at || r.created_at
+  if (sort === 'name') {
+    const sorted = [...rows].sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'fr') || new Date(when(b)).getTime() - new Date(when(a)).getTime())
+    const out: ConvGroup[] = []
+    sorted.forEach(r => {
+      const l = nameOf(r).charAt(0).toUpperCase()
+      const last = out[out.length - 1]
+      if (last && last.label === l) last.items.push(r); else out.push({ label: l, items: [r] })
+    })
+    return out
+  }
+  const sorted = [...rows].sort((a, b) => new Date(when(b)).getTime() - new Date(when(a)).getTime())
+  return DATE_GROUPS.map(label => ({ label: label as string, items: sorted.filter(r => dateGroupOf(when(r), now) === label) })).filter(g => g.items.length)
+}

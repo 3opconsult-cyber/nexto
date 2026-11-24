@@ -9,7 +9,6 @@ import { readScreenCache } from '@/lib/screenCache'
 import { AGENDA_CACHE, loadAgendaSnap, type AgendaCache } from '@/lib/agendaLoader'
 import Calendar, { type CalEvent } from '@/components/calendar/Calendar'
 import { useMode, roleColumn } from '@/lib/mode'
-import ModeHint from '@/components/ModeHint'
 import { UPCOMING, DONE, txDate, durationMinutes } from '@/lib/agenda'
 import { isTodayMission } from '@/lib/todayMission'
 import { MissionSuivi } from '@/components/presence/MissionTimeline'
@@ -21,6 +20,7 @@ import MissionActions from '@/components/MissionActions'
 import '../aere.css'
 import '../aere-pro.css'
 import { bookingPending, bookingEnded, bookingLapsed, expireBookings } from '@/lib/booking'
+import { DaySheet, MissionLineRow, type MissionLine } from '@/components/agenda/MissionLines'
 
 const TRAD: Record<string, string> = { menage: 'Ménage', repassage: 'Repassage', nettoyage: 'Nettoyage', vitres: 'Vitres' }
 
@@ -115,7 +115,6 @@ export default function AgendaPage() {
 
   // Un seul rôle à la fois : missions achetées en mode particulier, vendues en mode pro.
   const mine = mode ? txs.filter(t => t[roleColumn(mode)] === uid) : []
-  const otherCount = mode ? txs.filter(t => t[roleColumn(mode === 'pro' ? 'particulier' : 'pro')] === uid && t.buyer_id !== t.seller_id).length : 0
   const shownDisputes = disputes.filter(d => mine.some(t => t.id === d.transaction_id))
   // L'agenda ne montre que de vrais rendez-vous : une simple conversation (tarif pas encore validé)
   // reste dans Messages, sinon chaque « Contacter » ajoutait une fausse date au calendrier.
@@ -190,7 +189,34 @@ export default function AgendaPage() {
     return [...appts, ...free]
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mine, names, freeSlots, mode, disputedIds, uid])
-  const dayEvents = dayPick ? events.filter(e => e.kind === 'busy' && e.start.toDateString() === dayPick.toDateString()).sort((a, b) => a.start.getTime() - b.start.getTime()) : []
+  // Historique (24/11) : une ligne par mission, 3 actions d'un appui (Conversation, Facture si elle existe, Mission).
+  const invoiceTx = new Set(shownInvoices.map(r => r.transaction_id))
+  const lineOf = (t: any, when: 'time' | 'date'): MissionLine => {
+    const ended = t.status === 'cancelled' || bookingLapsed(t)
+    const pend = bookingPending(t)
+    const [state, tone]: [string, MissionLine['tone']] = disputedIds.has(t.id) ? ['Litige', 'alert']
+      : ended ? [badge(t).label, 'muted']
+      : pend ? [t.seller_id === uid ? 'À accepter' : 'En attente', 'warn']
+      : DONE.includes(t.status) ? ['Terminée', 'muted']
+      : t.status === 'arrived' ? ['En cours', 'ok']
+      : ['Confirmée', 'ok']
+    const iso = DONE.includes(t.status) && when === 'date' ? (t.completed_at || t.scheduled_at || t.created_at) : (t.scheduled_at || t.created_at)
+    return {
+      id: t.id, name: names[t.id] || (mode === 'pro' ? 'Client' : 'Prestataire'),
+      service: t.requests?.category ? (TRAD[t.requests.category] || t.requests.category) : 'Mission',
+      time: when === 'time' ? hhmm(iso) : new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+      state, tone, hasInvoice: invoiceTx.has(t.id),
+    }
+  }
+  const dayLines: MissionLine[] = dayPick
+    ? mine.filter(t => t.scheduled_at && new Date(t.scheduled_at).toDateString() === dayPick.toDateString()
+        && (disputedIds.has(t.id) || t.price_confirmed || DONE.includes(t.status) || bookingPending(t)))
+      .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+      .map(t => lineOf(t, 'time'))
+    : []
+  // Terminées : recherche par nom de l'autre partie, rangement par mois, 10 lignes puis « Voir plus ».
+  const [doneQuery, setDoneQuery] = useState('')
+  const [doneShown, setDoneShown] = useState(10)
 
   const open = (t: any) => router.push(DONE.includes(t.status) ? `/mission/${t.id}/facture` : `/mission/${t.id}/chat`)
 
@@ -313,20 +339,15 @@ export default function AgendaPage() {
           </button>
         )}
         <h1 style={{ flex: 1, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: z(17, 20), color: '#fff', margin: 0 }}>Agenda</h1>
-        {mode && mode !== 'particulier' && !loading && (
-          <span style={{ fontSize: z(12.5, 15), color: 'rgba(255,255,255,.8)' }} aria-label={`${mine.length} mission${mine.length > 1 ? 's' : ''} dans votre espace ${mode === 'pro' ? 'prestataire' : 'particulier'}`}>{mine.length} mission{mine.length > 1 ? 's' : ''}</span>
-        )}
       </div>
 
       <div style={{ padding: A ? '20px 20px 16px' : mode === 'pro' ? '24px 16px 16px' : '12px 16px 16px', maxWidth: 980, margin: '0 auto' }}>
-        {/* Maquette : « N missions dans votre espace particulier » en bandeau de lecture (le décompte n'est plus dans l'en-tête). */}
-        {A && !loading && (
-          <p className="a-info" style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 24px', fontSize: 16 }}>
-            <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ flexShrink: 0 }}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
-            <span>{mine.length} mission{mine.length > 1 ? 's' : ''} dans votre espace particulier</span>
+        {/* Une seule ligne d'état (24/11) : plus de double décompte, plus de « (via le menu) ». */}
+        {!loading && mode && (
+          <p data-agenda-state style={{ margin: '0 0 24px', fontSize: 17, lineHeight: 1.5, fontWeight: 700, color: '#123644' }}>
+            {todayList.length ? `Aujourd’hui : ${todayList.length} mission${todayList.length > 1 ? 's' : ''}` : 'Aujourd’hui : aucune mission'}
           </p>
         )}
-        {isPro && mode && <ModeHint mode={mode} otherCount={otherCount} what={otherCount > 1 ? 'missions' : 'mission'} compact />}
 
         {/* Un seul bandeau litige, quel que soit l'onglet (maquette) : un litige ouvre son dossier, plusieurs ouvrent la liste. */}
         {shownDisputes.length > 0 && (() => {
@@ -359,9 +380,8 @@ export default function AgendaPage() {
 
         <div className="ping-tabs ag-tabs" role="tablist" aria-label="Agenda">
           {TABS.map(([k, label]) => (
-            <button key={k} role="tab" id={`ag-tab-${k}`} aria-selected={tab === k} aria-controls={`ag-panel-${k}`} onClick={() => pickTab(k)}>
+            <button key={k} style={{ fontSize: 15, minHeight: 48 }} role="tab" id={`ag-tab-${k}`} aria-selected={tab === k} aria-controls={`ag-panel-${k}`} onClick={() => pickTab(k)}>
               {label}
-              {k === 'cours' && todayList.length > 0 ? ` (${todayList.length})` : ''}
               {k === 'cours' && mode === 'particulier' && offersWaiting > 0 && (
                 <span aria-label={`${offersWaiting} proposition${offersWaiting > 1 ? 's' : ''} reçue${offersWaiting > 1 ? 's' : ''}`}
                   style={{ display: 'inline-block', minWidth: 18, height: 18, lineHeight: '18px', padding: '0 5px', marginLeft: 6, borderRadius: 999, background: '#E8743B', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center', verticalAlign: 1 }}>
@@ -376,31 +396,15 @@ export default function AgendaPage() {
           {tab === 'calendrier' && (
             <>
               <div style={{ marginBottom: 20 }}>
-                <Calendar aere={mode === 'pro'} events={events} onDayClick={d => setDayPick(p => p && p.toDateString() === d.toDateString() ? null : d)}
-                  selection={dayPick ? { type: 'days', days: [dayPick] } : null}
+                <Calendar aere={mode === 'pro'} events={events} onDayClick={d => setDayPick(d)}
                   emptyHint={mode === 'pro' ? 'Aucun rendez-vous ni créneau pour l’instant. Publiez vos disponibilités pour être réservé en un clic.' : 'Aucun rendez-vous pour l’instant.'} />
               </div>
-              {/* Légende et détail du jour touché (vue Mois) : un titre, une ligne par rendez-vous, sans cadre. */}
+              {/* Légende ; le détail du jour touché s'ouvre dans la feuille « jour » (DaySheet), Mois et Semaine. */}
               <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 14, lineHeight: 1.5, color: '#4E6470', margin: '-8px 4px 20px' }}>
                 <span><span aria-hidden style={{ display: 'inline-block', width: 22, height: 12, borderRadius: 6, background: '#123644', verticalAlign: -1, marginRight: 8 }} />Confirmé</span>
                 <span><span aria-hidden style={{ display: 'inline-block', width: 22, height: 12, borderRadius: 6, border: '1.5px dashed #F2A93B', background: '#FFF7ED', verticalAlign: -1, marginRight: 8 }} />{mode === 'pro' ? 'À accepter' : 'En attente de réponse'}</span>
               </div>
-              {dayPick && (
-                <div data-day-detail style={{ margin: '0 4px 24px' }}>
-                  <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: '#123644', textTransform: 'capitalize', marginBottom: 8 }}>
-                    {dayPick.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </div>
-                  {dayEvents.length === 0 && <p style={{ fontSize: 15, lineHeight: 1.5, color: '#4E6470', margin: 0 }}>Rien de prévu ce jour-là.</p>}
-                  {dayEvents.map(e => (
-                    <button key={e.id} type="button" onClick={() => e.onClick?.()}
-                      style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 64, textAlign: 'left', border: 'none', borderTop: '1px solid #EEF2F1', background: 'none', padding: '12px 0', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      <b style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', width: 52, flexShrink: 0 }}>{hhmm(e.start.toISOString())}</b>
-                      <span style={{ flex: 1, minWidth: 0, fontSize: 15, lineHeight: 1.5, color: '#123644' }}>{e.title}</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, padding: '4px 12px', borderRadius: 999, flexShrink: 0, ...(e.tone === 'pending' ? { background: '#FFF7ED', color: '#7A5717', border: '1.5px dashed #F2A93B' } : e.tone === 'live' ? { background: 'rgba(18,179,156,.14)', color: '#0B8374' } : { background: '#EEF2F1', color: '#123644' }) }}>{e.subtitle}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <DaySheet day={dayPick} lines={dayLines} onClose={() => setDayPick(null)} />
               {isPro && mode === 'pro' && freeSlots !== null && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', margin: '22px 0 6px' }}>
@@ -467,7 +471,64 @@ export default function AgendaPage() {
           )}
 
           {tab === 'terminees' && !loading && (
-            done.length ? done.map(t => card(t, false, true)) : empty('Aucune prestation terminée pour l’instant.')
+            done.length ? (() => {
+              const dd = (t: any) => new Date(DONE.includes(t.status) ? (t.completed_at || t.scheduled_at || t.created_at) : (t.scheduled_at || t.created_at))
+              const q = doneQuery.trim().toLowerCase()
+              const found = done.filter(t => !q || (names[t.id] || '').toLowerCase().includes(q)).sort((a, b) => dd(b).getTime() - dd(a).getTime())
+              const shownDone = found.slice(0, doneShown)
+              const months: { label: string; items: any[] }[] = []
+              shownDone.forEach(t => {
+                const l = dd(t).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                const label = l.charAt(0).toUpperCase() + l.slice(1)
+                const last = months[months.length - 1]
+                if (last && last.label === label) last.items.push(t); else months.push({ label, items: [t] })
+              })
+              return (
+                <>
+                  <input type="search" value={doneQuery} onChange={e => { setDoneQuery(e.target.value); setDoneShown(10) }} placeholder="Rechercher par nom" aria-label="Rechercher une mission terminée par nom"
+                    style={{ width: '100%', boxSizing: 'border-box', minHeight: 52, padding: '12px 16px', borderRadius: 14, border: '1.5px solid #CFDAD7', background: '#fff', fontSize: 16, fontFamily: 'Inter, sans-serif', color: '#123644', outline: 'none', marginBottom: 20 }} />
+                  {found.length === 0 && empty(`Aucune mission terminée pour « ${doneQuery.trim()} ».`)}
+                  {months.map(g => (
+                    <div key={g.label} data-done-month={g.label}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#4E6470', margin: '16px 0 0' }}>{g.label}</div>
+                      {g.items.map((t, i) => (
+                        <MissionLineRow key={t.id} first={i === 0} m={{ ...lineOf(t, 'date'), extra: !(((bookingPending(t) && !bookingLapsed(t)) || bookingEnded(t)) || (DONE.includes(t.status) && (!rated.has(t.id) || incidentOpen(t)))) ? undefined : (
+                          <>
+                            {(((bookingPending(t) && !bookingLapsed(t)) || bookingEnded(t))) && (
+                              <div style={{ marginBottom: 10 }}>
+                                <BookingCard tx={t} userId={uid} counterpart={names[t.id]} compact
+                                  onChange={patch => setTxs(list => list.map(x => x.id === t.id ? { ...x, ...patch } : x))} />
+                              </div>
+                            )}
+                            {DONE.includes(t.status) && (!rated.has(t.id) || incidentOpen(t)) && (
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                {!rated.has(t.id) && (
+                                  <button type="button" onClick={() => router.push(`/mission/${t.id}/chat?avis`)}
+                                    style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+                                    {mode === 'pro' ? 'Noter le client' : 'Noter'}
+                                  </button>
+                                )}
+                                {incidentOpen(t) && (
+                                  <button type="button" onClick={() => router.push(`/mission/${t.id}/chat?signaler`)}
+                                    style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+                                    Signaler un problème
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </>) }} />
+                      ))}
+                    </div>
+                  ))}
+                  {found.length > doneShown && (
+                    <button type="button" onClick={() => setDoneShown(n => n + 10)}
+                      style={{ width: '100%', minHeight: 52, marginTop: 16, borderRadius: 14, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
+                      Voir plus ({found.length - doneShown} autre{found.length - doneShown > 1 ? 's' : ''})
+                    </button>
+                  )}
+                </>
+              )
+            })() : empty('Aucune prestation terminée pour l’instant.')
           )}
 
           {tab === 'factures' && !loading && mode && (

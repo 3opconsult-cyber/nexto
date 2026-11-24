@@ -171,7 +171,8 @@ export default function Calendar({
             bigCells={bigCells} aere={aere}
             onOpenDay={d => { if (onDayClick) { onDayClick(d); return } setCursor(d); if (views.includes('day')) setView('day') }} />
         : <TimeGrid days={days} events={events} now={now} h0={h0} h1={h1} step={stepMinutes} narrow={narrow && v === 'week'}
-            selectable={selectable} selection={selection} onSelect={onSelect} aere={aere} />}
+            selectable={selectable} selection={selection} onSelect={onSelect} aere={aere}
+            onDayHeader={v === 'week' ? onDayClick : undefined} />}
 
       {emptyHint && events.length === 0 && (
         <p style={{ fontSize: aere ? 15 : 12, color: C.slate, margin: '10px 2px 0', lineHeight: aere ? 1.55 : 1.5 }}>{emptyHint}</p>
@@ -213,9 +214,11 @@ function groupSimultaneous(list: CalEvent[]): CalEvent[] {
   return out
 }
 
-function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selection, onSelect, aere = false }: {
+function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selection, onSelect, aere = false, onDayHeader }: {
   days: Date[]; events: CalEvent[]; now: Date; h0: number; h1: number; step: number; narrow: boolean
   selectable: boolean; selection: CalSelection | null; onSelect?: (s: CalSelection | null) => void; aere?: boolean
+  // Vue Semaine : toucher l'en-tête d'un jour ouvre le détail du jour (page agenda).
+  onDayHeader?: (d: Date) => void
 }) {
   const [openGroup, setOpenGroup] = useState<string | null>(null)
   const height = (h1 - h0) * PX_PER_MIN
@@ -258,7 +261,8 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
         {days.map(d => {
           const today = sameDay(d, now)
           return (
-            <div key={d.getTime()} style={{ textAlign: 'center', minWidth: 0 }}>
+            <div key={d.getTime()} {...(onDayHeader ? { role: 'button', tabIndex: 0, 'aria-label': `Missions du ${d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`, onClick: () => onDayHeader(d), onKeyDown: (ev: React.KeyboardEvent) => { if (ev.key === 'Enter') onDayHeader(d) } } : {})}
+              style={{ textAlign: 'center', minWidth: 0, minHeight: onDayHeader ? 44 : undefined, cursor: onDayHeader ? 'pointer' : undefined }}>
               <div style={{ fontSize: aere ? 15 : 12, color: C.slate, fontWeight: 600 }}>{narrow ? WD[(d.getDay() + 6) % 7].slice(0, 1).toUpperCase() : WD[(d.getDay() + 6) % 7]}</div>
               <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: aere ? 36 : 28, height: aere ? 36 : 28, borderRadius: 999, marginTop: 2, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: aere ? 16 : 14, background: today ? C.teal : 'transparent', color: today ? '#fff' : C.ink }}>{d.getDate()}</div>
             </div>
