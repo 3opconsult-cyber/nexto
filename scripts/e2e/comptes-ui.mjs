@@ -100,7 +100,7 @@ for (const [label, status, body, re] of [
   ['trop de tentatives', 429, { code: 'over_email_send_rate_limit', msg: 'email rate limit exceeded', error_code: 'over_email_send_rate_limit' }, /Trop de tentatives/],
 ]) {
   const { p, ctx } = await page({ signup: { status, body } })
-  await p.goto(BASE + '/auth/signup'); await p.evaluate(() => sessionStorage.setItem('ping_signup_draft', JSON.stringify({ form: { email: 'simule@ping-demo.invalid', firstName: 'T', lastName: 'S', phone: '0612345678', birthdate: '', address: '' }, role: 'client', step: 2 })))
+  await p.goto(BASE + '/auth/signup'); await p.evaluate(() => sessionStorage.setItem('ping_signup_draft', JSON.stringify({ form: { email: 'simule@ping-demo.invalid', firstName: 'T', lastName: 'S', phone: '0612345678', birthdate: '', address: '' }, role: 'client', step: 3 })))
   await p.reload(); await p.waitForSelector('input[type=email]'); await p.locator('input[autocomplete=new-password]').fill('MotDePasse2026'); await p.locator('input[type=checkbox]').check()
   await p.getByRole('button', { name: 'Créer mon compte' }).click(); await p.waitForTimeout(1200)
   check(re.test(await alertText(p)), `erreur serveur « ${label} » : message en français (${(await alertText(p)).slice(0, 70)})`)
