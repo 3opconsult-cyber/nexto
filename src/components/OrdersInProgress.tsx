@@ -108,7 +108,7 @@ export default function OrdersInProgress({ role, title, transactions, topGap = 0
                 {(TRADES[t.requests?.category] || 'Prestation')} · {when(t)}
               </span>
             </span>
-            <span style={{ fontSize: 14, fontWeight: 700, padding: '6px 12px', borderRadius: 999, flexShrink: 0, background: TONE[e].bg, color: TONE[e].fg, border: 'none' }}>{LABEL[e]}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, padding: '6px 12px', borderRadius: 999, flexShrink: 0, background: TONE[e].bg, color: TONE[e].fg, border: 'none' }}>{LABEL[e]}</span>
           </button>
         ))}
       </div>

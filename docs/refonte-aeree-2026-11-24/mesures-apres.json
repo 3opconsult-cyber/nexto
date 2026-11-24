@@ -1,24 +1,28 @@
 {
- "base": "http://localhost:3217",
+ "base": "https://nexto-eta.vercel.app",
  "label": "apres",
  "ecrans": {
   "profil": {
    "racine": "div.body",
-   "blocs": 2,
+   "blocs": 3,
    "bordures": 0,
-   "separateursTraits": 1,
-   "texteMin": 15,
-   "sous15": 0,
-   "exemplesSous15": [],
-   "espaceMin": 28,
-   "espaceOu": "A Audit Client Par / Mon activité Mes d",
+   "separateursTraits": 3,
+   "texteMin": 14,
+   "sous15": 3,
+   "exemplesSous15": [
+    "14px En attente",
+    "14px En attente",
+    "14px En attente"
+   ],
+   "espaceMin": 0,
+   "espaceOu": "Mes commandes en c / Mon activité Mes d",
    "margeOu": "AAudit ClientParticu",
    "margeMin": 20,
    "interlOu": "Voir plus : factures, co",
    "interlMin": 1.5,
    "cibles44": 0,
    "listeCibles": [],
-   "hauteurPage": 724
+   "hauteurPage": 854
   },
   "messages": {
    "racine": "div.aere",

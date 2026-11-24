@@ -113,7 +113,7 @@ export default function ClientProfil() {
                 </div>
               )}
             </div>
-            <OrdersInProgress role="particulier" title="Mes commandes en cours" topGap={28} />
+            <div style={{ marginBottom: 28 }}><OrdersInProgress role="particulier" title="Mes commandes en cours" topGap={28} /></div>
 
             {/* Bloc 2 (seulement s'il manque quelque chose) : une phrase, pas de barre. */}
             {done < 4 && (

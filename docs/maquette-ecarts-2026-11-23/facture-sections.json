@@ -4,8 +4,8 @@
   {
    "k": "client : deux sections empilées dans l'ordre",
    "v": [
-    "PRESTATION",
-    "FRAIS DE SERVICE PING"
+    "Prestation",
+    "Frais de service PING"
    ],
    "ok": true
   },
@@ -47,8 +47,8 @@
   {
    "k": "pro : deux sections empilées dans l'ordre",
    "v": [
-    "VOTRE FACTURE",
-    "COMMISSION PING"
+    "Votre facture",
+    "Commission PING"
    ],
    "ok": true
   },

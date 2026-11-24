@@ -63,7 +63,7 @@
     },
     {
       "k": "bouton Réserver >= 44 px",
-      "v": "358x56",
+      "v": "350x52",
       "ok": true
     },
     {
@@ -118,7 +118,7 @@
     },
     {
       "k": "interrupteur : zone de toucher >= 44 px",
-      "v": "60x44",
+      "v": "60x52",
       "ok": true
     },
     {
