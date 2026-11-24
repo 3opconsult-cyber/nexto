@@ -45,7 +45,7 @@ function PingBaseLayer() {
           if (n > 0) return
           probes += 1
           // Réseau mobile intermittent : une fois, on recharge le style (nouveau lot de tuiles) avant de renoncer.
-          if (probes === 3) { try { glMap.setStyle(pickMapStyle()) } catch { /* sans objet */ } }
+          if (probes === 3) { try { glMap.setStyle(pickMapStyle(), { diff: false }) } catch { /* sans objet */ } }
           if (probes >= 8) { if (!cancelled) setFallback(true); return }
           window.setTimeout(probe, 2000)
         }
