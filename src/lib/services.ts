@@ -88,9 +88,11 @@ export async function fetchProvidersNearby(
   lat: number, lng: number, radiusM = 15000, trade?: string
 ): Promise<ProviderNearby[]> {
   const supabase = createClient()
-  const { data, error } = await supabase.rpc('providers_nearby', {
-    p_lat: lat, p_lng: lng, radius_m: radiusM, p_trade: trade ?? null,
-  })
+  const args = { p_lat: lat, p_lng: lng, radius_m: radiusM, p_trade: trade ?? null }
+  // Migration 064 : position floutée à ~50 m (providers_nearby_public). Avant elle, repli sur l'ancienne fonction,
+  // fermée aux clients par la même migration.
+  let { data, error } = await supabase.rpc('providers_nearby_public', args)
+  if (error) ({ data, error } = await supabase.rpc('providers_nearby', args))
   if (error) { console.error('providers_nearby', error); return [] }
   return (data ?? []) as ProviderNearby[]
 }

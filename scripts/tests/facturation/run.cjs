@@ -181,7 +181,7 @@ async function pdf() {
     assert.ok(!/ping/i.test((doc.getProducer() || '') + (doc.getCreator() || '')), 'PING dans les métadonnées')
   })
   await ta('récapitulatif particulier : aucun SIRET, bandeau « pas une facture », « non immatriculé », « Montant perçu »', async () => {
-    assert.strictEqual(docTitle(recap), "Récapitulatif d'intervention")
+    assert.strictEqual(docTitle(recap), 'Reçu')
     const { text } = await textOf(await buildInvoicePdf(recap))
     assert.ok(!/SIRET/.test(text), 'SIRET sur un récapitulatif de particulier'); assert.ok(/non immatricul/.test(text), 'mention non immatriculé absente')
     assert.ok(/pas une facture/.test(text), 'bandeau absent'); assert.ok(/Montant per/.test(text), '« Montant perçu » absent')
@@ -200,7 +200,15 @@ async function pdf() {
     const long = { ...lineF, date: '20/11/2026', forfait_cents: 9000, heures_incluses: 3, taux_horaire_cents: 2500, arrivee: '2026-11-20T08:00:00Z', depart: '2026-11-20T13:00:00Z' }
     const legal = { ...facture.legal, penalites: 'En cas de retard de paiement, penalites au taux de 3 fois le taux d\'interet legal, exigibles sans rappel prealable.',
       indemnite_recouvrement: 'Indemnite forfaitaire pour frais de recouvrement : 40 EUR.', escompte: 'Pas d\'escompte pour paiement anticipe. é è ê à ç ô' }
-    const f = await textOf(await buildInvoicePdf({ ...facture, lines: [long], legal }))
+    // Indemnité de 40 € : seulement pour un client professionnel (SIRET) ; absente pour un particulier.
+    const pro = await textOf(await buildInvoicePdf({ ...facture, client_snapshot: { ...facture.client_snapshot, siret: '12345678900011' }, lines: [long], legal }))
+    assert.ok(pro.text.includes('Indemnité'), 'indemnité absente pour un client professionnel')
+    const part = await textOf(await buildInvoicePdf({ ...facture, lines: [long], legal }))
+    assert.ok(!/Indemnit/.test(part.text), 'indemnité de 40 € affichée à un particulier')
+    const tva = await textOf(await buildInvoicePdf({ ...facture, transaction_ref: 'PING-T-2026-000123', lines: [long], legal: { ...legal, tva_taux: 20, franchise_tva: undefined } }))
+    assert.ok(/dont hors taxe/.test(tva.text) && /dont TVA 20 %/.test(tva.text), 'ligne TVA absente')
+    assert.ok(tva.text.includes('PING-T-2026-000123'), 'référence de l’opération absente')
+    const f = await textOf(await buildInvoicePdf({ ...facture, client_snapshot: { ...facture.client_snapshot, siret: '12345678900011' }, lines: [long], legal }))
     if (process.env.PDF_DUMP) console.log(f.text)
     assert.ok(/puis\n25,00 .? de l'heure/.test(f.text), 'fin de la ligne de tarif absente (coupée ?)')
     assert.ok(f.text.includes('pénalités') && f.text.includes('intérêt légal') && f.text.includes('préalable') && f.text.includes('Indemnité') && f.text.includes('anticipé'), 'accents')

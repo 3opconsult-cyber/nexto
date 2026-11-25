@@ -25,7 +25,7 @@ exports.KIND_LABEL = {
     commission_pro: 'Commission PING',
 };
 exports.TITLE = {
-    recapitulatif: "Récapitulatif d'intervention",
+    recapitulatif: 'Reçu',
     facture: 'Facture',
     commission: 'Frais de mise en relation',
 };
@@ -326,6 +326,18 @@ async function buildInvoicePdf(inv) {
     txt(inv.template === 'recapitulatif' ? 'Montant perçu' : 'Total', M, y, 12, bold);
     right((0, exports.EUR)(inv.net_cents), W - M, y, 16, bold, INK);
     y -= 17;
+    // Assujetti à la TVA (taux enregistré dans `legal.tva_taux`) : le prix affiché est le prix payé, TVA comprise ;
+    // on en déduit le hors taxe et la TVA, sans toucher au montant. Sans taux enregistré, rien n'est inventé.
+    const tauxTva = Number(inv.legal?.tva_taux);
+    if (inv.template === 'facture' && Number.isFinite(tauxTva) && tauxTva > 0) {
+        const ht = Math.round(inv.net_cents / (1 + tauxTva / 100)), tva = inv.net_cents - ht;
+        txt(`dont hors taxe`, M, y, 9, reg, SLATE);
+        right((0, exports.EUR)(ht), W - M, y, 9, reg, SLATE);
+        y -= 12;
+        txt(`dont TVA ${String(tauxTva).replace('.', ',')} %`, M, y, 9, reg, SLATE);
+        right((0, exports.EUR)(tva), W - M, y, 9, reg, SLATE);
+        y -= 14;
+    }
     if (inv.legal?.franchise_tva) {
         txt(inv.legal.franchise_tva, M, y, 8.5, reg, SLATE);
         y -= 13;
@@ -360,7 +372,8 @@ async function buildInvoicePdf(inv) {
         y -= 15;
         for (const m of [
             inv.legal?.categorie_operation ? `Catégorie de l'opération : ${inv.legal.categorie_operation}.` : null,
-            inv.legal?.penalites, inv.legal?.indemnite_recouvrement, inv.legal?.escompte,
+            // L'indemnité de 40 € ne concerne que les clients professionnels : jamais sur un document adressé à un particulier.
+            inv.legal?.penalites, cli.siret ? inv.legal?.indemnite_recouvrement : null, inv.legal?.escompte,
             'Règlement à réception.',
         ].filter(Boolean).map(exports.accentuer)) {
             para(m);
@@ -373,7 +386,8 @@ async function buildInvoicePdf(inv) {
     // ---------- pied ----------
     // « Ce relevé fait foi » : seulement sur le relevé de commission PING tant que PING n'a pas de SIRET
     // (jamais sur la facture du prestataire).
-    const foot = "Les heures d'arrivée et de départ sont horodatées dans l'application à partir d'une preuve fournie par le client (QR, code ou confirmation)."
+    const refLine = inv.transaction_ref ? `Référence de l'opération : ${inv.transaction_ref}. ` : '';
+    const foot = refLine + "Les heures d'arrivée et de départ sont horodatées dans l'application à partir d'une preuve fournie par le client (QR, code ou confirmation)."
         + (isCommission && !inv.issuer_snapshot?.siret ? ' Ce relevé fait foi en cas de contestation.' : '');
     let fy = M + 22;
     for (const l of wrap(foot, W - M * 2, 7.5)) {

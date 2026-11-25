@@ -21,7 +21,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Adresse de référence dans Disponibilités | à faire |
 | D-10 : absence réelle et clôture sur preuve non rejouées | non vérifié |
 | GPS précis iPhone, « Masquer » en écriture réelle, remise en ligne sans tarif ni position | non vérifié |
-| Filtre anti-contournement sur accroche et présentation de l'annonce (`chatFilter.ts`) | à faire (AUDIT-ANNONCE-CARTE n°2) |
+| Filtre anti-contournement sur accroche et présentation de l'annonce | fait dans le code (téléphone, e-mail, suite de chiffres), non vérifié en production ; pas de contrôle côté base |
 | Publication en un seul parcours de 3 étapes (onboarding + `/pro/annonce`) | à faire après accord sur la maquette v14 |
 | Supprimer son annonce (aujourd'hui : masquer seulement) | non vérifié, à faire |
 
@@ -57,14 +57,15 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | IBAN de PING dans `/admin/paiements` | attend Romain |
 | D-19 : séquestre, aucun prestataire de paiement choisi | bloquée |
 | Facture : « Reçu » pour non immatriculé, HT/TVA/TTC pour assujetti, masquer l'indemnité 40 € pour un client particulier, médiateur, test de la franchise au 01/01/2027 (AUDIT-ANNONCE-CARTE, section facture) | à faire, relecture expert-comptable |
-| Numérotation continue par série, référence de transaction `PING-T-…`, numéros de compte `PING-C/P-…`, vue CRM (RUBRIQUE-FACTURATION, demande du 26/11) | à faire, après 063 |
+| Coller `065_numerotation_references.sql` (numéros continus, références, vue CRM) après 063 ; brancher le CRM sur `crm_invoices` | écrit et poussé, attend Romain (collage) |
+| Facture assujetti : saisie du taux de TVA du prestataire (colonne et champ) pour alimenter `legal.tva_taux` ; l'affichage HT/TVA est prêt | à faire |
 | CESU : reprendre le branchement (`docs/cesu-ce-qui-manque.md`) | à faire |
 | Envoi des factures par e-mail : Resend non posé | attend Romain |
 
 ## Données SQL
 | Point | Statut |
 |---|---|
-| URGENT : `providers_nearby` renvoie la position exacte du domicile ; flou 50 m par pro, réglable en base (AUDIT-ANNONCE-CARTE n°1) | à faire, accord Romain sur la valeur (50 m) |
+| URGENT : coller `064_position_floutee.sql` (flou 50 m) après déploiement ; vérifier la RLS de `provider_profiles` (lat/lng/location lisibles par un client ?) | écrit et poussé, attend Romain (collage) |
 | Exposer à la carte : CESU, TVA, crédit d'impôt (n°4) | à faire après le flou |
 | Coller 061, 062, 063 dans l'ordre (`supabase/a_coller/README.md`) | attend Romain |
 | Nettoyage des données QA (`.invalid`, « QA ») : liste puis accord | attend Romain |

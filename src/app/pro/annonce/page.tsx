@@ -1,4 +1,5 @@
 "use client"
+import { filterMessage } from '@/lib/chatFilter'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -93,6 +94,13 @@ export default function MonAnnoncePage() {
 
   async function save(): Promise<boolean> {
     if (!uid) return false
+    // Annonce publique : ni téléphone, ni e-mail, ni suite de chiffres (les échanges passent par PING). Seuls ces trois
+    // motifs bloquent : les mots-clés du chat (« directement », « rue »…) feraient refuser des présentations normales.
+    const bad = [headline, bio].map(t => filterMessage(t).reasons).flat().filter(r => r !== 'coordonnées hors plateforme')
+    if (bad.length) {
+      setMsg({ tone: 'err', text: `Votre annonce contient ${Array.from(new Set(bad)).join(' et ')} : retirez-le, les échanges passent par PING.` })
+      return false
+    }
     setSaving(true); setMsg(null)
     const supabase = createClient()
     const patch = { headline: headline.trim() || null, bio: bio.trim() || null, highlights, service_radius_km: radius }
