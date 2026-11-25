@@ -47,8 +47,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 |---|---|
 | A-TRANCHER a à t (dont h : RLS `invoices`, b, d, e, n) | attend Romain |
 | TVA : calcul HT/TVA pour un prestataire assujetti | attend Romain |
-| GPS du pro pour « arrivée dans X min » (A-TRANCHER o) ; flou 50 m (q) | attend Romain |
-| Litige en offre : offre du client, demande de règlement du pro, 24 h pour refuser sinon accepté ; une seule annonce par pro | à trancher (A-TRANCHER p, maquette v13 écrans 5 à 7) ; ajouter : contre-offre, annuler son litige, bandeau « Ouvrir la commande » dans le chat |
+| GPS du pro pour « arrivée dans X min » (A-TRANCHER u) ; flou 50 m (w) | attend Romain |
+| Litige en offre : offre du client, demande de règlement du pro, 24 h pour refuser sinon accepté ; une seule annonce par pro | à trancher (A-TRANCHER v, maquette v13 écrans 5 à 7) ; ajouter : contre-offre, annuler son litige, bandeau « Ouvrir la commande » dans le chat |
 
 ## Facturation et paiement
 | Point | Statut |

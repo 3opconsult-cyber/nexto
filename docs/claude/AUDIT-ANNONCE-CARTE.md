@@ -38,7 +38,7 @@ Maquette : `docs/maquette/maquette-annonce-v12.html` (3 écrans : publier, carte
 
 ## Précisions de Romain (26/11/2026, après la première maquette)
 - Deux repères sur la carte : (1) point fixe de l'attache (entreprise ou résidence), jamais exact : zone d'environ 50 m ; (2) « Ici aujourd'hui », le prestataire actif en déplacement (existe, 058). Adresse exacte seulement après contrat payé.
-- Le GPS du pro sert de témoin à l'arrivée et au message « en route, arrivée dans X min », calculé avec sa position. **Écart avec la règle 6** : aujourd'hui `DepartureBar.tsx` n'utilise aucun GPS (le pro choisit sa durée ; seul un minimum plausible est calculé depuis l'adresse). Y ajouter le GPS est une 3e exception : A-TRANCHER o.
+- Le GPS du pro sert de témoin à l'arrivée et au message « en route, arrivée dans X min », calculé avec sa position. **Écart avec la règle 6** : aujourd'hui `DepartureBar.tsx` n'utilise aucun GPS (le pro choisit sa durée ; seul un minimum plausible est calculé depuis l'adresse). Y ajouter le GPS est une 3e exception : A-TRANCHER u.
 - Charte : la maquette v12 n'était pas celle de l'application (polices, couleurs, barre du bas). Remplacée par **v13**, refaite sur `ping-ui.css` et les captures du 23/11. v12 est gardée, marquée remplacée.
 - Fiche du pro : manquait le résumé court au toucher d'une épingle (maquette 2) ; la fiche complète existe déjà (maquette 3).
 - Chat : accès direct à la commande des deux côtés, lien « Traiter le litige » (maquette 4).
