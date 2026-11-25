@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/client'
 import { markRead } from '@/lib/unread'
 import { notifyOther, alertAdminNow } from '@/lib/notify'
 import { incidentOpen, incidentDeadlineLabel, INCIDENT_WINDOW_H } from '@/lib/incident'
+import ChatOrderStrip from '@/components/ChatOrderStrip'
 import { createDispute, EMPTY_DISPUTE, type DisputeExtra } from '@/lib/dispute'
 import { CLIENT_TAGS } from '@/lib/clientTags'
 import DepartureBar from '@/components/DepartureBar'
@@ -735,6 +736,8 @@ export default function ChatPage() {
 
       {/* Bandeau de la maquette (docs/maquette/maquette-ping-v11.html, .maskb) : texte copié tel quel. */}
       <div style={{ background: 'rgba(18,179,156,.1)', color: '#0B6F63', fontSize: A ? 15 : 11.5, lineHeight: A ? 1.5 : undefined, fontWeight: 600, textAlign: 'center', padding: A ? '12px 20px' : '8px 16px' }}>Téléphone et e-mail restent masqués : tout passe par PING</div>
+
+      {tx && userId && tx.buyer_id !== tx.seller_id && <ChatOrderStrip tx={tx} refreshKey={String(reportSent)} />}
 
       {tx && tx.buyer_id === tx.seller_id && (
         <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: 'rgba(229,72,77,.08)', color: '#C0503A', fontSize: 12.5, fontWeight: 600, lineHeight: 1.5 }}>

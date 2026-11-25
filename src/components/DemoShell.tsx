@@ -201,16 +201,18 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <div className="btn ghost" role="button" style={{ flex: 1, padding: '12px 8px' }} onClick={() => contact(p.id)}>Contacter</div>
+          {/* Aperçu mobile (maquette v14, écran 2) : un seul bouton fort, « Contacter » est sur la fiche.
+              Pro hors ligne : pas de réservation, « Contacter » reste le seul geste. */}
+          {(!mobile || !p.active) && <div className="btn ghost" role="button" style={{ flex: 1, padding: '12px 8px' }} onClick={() => contact(p.id)}>Contacter</div>}
           {p.active && (
-            <div className="btn" role="button" style={{ flex: 1.5, padding: '12px 8px' }} onClick={() => reserve(p)}>
+            <div className="btn" role="button" style={{ flex: mobile ? 1 : 1.5, padding: '12px 8px' }} onClick={() => reserve(p)}>
               {devis ? 'Demander un devis' : `Réserver${p.p ? ` · ${p.p}` : ''}`}
             </div>
           )}
         </div>
         <button type="button" onClick={() => { if (mobile) closePreview(); router.push(`/pro/${p.id}`) }}
           style={{ minHeight: 44, border: 0, background: 'none', color: '#097A6C', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: 'var(--fb)' }}>
-          Voir le profil et les avis
+          {mobile ? 'Voir la fiche' : 'Voir le profil et les avis'}
         </button>
       </div>
     )
@@ -398,9 +400,9 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // validée par un admin) ou « Nouveau · pièces en cours de contrôle », puis CESU. Tant que l'état du
   // contrôle est inconnu (migration absente), on garde le langage déclaratif (pièce fournie, assurance
   // renseignée), jamais « vérifié ».
-  const tagsOf = (p: Pro) => (
+  const tagsOf = (p: Pro, short = false) => (
     <div className="mq-tags">
-      {p.acts.map(k => <span key={k} className="mq-tag"><Ic name="check" size={12} />{lab(k)}</span>)}
+      {!short && p.acts.map(k => <span key={k} className="mq-tag"><Ic name="check" size={12} />{lab(k)}</span>)}
       {p.checked === true && <span className="mq-tag"><Ic name="shield" size={12} />Profil vérifié par PING</span>}
       {p.checked === false && <span className="mq-tag warn">Nouveau · pièces en cours de contrôle</span>}
       {p.checked === undefined && p.identity && <span className="mq-tag"><Ic name="id" size={12} />Pièce d’identité fournie</span>}
@@ -555,7 +557,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                         <b style={{ fontFamily: 'var(--fh)', fontSize: 15, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{pv.p}</b>
                         <button type="button" className="mq-ib box" onClick={closePreview} aria-label="Fermer l’aperçu" style={{ background: 'none', marginTop: -6 }}><Ic name="close" /></button>
                       </div>
-                      {tagsOf(pv)}
+                      {tagsOf(pv, true)}
                       {pvMissing.length > 0 && <p style={{ fontSize: 12, color: '#8A6520', fontWeight: 600, margin: '0 0 4px' }}>Ne fait pas : {pvMissing.map(lab).join(', ').toLowerCase()}</p>}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
                         {pv.active

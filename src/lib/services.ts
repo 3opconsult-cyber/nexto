@@ -278,17 +278,26 @@ export async function respondToRequest(requestId: string): Promise<{ missionId: 
 //             (RPC provider_docs_status de la 042, sinon provider_docs_checked de la 039)
 //   rcproChecked — son attestation d'assurance RC a été contrôlée par PING (042 seulement)
 // Avant les migrations, colonne et RPC n'existent pas : on renvoie undefined, rien ne s'affiche.
-export type ProviderFlags = { cesu?: boolean; checked?: boolean; rcproChecked?: boolean }
+export type ProviderFlags = { cesu?: boolean; checked?: boolean; rcproChecked?: boolean; vat?: 'franchise' | 'assujetti'; sap?: boolean }
 export async function fetchProviderFlags(ids: string[]): Promise<Record<string, ProviderFlags>> {
   const out: Record<string, ProviderFlags> = {}
   const uniq = Array.from(new Set(ids)).filter(Boolean)
   if (!uniq.length) return out
   const supabase = createClient()
-  const [cesu, status] = await Promise.all([
-    supabase.from('provider_profiles').select('id, accepts_cesu_prefinance').in('id', uniq),
+  const [cesu0, status] = await Promise.all([
+    // Résumé de carte (bloc de repères) : CESU, régime de TVA et n° SAP (crédit d'impôt), déclaratifs.
+    // Même lecture directe que la fiche ; sans ces colonnes, repli sur le seul CESU.
+    supabase.from('provider_profiles').select('id, accepts_cesu_prefinance, vat_status, sap_number').in('id', uniq),
     supabase.rpc('provider_docs_status', { p_ids: uniq }),
   ])
-  if (!cesu.error) for (const r of (cesu.data ?? []) as any[]) (out[r.id] ||= {}).cesu = !!r.accepts_cesu_prefinance
+  let cesu: { data: any[] | null; error: any } = cesu0
+  if (cesu.error) cesu = await supabase.from('provider_profiles').select('id, accepts_cesu_prefinance').in('id', uniq)
+  if (!cesu.error) for (const r of (cesu.data ?? []) as any[]) {
+    const f = (out[r.id] ||= {})
+    f.cesu = !!r.accepts_cesu_prefinance
+    if (r.vat_status === 'franchise' || r.vat_status === 'assujetti') f.vat = r.vat_status
+    if ('sap_number' in r) f.sap = !!r.sap_number
+  }
   if (!status.error) {
     for (const r of (status.data ?? []) as any[]) {
       const f = (out[r.provider_id] ||= {})

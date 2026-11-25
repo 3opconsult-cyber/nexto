@@ -228,38 +228,26 @@ export default function ProDetailPage() {
             <p style={{ color: 'var(--slate)', fontSize: 15, lineHeight: 1.55 }}>{statut}{pro.accepts_cesu_prefinance === true && <> · <b style={{ color: '#097A6C' }}>Accepte le CESU préfinancé</b></>}{pro.sap_number ? ' · service à la personne déclaré (n° SAP renseigné)' : ''}</p>
           </>)}
 
-          {/* Vérifications (maquette) : « Validée » seulement pour une pièce contrôlée par un admin PING. */}
-          <div className="mq-sect">Vérifications</div>
-          {docsChecked === true && (
-            <div className="mq-vr ok"><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d&apos;identité</b><small>Contrôlée par PING</small></span><span className="vs"><Ic name="check" size={11} />Validée</span></div>
-          )}
-          {docsChecked !== true && pro.has_identity && (
-            <div className={`mq-vr ${docsChecked === false ? 'w' : 'ok'}`}><span className="vi"><Ic name="id" size={15} /></span><span><b>Pièce d&apos;identité</b><small>{docsChecked === false ? 'Envoyée, en contrôle par PING' : 'Déposée sur PING par le pro'}</small></span><span className="vs">{docsChecked === false ? 'En contrôle' : <><Ic name="check" size={11} />Fournie</>}</span></div>
-          )}
-          {rcproChecked === true && (
-            <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Attestation contrôlée par PING · transmise sur demande</small></span><span className="vs"><Ic name="check" size={11} />Validée</span></div>
-          )}
-          {rcproChecked !== true && pro.has_rcpro && (
-            <div className="mq-vr ok"><span className="vi"><Ic name="shieldPlain" size={15} /></span><span><b>Assurance responsabilité civile</b><small>Renseignée par le pro (casse, dommage) · Attestation transmise sur demande</small></span><span className="vs"><Ic name="check" size={11} />Renseignée</span></div>
-          )}
-          {/* SIRET : déclaratif (qc-production B6), jamais « vérifié ». Numéro public de l'entreprise. */}
-          {pro.siret && (
-            <div className="mq-vr ok"><span className="vi"><Ic name="ent" size={15} /></span><span><b>SIRET renseigné</b><small>Déclaré par le pro · n° {String(pro.siret).replace(/\D/g, '').replace(/^(\d{3})(\d{3})(\d{3})(\d{5})$/, '$1 $2 $3 $4')}</small></span><span className="vs"><Ic name="check" size={11} />Renseigné</span></div>
-          )}
-          {/* has_urssaf : à renvoyer par provider_trust_stats (migration à écrire, la table documents n'est
-              lisible que par son auteur). Tant qu'elle ne le renvoie pas, la ligne reste masquée. */}
-          {pro.has_urssaf && (
-            <div className="mq-vr ok"><span className="vi"><Ic name="doc" size={15} /></span><span><b>Attestation URSSAF</b><small>Attestation de vigilance déposée sur PING par le pro</small></span><span className="vs"><Ic name="check" size={11} />Fournie</span></div>
-          )}
-          {pro.sap_number && (
-            <div className="mq-vr ok"><span className="vi"><Ic name="doc" size={15} /></span><span><b>Attestation crédit d&apos;impôt</b><small>Peut établir la déclaration fiscale</small></span><span className="vs"><Ic name="check" size={11} />Possible</span></div>
-          )}
-          {pro.accepts_cesu_prefinance === true && (
-            <div className="mq-vr ok"><span className="vi"><Ic name="card" size={15} /></span><span><b>Accepte le CESU préfinancé</b><small>Titres employeur ou comité d&apos;entreprise</small></span><span className="vs"><Ic name="check" size={11} />Oui</span></div>
-          )}
-          {!pro.has_identity && !pro.has_rcpro && !pro.siret && !pro.has_urssaf && !pro.sap_number && !pro.accepts_cesu_prefinance && docsChecked !== true && (
-            <p className="ping-sub">Aucune information encore renseignée par le prestataire.</p>
-          )}
+          {/* Repères (maquette v14, écran 3) : un seul bloc au lieu de lignes séparées. « Contrôlée par PING »
+              seulement pour une pièce validée par un admin ; le reste est déclaré par le prestataire. */}
+          <div className="mq-sect">Repères</div>
+          {(() => {
+            const rep: { k: string; t: string; ic: string; warn?: boolean; gray?: boolean }[] = []
+            if (docsChecked === true) rep.push({ k: 'id', t: 'Identité contrôlée par PING', ic: 'shield' })
+            else if (pro.has_identity) rep.push({ k: 'id', t: docsChecked === false ? 'Identité en contrôle' : 'Identité fournie', ic: 'id', warn: docsChecked === false })
+            if (rcproChecked === true) rep.push({ k: 'rc', t: 'Assurance contrôlée par PING', ic: 'shieldPlain' })
+            else if (pro.has_rcpro) rep.push({ k: 'rc', t: 'Assurance renseignée', ic: 'shieldPlain' })
+            if (pro.siret) rep.push({ k: 'siret', t: 'SIRET renseigné', ic: 'ent' })
+            if (pro.has_urssaf) rep.push({ k: 'urs', t: 'Attestation Urssaf fournie', ic: 'doc' })
+            if (pro.accepts_cesu_prefinance === true) rep.push({ k: 'cesu', t: 'Accepte le CESU préfinancé', ic: 'card' })
+            if (pro.sap_number) rep.push({ k: 'sap', t: 'Crédit d’impôt possible', ic: 'doc' })
+            if (pro.vat_status === 'assujetti') rep.push({ k: 'tva', t: 'TVA applicable', ic: 'doc', gray: true })
+            else if (pro.vat_status === 'franchise') rep.push({ k: 'tva', t: 'Sans TVA', ic: 'doc', gray: true })
+            return rep.length
+              ? <div className="mq-tags">{rep.map(r => <span key={r.k} className={`mq-tag${r.warn ? ' warn' : r.gray ? ' gray' : ''}`}><Ic name={r.ic as any} size={12} />{r.t}</span>)}</div>
+              : <p className="ping-sub">Aucune information encore renseignée par le prestataire.</p>
+          })()}
+          <p className="mq-muted">L’adresse du client n’est communiquée au prestataire qu’après réservation payée.</p>
           <p className="mq-muted">PING contrôle les pièces marquées « Validée ». Les autres informations sont déclarées par le prestataire.</p>
           {uid !== proId && (
             <p className="mq-muted" style={{ marginTop: 4 }}>{docsChecked === false ? 'Nouveau sur PING : réservable dès maintenant, pièces en cours de contrôle. ' : ''}PING est une plateforme de mise en relation : PING ne garantit ni la solvabilité ni la qualité des prestations ; vous choisissez librement votre prestataire.</p>
