@@ -55,3 +55,16 @@ Par « négociateur, conciliateur », Romain entend-il : (a) un rôle de PING da
 
 ## État
 Rien codé, rien poussé. Fichier créé pour la reprise. Prochaine étape : réponse de Romain (choix du prestataire de paiement ; sens de « négociateur »).
+
+## Décisions de Romain (25/11/2026)
+1. **Câblages gardés** : Mangopay, Stripe, virement SEPA, virement sur RIB, Wero. Dans le code il y a Stripe, Mangopay et Lemonway ; **Wero n'est pas écrit** (seule mention : `docs/checklist-2026-11-18.md`). Wero passe en général par un prestataire de paiement : à demander à Stripe et Mangopay (non vérifié).
+2. **Frais du mode de paiement** : afficher le coût de chaque mode à celui qui le choisit ; paiement en une fois possible. Point d'interrogation de Romain : inclure ou non le coût dans le prix. Conseil ci-dessous.
+3. **Séquestre** : doit être solide ; besoin du coût réel pour calculer la marge.
+4. **Commission** : 8 % (client) + 17 % (prestataire) en base (`app_settings`, `/admin/commission`). Romain parle de « 20 % sur la totalité » : 8 + 17 = 25 % du prix de la prestation. À confirmer.
+5. **Maintenance** : Claude à 200 € par mois (plus API Anthropic) à intégrer aux coûts fixes.
+6. **Médiateur** : juridique mis de côté, CGV inchangées. On garde le chat de gestion du conflit (médiation et arbitrage par PING). PING est une place de marché : il règle un différend sur la base de l'échange entre les deux parties, il ne juge pas la qualité. Recherche du médiateur légal : voir le rapport de session (liste CECMC).
+
+## Calcul de marge (exemple, prestation 100 €, taux 8 % + 17 %)
+Client paie 108 €, prestataire reçoit 83 €, PING garde 25 € (23 % de ce que paie le client).
+Coût carte (Stripe, carte européenne, tarif public relevé par un blog le 17/11/2026, NON VÉRIFIÉ) : 1,5 % + 0,25 € sur 108 € = 1,87 €. Carte professionnelle : environ 2,8 % + 0,25 € = 3,27 €. Frais Connect (compte actif, versement) : non trouvés, à demander.
+Reste pour PING avant coûts fixes : environ 23 €. Avec 200 € de maintenance Claude seule, il faut environ 9 missions de 100 € par mois pour couvrir cette ligne. Coûts fixes à compléter par Romain : hébergement (Vercel, Supabase), e-mails (Resend), comptable, adhésion médiateur, abonnement du prestataire de paiement (Mangopay : environ 249 € par mois selon un tiers, non vérifié).
