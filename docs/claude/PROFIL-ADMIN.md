@@ -1,6 +1,12 @@
 # Profil Admin (PING) (créé le 25/11/2026)
 Session « PING · Admin ». Zone de code : `public/admin.html` (servi sur `/admin`), `src/app/admin` (commission, paiements, parcours, retours, visites), `src/app/litiges`, `src/app/api/admin`.
 
+## État au 25/11/2026 : Hub (`/hub`)
+- `src/app/hub/page.tsx` : vignettes Admin, Client test, Prestataire test, Carte ; invitation (Particulier ou pro -> `/essai`, ou inscription directe particulier / pro) avec WhatsApp (`whatsappUrl`), Partager, Copier ; animations et supports.
+- Comptes de test : adresse pré-remplie (`/auth/login?email=`), aucun mot de passe dans le code. Déjà connecté avec cette adresse : accès direct ; sinon déconnexion puis connexion. Aucun compte admin créé : « Admin » demande le vrai compte.
+- Bouton rond « Hub » : `src/components/HubReturn.tsx` (layout) et script en fin de `public/admin.html`. Visible seulement si le Hub a été ouvert sur l'appareil (`localStorage ping_hub`), réglable dans le Hub.
+- Vérifié en local : `tsc`, `build`, capture 390 px, pré-remplissage de l'adresse. NON vérifié : en production, connexion réelle, WhatsApp, bouton Hub dans l'admin.
+
 ## Ce qui est propre
 Décision PING sur un litige (curseur + champ), commission réglable, paiements et rapprochement des virements, validation des pièces, alertes, parcours et visites, prospection et campagnes (écrans de suivi).
 

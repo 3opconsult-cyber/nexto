@@ -11,6 +11,7 @@ import InstallPrompt from '@/components/InstallPrompt'
 import AuthGate from '@/components/AuthGate'
 import TabPrefetch from '@/components/TabPrefetch'
 import OfflineSync from '@/components/OfflineSync'
+import HubReturn from '@/components/HubReturn'
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -77,6 +78,7 @@ export default function RootLayout({
         <AuthGate />
         <TabPrefetch />
         <OfflineSync />
+        <HubReturn />
       </body>
     </html>
   )
