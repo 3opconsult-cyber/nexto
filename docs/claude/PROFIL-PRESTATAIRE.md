@@ -16,8 +16,11 @@ Renvoi : `REGLES-METIER.md` (Prix et facturation, Litige) ; sa facture et sa com
 ## Si ton sujet touche une rubrique
 Même tableau que `PROFIL-PARTICULIER.md` (Design, Facturation, Règles métier, Données SQL, Prospection et communication).
 
-## État au 26/11/2026
-Audit annonce / carte fait : `AUDIT-ANNONCE-CARTE.md`. Maquette v14, version allégée (remplace v13 et v12) : `docs/maquette/maquette-annonce-v14.html` (+ .png), en attente d'accord de Romain. Décisions à prendre : A-TRANCHER u, p, q. Aucun code touché. Prochain pas Prestataire : filtre sur l'annonce, parcours de publication en 3 étapes, suppression de l'annonce. Bloquant côté Données SQL : flou 50 m (position exacte exposée).
+## État au 26/11/2026 (fin du bloc 1)
+Maquette v14 validée par Romain (`docs/maquette/maquette-annonce-v14.html`). Audit : `AUDIT-ANNONCE-CARTE.md`.
+**Fait et poussé (tsc, build et test facturation verts ; non vérifié en production, pas de test de jour) :** appel de la carte vers `providers_nearby_public` avec repli ; filtre téléphone/e-mail/chiffres sur accroche et présentation ; facture : titre « Reçu » pour un non-immatriculé, indemnité de 40 € réservée aux clients professionnels, lignes HT/TVA si `legal.tva_taux`, référence d'opération au pied.
+**SQL écrit, à coller par Romain :** 064 (flou 50 m, urgent) puis 065 (numéros continus, références, vue CRM). Voir `supabase/a_coller/README.md` lignes 19 et 20.
+**Reste pour finir l'interface prestataire (bloc 2, nouvelle session, dans cet ordre) :** (1) résumé au toucher d'une épingle et bloc de critères de la fiche (CESU, TVA, crédit d'impôt : exige d'abord la lecture de ces champs par la base) ; (2) bandeau « Ouvrir la commande » dans le chat, des deux côtés ; (3) litige : contre-offre, annuler son litige, demande de règlement avec 24 h (A-TRANCHER v à valider avant de coder) ; (4) parcours de publication en 3 étapes ; (5) supprimer son annonce ; (6) saisie du taux de TVA du prestataire. Décision encore ouverte : GPS à « Je pars » (A-TRANCHER u).
 
 ## Bilan du profil prestataire au 26/11/2026 (lu dans le code, non vérifié en production)
 **Pièces, en place :** pièce d'identité, assurance RC Pro, justificatif SIRET/Kbis, diplôme (facultatif), SAP, RIB (`src/lib/documents.ts`). Fichiers dans le bucket privé `documents` (lisible par le propriétaire et l'admin). Statut par pièce (en contrôle, valide, refusée avec motif), date de fin de validité, alertes d'expiration et de refus (`pieces.ts`), alerte admin (057). Mise à jour par le pro depuis « Mes pièces ». Le numéro de la carte d'identité n'est pas stocké, seulement la photo : voulu (RGPD).
