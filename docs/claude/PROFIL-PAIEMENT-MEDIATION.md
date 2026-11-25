@@ -68,3 +68,38 @@ Rien codé, rien poussé. Fichier créé pour la reprise. Prochaine étape : ré
 Client paie 108 €, prestataire reçoit 83 €, PING garde 25 € (23 % de ce que paie le client).
 Coût carte (Stripe, carte européenne, tarif public relevé par un blog le 17/11/2026, NON VÉRIFIÉ) : 1,5 % + 0,25 € sur 108 € = 1,87 €. Carte professionnelle : environ 2,8 % + 0,25 € = 3,27 €. Frais Connect (compte actif, versement) : non trouvés, à demander.
 Reste pour PING avant coûts fixes : environ 23 €. Avec 200 € de maintenance Claude seule, il faut environ 9 missions de 100 € par mois pour couvrir cette ligne. Coûts fixes à compléter par Romain : hébergement (Vercel, Supabase), e-mails (Resend), comptable, adhésion médiateur, abonnement du prestataire de paiement (Mangopay : environ 249 € par mois selon un tiers, non vérifié).
+
+## Mise à jour du 25/11/2026 (suite des décisions de Romain)
+**Commission : 25 % confirmés** (8 % client + 17 % prestataire).
+
+### Conciliateur (proposition, rien codé)
+Besoin de Romain : une personne de confiance, inscrite dans une liste, que PING contacte seulement en cas de besoin. Ce n'est pas le médiateur légal. Proposition : table `conciliators` gérée par l'admin (nom, spécialité, e-mail, disponibilité), bouton « Proposer un conciliateur » dans le litige côté admin ; le chat de litige actuel reste le canal. Recherche des personnes : à faire par Romain (réseau, associations de médiateurs). À valider : rémunération et responsabilité, avec le juriste plus tard.
+
+### Wero
+Wero est un virement instantané de compte à compte. Entre particuliers, il passe par les applications Wero et PING n'y est pas : aucun séquestre possible. Pour payer une mission, il faut que l'argent arrive sur le compte séquestre : Wero est donc un moyen d'alimenter ce compte, via un prestataire de paiement. Le paiement e-commerce en France est annoncé pour fin 2026, par des acquéreurs (Worldline, BNP Axepta, Nuvei). Aucun tarif trouvé. Non vérifié. Sources : Worldline (fr-fr/blogs/2026/wero-en-france-ce-que-les-commercants-doivent-savoir), E-Commerce Nation.
+
+### Benchmark des comptes séquestre (publié, NON VÉRIFIÉ : sources de blogs, devis écrits à obtenir)
+« Sescrow » : aucun résultat trouvé. À confirmer avec Romain (nom exact ou lien).
+| Acteur | Statut | Tarif public relevé | Remarque |
+|---|---|---|---|
+| Lemonway | Établissement de paiement français (ACPR) | carte à partir de 1,10 % + 0,25 € (page tarifs) | KYC et séquestre intégrés ; le moins cher des trois sur le papier |
+| Mangopay | Monnaie électronique, Luxembourg (CSSF) | à partir de 1,4 % + 0,25 € et environ 249 € par mois (Sharetribe) ; tarifs sur devis | Séquestre natif, très utilisé par les places de marché |
+| Stripe Connect | Monnaie électronique, Irlande | 1,5 % + 0,25 € carte européenne ; frais Connect non trouvés | Pas de compte séquestre à proprement parler |
+| Mollie, Adyen pour plateformes, Swan, Treezor | Cités ou non documentés | rien de fiable | à chiffrer par devis si Romain veut les comparer |
+Un séquestre indépendant exige en général un agrément : passer par un établissement agréé (les trois ci-dessus) est la voie normale. À faire valider par le juriste.
+Recommandation provisoire : demander un devis écrit à Lemonway et à Mangopay, avec le volume attendu et le versement 24 h après la prestation ; Stripe en complément pour la carte. Le choix se fait sur devis, pas sur ce tableau.
+
+## Facturation (onglet à part : ce qui existe déjà)
+Rubrique de référence : `RUBRIQUE-FACTURATION.md` (session Facturation). Ici seulement l'état lu dans le code.
+**Où** : onglet « Factures » de l'agenda et page `/documents` (`FacturesList.tsx`). Au premier plan les documents du prestataire ; repliés en bas, « Frais PING ». Chaque partie ne voit que sa commission (filtre par nature de document).
+**Les quatre modèles** (`src/lib/invoice-pdf.ts`) :
+| Document | Émetteur | Destinataire | Numéro | Contenu |
+|---|---|---|---|---|
+| Facture (pro immatriculé) | le prestataire, sous son en-tête | le client | FACT-… | prestation, date, durée, taux ; PING n'y figure pas |
+| Récapitulatif (pro particulier non immatriculé) | PING pour son compte | le client | RECAP-… | pas une facture, phrase de déclaration |
+| Frais de service | PING | le particulier | PING-C-… | sa part de 8 % uniquement |
+| Commission | PING | le prestataire | PING-V-… | sa part de 17 % uniquement |
+Sur la facture du prestataire, aucune ligne de commission : c'est déjà conforme à la règle de Romain.
+
+### Constat à traiter (NON vérifié en base : je n'ai pas interrogé Supabase)
+Le filtre « chaque partie ne voit que sa commission » est fait dans l'écran, pas dans la base. Dans la migration 056, le document PING-C a pour `issuer_id` le prestataire et `client_id` le particulier ; PING-V l'inverse. La règle de lecture (006) laisse lire un document à celui qui est `issuer_id` ou `client_id`. Résultat probable : le prestataire pourrait lire en base le document de frais du particulier, et inversement, en contournant l'écran. À faire vérifier par la session Données SQL (agent securite-donnees) avant toute correction. Rien modifié ici.
