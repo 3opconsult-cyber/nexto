@@ -44,3 +44,18 @@ Maquette : `docs/maquette/maquette-annonce-v12.html` (3 écrans : publier, carte
 - Chat : accès direct à la commande des deux côtés, lien « Traiter le litige » (maquette 4).
 - Litige en note : j'accepte, offre, contre-offre, j'annule mon litige (5). Si le problème vient du client : le pro se justifie, refuse, demande le règlement (6) ; le client a 24 h, doit refuser par écrit avec un motif, sinon le pro est payé (7). Existant : un seul montant proposé, accepté ou refusé (`AmicableSettlement`, 040). « Contre-offre », « Annuler mon litige » et le décompte de 24 h sur la demande de règlement : à créer.
 Maquette : `docs/maquette/maquette-annonce-v13.html` (+ .png).
+
+## Version allégée v14 et facture (26/11/2026)
+Romain : moins d'informations, bouton vert PING gardé sur la carte, facture et reçu aérés. Maquette : `docs/maquette/maquette-annonce-v14.html` (+ .png), remplace v13 (gardée). Principe : un bouton fort par écran, le détail au toucher.
+
+### Validation de la facture (lue dans `invoice-pdf.ts` et migrations 006, 056 ; à faire relire par l'expert-comptable, je ne suis pas juriste)
+En place : enseigne et SIRET en tête, numéro, date, émetteur, client, prestation avec date et durée, total, « TVA non applicable » avec l'article de franchise (bascule vers « art. L. 233-1 du CIBS » prévue en 006), catégorie de l'opération, pénalités de retard. Particulier non immatriculé : pas de facture, un « récapitulatif » avec « Prestation de services entre particuliers » et la phrase de déclaration.
+Points à régler (proposés, rien codé) :
+1. **Nom** : « Récapitulatif » devient « Reçu » côté client ; même mise en page que la facture.
+2. **Assujetti à la TVA** : pas de lignes HT, TVA, TTC (déjà en attente dans A-FAIRE Règles métier). Obligatoire pour ces prestataires.
+3. **Indemnité de 40 €** (« clients professionnels ») affichée aussi quand le client est un particulier : inutile et source de confusion, à masquer pour un client particulier.
+4. **Médiateur de la consommation** : le mot n'apparaît que dans la page litiges. À vérifier avec l'expert-comptable pour les CGV et la facture envers un particulier.
+5. **Franchise de TVA au 1er janvier 2027** : tester la bascule du libellé sur une facture datée de 2027 avant cette date (dans 5 semaines).
+6. **Frais de service PING** : une ligne séparée sous la facture au lieu d'un second onglet. Reste un document distinct.
+Ces points relèvent de PING · Facturation et paiement.
+

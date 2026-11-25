@@ -13,4 +13,5 @@ Lire la maquette : ouvrir `maquette-ping-v11.html` dans un navigateur ; le séle
 Règle : toute nouvelle maquette ou version est copiée ici avec sa date avant d'être utilisée comme référence ; l'ancienne reste tant que le contrat la cite.
 | `maquette-annonce-v13.html` (+ .png) | Proposition 26/11 : carte à deux repères, résumé et fiche du pro, chat relié à la commande, litige en note (7 écrans). Charte de l'app, améliorations en cadre doré | non validée par Romain ; remplace v12 |
 | `maquette-annonce-v12.html` | Première proposition 26/11, charte non conforme | remplacée par v13, gardée |
+| `maquette-annonce-v14.html` (+ .png) | Version allégée 26/11 : carte avec PING, résumé, fiche, chat, litige en 2 écrans, facture, reçu | non validée par Romain ; remplace v13 (gardée) |
 

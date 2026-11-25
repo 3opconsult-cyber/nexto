@@ -13,7 +13,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Alerte « autre espace » (ModeHint) en petit texte dans la ligne d'état de l'agenda | à faire |
 | D-17 : « Modifier » sur l'annonce | à faire |
 | Carte client sur iPhone réel (Waze, PING, pastille) | attend capture de Romain, non vérifié |
-| Fiche du pro en bas de carte avec critères + geste Accepter / Refuser (maquette v13) | à faire après accord |
+| Fiche du pro en bas de carte avec critères + geste Accepter / Refuser (maquette v14) | à faire après accord |
 
 ## Prestataire
 | Point | Statut |
@@ -22,7 +22,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | D-10 : absence réelle et clôture sur preuve non rejouées | non vérifié |
 | GPS précis iPhone, « Masquer » en écriture réelle, remise en ligne sans tarif ni position | non vérifié |
 | Filtre anti-contournement sur accroche et présentation de l'annonce (`chatFilter.ts`) | à faire (AUDIT-ANNONCE-CARTE n°2) |
-| Publication en un seul parcours de 3 étapes (onboarding + `/pro/annonce`) | à faire après accord sur la maquette v13 |
+| Publication en un seul parcours de 3 étapes (onboarding + `/pro/annonce`) | à faire après accord sur la maquette v14 |
 | Supprimer son annonce (aujourd'hui : masquer seulement) | non vérifié, à faire |
 
 ## Admin
@@ -48,7 +48,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | A-TRANCHER a à t (dont h : RLS `invoices`, b, d, e, n) | attend Romain |
 | TVA : calcul HT/TVA pour un prestataire assujetti | attend Romain |
 | GPS du pro pour « arrivée dans X min » (A-TRANCHER u) ; flou 50 m (w) | attend Romain |
-| Litige en offre : offre du client, demande de règlement du pro, 24 h pour refuser sinon accepté ; une seule annonce par pro | à trancher (A-TRANCHER v, maquette v13 écrans 5 à 7) ; ajouter : contre-offre, annuler son litige, bandeau « Ouvrir la commande » dans le chat |
+| Litige en offre : offre du client, demande de règlement du pro, 24 h pour refuser sinon accepté ; une seule annonce par pro | à trancher (A-TRANCHER v, maquette v14 écrans 5 et 6) ; ajouter : contre-offre, annuler son litige, bandeau « Ouvrir la commande » dans le chat |
 
 ## Facturation et paiement
 | Point | Statut |
@@ -56,6 +56,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Migrations 061, 062, 063 à coller (063 = identité émetteur BAITA EURL) | attend Romain, non vérifié |
 | IBAN de PING dans `/admin/paiements` | attend Romain |
 | D-19 : séquestre, aucun prestataire de paiement choisi | bloquée |
+| Facture : « Reçu » pour non immatriculé, HT/TVA/TTC pour assujetti, masquer l'indemnité 40 € pour un client particulier, médiateur, test de la franchise au 01/01/2027 (AUDIT-ANNONCE-CARTE, section facture) | à faire, relecture expert-comptable |
 | CESU : reprendre le branchement (`docs/cesu-ce-qui-manque.md`) | à faire |
 | Envoi des factures par e-mail : Resend non posé | attend Romain |
 
