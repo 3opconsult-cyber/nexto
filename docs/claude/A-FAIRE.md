@@ -67,7 +67,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Point | Statut |
 |---|---|
 | URGENT : coller `064_position_floutee.sql` (flou 50 m) après déploiement ; vérifier la RLS de `provider_profiles` (lat/lng/location lisibles par un client ?) | écrit et poussé, attend Romain (collage) |
-| Exposer à la carte : CESU, TVA, crédit d'impôt (n°4) | à faire après le flou |
+| Exposer à la carte : CESU, TVA, crédit d'impôt (n°4) | inutile : la fiche les lit déjà (26/11) |
+| Coller `066_prestations_realisees.sql` après 065 (nombre de prestations réalisées dans l'aperçu de carte) | écrit et poussé, attend Romain (collage) |
 | Coller 061, 062, 063 dans l'ordre (`supabase/a_coller/README.md`) | attend Romain |
 | Nettoyage des données QA (`.invalid`, « QA ») : liste puis accord | attend Romain |
 | Resserrer la RLS de `invoices` | décision Romain (A-TRANCHER h) |

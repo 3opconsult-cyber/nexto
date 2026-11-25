@@ -38,7 +38,7 @@ type Pro = {
   acts: string[]; hits: number
   // Présentation de la maquette : services, note, distance, CESU, pièces contrôlées par PING
   // (true : pièce d'identité validée par un admin ; false : en cours de contrôle ; undefined : inconnu).
-  svc: string; distTxt: string; cesu: boolean; checked?: boolean; rcproChecked?: boolean
+  svc: string; distTxt: string; cesu: boolean; checked?: boolean; rcproChecked?: boolean; done?: number
 }
 
 const HUES: Record<string, string> = {
@@ -172,7 +172,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
     if (x.has_rcpro) chips.push('Assurance RC renseignée')
     if (flags[x.id]?.cesu) chips.push('Accepte le CESU préfinancé')
     return {
-      svc: actsOf(x).map(lab).join(', '), distTxt, cesu: !!flags[x.id]?.cesu, checked: flags[x.id]?.checked, rcproChecked: flags[x.id]?.rcproChecked,
+      svc: actsOf(x).map(lab).join(', '), distTxt, cesu: !!flags[x.id]?.cesu, checked: flags[x.id]?.checked, rcproChecked: flags[x.id]?.rcproChecked, done: flags[x.id]?.done,
       id: x.id, av: (nm.charAt(0) || '?').toUpperCase(), n: nm,
       m: `${actsOf(x).map(lab).join(', ')} · ${rateTxt} · à ${distTxt}`, p: price,
       d: x.is_active ? 'Disponible' : 'Hors ligne pour le moment', c: chips, g: HUES[x.trade] || HUES.menage, cat: x.trade,
@@ -552,12 +552,11 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                         <div className="pvav" style={{ background: pv.active ? `linear-gradient(160deg,${pv.g})` : '#6E8592' }}>{pv.av}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <b className="pvname" style={{ display: 'block' }}>{pv.n}</b>
-                          <div className="pvmeta" style={{ fontWeight: 500 }}>{[pv.svc, pv.reviews > 0 ? `${r1(pv.rate)} (${pv.reviews})` : 'Nouveau', `à ${pv.distTxt}`].filter(Boolean).join(' · ')}</div>
+                          <div className="pvmeta" style={{ fontWeight: 500 }}>{[pv.svc, pv.reviews > 0 ? `★ ${r1(pv.rate)} (${pv.reviews} avis)` : 'Nouveau', pv.done ? `${pv.done} prestation${pv.done > 1 ? 's' : ''} réalisée${pv.done > 1 ? 's' : ''}` : null, `à ${pv.distTxt}`].filter(Boolean).join(' · ')}</div>
                         </div>
                         <b style={{ fontFamily: 'var(--fh)', fontSize: 15, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{pv.p}</b>
                         <button type="button" className="mq-ib box" onClick={closePreview} aria-label="Fermer l’aperçu" style={{ background: 'none', marginTop: -6 }}><Ic name="close" /></button>
                       </div>
-                      {tagsOf(pv, true)}
                       {pvMissing.length > 0 && <p style={{ fontSize: 12, color: '#8A6520', fontWeight: 600, margin: '0 0 4px' }}>Ne fait pas : {pvMissing.map(lab).join(', ').toLowerCase()}</p>}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
                         {pv.active
