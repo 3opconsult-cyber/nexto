@@ -57,6 +57,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | IBAN de PING dans `/admin/paiements` | attend Romain |
 | D-19 : séquestre, aucun prestataire de paiement choisi | bloquée |
 | Facture : « Reçu » pour non immatriculé, HT/TVA/TTC pour assujetti, masquer l'indemnité 40 € pour un client particulier, médiateur, test de la franchise au 01/01/2027 (AUDIT-ANNONCE-CARTE, section facture) | à faire, relecture expert-comptable |
+| Numérotation continue par série, référence de transaction `PING-T-…`, numéros de compte `PING-C/P-…`, vue CRM (RUBRIQUE-FACTURATION, demande du 26/11) | à faire, après 063 |
 | CESU : reprendre le branchement (`docs/cesu-ce-qui-manque.md`) | à faire |
 | Envoi des factures par e-mail : Resend non posé | attend Romain |
 
@@ -85,4 +86,4 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Outil d'envoi, domaine d'e-mail, comptes réseaux, plafonds, validateurs | en attente |
 
 ## À classer
-Rien pour l'instant.
+- Moyen de paiement (choix du prestataire de paiement, séquestre) et médiateur : session « PING · Paiement et médiation » ouverte le 26/11 (voir D-19, A-TRANCHER).
