@@ -16,5 +16,8 @@ Renvoi : `REGLES-METIER.md` (Prix et facturation, Litige) ; sa facture et sa com
 ## Si ton sujet touche une rubrique
 Même tableau que `PROFIL-PARTICULIER.md` (Design, Facturation, Règles métier, Données SQL, Prospection et communication).
 
+## État au 26/11/2026
+Audit annonce / carte fait : `AUDIT-ANNONCE-CARTE.md`. Maquette v12 : `docs/maquette/maquette-annonce-v12.html` (+ .png), en attente d'accord de Romain. Aucun code touché. Prochain pas Prestataire : filtre sur l'annonce, parcours de publication en 3 étapes, suppression de l'annonce. Bloquant côté Données SQL : flou 50 m (position exacte exposée).
+
 ## À faire et notes
 Voir `A-FAIRE.md`, section Prestataire.
