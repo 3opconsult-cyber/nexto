@@ -22,7 +22,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | D-10 : absence réelle et clôture sur preuve non rejouées | non vérifié |
 | GPS précis iPhone, « Masquer » en écriture réelle, remise en ligne sans tarif ni position | non vérifié |
 | Filtre anti-contournement sur accroche et présentation de l'annonce | fait dans le code (téléphone, e-mail, suite de chiffres), non vérifié en production ; pas de contrôle côté base |
-| Publication en un seul parcours de 3 étapes (onboarding + `/pro/annonce`) | à faire après accord sur la maquette v14 |
+| Publication en un seul parcours de 3 étapes (onboarding + `/pro/annonce`) | à faire (bloc 3) |
+| Résumé d'épingle allégé, bloc Repères de la fiche, bandeau « Ouvrir la commande » dans le chat | fait dans le code (26/11), non vérifié en production |
 | Supprimer son annonce (aujourd'hui : masquer seulement) | non vérifié, à faire |
 
 ## Admin
