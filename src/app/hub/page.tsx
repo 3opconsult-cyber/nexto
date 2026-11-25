@@ -18,13 +18,13 @@ const ICONS: Record<string, JSX.Element> = {
   swap: <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />,
 }
 
-type Tile = { icon: string; label: string; sub: string; href?: string; account?: { email: string; next: string }; tag?: string }
+type Tile = { icon: string; label: string; sub: string; href?: string; account?: { email: string; next: string }; tag?: string; tone?: 'dark' | 'green' | 'teal' | 'light'; wide?: boolean }
 
 const ESPACES: Tile[] = [
-  { icon: 'admin', label: 'Admin', sub: 'Compte administrateur réel', href: '/admin', tag: 'Admin' },
-  { icon: 'client', label: 'Client test', sub: 'Particulier : carte, agenda, messages', account: { email: 'audit.client.claude@ping-demo.invalid', next: '/map' }, tag: 'Compte test' },
-  { icon: 'pro', label: 'Prestataire test', sub: 'Demandes, agenda, Mon entreprise', account: { email: 'audit.pro.claude@ping-demo.invalid', next: '/pro/carte' }, tag: 'Compte test' },
-  { icon: 'map', label: 'Carte', sub: 'Avec le compte connecté', href: '/map' },
+  { icon: 'admin', label: 'Admin', sub: 'Compte administrateur réel', href: '/admin', tag: 'Admin', tone: 'dark', wide: true },
+  { icon: 'client', label: 'Client test', sub: 'Particulier : carte, agenda, messages', account: { email: 'audit.client.claude@ping-demo.invalid', next: '/map' }, tag: 'Compte test', tone: 'green' },
+  { icon: 'pro', label: 'Prestataire test', sub: 'Demandes, agenda, Mon entreprise', account: { email: 'audit.pro.claude@ping-demo.invalid', next: '/pro/carte' }, tag: 'Compte test', tone: 'teal' },
+  { icon: 'map', label: 'Carte', sub: 'Avec le compte connecté', href: '/map', tone: 'light', wide: true },
 ]
 
 const SUPPORTS: Tile[] = [
@@ -84,31 +84,39 @@ export default function Hub() {
     window.location.href = `/auth/login?email=${encodeURIComponent(t.account.email)}&next=${encodeURIComponent(t.account.next)}`
   }
 
+  const TONES = {
+    dark: { bg: 'linear-gradient(135deg,#123644,#1D5568)', fg: '#fff', sub: 'rgba(255,255,255,.78)', ico: 'rgba(255,255,255,.16)', st: '#fff', tag: 'rgba(255,255,255,.18)', tagfg: '#fff', bd: 'transparent' },
+    green: { bg: 'linear-gradient(135deg,#12B39C,#0E9A86)', fg: '#fff', sub: 'rgba(255,255,255,.88)', ico: 'rgba(255,255,255,.2)', st: '#fff', tag: 'rgba(255,255,255,.22)', tagfg: '#fff', bd: 'transparent' },
+    teal: { bg: 'linear-gradient(135deg,#2FD06E,#1FAE58)', fg: '#fff', sub: 'rgba(255,255,255,.9)', ico: 'rgba(255,255,255,.22)', st: '#fff', tag: 'rgba(255,255,255,.22)', tagfg: '#fff', bd: 'transparent' },
+    light: { bg: '#fff', fg: '#123644', sub: '#4E6470', ico: '#E6F7F4', st: '#0B8374', tag: 'rgba(18,179,156,.14)', tagfg: '#0B8374', bd: '#E7EDEB' },
+  }
   const carte = (t: Tile) => {
+    const k = TONES[t.tone ?? 'light']
     const contenu = (
       <>
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: '#E6F7F4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{ICONS[t.icon]}</svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: k.ico, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={k.st} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{ICONS[t.icon]}</svg>
+          </div>
+          {t.tag && <span style={{ marginLeft: 'auto', fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: k.tag, color: k.tagfg }}>{t.tag}</span>}
         </div>
-        <div style={{ fontWeight: 800, fontSize: 15, color: '#123644', marginTop: 10 }}>{t.label}</div>
-        <div style={{ fontSize: 12, color: '#4E6470', marginTop: 2, lineHeight: 1.35 }}>{t.sub}</div>
-        {t.tag && <span style={{ position: 'absolute', top: 10, right: 10, fontSize: 10.5, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: 'rgba(18,179,156,.14)', color: '#0B8374' }}>{t.tag}</span>}
-        {enCours === t.label && <div style={{ fontSize: 11.5, color: '#0B8374', marginTop: 4, fontWeight: 700 }}>Ouverture…</div>}
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: k.fg, marginTop: 14 }}>{t.label}</div>
+        <div style={{ fontSize: 12.5, color: k.sub, marginTop: 3, lineHeight: 1.4 }}>{enCours === t.label ? 'Ouverture…' : t.sub}</div>
       </>
     )
-    const style: React.CSSProperties = { position: 'relative', display: 'block', textAlign: 'left', minHeight: 124, boxSizing: 'border-box', padding: 14, background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, textDecoration: 'none', cursor: 'pointer', font: 'inherit' }
+    const style: React.CSSProperties = { gridColumn: t.wide ? '1 / -1' : undefined, display: 'block', textAlign: 'left', minHeight: t.wide ? 110 : 132, boxSizing: 'border-box', padding: 16, background: k.bg, border: `1px solid ${k.bd}`, borderRadius: 20, textDecoration: 'none', cursor: 'pointer', font: 'inherit', boxShadow: t.tone && t.tone !== 'light' ? '0 8px 20px rgba(18,54,68,.16)' : '0 2px 8px rgba(18,54,68,.05)' }
     return t.href
       ? <a key={t.label} href={t.href} style={style}>{contenu}</a>
       : <button key={t.label} type="button" onClick={() => ouvrirCompte(t)} style={style}>{contenu}</button>
   }
 
   const titre: React.CSSProperties = { fontSize: 12, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '26px 0 10px 2px' }
-  const grille: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 12 }
+  const grille: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 14 }
   const bouton48: React.CSSProperties = { minHeight: 48, borderRadius: 14, border: '1.5px solid #CFDAD7', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 14, cursor: 'pointer', padding: '0 14px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }
 
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ background: '#123644', color: '#fff', padding: '34px 20px 26px' }}>
+      <div style={{ background: '#123644', color: '#fff', padding: '40px 20px 34px', borderRadius: '0 0 28px 28px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 30 }}>PING</div>
           <div style={{ fontSize: 14, opacity: .85, marginTop: 4 }}>Hub : tous les accès, sur téléphone et ordinateur</div>
