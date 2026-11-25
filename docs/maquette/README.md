@@ -11,3 +11,6 @@ Références secondaires (déjà dans le dépôt, ne pas copier) : `public/app.h
 
 Lire la maquette : ouvrir `maquette-ping-v11.html` dans un navigateur ; le sélecteur de profil est en haut ; « Aller directement à un écran » liste les écrans. Pour les agents : lire `data.js` (une ligne = un élément à contrôler) puis les écrans dans le HTML.
 Règle : toute nouvelle maquette ou version est copiée ici avec sa date avant d'être utilisée comme référence ; l'ancienne reste tant que le contrat la cite.
+| `maquette-annonce-v13.html` (+ .png) | Proposition 26/11 : carte à deux repères, résumé et fiche du pro, chat relié à la commande, litige en note (7 écrans). Charte de l'app, améliorations en cadre doré | non validée par Romain ; remplace v12 |
+| `maquette-annonce-v12.html` | Première proposition 26/11, charte non conforme | remplacée par v13, gardée |
+

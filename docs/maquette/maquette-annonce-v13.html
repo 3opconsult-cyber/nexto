@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PING maquette v13 : carte, fiche, chat, litige</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Charte reprise de src/app/ping-ui.css : navy #123644, teal #12B39C / #0B8374, or #F2A93B (côté pro), lignes #E7EDEB, Quicksand + Inter. */
+:root{--ink:#123644;--teal:#12B39C;--tealD:#0B8374;--gold:#F2A93B;--slate:#4E6470;--line:#E7EDEB;--paper:#F3F6F5;--danger:#C0503A;--fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#DCE5E3;font-family:var(--fb);color:var(--ink)}
+h1{font:700 17px var(--fh);text-align:center;margin:18px 12px 4px}.sub{text-align:center;font-size:12.5px;color:var(--slate);margin:0 12px 14px}
+.grid{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;padding:8px 14px 40px}
+.col{width:340px}
+.ph{width:340px;height:700px;background:var(--paper);border-radius:30px;border:6px solid #1b2a30;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.cap{font-size:12px;color:var(--slate);line-height:1.5;margin:10px 4px 0}.cap b{color:var(--ink)}
+.cap .e{color:var(--tealD);font-weight:700}.cap .n{color:#8A6520;font-weight:700}
+/* repère « amélioration » : cadre doré pointillé */
+.imp{outline:2px dashed var(--gold);outline-offset:2px;border-radius:12px;position:relative}
+.imp:after{content:"AMÉLIORATION";position:absolute;top:-9px;right:8px;background:var(--gold);color:#fff;font:700 8.5px var(--fb);padding:1px 6px;border-radius:6px;letter-spacing:.04em}
+.sbar{height:26px;flex:none;font:600 11px var(--fb);display:flex;justify-content:space-between;padding:8px 18px 0}
+.appbar{height:46px;flex:none;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 12px;font:700 15px var(--fh)}
+.appbar.navy{background:var(--ink);color:#fff;border:0}
+.appbar .r{margin-left:auto;font:700 11.5px var(--fb);background:#EEF2F1;color:var(--ink);padding:5px 10px;border-radius:14px}
+.body{flex:1;overflow:hidden;padding:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.btn{display:block;text-align:center;border-radius:14px;padding:12px;font:700 13.5px var(--fh);border:1.5px solid var(--ink);color:var(--ink);background:#fff}
+.btn.p{background:var(--tealD);border-color:var(--tealD);color:#fff}.btn.t{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.d{border-color:var(--danger);color:var(--danger)}.btn.s{padding:9px;font-size:12.5px;border-color:#BFE6DF;color:var(--tealD)}
+.two{display:flex;gap:8px}.two>*{flex:1}
+.pill{display:inline-block;font:700 10.5px var(--fb);padding:3px 8px;border-radius:10px;background:#FFF7ED;color:#8A6520}
+.pill.g{background:#E6F8F5;color:var(--tealD)}.pill.r{background:rgba(192,80,58,.1);color:var(--danger)}
+.lab{font:700 10.5px var(--fb);text-transform:uppercase;letter-spacing:.03em;color:var(--slate);margin:2px 0 5px}
+.sm{font-size:12px;color:var(--slate);line-height:1.45}
+.av{width:44px;height:44px;border-radius:12px;background:linear-gradient(145deg,#12B39C,#0B8374);color:#fff;font:700 18px var(--fh);display:grid;place-items:center;flex:none}
+.row{display:flex;gap:10px;align-items:center}
+.star{color:var(--gold);letter-spacing:1px;font-size:12px}
+/* barre du bas : celle de l'app, bouton central Mission */
+.tabs{height:60px;flex:none;background:#fff;border-top:1px solid var(--line);display:flex;align-items:flex-start;padding-top:8px;font:600 9.5px var(--fb);color:var(--slate);text-align:center;position:relative}
+.tabs div{flex:1}.tabs .on{color:var(--teal)}.tabs.pro .on{color:var(--gold)}
+.tabs .c{position:relative;top:-18px}.tabs .c i{display:block;width:46px;height:46px;border-radius:50%;background:var(--tealD);margin:0 auto 2px;box-shadow:0 4px 12px #12b39c80;border:3px solid #fff}
+.tabs svg{display:block;margin:0 auto 2px}
+/* carte (même style que l'app : fond clair, routes jaunes) */
+.map{flex:1;position:relative;background:#ECEAE3;overflow:hidden}
+.map .rd{position:absolute;background:#F9E7A5;border:1px solid #E8D488;border-radius:6px}
+.map .pk{position:absolute;background:#C9DEB2;border-radius:30px}.map .wt{position:absolute;background:#A9D3E6;border-radius:40px}
+.pinl{position:absolute;background:var(--ink);color:#fff;font:700 11px var(--fb);padding:4px 9px;border-radius:14px;white-space:nowrap;transform:translate(-50%,-100%)}
+.pinl:after{content:"";position:absolute;left:50%;bottom:-4px;width:8px;height:8px;background:var(--ink);transform:translateX(-50%) rotate(45deg)}
+.pinl.z{background:var(--tealD)}
+.halo{position:absolute;border-radius:50%;background:rgba(18,179,156,.16);border:1.5px dashed var(--teal);transform:translate(-50%,-50%)}
+.me{position:absolute;width:16px;height:16px;border-radius:50%;background:var(--teal);border:3px solid #fff;box-shadow:0 0 0 6px rgba(18,179,156,.22);transform:translate(-50%,-50%)}
+.top{position:absolute;top:8px;left:10px;right:10px;display:flex;gap:8px}.top .b{background:#fff;border-radius:14px;padding:10px;box-shadow:0 2px 8px #0002;font:600 12px var(--fb)}
+.sheet{background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -6px 18px #0002;padding:8px 14px 10px;position:relative}
+.grip{width:38px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 8px}
+.chips{display:flex;gap:6px;margin:8px 0}.chips span{border:1px solid var(--line);border-radius:18px;padding:6px 12px;font:600 12px var(--fb)}.chips .on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.li{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.li b{font:700 13px var(--fh)}
+.bd{display:inline-flex;gap:4px;align-items:center;font:600 11px var(--fb);border-radius:8px;padding:3px 7px;margin:2px 3px 0 0;background:#E6F8F5;color:var(--tealD)}.bd.no{background:#F1F4F5;color:#7A8E99;font-weight:500}
+.hero{background:linear-gradient(135deg,#0B8374,#12B39C 120%);color:#fff;padding:14px;display:flex;gap:12px;align-items:center}
+.hero .av{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.5)}
+.bub{max-width:82%;padding:9px 12px;border-radius:16px;font-size:13px;line-height:1.4;margin-bottom:8px;background:#fff;border:1px solid var(--line)}
+.bub.me2{margin-left:auto;background:var(--ink);color:#fff;border:0}
+.sys{font:600 11.5px var(--fb);color:var(--tealD);background:#E6F8F5;border-radius:12px;padding:8px 10px;margin-bottom:8px;text-align:center}
+.inp{height:40px;border-radius:20px;border:1px solid var(--line);background:#fff;flex:1}.snd{width:40px;height:40px;border-radius:50%;background:var(--tealD)}
+.ta{border:1.5px solid var(--line);border-radius:12px;padding:9px;font-size:12.5px;background:#fff;min-height:56px;line-height:1.4}
+.big{font:700 24px var(--fh);color:var(--tealD)}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="map" viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="msg" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M9 3v4M15 3v4" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="usr" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c1-5 15-5 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="ok" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+<symbol id="sh" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="bk" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+</defs></svg>
+<h1>PING · maquette v13 · carte, fiche, chat, litige</h1>
+<p class="sub">Même charte que l'application (captures du 23/11). Cadre doré pointillé = amélioration proposée, à noter. Sans cadre = existe déjà. Rien n'est en ligne.</p>
+<div class="grid">
+
+<!-- 1 CARTE -->
+<div class="col"><div class="ph">
+ <div class="map">
+  <div class="wt" style="left:-30px;top:240px;width:150px;height:60px"></div><div class="pk" style="left:230px;top:40px;width:120px;height:90px"></div>
+  <div class="rd" style="left:-10px;top:150px;width:380px;height:9px;transform:rotate(-14deg)"></div><div class="rd" style="left:170px;top:-10px;width:9px;height:330px;transform:rotate(18deg)"></div>
+  <div class="top"><div class="b">Menu</div><div class="b" style="flex:1">Filtrer par service, près de vous</div></div>
+  <div class="imp" style="position:absolute;left:92px;top:120px;width:90px;height:90px;border-radius:50%;outline-offset:6px"></div>
+  <div class="halo" style="left:137px;top:165px;width:70px;height:70px"></div><div class="pinl" style="left:137px;top:158px">25 € · Nouveau</div>
+  <div class="pinl z" style="left:255px;top:235px">Ici aujourd'hui</div>
+  <div class="me" style="left:200px;top:215px"></div>
+ </div>
+ <div class="sheet"><div class="grip"></div><b style="font:700 14px var(--fh)">5 prestataires près de vous</b>
+  <div class="chips"><span class="on">Tous</span><span>Ménage</span><span>Repassage</span></div>
+  <div class="li"><div class="av" style="width:38px;height:38px;font-size:15px">L</div><div><b>Laura Fontaine</b><div class="sm">Ménage · 25 € · à environ 100 m</div></div></div>
+ </div>
+ <div class="tabs"><div class="on"><svg width="22" height="22"><use href="#map"/></svg>Carte</div><div><svg width="22" height="22"><use href="#msg"/></svg>Messages</div><div class="c"><i></i>Mission</div><div><svg width="22" height="22"><use href="#cal"/></svg>Agenda</div><div><svg width="22" height="22"><use href="#usr"/></svg>Profil</div></div>
+</div>
+<div class="cap"><b>1 · Carte, deux repères.</b><br><span class="e">Existe :</span> épingle à prix, liste du bas, repère « Ici aujourd'hui » (prestataire en déplacement).<br><span class="n">Amélioration :</span> le repère fixe n'est plus le point exact mais une zone d'environ 50 m (cercle pointillé) ; distance affichée « à environ 100 m », jamais au mètre. L'adresse exacte n'apparaît qu'après contrat payé.</div></div>
+
+<!-- 2 APERCU -->
+<div class="col"><div class="ph">
+ <div class="map" style="flex:.8">
+  <div class="rd" style="left:-10px;top:110px;width:380px;height:9px;transform:rotate(-14deg)"></div><div class="rd" style="left:170px;top:-10px;width:9px;height:330px;transform:rotate(18deg)"></div>
+  <div class="halo" style="left:170px;top:120px;width:80px;height:80px"></div><div class="pinl" style="left:170px;top:112px;background:var(--tealD)">25 €</div>
+ </div>
+ <div class="sheet imp" style="outline-offset:-4px;border-radius:22px 22px 0 0"><div class="grip"></div>
+  <div class="row"><div class="av">L</div><div style="flex:1"><b style="font:700 16px var(--fh)">Laura Fontaine</b><div class="sm"><span class="star">★★★★½</span> 4,4 (22 avis) · à environ 100 m</div></div><b style="font:700 16px var(--fh)">25 €/h</b></div>
+  <div class="sm" style="margin:8px 0 2px">Ménage complet, minutieux, produits fournis. Intervient jusqu'à 15 km.</div>
+  <div><span class="bd"><svg width="11" height="11"><use href="#ok"/></svg>Identité fournie</span><span class="bd"><svg width="11" height="11"><use href="#sh"/></svg>Assurance renseignée</span><span class="bd"><svg width="11" height="11"><use href="#ok"/></svg>CESU</span><span class="bd"><svg width="11" height="11"><use href="#ok"/></svg>Crédit d'impôt</span><span class="bd no">TVA non applicable</span></div>
+  <div class="two" style="margin-top:12px"><div class="btn">Voir la fiche</div><div class="btn p">Réserver · 100 €</div></div>
+  <div class="sm" style="margin:8px 0 0;text-align:center">Le prix est figé à l'accord. Adresse communiquée après réservation payée.</div>
+ </div>
+ <div class="tabs"><div class="on"><svg width="22" height="22"><use href="#map"/></svg>Carte</div><div><svg width="22" height="22"><use href="#msg"/></svg>Messages</div><div class="c"><i></i>Mission</div><div><svg width="22" height="22"><use href="#cal"/></svg>Agenda</div><div><svg width="22" height="22"><use href="#usr"/></svg>Profil</div></div>
+</div>
+<div class="cap"><b>2 · Résumé qui apparaît au toucher d'une épingle.</b><br><span class="n">Amélioration (à comparer avec l'aperçu actuel, non vérifié) :</span> la fiche courte que tu n'avais pas vue : nom, note, prix, accroche, critères, deux boutons. Aucun numéro de rue, aucun téléphone, aucun e-mail, nulle part.</div></div>
+
+<!-- 3 FICHE -->
+<div class="col"><div class="ph">
+ <div class="appbar"><svg width="20" height="20"><use href="#bk"/></svg>Profil du pro</div>
+ <div class="hero"><div class="av">L</div><div><div style="font:700 19px var(--fh)">Laura Fontaine</div><div style="font-size:12px;opacity:.95">★ 4,4 (22 avis) · Disponible</div></div></div>
+ <div class="body">
+  <div style="margin-bottom:8px"><span class="pill">Nouveau · pièces en cours de contrôle</span></div>
+  <div class="lab">À propos</div><div class="sm" style="margin-bottom:8px">Ménage complet, minutieux, produits fournis. Intervient jusqu'à 15 km autour de sa position.</div>
+  <div class="card row" style="justify-content:space-between"><div><b style="font:700 13.5px var(--fh)">Ménage</b><div class="sm">Forfait 3 h, puis à l'heure</div></div><b style="font:700 16px var(--fh)">100 €</b></div>
+  <div class="imp" style="margin-bottom:10px;padding:8px 6px"><div class="lab">Critères</div>
+   <span class="bd"><svg width="11" height="11"><use href="#ok"/></svg>Identité fournie</span><span class="bd"><svg width="11" height="11"><use href="#sh"/></svg>Assurance renseignée</span><span class="bd"><svg width="11" height="11"><use href="#ok"/></svg>CESU possible</span><span class="bd"><svg width="11" height="11"><use href="#ok"/></svg>Crédit d'impôt 50 %</span><span class="bd no">TVA non applicable</span></div>
+  <div class="card"><div class="lab">Où intervient-elle</div><div class="sm">Zone d'environ 50 m autour de son point d'attache. L'adresse exacte est communiquée seulement après une mission confirmée et payée.</div></div>
+ </div>
+ <div class="two" style="padding:0 12px 8px;margin-top:auto"><div class="btn">Contacter</div><div class="btn p">Réserver · 100 €</div></div>
+ <div class="tabs"><div class="on"><svg width="22" height="22"><use href="#map"/></svg>Carte</div><div><svg width="22" height="22"><use href="#msg"/></svg>Messages</div><div class="c"><i></i>Mission</div><div><svg width="22" height="22"><use href="#cal"/></svg>Agenda</div><div><svg width="22" height="22"><use href="#usr"/></svg>Profil</div></div>
+</div>
+<div class="cap"><b>3 · Fiche complète.</b><br><span class="e">Existe :</span> bandeau teal, À propos, Prestations, « Contacter / Réserver ».<br><span class="n">Amélioration :</span> bloc « Critères » regroupé (CESU, TVA, crédit d'impôt ajoutés) et phrase sur la zone d'environ 50 m. La liste « Vérifications » actuelle reste dessous.</div></div>
+
+<!-- 4 CHAT -->
+<div class="col"><div class="ph">
+ <div class="appbar"><svg width="20" height="20"><use href="#bk"/></svg>Laura F.<span class="r">100,00 €</span></div>
+ <div class="imp" style="margin:8px 12px 0;padding:9px 11px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;gap:10px"><div style="flex:1"><b style="font:700 13px var(--fh)">Commande · Ménage</b><div class="sm">jeu. 28/11, 14 h · confirmée</div></div><div class="btn p" style="padding:8px 12px;font-size:12px">Ouvrir la commande</div></div>
+ <div class="body" style="padding-top:12px">
+  <div class="bub">Bonjour, je serai chez vous à 14 h.</div>
+  <div class="bub me2">Parfait, merci.</div>
+  <div class="imp sys" style="margin-top:14px">En route : arrivée estimée dans 10 min<div style="font-weight:500;opacity:.85;margin-top:2px">calculée avec la position de votre prestataire, au départ seulement</div></div>
+  <div class="sys" style="background:#FFF7ED;color:#8A6520">Un problème sur cette mission ? <u>Traiter le litige</u></div>
+ </div>
+ <div class="row" style="padding:8px 12px"><div class="inp"></div><div class="snd"></div></div>
+ <div class="tabs"><div><svg width="22" height="22"><use href="#map"/></svg>Carte</div><div class="on"><svg width="22" height="22"><use href="#msg"/></svg>Messages</div><div class="c"><i></i>Mission</div><div><svg width="22" height="22"><use href="#cal"/></svg>Agenda</div><div><svg width="22" height="22"><use href="#usr"/></svg>Profil</div></div>
+</div>
+<div class="cap"><b>4 · Chat relié à la commande, des deux côtés.</b><br><span class="e">Existe :</span> prix dans l'en-tête, « Signaler », récapitulatif, message « En route » avec durée choisie par le pro.<br><span class="n">Amélioration :</span> bandeau « Ouvrir la commande » toujours en haut du chat ; lien « Traiter le litige » qui ouvre directement le dossier. <span class="n">Règle à valider :</span> le « 10 min » calculé avec la position du pro. Aujourd'hui PING n'utilise aucun GPS à « Je pars » (le pro choisit sa durée). Ce serait une 3e exception à la règle GPS.</div></div>
+
+<!-- 5 LITIGE NOTE -->
+<div class="col"><div class="ph">
+ <div class="appbar navy"><svg width="20" height="20"><use href="#bk"/></svg><div>Litige · Laura F.<div style="font:500 10.5px var(--fb);opacity:.85">Dossier suivi par PING</div></div></div>
+ <div class="body">
+  <div class="card"><div class="row" style="justify-content:space-between"><b style="font:700 14px var(--fh)">Note de litige</b><span class="pill">En cours</span></div>
+   <div class="sm" style="margin:6px 0"><b>Motif :</b> deux fenêtres de l'étage non faites. Montant en jeu : 80,00 €.</div>
+   <div class="lab" style="margin-top:8px">Que voulez-vous faire ?</div>
+   <div class="imp" style="padding:8px 4px 4px">
+    <div class="btn t" style="margin-bottom:6px">J'accepte la proposition</div>
+    <div class="two" style="margin-bottom:6px"><div class="btn s">Faire une offre</div><div class="btn s">Contre-offre</div></div>
+    <div class="btn d" style="padding:9px;font-size:12.5px">Annuler mon litige</div>
+   </div>
+   <div class="sm" style="margin-top:8px">Pas d'accord ? Demandez la médiation de PING : PING décide du montant.</div>
+  </div>
+  <div class="bub">Offre de Laura : 60 € au lieu de 80 €.</div>
+ </div>
+ <div class="tabs pro"><div><svg width="22" height="22"><use href="#map"/></svg>Carte</div><div class="on"><svg width="22" height="22"><use href="#msg"/></svg>Messages</div><div class="c"><i></i>Mission</div><div><svg width="22" height="22"><use href="#cal"/></svg>Agenda</div><div><svg width="22" height="22"><use href="#usr"/></svg>Profil</div></div>
+</div>
+<div class="cap"><b>5 · Note de litige dans le chat.</b><br><span class="e">Existe :</span> carte « Litige · … », arrangement à l'amiable (un montant, l'autre accepte ou refuse), médiation PING, « Voir la mission », « Factures ».<br><span class="n">Amélioration :</span> quatre choix lisibles : j'accepte, je fais une offre, je fais une contre-offre, j'annule mon litige. « Contre-offre » et « Annuler mon litige » : non trouvés dans le code, à créer.</div></div>
+
+<!-- 6 LITIGE PRO -->
+<div class="col"><div class="ph">
+ <div class="appbar navy"><svg width="20" height="20"><use href="#bk"/></svg><div>Litige · Client<div style="font:500 10.5px var(--fb);opacity:.85">Côté prestataire</div></div></div>
+ <div class="body">
+  <div class="card"><div class="row" style="justify-content:space-between"><b style="font:700 14px var(--fh)">Réclamation du client</b><span class="pill">En cours</span></div>
+   <div class="sm" style="margin:6px 0">Véranda non nettoyée.</div>
+   <div class="lab">Votre réponse</div>
+   <div class="imp" style="padding:8px 4px">
+    <div class="sm" style="margin-bottom:6px"><b>Le problème vient du client</b> : accès à la véranda impossible.</div>
+    <div class="ta">Véranda fermée à clé, personne sur place à mon arrivée. Photo de la porte jointe.</div>
+    <div class="two" style="margin:8px 0"><div class="btn s">Ajouter une photo</div><div class="btn s">Ajouter un message</div></div>
+    <div class="btn p" style="margin-bottom:6px">Refuser et demander le règlement</div>
+    <div class="btn s">Faire une offre</div>
+   </div>
+  </div>
+  <div class="sm" style="padding:0 4px">Après votre demande, le client a 24 h pour refuser le paiement en expliquant pourquoi.</div>
+ </div>
+ <div class="tabs pro"><div><svg width="22" height="22"><use href="#map"/></svg>Carte</div><div class="on"><svg width="22" height="22"><use href="#msg"/></svg>Messages</div><div class="c"><i></i>Mission</div><div><svg width="22" height="22"><use href="#cal"/></svg>Agenda</div><div><svg width="22" height="22"><use href="#usr"/></svg>Profil</div></div>
+</div>
+<div class="cap"><b>6 · Litige causé par le client (côté pro).</b><br><span class="n">Amélioration, règle de Romain à écrire :</span> le pro se justifie (texte, photo), refuse l'offre et demande le règlement. Réponse libre mais rien n'est dit « garanti » : c'est une déclaration.</div></div>
+
+<!-- 7 LITIGE CLIENT -->
+<div class="col"><div class="ph">
+ <div class="appbar navy"><svg width="20" height="20"><use href="#bk"/></svg><div>Règlement demandé<div style="font:500 10.5px var(--fb);opacity:.85">Prestataire Laura F.</div></div></div>
+ <div class="body">
+  <div class="card"><div class="lab">Réponse du prestataire</div><div class="sm">Véranda fermée à clé, personne sur place. Photo de la porte jointe. Demande le règlement de 100 €.</div></div>
+  <div class="card imp"><div class="lab">Temps restant pour répondre</div><div class="big">23 h 41</div>
+   <div class="sm" style="margin:4px 0 8px">Sans réponse dans ce délai, le paiement est accepté et le prestataire est payé.</div>
+   <div class="lab">Si vous refusez, expliquez pourquoi (obligatoire)</div>
+   <div class="ta" style="margin-bottom:8px">Je n'avais pas été prévenu qu'il fallait ouvrir la véranda…</div>
+   <div class="btn d" style="margin-bottom:6px">Refuser le paiement</div>
+   <div class="btn p">Accepter de payer</div>
+  </div>
+  <div class="sm" style="padding:0 4px">En cas de refus motivé sans accord, un administrateur PING décide.</div>
+ </div>
+ <div class="tabs"><div><svg width="22" height="22"><use href="#map"/></svg>Carte</div><div class="on"><svg width="22" height="22"><use href="#msg"/></svg>Messages</div><div class="c"><i></i>Mission</div><div><svg width="22" height="22"><use href="#cal"/></svg>Agenda</div><div><svg width="22" height="22"><use href="#usr"/></svg>Profil</div></div>
+</div>
+<div class="cap"><b>7 · Même litige, côté client.</b><br><span class="n">Amélioration :</span> décompte de 24 h ; refuser le paiement exige un motif écrit ; silence = paiement accepté. À trancher en Règles métier : aujourd'hui le délai de 24 h sert à OUVRIR un litige (<code>INCIDENT_WINDOW_H</code>), pas à répondre à une demande de règlement.</div></div>
+
+</div></body></html>
