@@ -22,6 +22,12 @@ vers le détail. `HISTORIQUE.md` garde CLAUDE.md mot pour mot (rien n'est suppri
 | CONTRAT-MAQUETTE.md (+ -public, -client, -prestataire, -admin) | Contrat de fidélité maquette / application (statuts OK, MANQUE, VOULU, NON VÉRIFIÉ) |
 | BRIEF-AGENT.md | Brief donné à tout agent au démarrage (économie de jetons) |
 | agents/<nom>/MEMOIRE.md, SOURCES.md | Mémoire et sources de chaque agent (13 agents) |
+| ESSENTIEL.md | Ce qui est chargé à chaque session (moins de 3 Ko) |
+| ROUTAGE.md, ENTREE.md | Quel point va dans quelle session ; la session « Entrée » |
+| A-FAIRE.md, MAQUETTES.md | Tâches par entrée ; index des visuels |
+| COMMUN.md | Design, règles communes, circuits |
+| PROFIL-PARTICULIER/PRESTATAIRE/ADMIN.md | Un fichier par profil, cinq titres |
+| RUBRIQUE-FACTURATION/PROSPECTION/DONNEES-SQL.md, AUTOMATISATION.md | Un fichier par rubrique |
 | HISTORIQUE.md | Copie intégrale de l'ancien CLAUDE.md |
 | CLAUDE.index.md | Version courte prévue de CLAUDE.md (Romain la relit avant remplacement) |
 
