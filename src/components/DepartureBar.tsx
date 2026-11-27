@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { distanceKm } from '@/lib/geo'
 import { systemSender } from '@/lib/systemMessage'
 import { readLastEta, saveLastEta, DEFAULT_ETA } from '@/lib/lastEta'
+import { ZONE_ATTEMPTS, geoMessage, isGeoFail, readPositionOnce } from '@/lib/position'
 
 /**
  * Suivi d'arrivée — volontairement sobre.
@@ -32,6 +33,12 @@ export default function DepartureBar({
   const [depErr, setDepErr] = useState('')
   const [eta, setEta] = useState(DEFAULT_ETA)
   const [busy, setBusy] = useState(false)
+  // Décision de Romain (27/11/2026, A-TRANCHER u) : à « Je pars », le prestataire peut calculer sa durée avec sa
+  // position, en l'indiquant lui-même (bouton, jamais automatique). La position est lue UNE fois, sert au calcul de
+  // la distance sur l'appareil, n'est ni envoyée ni conservée : seules les minutes partent, comme avant.
+  const [gpsBusy, setGpsBusy] = useState(false)
+  const [gpsMsg, setGpsMsg] = useState('')
+  const [fromGps, setFromGps] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   // Distance entre l'adresse déclarée du prestataire et celle du rendez-vous —
   // demande de Romain : "si la personne est à 4 km, elle ne peut pas être là
@@ -66,6 +73,19 @@ export default function DepartureBar({
     return () => clearInterval(id)
   }, [enRoute, inProgress])
 
+  async function etaFromPosition() {
+    const reqLat = tx?.requests?.lat, reqLng = tx?.requests?.lng
+    if (reqLat == null || reqLng == null) return
+    setGpsBusy(true); setGpsMsg('')
+    const r = await readPositionOnce(ZONE_ATTEMPTS)
+    setGpsBusy(false)
+    if (isGeoFail(r)) { setGpsMsg(geoMessage(r.reason)); return }
+    const km = distanceKm(r.lat, r.lng, reqLat, reqLng)
+    const min = Math.max(2, Math.ceil((km / 35) * 60) + 2)   // même hypothèse que le minimum plausible : 35 km/h + 2 min
+    setEta(ETAS.find(x => x >= min) ?? ETAS[ETAS.length - 1]); setFromGps(true)
+    setGpsMsg(`Calculé avec votre position : environ ${min} min. Votre position n’est pas conservée.`)
+  }
+
   async function declareDeparture() {
     setBusy(true); setDepErr('')
     const supabase = createClient()
@@ -83,7 +103,7 @@ export default function DepartureBar({
       onChange(data)
       await supabase.from('messages').insert({
         transaction_id: tx.id, ...(await systemSender(supabase)),
-        body: `→ En route — arrivée estimée dans ${eta} min`,
+        body: `→ En route — arrivée estimée dans ${eta} min${fromGps ? ' (calculée avec sa position)' : ''}`,
       })
     }
     setBusy(false); setAsk(false)
@@ -120,7 +140,7 @@ export default function DepartureBar({
             // Dernière durée choisie présélectionnée (correction 5 du 19/11 ter), relevée si la distance l'exige.
             const v = readLastEta(ETAS)
             setEta(minPlausibleMin != null && v < minPlausibleMin ? (ETAS.find(x => x >= minPlausibleMin) ?? ETAS[ETAS.length - 1]) : v)
-            setDepErr(''); setAsk(true)
+            setDepErr(''); setGpsMsg(''); setFromGps(false); setAsk(true)
           }} style={{
             width: '100%', border: 'none', borderRadius: 999, padding: '11px 0', cursor: 'pointer',
             background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif',
@@ -145,6 +165,12 @@ export default function DepartureBar({
               Compte tenu de la distance, une arrivée en moins de {minPlausibleMin} min n'est pas réaliste — ces créneaux sont désactivés.
             </p>
           )}
+          {tx?.requests?.lat != null && tx?.requests?.lng != null && (
+            <button onClick={etaFromPosition} disabled={gpsBusy} style={{ marginTop: 12, width: '100%', minHeight: 44, borderRadius: 12, border: '1.5px solid #12B39C', background: '#fff', color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+              {gpsBusy ? 'Recherche de votre position…' : 'Calculer avec ma position'}
+            </button>
+          )}
+          {gpsMsg && <p style={{ fontSize: 12, color: gpsMsg.startsWith('Calculé') ? '#0B8374' : '#B3402F', margin: '8px 0 0', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{gpsMsg}</p>}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
             {ETAS.map(m => {
               const impossible = minPlausibleMin != null && m < minPlausibleMin

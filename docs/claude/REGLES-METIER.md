@@ -45,6 +45,6 @@ Format : règle -> fichier de code qui l'applique. Détail : HISTORIQUE.md. Cont
 - Langage déclaratif : « pièce fournie », « assurance renseignée » ; jamais « certifié » ni « garanti ». Exception 03/11 : « profil vérifié par PING » seulement si pièce d'identité `valid` non expirée (042).
 - Nouveau prestataire réservable tout de suite (18/11) : badge « Nouveau / pièces en cours de contrôle », PING = mise en relation, pas garant.
 - Pas d'emoji : pictogrammes SVG inline ; ✓ ✕ ★ ← → tolérés. Aucun emoji dans les messages système en base.
-- GPS seulement : (1) validation « client absent » (photo horodatée + GPS, consentement) ; (2) option « Je suis en intervention ici » : floutée, 12 h, arrêt à tout moment, jamais l'adresse du client -> `src/lib/liveZone.ts`, 058.
+- GPS seulement : (0) calcul de la durée à « Je pars », sur demande du prestataire, position lue une fois et non conservée (27/11/2026) -> `DepartureBar.tsx` ; (1) validation « client absent » (photo horodatée + GPS, consentement) ; (2) option « Je suis en intervention ici » : floutée, 12 h, arrêt à tout moment, jamais l'adresse du client -> `src/lib/liveZone.ts`, 058.
 - Messages système : toujours `systemSender()`, jamais `sender_id: null` -> `src/lib/systemMessage.ts`.
 - E-mails : jamais le texte du message ni l'adresse ; 1 e-mail par mission et destinataire / 10 min -> `src/lib/notifyServer.ts`.

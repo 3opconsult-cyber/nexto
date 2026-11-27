@@ -8,7 +8,7 @@ PING = place de marché de services de proximité (ménage, repassage, nettoyage
 3. Prix validé au paramétrage ; seul un litige le rouvre. Commission réglable en base, jamais en dur.
 4. Adresse du client visible du prestataire seulement mission confirmée ET payée.
 5. Langage déclaratif : jamais « certifié » ni « garanti ». Pas d'emoji (pictogrammes SVG).
-6. GPS seulement pour « client absent » et « Je suis en intervention ici ». Séquestre et Urssaf : écrits, ÉTEINTS.
+6. GPS seulement pour « client absent », « Je suis en intervention ici » et, sur demande du prestataire, le calcul de la durée à « Je pars » (position lue une fois, non conservée). Séquestre et Urssaf : écrits, ÉTEINTS.
 7. Avant de toucher un composant : lister ses utilisateurs ; après : `scripts/e2e/non-regression.sh` (REGRESSIONS.md).
 8. Livraison : `npx tsc --noEmit` + `npm run build`, push sur `main`, test en production APRÈS le déploiement (~3 min), de jour (Paris).
 
