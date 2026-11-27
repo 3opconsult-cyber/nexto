@@ -60,6 +60,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Migrations 061, 062, 063 à coller (063 = identité émetteur BAITA EURL) | attend Romain, non vérifié |
 | IBAN de PING dans `/admin/paiements` | attend Romain |
 | D-19 : séquestre, aucun prestataire de paiement choisi | bloquée |
+| Séquestre : finir le câblage complet (Romain, 27/11) pour brancher le compte dès son ouverture ; reste éteint en attendant | à faire |
 | Facture : « Reçu » pour non immatriculé, HT/TVA/TTC pour assujetti, masquer l'indemnité 40 € pour un client particulier, médiateur, test de la franchise au 01/01/2027 (AUDIT-ANNONCE-CARTE, section facture) | à faire, relecture expert-comptable |
 | Coller `065_numerotation_references.sql` (numéros continus, références, vue CRM) après 063 ; brancher le CRM sur `crm_invoices` | écrit et poussé, attend Romain (collage) |
 | Facture assujetti : saisie du taux de TVA du prestataire (colonne et champ) pour alimenter `legal.tva_taux` ; l'affichage HT/TVA est prêt | à faire |
@@ -80,7 +81,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Point | Statut |
 |---|---|
 | Confirmer `info@opconsult.co` (A-TRANCHER t) | attend Romain |
-| Vidéos et plaquettes : séquestre montré actif (A-TRANCHER d) | à réaligner avant lancement |
+| Séquestre sur les supports et pages publiques : Romain (27/11) garde « paiement sous séquestre » et ajoute partout « Version pilote : les paiements ne sont pas encore activés » (A-TRANCHER d) | à faire |
+| Nouveaux messages (Romain, 27/11). Prestataire : « Soyez visible à chaque fois que vous intervenez quelque part. Captez les clients et les demandes autour de vos interventions. » Particulier : « Trouvez le prestataire le plus proche de chez vous. Réservez en quelques clics. » À poser sur pages d'accueil, plaquettes, vidéos | à faire |
 | Règle d'e-mail aux particuliers (RGPD, L34-5) | à trancher |
 | Plan 8 semaines (`docs/plan-marketing-outils.md`) | en attente d'accord, rien envoyé |
 
