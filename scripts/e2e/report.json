@@ -1,5 +1,5 @@
 {
- "started": "2026-11-24T09:32:26.272Z",
+ "started": "2026-11-27T11:20:58.679Z",
  "scenarios": {
   "setup": {
    "steps": [
@@ -15,12 +15,12 @@
    "steps": [
     {
      "k": "Contacter → conversation",
-     "v": "/mission/b4c786ed-1b87-48af-8f9f-27559ae091de/chat",
+     "v": "/mission/9930788f-61ae-4f24-b7b8-62a7a6e8dcff/chat",
      "ok": true
     },
     {
      "k": "demande titrée « QA parcours »",
-     "v": "QA parcours A — client sur place 2026-11-24 09:32",
+     "v": "QA parcours A — client sur place 2026-11-27 11:21",
      "ok": true
     },
     {
@@ -69,7 +69,7 @@
     {
      "k": "RDV enregistré (adresse du profil, statut « profil »)",
      "v": {
-      "scheduled_at": "2026-11-24T10:30:00+00:00",
+      "scheduled_at": "2026-11-27T12:00:00+00:00",
       "address_status": "profil",
       "requests": {
        "lat": null,
@@ -91,7 +91,7 @@
     },
     {
      "k": "/commande client : « Commande validée » + présence notée",
-     "v": "Commande validée Ménage · Audit P. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:30 Adresse 2 rue ",
+     "v": "Commande validée Ménage · Audit P. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure vendredi 27 novembre à 13:00 Adresse 2 r",
      "ok": true
     },
     {
@@ -101,13 +101,13 @@
     },
     {
      "k": "/commande pro : « Commande reçue », présence, « Vous percevez »",
-     "v": "Commande reçue Ménage · Audit C. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:30 Adresse 2 rue de",
+     "v": "Commande reçue Ménage · Audit C. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure vendredi 27 novembre à 13:00 Adresse 2 rue",
      "ok": true
     },
     {
      "k": "pro : bouton « Mission du jour » dans la barre du bas",
-     "v": 1,
-     "ok": true
+     "v": 0,
+     "ok": false
     },
     {
      "k": "pro : Mission du jour (présence sur le billet)",
@@ -117,7 +117,7 @@
     {
      "k": "« Je pars » enregistré",
      "v": {
-      "en_route_at": "2026-11-24T09:33:31.08+00:00",
+      "en_route_at": "2026-11-27T11:22:05.753+00:00",
       "eta_minutes": 10
      },
      "ok": true
@@ -129,17 +129,17 @@
     },
     {
      "k": "client : QR d’arrivée affiché",
-     "v": 16,
+     "v": 14,
      "ok": true
     },
     {
      "k": "client : code de secours sous le QR",
-     "v": "548444",
+     "v": "338481",
      "ok": true
     },
     {
      "k": "pro : arrivée validée (scanner intégré)",
-     "v": "Arrivée validée. Plus de 30 min avant l’heure du rendez-vous. Annuler Intervention en cours Arrivée à 10:33 ",
+     "v": "Arrivée validée. Plus de 30 min avant l’heure du rendez-vous. Annuler Intervention en cours Arrivée à 12:22 ",
      "ok": true
     },
     {
@@ -157,15 +157,15 @@
     },
     {
      "k": "pro : écran de scan de fin",
-     "v": "Fin validée. Moins de 5 min sur place. 0 min sur place · prestation 90,00 € Ce relevé fait foi en cas de litige. Voir la factureRetour à la conversation 4 nouve",
+     "v": "Fin validée. Moins de 5 min sur place. 0 min sur place · prestation 90,00 € Ce relevé fait foi en cas de litige. Voir la factureRetour à la conversation Demande",
      "ok": true
     },
     {
      "k": "mission terminée en base (preuves)",
      "v": {
       "status": "completed",
-      "arrived_at": "2026-11-24T09:33:47.868988+00:00",
-      "completed_at": "2026-11-24T09:33:55.693521+00:00",
+      "arrived_at": "2026-11-27T11:22:22.473984+00:00",
+      "completed_at": "2026-11-27T11:22:30.183688+00:00",
       "duration_minutes": 0,
       "arrival_proof": "code",
       "completion_proof": "qr",
@@ -194,17 +194,17 @@
      "k": "3 factures (montants)",
      "v": [
       {
-       "number": "PING-C-2026-00092",
+       "number": "PING-C-2026-00106",
        "kind": "commission_client",
        "net": "7,20 €"
       },
       {
-       "number": "PING-V-2026-00092",
+       "number": "PING-V-2026-00106",
        "kind": "commission_pro",
        "net": "15,30 €"
       },
       {
-       "number": "FACT-2026-00092",
+       "number": "FACT-2026-00106",
        "kind": "prestation",
        "net": "90,00 €"
       }
@@ -221,7 +221,7 @@
     },
     {
      "k": "facture (écran) : mention du mode de validation",
-     "v": "10:33 — 10:33 (arrivée : code du client saisi sur place ; fin : QR du client scanné sur place) · forfait 90,00 ",
+     "v": "12:22 — 12:22 (arrivée : code du client saisi sur place ; fin : QR du client scanné sur place) · forfait 90,00 ",
      "ok": true
     },
     {
@@ -240,14 +240,14 @@
       {
        "payer_role": "client",
        "payee": "pro",
-       "reference": "FACT-2026-00092",
+       "reference": "FACT-2026-00106",
        "status": "declare_paye",
        "amount_cents": 9000
       },
       {
        "payer_role": "client",
        "payee": "ping",
-       "reference": "PING-C-2026-00092",
+       "reference": "PING-C-2026-00106",
        "status": "declare_paye",
        "amount_cents": 720
       }
@@ -274,8 +274,24 @@
      "v": [
       "[client] 404 GET /bienvenue?_rsc=1q5z7",
       "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+      "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
       "[pro] 404 GET /bienvenue?_rsc=1q5z7",
-      "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login"
+      "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /pro/b9f8cd9a-16de-4a36-afd8-10a2135ab970"
      ],
      "ok": null
     }
@@ -283,23 +299,39 @@
    "errors": [
     "[client] 404 GET /bienvenue?_rsc=1q5z7",
     "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+    "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
     "[pro] 404 GET /bienvenue?_rsc=1q5z7",
-    "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login"
+    "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /pro/b9f8cd9a-16de-4a36-afd8-10a2135ab970"
    ],
-   "tx": "b4c786ed-1b87-48af-8f9f-27559ae091de",
+   "tx": "9930788f-61ae-4f24-b7b8-62a7a6e8dcff",
    "invoices": [
     {
-     "number": "PING-C-2026-00092",
+     "number": "PING-C-2026-00106",
      "kind": "commission_client",
      "net": "7,20 €"
     },
     {
-     "number": "PING-V-2026-00092",
+     "number": "PING-V-2026-00106",
      "kind": "commission_pro",
      "net": "15,30 €"
     },
     {
-     "number": "FACT-2026-00092",
+     "number": "FACT-2026-00106",
      "kind": "prestation",
      "net": "90,00 €"
     }
@@ -309,12 +341,12 @@
    "steps": [
     {
      "k": "Contacter → conversation",
-     "v": "/mission/e3a06178-a9a6-42bb-a546-176ef9a8c092/chat",
+     "v": "/mission/6dad70bb-221e-4f2b-9c73-fa18c289fd77/chat",
      "ok": true
     },
     {
      "k": "demande titrée « QA parcours »",
-     "v": "QA parcours B — client absent 2026-11-24 09:34",
+     "v": "QA parcours B — client absent 2026-11-27 11:23",
      "ok": true
     },
     {
@@ -363,7 +395,7 @@
     {
      "k": "RDV enregistré (adresse du profil, statut « profil »)",
      "v": {
-      "scheduled_at": "2026-11-24T10:30:00+00:00",
+      "scheduled_at": "2026-11-27T12:00:00+00:00",
       "address_status": "profil",
       "requests": {
        "lat": null,
@@ -385,7 +417,7 @@
     },
     {
      "k": "/commande client : « Commande validée » + « Serez-vous sur place ? »",
-     "v": "Commande validée Ménage · Audit P. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:30 Adresse 2 rue de l Audit, Grasse P",
+     "v": "Commande validée Ménage · Audit P. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure vendredi 27 novembre à 13:00 Adresse 2 rue de l Audit, Grass",
      "ok": true
     },
     {
@@ -405,13 +437,13 @@
     },
     {
      "k": "/commande pro : « Commande reçue », présence, « Vous percevez »",
-     "v": "Commande reçue Ménage · Audit C. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure mardi 24 novembre à 11:30 Adresse 2 rue de",
+     "v": "Commande reçue Ménage · Audit C. Acceptée Tarif validé · prix figé Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir. Date et heure vendredi 27 novembre à 13:00 Adresse 2 rue",
      "ok": true
     },
     {
      "k": "pro : bouton « Mission du jour » dans la barre du bas",
-     "v": 1,
-     "ok": true
+     "v": 0,
+     "ok": false
     },
     {
      "k": "pro : Mission du jour (présence sur le billet)",
@@ -421,7 +453,7 @@
     {
      "k": "« Je pars » enregistré",
      "v": {
-      "en_route_at": "2026-11-24T09:35:45.758+00:00",
+      "en_route_at": "2026-11-27T11:24:07.331+00:00",
       "eta_minutes": 10
      },
      "ok": true
@@ -449,7 +481,7 @@
     {
      "k": "messagerie client : message avec photo (base)",
      "v": [
-      "Photo d'arrivée du prestataire, 10:36 — position à 74 m de l'adresse du rendez-vous, relevée une fois avec son accord. Confirmez son arrivée"
+      "Photo d'arrivée du prestataire, 12:24 — position à 74 m de l'adresse du rendez-vous, relevée une fois avec son accord. Confirmez son arrivée"
      ],
      "ok": true
     },
@@ -460,12 +492,12 @@
     },
     {
      "k": "client : « … indique être sur place » + distance",
-     "v": "Photo reçue à 10:36, à 74 m de votre adresse.",
+     "v": "Photo reçue à 12:24, à 74 m de votre adresse.",
      "ok": true
     },
     {
      "k": "pro : arrivée validée par la confirmation du client",
-     "v": "Arrivée à 10:36 · client absent, arrivée confirmée par le client Si vous terminez maintenant : prestation ",
+     "v": "Arrivée à 12:24 · client absent, arrivée confirmée par le client Si vous terminez maintenant : prestation ",
      "ok": true
     },
     {
@@ -475,18 +507,18 @@
     },
     {
      "k": "client : « … indique avoir terminé » + durée et montant",
-     "v": "Fin annoncée à 10:36 : 0 min sur place → forfait, sans dépassement, 90,00 € + frais de service 7,20 €.",
+     "v": "Fin annoncée à 12:24 : 0 min sur place → forfait, sans dépassement, 90,00 € + frais de service 7,20 €.",
      "ok": true
     },
     {
      "k": "client : code de fin affiché",
-     "v": "391717",
+     "v": "874080",
      "ok": true
     },
     {
      "k": "code de fin posté dans la messagerie",
      "v": [
-      "Mon code de fin : 391 717 (à saisir dans « Mission du jour », valable jusqu'à 11:06)."
+      "Mon code de fin : 874 080 (à saisir dans « Mission du jour », valable jusqu'à 12:54)."
      ],
      "ok": true
     },
@@ -504,13 +536,13 @@
      "k": "mission terminée en base (preuves)",
      "v": {
       "status": "completed",
-      "arrived_at": "2026-11-24T09:36:00.14454+00:00",
-      "completed_at": "2026-11-24T09:36:19.556333+00:00",
+      "arrived_at": "2026-11-27T11:24:20.866087+00:00",
+      "completed_at": "2026-11-27T11:24:40.818942+00:00",
       "duration_minutes": 0,
       "arrival_proof": "distance_confirmation",
       "completion_proof": "distance_code",
       "arrival_method": "geoloc_code",
-      "arrival_photo_path": "b9f8cd9a-16de-4a36-afd8-10a2135ab970/e3a06178-a9a6-42bb-a546-176ef9a8c092/1795512958192.jpg",
+      "arrival_photo_path": "b9f8cd9a-16de-4a36-afd8-10a2135ab970/6dad70bb-221e-4f2b-9c73-fa18c289fd77/1795778659309.jpg",
       "subtotal_cents": 9000,
       "buyer_fee_cents": 720,
       "seller_fee_cents": 1530,
@@ -534,17 +566,17 @@
      "k": "3 factures (montants)",
      "v": [
       {
-       "number": "PING-C-2026-00093",
+       "number": "PING-C-2026-00107",
        "kind": "commission_client",
        "net": "7,20 €"
       },
       {
-       "number": "PING-V-2026-00093",
+       "number": "PING-V-2026-00107",
        "kind": "commission_pro",
        "net": "15,30 €"
       },
       {
-       "number": "FACT-2026-00093",
+       "number": "FACT-2026-00107",
        "kind": "prestation",
        "net": "90,00 €"
       }
@@ -562,7 +594,7 @@
     },
     {
      "k": "facture (écran) : mention du mode de validation",
-     "v": "10:36 — 10:36 (arrivée : client absent, photo et position envoyées, arrivée confirmée par le client ; fin : client absent, code de fin envoyé par le client et saisi par le prestataire) · forfait 90,00 ",
+     "v": "12:24 — 12:24 (arrivée : client absent, photo et position envoyées, arrivée confirmée par le client ; fin : client absent, code de fin envoyé par le client et saisi par le prestataire) · forfait 90,00 ",
      "ok": true
     },
     {
@@ -581,14 +613,14 @@
       {
        "payer_role": "client",
        "payee": "pro",
-       "reference": "FACT-2026-00093",
+       "reference": "FACT-2026-00107",
        "status": "declare_paye",
        "amount_cents": 9000
       },
       {
        "payer_role": "client",
        "payee": "ping",
-       "reference": "PING-C-2026-00093",
+       "reference": "PING-C-2026-00107",
        "status": "declare_paye",
        "amount_cents": 720
       }
@@ -615,8 +647,24 @@
      "v": [
       "[client] 404 GET /bienvenue?_rsc=1q5z7",
       "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+      "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
       "[pro] 404 GET /bienvenue?_rsc=1q5z7",
-      "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login"
+      "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+      "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+      "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /pro/b9f8cd9a-16de-4a36-afd8-10a2135ab970"
      ],
      "ok": null
     }
@@ -624,23 +672,39 @@
    "errors": [
     "[client] 404 GET /bienvenue?_rsc=1q5z7",
     "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+    "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
     "[pro] 404 GET /bienvenue?_rsc=1q5z7",
-    "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login"
+    "[pro] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /auth/login",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/providers_nearby_public",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /map",
+    "[client] 404 POST /rest/v1/rpc/provider_done_counts",
+    "[client] console: Failed to load resource: the server responded with a status of 404 (Not Found) @ /pro/b9f8cd9a-16de-4a36-afd8-10a2135ab970"
    ],
-   "tx": "e3a06178-a9a6-42bb-a546-176ef9a8c092",
+   "tx": "6dad70bb-221e-4f2b-9c73-fa18c289fd77",
    "invoices": [
     {
-     "number": "PING-C-2026-00093",
+     "number": "PING-C-2026-00107",
      "kind": "commission_client",
      "net": "7,20 €"
     },
     {
-     "number": "PING-V-2026-00093",
+     "number": "PING-V-2026-00107",
      "kind": "commission_pro",
      "net": "15,30 €"
     },
     {
-     "number": "FACT-2026-00093",
+     "number": "FACT-2026-00107",
      "kind": "prestation",
      "net": "90,00 €"
     }
