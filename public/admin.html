@@ -108,6 +108,7 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .sig-msg.b{align-self:flex-end;background:rgba(18,179,156,.1);border:1px solid rgba(18,179,156,.25)}
 .mono{font-variant-numeric:tabular-nums;color:var(--slate);font-size:12px}
 .link{color:var(--tealD);font-weight:600;cursor:pointer;font-size:12.5px}
+.litpill{display:inline-flex;align-items:center;min-height:28px;margin-left:8px;padding:0 10px;border:none;border-radius:999px;background:#B3402F;color:#fff;font:700 12.5px var(--fb);cursor:pointer}
 .btn{background:var(--btnFill);color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;min-height:44px;padding:11px 18px;border-radius:14px;border:none;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .btn.dark{background:var(--ink)}
@@ -3915,10 +3916,33 @@ window.loadLiveUsers = async function () {
   __allPros = (pros || []).filter(p => keep(p.id))
   __allClients = (clients || []).filter(c => keep(c.id))
   __usersCore = core
+  await loadLitBy()
   window.renderLiveUsers(__allPros, __allClients)
 }
 
 let __act = null, __actF = 'all'
+// Audit 27/11 : pastille rouge « Litige » sur les lignes du CRM (comptes actifs, prestataires, clients) ;
+// un appui ouvre directement le dossier du litige ouvert de ce compte.
+let __litBy = null
+async function loadLitBy() {
+  if (__litBy) return __litBy
+  const m = {}
+  try {
+    const { data: ds } = await supabaseLive.from('disputes').select('id, transaction_id, created_at').eq('status', 'open').order('created_at', { ascending: false }).limit(500)
+    const txIds = [...new Set((ds || []).map(d => d.transaction_id).filter(Boolean))]
+    if (txIds.length) {
+      const { data: txs } = await supabaseLive.from('transactions').select('id, buyer_id, seller_id').in('id', txIds)
+      const by = {}; (txs || []).forEach(x => { by[x.id] = x })
+      ;(ds || []).forEach(d => { const x = by[d.transaction_id]; if (!x) return; [x.buyer_id, x.seller_id].forEach(u => { if (u) (m[u] = m[u] || []).push(d.id) }) })
+    }
+  } catch (e) { /* pastilles absentes, la liste reste utilisable */ }
+  __litBy = m
+  return m
+}
+function litPill(uid) {
+  const ids = __litBy && __litBy[uid]; if (!ids || !ids.length) return ''
+  return ' <button type="button" class="litpill" title="Ouvrir le dossier du litige" onclick="event.stopPropagation();window.openLitigeDossier(\'' + esc(ids[0]) + '\')">Litige' + (ids.length > 1 ? ' · ' + ids.length : '') + '</button>'
+}
 const eur = c => (c / 100).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
 window.loadActivite = async function () {
   const st = document.getElementById('actStatus'); if (!st) return
@@ -3942,6 +3966,7 @@ window.loadActivite = async function () {
     const rep = (a.repondants || []).length ? a.repondants.map(r => esc(r.nom) + ' <span class="muted">(' + esc(r.statut) + ')</span>').join(', ') : '<span class="muted">aucun pour l’instant</span>'
     return '<tr><td>' + (a.urgent ? '<b style="color:#E8743B">URGENT</b> ' : '') + esc(a.title || a.category) + (a.fictif ? ' <span class="muted">(fictif)</span>' : '') + '</td><td>' + esc(a.demandeur) + '</td><td>' + esc(b) + '</td><td>' + (a.desired_date ? new Date(a.desired_date).toLocaleDateString('fr-FR') : '—') + '</td><td>' + rep + '</td></tr>'
   }).join('')
+  await loadLitBy()
   window.renderActPeople()
 }
 window.loadActOverview = async function () {
@@ -3966,7 +3991,7 @@ window.renderActPeople = function () {
   const rows = base.filter(f)
   document.getElementById('actPplCount').textContent = rows.length + ' / ' + base.length
   document.getElementById('actPplBody').innerHTML = rows.map(p =>
-    '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail && window.openPersonDetail(\'' + esc(p.id) + '\')"><td><div class="who"><div class="av">' + esc((p.nom || '?').charAt(0).toUpperCase()) + '</div>' + esc(p.nom) + fxTag(isFictifEmail(p.email)) + '</div><div class="muted" style="font-size:11px">' + esc(p.email) + '</div></td>' +
+    '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail && window.openPersonDetail(\'' + esc(p.id) + '\')"><td><div class="who"><div class="av">' + esc((p.nom || '?').charAt(0).toUpperCase()) + '</div>' + esc(p.nom) + fxTag(isFictifEmail(p.email)) + litPill(p.id) + '</div><div class="muted" style="font-size:11px">' + esc(p.email) + '</div></td>' +
     '<td>' + (p.est_prestataire ? 'Prestataire' : 'Particulier') + (p.est_prestataire && p.created_at ? '' : '') + '</td><td>' + esc(p.city || '—') + '</td><td>' + esc(p.annonces_ouvertes) + '</td><td>' + esc(p.en_cours) + '</td><td>' + esc(p.terminees) + '</td>' +
     '<td>' + (p.derniere_connexion ? new Date(p.derniere_connexion).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—') + '</td></tr>'
   ).join('') || '<tr><td colspan="7" class="muted" style="padding:14px 0">Personne dans cette sélection.</td></tr>'
@@ -3990,7 +4015,7 @@ window.renderLiveUsers = function (pros, clients) {
     const name = (p.profiles && p.profiles.full_name) || '—'
     const initial = (name || '?').charAt(0).toUpperCase()
     return '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail(\'' + esc(p.id) + '\')">' +
-      '<td><div class="who"><div class="av">' + esc(initial) + '</div>' + esc(name) + fxTag(ufx(p.id)) + '</div></td>' +
+      '<td><div class="who"><div class="av">' + esc(initial) + '</div>' + esc(name) + fxTag(ufx(p.id)) + litPill(p.id) + '</div></td>' +
       '<td>' + esc(TRADES_LIVE[p.trade] || p.trade || '—') + '</td>' +
       '<td>' + esc(LEGAL_LIVE[p.legal_status] || p.legal_status || '—') + '</td>' +
       '<td>' + esc((p.profiles && p.profiles.city) || '—') + '</td>' +
@@ -4003,7 +4028,7 @@ window.renderLiveUsers = function (pros, clients) {
   clientBody.innerHTML = clients.map(c => {
     const initial = (c.full_name || '?').charAt(0).toUpperCase()
     return '<tr class="rowlink" style="cursor:pointer" onclick="window.openPersonDetail(\'' + esc(c.id) + '\')">' +
-      '<td><div class="who"><div class="av coral">' + esc(initial) + '</div>' + esc(c.full_name || '—') + fxTag(ufx(c.id)) + '</div></td>' +
+      '<td><div class="who"><div class="av coral">' + esc(initial) + '</div>' + esc(c.full_name || '—') + fxTag(ufx(c.id)) + litPill(c.id) + '</div></td>' +
       '<td>' + esc(c.city || '—') + '</td>' +
       '<td data-sort="' + esc(c.created_at || '') + '">' + esc(dateFr(c.created_at)) + '</td>' +
       '<td><span class="link">Ouvrir</span></td></tr>'
