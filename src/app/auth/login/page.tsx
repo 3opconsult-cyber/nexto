@@ -39,7 +39,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [info, setInfo] = useState('')
   const [next, setNext] = useState<string | null>(null)
-  useEffect(() => { setNext(nextPath()) }, [])
+  useEffect(() => {
+    setNext(nextPath())
+    // ?email= : pré-remplit l'adresse (raccourcis du Hub vers les comptes de test). Jamais de mot de passe dans l'URL.
+    const e = new URLSearchParams(window.location.search).get('email')
+    if (e && e.length < 200) setEmail(e)
+  }, [])
 
   // ?next=/chemin : retour à la page d'origine après connexion (chemins internes uniquement).
   function nextPath(): string | null {

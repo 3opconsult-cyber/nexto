@@ -33,6 +33,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | D-05 : Décision PING non jouée | non vérifié |
 | D-09 : pastille admin pour pièces refusées | non vue |
 | D-13 : alertes admin, SQL 062 après 061 | attend Romain |
+| Audit admin 27/11 : S1 (promotion admin) à confirmer en base, puis F1, F2, F4 (`AUDIT-ADMIN-2026-11-27.md`) | attend Romain |
+| Hub `/hub` : tester en production après déploiement (iPhone et ordinateur), puis `non-regression.sh` | à faire, non vérifié |
 
 ## Design
 | Point | Statut |
