@@ -101,3 +101,9 @@ html[data-fb-hide] .ping-fb { display: none !important; }
   .map-topbar .app-burger { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; pointer-events: auto; background: #fff !important; border-radius: 14px !important; box-shadow: 0 6px 16px rgba(20,50,60,.2); }
   .map-search { top: 12px !important; left: 64px !important; right: 12px !important; height: 44px; min-height: 44px !important; box-sizing: border-box; padding: 0 12px !important; border-radius: 14px; gap: 8px; box-shadow: 0 6px 16px rgba(20,50,60,.2); }
 }
+
+/* Audit Design 27/11 : sur ordinateur, le logo est déjà dans la barre latérale ; la carte client ne le répète
+   plus (comme la carte prestataire). */
+@media (min-width: 1000px) {
+  .app-shell .map-topbar .pinglogo { display: none !important; }
+}

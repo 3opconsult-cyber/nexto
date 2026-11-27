@@ -543,7 +543,7 @@ export default function ProCartePage() {
             <div className="sp map-desk-only" />
             <span className="map-desk-only" style={{ display: 'contents' }}><ModeSwitchPill to="particulier" /></span>
             <button type="button" className="tbell map-desk-only" onClick={() => router.push('/messages')} aria-label={unread ? `Messages, ${unread} non lu${unread > 1 ? 's' : ''}` : 'Messages'} style={{ color: 'var(--ink)', padding: 0 }}>
-              <Ic name="bell" size={19} />
+              <Ic name="msg" size={18} />
               {unread > 0 && <span className="mq-nb">{unread > 9 ? '9+' : unread}</span>}
             </button>
           </div>

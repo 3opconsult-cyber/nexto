@@ -79,7 +79,7 @@ export default function LitigesPage() {
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucun litige pour l'instant</div>
-            <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
+            <div style={{ fontSize: 14, color: '#4E6470', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
           </div>
         )}
         {(() => {
@@ -89,7 +89,7 @@ export default function LitigesPage() {
           }, {} as Record<string, any[]>)
           return Object.entries(groups).map(([mois, list]: [string, any[]]) => (
             <div key={mois} style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.04em', margin: '0 0 10px 2px' }}>{mois}</div>
               {list.map(d => {
                 const cat = d.transactions?.requests?.category
                 return (
@@ -99,16 +99,16 @@ export default function LitigesPage() {
                       <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>
                         {names[d.transactions?.id] || 'Mission'}
                       </span>
-                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#FFF7ED', color: '#8a6520', flexShrink: 0 }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#FFF7ED', color: '#8a6520', flexShrink: 0 }}>
                         {STATUS_LABELS[d.status] || d.status}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 3 }}>
+                    <div style={{ fontSize: 14, color: '#4E6470', marginTop: 3 }}>
                       {cat ? <b style={{ color: '#0B8374' }}>{TRAD[cat] || cat} · </b> : null}
                       {new Date(d.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                     </div>
                     <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>{d.reason}</div>
-                    {d.resolution && <div style={{ fontSize: 11.5, color: '#0B8374', marginTop: 6, fontWeight: 600 }}>Résolution : {d.resolution}</div>}
+                    {d.resolution && <div style={{ fontSize: 14, color: '#0B8374', marginTop: 6, fontWeight: 600 }}>Résolution : {d.resolution}</div>}
                   </div>
                 )
               })}

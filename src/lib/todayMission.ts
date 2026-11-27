@@ -51,11 +51,15 @@ async function readTodayMission(mode: Mode): Promise<TodayMission | null> {
   if (!uid) return null
   const user = { id: uid }
   const withBooking = await bookingAvailable(supabase)
+  const now = new Date()
+  // Seules les missions qui peuvent être « du jour » (mêmes bornes que isTodayMission) : sans ce filtre, un compte
+  // avec plus de 30 missions anciennes restées ouvertes ne voyait jamais celle du jour (audit 27/11, limite 30).
+  const ago = (h: number) => new Date(now.getTime() - h * 3600_000).toISOString()
   const { data } = await supabase.from('transactions')
     .select(`id, status, price_confirmed, scheduled_at, en_route_at, arrived_at, completed_at, buyer_id, seller_id${withBooking ? ', booking_status' : ''}`)
     .eq(roleColumn(mode), user.id).eq('price_confirmed', true).in('status', ['pending', 'arrived'])
+    .or(`scheduled_at.gte.${ago(12)},en_route_at.gte.${ago(12)},arrived_at.gte.${ago(24)}`)
     .order('scheduled_at', { ascending: true, nullsFirst: false }).limit(30)
-  const now = new Date()
   const list = (data ?? []).filter((t: any) => t.buyer_id !== t.seller_id && isTodayMission(t, now))
   if (!list.length) return null
   // Ordre : en cours, puis en route, puis la plus proche. Une mission qui attend une action (photo à

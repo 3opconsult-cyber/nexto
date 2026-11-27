@@ -12,7 +12,7 @@ export default function CguPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', fontFamily: 'Inter, sans-serif', padding: '28px 16px 48px' }}>
       <div style={{ maxWidth: 680, margin: '0 auto', background: '#fff', borderRadius: 20, padding: '24px 22px', border: '1px solid #E7EDEB' }}>
-        <Link href="/auth/signup" style={{ fontSize: 13, fontWeight: 700, color: '#4E6470', textDecoration: 'none' }}>← Retour à l&apos;inscription</Link>
+        <Link href="/auth/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, fontSize: 15, fontWeight: 700, color: '#4E6470', textDecoration: 'none' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg> Retour à l&apos;inscription</Link>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 24, color: '#123644', margin: '12px 0 8px' }}>Conditions générales d&apos;utilisation</h1>
         <div style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: '#8A6520', background: 'rgba(242,169,59,.15)', padding: '5px 10px', borderRadius: 999, marginBottom: 8 }}>
           Version provisoire — en cours de validation juridique

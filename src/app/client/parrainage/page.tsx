@@ -74,7 +74,7 @@ export default function ParrainagePage() {
         ) : (
           <>
             <div style={{ background: '#123644', borderRadius: 18, padding: 20, marginBottom: 16, textAlign: 'center' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.72)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>Votre code</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.72)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>Votre code</div>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 26, color: '#fff', letterSpacing: '.06em', marginBottom: 14 }}>{code}</div>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button onClick={shareWhatsapp} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '11px 16px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13 }}>
@@ -103,7 +103,7 @@ export default function ParrainagePage() {
                   <div style={{ background: '#fff', borderRadius: 14, padding: 12 }}>
                     <QrCode data={shareUrl} size={140} />
                   </div>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,.8)', margin: 0, textAlign: 'center' }}>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,.8)', margin: 0, textAlign: 'center' }}>
                     À afficher sur votre stand, votre boutique ou votre camion — flashé, ça inscrit directement avec votre code.
                   </p>
                 </div>
@@ -113,11 +113,11 @@ export default function ParrainagePage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
               <div style={{ background: 'rgba(18,179,156,.08)', borderRadius: 14, padding: 14 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{registered}</div>
-                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{registered > 1 ? 's' : ''} enregistré{registered > 1 ? 's' : ''}</div>
+                <div style={{ fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{registered > 1 ? 's' : ''} enregistré{registered > 1 ? 's' : ''}</div>
               </div>
               <div style={{ background: 'rgba(18,179,156,.08)', borderRadius: 14, padding: 14 }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22 }}>{completed}</div>
-                <div style={{ fontSize: 11, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{completed > 1 ? 's' : ''} ayant terminé une mission</div>
+                <div style={{ fontSize: 13, color: '#4E6470', fontWeight: 600, marginTop: 2 }}>Filleul{completed > 1 ? 's' : ''} ayant terminé une mission</div>
               </div>
             </div>
 

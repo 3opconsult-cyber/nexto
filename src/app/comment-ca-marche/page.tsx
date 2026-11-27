@@ -93,7 +93,7 @@ export default function CommentCaMarche() {
         .slide-anim--1 { animation: slideInL .32s cubic-bezier(.2,.7,.3,1) both }
       `}</style>
       <div style={{ padding: '20px 20px 0' }}>
-        <button onClick={() => router.back()} style={{ color: 'rgba(255,255,255,.7)', background: 'none', border: 'none', fontSize: 13, fontWeight: 700 }}>← Retour</button>
+        <button onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, padding: 0, color: 'rgba(255,255,255,.85)', background: 'none', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg> Retour</button>
         <div style={{ display: 'flex', gap: 8, marginTop: 16, marginBottom: 4 }}>
           {(['particulier', 'pro'] as Mode[]).map(m => (
             <button key={m} onClick={() => switchMode(m)}
