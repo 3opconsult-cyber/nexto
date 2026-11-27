@@ -42,9 +42,9 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Retirer `ping-legacy.css` | à faire |
 | Carte : zoom, bandeau d'icônes, bouton PING (AUDIT-ANNONCE-CARTE n°5) | attend capture, non vérifié |
 | Bureau (>= 1000 px) non mesuré sur les derniers lots | non vérifié |
-| Palette unique (marque, app, admin) et propriétaire de `brand/tokens.css` (audit 27/11) | attend Romain |
-| Admin : couleurs et boutons de l'application dans `admin.html` (audit 27/11) | à faire |
-| Couleurs en dur -> variables ; un seul rouge ; un seul bouton Retour (audit 27/11) | à faire |
+| Palette unique (marque, app, admin), `brand/tokens.css` aligné (audit 27/11) | fait dans le code et vu en production sur pages publiques ; admin non vu (pas de compte) |
+| Admin : couleurs et boutons de l'application dans `admin.html` (audit 27/11) | fait dans le code, non vérifié à l'écran |
+| Couleurs en dur -> variables ; composant carte commun ; ★ ✓ ✕ en SVG (audit 27/11) | à faire |
 
 ## Règles métier
 | Point | Statut |

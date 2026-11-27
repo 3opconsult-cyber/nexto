@@ -27,12 +27,13 @@ Composants partagés : `DesktopShell.tsx`, `NavDrawer.tsx`, `BottomTabBar.tsx`, 
 | Litige | l'une des parties | admin PING (Décision) | les deux, paiement bloqué |
 | Support visuel | création-matériel | Romain | prospection |
 
-## État (27/11/2026)
-- Audit d'homogénéité fait sur le code (pas de capture) : `AUDIT-DESIGN-2026-11-27.md`.
-- Particulier et prestataire : base commune (`ping-ui.css`, `.card`, bouton 44 px). Admin : style à part (`admin.html` + pages `/admin/*` sans `NavDrawer`).
-- Trois palettes : marque (`brand/tokens.css`) et admin gardent #0C8F7E / #6E8592 ; l'application est passée à #0B8374 / #4E6470.
-- Couleurs en dur massives dans `src` ; 5 rouges d'erreur ; 2 boutons Retour (`BackHeader`, `RetourLink`).
-- Rien modifié dans le style. En attente : choix de la palette unique et propriétaire de `brand/tokens.css` (question à Romain).
+## État (27/11/2026, fin de bloc)
+- Palette unique décidée (Romain, 27/11) : celle de l'application. Vert foncé #0B8374, gris #4E6470, trait #E7EDEB, un seul rouge d'erreur #B3402F (5 teintes avant). Appliquée dans `src`, `admin.html`, `app.html`, `client.html`, `brand/tokens.css`, sources `brand/` et pages générées (animations, plaquettes, e-mails). Les MP4 et PDF ne sont pas régénérés.
+- `brand/tokens.css` suit désormais la palette de l'application ; propriétaire : Design (couleurs), Prospection (supports qui l'utilisent).
+- Admin (`admin.html`) : boutons vert foncé, 15 px, 44 px minimum. Pages `/admin/*` toujours sans `NavDrawer`.
+- `RetourLink` (lien contextuel « Retour à mon annonce ») : 15 px, même flèche que `BackHeader`. Ce ne sont pas deux boutons pour la même chose.
+- Reste : couleurs écrites en dur (≈ 1 200) à passer en variables, cartes faites à la main (angles 10 à 18 px), ★ ✓ ✕ en texte, petits textes de `ping-ui.css`. La maquette `docs/maquette/` garde l'ancienne palette (référence, non modifiée).
+- Audit : `AUDIT-DESIGN-2026-11-27.md`.
 
 ## À faire et notes
 Voir `A-FAIRE.md`, sections Design.

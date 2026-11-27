@@ -19,7 +19,7 @@ Méthode : lecture du code et comptages (`grep`), sans capture de production. To
 3. **Couleurs écrites en dur partout.** Dans `src`, environ 500 fois #123644, 450 fois #4E6470, 290 fois #0B8374 au lieu des variables. Restent 99 fois l'ancien gris #6E8592 (surtout `mission/[id]/chat`, `admin/parcours`, `pro/revenus`) et 5 fois l'ancien vert #0C8F7E (`FindSheet`, `MonAnnonceCard`, `pro/carte`, `DemoShell`). Cinq rouges différents pour « erreur » (#C0503A, #B3402F, #B2432E, #A8432F, #E5484D) et trois verts foncés (#0B8374, #097A6C, #0B6F63).
 4. **Deux définitions de « danger ».** `globals.css` : corail #FF7A66 ; `ping-ui.css` : rouge #C0503A. Selon le fichier chargé, une erreur n'a pas la même couleur.
 5. **Cartes : un modèle commun existe mais peu utilisé.** `.card` (fond blanc, trait, angle 16 px) est la même dans l'app, `client.html` et `app.html` ; l'admin a le même angle mais 18 px de marge intérieure. Dans les écrans React, les cartes sont presque toutes écrites à la main : angles 10, 11, 12, 14, 16, 18 px mélangés (prestataire : 29 fois 16, 27 fois 12, 10 fois 10). `AereRow` (ligne aérée) n'est utilisée que dans le profil particulier.
-6. **Deux boutons « Retour ».** `BackHeader` (messages, paiements client et pro) et `RetourLink` (tarifs, disponibilités, documents pro). Même fonction, deux apparences.
+6. **Lien « Retour » différent.** `RetourLink` (lien contextuel « Retour à mon annonce ») avait 13 px, une flèche texte et un autre vert que `BackHeader`. Corrigé le 27/11 (ce ne sont pas deux boutons pour la même chose).
 7. **Menu absent de l'admin React.** Les 19 écrans particulier/prestataire utilisent `NavDrawer` ; aucune page `/admin/*` ne l'utilise.
 8. **Pictogrammes en caractères.** ★ ✓ ✕ écrits comme texte dans une vingtaine d'écrans (avis, chat, commande, litiges) et dans les animations. Ce ne sont pas des émojis en couleur, mais la règle demande des pictogrammes SVG (`PingIcons.tsx` existe déjà).
 9. **Petits textes.** 73 tailles de 10 à 13 px dans `ping-ui.css` (héritées du prototype). La règle aérée demande 15 px pour le texte courant.
@@ -34,3 +34,6 @@ Méthode : lecture du code et comptages (`grep`), sans capture de production. To
 
 ## Question pour Romain
 Le fichier `brand/tokens.css` est-il possédé par Design (le style) ou par Prospection (les supports) ? Aujourd'hui personne ne le tient à jour avec l'application.
+
+## Suite (27/11, accord de Romain)
+Fait : points 1, 2, 4 et 6, et le rouge unique du point 3. Reste : couleurs en dur en variables, carte commune, pictogrammes SVG, petits textes. MP4 et PDF à régénérer (Prospection). La page `landing-pro` dit « Paiement sous séquestre » alors que le séquestre est éteint (A-TRANCHER d, Prospection).
