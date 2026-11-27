@@ -78,3 +78,10 @@ Autres défauts vus (non corrigés, à décider) :
 - Bouton PING de la carte : non doublé avec le QR (le bouton Mission occupe déjà la même fonction au même endroit pour les deux espaces) ; proposition à valider par Romain.
 - Mon annonce : une seule ligne d'en-tête ; Mon entreprise : ligne « Mon annonce » en double retirée ; réservation : « Confirmer » estompé tant que l'heure n'est pas choisie.
 - Reste : onglets de l'agenda sur 2 lignes côté pro (1 ligne côté client), flèche Retour présente côté client et absente côté pro ; « Coordonnées et statut » ouvre l'inscription.
+
+## Étendre à d'autres métiers : analyse de structure (27/11, 17 h)
+- Catalogue déjà en données (`service_catalog`, admin > Catalogue des services) : par métier, manières de tarifer (forfait, à l'heure, forfait + heures), CESU / crédit d'impôt, champs de la demande, pièces exigées. Ajouter un métier = une ligne, sans code.
+- Prix, commission, facture, QR d'arrivée et de fin : indépendants du métier (même calcul pour tout forfait ou tarif horaire). Facturation identique.
+- À adapter : familles (champ `domain` existe), pictogrammes, filtres de la carte en familles, crédit d'impôt seulement pour les services à la personne éligibles, pièces propres (décennale pour le bâtiment).
+- Hors cadre : « serveur, job d'été » = salariat, pas prestation : à trancher avant (risque juridique).
+- Maquette : https://claude.ai/artifact/Jt6pH946bhNcYGsdNhhGzk (familles -> métiers en choix multiple -> fiche multi-métiers, prix figé, pas de devis).

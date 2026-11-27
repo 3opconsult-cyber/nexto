@@ -14,6 +14,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | D-17 : « Modifier » sur l'annonce | à faire |
 | Carte client sur iPhone réel (Waze, PING, pastille) | attend capture de Romain, non vérifié |
 | Fiche du pro en bas de carte avec critères + geste Accepter / Refuser (maquette v14) | à faire après accord |
+| Carte : le point « Adresse de référence » tombe au mauvais endroit (géocodage du profil) ; le client ne se voit pas par GPS. Décider si la règle 6 autorise un relevé GPS unique côté client (Romain, 27/11) | à faire, voir Règles métier |
 
 ## Prestataire
 | Point | Statut |
@@ -25,6 +26,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Publication en un seul parcours de 3 étapes (onboarding + `/pro/annonce`) | à faire (bloc 3) |
 | Résumé d'épingle allégé, bloc Repères de la fiche, bandeau « Ouvrir la commande » dans le chat | fait dans le code (26/11), non vérifié en production |
 | Supprimer son annonce (aujourd'hui : masquer seulement) | non vérifié, à faire |
+| Métiers : catalogue en familles (Maison, Jardin, Petits travaux, Transport…), un pro = une fiche avec plusieurs métiers ; « Autre » = demande d'ajout avec proposition des métiers proches ; maquette https://claude.ai/artifact/Jt6pH946bhNcYGsdNhhGzk (Romain, 27/11 : pas de multi-rubriques pour l'instant, ménage d'abord) | en attente |
+| Retirer le tarif « Sur devis » partout (catalogue `pricing_modes`, tarifs, fiche, réservation) : une prestation, un prix, un paiement (Romain, 27/11) | à faire, voir Règles métier |
 
 ## Admin
 | Point | Statut |
@@ -33,6 +36,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | D-05 : Décision PING non jouée | non vérifié |
 | D-09 : pastille admin pour pièces refusées | non vue |
 | D-13 : alertes admin, SQL 062 après 061 | attend Romain |
+| File « Nouveaux métiers à valider » (accepter, rattacher, refuser) + liste de mots interdits (Romain, 27/11) | à faire plus tard |
+| Pastille rouge « Litige » sur les lignes du CRM : demande de fusion n°7, non testée | attend Romain |
 
 ## Design
 | Point | Statut |
@@ -53,6 +58,9 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | TVA : calcul HT/TVA pour un prestataire assujetti | attend Romain |
 | GPS à « Je pars » (A-TRANCHER u) : codé le 27/11, non vérifié sur iPhone ; flou 50 m : 064 à coller | à tester |
 | Litige en offre : offre du client, demande de règlement du pro, 24 h pour refuser sinon accepté ; une seule annonce par pro | à trancher (A-TRANCHER v, maquette v14 écrans 5 et 6) ; ajouter : contre-offre, annuler son litige, bandeau « Ouvrir la commande » dans le chat |
+| « Sur devis » supprimé (décision Romain 27/11) ; dire si la proposition de tarif dans le chat (réponse à une demande déposée) reste permise | à trancher |
+| Missions de dernière minute de type « serveur, job d'été » : salariat, pas prestation indépendante ; risque de requalification, à vérifier avant toute ouverture | à trancher |
+| GPS client : relevé unique pour se voir sur la carte ? (règle 6) | à trancher |
 
 ## Facturation et paiement
 | Point | Statut |
@@ -76,6 +84,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Coller 061, 062, 063 dans l'ordre (`supabase/a_coller/README.md`) | attend Romain |
 | Nettoyage des données QA (`.invalid`, « QA ») : liste puis accord | attend Romain |
 | Resserrer la RLS de `invoices` | décision Romain (A-TRANCHER h) |
+| Profils de démonstration : remplacer « Fictif N » par prénom + nom suivis de « (fictif) », métiers variés (ménage, repassage, nettoyage de fin de chantier) (Romain, 27/11) | à faire |
 
 ## Prospection et communication
 | Point | Statut |
