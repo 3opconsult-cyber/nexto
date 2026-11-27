@@ -28,8 +28,8 @@ const MANDAT: Record<string, { t: string; fg: string; bg: string; txt: string }>
   none: { t: 'Non signé', fg: '#8A6520', bg: 'rgba(242,169,59,.15)', txt: 'Le mandat se signe avec l’ouverture de votre compte de versement, chez le partenaire de paiement.' },
   pending: { t: 'En cours', fg: '#8A6520', bg: 'rgba(242,169,59,.15)', txt: 'Mandat transmis à votre banque, en attente de son retour.' },
   active: { t: 'Actif', fg: '#0B8374', bg: 'rgba(18,179,156,.12)', txt: 'Les commissions non retenues sur un versement sont prélevées automatiquement sur votre compte.' },
-  revoked: { t: 'Révoqué', fg: '#c0503a', bg: 'rgba(192,80,58,.12)', txt: 'Votre banque nous a signalé la révocation du mandat. Les commissions dues sont retenues sur vos prochains versements ; au-delà du plafond d’impayés, le compte est suspendu.' },
-  failed: { t: 'Refusé', fg: '#c0503a', bg: 'rgba(192,80,58,.12)', txt: 'Votre banque a refusé le mandat. Contactez le support PING pour le renouveler.' },
+  revoked: { t: 'Révoqué', fg: '#B3402F', bg: 'rgba(179,64,47,.12)', txt: 'Votre banque nous a signalé la révocation du mandat. Les commissions dues sont retenues sur vos prochains versements ; au-delà du plafond d’impayés, le compte est suspendu.' },
+  failed: { t: 'Refusé', fg: '#B3402F', bg: 'rgba(179,64,47,.12)', txt: 'Votre banque a refusé le mandat. Contactez le support PING pour le renouveler.' },
 }
 
 const maskIban = (raw: string) => { const c = cleanIban(raw); return c.length > 8 ? formatIban(c.slice(0, 4) + '•'.repeat(c.length - 8) + c.slice(-4)) : c }
@@ -136,7 +136,7 @@ export default function ProPaiementsPage() {
 
   const c = st?.compte
   const badge = c?.statut === 'active' ? { t: 'Versements actifs', bg: 'rgba(18,179,156,.12)', fg: '#0B8374' }
-    : c?.statut === 'restricted' ? { t: 'Compte à régulariser', bg: 'rgba(192,80,58,.12)', fg: '#c0503a' }
+    : c?.statut === 'restricted' ? { t: 'Compte à régulariser', bg: 'rgba(179,64,47,.12)', fg: '#B3402F' }
     : c ? { t: 'En cours de contrôle', bg: 'rgba(242,169,59,.15)', fg: '#8A6520' } : null
 
   return (
@@ -168,7 +168,7 @@ export default function ProPaiementsPage() {
                   style={{ marginTop: 10, minHeight: 44, padding: '0 18px', borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
                   {savedIban ? 'Modifier' : 'Ajouter'}
                 </button>
-                {bankMsg && <p style={{ color: bankMsg.ok ? '#0B8374' : '#c0503a', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
+                {bankMsg && <p style={{ color: bankMsg.ok ? '#0B8374' : '#B3402F', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
               </>
             ) : (
               <>
@@ -179,7 +179,7 @@ export default function ProPaiementsPage() {
                   onChange={e => setBank({ ...bank, iban: formatIban(e.target.value) })} />
                 <label style={label}>BIC (facultatif)</label>
                 <input style={input} value={bank.bic} onChange={e => setBank({ ...bank, bic: e.target.value.toUpperCase().replace(/\s/g, '') })} />
-                {bankMsg && <p style={{ color: bankMsg.ok ? '#0B8374' : '#c0503a', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
+                {bankMsg && <p style={{ color: bankMsg.ok ? '#0B8374' : '#B3402F', fontSize: 12, marginTop: 10, lineHeight: 1.5 }}>{bankMsg.t}</p>}
                 <button onClick={saveBank} disabled={bankBusy} style={{ width: '100%', marginTop: 14, minHeight: 48, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: bankBusy ? 0.7 : 1 }}>
                   {bankBusy ? 'Enregistrement…' : savedIban ? 'Mettre à jour mon IBAN' : 'Enregistrer mon IBAN'}
                 </button>
@@ -241,7 +241,7 @@ export default function ProPaiementsPage() {
           <p style={{ fontSize: 11.5, color: '#4E6470', lineHeight: 1.5, margin: '12px 0 0' }}>Le client a annoncé son virement : ouvrez la ligne, notez « Reçu » dès qu’il apparaît sur votre compte, ou « Non reçu » s’il manque.</p>
           </div>
           {!st ? (
-            <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
+            <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
           ) : !st.actif ? (
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
@@ -297,14 +297,14 @@ export default function ProPaiementsPage() {
                       </p>
                     </>
                   )}
-                  {error && <p style={{ color: '#c0503a', fontSize: 12, marginTop: 10 }}>{error}</p>}
+                  {error && <p style={{ color: '#B3402F', fontSize: 12, marginTop: 10 }}>{error}</p>}
                   <button onClick={submit} disabled={busy} style={{ width: '100%', marginTop: 14, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
                     {busy ? 'Envoi…' : c ? 'Enregistrer' : 'Ouvrir mon compte de versement'}
                   </button>
                 </div>
               ) : c?.statut !== 'active' && (
                 <>
-                  {error && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{error}</p>}
+                  {error && <p style={{ color: '#B3402F', fontSize: 12, marginBottom: 10 }}>{error}</p>}
                   <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, padding: 13, borderRadius: 999, cursor: 'pointer', opacity: busy ? 0.7 : 1 }}>
                     {busy ? 'Ouverture…' : c ? `Compléter chez ${st.prestataire}` : `Ouvrir mon compte chez ${st.prestataire}`}
                   </button>
@@ -342,7 +342,7 @@ export default function ProPaiementsPage() {
           )}
 
           {debts.length > 0 && (
-            <div style={{ background: '#fff', border: '1.5px solid rgba(192,80,58,.35)', borderRadius: 16, padding: 16 }}>
+            <div style={{ background: '#fff', border: '1.5px solid rgba(179,64,47,.35)', borderRadius: 16, padding: 16 }}>
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#a8402c' }}>Commissions à régulariser</div>
               {debts.map(d => (
                 <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5, color: '#123644', padding: '8px 0', borderTop: '1px solid #E7EDEB' }}>

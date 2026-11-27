@@ -70,7 +70,7 @@ export default function ParrainagePage() {
 
       <div style={{ padding: 16 }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
         ) : (
           <>
             <div style={{ background: '#123644', borderRadius: 18, padding: 20, marginBottom: 16, textAlign: 'center' }}>

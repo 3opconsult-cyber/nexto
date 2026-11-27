@@ -89,7 +89,7 @@ export default function OnboardingStep({
             disabled={ctaDisabled || ctaLoading}
             style={{
               width: '100%', padding: 15, borderRadius: 999, border: 'none',
-              background: (ctaDisabled || ctaLoading) ? '#DCE5E3' : '#12B39C',
+              background: (ctaDisabled || ctaLoading) ? '#E7EDEB' : '#12B39C',
               color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15,
             }}
           >{ctaLoading ? '…' : ctaLabel}</button>

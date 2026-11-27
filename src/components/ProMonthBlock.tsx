@@ -36,14 +36,14 @@ export function ProDisputeAlert({ transactions, compact = false }: { transaction
   return (
     <div onClick={() => router.push(`/litiges/${dispute.id}`)} role="button"
       style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', minHeight: 44, borderRadius: 14, background: '#FEE2E2', border: '1px solid #FCA5A5', cursor: 'pointer' }}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0503A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2 2 21h20z" /><path d="M12 9v5M12 18h.01" /></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B3402F" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2 2 21h20z" /><path d="M12 9v5M12 18h.01" /></svg>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: '#C0503A' }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: '#B3402F' }}>
           {dispute.count > 1 ? `${dispute.count} litiges ouverts` : 'Un litige est ouvert'}{compact ? ' : répondre' : ' sur vos missions'}
         </div>
-        {!compact && <div style={{ fontSize: 11.5, color: '#C0503A', marginTop: 2 }}>Répondez dans le dossier pour que PING puisse trancher.</div>}
+        {!compact && <div style={{ fontSize: 11.5, color: '#B3402F', marginTop: 2 }}>Répondez dans le dossier pour que PING puisse trancher.</div>}
       </div>
-      <span style={{ color: '#C0503A' }}>›</span>
+      <span style={{ color: '#B3402F' }}>›</span>
     </div>
   )
 }
@@ -117,14 +117,14 @@ export default function ProMonthBlock({ pro, transactions, hideDispute }: Props)
       {dispute && !hideDispute && (
         <div onClick={() => router.push(`/litiges/${dispute.id}`)} role="button"
           style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 14, background: '#FEE2E2', border: '1px solid #FCA5A5', cursor: 'pointer', marginBottom: 9 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0503A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2 2 21h20z" /><path d="M12 9v5M12 18h.01" /></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B3402F" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 2 2 21h20z" /><path d="M12 9v5M12 18h.01" /></svg>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: '#C0503A' }}>
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#B3402F' }}>
               {dispute.count > 1 ? `${dispute.count} litiges ouverts` : 'Un litige est ouvert'} sur vos missions
             </div>
-            <div style={{ fontSize: 11.5, color: '#C0503A', marginTop: 2 }}>Répondez dans le dossier pour que PING puisse trancher.</div>
+            <div style={{ fontSize: 11.5, color: '#B3402F', marginTop: 2 }}>Répondez dans le dossier pour que PING puisse trancher.</div>
           </div>
-          <span style={{ color: '#C0503A' }}>›</span>
+          <span style={{ color: '#B3402F' }}>›</span>
         </div>
       )}
 

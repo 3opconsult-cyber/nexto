@@ -22,7 +22,7 @@
 .aere .a-row .a-tx{flex:1;min-width:0}
 .aere .a-row .a-t{display:block;font:700 17px/1.4 Quicksand,sans-serif;color:var(--a-ink)}
 .aere .a-row .a-s{display:block;font-size:15px;line-height:1.5;color:var(--a-mut);margin-top:2px}
-.aere .a-row .a-chev{flex:0 0 auto;color:#6E8592;font-size:20px;line-height:1}
+.aere .a-row .a-chev{flex:0 0 auto;color:#4E6470;font-size:20px;line-height:1}
 .aere .a-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;line-height:1.5;font-weight:700;background:rgba(242,169,59,.18);color:#7A5710}
 .aere .a-pill.ok{background:rgba(18,179,156,.14);color:#0B6F63}
 

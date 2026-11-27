@@ -15,7 +15,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 :root{--ink:#123644;--paper:#F3F6F5;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;
---teal:#12B39C;--tealD:#0C8F7E;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#6E8592;--line:#E7EDEB;
+--teal:#12B39C;--tealD:#0B8374;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
 --fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:radial-gradient(900px 700px at 50% -10%,#173540,#0b1720);min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px;font-family:var(--fb)}
@@ -72,7 +72,7 @@ body{background:radial-gradient(900px 700px at 50% -10%,#173540,#0b1720);min-hei
 .preview.show{transform:none}
 .pvh{width:38px;height:5px;border-radius:99px;background:var(--line);margin:0 auto 12px}
 .pvrow{display:flex;gap:12px;align-items:flex-start}
-.pvav{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:19px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.pvav{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:19px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0B8374)}
 .pvname{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:16px}
 .pvmeta{font-size:11.5px;color:var(--slate);margin-top:1px}
 .chipset{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -92,7 +92,7 @@ body{background:radial-gradient(900px 700px at 50% -10%,#173540,#0b1720);min-hei
 
 /* rows / lists */
 .row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:9px;cursor:pointer}
-.row .av{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:17px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.row .av{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:17px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0B8374)}
 .row .av.g{background:#9fb0b8}.row .av.gold{background:linear-gradient(160deg,#f2a93b,#d98a1f)}
 .row .m{flex:1;min-width:0}
 .row .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;display:flex;align-items:center;gap:6px}
@@ -105,7 +105,7 @@ body{background:radial-gradient(900px 700px at 50% -10%,#173540,#0b1720);min-hei
 .stars{color:var(--gold);font-size:12px}
 
 /* profile */
-.hero{background:linear-gradient(160deg,#14b39c,#0c8f7e);padding:16px;color:#fff;border-radius:0}
+.hero{background:linear-gradient(160deg,#14b39c,#0B8374);padding:16px;color:#fff;border-radius:0}
 .hero .big{width:52px;height:52px;border-radius:15px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-family:var(--fh);font-weight:700;font-size:21px;border:2px solid rgba(255,255,255,.5)}
 .hero h2{font-family:var(--fh);font-weight:700;font-size:19px;margin-top:9px}
 .hero .meta{opacity:.92;font-size:12px;margin-top:2px}
@@ -272,7 +272,7 @@ svg{display:block}
 .drawer.on{transform:translateX(0)}
 .drawer .dh{padding:18px 16px 14px;border-bottom:1px solid var(--line)}
 .drawer .du{display:flex;align-items:center;gap:10px;margin-top:14px}
-.drawer .du .av2{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0C8F7E);color:#fff;font-family:var(--fh);font-weight:700;font-size:16px}
+.drawer .du .av2{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0B8374);color:#fff;font-family:var(--fh);font-weight:700;font-size:16px}
 .drawer .du .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px}
 .drawer .du .ds{font-size:11px;color:var(--slate)}
 .dnav{flex:1;overflow-y:auto;padding:10px 10px}
@@ -304,7 +304,7 @@ svg{display:block}
 
 /* ---- Bouton PING (rafraichir autour de moi) ---- */
 .pingbtn{position:absolute;right:14px;bottom:172px;z-index:33;width:56px;height:56px;border-radius:50%;
- background:linear-gradient(160deg,#12B39C,#0C8F7E);display:grid;place-items:center;cursor:pointer;
+ background:linear-gradient(160deg,#12B39C,#0B8374);display:grid;place-items:center;cursor:pointer;
  box-shadow:0 10px 26px rgba(18,179,156,.42);border:2.5px solid #fff;transition:transform .16s}
 .pingbtn:active{transform:scale(.92)}
 .pingbtn .lbl{font-family:var(--fh);font-weight:700;font-size:11.5px;color:#fff;letter-spacing:.4px;line-height:1}
@@ -360,7 +360,7 @@ svg{display:block}
 .lev .t{font-size:11.5px;color:var(--slate);line-height:1.5;margin-top:4px}
 .lev .mt2{font-size:9.5px;color:var(--slate);margin-top:7px;padding-top:6px;border-top:1px solid var(--line)}
 .ltag{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:99px}
-.ltag.a{background:#E9F7F4;color:#0C8F7E}
+.ltag.a{background:#E9F7F4;color:#0B8374}
 .ltag.b{background:#FDF3E2;color:#8a6520}
 .ltag.k{background:rgba(18,54,68,.09);color:var(--ink)}
 .lgel{display:flex;align-items:center;gap:9px;background:#FFFBF2;border:1px solid #F5D9A6;border-radius:12px;padding:11px 12px;margin-top:10px}
@@ -429,7 +429,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
           </div>
           <div class="searchbar" style="top:66px" onclick="go('v_search')"><div class="lg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M4 6h16M7 12h10M10 18h4"/></svg></div><div class="tx">Filtrer par service, près de vous</div></div>
           <div class="chips" style="top:118px">
-            <div class="chip on" data-cat="tous" onclick="mapChip(this)">Tous</div><div class="chip" data-cat="menage" onclick="mapChip(this)">Ménage</div><div class="chip" data-cat="vitres" onclick="mapChip(this)">Vitres</div><div class="chip" data-cat="remise" onclick="mapChip(this)">Remise en état</div><div class="chip" style="background:linear-gradient(135deg,#12B39C,#0C8F7E);color:#fff;border-color:transparent" onclick="go('v_offre_new')">+ Publier une demande</div>
+            <div class="chip on" data-cat="tous" onclick="mapChip(this)">Tous</div><div class="chip" data-cat="menage" onclick="mapChip(this)">Ménage</div><div class="chip" data-cat="vitres" onclick="mapChip(this)">Vitres</div><div class="chip" data-cat="remise" onclick="mapChip(this)">Remise en état</div><div class="chip" style="background:linear-gradient(135deg,#12B39C,#0B8374);color:#fff;border-color:transparent" onclick="go('v_offre_new')">+ Publier une demande</div>
           </div>
           <div class="radar"></div>
           <div class="pingbtn" onclick="doPing('v_map')"><span class="halo"></span><span class="lbl">PING</span></div>
@@ -462,7 +462,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
         <div class="row" onclick="go('v_provider')"><div class="av">S</div><div class="m"><div class="nm">Sofia M.</div><div class="ds">Ménage &amp; repassage · identité et assurance RC renseignées · à 350 m</div></div><div class="rt"><b>4,9</b>25 &euro;/h</div></div>
         <div class="row" onclick="go('v_provider')"><div class="av g" style="background:linear-gradient(160deg,#F2A93B,#d98a1f)">A</div><div class="m"><div class="nm">Amine K.</div><div class="ds">Remise en état · identité et assurance RC renseignées · à 620 m</div></div><div class="rt"><b>4,8</b>180 &euro;</div></div>
         <div class="row" onclick="go('v_provider')"><div class="av g" style="background:linear-gradient(160deg,#FF7A66,#e05f4b)">L</div><div class="m"><div class="nm">Léa T.</div><div class="ds">Ménage · identité fournie · assurance RC non renseignée · à 800 m</div></div><div class="rt"><b>4,7</b>20 &euro;/h</div></div>
-        <div class="row" onclick="go('v_provider')"><div class="av g" style="background:linear-gradient(160deg,#6E8592,#4c6472)">N</div><div class="m"><div class="nm">Nadia B.</div><div class="ds">Blanchisserie &amp; repassage · identité et assurance RC renseignées · à 1,1 km</div></div><div class="rt"><b>5,0</b>22 &euro;/h</div></div>
+        <div class="row" onclick="go('v_provider')"><div class="av g" style="background:linear-gradient(160deg,#4E6470,#4c6472)">N</div><div class="m"><div class="nm">Nadia B.</div><div class="ds">Blanchisserie &amp; repassage · identité et assurance RC renseignées · à 1,1 km</div></div><div class="rt"><b>5,0</b>22 &euro;/h</div></div>
         <div class="row" onclick="go('v_provider')"><div class="av g">T</div><div class="m"><div class="nm">Thomas R.</div><div class="ds">Vitres · identité fournie · nouveau sur PING · à 1,3 km</div></div><div class="rt"><b>4,6</b>35 &euro;/h</div></div>
       </div>
     </section>
@@ -798,7 +798,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
         <div class="h2">Mon activité</div>
         <div class="row" onclick="go('p_dash')"><div class="av g" style="width:40px;height:40px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Tableau de bord</div><div class="ds">Revenus &middot; statistiques &middot; tarifs</div></div><span style="color:var(--slate)">&rsaquo;</span></div>
         <div class="row" onclick="go('p_demandes')"><div class="av g" style="width:40px;height:40px;background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Demandes directes</div><div class="ds">Réservations reçues &middot; devis</div></div><span style="color:var(--slate)">&rsaquo;</span></div>
-        <div class="row" onclick="go('p_factures')"><div class="av g" style="width:40px;height:40px;background:linear-gradient(160deg,#6E8592,#4c6472)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Factures &amp; documents</div><div class="ds">Horodatés &middot; exportables</div></div><span style="color:var(--slate)">&rsaquo;</span></div>
+        <div class="row" onclick="go('p_factures')"><div class="av g" style="width:40px;height:40px;background:linear-gradient(160deg,#4E6470,#4c6472)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M6 2h9l3 3v17l-3-2-3 2-3-2-3 2V2z"/></svg></div><div class="m"><div class="nm" style="font-size:13px">Factures &amp; documents</div><div class="ds">Horodatés &middot; exportables</div></div><span style="color:var(--slate)">&rsaquo;</span></div>
         <div class="h2">Conformité <span class="badge teal">à jour</span></div>
         <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/></svg></div><div class="vt"><b>Identité &amp; statut</b><small>Fichier masqué · vérifié</small></div><div class="vs">Vérifié</div></div>
         <div class="vrow ok"><div class="vi"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--tealD)" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z"/></svg></div><div class="vt"><b>Responsabilité civile pro</b><small>Assurances à jour</small></div><div class="vs">À jour</div></div>
@@ -841,9 +841,9 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
         <div class="field2"><div class="l">Assurances (artisan)</div><div class="v" style="color:var(--slate)">RC Pro · complémentaire <span class="edit">ajouter</span></div></div>
         <div class="card" style="margin-top:4px"><div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13px">Bon à savoir · 2026</div>
           <div class="lawlist">
-            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Plafond micro <b>services : 83 600 €/an</b> (période 2026-2028).</span></div>
-            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Franchise TVA <b>travaux immobiliers (plomberie) : 25 000 € / 27 500 €</b>. Au-delà, TVA à facturer.</span></div>
-            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Autres prestations de services : franchise TVA <b>37 500 € / 41 250 €</b>.</span></div>
+            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Plafond micro <b>services : 83 600 €/an</b> (période 2026-2028).</span></div>
+            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Franchise TVA <b>travaux immobiliers (plomberie) : 25 000 € / 27 500 €</b>. Au-delà, TVA à facturer.</span></div>
+            <div class="li"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg><span>Autres prestations de services : franchise TVA <b>37 500 € / 41 250 €</b>.</span></div>
           </div>
         </div>
         <p class="note2">Informations indicatives (droit français en vigueur, 2026). Elles ne remplacent pas l'avis d'un expert-comptable. PING transmet vos revenus à l'administration fiscale (dispositif DAC7).</p>
@@ -1023,14 +1023,14 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
 
         <div class="card" style="padding:12px">
           <div style="display:flex;align-items:center;gap:9px">
-            <div class="pvav" style="width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0C8F7E);color:#fff;font-family:var(--fh);font-weight:700">S</div>
+            <div class="pvav" style="width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(160deg,#12B39C,#0B8374);color:#fff;font-family:var(--fh);font-weight:700">S</div>
             <div style="flex:1">
               <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px">Sofia M.</div>
               <div class="ds" style="font-size:11px;color:var(--slate)">4,9 (86 avis) · à 600 m · répond en ~10 min</div>
             </div>
             <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:17px">95 &euro;</div>
           </div>
-          <div class="chipset" style="margin-top:8px"><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Pièce d'identité fournie</span><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Assurance RC renseignée</span></div>
+          <div class="chipset" style="margin-top:8px"><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Pièce d'identité fournie</span><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Assurance RC renseignée</span></div>
           <p class="sub" style="margin-top:8px;font-size:12px">&laquo;&nbsp;Bonjour, je peux intervenir samedi à 9 h. 3 h de ménage complet, produits à votre charge comme indiqué.&nbsp;&raquo;</p>
           <div style="display:flex;gap:8px;margin-top:9px"><div class="btn ghost" style="flex:1" onclick="go('v_chat')">Échanger</div><div class="btn" style="flex:1.3" onclick="go('v_booking')">Accepter · 95 &euro;</div></div>
         </div>
@@ -1044,7 +1044,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
             </div>
             <div style="font-family:var(--fh);font-weight:700;color:var(--ink);font-size:17px">78 &euro;</div>
           </div>
-          <div class="chipset" style="margin-top:8px"><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Pièce d'identité fournie</span></div>
+          <div class="chipset" style="margin-top:8px"><span class="vchip ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Pièce d'identité fournie</span></div>
           <p class="sub" style="margin-top:8px;font-size:12px">&laquo;&nbsp;Disponible samedi matin, j'habite le quartier. J'ai déjà fait plusieurs ménages sur PING.&nbsp;&raquo;</p>
           <div style="display:flex;gap:8px;margin-top:9px"><div class="btn ghost" style="flex:1" onclick="go('v_chat')">Échanger</div><div class="btn" style="flex:1.3" onclick="go('v_booking')">Accepter · 78 &euro;</div></div>
         </div>
@@ -1108,7 +1108,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
           <div class="pin" style="left:62%;top:34%" onclick="go('p_offre_detail')"><div class="mk alt" style="background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div></div>
           <div class="pin" style="left:29%;top:62%" onclick="go('p_offre_detail')"><div class="mk alt" style="background:linear-gradient(160deg,#F2A93B,#d98a1f)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div></div>
           </div>
-          <div class="searchbar" style="cursor:default;top:66px"><div class="lg" style="background:linear-gradient(160deg,#12B39C,#0C8F7E)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><div class="tx" id="proMapStatus">Vous êtes visible · rayon 5 km</div></div>
+          <div class="searchbar" style="cursor:default;top:66px"><div class="lg" style="background:linear-gradient(160deg,#12B39C,#0B8374)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><div class="tx" id="proMapStatus">Vous êtes visible · rayon 5 km</div></div>
           <div class="chips" style="top:118px">
             <div class="chip on" onclick="mapChip(this)">Demandes ouvertes</div><div class="chip" onclick="mapChip(this)">Mes interventions</div><div class="chip" onclick="mapChip(this)">Autres pros</div>
           </div>
@@ -1210,7 +1210,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
       <div class="appbar"><b>Messages</b></div>
       <div class="body">
         <div class="doc" onclick="go('v_chat')" style="cursor:pointer">
-          <div class="dt fac" style="background:linear-gradient(160deg,#12B39C,#0C8F7E);color:#fff">J</div>
+          <div class="dt fac" style="background:linear-gradient(160deg,#12B39C,#0B8374);color:#fff">J</div>
           <div class="m"><div class="nm">Julie R.</div><div class="ds">Parfait, à samedi 9 h alors&nbsp;!</div></div>
           <div class="rt"><b style="font-size:11px;color:var(--slate)">10:42</b></div>
         </div>
@@ -1220,7 +1220,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
           <div class="rt"><b style="font-size:11px;color:var(--slate)">hier</b></div>
         </div>
         <div class="doc" onclick="go('v_chat')" style="cursor:pointer">
-          <div class="dt dev" style="background:linear-gradient(160deg,#6E8592,#4c6472);color:#fff">A</div>
+          <div class="dt dev" style="background:linear-gradient(160deg,#4E6470,#4c6472);color:#fff">A</div>
           <div class="m"><div class="nm">Amélie D.</div><div class="ds">Merci beaucoup pour hier</div></div>
           <div class="rt"><b style="font-size:11px;color:var(--slate)">2 j</b></div>
         </div>
@@ -1275,7 +1275,7 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
 
         <div class="h2">En cas de dommage</div>
         <div class="doc" onclick="go('v_assur')" style="cursor:pointer">
-          <div class="dt fac" style="background:linear-gradient(160deg,#6E8592,#4c6472);color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z"/></svg></div>
+          <div class="dt fac" style="background:linear-gradient(160deg,#4E6470,#4c6472);color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z"/></svg></div>
           <div class="m"><div class="nm">Assurance du prestataire</div><div class="ds">Casse ou vol &middot; PING transmet les coordonn&eacute;es</div></div>
           <span style="color:var(--slate)">&rsaquo;</span>
         </div>
@@ -1393,8 +1393,8 @@ body{background:var(--paper);padding:0;gap:0;display:block;min-height:100dvh}
         <div class="h2">Composez le devis</div>
         <p class="sub" style="margin-top:0">Ajoutez depuis votre catalogue, ou saisissez un prix manuel.</p>
         <div style="margin-top:10px">
-          <span class="pickchip on" onclick="tglPick(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Ménage complet <b>90 €</b></span>
-          <span class="pickchip on" onclick="tglPick(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Déplacement <b>15 €</b></span>
+          <span class="pickchip on" onclick="tglPick(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Ménage complet <b>90 €</b></span>
+          <span class="pickchip on" onclick="tglPick(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> Déplacement <b>15 €</b></span>
           <span class="pickchip" onclick="tglPick(this)">Repassage <b>80 €</b></span>
           <span class="pickchip" onclick="tglPick(this)">Vitres <b>60 €</b></span>
         </div>
@@ -1520,13 +1520,13 @@ function setAvail2(on){
 
 /* ================= PROFILS CARTE ================= */
 let PROS=[
- {av:'S',n:'Sofia M.',m:'M\u00e9nage &amp; repassage \u00b7 4,9 (86) \u00b7 \u00e0 350 m',p:'25 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~5 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#12B39C,#0C8F7E',cat:'menage'},
+ {av:'S',n:'Sofia M.',m:'M\u00e9nage &amp; repassage \u00b7 4,9 (86) \u00b7 \u00e0 350 m',p:'25 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~5 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#12B39C,#0B8374',cat:'menage'},
  {av:'A',n:'Amine K.',m:'Remise en \u00e9tat \u00b7 4,8 (52) \u00b7 \u00e0 620 m',p:'180 \u20ac forfait',d:'Disponible maintenant \u00b7 r\u00e9pond en ~12 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#F2A93B,#d98a1f',cat:'remise'},
  {av:'L',n:'L\u00e9a T.',m:'M\u00e9nage \u00b7 4,7 (23) \u00b7 \u00e0 800 m \u00b7 \u00e9tudiante',p:'20 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~8 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie'],g:'#FF7A66,#e05f4b',cat:'menage'},
- {av:'N',n:'Nadia B.',m:'Repassage \u00b7 5,0 (41) \u00b7 \u00e0 1,1 km',p:'22 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~15 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#6E8592,#4c6472',cat:'menage'},
+ {av:'N',n:'Nadia B.',m:'Repassage \u00b7 5,0 (41) \u00b7 \u00e0 1,1 km',p:'22 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~15 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie','Assurance RC renseign\u00e9e'],g:'#4E6470,#4c6472',cat:'menage'},
  {av:'T',n:'Thomas R.',m:'Nettoyage vitres \u00b7 4,6 (18) \u00b7 \u00e0 1,3 km',p:'35 \u20ac/h',d:'Disponible maintenant \u00b7 r\u00e9pond en ~20 min',c:['Pi\u00e8ce d\u2019identit\u00e9 fournie'],g:'#12B39C,#0e7f70',cat:'vitres'}
 ];
-const CHK='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0C8F7E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> ';
+const CHK='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0B8374" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> ';
 function openPv(i){
  window.__pvIndex=i;
  const o=PROS[i]||PROS[0];
@@ -1624,7 +1624,7 @@ function lookupSiret(digits){
   .then(r=>r.json())
   .then(d=>{
    const r=d&&d.results&&d.results[0];
-   if(!r){box.innerHTML='<p style="font-size:10.5px;color:#c0503a;margin-top:2px">Aucune entreprise trouvée pour ce numéro — vérifiez la saisie.</p>';return;}
+   if(!r){box.innerHTML='<p style="font-size:10.5px;color:#B3402F;margin-top:2px">Aucune entreprise trouvée pour ce numéro — vérifiez la saisie.</p>';return;}
    const siege=r.siege||{};
    const actif=r.etat_administratif==='A';
    box.innerHTML='<div style="background:'+(actif?'rgba(18,179,156,.08)':'rgba(255,122,102,.08)')+';border:1px solid '+(actif?'var(--teal)':'var(--coral)')+';border-radius:9px;padding:10px 11px;margin-top:2px">'
@@ -1664,11 +1664,11 @@ function openDoc(k){
  $('dvDate').textContent=d.dt;
  let body='';
  if(d.psp){
-  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E8592" stroke-width="1.8" style="margin-bottom:8px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><br>Vos coordonn\u00e9es bancaires sont d\u00e9tenues par le prestataire de paiement.<br>PING ne les stocke jamais (PCI-DSS).</div></div>';
+  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4E6470" stroke-width="1.8" style="margin-bottom:8px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><br>Vos coordonn\u00e9es bancaires sont d\u00e9tenues par le prestataire de paiement.<br>PING ne les stocke jamais (PCI-DSS).</div></div>';
  }else if(d.empty){
-  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E8592" stroke-width="1.8" style="margin-bottom:8px"><path d="M12 5v14M5 12h14"/></svg><br>Aucun document d\u00e9pos\u00e9.<br>Ajoutez votre attestation pour compl\u00e9ter votre profil.</div></div>';
+  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4E6470" stroke-width="1.8" style="margin-bottom:8px"><path d="M12 5v14M5 12h14"/></svg><br>Aucun document d\u00e9pos\u00e9.<br>Ajoutez votre attestation pour compl\u00e9ter votre profil.</div></div>';
  }else if(d.mask){
-  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E8592" stroke-width="1.8" style="margin-bottom:8px"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><path d="M4 4l16 16"/></svg><br>Document masqu\u00e9 pour votre s\u00e9curit\u00e9.<br>Chiffr\u00e9 au repos \u00b7 acc\u00e8s restreint (RGPD).</div></div>';
+  body='<div class="mask"><div class="lock"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4E6470" stroke-width="1.8" style="margin-bottom:8px"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><path d="M4 4l16 16"/></svg><br>Document masqu\u00e9 pour votre s\u00e9curit\u00e9.<br>Chiffr\u00e9 au repos \u00b7 acc\u00e8s restreint (RGPD).</div></div>';
  }else{
   body='<div style="padding:18px;font-size:9.5px;line-height:1.7;color:var(--ink)"><div style="font-family:var(--fh);font-weight:700;font-size:12px;margin-bottom:10px">AVIS DE SITUATION AU R\u00c9PERTOIRE SIRENE</div><div style="color:var(--slate)">INSEE \u00b7 \u00c9tabli le 12/06/2026</div><div style="height:1px;background:var(--line);margin:10px 0"></div><div><b>SIREN</b> 892 431 007</div><div><b>SIRET</b> 892 431 007 00018</div><div><b>D\u00e9nomination</b> SOFIA SERVICES</div><div><b>Forme</b> Entrepreneur individuel</div><div><b>Activit\u00e9 (NAF)</b> 81.21Z \u2014 Nettoyage courant des b\u00e2timents</div><div><b>Adresse</b> 06130 GRASSE</div><div><b>Date de cr\u00e9ation</b> 03/02/2026</div><div><b>\u00c9tat</b> Actif</div></div>';
  }
@@ -1789,7 +1789,7 @@ fit();setActiveTab('v_map');renderMenu();openPv(0);closePreview();syncLit();setT
 (function(){
   var SB='https://wmiawwaxwlvascyflpba.supabase.co';
   var KEY='sb_publishable_ehRFsNEJD1hnkOyi7vdfEA_NJey8yfP';
-  var HUES={menage:'#12B39C,#0C8F7E',repassage:'#6E8592,#4c6472',nettoyage:'#F2A93B,#d98a1f',vitres:'#12B39C,#0e7f70',remise:'#FF7A66,#e05f4b'};
+  var HUES={menage:'#12B39C,#0B8374',repassage:'#4E6470,#4c6472',nettoyage:'#F2A93B,#d98a1f',vitres:'#12B39C,#0e7f70',remise:'#FF7A66,#e05f4b'};
   var TRAD={menage:'M\u00e9nage',repassage:'Repassage',nettoyage:'Nettoyage',vitres:'Vitres',remise:'Remise en \u00e9tat'};
   function euro(c){return c?(c/100).toFixed(0):'';}
   // Grasse par defaut ; on tente la vraie geoloc

@@ -88,7 +88,7 @@ export default function ProRevenusPage() {
 
       <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '28px 20px', minHeight: '60vh' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
+          <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>
         ) : (
           <div className="a-stack">
             <ProSuspensionBanner />
@@ -99,15 +99,15 @@ export default function ProRevenusPage() {
               </div>
               <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{eur(yearCents)}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Depuis janvier</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Depuis janvier</div>
               </div>
               <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#123644' }}>{countYear}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Prestations cette année</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>Prestations cette année</div>
               </div>
               <div style={{ padding: 16, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
                 <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 22, color: '#F59E0B' }}>{rating > 0 ? rating.toFixed(1) : '—'}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6E8592', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>{reviewsCount} avis</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#4E6470', marginTop: 4, textTransform: 'uppercase', letterSpacing: '.03em' }}>{reviewsCount} avis</div>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ export default function ProRevenusPage() {
                 <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, color: '#123644' }}>Mes versements</span>
                 <span style={{ display: 'block', fontSize: 12, color: '#4E6470', marginTop: 2 }}>Compte de versement et IBAN, pour le paiement en ligne</span>
               </span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2"><path d="M9 6l6 6-6 6" /></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2"><path d="M9 6l6 6-6 6" /></svg>
             </button>
 
             {sapReady && (
@@ -136,7 +136,7 @@ export default function ProRevenusPage() {
                     {sapSaved ? 'Enregistré' : 'Enregistrer'}
                   </button>
                 </div>
-                {sapError && <p style={{ color: '#c0503a', fontSize: 12, margin: '8px 0 0' }}>{sapError}</p>}
+                {sapError && <p style={{ color: '#B3402F', fontSize: 12, margin: '8px 0 0' }}>{sapError}</p>}
               </div>
             )}
 
@@ -159,8 +159,8 @@ export default function ProRevenusPage() {
                       {taxSaved ? 'Enregistré' : 'Enregistrer'}
                     </button>
                   </div>
-                  <p style={{ fontSize: 11, color: '#6E8592', margin: '6px 0 0' }}>Visible uniquement par vous et PING, jamais sur votre profil.</p>
-                  {taxError && <p style={{ color: '#c0503a', fontSize: 12, margin: '8px 0 0' }}>{taxError}</p>}
+                  <p style={{ fontSize: 11, color: '#4E6470', margin: '6px 0 0' }}>Visible uniquement par vous et PING, jamais sur votre profil.</p>
+                  {taxError && <p style={{ color: '#B3402F', fontSize: 12, margin: '8px 0 0' }}>{taxError}</p>}
                 </>
               )}
             </div>

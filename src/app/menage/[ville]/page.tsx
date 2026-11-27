@@ -96,7 +96,7 @@ export default function VillePage({ params }: { params: { ville: string } }) {
         <Link href="/map" className="ping-btn" style={{ display: 'block', textAlign: 'center', marginTop: 24, textDecoration: 'none' }}>
           Voir les prestataires disponibles à {city.name}
         </Link>
-        <p style={{ fontSize: 11, color: '#6E8592', textAlign: 'center', marginTop: 10 }}>
+        <p style={{ fontSize: 11, color: '#4E6470', textAlign: 'center', marginTop: 10 }}>
           Vous êtes prestataire de ménage à {city.name} ?{' '}
           <Link href="/auth/signup" style={{ color: '#0B8374', fontWeight: 700 }}>Inscrivez-vous gratuitement</Link>.
         </p>

@@ -278,7 +278,7 @@ export default function ProCartePage() {
   // mi-hauteur, sans « Agrandir ») ; sur ordinateur, sous la carte de la demande.
   const requestActions = selected && (
     <>
-      {sendError && <p style={{ color: '#c0503a', fontSize: 12, marginBottom: 10 }}>{sendError}</p>}
+      {sendError && <p style={{ color: '#B3402F', fontSize: 12, marginBottom: 10 }}>{sendError}</p>}
       {!selected.mine && sentByRequest[selected.id] ? (
         <>
           <p style={{ fontSize: 12.5, color: 'var(--ink)', background: 'rgba(18,179,156,.08)', borderRadius: 12, padding: 12, lineHeight: 1.5, marginBottom: 10 }}>
@@ -378,7 +378,7 @@ export default function ProCartePage() {
         const near = reqs.reduce((m, r) => ((r.distance_m ?? Infinity) < (m.distance_m ?? Infinity) ? r : m), reqs[0])
         return (
           <button type="button" data-voir-plus-proche onClick={() => selectRequest(near.id)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 56, margin: '0 0 20px', border: 0, borderRadius: 999, background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 56, margin: '0 0 20px', border: 0, borderRadius: 999, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer' }}>
             Voir la plus proche · à {distanceTxt(near.distance_m)}
           </button>
         )
@@ -574,7 +574,7 @@ export default function ProCartePage() {
                 <input value={zoneCity} onChange={e => setZoneCity(e.target.value)} placeholder="Ou une ville (ex. Cannes)" autoComplete="off" style={{ flex: 1, minHeight: 44, boxSizing: 'border-box', padding: '9px 12px', borderRadius: 12, border: '1.5px solid var(--line)', fontSize: 16 }} />
                 <div onClick={chooseCity} role="button" style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 16px', borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: 'pointer', background: 'var(--tealD)', color: '#fff' }}>OK</div>
               </div>
-              {zoneErr && <p style={{ color: '#c0503a', fontSize: 12, marginTop: 6 }}>{zoneErr}</p>}
+              {zoneErr && <p style={{ color: '#B3402F', fontSize: 12, marginTop: 6 }}>{zoneErr}</p>}
             </div>
           )}
 

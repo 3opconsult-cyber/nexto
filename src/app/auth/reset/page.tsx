@@ -62,11 +62,11 @@ export default function ResetPage() {
         <div style={{ marginBottom: 14 }}><Sign /></div>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 22, color: '#123644', margin: '0 0 6px' }}>Nouveau mot de passe</h1>
         {done ? (
-          <p style={{ color: '#0E8F7D', fontWeight: 600 }}>Mot de passe modifié. Redirection en cours…</p>
+          <p style={{ color: '#0B8374', fontWeight: 600 }}>Mot de passe modifié. Redirection en cours…</p>
         ) : !ready ? (
           <p style={{ color: '#4E6470', fontSize: 14 }}>
             {expired
-              ? <>Ce lien n&apos;est plus valable. <Link href="/auth/login" style={{ color: '#0E8F7D', fontWeight: 700 }}>Retour à la connexion</Link>, puis « Mot de passe oublié ? » pour recevoir un nouveau lien.</>
+              ? <>Ce lien n&apos;est plus valable. <Link href="/auth/login" style={{ color: '#0B8374', fontWeight: 700 }}>Retour à la connexion</Link>, puis « Mot de passe oublié ? » pour recevoir un nouveau lien.</>
               : 'Vérification du lien…'}
           </p>
         ) : (

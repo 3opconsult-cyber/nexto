@@ -67,7 +67,7 @@ export default function Modal({
         `}</style>
 
         <div style={{ padding: '9px 0 0', flexShrink: 0 }}>
-          <div style={{ width: 38, height: 4, borderRadius: 2, background: '#DCE5E3', margin: '0 auto' }} />
+          <div style={{ width: 38, height: 4, borderRadius: 2, background: '#E7EDEB', margin: '0 auto' }} />
         </div>
 
         {title && (
@@ -101,7 +101,7 @@ export function Cta({
   const styles = {
     teal:  { background: '#0B8374', color: '#fff', boxShadow: '0 8px 18px rgba(18,179,156,.28)' },
     dark:  { background: '#123644', color: '#fff', boxShadow: '0 8px 18px rgba(18,54,68,.22)' },
-    ghost: { background: '#fff', color: '#123644', boxShadow: '0 0 0 1px #DCE5E3' },
+    ghost: { background: '#fff', color: '#123644', boxShadow: '0 0 0 1px #E7EDEB' },
   }[variant]
   return (
     <button onClick={onClick} disabled={disabled} style={{

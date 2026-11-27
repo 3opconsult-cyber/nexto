@@ -143,7 +143,7 @@ export default function AddressReferenceSheet({ open, onClose, kind, uid, curren
 
       {searching && <p role="status" style={{ fontSize: 15, color: '#4E6470', margin: '14px 0 0' }}>Recherche…</p>}
       {!searching && hits && hits.length === 0 && (
-        <p role="status" style={{ fontSize: 15, lineHeight: 1.5, color: '#A8432F', margin: '14px 0 0' }}>Aucune adresse trouvée. Vérifiez l’orthographe ou ajoutez la ville ou le code postal.</p>
+        <p role="status" style={{ fontSize: 15, lineHeight: 1.5, color: '#B3402F', margin: '14px 0 0' }}>Aucune adresse trouvée. Vérifiez l’orthographe ou ajoutez la ville ou le code postal.</p>
       )}
       {hits && hits.length > 0 && !pick && (
         <ul data-adresse-propositions style={{ listStyle: 'none', margin: '16px 0 0', padding: 0 }}>
@@ -170,7 +170,7 @@ export default function AddressReferenceSheet({ open, onClose, kind, uid, curren
             style={{ minHeight: 48, border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline', padding: 0 }}>Ce n’est pas la bonne : revoir les propositions</button>
         </div>
       )}
-      {err && <p role="alert" style={{ fontSize: 15, color: '#A8432F', fontWeight: 600, margin: '14px 0 0' }}>{err}</p>}
+      {err && <p role="alert" style={{ fontSize: 15, color: '#B3402F', fontWeight: 600, margin: '14px 0 0' }}>{err}</p>}
     </Modal>,
     document.body,
   )

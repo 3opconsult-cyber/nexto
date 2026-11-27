@@ -21,7 +21,7 @@ export default function ProSuspensionBanner() {
   }, [])
   if (!s) return null
   return (
-    <div role="alert" style={{ background: 'rgba(192,80,58,.08)', border: '1.5px solid rgba(192,80,58,.35)', borderRadius: 14, padding: 14, marginBottom: 14 }}>
+    <div role="alert" style={{ background: 'rgba(179,64,47,.08)', border: '1.5px solid rgba(179,64,47,.35)', borderRadius: 14, padding: 14, marginBottom: 14 }}>
       <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#a8402c' }}>Compte suspendu depuis le {new Date(s.since).toLocaleDateString('fr-FR')}</div>
       <p style={{ fontSize: 12.5, color: '#123644', lineHeight: 1.55, margin: '6px 0 0' }}>
         {s.reason || 'Une commission PING reste impayée.'}

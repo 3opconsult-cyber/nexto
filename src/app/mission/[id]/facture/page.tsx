@@ -360,7 +360,7 @@ export default function FacturePage() {
         </section>
         ))}
 
-        {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B2432E', fontSize: 15 }}>{err}</p>}
+        {err && <p className="no-print" style={{ maxWidth: 620, margin: '12px auto 0', color: '#B3402F', fontSize: 15 }}>{err}</p>}
         <div className="no-print" style={{ maxWidth: 620, margin: '0 auto' }}>
           {userId && (isBuyer || isSeller) && <TransferCard transactionId={String(params.id)} userId={userId} />}
           <AvanceImmediateCard transactionId={String(params.id)} isSeller={isSeller} />

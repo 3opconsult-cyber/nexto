@@ -130,7 +130,7 @@ function pinIcon(color: string, label: string | null, i = 0, inner = '', state: 
   if (hit) return hit
   const labBg = state === 'sel' ? '#12B39C' : state === 'off' ? '#fff' : '#123644'
   const labFg = state === 'off' ? '#4E6470' : '#fff'
-  const labBd = state === 'off' ? '#DCE5E3' : '#fff'
+  const labBd = state === 'off' ? '#E7EDEB' : '#fff'
   const tag = label
     ? `<div style="background:${labBg};color:${labFg};font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3);border:1px solid ${labBd};margin-bottom:2px" class="pin-tag">${label}</div>`
     : ''
@@ -391,8 +391,8 @@ export default function LiveMap({
       <style>{`.leaflet-top.leaflet-left{top:158px}
         @media (max-width:999px){.leaflet-control-zoom{display:none !important}}
         .leaflet-container{background:#E9F1EA}
-        .leaflet-control-attribution{font:9.5px/1.4 Inter,sans-serif !important;color:#6E8592 !important;background:rgba(255,255,255,.55) !important;padding:0 5px !important;border-radius:6px 0 0 0}
-        .leaflet-control-attribution a{color:#6E8592 !important;text-decoration:none}.leaflet-control-zoom{z-index:400 !important}
+        .leaflet-control-attribution{font:9.5px/1.4 Inter,sans-serif !important;color:#4E6470 !important;background:rgba(255,255,255,.55) !important;padding:0 5px !important;border-radius:6px 0 0 0}
+        .leaflet-control-attribution a{color:#4E6470 !important;text-decoration:none}.leaflet-control-zoom{z-index:400 !important}
         @keyframes pinIn{0%{opacity:0;transform:translateY(-14px) scale(.7)}100%{opacity:1;transform:translateY(0) scale(1)}}
         .you-tip{background:#fff;border:none;box-shadow:0 2px 8px rgba(18,54,68,.2);border-radius:999px;padding:3px 10px;font-family:Quicksand,sans-serif;font-weight:700;font-size:11px;color:#123644}
         .you-tip::before{display:none}

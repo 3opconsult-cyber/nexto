@@ -18,7 +18,7 @@ export type FindService = { key: string; label: string; icon: string }
 type When = 'asap' | 'today' | 'date'
 type Step = 'need' | 'when' | 'result' | 'list'
 
-const C = { navy: '#123644', teal: '#0C8F7E', tealBright: '#12B39C', line: '#DCE5E3', slate: '#4E6470', soft: '#F3F6F5' }
+const C = { navy: '#123644', teal: '#0B8374', tealBright: '#12B39C', line: '#E7EDEB', slate: '#4E6470', soft: '#F3F6F5' }
 const pad = (n: number) => String(n).padStart(2, '0')
 const hm = (v: string) => (v ? v.split('T')[1] : '')
 const distLabel = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1).replace('.', ',')} km`)
@@ -130,7 +130,7 @@ export default function FindSheet({ open, onClose, services, pros, acts, newIds,
     const isNew = newIds.has(p.id)
     return (
       <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-        <span aria-hidden="true" style={{ width: big ? 56 : 48, height: big ? 56 : 46, borderRadius: 16, background: 'linear-gradient(160deg,#12B39C,#0C8F7E)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: big ? 22 : 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>{nm.charAt(0).toUpperCase()}</span>
+        <span aria-hidden="true" style={{ width: big ? 56 : 48, height: big ? 56 : 46, borderRadius: 16, background: 'linear-gradient(160deg,#12B39C,#0B8374)', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: big ? 22 : 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>{nm.charAt(0).toUpperCase()}</span>
         <span style={{ flex: 1, minWidth: 0 }}>
           <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: big ? 20 : 17, color: C.navy, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nm}</b>
           <small style={{ display: 'block', fontSize: 15, lineHeight: 1.6, color: C.slate, marginTop: 2 }}>

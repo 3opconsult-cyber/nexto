@@ -39,7 +39,7 @@ function Stars({ n, size = 15 }: { n: number; size?: number }) {
   return (
     <span aria-label={`${n} sur 5`} style={{ display: 'inline-flex', gap: 1 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= n ? C.gold : '#DCE5E3'}><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z" /></svg>
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= n ? C.gold : '#E7EDEB'}><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z" /></svg>
       ))}
     </span>
   )
@@ -111,7 +111,7 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
   const trade = tx.requests?.category ? (TRADES[tx.requests.category] || tx.requests.category) : null
   const summary = [contractLabel(tx), tx.scheduled_at ? `RDV ${fmtDate(tx.scheduled_at)}` : null].filter(Boolean).join(' · ')
   const statusLabel = tx.status === 'cancelled' ? 'Annulée' : dispute?.status === 'open' ? 'Litige en cours' : done ? 'Terminée' : tx.arrived_at ? 'En cours' : 'Confirmée'
-  const statusColor = tx.status === 'cancelled' ? '#C0503A' : dispute?.status === 'open' ? '#B54708' : done ? C.tealD : C.navy
+  const statusColor = tx.status === 'cancelled' ? '#B3402F' : dispute?.status === 'open' ? '#B54708' : done ? C.tealD : C.navy
 
   return (
     <div style={{ margin: '10px 16px 0', background: '#fff', border: `1px solid ${C.line}`, borderRadius: 14, padding: '10px 14px' }}>

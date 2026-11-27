@@ -212,7 +212,7 @@ export default function MonAnnoncePage() {
   const statusBox = (
     <div style={{ ...card, background: online ? 'rgba(18,179,156,.08)' : '#F3F6F5', borderRadius: 18, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, background: suspended ? '#C0503A' : online ? TEAL : '#A5B3B9', boxShadow: online ? '0 0 0 4px rgba(18,179,156,.18)' : 'none' }} />
+        <span style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0, background: suspended ? '#B3402F' : online ? TEAL : '#A5B3B9', boxShadow: online ? '0 0 0 4px rgba(18,179,156,.18)' : 'none' }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, color: NAVY }}>
             {suspended ? 'Suspendue' : online ? 'En ligne · visible sur la carte' : 'En pause'}
@@ -314,7 +314,7 @@ export default function MonAnnoncePage() {
               <button key={h.key} type="button" aria-pressed={on}
                 onClick={() => edit(setHighlights)(on ? highlights.filter(k => k !== h.key) : [...highlights, h.key])}
                 style={{ padding: '8px 16px', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                  border: on ? 'none' : `1px solid #DCE5E3`, background: on ? TEAL : '#fff', color: on ? '#fff' : NAVY }}>
+                  border: on ? 'none' : `1px solid #E7EDEB`, background: on ? TEAL : '#fff', color: on ? '#fff' : NAVY }}>
                 {h.label}
               </button>
             )
@@ -329,7 +329,7 @@ export default function MonAnnoncePage() {
           {RADIUS_CHOICES.map(km => (
             <button key={km} type="button" aria-pressed={radius === km} onClick={() => edit(setRadius)(km)}
               style={{ padding: '8px 18px', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                border: radius === km ? 'none' : `1px solid #DCE5E3`, background: radius === km ? TEAL : '#fff', color: radius === km ? '#fff' : NAVY }}>
+                border: radius === km ? 'none' : `1px solid #E7EDEB`, background: radius === km ? TEAL : '#fff', color: radius === km ? '#fff' : NAVY }}>
               {km} km
             </button>
           ))}
@@ -430,7 +430,7 @@ export default function MonAnnoncePage() {
           {statusBox}
           {msg && (
             <div role="status" style={{ padding: '11px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.45,
-              background: msg.tone === 'ok' ? 'rgba(18,179,156,.1)' : '#FEF2F2', color: msg.tone === 'ok' ? TEAL_D : '#C0503A' }}>{msg.text}</div>
+              background: msg.tone === 'ok' ? 'rgba(18,179,156,.1)' : '#FEF2F2', color: msg.tone === 'ok' ? TEAL_D : '#B3402F' }}>{msg.text}</div>
           )}
           {gauge}
 

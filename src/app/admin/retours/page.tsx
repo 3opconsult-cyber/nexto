@@ -101,7 +101,7 @@ export default function AdminRetours() {
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#0B8374', background: 'rgba(18,179,156,.1)', padding: '3px 10px', borderRadius: 999 }}>
                       {ROLE_LABEL[r.role]}
                     </span>
-                    <span style={{ fontSize: 11.5, color: '#6E8592' }}>{new Date(r.created_at).toLocaleString('fr-FR')}</span>
+                    <span style={{ fontSize: 11.5, color: '#4E6470' }}>{new Date(r.created_at).toLocaleString('fr-FR')}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12.5, color: '#4E6470' }}>
                     <span>Simplicité <b style={{ color: '#123644' }}>{r.simplicite}/5</b></span>
@@ -109,8 +109,8 @@ export default function AdminRetours() {
                     <span>Utilité <b style={{ color: '#123644' }}>{r.utilite}/5</b></span>
                   </div>
                   <div style={{ display: 'flex', gap: 16, marginTop: 6, fontSize: 12.5, color: '#4E6470' }}>
-                    <span>Recommande : <b style={{ color: r.recommanderait ? '#0B8374' : '#c0503a' }}>{r.recommanderait ? 'Oui' : 'Non'}</b></span>
-                    <span>Utiliserait : <b style={{ color: r.utiliserait ? '#0B8374' : '#c0503a' }}>{r.utiliserait ? 'Oui' : 'Non'}</b></span>
+                    <span>Recommande : <b style={{ color: r.recommanderait ? '#0B8374' : '#B3402F' }}>{r.recommanderait ? 'Oui' : 'Non'}</b></span>
+                    <span>Utiliserait : <b style={{ color: r.utiliserait ? '#0B8374' : '#B3402F' }}>{r.utiliserait ? 'Oui' : 'Non'}</b></span>
                   </div>
                   {r.commentaire && (
                     <p style={{ fontSize: 13.5, color: '#123644', marginTop: 10, lineHeight: 1.5, fontStyle: 'italic' }}>« {r.commentaire} »</p>

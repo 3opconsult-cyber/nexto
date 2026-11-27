@@ -137,7 +137,7 @@ export default function Commande() {
   const statusLabel = cancelled ? 'Annulée' : tx.booking_status === 'refusee' ? 'Réservation refusée' : tx.booking_status === 'expiree' ? 'Réservation expirée'
     : pend ? (isSeller ? 'À accepter par vous' : 'En attente d’acceptation')
       : done ? 'Terminée' : tx.arrived_at ? 'Sur place' : 'Acceptée'
-  const statusTone = cancelled || ended ? '#C0503A' : pend ? '#B54708' : '#0A6F62'
+  const statusTone = cancelled || ended ? '#B3402F' : pend ? '#B54708' : '#0A6F62'
 
   async function answerAddress(ok: boolean) {
     setAddrBusy(true); setAddrErr('')
@@ -212,9 +212,9 @@ export default function Commande() {
             <div style={h3}>Adresse à valider</div>
             <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
               <button disabled={addrBusy} onClick={() => answerAddress(true)} style={{ flex: 1, minHeight: 52, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Accepter</button>
-              <button disabled={addrBusy} onClick={() => answerAddress(false)} style={{ flex: 1, minHeight: 52, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Refuser</button>
+              <button disabled={addrBusy} onClick={() => answerAddress(false)} style={{ flex: 1, minHeight: 52, borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Refuser</button>
             </div>
-            {addrErr && <p role="alert" style={{ ...muted, color: '#B2432E', fontWeight: 600, marginTop: 10 }}>{addrErr}</p>}
+            {addrErr && <p role="alert" style={{ ...muted, color: '#B3402F', fontWeight: 600, marginTop: 10 }}>{addrErr}</p>}
           </div>
         </div>
       )}
@@ -261,7 +261,7 @@ export default function Commande() {
         <div className="a-block a-lift">
           <MissionActions tx={tx} userId={uid} onChange={patch} />
           {cancelAvail === false && live && (
-            <button type="button" className="a-btn sec" style={{ color: '#B2432E', boxShadow: 'inset 0 0 0 1.5px #E3C7C0' }} onClick={() => setCancelOpen(true)}>Annuler</button>
+            <button type="button" className="a-btn sec" style={{ color: '#B3402F', boxShadow: 'inset 0 0 0 1.5px #E3C7C0' }} onClick={() => setCancelOpen(true)}>Annuler</button>
           )}
           {cancelOpen && <CancelSheet tx={tx} userId={uid} open onClose={() => setCancelOpen(false)} onDone={p => patch(p)} />}
         </div>

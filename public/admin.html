@@ -13,7 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-:root{--ink:#123644;--paper:#F3F6F5;--teal:#12B39C;--tealD:#0C8F7E;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#6E8592;--line:#E7EDEB;--side:#0F2A33;
+:root{--ink:#123644;--paper:#F3F6F5;--teal:#12B39C;--tealD:#0B8374;--btnFill:#0B8374;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;--side:#0F2A33;
 --fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
@@ -31,7 +31,7 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .npill{display:none;margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#E8743B;color:#fff;font-size:11px;font-weight:800;align-items:center;justify-content:center}
 .npill.on{display:inline-flex}
 .nav a:hover{background:rgba(255,255,255,.05);color:#e6f0f2}
-.nav a.on{background:var(--teal);color:#fff}
+.nav a.on{background:var(--btnFill);color:#fff}
 .nav .sep{margin:10px 12px 4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5c7f88;font-weight:700}
 .side .foot{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
 .side .foot .av{width:32px;height:32px;border-radius:50%;background:var(--coral);display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:13px}
@@ -58,7 +58,7 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .cfbox .pv img{max-width:100%;max-height:52vh;border-radius:8px}
 .cfbox .pv iframe{width:100%;height:52vh;border:0;border-radius:8px;background:#fff}
 .cfbox .acts{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
-.btn.red{background:#c0503a}
+.btn.red{background:#B3402F}
 .livetop{grid-template-columns:1fr 1fr}
 @media (max-width:860px){.livetop{grid-template-columns:1fr}}
 .period{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer}
@@ -91,10 +91,10 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:#fafcfb}
 .who{display:flex;align-items:center;gap:9px}
-.who .av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:12px;background:linear-gradient(160deg,#14b39c,#0c8f7e);flex:0 0 auto}
+.who .av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:12px;background:linear-gradient(160deg,#14b39c,#0B8374);flex:0 0 auto}
 .who .av.g{background:#9fb0b8}.who .av.gold{background:linear-gradient(160deg,#f2a93b,#d98a1f)}.who .av.coral{background:var(--coral)}
 .tag{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:4px}
-.tag.ok{background:rgba(18,179,156,.12);color:var(--tealD)}.tag.wait{background:rgba(242,169,59,.16);color:var(--amber)}.tag.dn{background:rgba(255,122,102,.15);color:#c0503a}.tag.ink{background:rgba(18,54,68,.08);color:var(--ink)}
+.tag.ok{background:rgba(18,179,156,.12);color:var(--tealD)}.tag.wait{background:rgba(242,169,59,.16);color:var(--amber)}.tag.dn{background:rgba(255,122,102,.15);color:#B3402F}.tag.ink{background:rgba(18,54,68,.08);color:var(--ink)}
 .tag.acq-active{background:rgba(47,208,110,.16);color:#1f9f52}
 .camp-form{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 .camp-qrthumb{display:inline-flex;width:34px;height:34px;cursor:pointer;border-radius:6px;overflow:hidden;background:#fff;border:1px solid var(--line);padding:2px}
@@ -108,14 +108,14 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .sig-msg.b{align-self:flex-end;background:rgba(18,179,156,.1);border:1px solid rgba(18,179,156,.25)}
 .mono{font-variant-numeric:tabular-nums;color:var(--slate);font-size:12px}
 .link{color:var(--tealD);font-weight:600;cursor:pointer;font-size:12.5px}
-.btn{background:var(--teal);color:#fff;font-family:var(--fh);font-weight:700;font-size:13.5px;padding:11px 18px;border-radius:11px;border:none;cursor:pointer}
+.btn{background:var(--btnFill);color:#fff;font-family:var(--fh);font-weight:700;font-size:15px;min-height:44px;padding:11px 18px;border-radius:14px;border:none;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .btn.dark{background:var(--ink)}
 .iconbtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;display:inline-grid;place-items:center;cursor:pointer;color:var(--tealD)}
 .split{display:grid;grid-template-columns:2fr 1fr;gap:16px}
 .animPrev{text-align:center;margin-top:10px}
 .pvbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
-.pvbar button{border:1px solid var(--line,#DCE5E3);background:#fff;color:var(--ink,#123644);border-radius:999px;padding:6px 14px;font:600 12.5px Inter,system-ui,sans-serif;cursor:pointer}
+.pvbar button{border:1px solid var(--line,#E7EDEB);background:#fff;color:var(--ink,#123644);border-radius:999px;padding:6px 14px;font:600 12.5px Inter,system-ui,sans-serif;cursor:pointer}
 .pvbar button[aria-pressed="true"]{background:var(--teal,#12B39C);border-color:var(--teal,#12B39C);color:#fff}
 .pvbar button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 /* Accueil « hub » : voir l'app comme chaque profil (Admin · Prestataire · Client) */
@@ -141,7 +141,7 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .asbanner .t{flex:1;min-width:220px;font-size:12.5px;line-height:1.5;color:var(--ink)}
 .asbanner .t small{display:block;color:var(--slate);font-size:11.5px;margin-top:2px}
 .asbanner .acts{display:flex;gap:8px;flex-wrap:wrap}
-.asbanner .btn{padding:9px 14px;font-size:12.5px}
+.asbanner .btn{padding:9px 14px;font-size:14px}
 @media (max-width:860px){.ashub{gap:8px}.ashub .asv{padding:12px 4px}.ashub .asv[aria-current="page"]{padding:11px 3px}.ashub .asv b{font-size:13px}.ashub .asv small{font-size:10.5px}.asbanner .t{flex:1 1 100%;min-width:0}}
 .pvphone{width:min(100%,426px);margin:0 auto;background:#0B1B22;border-radius:44px;padding:18px 18px 22px;box-sizing:border-box;box-shadow:0 12px 34px rgba(11,27,34,.28);position:relative}
 .pvphone:before{content:"";position:absolute;top:8px;left:50%;width:84px;height:8px;margin-left:-42px;border-radius:4px;background:#1E3440}
@@ -161,7 +161,7 @@ body{font-family:var(--fb);background:var(--paper);color:var(--ink)}
 .crumb{display:inline-flex;align-items:center;gap:6px;color:var(--tealD);font-weight:700;font-size:13px;cursor:pointer;margin-bottom:14px}
 .crumb:hover{text-decoration:underline}
 .fhead{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
-.fhead .av{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:22px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.fhead .av{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:22px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0B8374)}
 .fhead .av.coral{background:var(--coral)}.fhead .av.gold{background:linear-gradient(160deg,#f2a93b,#d98a1f)}.fhead .av.g{background:#9fb0b8}
 .fhead h2{font-family:var(--fh);font-weight:700;font-size:20px}
 .fhead .fsub{color:var(--slate);font-size:12.5px;margin-top:2px}
@@ -188,7 +188,7 @@ textarea.minput{min-height:120px;resize:vertical}
 .parties{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .pcard{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;cursor:pointer}
 .pcard:hover{border-color:var(--teal)}
-.pcard .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0c8f7e)}
+.pcard .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0B8374)}
 .pcard .av.coral{background:var(--coral)}.pcard .av.gold{background:linear-gradient(160deg,#f2a93b,#d98a1f)}.pcard .av.g{background:#9fb0b8}
 .pcard .role{font-size:10px;color:var(--slate);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .pcard .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:13.5px}
@@ -246,7 +246,7 @@ textarea.minput{min-height:120px;resize:vertical}
 .sheetdoc .ttl{display:flex;justify-content:space-between;font-family:var(--fh);font-weight:700;font-size:16px;padding-top:12px;border-top:2px solid var(--ink);margin-top:6px}
 .sheetdoc .legal{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);font-size:9.5px;color:var(--slate);line-height:1.6}
 .sheetdoc .stamp{display:inline-block;border:2px solid var(--tealD);color:var(--tealD);font-family:var(--fh);font-weight:700;font-size:11px;padding:5px 12px;border-radius:6px;transform:rotate(-4deg);margin-top:10px}
-.sheetdoc .stamp.rd{border-color:#c0503a;color:#c0503a}
+.sheetdoc .stamp.rd{border-color:#B3402F;color:#B3402F}
 .idblur{background:repeating-linear-gradient(45deg,#EDF1F0,#EDF1F0 9px,#E3EAE8 9px,#E3EAE8 18px);border-radius:8px;height:180px;display:grid;place-items:center;text-align:center;color:var(--slate);font-size:11px;padding:20px;line-height:1.6}
 .clk{cursor:pointer;transition:background .15s}
 .clk:hover{background:rgba(18,179,156,.05)}
@@ -383,7 +383,7 @@ textarea.minput{min-height:120px;resize:vertical}
 .backarrow:hover{background:var(--paper);border-color:var(--teal);color:var(--tealD)}
 .chatbox{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding:6px 2px}
 .bubble{max-width:75%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.4}
-.bubble.admin{align-self:flex-end;background:var(--teal);color:#fff;border-bottom-right-radius:4px}
+.bubble.admin{align-self:flex-end;background:var(--btnFill);color:#fff;border-bottom-right-radius:4px}
 .bubble.user{align-self:flex-start;background:var(--paper);color:var(--ink);border-bottom-left-radius:4px}
 .bubble .tm{display:block;font-size:9.5px;opacity:.7;margin-top:4px}
 .navmask{display:none}
@@ -452,7 +452,7 @@ body{overscroll-behavior-y:none}
   .side{height:100dvh;padding-top:env(safe-area-inset-top)}
   .content{padding-bottom:calc(34px + env(safe-area-inset-bottom))}
   input,select,textarea{font-size:16px!important}
-  .btn,.tab,.navitem{min-height:40px}
+  .btn,.tab,.navitem{min-height:44px}
 }
 /* Barre de navigation rapide en bas (mobile) */
 .mtab{display:none}
@@ -539,7 +539,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
           <div class="kpi click" onclick="nav('tx')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span> Facturé</div><div class="v" id="ovVolume">—</div><div class="d" id="ovVolumeD"></div></div>
           <div class="kpi click" onclick="nav('commissions')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a2 2 0 0 1 0 4H9"/></svg></span> Commissions PING</div><div class="v" id="ovCommission">—</div><div class="d" id="ovCommissionD"></div></div>
           <div class="kpi click" onclick="nav('users')"><div class="l"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/></svg></span> Prestataires actifs</div><div class="v" id="ovProviders">—</div><div class="d" id="ovProvidersD"></div></div>
-          <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#c0503a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Litiges ouverts</div><div class="v" id="ovDisputes">—</div><div class="d" id="ovDisputesD"></div></div>
+          <div class="kpi click" onclick="nav('litiges')"><div class="l"><span class="ic" style="background:rgba(255,122,102,.15);color:#B3402F"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span> Litiges ouverts</div><div class="v" id="ovDisputes">—</div><div class="d" id="ovDisputesD"></div></div>
         </div>
         <div class="card mt"><h3>Derniers inscrits <span class="muted" id="ovSignupsN">les plus récents d'abord</span><span class="link" onclick="nav('users')">Tous les utilisateurs</span></h3>
           <table class="tbl" data-noenh="1"><thead><tr><th>Nom</th><th>Rôle</th><th>Inscrit le</th><th>Ville</th><th>Pièces</th></tr></thead><tbody id="ovSignupsBody"></tbody></table>
@@ -548,7 +548,7 @@ window.addEventListener('load',function(){var o=window.nav;if(typeof o!=='functi
         <div class="card mt" id="liveMapCard"><h3>Carte des prestataires <span class="muted">position enregistrée à l'inscription</span></h3>
           <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px;margin:4px 0 14px">
             <div class="kpi click" onclick="showMapPeople('online')"><div class="l">Actifs sur la carte</div><div class="v" id="mapKpiConnected" style="color:var(--tealD)">0</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
-            <div class="kpi click" onclick="showMapPeople('job')"><div class="l">En prestation maintenant</div><div class="v" id="mapKpiOnJob" style="color:#c0503a">0</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
+            <div class="kpi click" onclick="showMapPeople('job')"><div class="l">En prestation maintenant</div><div class="v" id="mapKpiOnJob" style="color:#B3402F">0</div><div style="font-size:10.5px;color:var(--tealD);font-weight:700;margin-top:6px">Voir la liste ›</div></div>
           </div>
           <div id="mapPeopleList" style="display:none;margin-bottom:14px"></div>
           <div id="liveMapSvg" style="border-radius:14px;overflow:hidden;border:1px solid var(--line);height:280px"></div>
@@ -1435,7 +1435,7 @@ Facebook (particulier, groupe quartier) :
               <div style="font-family:var(--fh);font-weight:700;font-size:14px;opacity:.85">PING · Grasse</div>
               <h4 style="margin-top:10px">Le ménage de confiance, juste à côté de vous.</h4>
               <div style="font-size:12px;opacity:.9;margin-top:8px">Vous vous inscrivez en pro → vous devenez visible. Vous cherchez → vous trouvez à côté.</div>
-              <div class="ml-cta"><span style="background:var(--teal);color:#fff">Je cherche un ménage</span><span style="background:#fff;color:var(--ink)">Je propose mes services</span></div>
+              <div class="ml-cta"><span style="background:var(--btnFill);color:#fff">Je cherche un ménage</span><span style="background:#fff;color:var(--ink)">Je propose mes services</span></div>
             </div>
             <div style="padding:14px;background:#fff"><div class="grid k2"><div class="an"><div class="v" style="font-size:13px">Inscription pro</div><div class="l">Nom · zone · métier → visible sur la carte</div></div><div class="an"><div class="v" style="font-size:13px">Inscription particulier</div><div class="l">Nom · contact · zone → alerte au lancement</div></div></div></div>
             </div>
@@ -1752,7 +1752,7 @@ function renderFiche(key){const e=ENT[key];
    <div style="display:flex;gap:8px;flex-wrap:wrap">
     <button class="btn" onclick="validerCompte('${key}')">Valider le compte</button>
     <button class="btn ghost" onclick="demanderMAJ('${key}')">Demander une mise à jour</button>
-    <button class="btn ghost" style="color:#c0503a;border-color:#f0c4bb" onclick="radierCompte('${key}')">Radier le compte</button>
+    <button class="btn ghost" style="color:#B3402F;border-color:#f0c4bb" onclick="radierCompte('${key}')">Radier le compte</button>
    </div>
   </div>
   <p class="note">Radier retire le profil de la carte et des recherches, sans supprimer l'historique. Prototype : aucune persistance, aucun e-mail réel envoyé.</p>
@@ -1856,7 +1856,7 @@ function pvPiece(k){
  const d=PIECES[k];if(!d)return;
  let inner;
  if(d.mask){
-  inner='<div class="idblur"><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E8592" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><path d="M4 4l16 16"/></svg><br><br><b>Document chiffr\u00e9 et masqu\u00e9</b><br>Consultation trac\u00e9e \u00b7 acc\u00e8s restreint (RGPD)<br>Transmissible sur demande d\u2019une partie<br>ou d\u2019une autorit\u00e9 dans le cadre d\u2019une proc\u00e9dure</div></div>';
+  inner='<div class="idblur"><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4E6470" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><path d="M4 4l16 16"/></svg><br><br><b>Document chiffr\u00e9 et masqu\u00e9</b><br>Consultation trac\u00e9e \u00b7 acc\u00e8s restreint (RGPD)<br>Transmissible sur demande d\u2019une partie<br>ou d\u2019une autorit\u00e9 dans le cadre d\u2019une proc\u00e9dure</div></div>';
  } else if(k==='siret'){
   inner='<h4>Avis de situation au r\u00e9pertoire SIRENE</h4><p style="color:var(--slate);font-size:10.5px">INSEE \u00b7 \u00e9tabli le 12/06/2026</p><table>'
   +'<tr><td>SIREN</td><td>892 431 007</td></tr><tr><td>SIRET</td><td>892 431 007 00018</td></tr>'
@@ -2918,7 +2918,7 @@ function donutSVG(data,size){
  return '<svg viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'">'+segs
   +'<circle cx="'+cx+'" cy="'+cy+'" r="'+(r-16)+'" fill="#fff"/>'
   +'<text x="'+cx+'" y="'+(cy-2)+'" text-anchor="middle" font-family="Quicksand,sans-serif" font-weight="700" font-size="24" fill="#123644">'+total+'</text>'
-  +'<text x="'+cx+'" y="'+(cy+17)+'" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#6E8592">leads</text></svg>';
+  +'<text x="'+cx+'" y="'+(cy+17)+'" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="#4E6470">leads</text></svg>';
 }
 /* ================= CARTE EN DIRECT — prestataires connectés / en prestation ================= */
 const LIVE_MAP=[
@@ -3595,7 +3595,7 @@ window.loadLiveMap = async function () {
   if (prosErr || txErr) {
     const msg = (prosErr && prosErr.message) || (txErr && txErr.message) || 'erreur inconnue'
     if (noteElEarly) noteElEarly.textContent = 'Erreur au chargement : ' + msg
-    svgBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#c0503a;font-size:12px;font-weight:600;text-align:center;padding:20px">' + esc(msg) + '</div>'
+    svgBox.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B3402F;font-size:12px;font-weight:600;text-align:center;padding:20px">' + esc(msg) + '</div>'
     return
   }
 
@@ -3627,7 +3627,7 @@ window.loadLiveMap = async function () {
 
   list.forEach(p => {
     const onJob = onJobIds.has(p.id)
-    const color = onJob ? '#c0503a' : '#2FD06E'
+    const color = onJob ? '#B3402F' : '#2FD06E'
     const icon = L.divIcon({
       className: '', iconSize: [16, 16],
       html: '<div style="width:14px;height:14px;border-radius:50%;background:' + color + ';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>',
@@ -4766,7 +4766,7 @@ window.openDecision = async function (disputeId) {
     '<div style="font-size:13px;margin-bottom:10px">Versé au prestataire : <b id="decPayout">—</b></div>' +
     '<label style="font-size:12px;font-weight:700">Motif (lu par les deux parties)</label><textarea class="minput" id="decReason" maxlength="1000" style="min-height:80px"></textarea>' +
     '<p class="note" style="margin:0 0 10px">Litige clos, avoir sur la facture si un montant est rendu, virement ajusté ; paiement en ligne : remboursement partiel puis versement du reste. Frais de service et commission PING inchangés. Les deux parties sont prévenues (fil du litige, conversation, e-mail).</p>' +
-    '<div id="decErr" style="color:#c0503a;font-size:12.5px;margin-bottom:8px"></div>' +
+    '<div id="decErr" style="color:#B3402F;font-size:12.5px;margin-bottom:8px"></div>' +
     '<div style="display:flex;gap:9px;justify-content:flex-end"><button class="btn ghost" type="button" data-close2>Annuler</button><button class="btn" type="button" id="decGo">Appliquer la décision</button></div></div>'
   m.classList.add('on')
   m.querySelector('[data-close]').onclick = close
@@ -5207,8 +5207,8 @@ function catNotice(msg, kind) {
   const el = document.getElementById('catNotice'); if (!el) return
   if (!msg) { el.style.display = 'none'; el.textContent = ''; return }
   el.style.display = 'block'; el.textContent = msg
-  el.style.borderColor = kind === 'err' ? 'rgba(192,80,58,.4)' : ''
-  el.style.color = kind === 'err' ? '#c0503a' : ''
+  el.style.borderColor = kind === 'err' ? 'rgba(179,64,47,.4)' : ''
+  el.style.color = kind === 'err' ? '#B3402F' : ''
 }
 const catState = c => c.hidden ? ['Masqué', 'dn'] : c.active ? ['Proposé au choix', 'ok'] : ['Affiché (carte), non proposé', 'wait']
 
@@ -5267,7 +5267,7 @@ function catRenderList() {
         ? '<button class="btn ghost" type="button" data-cat="unoffer" data-i="' + i + '">Ne plus proposer</button>'
         : '<button class="btn ghost" type="button" data-cat="offer" data-i="' + i + '">Proposer au choix</button>') +
       '</td></tr>' +
-      (conf ? '<tr><td colspan="6"><div class="lawbox" style="border-color:rgba(192,80,58,.4)"><b>' + esc(conf.title) + '</b><p style="margin:6px 0 10px">' + esc(conf.text) + '</p>' +
+      (conf ? '<tr><td colspan="6"><div class="lawbox" style="border-color:rgba(179,64,47,.4)"><b>' + esc(conf.title) + '</b><p style="margin:6px 0 10px">' + esc(conf.text) + '</p>' +
         '<button class="btn ghost" type="button" data-cat="cancel">Annuler</button> <button class="btn red" type="button" data-cat="confirm">' + esc(conf.cta) + '</button></div></td></tr>' : '')
   }).join('') + '</table></div>'
 }
@@ -5348,7 +5348,7 @@ function catOpenForm(c) {
     '<span class="muted">Champs de l\'annonce du client</span><div style="margin:6px 0 6px">' + Object.keys(CAT_FIELDS).map(f => chk('catField', f, CAT_FIELDS[f], fields.includes(f))).join('') + '</div>' +
     '<span class="muted">Pièces et qualifications demandées aux prestataires de ce service</span><div id="catDocs" style="margin-top:6px"></div>' +
     '<button class="btn ghost" type="button" data-cat="doc-add" style="margin-bottom:14px">Ajouter une pièce</button>' +
-    '<p id="catErr" role="alert" style="color:#c0503a;font-weight:600;font-size:12.5px;margin-bottom:10px;display:none"></p>' +
+    '<p id="catErr" role="alert" style="color:#B3402F;font-weight:600;font-size:12.5px;margin-bottom:10px;display:none"></p>' +
     '<div style="display:flex;gap:10px"><button class="btn ghost" type="button" onclick="window.catCancel()">Annuler</button><button class="btn" type="button" onclick="window.catSave()">' + (c ? 'Enregistrer' : 'Ajouter au catalogue') + '</button></div>'
   card.style.display = 'block'
   catRenderDocs()

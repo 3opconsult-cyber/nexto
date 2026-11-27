@@ -28,7 +28,7 @@ function Step({ n, state, title, children }: { n: number; state: StepState; titl
         {state === 'ok' ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg> : n}
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: state === 'off' ? '#6E8592' : '#123644', marginTop: 4 }}>
+        <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: state === 'off' ? '#4E6470' : '#123644', marginTop: 4 }}>
           {title}<span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>{state === 'ok' ? ' (fait)' : state === 'now' ? ' (étape en cours)' : ''}</span>
         </div>
         {children}
@@ -53,7 +53,7 @@ function StickyCta({ children, onClick, disabled, above }: { children: React.Rea
       <div aria-hidden style={{ height: above ? 96 : 8 }} />
       <div style={{
         position: 'fixed', left: 0, right: 0, bottom: 'var(--tabbar-h, 0px)', zIndex: 30, maxWidth: 480, margin: '0 auto',
-        background: '#fff', borderTop: '1px solid #DCE5E3', boxShadow: '0 -6px 16px rgba(18,54,68,.06)',
+        background: '#fff', borderTop: '1px solid #E7EDEB', boxShadow: '0 -6px 16px rgba(18,54,68,.06)',
         padding: '8px 16px calc(10px + env(safe-area-inset-bottom, 0px))', boxSizing: 'border-box',
       }}>
         {above}
@@ -211,7 +211,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
       {label}
       <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
         inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000"
-        style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: compact ? 3 : 5, minHeight: 48, borderRadius: 12, border: '1.5px solid #DCE5E3', padding: '0 12px', fontSize: 20, letterSpacing: 6, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
+        style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: compact ? 3 : 5, minHeight: 48, borderRadius: 12, border: '1.5px solid #E7EDEB', padding: '0 12px', fontSize: 20, letterSpacing: 6, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
     </label>
   )
   const codeBox = (label: string, inSticky: boolean) => (
@@ -314,7 +314,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
           {refused && <p style={{ ...p, color: '#B3402F', fontWeight: 600 }}>{cl} a contesté la fin annoncée. Échangez dans la conversation.</p>}
         </Step>
       </ol>
-      <p style={{ ...p, fontSize: 11.5, color: '#6E8592', marginTop: 8 }}>Sans réponse sous 24 h, la fin reste non confirmée et PING décide.</p>
+      <p style={{ ...p, fontSize: 11.5, color: '#4E6470', marginTop: 8 }}>Sans réponse sous 24 h, la fin reste non confirmée et PING décide.</p>
       {msg}
       {!pending
         ? <StickyCta disabled={!!busy} onClick={askEndCode}>{busy === 'send' ? 'Envoi…' : `Demander le code de fin à ${cl}`}</StickyCta>

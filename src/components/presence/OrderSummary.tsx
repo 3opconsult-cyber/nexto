@@ -41,7 +41,7 @@ export default function OrderSummary({ tx, asSeller, counterpart, payOn, thresho
   const row = (l: string, v: string, s?: string, strong?: boolean) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', padding: '8px 0', minHeight: 44, borderTop: '1px solid #EEF2F1' }}>
       <span style={{ fontSize: 13, color: strong ? '#123644' : '#3d5560', fontWeight: strong ? 700 : 500 }}>
-        {l}{s && <small style={{ display: 'block', fontSize: 11.5, color: '#6E8592', fontWeight: 400, marginTop: 1 }}>{s}</small>}
+        {l}{s && <small style={{ display: 'block', fontSize: 11.5, color: '#4E6470', fontWeight: 400, marginTop: 1 }}>{s}</small>}
       </span>
       <b style={{ fontSize: strong ? 15 : 13.5, color: '#123644', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{v}</b>
     </div>

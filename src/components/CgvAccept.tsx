@@ -30,7 +30,7 @@ export default function CgvAccept() {
       <button onClick={accept} style={{ border: 'none', borderRadius: 999, padding: '11px 18px', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
         J&apos;accepte les CGV prestataires et le contrat de commission
       </button>
-      {state === 'error' && <p style={{ color: '#c0503a', fontSize: 12.5, margin: '8px 0 0' }}>L&apos;acceptation n&apos;a pas pu être enregistrée. Réessayez.</p>}
+      {state === 'error' && <p style={{ color: '#B3402F', fontSize: 12.5, margin: '8px 0 0' }}>L&apos;acceptation n&apos;a pas pu être enregistrée. Réessayez.</p>}
     </div>
   )
 }

@@ -80,7 +80,7 @@ export default function SupportPage() {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {msgs.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: '#6E8592', fontWeight: 600, fontSize: 13 }}>
+          <div style={{ textAlign: 'center', padding: '48px 0', color: '#4E6470', fontWeight: 600, fontSize: 13 }}>
             Une question, un souci ? Écrivez-nous, l'équipe PING vous répond directement ici.
           </div>
         )}
@@ -102,7 +102,7 @@ export default function SupportPage() {
       <div style={{ padding: '12px 16px', background: '#fff', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #E7EDEB' }}>
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
+          style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #E7EDEB', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send}
           style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0B8374', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

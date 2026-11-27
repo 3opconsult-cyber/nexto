@@ -335,7 +335,7 @@ export default function NewOpenRequestPage() {
           </div>
           <button type="button" onClick={() => setUrgent(!urgent)} aria-pressed={urgent}
             style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '14px 16px', marginTop: 20, minHeight: 64, borderRadius: 16, cursor: 'pointer', border: 'none', background: urgent ? 'rgba(232,116,59,.12)' : '#EEF3F2' }}>
-            <span style={{ width: 38, height: 22, borderRadius: 999, background: urgent ? '#E8743B' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
+            <span style={{ width: 38, height: 22, borderRadius: 999, background: urgent ? '#E8743B' : '#E7EDEB', position: 'relative', flexShrink: 0 }}>
               <span style={{ position: 'absolute', top: 2, left: urgent ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
             </span>
             <span>
@@ -391,7 +391,7 @@ export default function NewOpenRequestPage() {
 
         {/* « Publier » collant au-dessus de la barre du bas (audit 19/11, correction 18). */}
         <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))', background: '#F3F6F5', borderTop: 'none' }}>
-          {error && <p role="alert" style={{ color: '#c0503a', fontSize: 15, lineHeight: 1.5, fontWeight: 600, margin: '0 0 8px' }}>{error}</p>}
+          {error && <p role="alert" style={{ color: '#B3402F', fontSize: 15, lineHeight: 1.5, fontWeight: 600, margin: '0 0 8px' }}>{error}</p>}
           <button onClick={() => submit()} disabled={creating} style={{ width: '100%', minHeight: 50, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 14, borderRadius: 999, cursor: 'pointer', opacity: creating ? 0.7 : 1 }}>
             {creating ? 'Publication…' : 'Publier mon annonce'}
           </button>

@@ -3,8 +3,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <style>
 :root{
-  --ink:#123644; --ink2:#0e2a34; --teal:#12B39C; --tealD:#0C8F7E; --green:#2FD06E;
-  --coral:#FF7A66; --gold:#F2A93B; --paper:#F3F6F5; --line:#DCE5E3; --slate:#4E6470;
+  --ink:#123644; --ink2:#0e2a34; --teal:#12B39C; --tealD:#0B8374; --green:#2FD06E;
+  --coral:#FF7A66; --gold:#F2A93B; --paper:#F3F6F5; --line:#E7EDEB; --slate:#4E6470;
   --bg:#E4EBE9; --fg:#123644; --fg2:#4E6470; --chrome:#FFFFFF; --hair:#D3DEDB;
   --fh:'Quicksand',ui-rounded,'Trebuchet MS',sans-serif;
   --fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -271,9 +271,9 @@ const PROS = [
   {id:1, nom:"Fictif 1",  type:"pro",  metier:"Ménage",              ville:"Vence",                lat:43.7225, lon:7.1130, tarif:26, note:4.8, avis:41, dep:"2018", hue:"#12B39C"},
   {id:2, nom:"Fictif 2",  type:"part", metier:"Repassage",           ville:"Saint-Paul-de-Vence",  lat:43.6960, lon:7.1220, tarif:17, note:4.6, avis:12, dep:"2024", hue:"#F2A93B"},
   {id:3, nom:"Fictif 3",  type:"part", metier:"Ménage",              ville:"La Colle-sur-Loup",    lat:43.6860, lon:7.1040, tarif:19, note:4.9, avis:23, dep:"2023", hue:"#FF7A66"},
-  {id:4, nom:"Fictif 4",  type:"pro",  metier:"Nettoyage de vitres", ville:"Cagnes-sur-Mer",       lat:43.6640, lon:7.1490, tarif:34, note:4.7, avis:58, dep:"2016", hue:"#0C8F7E"},
+  {id:4, nom:"Fictif 4",  type:"pro",  metier:"Nettoyage de vitres", ville:"Cagnes-sur-Mer",       lat:43.6640, lon:7.1490, tarif:34, note:4.7, avis:58, dep:"2016", hue:"#0B8374"},
   {id:5, nom:"Fictif 5",  type:"pro",  metier:"Ménage",              ville:"Villeneuve-Loubet",    lat:43.6580, lon:7.1220, tarif:24, note:4.5, avis:33, dep:"2021", hue:"#12B39C"},
-  {id:6, nom:"Fictif 6",  type:"pro",  metier:"Repassage",           ville:"Saint-Laurent-du-Var", lat:43.6680, lon:7.1880, tarif:22, note:4.9, avis:76, dep:"2019", hue:"#0C8F7E"},
+  {id:6, nom:"Fictif 6",  type:"pro",  metier:"Repassage",           ville:"Saint-Laurent-du-Var", lat:43.6680, lon:7.1880, tarif:22, note:4.9, avis:76, dep:"2019", hue:"#0B8374"},
   {id:7, nom:"Fictif 7",  type:"part", metier:"Ménage",              ville:"Nice — Lingostière",   lat:43.7050, lon:7.2000, tarif:20, note:4.4, avis:9,  dep:"2025", hue:"#F2A93B"},
   {id:8, nom:"Fictif 8",  type:"pro",  metier:"Nettoyage fin de chantier", ville:"Nice — Cimiez",  lat:43.7190, lon:7.2760, tarif:39, note:4.8, avis:64, dep:"2014", hue:"#123644"},
   {id:9, nom:"Fictif 9",  type:"part", metier:"Ménage et repassage", ville:"Nice — centre",        lat:43.7009, lon:7.2683, tarif:21, note:4.7, avis:28, dep:"2022", hue:"#FF7A66"},
@@ -347,7 +347,7 @@ function mapSVG(opts){
     <path d="${sea}" fill="${o.compact?'#0a222b':'#CFE0E2'}"/>
     <path d="${path(COTE)}" fill="none" stroke="${o.compact?'#1d4b59':'#B4CBCE'}" stroke-width="3"/>
     <path d="${path(VAR)}" fill="none" stroke="${o.compact?'#1d4b59':'#C3D6D8'}" stroke-width="7" stroke-linecap="round"/>
-    <path d="${path(A8)}" fill="none" stroke="${o.compact?'#1a3d4a':'#DCE5E3'}" stroke-width="9" stroke-linecap="round"/>`;
+    <path d="${path(A8)}" fill="none" stroke="${o.compact?'#1a3d4a':'#E7EDEB'}" stroke-width="9" stroke-linecap="round"/>`;
   if(!o.compact){
     s += VILLES.map(v=>{const[x,y]=proj(v.lon,v.lat);
       return `<text class="maplbl" x="${x+v.dx}" y="${y+v.dy}"${v.n==='NICE'?' style="font-size:19px;letter-spacing:.1em;fill:#66808A"':''}>${v.n}</text>`;}).join('');

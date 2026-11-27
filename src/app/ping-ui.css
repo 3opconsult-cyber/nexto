@@ -6,7 +6,7 @@
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-:root{--danger:#C0503A;--danger-bg:rgba(192,80,58,.1);--warn-text:#8A6520;--warn-bg:#FFF7ED;--ink:#123644;--paper:#F3F6F5;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;
+:root{--danger:#B3402F;--danger-bg:rgba(179,64,47,.1);--warn-text:#8A6520;--warn-bg:#FFF7ED;--ink:#123644;--paper:#F3F6F5;--land:#ECEAE3;--water:#A9D3E6;--park:#C9DEB2;--roadcase:#E0DCCF;
 --teal:#12B39C;--tealD:#0B8374;--btnFill:#0B8374;--coral:#FF7A66;--gold:#F2A93B;--amber:#B0873C;--slate:#4E6470;--line:#E7EDEB;
 --fh:'Quicksand',system-ui,sans-serif;--fb:'Inter',system-ui,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -58,7 +58,7 @@
 .pin{position:absolute;transform:translate(-50%,-100%);z-index:20;cursor:pointer}
 .mk{width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(45deg);display:grid;place-items:center;border:3px solid #fff;box-shadow:0 8px 18px rgba(20,50,60,.28);background:var(--teal)}
 .mk>*{transform:rotate(-45deg)}
-.mk.alt{background:#6E8592}
+.mk.alt{background:#4E6470}
 .you{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);z-index:15}
 .you .d{width:18px;height:18px;border-radius:50%;background:var(--coral);border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.3)}
 
@@ -88,7 +88,7 @@
 /* rows / lists */
 .row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:9px;cursor:pointer}
 .row .av{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-family:var(--fh);font-weight:700;font-size:17px;flex:0 0 auto;background:linear-gradient(160deg,#14b39c,#0b8374)}
-.row .av.g{background:#6E8592}.row .av.gold{background:linear-gradient(160deg,#f2a93b,#8A6520)}
+.row .av.g{background:#4E6470}.row .av.gold{background:linear-gradient(160deg,#f2a93b,#8A6520)}
 .row .m{flex:1;min-width:0}
 .row .nm{font-family:var(--fh);font-weight:700;color:var(--ink);font-size:14px;display:flex;align-items:center;gap:6px}
 .row .ds{font-size:11.5px;color:var(--slate);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -195,7 +195,7 @@
 .lawlist{font-size:11.5px;color:var(--slate);line-height:1.7;margin-top:4px}
 .lawlist b{color:var(--ink)}
 .lawlist .li{display:flex;gap:7px;margin-bottom:4px}.lawlist .li svg{flex:0 0 auto;margin-top:2px}
-.note2{font-size:10.5px;color:#6E8592;margin-top:12px;line-height:1.4;font-style:italic}
+.note2{font-size:10.5px;color:#4E6470;margin-top:12px;line-height:1.4;font-style:italic}
 .qa{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .qab{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 8px;text-align:center;cursor:pointer;font-family:var(--fh);font-weight:700;color:var(--ink);font-size:11px}
 .qab .qi{width:34px;height:34px;border-radius:10px;background:rgba(242,169,59,.14);display:grid;place-items:center;margin:0 auto 7px;color:var(--amber)}
@@ -434,7 +434,7 @@ svg{display:block}
    ============================================================ */
 .pingbtn{background:linear-gradient(160deg,#0B8374,#08695D)}
 .pingbtn .halo{border-color:#12B39C}
-.tbell .mq-nb,.mq-nb{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:999px;background:#E5484D;color:#fff;font:700 10px var(--fb);padding:0 4px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.tbell .mq-nb,.mq-nb{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:999px;background:#B3402F;color:#fff;font:700 10px var(--fb);padding:0 4px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 .searchbar .chv{margin-left:auto;color:var(--slate);display:inline-flex;flex:0 0 auto}
 .searchbar .tx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chips .chip{min-height:44px;display:inline-flex;align-items:center;gap:6px}
@@ -453,7 +453,7 @@ svg{display:block}
 .mq-ib{width:44px;height:44px;border:0;background:none;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink);cursor:pointer;padding:0;flex:0 0 auto}
 .mq-ib.box{width:44px;height:44px;background:var(--paper)}
 .mq-avail{color:#097A6C;font-size:12px;font-weight:600}
-.mq-off{color:#6E8592;font-size:12px;font-weight:600}
+.mq-off{color:#4E6470;font-size:12px;font-weight:600}
 
 /* Ligne de liste (prestataires, choix) */
 .mq-row{display:flex;align-items:center;gap:12px;padding:12px 0;border:0;border-bottom:1px solid #EEF2F1;min-height:52px;width:100%;text-align:left;background:none;cursor:pointer;font:inherit;color:var(--ink)}
@@ -468,7 +468,7 @@ svg{display:block}
 
 /* Étoiles au prorata de la note */
 .ping-stars-r{color:var(--gold);letter-spacing:1px;position:relative;display:inline-block;white-space:nowrap;line-height:1;vertical-align:-1px}
-.ping-stars-r .st0{color:#DCE5E3}
+.ping-stars-r .st0{color:#E7EDEB}
 .ping-stars-r .st1{position:absolute;left:0;top:0;overflow:hidden;color:var(--gold)}
 
 /* Carte de demande (prestataire) */
@@ -500,7 +500,7 @@ svg{display:block}
 .mq-vr small{font-size:10.5px;color:var(--slate);display:block}
 .mq-vr .vs{margin-left:auto;font:700 9.5px var(--fb);color:#097A6C;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
 .mq-vr.w .vs{color:#8A6520}
-.mq-muted{color:#6E8592;font-size:10.5px;line-height:1.45}
+.mq-muted{color:#4E6470;font-size:10.5px;line-height:1.45}
 
 /* Liste aérée (carte prestataire) : titre, budget, une ligne d info ; séparateur léger, pas de cadre. */
 .air-row{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid #EEF2F1;padding:16px 0;min-height:76px;cursor:pointer;font:inherit;color:var(--ink)}

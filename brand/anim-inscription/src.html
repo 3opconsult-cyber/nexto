@@ -210,7 +210,7 @@
     plus: 'M12 5v14M5 12h14'
   };
   function icon(p, name, cx, cy, s, c, w){
-    s = s || 1; var g = el('g', {transform:'translate('+(cx-12*s)+','+(cy-12*s)+') scale('+s+')', fill:'none', stroke: c || '#0C8F7E',
+    s = s || 1; var g = el('g', {transform:'translate('+(cx-12*s)+','+(cy-12*s)+') scale('+s+')', fill:'none', stroke: c || '#0B8374',
       'stroke-width': w || 1.9, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, p);
     IC[name].split('|').forEach(function(d){ el('path', {d:d}, g); });
     return g;
@@ -233,7 +233,7 @@
     o = o || {}; var w = o.w || (label.length * 6.4 + 20);
     var g = el('g', {}, p);
     var r = el('rect', {x:x, y:y, width:w, height: o.h || 22, rx: (o.h || 22)/2, fill: o.fill || '#DDF5F0'}, g);
-    var t = tx(g, x + w/2, y + (o.h || 22)/2 + 4, label, {s: o.s || 11, w:600, c: o.c || '#0C8F7E', a:'middle'});
+    var t = tx(g, x + w/2, y + (o.h || 22)/2 + 4, label, {s: o.s || 11, w:600, c: o.c || '#0B8374', a:'middle'});
     g.r = r; g.t = t; g.w = w; return g;
   }
   function btn(p, cx, cy, w, h, label, o){
@@ -260,7 +260,7 @@
   function input(g, x, y, w, label, val, o){
     o = o || {};
     tx(g, x, y, label, {s:11.5, w:700, c:GREY});
-    var r = box(g, x, y + 7, w, 36, {rx:10, fill:'#F6F9F8', stroke:'#DCE5E3', sw:1.3});
+    var r = box(g, x, y + 7, w, 36, {rx:10, fill:'#F6F9F8', stroke:'#E7EDEB', sw:1.3});
     var t = tx(g, x + 12, y + 30, '', {s:13.5, w:500});
     return {r:r, t:t, full:val, a:o.a, b:o.b, y:y};
   }
@@ -269,7 +269,7 @@
     var k = seg(t, f.a, f.b), n = Math.floor(f.full.length * k + 0.0001);
     f.t.textContent = f.full.slice(0, n);
     var on = t >= f.a - 0.05 && t < f.b + 0.35;
-    f.r.setAttribute('stroke', on ? TEAL : '#DCE5E3'); f.r.setAttribute('stroke-width', on ? 1.8 : 1.3);
+    f.r.setAttribute('stroke', on ? TEAL : '#E7EDEB'); f.r.setAttribute('stroke-width', on ? 1.8 : 1.3);
   }
   function arrowBtn(g, cx, cy, hidden){
     var c = el('g', {}, g);
@@ -295,7 +295,7 @@
     // notification caméra
     var nb = el('g', {}, g); S.banner = nb;
     box(nb, 26, 48, 288, 62, {rx:18, fill:'#fff', stroke:'none'});
-    el('circle', {cx:58, cy:79, r:18, fill:'#DDF5F0'}, nb); icon(nb, 'link', 58, 79, .78, '#0C8F7E', 2);
+    el('circle', {cx:58, cy:79, r:18, fill:'#DDF5F0'}, nb); icon(nb, 'link', 58, 79, .78, '#0B8374', 2);
     tx(nb, 86, 74, 'nexto-eta.vercel.app', {s:13.5, w:700});
     tx(nb, 86, 93, 'Ouvrir l’inscription PING', {s:12, c:GREY});
   })();
@@ -338,7 +338,7 @@
     box(g, 42, 384, 254, 84, {rx:13, fill:'#E7F6F3', stroke:'none'});
     S.chk = box(g, 54, 398, 18, 18, {rx:5, fill:'#fff', stroke:'#9FC9C1', sw:1.6});
     S.chkMark = icon(g, 'check', 63, 407, .5, '#fff', 3.4);
-    ['J’accepte les Conditions Générales', 'et la Politique de confidentialité', 'de PING'].forEach(function(s, i){ tx(g, 82, 410 + i*17, s, {s:11.5, w:600, c:'#0C8F7E'}); });
+    ['J’accepte les Conditions Générales', 'et la Politique de confidentialité', 'de PING'].forEach(function(s, i){ tx(g, 82, 410 + i*17, s, {s:11.5, w:600, c:'#0B8374'}); });
     S.b2 = btn(g, 170, 580, 252, 46, 'Créer mon compte', {});
   })();
 
@@ -347,7 +347,7 @@
     var g = $('sMail'); bgNavy(g);
     box(g, 24, 170, 292, 330, {rx:24, stroke:'none'});
     S.mIcon = el('rect', {x:142, y:198, width:56, height:56, rx:16, fill:'#E1F4F0'}, g);
-    S.mMail = icon(g, 'mail', 170, 226, 1.15, '#0C8F7E', 2);
+    S.mMail = icon(g, 'mail', 170, 226, 1.15, '#0B8374', 2);
     S.mOk = icon(g, 'check', 170, 226, 1.4, '#fff', 3);
     tx(g, 170, 292, 'Vérifiez votre boîte mail', {f:'Q', s:20, a:'middle'});
     ['Un lien de confirmation vient d’être', 'envoyé à sophie@exemple.fr.', 'Cliquez dessus pour activer votre', 'compte, puis connectez-vous.'].forEach(function(s, i){ tx(g, 170, 322 + i*20, s, {s:12.5, c:GREY, a:'middle'}); });
@@ -355,7 +355,7 @@
     // notification de message
     var nb = el('g', {}, g); S.mNote = nb;
     box(nb, 26, 40, 288, 64, {rx:18, fill:'#fff', stroke:'none'});
-    el('circle', {cx:58, cy:72, r:18, fill:'#DDF5F0'}, nb); icon(nb, 'mail', 58, 72, .75, '#0C8F7E', 2);
+    el('circle', {cx:58, cy:72, r:18, fill:'#DDF5F0'}, nb); icon(nb, 'mail', 58, 72, .75, '#0B8374', 2);
     tx(nb, 86, 67, 'PING', {s:13.5, w:700});
     tx(nb, 86, 86, 'Confirmez votre adresse e-mail', {s:12, c:GREY});
     S.mChip = chip(g, 100, 520, 'Compte activé', {w:140, h:26, s:12.5, fill:'#2FD06E', c:'#fff'});
@@ -394,12 +394,12 @@
     [['M12 210 L328 150', 9], ['M60 12 L130 668', 9], ['M12 400 L328 360', 7], ['M230 12 L200 668', 7], ['M12 560 L200 520', 6]].forEach(function(r){
       el('path', {d:r[0], fill:'none', stroke:'#fff', 'stroke-width':r[1], 'stroke-linecap':'round'}, g); });
     box(g, 24, 50, 292, 44, {rx:22, sh:true, stroke:'none'});
-    icon(g, 'search', 50, 72, .75, GREY, 2); tx(g, 70, 77, 'Que cherchez-vous ?', {s:13.5, c:'#6E8592'});
+    icon(g, 'search', 50, 72, .75, GREY, 2); tx(g, 70, 77, 'Que cherchez-vous ?', {s:13.5, c:'#4E6470'});
     S.mChips = [['Ménage', 24], ['Repassage', 100], ['Nettoyage', 192]].map(function(q){ return chip(g, q[1], 104, q[0], {w: q[0].length*7 + 24, h:28, s:12.5, fill:'#fff', c:INK}); });
     S.mPins = [[88, 250], [190, 300], [262, 210], [140, 420]].map(function(p, i){
       var c = el('g', {}, g);
       el('circle', {r:22, fill:TEAL, opacity:.2}, c);
-      el('path', {d:'M0 18 C-6 6 -14 -2 -14 -10 a14 14 0 1 1 28 0 c0 8 -8 16 -14 28z', fill: i === 1 ? '#0C8F7E' : TEAL}, c);
+      el('path', {d:'M0 18 C-6 6 -14 -2 -14 -10 a14 14 0 1 1 28 0 c0 8 -8 16 -14 28z', fill: i === 1 ? '#0B8374' : TEAL}, c);
       el('circle', {cx:0, cy:-10, r:5, fill:'#fff'}, c);
       c.px = p[0]; c.py = p[1]; return c;
     });
@@ -408,7 +408,7 @@
     box(pc, 24, 524, 292, 124, {rx:20, sh:true, stroke:'none'});
     el('circle', {cx:58, cy:560, r:20, fill:INK}, pc); tx(pc, 58, 567, 'C', {f:'Q', s:19, c:'#fff', a:'middle'});
     tx(pc, 88, 556, 'Camille R.', {f:'Q', s:16}); tx(pc, 88, 575, 'Ménage · 60 € le forfait · 400 m', {s:11.5, c:GREY});
-    chip(pc, 40, 592, 'Disponible', {w:84, h:22, s:11, fill:'#DDF5F0', c:'#0C8F7E'});
+    chip(pc, 40, 592, 'Disponible', {w:84, h:22, s:11, fill:'#DDF5F0', c:'#0B8374'});
     S.mContact = btn(pc, 250, 616, 112, 36, 'Contacter', {s:14});
     tx(pc, 142, 608, '4,9 ★', {s:11.5, w:600, c:GREY});
   })();
@@ -431,7 +431,7 @@
   function choice(g, y, label, hint){
     var c = el('g', {});
     g.appendChild(c);
-    c.r = box(c, 34, y, 272, hint ? 66 : 54, {rx:16, fill:'#fff', stroke:'#DCE5E3', sw:1.6});
+    c.r = box(c, 34, y, 272, hint ? 66 : 54, {rx:16, fill:'#fff', stroke:'#E7EDEB', sw:1.6});
     tx(c, 54, y + (hint ? 28 : 33), label, {f:'Q', s:16.5});
     if (hint) tx(c, 54, y + 49, hint, {s:11.5, c:GREY});
     c.ck = el('g', {}, c); el('circle', {cx:282, cy:y + (hint ? 33 : 27), r:11, fill:TEAL}, c.ck); icon(c.ck, 'check', 282, y + (hint ? 33 : 27), .5, '#fff', 3.6);
@@ -458,10 +458,10 @@
       tx(c, 46, y + 30, q[0], {f:'Q', s:16});
       var sg = seg3(c, 41, y + 44); setSeg(sg, q[1]);
       tx(c, 46, y + 106, q[3], {s:11.5, w:700, c:GREY});
-      box(c, 46, y + 114, 248, 38, {rx:10, fill:'#F6F9F8', stroke:'#DCE5E3', sw:1.3});
+      box(c, 46, y + 114, 248, 38, {rx:10, fill:'#F6F9F8', stroke:'#E7EDEB', sw:1.3});
       var v = tx(c, 58, y + 139, '', {s:14, w:600});
       tx(c, 282, y + 139, q[4], {s:12.5, c:GREY, a:'end'});
-      tx(c, 46, y + 170, 'Affiché aux clients : ' + q[2] + ' ' + (i ? '€/h' : '€ le forfait'), {s:11.5, w:700, c:'#0C8F7E'});
+      tx(c, 46, y + 170, 'Affiché aux clients : ' + q[2] + ' ' + (i ? '€/h' : '€ le forfait'), {s:11.5, w:700, c:'#0B8374'});
       c.v = v; c.val = q[2]; return c;
     });
   })();
@@ -469,7 +469,7 @@
     var g = $('sEnt'); S.entB = obFrame(g, 4, 'Votre entreprise', ['Tapez son nom, on retrouve le SIRET', 'et l’adresse pour vous.'], 'Continuer', true);
     S.eIn = input(g, 34, 190, 272, 'Nom de l’entreprise', 'Net Azur Services', {a:23.8, b:24.5});
     var rc = el('g', {}, g); S.eRes = rc;
-    box(rc, 34, 246, 272, 66, {rx:12, fill:'#fff', stroke:'#DCE5E3'});
+    box(rc, 34, 246, 272, 66, {rx:12, fill:'#fff', stroke:'#E7EDEB'});
     tx(rc, 48, 272, 'Net Azur Services', {s:13.5, w:700});
     tx(rc, 48, 292, 'SIRET 812 345 678 00019 · Antibes', {s:11.5, c:GREY});
     S.eSel = el('rect', {x:34, y:246, width:272, height:66, rx:12, fill:'none', stroke:TEAL, 'stroke-width':2, opacity:0}, g);
@@ -477,13 +477,13 @@
     tx(zc, 34, 372, 'Où intervenez-vous ?', {f:'Q', s:16});
     tx(zc, 34, 392, 'Pour apparaître au bon endroit sur la carte.', {s:11.5, c:GREY});
     box(zc, 34, 408, 272, 44, {rx:12, fill:'rgba(18,179,156,.1)', stroke:'none'});
-    icon(zc, 'pin', 58, 430, .72, '#0C8F7E', 2); tx(zc, 76, 435, 'Position enregistrée · Antibes', {s:13, w:700, c:'#0C8F7E'});
+    icon(zc, 'pin', 58, 430, .72, '#0B8374', 2); tx(zc, 76, 435, 'Position enregistrée · Antibes', {s:13, w:700, c:'#0B8374'});
   })();
   (function(){
     var g = $('sCgv'); S.cgvB = obFrame(g, 7, 'Un mot pour vous présenter', ['Une phrase suffit. Vous pourrez la modifier.'], 'Terminer', true);
-    box(g, 34, 180, 272, 92, {rx:12, fill:'#F6F9F8', stroke:'#DCE5E3', sw:1.3});
+    box(g, 34, 180, 272, 92, {rx:12, fill:'#F6F9F8', stroke:'#E7EDEB', sw:1.3});
     tx(g, 48, 206, 'M\u00e9nage soigneux \u00e0 Antibes et alentours,', {s:12.5}); tx(g, 48, 225, 'avec mon propre mat\u00e9riel.', {s:12.5});
-    S.cgvBox = box(g, 34, 296, 272, 120, {rx:12, fill:'#fff', stroke:'#DCE5E3', sw:1.6});
+    S.cgvBox = box(g, 34, 296, 272, 120, {rx:12, fill:'#fff', stroke:'#E7EDEB', sw:1.6});
     S.cgvChk = box(g, 48, 312, 20, 20, {rx:5, fill:'#fff', stroke:'#9FC9C1', sw:1.6});
     S.cgvMark = icon(g, 'check', 58, 322, .55, '#fff', 3.4);
     ['J’accepte les CGV prestataires et le', 'contrat de commission : commission', 'PING retenue sur mes versements,', 'prélèvement SEPA des commissions non', 'retenues, suspension en cas d’impayé.'].forEach(function(s, i){ tx(g, 78, 326 + i*19, s, {s:11.5, c:INK}); });
@@ -493,8 +493,8 @@
     S.dYes = choice(g, 214, 'Oui, la télécharger');
     S.dNo = choice(g, 316, 'Pas maintenant');
     var f = el('g', {}, g); S.dFile = f;
-    box(f, 34, 394, 272, 58, {rx:14, fill:'#F6F9F8', stroke:'#DCE5E3'});
-    icon(f, 'doc', 62, 423, .85, '#0C8F7E', 2); tx(f, 86, 418, 'identite.jpg', {s:13, w:700}); tx(f, 86, 437, 'Pièce fournie', {s:11.5, w:700, c:'#0C8F7E'});
+    box(f, 34, 394, 272, 58, {rx:14, fill:'#F6F9F8', stroke:'#E7EDEB'});
+    icon(f, 'doc', 62, 423, .85, '#0B8374', 2); tx(f, 86, 418, 'identite.jpg', {s:13, w:700}); tx(f, 86, 437, 'Pièce fournie', {s:11.5, w:700, c:'#0B8374'});
     el('circle', {cx:282, cy:423, r:11, fill:TEAL}, f); icon(f, 'check', 282, 423, .5, '#fff', 3.6);
   })();
   (function(){
@@ -531,8 +531,8 @@
     });
     var fx = el('g', {}, g); S.aFx = fx;
     box(fx, 24, 424, 292, 70, {rx:18, fill:'#E8F8F4', stroke:'#12B39C', sw:1.6});
-    icon(fx, 'doc', 54, 459, .85, '#0C8F7E', 2);
-    tx(fx, 78, 453, 'Facture automatique', {s:13.5, w:700, c:'#0C8F7E'}); tx(fx, 78, 472, 'à votre nom, à chaque mission', {s:12, c:GREY});
+    icon(fx, 'doc', 54, 459, .85, '#0B8374', 2);
+    tx(fx, 78, 453, 'Facture automatique', {s:13.5, w:700, c:'#0B8374'}); tx(fx, 78, 472, 'à votre nom, à chaque mission', {s:12, c:GREY});
   })();
 
   // ordre et début de chaque écran du téléphone
@@ -649,8 +649,8 @@
 
     // 7. métier
     var sel = [19.8, 20.25, 99];
-    S.svc.forEach(function(c, i){ var on = t >= sel[i]; c.r.setAttribute('stroke', on ? TEAL : '#DCE5E3'); c.r.setAttribute('fill', on ? '#EEF9F7' : '#fff'); show(c.ck, on ? 1 : 0); });
-    var s1 = t >= 19.8; S.svcB.r.setAttribute('fill', s1 ? TEAL : '#DCE5E3');
+    S.svc.forEach(function(c, i){ var on = t >= sel[i]; c.r.setAttribute('stroke', on ? TEAL : '#E7EDEB'); c.r.setAttribute('fill', on ? '#EEF9F7' : '#fff'); show(c.ck, on ? 1 : 0); });
+    var s1 = t >= 19.8; S.svcB.r.setAttribute('fill', s1 ? TEAL : '#E7EDEB');
     // 8. tarifs
     S.tCards.forEach(function(c, i){ var a = eout(seg(t, 21.35 + i*0.3, 21.8 + i*0.3)); show(c, a); tr(c, 'translate(0,'+(20*(1-a)).toFixed(1)+')');
       var k = seg(t, 21.9 + i*0.5, 22.4 + i*0.5); c.v.textContent = c.val.slice(0, Math.floor(c.val.length*k + .0001)); });
@@ -661,11 +661,11 @@
     var ez = eout(seg(t, 24.8, 25.2)); show(S.eZone, ez); tr(S.eZone, 'translate(0,'+(14*(1-ez)).toFixed(1)+')');
     // 10. CGV
     var cg = t >= 26.65; S.cgvChk.setAttribute('fill', cg ? TEAL : '#fff'); S.cgvChk.setAttribute('stroke', cg ? TEAL : '#9FC9C1'); show(S.cgvMark, cg ? 1 : 0);
-    S.cgvBox.setAttribute('stroke', cg ? TEAL : '#DCE5E3'); S.cgvB.r.setAttribute('fill', cg ? TEAL : '#DCE5E3');
+    S.cgvBox.setAttribute('stroke', cg ? TEAL : '#E7EDEB'); S.cgvB.r.setAttribute('fill', cg ? TEAL : '#E7EDEB');
     // 11. pièces
-    var dy = t >= 28.35; S.dYes.r.setAttribute('stroke', dy ? TEAL : '#DCE5E3'); S.dYes.r.setAttribute('fill', dy ? '#EEF9F7' : '#fff'); show(S.dYes.ck, dy ? 1 : 0);
+    var dy = t >= 28.35; S.dYes.r.setAttribute('stroke', dy ? TEAL : '#E7EDEB'); S.dYes.r.setAttribute('fill', dy ? '#EEF9F7' : '#fff'); show(S.dYes.ck, dy ? 1 : 0);
     show(S.dNo.ck, 0); var df = eout(seg(t, 28.7, 29.1)); show(S.dFile, df); tr(S.dFile, 'translate(0,'+(12*(1-df)).toFixed(1)+')');
-    S.docB.r.setAttribute('fill', dy ? TEAL : '#DCE5E3');
+    S.docB.r.setAttribute('fill', dy ? TEAL : '#E7EDEB');
     // 12. dossier
     sc(S.attBtn, 1 - 0.05*Math.sin(Math.PI*seg(t, 31.55, 31.9)), 170, 482);
     // 13. annonce
@@ -673,7 +673,7 @@
     S.aDot.setAttribute('fill', on ? TEAL : '#A5B3B9'); S.aTit.textContent = on ? 'En ligne · visible sur la carte' : 'En pause';
     S.aSub1.textContent = on ? 'Les clients proches vous voient.' : 'Votre annonce n’apparaît pas sur la carte.';
     S.aBtn.t.textContent = on ? 'Mettre en pause' : 'Mettre mon annonce en ligne';
-    S.aBtn.r.setAttribute('fill', on ? '#fff' : TEAL); S.aBtn.r.setAttribute('stroke', on ? TEAL : 'none'); S.aBtn.r.setAttribute('stroke-width', 1.6); S.aBtn.t.setAttribute('fill', on ? '#0C8F7E' : '#fff');
+    S.aBtn.r.setAttribute('fill', on ? '#fff' : TEAL); S.aBtn.r.setAttribute('stroke', on ? TEAL : 'none'); S.aBtn.r.setAttribute('stroke-width', 1.6); S.aBtn.t.setAttribute('fill', on ? '#0B8374' : '#fff');
     var fa = eout(seg(t, 33.6, 34.1)); show(S.aFx, fa); tr(S.aFx, 'translate(0,'+(14*(1-fa)).toFixed(1)+')');
 
     // partie 2 : séparateur

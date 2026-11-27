@@ -161,7 +161,7 @@ export default function DepartureBar({
             scanné sur place, qui déclenchera réellement la mission.
           </p>
           {minPlausibleMin != null && minPlausibleMin > ETAS[0] && (
-            <p style={{ fontSize: 11.5, color: '#6E8592', margin: '10px 0 0' }}>
+            <p style={{ fontSize: 11.5, color: '#4E6470', margin: '10px 0 0' }}>
               Compte tenu de la distance, une arrivée en moins de {minPlausibleMin} min n'est pas réaliste — ces créneaux sont désactivés.
             </p>
           )}
@@ -179,8 +179,8 @@ export default function DepartureBar({
                   flex: '1 0 28%', minHeight: 44, padding: '13px 0', borderRadius: 12, border: 'none', cursor: impossible ? 'not-allowed' : 'pointer',
                   fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15,
                   background: impossible ? '#F3F6F5' : eta === m ? '#12B39C' : '#fff',
-                  color: impossible ? '#DCE5E3' : eta === m ? '#fff' : '#123644',
-                  boxShadow: impossible || eta === m ? 'none' : '0 0 0 1px #DCE5E3',
+                  color: impossible ? '#E7EDEB' : eta === m ? '#fff' : '#123644',
+                  boxShadow: impossible || eta === m ? 'none' : '0 0 0 1px #E7EDEB',
                 }}>{m} min</button>
               )
             })}

@@ -166,7 +166,7 @@ export default function CommentCaMarche() {
         ) : (
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={() => go(-1)} disabled={index === 0}
-              style={{ flex: 1, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 15, borderRadius: 999, opacity: index === 0 ? 0.4 : 1 }}>
+              style={{ flex: 1, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, padding: 15, borderRadius: 999, opacity: index === 0 ? 0.4 : 1 }}>
               Précédent
             </button>
             <button onClick={() => go(1)}

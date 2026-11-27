@@ -228,7 +228,7 @@ export default function ProTarifsPage() {
             {opts.row?.hidden && <span className="a-pill" style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#FFF4DD', color: '#8A5A00' }}>Masquée</span>}
           </div>
           <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3 }}>{pricingSummary(cols)}</div>
-          {opts.desc && <div style={{ fontSize: 12, color: '#6E8592', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opts.desc}</div>}
+          {opts.desc && <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opts.desc}</div>}
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, color: '#123644', whiteSpace: 'nowrap' }}>{pricingShort(cols) ?? 'À compléter'}</div>
@@ -263,8 +263,8 @@ export default function ProTarifsPage() {
           ouvre une conversation pour chiffrer.
         </p>
 
-        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
-        {error && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#c0503a', fontSize: 12.5, fontWeight: 600, marginBottom: 10 }}>{error}</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {error && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#B3402F', fontSize: 12.5, fontWeight: 600, marginBottom: 10 }}>{error}</div>}
 
         {!loading && (
           <>
@@ -319,7 +319,7 @@ export default function ProTarifsPage() {
                       <span style={label}>Description courte (facultatif)</span>
                       <textarea value={description} onChange={e => setDescription(e.target.value.slice(0, DESC_MAX))} rows={2}
                         placeholder="Ce qui est compris, matériel fourni…" style={{ ...input, resize: 'vertical' }} />
-                      <span style={{ display: 'block', textAlign: 'right', fontSize: 11, color: '#6E8592', marginTop: 3 }}>{description.length}/{DESC_MAX}</span>
+                      <span style={{ display: 'block', textAlign: 'right', fontSize: 11, color: '#4E6470', marginTop: 3 }}>{description.length}/{DESC_MAX}</span>
                     </label>
 
                     {ext && (
@@ -336,12 +336,12 @@ export default function ProTarifsPage() {
                           )}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <button type="button" onClick={() => fileRef.current?.click()}
-                              style={{ minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                              style={{ minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                               {shownPhoto ? 'Changer la photo' : 'Ajouter une photo'}
                             </button>
                             {shownPhoto && (
                               <button type="button" onClick={() => { setPhoto(null); setPhotoRemoved(true) }}
-                                style={{ minHeight: 44, padding: 0, border: 'none', background: 'none', color: '#c0503a', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>Retirer la photo</button>
+                                style={{ minHeight: 44, padding: 0, border: 'none', background: 'none', color: '#B3402F', fontWeight: 700, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>Retirer la photo</button>
                             )}
                           </div>
                           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden
@@ -365,21 +365,21 @@ export default function ProTarifsPage() {
             {editing.kind !== 'primary' && trade && ext && (
               <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, minHeight: 44, cursor: 'pointer' }}>
                 <input type="checkbox" checked={hidden} onChange={e => setHidden(e.target.checked)} style={{ width: 24, height: 24, margin: 0, flexShrink: 0, accentColor: '#12B39C' }} />
-                <span style={{ fontSize: 13, color: '#123644' }}>Masquer de ma fiche <span style={{ color: '#6E8592', fontSize: 12 }}>(gardée ici, non réservable)</span></span>
+                <span style={{ fontSize: 13, color: '#123644' }}>Masquer de ma fiche <span style={{ color: '#4E6470', fontSize: 12 }}>(gardée ici, non réservable)</span></span>
               </label>
             )}
 
-            {sheetError && <p style={{ color: '#c0503a', fontSize: 12.5, fontWeight: 600, margin: '12px 0 0' }}>{sheetError}</p>}
+            {sheetError && <p style={{ color: '#B3402F', fontSize: 12.5, fontWeight: 600, margin: '12px 0 0' }}>{sheetError}</p>}
 
             {/* Boutons collants en bas de la fenêtre (audit 19/11, correction 17) : « Enregistrer » toujours
                 visible, sans défiler sous le formulaire de prix. */}
             <div style={{ display: 'flex', gap: 8, position: 'sticky', bottom: -20, zIndex: 2, margin: '18px -20px -20px', padding: '12px 20px calc(16px + env(safe-area-inset-bottom, 0px))', background: '#fff', borderTop: '1px solid #EEF2F1' }}>
               {editing.kind === 'row' && (
                 <button type="button" onClick={() => setAskRemove(editing.id)}
-                  style={{ minHeight: 48, padding: '12px 16px', borderRadius: 999, border: '1.5px solid #F3D3CC', background: '#fff', color: '#c0503a', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Retirer</button>
+                  style={{ minHeight: 48, padding: '12px 16px', borderRadius: 999, border: '1.5px solid #F3D3CC', background: '#fff', color: '#B3402F', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Retirer</button>
               )}
               <button type="button" onClick={close}
-                style={{ flex: 1, minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
+                style={{ flex: 1, minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
               <button type="button" onClick={save} disabled={saving}
                 style={{ flex: 1.4, minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}

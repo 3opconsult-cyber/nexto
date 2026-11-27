@@ -195,7 +195,7 @@ def e(s):
 
 def linkify(s):
     """Texte échappé, URLs du site rendues cliquables (le texte affiché reste l'URL, lisible en version texte)."""
-    return re.sub(r"(https://[^\s;,]+[^\s;,.])", r'<a href="\1" target="_blank" style="color:#0C8F7E">\1</a>', e(s))
+    return re.sub(r"(https://[^\s;,]+[^\s;,.])", r'<a href="\1" target="_blank" style="color:#0B8374">\1</a>', e(s))
 
 
 def bloc_html(b):
@@ -215,7 +215,7 @@ def bloc_html(b):
             'font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:999px">%s</a>'
             '</td></tr></table>' % (TEAL, e(url(b[2])), FONT, e(b[1])))
     if k == "link":
-        return ('<p %s>%s<a href="%s" target="_blank" style="color:#0C8F7E;font-weight:bold">%s</a></p>'
+        return ('<p %s>%s<a href="%s" target="_blank" style="color:#0B8374;font-weight:bold">%s</a></p>'
                 % (p, e(b[1]), e(url(b[3])), e(b[2])))
     if k == "note":
         return ('<p style="margin:0 0 18px;padding:12px 14px;background:%s;border-radius:10px;font-family:%s;'

@@ -45,7 +45,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
   arrived:   { label: 'En cours',        color: '#0B8374', bg: 'rgba(18,179,156,.1)' },
   completed: { label: 'Terminée',        color: '#123644', bg: '#F3F6F5' },
   released:  { label: 'Réglée',          color: '#15803D', bg: '#DCFCE7' },
-  disputed:  { label: 'En litige',       color: '#C0503A', bg: '#FEE2E2' },
+  disputed:  { label: 'En litige',       color: '#B3402F', bg: '#FEE2E2' },
   refunded:  { label: 'Remboursée',      color: '#4E6470', bg: '#F3F6F5' },
   cancelled: { label: 'Annulée',         color: '#4E6470', bg: '#F3F6F5' },
 }
@@ -168,7 +168,7 @@ export default function ProDashboard() {
           {/* Interrupteur très visible, en haut : une ligne entière sous le titre (les clients vous voient / vous êtes masqué). */}
           <div style={{ flex: '1 1 100%', marginTop: 4 }}>
             <VisibilitySwitch active={available} busy={vis.busy} onToggle={vis.toggle} onDark style={{ width: '100%', justifyContent: 'space-between' }} />
-            {vis.msg && <p role="alert" data-visibility-msg style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#fff', background: 'rgba(192,80,58,.35)', borderRadius: 12, padding: '10px 14px' }}>{vis.msg}</p>}
+            {vis.msg && <p role="alert" data-visibility-msg style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#fff', background: 'rgba(179,64,47,.35)', borderRadius: 12, padding: '10px 14px' }}>{vis.msg}</p>}
           </div>
         </div>
       ) : (
@@ -264,7 +264,7 @@ export default function ProDashboard() {
                 style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', minHeight: 56, padding: '14px 18px', borderRadius: 16, background: '#fff', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', border: `1.5px solid ${docAlerts.some(a => a.urgent) ? 'rgba(255,122,102,.6)' : 'rgba(242,169,59,.6)'}` }}>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>Mes pièces : à mettre à jour</span>
-                  <span style={{ display: 'block', fontSize: 15, lineHeight: 1.5, fontWeight: 600, marginTop: 2, color: docAlerts[0].urgent ? '#A8432F' : '#7A5717' }}>
+                  <span style={{ display: 'block', fontSize: 15, lineHeight: 1.5, fontWeight: 600, marginTop: 2, color: docAlerts[0].urgent ? '#B3402F' : '#7A5717' }}>
                     {docAlerts[0].text}{docAlerts.length > 1 ? ` · et ${docAlerts.length - 1} autre${docAlerts.length > 2 ? 's' : ''}` : ''}
                   </span>
                 </span>
@@ -361,7 +361,7 @@ export default function ProDashboard() {
         {tab === 'missions' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {transactions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Aucune mission pour l'instant</div>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Aucune mission pour l'instant</div>
             ) : transactions.map(t => {
               const st = STATUS_LABELS[t.status] || STATUS_LABELS.pending
               return (

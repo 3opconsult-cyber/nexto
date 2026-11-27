@@ -61,8 +61,8 @@ const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
   // « Contrôlé par PING » : la pièce a été validée par un admin (exception de langage du 03/11).
   valid: { label: 'Contrôlé par PING', bg: 'rgba(18,179,156,.14)', fg: '#0B8374' },
   pending: { label: 'Reçu — en cours de traitement', bg: 'rgba(242,169,59,.16)', fg: '#8A6520' },
-  rejected: { label: 'Refusé — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
-  expired: { label: 'Expiré — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#C0503A' },
+  rejected: { label: 'Refusé — à redéposer', bg: 'rgba(255,122,102,.14)', fg: '#B3402F' },
+  expired: { label: 'Expiré — à renouveler', bg: 'rgba(255,122,102,.14)', fg: '#B3402F' },
 }
 
 // `identite--passeport-1730…pdf` (nouveau) ou `identite-1730…pdf` (ancien format, sans type).
@@ -208,7 +208,7 @@ export default function ProDocumentsPage() {
       </div>
 
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '28px 20px 0', display: 'flex', flexDirection: 'column', gap: 36 }}>
-        {error && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#c0503a', fontSize: 12.5, fontWeight: 600 }}>{error}</div>}
+        {error && <div style={{ background: '#fff', borderRadius: 12, padding: '10px 14px', color: '#B3402F', fontSize: 12.5, fontWeight: 600 }}>{error}</div>}
 
         {asked.length > 0 && (
           <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 14 }}>
@@ -222,11 +222,11 @@ export default function ProDocumentsPage() {
                   <div key={a.kind + '--' + a.type} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', borderRadius: 11, background: '#F7F9F8' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{a.label}</div>
-                      <div style={{ fontSize: 11, color: '#6E8592' }}>Demandée pour {a.services.join(', ').toLowerCase()}{rub ? ` · rubrique ${rub.title}` : ''}</div>
+                      <div style={{ fontSize: 11, color: '#4E6470' }}>Demandée pour {a.services.join(', ').toLowerCase()}{rub ? ` · rubrique ${rub.title}` : ''}</div>
                     </div>
                     {given
                       ? <span className="a-pill" style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: STATUS.valid.bg, color: STATUS.valid.fg }}>Fournie</span>
-                      : <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592' }}>{a.required ? 'À fournir' : 'Facultatif'}</span>}
+                      : <span style={{ fontSize: 11, fontWeight: 700, color: '#4E6470' }}>{a.required ? 'À fournir' : 'Facultatif'}</span>}
                   </div>
                 )
               })}
@@ -250,11 +250,11 @@ export default function ProDocumentsPage() {
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, color: '#123644' }}>{r.title}</span>
                     {st
                       ? <span className="a-pill" style={{ padding: '2px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, background: st.bg, color: st.fg, whiteSpace: 'nowrap', maxWidth: '100%' }}>{st.label}</span>
-                      : <span style={{ fontSize: 11, fontWeight: 700, color: '#6E8592' }}>{r.optional ? 'Facultatif' : 'À fournir'}</span>}
+                      : <span style={{ fontSize: 11, fontWeight: 700, color: '#4E6470' }}>{r.optional ? 'Facultatif' : 'À fournir'}</span>}
                   </div>
                   <div style={{ fontSize: 12, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>{r.help}</div>
                   {row?.status === 'rejected' && (
-                    <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(255,122,102,.1)', color: '#A8432F', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>
+                    <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(255,122,102,.1)', color: '#B3402F', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>
                       Refusée{row.rejection_reason ? ` : ${row.rejection_reason}` : ''}. Déposez une nouvelle pièce : elle repart en contrôle. Une pièce refusée ne compte pas pour « profil vérifié par PING ».
                     </div>
                   )}
@@ -266,12 +266,12 @@ export default function ProDocumentsPage() {
                     </button>
                   )}
                   {exp && row?.status !== 'rejected' && (
-                    <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: exp.expired || exp.days <= 14 ? 'rgba(255,122,102,.1)' : 'rgba(242,169,59,.14)', color: exp.expired || exp.days <= 14 ? '#A8432F' : '#7A5717', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>
+                    <div role="status" style={{ marginTop: 8, padding: '8px 10px', borderRadius: 10, background: exp.expired || exp.days <= 14 ? 'rgba(255,122,102,.1)' : 'rgba(242,169,59,.14)', color: exp.expired || exp.days <= 14 ? '#B3402F' : '#7A5717', fontSize: 12, fontWeight: 600, lineHeight: 1.45 }}>
                       {expiryText(exp)}.
                     </div>
                   )}
                   {row?.status === 'valid' && row.valid_until && !exp && (
-                    <div style={{ fontSize: 11, color: '#6E8592', marginTop: 4 }}>Valable jusqu&apos;au {new Date(`${row.valid_until}T12:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                    <div style={{ fontSize: 11, color: '#4E6470', marginTop: 4 }}>Valable jusqu&apos;au {new Date(`${row.valid_until}T12:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
                   )}
                 </div>
               </div>
@@ -294,7 +294,7 @@ export default function ProDocumentsPage() {
                       </svg>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{typeLabel(r, p)}</div>
-                        {p.at > 0 && <div style={{ fontSize: 11, color: '#6E8592' }}>Déposée le {new Date(p.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
+                        {p.at > 0 && <div style={{ fontSize: 11, color: '#4E6470' }}>Déposée le {new Date(p.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>}
                       </div>
                       <button onClick={() => open(p)} style={{ minWidth: 56, minHeight: 44, padding: '0 10px', border: 'none', borderRadius: 10, background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Voir</button>
                       <button onClick={() => setToRemove(p)} aria-label={`Supprimer ${typeLabel(r, p)}`} style={{ width: 44, height: 44, border: 'none', borderRadius: 10, background: 'none', color: '#4E6470', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

@@ -36,7 +36,7 @@ export default function PricingEditor({
         <input type="number" inputMode="decimal" min="0" step={key === 'hours' ? '0.5' : '1'} value={value[key]}
           onChange={e => set({ [key]: e.target.value } as Partial<PricingDraft>)}
           style={{ flex: 1, minWidth: 0, minHeight: 44, boxSizing: 'border-box', border: 'none', outline: 'none', padding: '10px 12px', fontSize: 16, fontFamily: 'Inter, sans-serif', color: '#123644' }} />
-        <span style={{ padding: '0 12px', fontSize: 12.5, fontWeight: 700, color: '#6E8592' }}>{suffix}</span>
+        <span style={{ padding: '0 12px', fontSize: 12.5, fontWeight: 700, color: '#4E6470' }}>{suffix}</span>
       </span>
     </label>
   )
@@ -71,7 +71,7 @@ export default function PricingEditor({
       {preview && (
         <div style={{ marginTop: 12, fontSize: 12.5, fontWeight: 700, color: '#0B8374' }}>Affiché aux clients : {preview}</div>
       )}
-      {showError && error && <div style={{ marginTop: 10, fontSize: 12, color: '#c0503a', fontWeight: 600 }}>{error}</div>}
+      {showError && error && <div style={{ marginTop: 10, fontSize: 12, color: '#B3402F', fontWeight: 600 }}>{error}</div>}
     </div>
   )
 }

@@ -157,7 +157,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                 background: available ? 'rgba(18,179,156,.1)' : '#F3F6F5',
               }}>
                 <span style={{ fontSize: 13.5, fontWeight: 700, color: '#123644', textAlign: 'left' }}>{available ? 'Disponible, visible sur la carte' : 'Hors ligne, invisible des clients'}</span>
-                <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#F2A93B' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
+                <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#F2A93B' : '#E7EDEB', position: 'relative', flexShrink: 0 }}>
                   <span style={{ position: 'absolute', top: 2, left: available ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
                 </span>
               </button>
@@ -167,7 +167,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
               {today && (
                 <button onClick={() => go(`/mission/${today.id}/jour`)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', minHeight: 48, padding: '13px 12px', borderRadius: 10, border: 'none', background: today.urgent ? 'rgba(229,72,77,.08)' : 'rgba(18,179,156,.1)', fontSize: 14.5, fontWeight: 700, color: '#123644', cursor: 'pointer', marginBottom: 4 }}>
-                  <Icon name="qr" />Mission du jour{today.urgent && <span style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#E5484D' }} aria-label="Action attendue" />}
+                  <Icon name="qr" />Mission du jour{today.urgent && <span style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#B3402F' }} aria-label="Action attendue" />}
                 </button>
               )}
               {links.map(l => (

@@ -301,17 +301,17 @@ export default function LitigePage() {
           <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#0B8374', marginBottom: 6 }}>Médiation PING (visible par vous seul)</div>
             <textarea value={decision} onChange={e => setDecision(e.target.value)} rows={2} aria-label="Décision de PING"
-              style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 13 }} />
+              style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #E7EDEB', fontFamily: 'inherit', fontSize: 13 }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <button onClick={() => close('resolved')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
-              <button onClick={() => close('rejected')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
+              <button onClick={() => close('rejected')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
             </div>
           </div>
         </div>
       )}
 
       <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, background: '#fff', boxShadow: '0 -1px 0 #E3EAE8', padding: '12px 20px' }}>
-        {err && <div style={{ color: '#B2432E', fontSize: 15, marginBottom: 8 }}>{err}</div>}
+        {err && <div style={{ color: '#B3402F', fontSize: 15, marginBottom: 8 }}>{err}</div>}
         {open || admin ? (
           <div style={{ display: 'flex', gap: 8, maxWidth: 640, margin: '0 auto' }}>
             <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(admin ? 'mediation' : 'text') }}
@@ -386,21 +386,21 @@ function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, 
             : result.etat === 'versement_en_attente' ? 'Remboursement fait ; versement au prestataire en attente (reprise automatique).' : null}
         </div>
       )}
-      {!open && dispute?.money_error && admin && <div style={{ fontSize: 12, color: '#C0503A', marginTop: 4 }}>Répartition à reprendre : {dispute.money_error}</div>}
+      {!open && dispute?.money_error && admin && <div style={{ fontSize: 12, color: '#B3402F', marginTop: 4 }}>Répartition à reprendre : {dispute.money_error}</div>}
       {admin && showManual && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12.5, color: '#4E6470', marginTop: 10 }}>
             <span>Total payé par le client</span><b style={{ color: '#123644' }}>{EUR(tx.total_charged_cents || 0)}</b>
             <span>Encaissé (séquestre)</span><b style={{ color: '#123644' }}>{EUR(sum('charge'))}</b>
-            <span>Versé au prestataire</span><b style={{ color: sum('transfer') + sum('payout') ? '#C0503A' : '#123644' }}>{EUR(sum('transfer') + sum('payout'))}</b>
+            <span>Versé au prestataire</span><b style={{ color: sum('transfer') + sum('payout') ? '#B3402F' : '#123644' }}>{EUR(sum('transfer') + sum('payout'))}</b>
             <span>Déjà remboursé</span><b style={{ color: '#123644' }}>{EUR(sum('refund'))}</b>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
             <input value={refundEur} onChange={e => setRefundEur(e.target.value)} inputMode="decimal" aria-label="Montant en euros"
-              style={{ width: 110, padding: '9px 11px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 13 }} />
+              style={{ width: 110, padding: '9px 11px', borderRadius: 10, border: '1px solid #E7EDEB', fontSize: 13 }} />
             {ps !== 'released'
               ? <button onClick={onRefund} disabled={!held} title={held ? '' : 'Aucun paiement sous séquestre'}
-                  style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: held ? '#FF7A66' : '#DCE5E3', color: '#fff', fontWeight: 700, cursor: held ? 'pointer' : 'default' }}>Rembourser le client (séquestre)</button>
+                  style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: held ? '#FF7A66' : '#E7EDEB', color: '#fff', fontWeight: 700, cursor: held ? 'pointer' : 'default' }}>Rembourser le client (séquestre)</button>
               : <button onClick={onRetenue}
                   style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Retenir sur ses prochains versements</button>}
           </div>
@@ -421,7 +421,7 @@ function Countdown({ to }: { to: string }) {
   const m = Math.floor((Math.abs(ms) % 3600000) / 60000)
   const late = ms <= 0
   return (
-    <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: late ? '#C0503A' : '#8a6520' }}>
+    <div style={{ marginTop: 8, fontSize: 12.5, fontWeight: 700, color: late ? '#B3402F' : '#8a6520' }}>
       {late ? `Réponse attendue depuis ${h} h ${String(m).padStart(2, '0')}` : `Réponse attendue sous ${h} h ${String(m).padStart(2, '0')}`}
     </div>
   )
@@ -437,9 +437,9 @@ const DEC_CSS = `
 .dec-range{-webkit-appearance:none;appearance:none;width:100%;height:48px;margin:0;background:transparent;touch-action:manipulation;cursor:pointer}
 .dec-range:focus{outline:none}
 .dec-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(18,179,156,.35)}
-.dec-range::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(to right,#12B39C 0,#12B39C var(--p),#DCE5E3 var(--p),#DCE5E3 100%)}
+.dec-range::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(to right,#12B39C 0,#12B39C var(--p),#E7EDEB var(--p),#E7EDEB 100%)}
 .dec-range::-webkit-slider-thumb{-webkit-appearance:none;width:44px;height:44px;margin-top:-17px;border-radius:50%;background:#fff;border:3px solid #0B8374;box-shadow:0 2px 8px rgba(18,54,68,.25)}
-.dec-range::-moz-range-track{height:10px;border-radius:999px;background:#DCE5E3}
+.dec-range::-moz-range-track{height:10px;border-radius:999px;background:#E7EDEB}
 .dec-range::-moz-range-progress{height:10px;border-radius:999px;background:#12B39C}
 .dec-range::-moz-range-thumb{width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid #0B8374;box-sizing:border-box}
 `
@@ -492,11 +492,11 @@ function DecisionPanel({ ceiling, requested, refund, setRefund, reason, setReaso
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
             <input id="dec-refund" className="a-input" value={refund} onChange={e => setRefund(e.target.value)} onFocus={keepVisible}
               inputMode="decimal" autoComplete="off" enterKeyHint="done" placeholder="Saisir un montant" aria-describedby="dec-split" aria-invalid={bad}
-              style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 700, borderColor: bad ? '#C0503A' : undefined, scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }} />
+              style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 700, borderColor: bad ? '#B3402F' : undefined, scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }} />
             <span aria-hidden style={{ fontSize: 18, fontWeight: 700, color: '#123644' }}>€</span>
           </div>
           {bad && (
-            <div role="alert" style={{ fontSize: 15, color: '#B2432E', marginTop: 8 }}>Montant entre 0 et {EUR(ceiling)} (chiffres, 2 décimales au plus).</div>
+            <div role="alert" style={{ fontSize: 15, color: '#B3402F', marginTop: 8 }}>Montant entre 0 et {EUR(ceiling)} (chiffres, 2 décimales au plus).</div>
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
             {quick.map(([label, c]) => (
@@ -528,7 +528,7 @@ function DecisionPanel({ ceiling, requested, refund, setRefund, reason, setReaso
           </div>
         ) : (
           <button type="button" disabled={!canApply} onClick={() => setConfirm(true)}
-            style={{ width: '100%', minHeight: 52, borderRadius: 999, border: 'none', background: canApply ? '#0B8374' : '#DCE5E3', color: canApply ? '#fff' : '#4E6470', fontSize: 16, fontWeight: 700, cursor: canApply ? 'pointer' : 'default', fontFamily: 'inherit', scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }}>
+            style={{ width: '100%', minHeight: 52, borderRadius: 999, border: 'none', background: canApply ? '#0B8374' : '#E7EDEB', color: canApply ? '#fff' : '#4E6470', fontSize: 16, fontWeight: 700, cursor: canApply ? 'pointer' : 'default', fontFamily: 'inherit', scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }}>
             Appliquer la décision
           </button>
         )}

@@ -281,7 +281,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     plus: 'M12 5v14M5 12h14'
   };
   function icon(p, name, cx, cy, s, c, w){
-    s = s || 1; var g = el('g', {transform:'translate('+(cx-12*s)+','+(cy-12*s)+') scale('+s+')', fill:'none', stroke: c || '#0C8F7E',
+    s = s || 1; var g = el('g', {transform:'translate('+(cx-12*s)+','+(cy-12*s)+') scale('+s+')', fill:'none', stroke: c || '#0B8374',
       'stroke-width': w || 1.9, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, p);
     IC[name].split('|').forEach(function(d){ el('path', {d:d}, g); });
     return g;
@@ -304,7 +304,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     o = o || {}; var w = o.w || (label.length * 6.4 + 20);
     var g = el('g', {}, p);
     var r = el('rect', {x:x, y:y, width:w, height: o.h || 22, rx: (o.h || 22)/2, fill: o.fill || '#DDF5F0'}, g);
-    var t = tx(g, x + w/2, y + (o.h || 22)/2 + 4, label, {s: o.s || 11, w:600, c: o.c || '#0C8F7E', a:'middle'});
+    var t = tx(g, x + w/2, y + (o.h || 22)/2 + 4, label, {s: o.s || 11, w:600, c: o.c || '#0B8374', a:'middle'});
     g.r = r; g.t = t; g.w = w; return g;
   }
   function btn(p, cx, cy, w, h, label, o){
@@ -411,7 +411,7 @@ html.rec .player{width:auto; min-width:0; margin:0;}
   // msgs = textes à l'écran (une idée par scène, 8 mots par ligne au plus), taps = touchers montrés (le doigt arrive 0,8 s avant, le résultat reste 1,2 s).
   // Même logo (mot « ping », épingle), mêmes couleurs et mêmes polices que les animations d'origine (helpers c_helpers.js).
   var CFG = {"scenes": [{"id": "accroche", "kind": "hook", "d": 5.9, "lib": "Accroche", "desc": "Logo PING, la tagline sur la carte, les prestataires qui apparaissent autour de vous.", "msgs": [{"id": "m1", "lines": ["Et si ce que vous cherchiez", "se trouvait juste à côté ?"], "at": 0.2, "style": "tag", "hl": 1, "thr": 5.4}], "v": "Avant d’aller chercher plus loin, regardez autour de vous.", "_wps": 1.7, "_cps": 10.9, "sl": ["Avant d’aller chercher plus", "loin, regardez autour de vous."], "t0": 0.0}, {"id": "crainte", "kind": "trust", "d": 6.5, "lib": "La crainte", "desc": "« Un inconnu chez vous ? » puis le profil vérifié par PING, les avis.", "msgs": [{"id": "m1", "lines": ["Un inconnu chez vous ?"], "at": 0.2, "until": 3.1, "style": "q", "thr": 2.6}, {"id": "m2", "lines": ["Profil vérifié par PING"], "at": 3.55, "style": "a", "thr": 2.6}], "v": "Chez vous, la confiance compte : profils contrôlés, avis d’autres clients.", "_wps": 1.69, "_cps": 12.5, "sl": ["Chez vous, la confiance compte : profils", "contrôlés, avis d’autres clients."], "t0": 5.9}, {"id": "appuis", "kind": "find", "d": 10.3, "lib": "4 appuis", "desc": "Trouver un prestataire, Ménage, Voir les prestataires, Réserver : le prix validé s'affiche.", "msgs": [{"id": "m1", "lines": ["Je trouve en 4 appuis"], "at": 0.2, "style": "cap", "thr": 3.0}], "taps": [[1.2, 270, 868], [3.2, 106, 670], [5.6, 270, 880], [8.0, 270, 850]], "v": "Ménage, repassage, nettoyage, fin de chantier, remise en état : quatre gestes.", "_wps": 1.13, "_cps": 8.0, "sl": ["Ménage, repassage, nettoyage, fin de", "chantier, remise en état : quatre gestes."], "t0": 12.4}, {"id": "route", "kind": "route", "d": 7.4, "lib": "En route", "desc": "Exemple de suivi : carte aux routes jaunes, camionnette qui roule, « En route · 14:32 », notification « d'ici 1 h ».", "msgs": [{"id": "m1", "lines": ["En route · 14:32"], "at": 0.3, "style": "chip", "thr": 2.2}, {"id": "m2", "lines": ["Votre rendez-vous sera là", "d’ici 1 h"], "at": 3.25, "style": "notif", "thr": 3.8}], "v": "Le jour du rendez-vous, vous savez à quelle heure il arrive.", "_wps": 1.62, "_cps": 8.8, "sl": ["Le jour du rendez-vous, vous", "savez à quelle heure il arrive."], "t0": 22.700000000000003}, {"id": "traces", "kind": "times", "d": 5.0, "lib": "Arrivée, départ, notes", "desc": "Heure d'arrivée, heure de départ, notes croisées : pas de place pour les fausses notes.", "msgs": [{"id": "m1", "lines": ["Pas de place pour", "les fausses notes"], "at": 0.2, "style": "cap", "thr": 3.8}], "v": "Arrivée et départ sont horodatés ; chacun note l’autre.", "_wps": 1.82, "_cps": 12.5, "sl": ["Arrivée et départ sont", "horodatés ; chacun note l’autre."], "t0": 30.1}, {"id": "paiement", "kind": "pay", "d": 3.5, "lib": "Paiement", "desc": "Paiement par virement : prix validé, 60 € en exemple.", "msgs": [{"id": "m1", "lines": ["Paiement par virement,", "prix validé"], "at": 0.2, "style": "cap", "thr": 3.0}], "v": "Prix validé d’avance, réglé par virement.", "_wps": 2.07, "_cps": 14.1, "sl": ["Prix validé d’avance, réglé par virement."], "t0": 35.1}, {"id": "final", "kind": "final", "d": 6.1, "lib": "Activer PING", "desc": "Logo PING, « Activer PING », « Ils sont juste à côté. », QR /l/ins et bouton « Je m'inscris » (page web seulement).", "msgs": [{"id": "m1", "lines": ["Activer PING"], "at": 0.2, "style": "big", "thr": 1.8}, {"id": "m2", "lines": ["Ils sont juste à côté."], "at": 2.8, "style": "tag2", "hl": 0, "thr": 3.0}], "v": "Vous cherchez un prestataire ? Activez PING : ils sont juste à côté.", "v0": 0.5, "_wps": 2.0, "_cps": 12.4, "sl": ["Vous cherchez un prestataire ?", "Activez PING : ils sont juste à côté."], "t0": 38.6}], "voice": "/brand/files/voix-courte-client.mp3", "who": "client", "code": "ins", "sequestre": false};
-  var NAVY = '#123644', TEAL = '#12B39C', TEALD = '#0C8F7E', GOLD = '#F2A93B', GREEN = '#2FD06E', GREY = '#4E6470', ORANGE = '#E8743B', LINE = '#DCE5E3';
+  var NAVY = '#123644', TEAL = '#12B39C', TEALD = '#0B8374', GOLD = '#F2A93B', GREEN = '#2FD06E', GREY = '#4E6470', ORANGE = '#E8743B', LINE = '#E7EDEB';
   IC.shield = 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z|M8.5 12l2.5 2.5L16 9.5';
   IC.qr = 'M4 4h6v6H4z|M14 4h6v6h-6z|M4 14h6v6H4z|M14 14h2.5v2.5H14z|M18 14h2v2|M14 19h2M18 18.5h2v1.5h-3';
   IC.star = 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z';
@@ -844,14 +844,14 @@ html.rec .player{width:auto; min-width:0; margin:0;}
     el('circle', { cx: 270, cy: 560, r: 17, fill: TEAL, stroke: '#fff', 'stroke-width': 5 }, g);
     var pp = [[110, 430], [410, 450]].map(function(p){ return pinAt(g, p[0], p[1], TEAL); });
     var C = el('g', {}, g); box(C, 24, 690, 492, 200, { rx: 34, sh: true, stroke: 'none' });
-    var dot = el('circle', { cx: 70, cy: 760, r: 13, fill: '#C0503A' }, C);
+    var dot = el('circle', { cx: 70, cy: 760, r: 13, fill: '#B3402F' }, C);
     var off = tx(C, 100, 772, 'Hors ligne', { f: 'Q', s: 40, c: GREY }), on = tx(C, 100, 772, 'Disponible maintenant', { f: 'Q', s: 36 }); fit(on, 262);
     var tog = el('rect', { x: 376, y: 746, width: 108, height: 62, rx: 31, fill: '#CDD6D3' }, C), knob = el('circle', { cx: 407, cy: 777, r: 25, fill: '#fff', filter: 'url(#shs)' }, C);
     tx(C, 100, 836, 'Visible sur la carte', { s: 26, w: 600, c: GREY });
     var msgs = mkMsgs(g, s);
     return function(u){
       var k = eio(seg(u, T, T + 0.35)), isOn = u >= T + 0.05;
-      tog.setAttribute('fill', isOn ? GOLD : '#CDD6D3'); knob.setAttribute('cx', (407 + 70 * k).toFixed(1)); dot.setAttribute('fill', isOn ? TEAL : '#C0503A');
+      tog.setAttribute('fill', isOn ? GOLD : '#CDD6D3'); knob.setAttribute('cx', (407 + 70 * k).toFixed(1)); dot.setAttribute('fill', isOn ? TEAL : '#B3402F');
       show(off, 1 - seg(u, T, T + 0.2)); show(on, seg(u, T + 0.1, T + 0.4));
       press(tog, seg(u, T - 0.15, T + 0.25), 430, 777);
       rings.forEach(function(c, i){ var kk = mod(u - T - 0.2 - i * 0.6, 1.8) / 1.8; c.setAttribute('r', (18 + kk * 230).toFixed(1)); show(c, u > T + 0.2 + i * 0.6 ? (1 - kk) * 0.55 : 0); });

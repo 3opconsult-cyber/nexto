@@ -344,7 +344,7 @@ function TimeGrid({ days, events, now, h0, h1, step, narrow, selectable, selecti
                   )
                 })()}
                 {sameDay(d, now) && minutesOfDay(now) >= h0 && minutesOfDay(now) <= h1 && (
-                  <div style={{ position: 'absolute', left: 0, right: 0, top: (minutesOfDay(now) - h0) * PX_PER_MIN, borderTop: '2px solid #c0503a', zIndex: 4, pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', left: 0, right: 0, top: (minutesOfDay(now) - h0) * PX_PER_MIN, borderTop: '2px solid #B3402F', zIndex: 4, pointerEvents: 'none' }} />
                 )}
               </div>
             )
@@ -440,7 +440,7 @@ function MonthGrid({ cursor, events, now, selectable, selection, onSelect, onOpe
                 background: on ? 'rgba(242,169,59,.18)' : past ? 'transparent' : C.paper, opacity: inMonth ? 1 : .45,
                 display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0, fontFamily: 'Inter, sans-serif',
               }}>
-              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: aere ? 16 : 14, color: today ? C.tealD : past ? '#6E8592' : C.ink }}>{d.getDate()}</span>
+              <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: aere ? 16 : 14, color: today ? C.tealD : past ? '#4E6470' : C.ink }}>{d.getDate()}</span>
               {busy > 0 && <span style={{ fontSize: aere ? 12 : 10.5, fontWeight: 700, color: '#fff', background: past ? '#8A9BA3' : C.ink, borderRadius: 999, padding: aere ? '1px 2px' : '1px 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{busy} RDV</span>}
               {pend > 0 && <span style={{ fontSize: aere ? 12 : 10.5, fontWeight: 700, color: '#7A5717', background: '#FFF7ED', border: `1.5px dashed ${C.gold}`, borderRadius: 999, padding: aere ? '0 2px' : '0 3px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{pend} RDV</span>}
               {free > 0 && <span style={{ fontSize: aere ? 12 : 11, fontWeight: 700, color: C.tealD, background: 'rgba(18,179,156,.14)', borderRadius: 999, padding: aere ? '1px 2px' : '1px 5px', alignSelf: 'flex-start', maxWidth: '100%', overflow: 'hidden', whiteSpace: 'nowrap' }}>{free} libre{free > 1 ? 's' : ''}</span>}

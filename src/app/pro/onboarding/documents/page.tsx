@@ -161,7 +161,7 @@ export default function ProDocuments() {
             {uploading ? 'Envoi…' : 'Télécharger le document'}
           </button>
         )}
-        {error && <p style={{ color: '#c0503a', fontSize: 12.5, marginTop: 14, textAlign: 'center' }}>{error}</p>}
+        {error && <p style={{ color: '#B3402F', fontSize: 12.5, marginTop: 14, textAlign: 'center' }}>{error}</p>}
       </div>
     </OnboardingStep>
   )

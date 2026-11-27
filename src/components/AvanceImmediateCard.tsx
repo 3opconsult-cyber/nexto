@@ -46,7 +46,7 @@ export default function AvanceImmediateCard({ transactionId, isSeller }: { trans
               </button>
             </>
           : <p style={{ fontSize: 12, color: '#4E6470', margin: '6px 0 0' }}>Pas encore transmise par le prestataire.</p>}
-      {msg && <p style={{ fontSize: 12, color: '#c0503a', margin: '8px 0 0' }}>{msg}</p>}
+      {msg && <p style={{ fontSize: 12, color: '#B3402F', margin: '8px 0 0' }}>{msg}</p>}
     </div>
   )
 }

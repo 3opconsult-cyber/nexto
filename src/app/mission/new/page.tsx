@@ -508,7 +508,7 @@ function MissionForm() {
               le prestataire vous envoie un tarif que vous acceptez ou non. Rien n&apos;est réservé tant que vous
               n&apos;avez pas accepté son tarif.
             </div>
-            {error && <p style={{ color: '#B2432E', fontSize: 15, marginBottom: 12 }}>{error}</p>}
+            {error && <p style={{ color: '#B3402F', fontSize: 15, marginBottom: 12 }}>{error}</p>}
             <button onClick={askQuote} disabled={devisBusy}
               style={{ width: '100%', minHeight: 54, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 15, borderRadius: 16, opacity: devisBusy ? 0.7 : 1 }}>
               {devisBusy ? 'Ouverture…' : 'Demander un devis'}
@@ -523,13 +523,13 @@ function MissionForm() {
               <div style={{ fontSize: 15, color: chosen ? '#0B6F63' : '#4E6470', fontWeight: chosen ? 700 : 400, marginTop: 12 }}>
                 {chosen ? `Créneau choisi : ${dayLabel(chosen.starts_at)} à ${hhmm(chosen.starts_at)}` : 'Touchez un créneau disponible publié par le prestataire.'}
               </div>
-              {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#B2432E', fontSize: 15, fontWeight: 600, margin: '8px 0 0' }}>{fieldErr.msg}</p>}
+              {fieldErr?.field === 'slot' && !chosen && <p role="alert" style={{ color: '#B3402F', fontSize: 15, fontWeight: 600, margin: '8px 0 0' }}>{fieldErr.msg}</p>}
             </div>
           ) : (
             <div style={card}>
               <span style={{ fontSize: 16, color: '#123644', fontWeight: 600 }}>Date et heure souhaitées</span>
               <div style={{ marginTop: 12 }}><DayTimePicker value={wantedAt} onChange={v => { setWantedAt(v); if (fieldErr?.field === 'date') setFieldErr(null) }} /></div>
-              {fieldErr?.field === 'date' && <p role="alert" style={{ color: '#B2432E', fontSize: 15, fontWeight: 600, margin: '8px 0 0' }}>{fieldErr.msg}</p>}
+              {fieldErr?.field === 'date' && <p role="alert" style={{ color: '#B3402F', fontSize: 15, fontWeight: 600, margin: '8px 0 0' }}>{fieldErr.msg}</p>}
             </div>
           )}
         </div>
@@ -604,7 +604,7 @@ function MissionForm() {
             <span style={{ fontSize: 16, color: '#123644', fontWeight: 600 }}>Durée estimée (heures) — ajustée au réel après le scan de sortie</span>
             <input type="number" value={estimatedHours} onChange={e => { setEstimatedHours(e.target.value); if (fieldErr?.field === 'hours') setFieldErr(null) }} min="0.5" step="0.5"
               style={{ display: 'block', width: '100%', minHeight: 52, marginTop: 10, border: '1.5px solid #CFDAD7', borderRadius: 14, padding: '12px 16px', fontSize: 16, boxSizing: 'border-box' }} />
-            {fieldErr?.field === 'hours' && <span role="alert" style={{ display: 'block', color: '#B2432E', fontSize: 15, fontWeight: 600, marginTop: 6 }}>{fieldErr.msg}</span>}
+            {fieldErr?.field === 'hours' && <span role="alert" style={{ display: 'block', color: '#B3402F', fontSize: 15, fontWeight: 600, marginTop: 6 }}>{fieldErr.msg}</span>}
           </label>
         )}
 
@@ -645,7 +645,7 @@ function MissionForm() {
           </span>
         </div>
 
-        {error && <p role="alert" style={{ color: '#B2432E', fontSize: 15, marginBottom: 12 }}>{error}</p>}
+        {error && <p role="alert" style={{ color: '#B3402F', fontSize: 15, marginBottom: 12 }}>{error}</p>}
 
         {results && (
           <div id="mn-results" role="status" style={{ ...card, background: '#FFF7ED', borderRadius: 16, padding: 18 }}>

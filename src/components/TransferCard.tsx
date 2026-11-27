@@ -150,7 +150,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
             : `À régler avant le ${dateFr(t.due_at)}, avec la référence en libellé du virement.`}
         </div>
         {transferState(t) === 'non_recu' && (
-          <div style={{ background: 'rgba(192,80,58,.08)', borderRadius: 9, padding: '9px 11px', margin: '4px 0 8px', fontSize: 12.5, lineHeight: 1.55, color: '#7A2E1E' }}>
+          <div style={{ background: 'rgba(179,64,47,.08)', borderRadius: 9, padding: '9px 11px', margin: '4px 0 8px', fontSize: 12.5, lineHeight: 1.55, color: '#7A2E1E' }}>
             <b>{toPro ? 'Le prestataire' : 'PING'} indique ne pas avoir reçu ce virement</b>{t.not_received_at ? ` (le ${dateFr(t.not_received_at)})` : ''}.
             {t.not_received_note ? ` « ${t.not_received_note} »` : ''} Vérifiez le montant, la référence et l’IBAN sur votre relevé.
             {asking === t.id ? (
@@ -170,7 +170,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
           </div>
         )}
         {transferState(t) === 'desaccord' && (
-          <p style={{ fontSize: 12.5, color: '#7A2E1E', background: 'rgba(192,80,58,.08)', borderRadius: 9, padding: '9px 11px', margin: '4px 0 8px', lineHeight: 1.55 }}>
+          <p style={{ fontSize: 12.5, color: '#7A2E1E', background: 'rgba(179,64,47,.08)', borderRadius: 9, padding: '9px 11px', margin: '4px 0 8px', lineHeight: 1.55 }}>
             Vous maintenez avoir fait ce virement, le destinataire ne le voit pas : PING est informé et peut intervenir dans la conversation de la mission. Une preuve de virement (capture, avis d’exécution) aide à trancher.
           </p>
         )}
@@ -244,7 +244,7 @@ export default function TransferCard({ transactionId, userId }: { transactionId:
           ))}
         </div>
       )}
-      {err && <p style={{ color: '#c0503a', fontSize: 12, marginTop: 8 }}>{err}</p>}
+      {err && <p style={{ color: '#B3402F', fontSize: 12, marginTop: 8 }}>{err}</p>}
     </div>
   )
 }

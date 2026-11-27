@@ -29,7 +29,7 @@ export default function ImprimerQrSurPlace() {
         }
       `}</style>
       <div className="no-print" style={{ display: 'flex', gap: 10, padding: 16, justifyContent: 'center' }}>
-        <button onClick={() => router.back()} style={{ border: '1.5px solid #DCE5E3', background: '#fff', borderRadius: 999, padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>Retour</button>
+        <button onClick={() => router.back()} style={{ border: '1.5px solid #E7EDEB', background: '#fff', borderRadius: 999, padding: '10px 18px', fontWeight: 700, cursor: 'pointer' }}>Retour</button>
         <button onClick={() => window.print()} disabled={!token} style={{ border: 'none', background: '#123644', color: '#fff', borderRadius: 999, padding: '10px 22px', fontWeight: 700, cursor: token ? 'pointer' : 'default' }}>Imprimer</button>
       </div>
       {err && <p role="alert" style={{ textAlign: 'center', color: '#B3402F' }}>{err}</p>}

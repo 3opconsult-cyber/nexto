@@ -44,11 +44,11 @@ export default function FavorisPage() {
       </div>
 
       <div style={{ padding: 16 }}>
-        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
         {!loading && rows.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucun favori pour l'instant</div>
-            <div style={{ fontSize: 12, color: '#6E8592', marginTop: 4 }}>Touchez le cœur en haut d&apos;un profil de prestataire pour le retrouver ici.</div>
+            <div style={{ fontSize: 12, color: '#4E6470', marginTop: 4 }}>Touchez le cœur en haut d&apos;un profil de prestataire pour le retrouver ici.</div>
             <button onClick={() => router.push('/map')} style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: '#0B8374', background: 'none', border: 'none' }}>Parcourir la carte →</button>
           </div>
         )}

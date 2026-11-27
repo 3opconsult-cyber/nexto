@@ -152,7 +152,7 @@ export default function MissionQrCodes() {
 
             <button onClick={() => router.push('/aide/apres-commande')} style={{ marginTop: 14, border: 'none', background: 'none', color: '#0B8374', fontWeight: 700, fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline' }}>Voir comment ça marche</button>
 
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, color: '#6E8592', fontWeight: 600 }}>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, color: '#4E6470', fontWeight: 600 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--teal)', animation: 'pingPulse 1.4s ease-in-out infinite' }} />
               En attente du scan…
             </div>
@@ -220,7 +220,7 @@ export default function MissionQrCodes() {
             </p>
             <button className="ping-btn" style={{ marginTop: 20 }} onClick={() => router.push(`/mission/${tx.id}/chat?avis`)}>Laisser un avis</button>
             <button onClick={() => router.push(`/mission/${tx.id}/facture`)} style={{
-              marginTop: 10, width: '100%', border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644',
+              marginTop: 10, width: '100%', border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644',
               borderRadius: 999, padding: '12px 0', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 14, cursor: 'pointer',
             }}>Voir la facture</button>
             <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ marginTop: 10, border: 'none', background: 'none', color: '#4E6470', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Retour à la conversation</button>

@@ -32,7 +32,7 @@ export function HubRow({ icon, label, sub, badge, onClick }: {
       {badge && (
         <span className="a-pill" style={{ padding: '3px 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0, background: badge.tone === 'ok' ? 'rgba(18,179,156,.14)' : 'rgba(242,169,59,.16)', color: badge.tone === 'ok' ? '#0B8374' : '#8A6520' }}>{badge.text}</span>
       )}
-      {onClick && <span style={{ color: '#6E8592', flexShrink: 0 }}>›</span>}
+      {onClick && <span style={{ color: '#4E6470', flexShrink: 0 }}>›</span>}
     </div>
   )
 }

@@ -92,7 +92,7 @@ export default function PresenceChoice({ txId, presence, proName, onChange, comp
             </button>
           )
         })}
-        {err && <p role="alert" style={{ color: '#B2432E', fontSize: 15, margin: '0 0 8px' }}>{err}</p>}
+        {err && <p role="alert" style={{ color: '#B3402F', fontSize: 15, margin: '0 0 8px' }}>{err}</p>}
       </div>
     )
   }
@@ -104,7 +104,7 @@ export default function PresenceChoice({ txId, presence, proName, onChange, comp
         return (
           <button key={o.v} type="button" onClick={() => choose(o.v)} disabled={!!busy} aria-pressed={on} style={{
             display: 'block', width: '100%', textAlign: 'left', minHeight: 64, padding: '13px 16px', marginBottom: 10, borderRadius: 16, cursor: 'pointer',
-            border: on ? '2px solid #0B8374' : '1.5px solid #DCE5E3', background: on ? 'rgba(18,179,156,.08)' : '#fff',
+            border: on ? '2px solid #0B8374' : '1.5px solid #E7EDEB', background: on ? 'rgba(18,179,156,.08)' : '#fff',
           }}>
             <b style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Quicksand, sans-serif', fontSize: 15.5, color: '#123644' }}>
               <span aria-hidden style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${on ? '#0B8374' : '#C5D3CF'}`, display: 'grid', placeItems: 'center', flexShrink: 0 }}>

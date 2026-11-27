@@ -114,7 +114,7 @@ export default function ClientDocumentsPage() {
             <button type="button" className="a-btn" onClick={() => setCapture(true)} disabled={uploading}>Renvoyer une pièce</button>
           </div>
         )}
-        {err && <p className="a-info" style={{ color: '#B2432E', fontWeight: 600 }}>{err}</p>}
+        {err && <p className="a-info" style={{ color: '#B3402F', fontWeight: 600 }}>{err}</p>}
         <p className="a-info" style={{ marginTop: 20 }}>PDF, JPG ou PNG · 10 Mo maximum.</p>
       </div>
 

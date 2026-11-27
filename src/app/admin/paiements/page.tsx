@@ -137,10 +137,10 @@ function Virements() {
               <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#0B8374')}>Reçu</button>
             )}
             {t.payee === 'ping' && t.declared_at && t.status !== 'recu' && 'not_received_at' in t && transferState(t) !== 'non_recu' && (
-              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'non', t })} style={btn('#c0503a')}>Non reçu</button>
+              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'non', t })} style={btn('#B3402F')}>Non reçu</button>
             )}
             {t.payee === 'pro' && t.not_received_at && t.status !== 'recu' && (
-              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#6E8592')}>Trancher : reçu</button>
+              <button disabled={busy === t.id} onClick={() => setDlg({ kind: 'recu', t })} style={btn('#4E6470')}>Trancher : reçu</button>
             )}
             <a href={`/mission/${t.transaction_id}/facture`} style={{ fontSize: 12, fontWeight: 700, color: '#0B8374' }}>Mission</a>
           </div>
@@ -213,7 +213,7 @@ export default function AdminPaiementsPage() {
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
         <h1 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 24, margin: '0 0 12px' }}>Paiements</h1>
         <Virements />
-        <p style={{ fontSize: 12.5, color: '#c0503a' }}>Séquestre : {d.error || 'indisponible'}</p>
+        <p style={{ fontSize: 12.5, color: '#B3402F' }}>Séquestre : {d.error || 'indisponible'}</p>
         {dialog}
       </div>
     </div>
@@ -273,7 +273,7 @@ export default function AdminPaiementsPage() {
             {d.pareFeu.alertes.length === 0 ? <div style={{ fontSize: 13, color: '#4E6470' }}>Aucune.</div> : sortPaymentAlerts(d.pareFeu.alertes).map(a => (
               <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #E7EDEB' }}>
                 <div style={{ fontSize: 13 }}>
-                  <b style={{ color: paymentAlertGrave(a.kind) ? '#c0503a' : '#123644' }}>{KIND(a.kind)}</b>
+                  <b style={{ color: paymentAlertGrave(a.kind) ? '#B3402F' : '#123644' }}>{KIND(a.kind)}</b>
                   {paymentAlertGrave(a.kind) && <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#FCE9E4', color: '#7A2E1E', marginLeft: 6 }}>Grave</span>}
                   {' · '}{a.provider_id ? a.nom : 'prestataire non retrouvé'} · {new Date(a.created_at).toLocaleString('fr-FR')}
                   {a.detail?.amountCents ? <span> · {eur(a.detail.amountCents)}</span> : null}
@@ -287,7 +287,7 @@ export default function AdminPaiementsPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {a.provider_id && !['suspended', 'unsuspended'].includes(a.kind) && (
-                    <button disabled={busy === a.provider_id} style={btn('#c0503a')}
+                    <button disabled={busy === a.provider_id} style={btn('#B3402F')}
                       onClick={() => act('/api/payments/admin', { action: 'suspend', providerId: a.provider_id, reason: KIND(a.kind) }, `Suspendre ${a.nom} (retrait de la carte, versements bloqués) ?`)}>Suspendre</button>
                   )}
                   <button disabled={busy === a.id} style={btn('#4E6470')}
@@ -306,14 +306,14 @@ export default function AdminPaiementsPage() {
           <div key={m.id} style={box}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
               <b style={{ fontFamily: 'monospace', fontSize: 13 }}>{m.id.slice(0, 8).toUpperCase()}</b>
-              <span style={{ fontSize: 12, fontWeight: 700, color: m.alerte || m.litige ? '#c0503a' : '#0B8374' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: m.alerte || m.litige ? '#B3402F' : '#0B8374' }}>
                 {STATUT[m.payment_status] || m.payment_status}{m.litige ? ' · litige ouvert' : ''}{m.status === 'cancelled' ? ' · annulée' : ''}
               </span>
             </div>
             <div style={{ fontSize: 12.5, color: '#4E6470', marginTop: 6, lineHeight: 1.6 }}>
               Payé {eur(m.payeCents)} · total {eur(m.total_charged_cents)} · part prestataire {eur(m.payout_cents)}
               {' · '}{m.completed_at ? `terminée le ${new Date(m.completed_at).toLocaleString('fr-FR')}` : m.arrived_at ? 'en cours' : m.en_route_at ? 'prestataire en route' : 'à venir'}
-              {m.alerte && <div style={{ color: '#c0503a', fontWeight: 600 }}>Alerte : {m.alerte}</div>}
+              {m.alerte && <div style={{ color: '#B3402F', fontWeight: 600 }}>Alerte : {m.alerte}</div>}
             </div>
             {m.payeCents > 0 && (
               <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>

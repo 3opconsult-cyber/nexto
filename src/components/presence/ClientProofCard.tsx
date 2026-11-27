@@ -44,11 +44,11 @@ export default function ClientProofCard({ txId, phase, v2, legacyToken }: {
           : 'Le prestataire le scanne en partant : la durée réelle et la facture en découlent.'}
       </p>
       {token ? (
-        <div style={{ width: 196, margin: '12px auto 0', padding: 12, borderRadius: 16, border: '1px solid #DCE5E3', background: '#fff' }}>
+        <div style={{ width: 196, margin: '12px auto 0', padding: 12, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
           <QrCode data={path + token} size={170} />
         </div>
       ) : (
-        <div style={{ padding: '30px 0', fontSize: 12.5, color: '#6E8592' }}>{err || 'Préparation du QR…'}</div>
+        <div style={{ padding: '30px 0', fontSize: 12.5, color: '#4E6470' }}>{err || 'Préparation du QR…'}</div>
       )}
       {code && (
         <>
@@ -57,7 +57,7 @@ export default function ClientProofCard({ txId, phase, v2, legacyToken }: {
         </>
       )}
       {v2 && proof?.expires_at && (
-        <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 6 }}>Usage unique, renouvelé automatiquement. Ne l&apos;envoyez pas à l&apos;avance.</div>
+        <div style={{ fontSize: 10.5, color: '#4E6470', marginTop: 6 }}>Usage unique, renouvelé automatiquement. Ne l&apos;envoyez pas à l&apos;avance.</div>
       )}
     </div>
   )

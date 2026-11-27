@@ -383,7 +383,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   // et le nombre d'avis (ou « Nouveau »), le CESU accepté, et un chevron.
   const row = (p: Pro, onOpen: (p: Pro) => void = q => router.push(`/pro/${q.id}`)) => (
     <button type="button" key={p.id} className="mq-row" onClick={() => onOpen(p)} aria-label={`${p.n}, ${p.active ? p.p || 'disponible' : 'hors ligne pour le moment'}`}>
-      <span className="mq-av" style={{ background: p.active ? `linear-gradient(160deg,${p.g})` : '#6E8592' }}>{p.av}</span>
+      <span className="mq-av" style={{ background: p.active ? `linear-gradient(160deg,${p.g})` : '#4E6470' }}>{p.av}</span>
       <span className="grow">
         <b>{p.n}</b>
         <small>{[p.svc, p.active ? p.p : 'hors ligne pour le moment', `à ${p.distTxt}`].filter(Boolean).join(' · ')}</small>
@@ -413,7 +413,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
   const navArrows = navList.length > 1 && navIdx >= 0 && (
     <span style={{ display: 'flex', alignItems: 'center', gap: 4, flex: '0 0 auto' }}>
       <button type="button" className="mq-ib" onClick={() => step(-1)} aria-label="Prestataire précédent"><Ic name="back" /></button>
-      <span style={{ fontSize: 12, color: '#6E8592', minWidth: 34, textAlign: 'center' }}>{navIdx + 1} / {navList.length}</span>
+      <span style={{ fontSize: 12, color: '#4E6470', minWidth: 34, textAlign: 'center' }}>{navIdx + 1} / {navList.length}</span>
       <button type="button" className="mq-ib" onClick={() => step(1)} aria-label="Prestataire suivant"><Ic name="chev" /></button>
     </span>
   )
@@ -493,7 +493,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
 
                 {/* Ligne d'état unique : « 7 en ligne près de vous ». Au toucher : détail par métier et accès au filtre. */}
                 <div className="searchbar map-search" role="button" aria-haspopup="true" aria-expanded={statusOpen} data-map-status style={{ top: 66, height: 'auto' }} onClick={() => setStatusOpen(o => !o)}>
-                  <div className="lg" style={{ background: liveCount > 0 ? 'var(--btnFill)' : '#6E8592', color: '#fff' }}><Ic name="loc" size={15} /></div>
+                  <div className="lg" style={{ background: liveCount > 0 ? 'var(--btnFill)' : '#4E6470', color: '#fff' }}><Ic name="loc" size={15} /></div>
                   <div className="tx" data-ping-line={pingLine ? '1' : undefined} role="status" style={{ fontWeight: 700, color: pingLine && !ping.failed ? '#0B8374' : 'var(--ink)', whiteSpace: wide || pingLine ? 'normal' : 'nowrap', lineHeight: 1.25, padding: wide || pingLine ? '6px 0' : 0 }}>{statusText}</div>
                   <span className="chv" style={{ transform: statusOpen ? 'rotate(180deg)' : 'none' }}><Ic name="down" size={20} /></span>
                 </div>
@@ -517,7 +517,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   {/* Action principale : une seule, grosse, en bas de la carte (« Déposer une demande » est passée dans la feuille). */}
                   {!pvShow && !(isDesk && findOpen) && (
                     <button type="button" data-find-open onClick={() => setFindOpen(true)}
-                      style={{ position: 'absolute', left: 14, right: isDesk ? undefined : 14, width: isDesk ? 340 : undefined, bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 4px)`, zIndex: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 56, boxSizing: 'border-box', padding: '0 22px', borderRadius: 999, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, boxShadow: '0 10px 24px rgba(12,143,126,.38)', cursor: 'pointer' }}>
+                      style={{ position: 'absolute', left: 14, right: isDesk ? undefined : 14, width: isDesk ? 340 : undefined, bottom: isDesk ? ctrlBase : `calc(${ctrlBase} + 4px)`, zIndex: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 56, boxSizing: 'border-box', padding: '0 22px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, boxShadow: '0 10px 24px rgba(12,143,126,.38)', cursor: 'pointer' }}>
                       <Ic name="search" size={20} />
                       Trouver un prestataire
                     </button>
@@ -528,7 +528,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 {/* Volet de la liste (mobile) : remplacé par l'aperçu quand un prestataire est choisi. */}
                 {!pvShow && (
                   <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}
-                    footer={<button type="button" onClick={() => router.push('/client/demandes/new')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, border: '1.5px solid #DCE5E3', borderRadius: 999, background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}><Ic name="plus" size={16} />Déposer une demande</button>}>
+                    footer={<button type="button" onClick={() => router.push('/client/demandes/new')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, border: '1.5px solid #E7EDEB', borderRadius: 999, background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}><Ic name="plus" size={16} />Déposer une demande</button>}>
                     {sheet !== 'peek' && (<>
                       <div style={{ margin: '0 0 20px' }}><ReferenceAddressLine kind="client" address={refAddr.address} uid={refAddr.uid} loaded={refAddr.loaded}
                         onSaved={(l, pt) => { refAddr.setAddress(l); chooseLoc(pt, undefined, 'profile'); setRecenterTick(t => t + 1) }} /></div>
@@ -549,7 +549,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                     <>
                       {/* Carte de présentation (maquette, .preview) */}
                       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                        <div className="pvav" style={{ background: pv.active ? `linear-gradient(160deg,${pv.g})` : '#6E8592' }}>{pv.av}</div>
+                        <div className="pvav" style={{ background: pv.active ? `linear-gradient(160deg,${pv.g})` : '#4E6470' }}>{pv.av}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <b className="pvname" style={{ display: 'block' }}>{pv.n}</b>
                           <div className="pvmeta" style={{ fontWeight: 500 }}>{[pv.svc, pv.reviews > 0 ? `★ ${r1(pv.rate)} (${pv.reviews} avis)` : 'Nouveau', pv.done ? `${pv.done} prestation${pv.done > 1 ? 's' : ''} réalisée${pv.done > 1 ? 's' : ''}` : null, `à ${pv.distTxt}`].filter(Boolean).join(' · ')}</div>
@@ -564,7 +564,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                           : <span className="mq-off">○ Hors ligne pour le moment : pas de réservation, vous pouvez lui écrire</span>}
                         {navArrows}
                       </div>
-                      {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '0 0 8px' }}>{contactErr}</p>}
+                      {contactErr && <p style={{ color: '#B3402F', fontSize: 12, margin: '0 0 8px' }}>{contactErr}</p>}
                       {pvActions(pv, true)}
                     </>
                   )}
@@ -633,7 +633,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                           : <p className="sub" style={{ color: 'var(--slate)' }}>Nouveau, pas encore d&apos;avis.</p>}
                       </div>
                     </div>
-                    {contactErr && <p style={{ color: '#c0503a', fontSize: 12, margin: '10px 14px 0' }}>{contactErr}</p>}
+                    {contactErr && <p style={{ color: '#B3402F', fontSize: 12, margin: '10px 14px 0' }}>{contactErr}</p>}
                     <div style={{ padding: 14, borderTop: '1px solid var(--line)' }}>{pvActions(pv, false)}</div>
                   </div>
                 )}
@@ -661,7 +661,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                   </div>
                 ))}
               </div>
-              <p className="sub" style={{ fontSize: 11, color: '#6E8592' }}>Choisissez une ou plusieurs activités : d&apos;abord ceux qui font tout, puis ceux qui en font une partie.</p>
+              <p className="sub" style={{ fontSize: 11, color: '#4E6470' }}>Choisissez une ou plusieurs activités : d&apos;abord ceux qui font tout, puis ceux qui en font une partie.</p>
               <div className="h2">Filtres</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {['Disponible', 'Pièce d’identité fournie', 'Assurance RC renseignée', '≤ 1 km', '4★ et +'].map(f => (

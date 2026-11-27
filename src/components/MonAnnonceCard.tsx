@@ -27,7 +27,7 @@ export default function MonAnnonceCard({ pro, pct, canPublishNow, onActive }: {
   const META: Record<Etat, { titre: string; texte: string; dot: string }> = {
     ligne: { titre: 'En ligne · visible sur la carte', texte: '', dot: '#12B39C' },
     pause: { titre: 'En pause', texte: 'Votre annonce n’apparaît pas sur la carte. Vos missions en cours continuent.', dot: '#A5B3B9' },
-    suspendue: { titre: 'Suspendue par PING', texte: 'Compte suspendu : contactez le support PING pour régulariser.', dot: '#C0503A' },
+    suspendue: { titre: 'Suspendue par PING', texte: 'Compte suspendu : contactez le support PING pour régulariser.', dot: '#B3402F' },
     brouillon: { titre: 'Brouillon', texte: 'Il manque un tarif ou votre position pour la mettre en ligne.', dot: '#F2A93B' },
   }
   const m = META[etat]
@@ -50,7 +50,7 @@ export default function MonAnnonceCard({ pro, pct, canPublishNow, onActive }: {
     await write(true)
   }
 
-  const big: React.CSSProperties = { width: '100%', minHeight: 56, borderRadius: 14, border: 'none', background: '#0C8F7E', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer' }
+  const big: React.CSSProperties = { width: '100%', minHeight: 56, borderRadius: 14, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, cursor: 'pointer' }
   const ghost: React.CSSProperties = { flex: 1, minHeight: 52, borderRadius: 14, border: 'none', background: '#F0F4F3', color: NAVY, fontWeight: 700, fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }
 
   return (
@@ -71,7 +71,7 @@ export default function MonAnnonceCard({ pro, pct, canPublishNow, onActive }: {
         </div>
       )}
 
-      {msg && <p role="status" style={{ fontSize: 15, lineHeight: 1.5, color: '#A8432F', margin: '14px 0 0' }}>{msg}</p>}
+      {msg && <p role="status" style={{ fontSize: 15, lineHeight: 1.5, color: '#B3402F', margin: '14px 0 0' }}>{msg}</p>}
 
       {ask ? (
         <div data-annonce-confirm style={{ marginTop: 20 }}>

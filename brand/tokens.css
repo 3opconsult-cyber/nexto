@@ -17,13 +17,13 @@
   --ink:    #123644;   /* fond profond, texte principal */
   --ink2:   #0e2a34;   /* variante plus sombre */
   --teal:   #12B39C;   /* accent primaire, anneaux du logo */
-  --tealD:  #0C8F7E;
+  --tealD:  #0B8374;
   --coral:  #FF7A66;   /* accent secondaire — usage rare */
   --gold:   #F2A93B;   /* accent tertiaire — usage rare */
   --green:  #2FD06E;   /* le point. Le signal. Jamais autre chose. */
   --paper:  #F3F6F5;
-  --line:   #DCE5E3;
-  --slate:  #6E8592;   /* texte secondaire */
+  --line:   #E7EDEB;
+  --slate:  #4E6470;   /* texte secondaire */
 
   /* Typo */
   --fh: 'Quicksand', sans-serif;  /* titres */

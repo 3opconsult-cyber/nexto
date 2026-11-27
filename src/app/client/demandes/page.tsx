@@ -277,11 +277,11 @@ export default function MesDemandesPage() {
                             )}
                             {p?.bio && p.bio.trim() && <div style={{ fontSize: 12, color: '#4E6470', marginTop: 8, lineHeight: 1.45 }}>{excerpt(p.bio)}</div>}
                             {cancelled ? (
-                              <div style={{ fontSize: 11.5, fontWeight: 700, color: '#6E8592', marginTop: 10 }}>Conversation annulée</div>
+                              <div style={{ fontSize: 11.5, fontWeight: 700, color: '#4E6470', marginTop: 10 }}>Conversation annulée</div>
                             ) : (
                               <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                                 <button onClick={() => router.push(`/mission/${t.id}/chat`)}
-                                  style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                  style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                   Voir la discussion
                                 </button>
                                 {t.hasPendingOffer && !t.price_confirmed && confirming !== t.id && (
@@ -306,12 +306,12 @@ export default function MesDemandesPage() {
                                 ) : (
                                   <p style={{ fontSize: 12, color: '#4E6470', margin: '0 0 6px' }}>Vous indiquerez ensuite l’adresse et l’heure dans la discussion.</p>
                                 )}
-                                {acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
+                                {acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#B3402F', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
                                 {/* Collant au-dessus de la barre du bas (correction 5) : « Confirmer » reste visible
                                     pendant le choix du rendez-vous, sans défilement. */}
                                 <div style={{ display: 'flex', gap: 8, position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, background: '#fff', margin: '10px -12px -12px', padding: '10px 12px 12px', borderTop: '1px solid #EEF2F1', borderRadius: '0 0 12px 12px' }}>
                                   <button type="button" onClick={() => setConfirming(null)} disabled={busy === t.id}
-                                    style={{ flex: '0 0 auto', minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                    style={{ flex: '0 0 auto', minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                     Annuler
                                   </button>
                                   <button type="button" onClick={() => acceptPro(t, r)} disabled={busy === t.id || (hasAddr(r) && !rdvAt)}
@@ -321,9 +321,9 @@ export default function MesDemandesPage() {
                                 </div>
                               </div>
                             )}
-                            {confirming !== t.id && acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
+                            {confirming !== t.id && acceptErr[t.id] && <div role="alert" style={{ fontSize: 12, color: '#B3402F', fontWeight: 600, marginTop: 6 }}>{acceptErr[t.id]}</div>}
                             {!cancelled && t.hasPendingOffer && !t.price_confirmed && confirming !== t.id && (
-                              <div style={{ fontSize: 10.5, color: '#6E8592', marginTop: 6 }}>En acceptant, le tarif est fixé et vous choisissez le rendez-vous.</div>
+                              <div style={{ fontSize: 10.5, color: '#4E6470', marginTop: 6 }}>En acceptant, le tarif est fixé et vous choisissez le rendez-vous.</div>
                             )}
                           </div>
                         )
@@ -333,10 +333,10 @@ export default function MesDemandesPage() {
 
                   <div style={{ display: 'flex', gap: 14, marginTop: 10, paddingTop: 10, borderTop: 'none' }}>
                     {canCancel && <button type="button" onClick={() => cancel(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 15, fontWeight: 700, color: '#8a6520', cursor: 'pointer' }}>Annuler</button>}
-                    <button type="button" onClick={() => remove(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 15, fontWeight: 700, color: '#c0503a', cursor: 'pointer', marginLeft: 'auto' }}>{delAsk === r.id ? 'Confirmer la suppression' : 'Supprimer'}</button>
+                    <button type="button" onClick={() => remove(r)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 15, fontWeight: 700, color: '#B3402F', cursor: 'pointer', marginLeft: 'auto' }}>{delAsk === r.id ? 'Confirmer la suppression' : 'Supprimer'}</button>
                     {delAsk === r.id && <button type="button" onClick={() => setDelAsk(null)} style={{ minHeight: 44, padding: '0 4px', border: 'none', background: 'none', fontSize: 15, fontWeight: 700, color: '#4E6470', cursor: 'pointer' }}>Garder</button>}
                   </div>
-                  {rowErr[r.id] && <div role="alert" style={{ fontSize: 12, color: '#c0503a', fontWeight: 600, marginTop: 4 }}>{rowErr[r.id]}</div>}
+                  {rowErr[r.id] && <div role="alert" style={{ fontSize: 12, color: '#B3402F', fontWeight: 600, marginTop: 4 }}>{rowErr[r.id]}</div>}
                 </div>
               )
             })}

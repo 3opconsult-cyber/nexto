@@ -196,7 +196,7 @@ export default function ClientProfil() {
         <label style={fieldLabel}>Ville</label>
         <input style={fieldInput} value={f.city} autoComplete="address-level2" onChange={e => setF({ ...f, city: e.target.value })} />
         <p style={{ fontSize: 15, color: '#4E6470', lineHeight: 1.55, margin: '14px 0 0' }}>Votre adresse n&apos;est montrée à un prestataire qu&apos;une fois une mission confirmée.</p>
-        {editErr && <p style={{ color: '#C0503A', fontSize: 15, fontWeight: 600, margin: '10px 0 0' }}>{editErr}</p>}
+        {editErr && <p style={{ color: '#B3402F', fontSize: 15, fontWeight: 600, margin: '10px 0 0' }}>{editErr}</p>}
         <button onClick={saveEdit} disabled={saving}
           style={{ width: '100%', marginTop: 16, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 14, minHeight: 52, borderRadius: 999, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
           {saving ? 'Enregistrement…' : 'Enregistrer'}

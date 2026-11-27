@@ -100,7 +100,7 @@ export default function AvanceImmediate() {
                 <b style={{ color: '#0B8374', width: 14 }}>{i + 1}</b><span>{s}</span>
               </div>
             ))}
-            <p style={{ fontSize: 11.5, color: '#6E8592', margin: '8px 0 0', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 11.5, color: '#4E6470', margin: '8px 0 0', lineHeight: 1.5 }}>
               Conditions de l&apos;Urssaf : avoir déjà fait au moins une déclaration de revenus, et que le prestataire soit déclaré en services à la personne. Plafond : 12 000 € de dépenses par an.
             </p>
           </div>
@@ -119,7 +119,7 @@ export default function AvanceImmediate() {
 
           {dispo && (!statut || statut.statut === 'refuse') && (
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 16 }}>
-              {statut?.statut === 'refuse' && <p style={{ fontSize: 12.5, color: '#c0503a', marginTop: 0 }}>L&apos;Urssaf n&apos;a pas pu vous inscrire : {statut.message}. Vérifiez vos informations.</p>}
+              {statut?.statut === 'refuse' && <p style={{ fontSize: 12.5, color: '#B3402F', marginTop: 0 }}>L&apos;Urssaf n&apos;a pas pu vous inscrire : {statut.message}. Vérifiez vos informations.</p>}
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, color: '#123644', marginBottom: 12 }}>Vos informations</div>
               <div style={{ display: 'flex', gap: 16, marginBottom: 12, fontSize: 13, color: '#123644' }}>
                 <label><input type="radio" checked={f.civilite === '2'} onChange={() => set('civilite', '2')} /> Madame</label>
@@ -138,7 +138,7 @@ export default function AvanceImmediate() {
                     <input style={field} value={f.villeNaissance} onChange={e => { set('villeNaissance', e.target.value); set('inseeNaissance', '') }} />
                     {birthOpts.length > 0 && (
                       <div style={{ border: '1px solid #E7EDEB', borderRadius: 10, marginTop: 4, background: '#fff' }}>
-                        {birthOpts.map(c => <div key={c.code} onClick={() => { set('villeNaissance', c.nom); set('inseeNaissance', c.code); setBirthOpts([]) }} style={{ padding: '8px 12px', fontSize: 13, color: '#123644', cursor: 'pointer' }}>{c.nom} <span style={{ color: '#6E8592' }}>({c.code.slice(0, 2)})</span></div>)}
+                        {birthOpts.map(c => <div key={c.code} onClick={() => { set('villeNaissance', c.nom); set('inseeNaissance', c.code); setBirthOpts([]) }} style={{ padding: '8px 12px', fontSize: 13, color: '#123644', cursor: 'pointer' }}>{c.nom} <span style={{ color: '#4E6470' }}>({c.code.slice(0, 2)})</span></div>)}
                       </div>
                     )}
                   </label>}
@@ -164,12 +164,12 @@ export default function AvanceImmediate() {
               <label style={lbl}>Courriel<input style={field} type="email" value={f.email} onChange={e => set('email', e.target.value)} /></label>
 
               <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#123644', margin: '18px 0 4px' }}>Compte bancaire pour le prélèvement Urssaf</div>
-              <p style={{ fontSize: 11.5, color: '#6E8592', margin: '0 0 10px' }}>Transmis directement à l&apos;Urssaf, jamais conservé par PING.</p>
+              <p style={{ fontSize: 11.5, color: '#4E6470', margin: '0 0 10px' }}>Transmis directement à l&apos;Urssaf, jamais conservé par PING.</p>
               <label style={lbl}>IBAN<input style={field} value={f.iban} onChange={e => set('iban', e.target.value)} /></label>
               <label style={lbl}>BIC<input style={field} value={f.bic} onChange={e => set('bic', e.target.value)} /></label>
               <label style={lbl}>Titulaire du compte<input style={field} value={f.titulaire} onChange={e => set('titulaire', e.target.value)} /></label>
 
-              {err && <p style={{ fontSize: 12.5, color: '#c0503a' }}>{err}</p>}
+              {err && <p style={{ fontSize: 12.5, color: '#B3402F' }}>{err}</p>}
               <button onClick={submit} disabled={busy} style={{ width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
                 {busy ? 'Envoi à l’Urssaf…' : "M'inscrire à l'avance immédiate"}
               </button>

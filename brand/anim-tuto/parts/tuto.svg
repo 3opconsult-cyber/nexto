@@ -1,5 +1,5 @@
           <g id="qrShow">
-            <rect x="40" y="112" width="170" height="170" rx="16" fill="#fff" stroke="#DCE5E3" stroke-width="1.5"/>
+            <rect x="40" y="112" width="170" height="170" rx="16" fill="#fff" stroke="#E7EDEB" stroke-width="1.5"/>
             <rect x="62" y="134" width="126" height="126" rx="6" fill="#fff"/>
             <use href="#qrg"/>
             <text x="125" y="316" text-anchor="middle" font-family="Inter" font-weight="600" font-size="13" fill="#123644">Votre code QR de mission</text>

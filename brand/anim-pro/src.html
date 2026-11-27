@@ -224,7 +224,7 @@
     plus: 'M12 5v14M5 12h14'
   };
   function icon(p, name, cx, cy, s, c, w){
-    s = s || 1; var g = el('g', {transform:'translate('+(cx-12*s)+','+(cy-12*s)+') scale('+s+')', fill:'none', stroke: c || '#0C8F7E',
+    s = s || 1; var g = el('g', {transform:'translate('+(cx-12*s)+','+(cy-12*s)+') scale('+s+')', fill:'none', stroke: c || '#0B8374',
       'stroke-width': w || 1.9, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, p);
     IC[name].split('|').forEach(function(d){ el('path', {d:d}, g); });
     return g;
@@ -247,7 +247,7 @@
     o = o || {}; var w = o.w || (label.length * 6.4 + 20);
     var g = el('g', {}, p);
     var r = el('rect', {x:x, y:y, width:w, height: o.h || 22, rx: (o.h || 22)/2, fill: o.fill || '#DDF5F0'}, g);
-    var t = tx(g, x + w/2, y + (o.h || 22)/2 + 4, label, {s: o.s || 11, w:600, c: o.c || '#0C8F7E', a:'middle'});
+    var t = tx(g, x + w/2, y + (o.h || 22)/2 + 4, label, {s: o.s || 11, w:600, c: o.c || '#0B8374', a:'middle'});
     g.r = r; g.t = t; g.w = w; return g;
   }
   function btn(p, cx, cy, w, h, label, o){
@@ -278,8 +278,8 @@
     });
     var add = el('g', {}, g);
     box(add, 24, 448, 292, 52, {dash:'5 5', stroke:'#9FC9C1', sw:1.5, fill:'none'});
-    icon(add, 'plus', 92, 474, .8, '#0C8F7E', 2.4);
-    tx(add, 106, 479, 'Ajouter une prestation', {s:14, w:600, c:'#0C8F7E'});
+    icon(add, 'plus', 92, 474, .8, '#0B8374', 2.4);
+    tx(add, 106, 479, 'Ajouter une prestation', {s:14, w:600, c:'#0B8374'});
     S.tAdd = add;
     var note = el('g', {}, g);
     tx(note, 170, 540, 'Le prix est fixé ici, avant la mission :', {s:12, c:'#4E6470', a:'middle'});
@@ -307,21 +307,21 @@
     var sum = el('g', {}, g); S.dSum = sum;
     box(sum, 24, 462, 292, 74, {rx:16, sh:true, stroke:'none'});
     el('circle', {cx:52, cy:499, r:17, fill:'#DDF5F0'}, sum);
-    icon(sum, 'cal', 52, 499, .72, '#0C8F7E', 2.1);
+    icon(sum, 'cal', 52, 499, .72, '#0B8374', 2.1);
     tx(sum, 80, 493, '4 jeudis ouverts', {s:13.5, w:700});
     tx(sum, 80, 512, '8 h – 12 h et 14 h – 16 h', {s:12, c:'#4E6470'});
     tx(g, 170, 572, 'Les clients réservent dans vos créneaux.', {s:12, c:'#4E6470', a:'middle'}).id = 'dHint';
     // feuille du jour touché
     var sh = el('g', {}, g); S.sheet = sh;
     el('rect', {x:12, y:296, width:316, height:400, rx:26, fill:'#fff', filter:'url(#sh)'}, sh);
-    el('rect', {x:150, y:306, width:40, height:5, rx:2.5, fill:'#DCE5E3'}, sh);
+    el('rect', {x:150, y:306, width:40, height:5, rx:2.5, fill:'#E7EDEB'}, sh);
     tx(sh, 32, 340, 'jeudi 5 novembre', {f:'Q', s:18});
     S.full = el('g', {}, sh);
-    box(S.full, 24, 354, 292, 40, {rx:13, stroke:'#DCE5E3'});
+    box(S.full, 24, 354, 292, 40, {rx:13, stroke:'#E7EDEB'});
     tx(S.full, 170, 379, 'Journée complète · 8 h – 20 h', {s:13.5, w:600, a:'middle'});
     S.bands = ['8 h – 10 h','10 h – 12 h','12 h – 14 h','14 h – 16 h','16 h – 18 h','18 h – 20 h'].map(function(b, i){
       var x = 24 + (i%2)*150, y = 404 + Math.floor(i/2)*46, c = el('g', {}, sh);
-      var r = el('rect', {x:x, y:y, width:142, height:38, rx:12, fill:'#fff', stroke:'#DCE5E3', 'stroke-width':1.2}, c);
+      var r = el('rect', {x:x, y:y, width:142, height:38, rx:12, fill:'#fff', stroke:'#E7EDEB', 'stroke-width':1.2}, c);
       var t = tx(c, x + 71, y + 24, b, {s:13.5, w:600, a:'middle'});
       return {r:r, t:t, x:x + 71, y:y + 19};
     });
@@ -382,11 +382,11 @@
     // fiche de la demande
     var sh = el('g', {}, g); S.req = sh;
     el('rect', {x:12, y:360, width:316, height:340, rx:26, fill:'#fff', filter:'url(#sh)'}, sh);
-    el('rect', {x:150, y:370, width:40, height:5, rx:2.5, fill:'#DCE5E3'}, sh);
+    el('rect', {x:150, y:370, width:40, height:5, rx:2.5, fill:'#E7EDEB'}, sh);
     chip(sh, 32, 388, 'Urgent', {fill:'#FDE7DC', c:'#C2551F', w:64});
     tx(sh, 32, 438, 'Ménage · 3 h', {f:'Q', s:21});
     [['pin', 'À 400 m · Antibes'], ['cal', 'Demain, jeudi 5 nov. · matin'], ['ruler', '80 m² · foyer de 2 personnes'], ['euro', 'Budget : 60 à 80 €']].forEach(function(r, i){
-      var y = 470 + i*26; icon(sh, r[0], 42, y - 4, .62, '#0C8F7E', 2.2);
+      var y = 470 + i*26; icon(sh, r[0], 42, y - 4, .62, '#0B8374', 2.2);
       tx(sh, 60, y, r[1], {s:13, w: i === 3 ? 700 : 400, c: i === 3 ? '#123644' : '#4E6470'});
     });
     S.contact = btn(sh, 170, 600, 292, 44, 'Contacter le client');
@@ -420,12 +420,12 @@
     tx(S.c3, 300, 318, '75 €', {f:'Q', s:28, a:'end'});
     tx(S.c3, 92, 316, 'Prix fixé, sans surprise', {s:11, c:'#4E6470'});
     el('rect', {x:92, y:328, width:208, height:1, fill:'#E2ECEA'}, S.c3);
-    tx(S.c3, 92, 348, 'Vous percevez environ 62,25 €', {s:12.5, w:700, c:'#0C8F7E'});
+    tx(S.c3, 92, 348, 'Vous percevez environ 62,25 €', {s:12.5, w:700, c:'#0B8374'});
     tx(S.c3, 92, 362, 'après commission PING', {s:10.5, c:'#4E6470'});
     // 4. accord du client
     S.c4 = el('g', {}, g); el('rect', {x:58, y:380, width:224, height:28, rx:14, fill:'#DDF5F0'}, S.c4);
-    icon(S.c4, 'check', 78, 394, .62, '#0C8F7E', 3);
-    tx(S.c4, 92, 398.5, 'Sophie a accepté votre tarif', {s:12, w:600, c:'#0C8F7E'});
+    icon(S.c4, 'check', 78, 394, .62, '#0B8374', 3);
+    tx(S.c4, 92, 398.5, 'Sophie a accepté votre tarif', {s:12, w:600, c:'#0B8374'});
     // 5. rendez-vous
     S.c5 = el('g', {}, g); box(S.c5, 24, 420, 292, 54, {rx:14, sh:true, stroke:'none'});
     icon(S.c5, 'cal', 48, 447, .8);
@@ -434,15 +434,15 @@
     // 6. adresse d'intervention
     S.c6 = el('g', {}, g); S.c6bg = box(S.c6, 24, 486, 292, 66, {rx:14, sh:true, stroke:'#fff', sw:1.8});
     S.c6lock = icon(S.c6, 'lock', 48, 519, .8, '#8A9AA2');
-    S.c6pin = icon(S.c6, 'pin', 48, 519, .85, '#0C8F7E');
+    S.c6pin = icon(S.c6, 'pin', 48, 519, .85, '#0B8374');
     tx(S.c6, 70, 510, "Adresse d'intervention", {s:13, w:700});
     S.c6a = tx(S.c6, 70, 530, 'Transmise une fois la mission validée', {s:11.5, c:'#4E6470'});
-    S.c6b = tx(S.c6, 70, 532, '12 rue des Lilas, 06600 Antibes', {s:13, w:600, c:'#0C8F7E'});
+    S.c6b = tx(S.c6, 70, 532, '12 rue des Lilas, 06600 Antibes', {s:13, w:600, c:'#0B8374'});
     S.c6c = tx(S.c6, 70, 546, 'Visible maintenant que la mission est validée', {s:10.5, c:'#4E6470'});
     // barre de saisie
     el('rect', {x:12, y:596, width:316, height:72, fill:'#fff'}, g);
     el('rect', {x:12, y:596, width:316, height:1, fill:'#E2ECEA'}, g);
-    S.propose = btn(g, 98, 626, 148, 34, '+ Proposer un tarif', {fill:'#fff', stroke:'#12B39C', c:'#0C8F7E', s:13});
+    S.propose = btn(g, 98, 626, 148, 34, '+ Proposer un tarif', {fill:'#fff', stroke:'#12B39C', c:'#0B8374', s:13});
     S.input = el('rect', {x:180, y:609, width:136, height:34, rx:17, fill:'#EEF3F2'}, g);
     S.inputTx = tx(g, 196, 631, 'Message…', {s:12.5, c:'#8A9AA2'});
   })();
@@ -466,7 +466,7 @@
     tx(d, 46, 136, 'Marc Dupuis', {f:'Q', s:18});
     tx(d, 46, 154, 'Ménage et repassage', {s:10.5, c:'#4E6470'});
     tx(d, 46, 169, 'SIRET 912 345 678 00012', {s:10.5, c:'#4E6470'});
-    tx(d, 296, 136, 'FACTURE', {s:12, w:700, c:'#0C8F7E', a:'end', ls:.8});
+    tx(d, 296, 136, 'FACTURE', {s:12, w:700, c:'#0B8374', a:'end', ls:.8});
     tx(d, 296, 154, 'FACT-2026-0042', {s:10.5, c:'#4E6470', a:'end'});
     tx(d, 296, 169, '5 nov. 2026', {s:10.5, c:'#4E6470', a:'end'});
     el('rect', {x:46, y:184, width:250, height:1, fill:'#E2ECEA'}, d);
@@ -484,7 +484,7 @@
     tx(d, 46, 352, 'TVA non applicable, art. 293 B du CGI', {s:9.5, c:'#8A9AA2'});
     var p = el('g', {}, g); S.pay = p;
     box(p, 26, 388, 288, 92, {rx:16, fill:'#DDF5F0', stroke:'none'});
-    tx(p, 46, 416, 'Vous percevez', {s:12.5, w:600, c:'#0C8F7E'});
+    tx(p, 46, 416, 'Vous percevez', {s:12.5, w:600, c:'#0B8374'});
     tx(p, 296, 424, '62,25 €', {f:'Q', s:30, a:'end'});
     tx(p, 46, 452, 'Commission PING 17 % : 12,75 €', {s:11.5, c:'#4E6470'});
     tx(p, 46, 468, 'Facture à votre nom, PING n’y figure pas', {s:11.5, c:'#4E6470'});
@@ -505,7 +505,7 @@
     tx(b, 170, 302, 'À vous de noter Sophie', {s:14, w:700, a:'middle'});
     S.starsB = starRow(b, 170, 338, 1);
     S.tags = [chip(b, 40, 368, 'Très accueillant', {w:124, h:28, s:12, fill:'#fff', c:'#123644'}), chip(b, 172, 368, 'Matériel fourni', {w:128, h:28, s:12, fill:'#fff', c:'#123644'})];
-    S.tags.forEach(function(c){ c.r.setAttribute('stroke', '#DCE5E3'); c.r.setAttribute('stroke-width', 1.2); });
+    S.tags.forEach(function(c){ c.r.setAttribute('stroke', '#E7EDEB'); c.r.setAttribute('stroke-width', 1.2); });
     el('rect', {x:40, y:414, width:260, height:40, rx:20, fill:'#EEF3F2'}, b);
     S.seg = el('rect', {x:44, y:418, width:126, height:32, rx:16, fill:'#fff'}, b);
     S.segA = tx(b, 107, 439, 'Publier l’avis', {s:12.5, w:700, a:'middle'});
@@ -536,7 +536,7 @@
       var y = 202 + i*70, c = el('g', {}, g);
       var bg = box(c, 24, y, 292, 60, {rx:14, sh:true, stroke:'#fff', sw:1.8});
       el('circle', {cx:52, cy:y + 30, r:17, fill:'#DDF5F0'}, c);
-      icon(c, r[0], 52, y + 30, .72, '#0C8F7E', 2.1);
+      icon(c, r[0], 52, y + 30, .72, '#0B8374', 2.1);
       tx(c, 80, y + 26, r[1], {s:13.5, w:700});
       tx(c, 80, y + 45, r[2], {s:11.5, c:'#4E6470'});
       if (r[3]) chip(c, 244, y + 19, 'bientôt', {fill:'#FFF1D6', c:'#8a6520', w:58});
@@ -640,7 +640,7 @@
       if (saved) sc(D.g, back(seg(t, 12.9 + (n-5)/7*0.18, 13.25 + (n-5)/7*0.18)), D.x + 19, D.y + 23); else D.g.removeAttribute('transform');
     });
     var BT = [10.6, 11.0, 99, 11.4, 99, 99];
-    S.bands.forEach(function(b, i){ var on = t >= BT[i]; b.r.setAttribute('fill', on ? '#12B39C' : '#fff'); b.r.setAttribute('stroke', on ? '#12B39C' : '#DCE5E3'); b.t.setAttribute('fill', on ? '#fff' : '#123644'); });
+    S.bands.forEach(function(b, i){ var on = t >= BT[i]; b.r.setAttribute('fill', on ? '#12B39C' : '#fff'); b.r.setAttribute('stroke', on ? '#12B39C' : '#E7EDEB'); b.t.setAttribute('fill', on ? '#fff' : '#123644'); });
     var optOn = t >= 11.85; S.opt.setAttribute('stroke', optOn ? '#12B39C' : '#E7EDEB'); S.opt.setAttribute('fill', optOn ? '#EEF9F7' : '#fff');
     S.radio.setAttribute('stroke', optOn ? '#12B39C' : '#B8C9C5'); S.radio.setAttribute('stroke-width', optOn ? 5 : 2); S.radio.setAttribute('r', optOn ? 5.5 : 7);
     var sk = eout(seg(t, 13.1, 13.5)); show(S.dSum, sk); tr(S.dSum, 'translate(0,'+(12*(1-sk)).toFixed(1)+')'); show($('dHint'), seg(t, 13.3, 13.6));
@@ -674,7 +674,7 @@
       var k = eout(seg(t, q[1], q[1] + 0.4)); show(q[0], k); tr(q[0], 'translate(0,'+(12*(1-k)).toFixed(1)+')');
     });
     var acc = t >= 25.3;
-    S.c3chip.r.setAttribute('fill', acc ? '#DDF5F0' : '#FFF1D6'); S.c3chip.t.setAttribute('fill', acc ? '#0C8F7E' : '#8a6520'); S.c3chip.t.textContent = acc ? 'Acceptée' : 'En attente';
+    S.c3chip.r.setAttribute('fill', acc ? '#DDF5F0' : '#FFF1D6'); S.c3chip.t.setAttribute('fill', acc ? '#0B8374' : '#8a6520'); S.c3chip.t.textContent = acc ? 'Acceptée' : 'En attente';
     var pp = 1 - 0.06*Math.sin(Math.PI*seg(t, 23.5, 23.8)); sc(S.propose, pp, 98, 626);
     // une fois un tarif accepté, « + Proposer un tarif » disparaît (règle du tarif)
     var gone = eio(seg(t, 25.5, 25.9)); show(S.propose, 1 - gone);
@@ -712,7 +712,7 @@
     show(S.quote, seg(t, 42.6, 42.9)); show(S.pub, seg(t, 42.8, 43.1));
     var bk = eout(seg(t, 43.0, 43.4)); show(S.rB, bk); tr(S.rB, 'translate(0,'+(16*(1-bk)).toFixed(1)+')');
     S.starsB.forEach(function(s, i){ var k = back(seg(t, 43.5 + i*0.13, 43.8 + i*0.13)); s.setAttribute('transform', 'scale('+k.toFixed(3)+')'); });
-    S.tags.forEach(function(c, i){ var on = t >= 43.95 + i*0.2; c.r.setAttribute('fill', on ? '#12B39C' : '#fff'); c.r.setAttribute('stroke', on ? '#12B39C' : '#DCE5E3'); c.t.setAttribute('fill', on ? '#fff' : '#123644'); });
+    S.tags.forEach(function(c, i){ var on = t >= 43.95 + i*0.2; c.r.setAttribute('fill', on ? '#12B39C' : '#fff'); c.r.setAttribute('stroke', on ? '#12B39C' : '#E7EDEB'); c.t.setAttribute('fill', on ? '#fff' : '#123644'); });
     var sg = eio(seg(t, 44.0, 44.25)); S.seg.setAttribute('x', (44 + 126*sg).toFixed(1));
     S.segA.setAttribute('fill', sg > .5 ? '#4E6470' : '#123644'); S.segB.setAttribute('fill', sg > .5 ? '#123644' : '#4E6470');
     show(S.priv, seg(t, 44.2, 44.45));

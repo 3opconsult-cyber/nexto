@@ -42,7 +42,7 @@ export function MyPositionRow({ onLocate, initialAccuracyM = null }: { onLocate:
         <Ic name="loc" size={20} />{busy ? 'Localisation en cours…' : res && res.ok !== true ? 'Réessayer ma position' : 'Utiliser ma position'}
       </button>
       {res && res.ok !== true && (
-        <p role="alert" style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#A8432F', whiteSpace: 'pre-line' }}>{geoMessage(res.reason)}</p>
+        <p role="alert" style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#B3402F', whiteSpace: 'pre-line' }}>{geoMessage(res.reason)}</p>
       )}
       {acc != null && !approx && (
         <p role="status" data-position-precision style={{ margin: '12px 0 0', fontSize: 15, lineHeight: 1.5, color: '#123644' }}>Position trouvée ({accuracyText(acc)}). Un seul relevé, jamais suivie ni partagée.</p>
@@ -171,7 +171,7 @@ export default function LocationAsk({ onChoose, onClose, overlay = true, modal =
           </button>
         </div>
       )}
-      {err && <p role="alert" style={{ marginTop: 10, fontSize: 13, color: 'var(--danger, #C0503A)', lineHeight: 1.4 }}>{err}</p>}
+      {err && <p role="alert" style={{ marginTop: 10, fontSize: 13, color: 'var(--danger, #B3402F)', lineHeight: 1.4 }}>{err}</p>}
     </div>
   )
   if (!overlay) return body

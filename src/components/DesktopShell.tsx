@@ -142,7 +142,7 @@ export default function DesktopShell({ children }: { children: React.ReactNode }
           <div className={`dnav-item ${pathname === `/mission/${today.id}/jour` ? 'on' : ''}`} onClick={() => go(`/mission/${today.id}/jour`)}
             style={{ background: today.urgent ? 'rgba(229,72,77,.08)' : 'rgba(18,179,156,.1)', marginBottom: 4 }}>
             {navIcon('Mission du jour')}<span>Mission du jour</span>
-            {today.urgent && <span aria-label="Action attendue" style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#E5484D' }} />}
+            {today.urgent && <span aria-label="Action attendue" style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#B3402F' }} />}
           </div>
         )}
         {nav.map(item)}

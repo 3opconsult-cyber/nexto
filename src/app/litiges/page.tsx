@@ -75,11 +75,11 @@ export default function LitigesPage() {
             ))}
           </div>
         )}
-        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 16, border: '1px solid #E7EDEB' }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: '#4E6470' }}>Aucun litige pour l'instant</div>
-            <div style={{ fontSize: 11.5, color: '#6E8592', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
+            <div style={{ fontSize: 11.5, color: '#4E6470', marginTop: 4 }}>Un signalement peut s'ouvrir depuis la conversation d'une mission.</div>
           </div>
         )}
         {(() => {

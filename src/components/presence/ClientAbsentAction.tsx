@@ -92,7 +92,7 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
 
   if (phase === 'arrivee') {
     return (
-      <div role="alert" style={{ background: '#FFF1EF', border: '2px solid #E5484D', borderRadius: 16, padding: 16 }}>
+      <div role="alert" style={{ background: '#FFF1EF', border: '2px solid #B3402F', borderRadius: 16, padding: 16 }}>
         <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#123644' }}>{pn} indique être sur place</div>
         <p style={{ fontSize: 12.5, color: '#3d5560', margin: '5px 0 0', lineHeight: 1.5 }}>
           Photo reçue à {hhmm(req.requested_at)}{req.distance_m != null ? `, à ${req.distance_m} m de votre adresse` : req.geo_status === 'conforme' ? ', position conforme à votre adresse' : ', position non comparable à votre adresse'}. Rien n’est validé sans vous.
@@ -100,7 +100,7 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
         {req.photo_path && (
           photo
             ? <img src={photo} alt={`Photo d’arrivée envoyée par ${pn}`} style={{ display: 'block', width: '100%', maxHeight: 220, objectFit: 'cover', borderRadius: 12, marginTop: 10 }} />
-            : <div style={{ height: 120, borderRadius: 12, marginTop: 10, background: '#F3F6F5', display: 'grid', placeItems: 'center', fontSize: 12, color: '#6E8592' }}>Chargement de la photo…</div>
+            : <div style={{ height: 120, borderRadius: 12, marginTop: 10, background: '#F3F6F5', display: 'grid', placeItems: 'center', fontSize: 12, color: '#4E6470' }}>Chargement de la photo…</div>
         )}
         <button type="button" style={primary} disabled={!!busy} onClick={confirm}>{busy === 'ok' ? 'Enregistrement…' : 'Je confirme'}</button>
         {codeBlock}
@@ -117,7 +117,7 @@ export default function ClientAbsentAction({ txId, phase, req, proName, buyerFee
   const pv = req.preview
   const fee = pv && pv.buyer_fee_cents != null ? pv.buyer_fee_cents : pv && buyerFeeRate && pv.subtotal_cents != null ? Math.round(pv.subtotal_cents * buyerFeeRate) : null
   return (
-    <div role="alert" style={{ background: shown ? '#fff' : '#FFF1EF', border: `2px solid ${shown ? '#12B39C' : '#E5484D'}`, borderRadius: 16, padding: 16 }}>
+    <div role="alert" style={{ background: shown ? '#fff' : '#FFF1EF', border: `2px solid ${shown ? '#12B39C' : '#B3402F'}`, borderRadius: 16, padding: 16 }}>
       <div style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15.5, color: '#123644' }}>{shown ? 'Code de fin envoyé' : `${pn} indique avoir terminé`}</div>
       {pv && (
         <p style={{ fontSize: 13, color: '#123644', margin: '6px 0 0', lineHeight: 1.5 }}>

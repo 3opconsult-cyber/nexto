@@ -14,7 +14,7 @@ import { incidentOpen } from '@/lib/incident'
 type Etat = 'litige' | 'accepter' | 'attente' | 'valider' | 'place' | 'route' | 'confirmee'
 const LABEL: Record<Etat, string> = { litige: 'Litige ouvert', accepter: 'À accepter', attente: 'En attente', valider: 'À valider', place: 'Sur place', route: 'En route', confirmee: 'Confirmée' }
 const TONE: Record<Etat, { bg: string; fg: string; dash?: boolean }> = {
-  litige: { bg: '#FEE2E2', fg: '#A8432F' },
+  litige: { bg: '#FEE2E2', fg: '#B3402F' },
   accepter: { bg: '#FFF7ED', fg: '#7A5717', dash: true },
   attente: { bg: '#FFF7ED', fg: '#7A5717', dash: true },
   valider: { bg: '#FFF7ED', fg: '#7A5717' },

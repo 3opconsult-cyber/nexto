@@ -44,7 +44,7 @@ export default function AidePage() {
                 <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, color: '#123644' }}>{r.title}</span>
                 <span style={{ display: 'block', fontSize: 12, color: '#4E6470', marginTop: 2 }}>{r.sub}</span>
               </span>
-              <span aria-hidden="true" style={{ color: '#6E8592' }}>›</span>
+              <span aria-hidden="true" style={{ color: '#4E6470' }}>›</span>
             </button>
           ))}
         </div>

@@ -319,7 +319,7 @@ function SignupForm() {
                 </label>
               </>
             )}
-            {error && <p role="alert" style={{ color: '#B2432E', fontSize: 16, lineHeight: 1.55, fontWeight: 600, margin: 0 }}>{error}</p>}
+            {error && <p role="alert" style={{ color: '#B3402F', fontSize: 16, lineHeight: 1.55, fontWeight: 600, margin: 0 }}>{error}</p>}
             <button type="submit" disabled={loading}
               style={{ width: '100%', border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 18, minHeight: 56, padding: 15, borderRadius: 16, cursor: 'pointer', opacity: loading ? .6 : 1 }}>
               {loading ? 'Création…' : step < 3 ? 'Continuer →' : 'Créer mon compte'}

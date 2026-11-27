@@ -161,7 +161,7 @@ export default function Disponibilites() {
 
       <div style={{ flex: 1, padding: '24px 16px 40px' }}>
         <div style={{ maxWidth: 820, margin: '0 auto' }}>
-          {loading && <div style={{ textAlign: 'center', padding: 30, color: '#6E8592', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
+          {loading && <div style={{ textAlign: 'center', padding: 30, color: '#4E6470', fontWeight: 600, fontSize: 13 }}>Chargement…</div>}
 
           {!loading && slots === null && (
             <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 16, padding: 18, fontSize: 13, color: '#4E6470', lineHeight: 1.55 }}>
@@ -171,7 +171,7 @@ export default function Disponibilites() {
 
           {!loading && slots !== null && (
             <>
-              {msg && <p style={{ fontSize: 13, color: msg.ok ? '#0B8374' : '#c0503a', margin: '0 0 10px', fontWeight: 600 }}>{msg.text}</p>}
+              {msg && <p style={{ fontSize: 13, color: msg.ok ? '#0B8374' : '#B3402F', margin: '0 0 10px', fontWeight: 600 }}>{msg.text}</p>}
               <Calendar aere events={events} views={['month']} defaultView="month" bigCells onDayClick={openDay} />
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 20, fontSize: 15, color: '#4E6470' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 4, background: 'rgba(18,179,156,.14)', border: '1.5px solid #12B39C' }} />Créneaux libres</span>
@@ -224,7 +224,7 @@ export default function Disponibilites() {
             <button onClick={save} disabled={busy} style={{ marginTop: 16, width: '100%', border: 'none', borderRadius: 999, padding: 14, background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: busy ? .6 : 1 }}>
               {busy ? 'Enregistrement…' : 'Enregistrer'}
             </button>
-            <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', margin: '10px 0 0' }}>Un créneau déjà réservé par un client n&apos;est jamais retiré.</p>
+            <p style={{ fontSize: 11.5, color: '#4E6470', textAlign: 'center', margin: '10px 0 0' }}>Un créneau déjà réservé par un client n&apos;est jamais retiré.</p>
           </div>
         </div>
       )}

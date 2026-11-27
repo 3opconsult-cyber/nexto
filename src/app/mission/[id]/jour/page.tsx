@@ -281,7 +281,7 @@ export default function MissionDuJour() {
                   <button style={{ ...link, display: 'block', margin: '8px auto 0' }} onClick={() => setAskEta(false)}>Annuler</button>
                 </div>
               )}
-              <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 8 }}>
+              <p style={{ fontSize: 11.5, color: '#4E6470', textAlign: 'center', marginTop: 8 }}>
                 Le client voit votre heure d&apos;arrivée estimée.{' '}
                 {!v48 || presence === 'sur_place' ? 'La mission démarre au scan de son QR.'
                   : presence === 'absent' ? `${pn} ne sera pas sur place : démarche client absent (photo, position, code du client).`
@@ -307,7 +307,7 @@ export default function MissionDuJour() {
                 <>
                   <button style={primary} onClick={() => { setMsg(null); setScan('arrivee') }}>Scanner le QR du client</button>
                   {winA?.warning && PRESENCE_WARNING[winA.warning] && <p style={{ fontSize: 11.5, color: '#8a6520', textAlign: 'center', marginTop: 6 }}>{PRESENCE_WARNING[winA.warning]}</p>}
-                  <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 6 }}>Aucune position n&apos;est relevée.</p>
+                  <p style={{ fontSize: 11.5, color: '#4E6470', textAlign: 'center', marginTop: 6 }}>Aucune position n&apos;est relevée.</p>
                   <button style={{ ...link, display: 'block', margin: '4px auto 0', minHeight: 44 }} onClick={() => setAbsentOpen(true)}>Le client n&apos;est pas là ? Démarche client absent</button>
                 </>
               ) : (
@@ -347,13 +347,13 @@ export default function MissionDuJour() {
               ) : v48 ? (
                 <>
                   <button style={{ ...primary, marginTop: 12 }} onClick={() => { setMsg(null); setScan('fin') }}>Terminer la mission</button>
-                  <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 6 }}>Scannez le QR de fin affiché chez le client.</p>
+                  <p style={{ fontSize: 11.5, color: '#4E6470', textAlign: 'center', marginTop: 6 }}>Scannez le QR de fin affiché chez le client.</p>
                   <button style={{ ...link, display: 'block', margin: '4px auto 0', minHeight: 44 }} onClick={() => setAbsentOpen(true)}>Le client n&apos;est pas là ? Fin à distance (code de fin)</button>
                 </>
               ) : (
                 <>
                   <button style={{ ...primary, marginTop: 12 }} onClick={() => { setMsg(null); setScan('fin') }}>Terminer la mission</button>
-                  <p style={{ fontSize: 11.5, color: '#6E8592', textAlign: 'center', marginTop: 6 }}>Scannez le QR de fin affiché chez le client.</p>
+                  <p style={{ fontSize: 11.5, color: '#4E6470', textAlign: 'center', marginTop: 6 }}>Scannez le QR de fin affiché chez le client.</p>
                   {v2 && <div style={{ marginTop: 6 }}><RemotePresence txId={tx.id} phase="fin" v2 remote={remF} onDone={load} /></div>}
                 </>
               )}

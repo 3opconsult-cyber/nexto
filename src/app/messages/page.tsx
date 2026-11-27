@@ -107,7 +107,7 @@ export default function MessagesPage() {
           {/* Décompte de la maquette, en simple phrase (plus de cadre). */}
           {mode && <p style={{ margin: '0 0 16px', fontSize: 16, lineHeight: 1.55, color: '#4E6470' }}>{nbConv} conversation{nbConv > 1 ? 's' : ''} dans votre espace {mode === 'pro' ? 'prestataire' : 'particulier'}</p>}
           <div style={{ position: 'relative' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E8592" strokeWidth="2.2" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2.2" style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }}>
               <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
             </svg>
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher par nom" aria-label="Rechercher une conversation par nom" type="search"
@@ -138,7 +138,7 @@ export default function MessagesPage() {
       )}
 
       <div style={{ padding: '28px 20px 16px' }}>
-        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#6E8592', fontWeight: 600, fontSize: 16 }}>Chargement…</div>}
+        {loading && <div style={{ textAlign: 'center', padding: 40, color: '#4E6470', fontWeight: 600, fontSize: 16 }}>Chargement…</div>}
         {!loading && visible.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 8px' }}>
             <div style={{ fontWeight: 700, fontSize: 18, color: '#123644' }}>Aucune conversation pour l'instant</div>

@@ -159,8 +159,8 @@ export default function ProDetailPage() {
         <b style={{ flex: 1 }}>{uid === proId ? 'Ma fiche publique' : 'Profil du pro'}</b>
         {uid !== proId && (
           <button onClick={toggleFav} disabled={favBusy} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} aria-pressed={fav}
-            style={{ width: 44, height: 44, borderRadius: 10, border: 'none', background: 'none', display: 'grid', placeItems: 'center', cursor: 'pointer', opacity: favBusy ? 0.6 : 1, color: fav ? '#E5484D' : 'var(--ink)' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill={fav ? '#E5484D' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>
+            style={{ width: 44, height: 44, borderRadius: 10, border: 'none', background: 'none', display: 'grid', placeItems: 'center', cursor: 'pointer', opacity: favBusy ? 0.6 : 1, color: fav ? '#B3402F' : 'var(--ink)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={fav ? '#B3402F' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>
           </button>
         )}
       </div>
@@ -267,7 +267,7 @@ export default function ProDetailPage() {
       {/* Desktop : la barre reste dans la colonne de contenu, à droite de la barre latérale (236 px). */}
       <style>{`@media (min-width:1000px){.pro-foot{left:236px !important;max-width:none !important;margin:0 !important}.pro-foot>div{max-width:640px;margin:0 auto}}`}</style>
       <div className="ping-foot pro-foot" style={{ position: 'fixed', bottom: 'var(--tabbar-h, 0px)', left: 0, right: 0, maxWidth: 480, zIndex: 20, margin: '0 auto', background: '#fff', borderTop: '1px solid var(--line)', padding: '12px 16px calc(14px + env(safe-area-inset-bottom,0px))' }}>
-        {actionErr && <p style={{ color: '#c0503a', fontSize: 15, margin: '0 0 8px', textAlign: 'center' }}>{actionErr}</p>}
+        {actionErr && <p style={{ color: '#B3402F', fontSize: 15, margin: '0 0 8px', textAlign: 'center' }}>{actionErr}</p>}
         <div style={{ display: 'flex', gap: 10 }}>
           <button className="ping-btn ghost" style={{ flex: 1 }} onClick={() => contact()}>Contacter</button>
           <button className="ping-btn" style={{ flex: 1.4 }} onClick={() => reserve()}>
