@@ -5530,7 +5530,7 @@ if (document.querySelector('.section.on')?.id === 's_overview') { window.loadOve
 // Bouton « Hub » (retour à /hub), seulement si le Hub a été ouvert sur cet appareil.
 try { if (localStorage.getItem('ping_hub') === '1') {
   var hb = document.createElement('a'); hb.href = '/hub'; hb.setAttribute('aria-label', 'Retour au Hub'); hb.textContent = 'Hub';
-  hb.style.cssText = 'position:fixed;left:12px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:9999;min-width:48px;height:48px;padding:0 16px;border-radius:24px;background:#123644;color:#fff;font:700 14px Inter,sans-serif;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 16px rgba(18,54,68,.35)';
+  hb.style.cssText = 'position:fixed;left:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:9999;min-width:48px;height:48px;padding:0 16px;border-radius:24px;background:#123644;color:#fff;font:700 14px Inter,sans-serif;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 16px rgba(18,54,68,.35)';
   document.body.appendChild(hb);
 } } catch (e) {}
 </script>
