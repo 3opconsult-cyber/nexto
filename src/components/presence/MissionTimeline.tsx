@@ -48,7 +48,7 @@ export default function MissionTimeline({ current, times, steps = STEPS, compact
                 <span aria-hidden style={{ width: 20, height: 20, borderRadius: '50%', flex: '0 0 auto', background: done ? '#12B39C' : '#fff', border: `2px solid ${done ? '#12B39C' : on ? '#123644' : '#C5D3CF'}`, boxShadow: on ? '0 0 0 4px rgba(18,179,156,.22)' : undefined, display: 'grid', placeItems: 'center' }}>
                   {done && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>}
                 </span>
-                {i < last && <span aria-hidden style={{ flex: 1, height: 2, margin: '0 4px', background: i < current ? '#12B39C' : '#E7EDEB' }} />}
+                {i < last && <span aria-hidden style={{ flex: 1, height: 2, margin: '0 4px', background: i < current ? '#12B39C' : '#DCE5E3' }} />}
               </li>
             )
           })}
@@ -71,7 +71,7 @@ export default function MissionTimeline({ current, times, steps = STEPS, compact
         const color = done ? '#12B39C' : on ? '#123644' : '#C5D3CF'
         return (
           <li key={s} aria-current={i === current ? 'step' : undefined} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-            {i > 0 && <span aria-hidden style={{ position: 'absolute', top: dot / 2 - 1, right: '50%', width: '100%', height: 2, background: i <= current ? '#12B39C' : '#E7EDEB' }} />}
+            {i > 0 && <span aria-hidden style={{ position: 'absolute', top: dot / 2 - 1, right: '50%', width: '100%', height: 2, background: i <= current ? '#12B39C' : '#DCE5E3' }} />}
             <span aria-hidden style={{
               position: 'relative', width: dot, height: dot, borderRadius: '50%', background: done ? '#12B39C' : '#fff',
               border: `2px solid ${color}`, boxSizing: 'border-box', display: 'grid', placeItems: 'center',

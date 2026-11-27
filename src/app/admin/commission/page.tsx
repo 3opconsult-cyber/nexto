@@ -116,7 +116,7 @@ export default function AdminCommissionPage() {
             <span style={{ fontSize: 13, fontWeight: 700, color: '#123644' }}>Commission côté client (particulier)</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <input value={buyer} onChange={e => setBuyer(e.target.value)} inputMode="decimal"
-                style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #E7EDEB', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
+                style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
               <span style={{ color: '#4E6470', fontWeight: 700 }}>%</span>
             </div>
           </label>
@@ -124,7 +124,7 @@ export default function AdminCommissionPage() {
             <span style={{ fontSize: 13, fontWeight: 700, color: '#123644' }}>Commission côté prestataire</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <input value={seller} onChange={e => setSeller(e.target.value)} inputMode="decimal"
-                style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #E7EDEB', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
+                style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
               <span style={{ color: '#4E6470', fontWeight: 700 }}>%</span>
             </div>
           </label>
@@ -137,7 +137,7 @@ export default function AdminCommissionPage() {
             <span style={{ fontSize: 13, fontWeight: 700, color: '#123644' }}>Heure entamée, heure due — à partir de</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <input value={threshold} onChange={e => setThreshold(e.target.value.replace(/[^0-9]/g, ''))} inputMode="numeric"
-                style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #E7EDEB', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
+                style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
               <span style={{ color: '#4E6470', fontWeight: 700 }}>minutes</span>
             </div>
             <p style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.55, margin: '8px 0 0' }}>
@@ -160,7 +160,7 @@ export default function AdminCommissionPage() {
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: '#123644' }}>{label}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
                   <input value={val} onChange={e => set(e.target.value.replace(/[^0-9,.]/g, ''))} inputMode="decimal"
-                    style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #E7EDEB', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
+                    style={{ width: 90, padding: '11px 13px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'Quicksand, sans-serif', fontWeight: 700 }} />
                   <span style={{ color: '#4E6470', fontWeight: 700 }}>{unit}</span>
                 </div>
                 <span style={{ display: 'block', fontSize: 12, color: '#4E6470', lineHeight: 1.5, marginTop: 6 }}>{help}</span>

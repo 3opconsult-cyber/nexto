@@ -220,7 +220,7 @@ export default function MissionQrCodes() {
             </p>
             <button className="ping-btn" style={{ marginTop: 20 }} onClick={() => router.push(`/mission/${tx.id}/chat?avis`)}>Laisser un avis</button>
             <button onClick={() => router.push(`/mission/${tx.id}/facture`)} style={{
-              marginTop: 10, width: '100%', border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644',
+              marginTop: 10, width: '100%', border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644',
               borderRadius: 999, padding: '12px 0', fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 14, cursor: 'pointer',
             }}>Voir la facture</button>
             <button onClick={() => router.push(`/mission/${tx.id}/chat`)} style={{ marginTop: 10, border: 'none', background: 'none', color: '#4E6470', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Retour à la conversation</button>

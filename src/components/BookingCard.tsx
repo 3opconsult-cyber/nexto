@@ -66,14 +66,14 @@ export default function BookingCard({ tx, userId, counterpart, onChange, compact
   }
 
   const box: React.CSSProperties = {
-    background: pending && isSeller ? '#FFF7ED' : '#fff', border: `1.5px solid ${pending ? (isSeller ? '#F2A93B' : '#12B39C') : '#E7EDEB'}`,
+    background: pending && isSeller ? '#FFF7ED' : '#fff', border: `1.5px solid ${pending ? (isSeller ? '#F2A93B' : '#12B39C') : '#DCE5E3'}`,
     borderRadius: 14, padding: compact ? 12 : 14, ...style,
   }
   const h: React.CSSProperties = { fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: compact ? 13.5 : 14.5, color: '#123644' }
   const p: React.CSSProperties = { fontSize: 12.5, color: '#3d5560', lineHeight: 1.5, margin: '3px 0 0' }
   const btn = (primary: boolean, danger = false): React.CSSProperties => ({
     flex: primary ? 1.4 : 1, minHeight: 48, borderRadius: 999, cursor: 'pointer', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14,
-    border: primary ? 'none' : '1.5px solid #E7EDEB', background: primary ? (danger ? '#B3402F' : '#0B8374') : '#fff', color: primary ? '#fff' : '#123644',
+    border: primary ? 'none' : '1.5px solid #DCE5E3', background: primary ? (danger ? '#B3402F' : '#0B8374') : '#fff', color: primary ? '#fff' : '#123644',
   })
 
   // ---- Prestataire : à accepter ----
@@ -103,13 +103,13 @@ export default function BookingCard({ tx, userId, counterpart, onChange, compact
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
             {REFUSAL_REASONS.map(r => (
               <button key={r} type="button" aria-pressed={reason === r} onClick={e => { stop(e); setReason(x => x === r ? '' : r) }}
-                style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: `1.5px solid ${reason === r ? '#0B8374' : '#E7EDEB'}`, background: reason === r ? 'rgba(18,179,156,.1)' : '#fff', color: '#123644', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: `1.5px solid ${reason === r ? '#0B8374' : '#DCE5E3'}`, background: reason === r ? 'rgba(18,179,156,.1)' : '#fff', color: '#123644', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
                 {r}
               </button>
             ))}
           </div>
           <input value={reason} onChange={e => setReason(e.target.value.slice(0, 300))} onClick={stop} placeholder="Ou écrivez un motif"
-            aria-label="Motif du refus" style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, borderRadius: 12, border: '1.5px solid #E7EDEB', padding: '0 12px', fontSize: 14, fontFamily: 'Inter, sans-serif' }} />
+            aria-label="Motif du refus" style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, borderRadius: 12, border: '1.5px solid #DCE5E3', padding: '0 12px', fontSize: 14, fontFamily: 'Inter, sans-serif' }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             <button type="button" onClick={e => { stop(e); setAsking(false) }} disabled={!!busy} style={btn(false)}>Garder</button>
             <button type="button" onClick={refuse} disabled={!!busy} autoFocus style={{ ...btn(true, true), opacity: busy ? .7 : 1 }}>

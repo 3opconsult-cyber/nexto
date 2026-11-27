@@ -281,7 +281,7 @@ export default function MesDemandesPage() {
                             ) : (
                               <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                                 <button onClick={() => router.push(`/mission/${t.id}/chat`)}
-                                  style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                  style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                   Voir la discussion
                                 </button>
                                 {t.hasPendingOffer && !t.price_confirmed && confirming !== t.id && (
@@ -311,7 +311,7 @@ export default function MesDemandesPage() {
                                     pendant le choix du rendez-vous, sans défilement. */}
                                 <div style={{ display: 'flex', gap: 8, position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, background: '#fff', margin: '10px -12px -12px', padding: '10px 12px 12px', borderTop: '1px solid #EEF2F1', borderRadius: '0 0 12px 12px' }}>
                                   <button type="button" onClick={() => setConfirming(null)} disabled={busy === t.id}
-                                    style={{ flex: '0 0 auto', minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+                                    style={{ flex: '0 0 auto', minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
                                     Annuler
                                   </button>
                                   <button type="button" onClick={() => acceptPro(t, r)} disabled={busy === t.id || (hasAddr(r) && !rdvAt)}

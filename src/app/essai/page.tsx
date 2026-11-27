@@ -40,7 +40,7 @@ function theme(role: Role | null) {
     subtle: light ? '#475A64' : '#fff',
     kicker: light ? PING_TEAL : PING_GREEN,
     hairline: light ? '#E7EDEB' : 'rgba(255,255,255,.15)',
-    dotOff: light ? '#E7EDEB' : 'rgba(255,255,255,.22)',
+    dotOff: light ? '#DCE5E3' : 'rgba(255,255,255,.22)',
     chipBg: light ? 'rgba(18,54,68,.08)' : 'rgba(255,255,255,.1)',
   }
 }

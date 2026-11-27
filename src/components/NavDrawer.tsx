@@ -157,7 +157,7 @@ export default function NavDrawer({ dark = true }: { dark?: boolean }) {
                 background: available ? 'rgba(18,179,156,.1)' : '#F3F6F5',
               }}>
                 <span style={{ fontSize: 13.5, fontWeight: 700, color: '#123644', textAlign: 'left' }}>{available ? 'Disponible, visible sur la carte' : 'Hors ligne, invisible des clients'}</span>
-                <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#F2A93B' : '#E7EDEB', position: 'relative', flexShrink: 0 }}>
+                <span style={{ width: 38, height: 22, borderRadius: 999, background: available ? '#F2A93B' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
                   <span style={{ position: 'absolute', top: 2, left: available ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
                 </span>
               </button>

@@ -314,7 +314,7 @@ export default function MonAnnoncePage() {
               <button key={h.key} type="button" aria-pressed={on}
                 onClick={() => edit(setHighlights)(on ? highlights.filter(k => k !== h.key) : [...highlights, h.key])}
                 style={{ padding: '8px 16px', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                  border: on ? 'none' : `1px solid #E7EDEB`, background: on ? TEAL : '#fff', color: on ? '#fff' : NAVY }}>
+                  border: on ? 'none' : `1px solid #DCE5E3`, background: on ? TEAL : '#fff', color: on ? '#fff' : NAVY }}>
                 {h.label}
               </button>
             )
@@ -329,7 +329,7 @@ export default function MonAnnoncePage() {
           {RADIUS_CHOICES.map(km => (
             <button key={km} type="button" aria-pressed={radius === km} onClick={() => edit(setRadius)(km)}
               style={{ padding: '8px 18px', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                border: radius === km ? 'none' : `1px solid #E7EDEB`, background: radius === km ? TEAL : '#fff', color: radius === km ? '#fff' : NAVY }}>
+                border: radius === km ? 'none' : `1px solid #DCE5E3`, background: radius === km ? TEAL : '#fff', color: radius === km ? '#fff' : NAVY }}>
               {km} km
             </button>
           ))}

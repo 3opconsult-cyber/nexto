@@ -101,7 +101,7 @@ export default function AmicableSettlement({ dispute, buyerId, sellerId, userId,
         <div style={{ position: 'relative', width: 130, flexShrink: 0 }}>
           <input id={`amiable-${dispute.id}`} value={amount} onChange={e => setAmount(e.target.value)} inputMode="decimal" autoComplete="off" autoFocus
             onKeyDown={e => { if (e.key === 'Enter') send() }}
-            style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 28px 10px 12px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 15, fontFamily: 'inherit' }} />
+            style={{ width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '10px 28px 10px 12px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, fontFamily: 'inherit' }} />
           <span style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', color: C.slate, fontSize: 14 }}>€</span>
         </div>
         <button type="button" onClick={send} disabled={busy || !amount.trim()} style={{ ...btn(true), opacity: busy || !amount.trim() ? .5 : 1 }}>Envoyer</button>

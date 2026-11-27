@@ -14,10 +14,10 @@ export default function AddressChoice({ profileAddress, value, onChange, error }
   error?: string
 }) {
   const errEl = error ? <p role="alert" style={{ color: '#B3402F', fontSize: 12.5, fontWeight: 600, margin: '6px 0 0' }}>{error}</p> : null
-  const field: React.CSSProperties = { display: 'block', width: '100%', marginTop: 6, border: '1px solid #E7EDEB', borderRadius: 10, padding: '11px 13px', fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit' }
+  const field: React.CSSProperties = { display: 'block', width: '100%', marginTop: 6, border: '1px solid #DCE5E3', borderRadius: 10, padding: '11px 13px', fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit' }
   const opt = (on: boolean): React.CSSProperties => ({
     display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%', textAlign: 'left', padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
-    border: on ? '2px solid #12B39C' : '1px solid #E7EDEB', background: on ? 'rgba(18,179,156,.06)' : '#fff', marginBottom: 8, fontFamily: 'inherit',
+    border: on ? '2px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.06)' : '#fff', marginBottom: 8, fontFamily: 'inherit',
   })
   const dot = (on: boolean) => <span style={{ width: 18, height: 18, borderRadius: 999, flexShrink: 0, marginTop: 1, border: on ? '6px solid #12B39C' : '2px solid #A5B3B9', boxSizing: 'border-box' }} />
 

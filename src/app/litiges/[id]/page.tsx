@@ -301,10 +301,10 @@ export default function LitigePage() {
           <div style={{ background: '#fff', border: '1px dashed #12B39C', borderRadius: 14, padding: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#0B8374', marginBottom: 6 }}>Médiation PING (visible par vous seul)</div>
             <textarea value={decision} onChange={e => setDecision(e.target.value)} rows={2} aria-label="Décision de PING"
-              style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #E7EDEB', fontFamily: 'inherit', fontSize: 13 }} />
+              style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #DCE5E3', fontFamily: 'inherit', fontSize: 13 }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <button onClick={() => close('resolved')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Clore : résolu</button>
-              <button onClick={() => close('rejected')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
+              <button onClick={() => close('rejected')} style={{ flex: 1, minHeight: 44, padding: 10, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Clore : non retenu</button>
             </div>
           </div>
         </div>
@@ -397,10 +397,10 @@ function MoneyPanel({ tx, pays, admin, open, refundEur, setRefundEur, onRefund, 
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
             <input value={refundEur} onChange={e => setRefundEur(e.target.value)} inputMode="decimal" aria-label="Montant en euros"
-              style={{ width: 110, padding: '9px 11px', borderRadius: 10, border: '1px solid #E7EDEB', fontSize: 13 }} />
+              style={{ width: 110, padding: '9px 11px', borderRadius: 10, border: '1px solid #DCE5E3', fontSize: 13 }} />
             {ps !== 'released'
               ? <button onClick={onRefund} disabled={!held} title={held ? '' : 'Aucun paiement sous séquestre'}
-                  style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: held ? '#FF7A66' : '#E7EDEB', color: '#fff', fontWeight: 700, cursor: held ? 'pointer' : 'default' }}>Rembourser le client (séquestre)</button>
+                  style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: held ? '#FF7A66' : '#DCE5E3', color: '#fff', fontWeight: 700, cursor: held ? 'pointer' : 'default' }}>Rembourser le client (séquestre)</button>
               : <button onClick={onRetenue}
                   style={{ flex: 1, padding: 10, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Retenir sur ses prochains versements</button>}
           </div>
@@ -437,9 +437,9 @@ const DEC_CSS = `
 .dec-range{-webkit-appearance:none;appearance:none;width:100%;height:48px;margin:0;background:transparent;touch-action:manipulation;cursor:pointer}
 .dec-range:focus{outline:none}
 .dec-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(18,179,156,.35)}
-.dec-range::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(to right,#12B39C 0,#12B39C var(--p),#E7EDEB var(--p),#E7EDEB 100%)}
+.dec-range::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(to right,#12B39C 0,#12B39C var(--p),#DCE5E3 var(--p),#DCE5E3 100%)}
 .dec-range::-webkit-slider-thumb{-webkit-appearance:none;width:44px;height:44px;margin-top:-17px;border-radius:50%;background:#fff;border:3px solid #0B8374;box-shadow:0 2px 8px rgba(18,54,68,.25)}
-.dec-range::-moz-range-track{height:10px;border-radius:999px;background:#E7EDEB}
+.dec-range::-moz-range-track{height:10px;border-radius:999px;background:#DCE5E3}
 .dec-range::-moz-range-progress{height:10px;border-radius:999px;background:#12B39C}
 .dec-range::-moz-range-thumb{width:44px;height:44px;border-radius:50%;background:#fff;border:3px solid #0B8374;box-sizing:border-box}
 `
@@ -528,7 +528,7 @@ function DecisionPanel({ ceiling, requested, refund, setRefund, reason, setReaso
           </div>
         ) : (
           <button type="button" disabled={!canApply} onClick={() => setConfirm(true)}
-            style={{ width: '100%', minHeight: 52, borderRadius: 999, border: 'none', background: canApply ? '#0B8374' : '#E7EDEB', color: canApply ? '#fff' : '#4E6470', fontSize: 16, fontWeight: 700, cursor: canApply ? 'pointer' : 'default', fontFamily: 'inherit', scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }}>
+            style={{ width: '100%', minHeight: 52, borderRadius: 999, border: 'none', background: canApply ? '#0B8374' : '#DCE5E3', color: canApply ? '#fff' : '#4E6470', fontSize: 16, fontWeight: 700, cursor: canApply ? 'pointer' : 'default', fontFamily: 'inherit', scrollMarginBottom: 'calc(var(--tabbar-h, 0px) + 120px)' }}>
             Appliquer la décision
           </button>
         )}

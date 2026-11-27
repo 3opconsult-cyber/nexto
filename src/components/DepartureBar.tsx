@@ -179,8 +179,8 @@ export default function DepartureBar({
                   flex: '1 0 28%', minHeight: 44, padding: '13px 0', borderRadius: 12, border: 'none', cursor: impossible ? 'not-allowed' : 'pointer',
                   fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15,
                   background: impossible ? '#F3F6F5' : eta === m ? '#12B39C' : '#fff',
-                  color: impossible ? '#E7EDEB' : eta === m ? '#fff' : '#123644',
-                  boxShadow: impossible || eta === m ? 'none' : '0 0 0 1px #E7EDEB',
+                  color: impossible ? '#DCE5E3' : eta === m ? '#fff' : '#123644',
+                  boxShadow: impossible || eta === m ? 'none' : '0 0 0 1px #DCE5E3',
                 }}>{m} min</button>
               )
             })}

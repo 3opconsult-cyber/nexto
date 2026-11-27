@@ -335,7 +335,7 @@ export default function NewOpenRequestPage() {
           </div>
           <button type="button" onClick={() => setUrgent(!urgent)} aria-pressed={urgent}
             style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', padding: '14px 16px', marginTop: 20, minHeight: 64, borderRadius: 16, cursor: 'pointer', border: 'none', background: urgent ? 'rgba(232,116,59,.12)' : '#EEF3F2' }}>
-            <span style={{ width: 38, height: 22, borderRadius: 999, background: urgent ? '#E8743B' : '#E7EDEB', position: 'relative', flexShrink: 0 }}>
+            <span style={{ width: 38, height: 22, borderRadius: 999, background: urgent ? '#E8743B' : '#DCE5E3', position: 'relative', flexShrink: 0 }}>
               <span style={{ position: 'absolute', top: 2, left: urgent ? 18 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .15s' }} />
             </span>
             <span>

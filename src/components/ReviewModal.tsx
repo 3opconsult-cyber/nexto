@@ -87,7 +87,7 @@ export default function ReviewModal({
               style={{
                 width: 44, height: 44, display: 'grid', placeItems: 'center',
                 background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 1,
-                fontSize: 32, color: n <= value ? '#F2A93B' : '#E7EDEB',
+                fontSize: 32, color: n <= value ? '#F2A93B' : '#DCE5E3',
               }}>★</button>
           ))}
         </div>
@@ -126,7 +126,7 @@ export default function ReviewModal({
                 border: 'none',
                 background: recommend === val ? (val ? '#12B39C' : '#123644') : '#fff',
                 color: recommend === val ? '#fff' : '#123644',
-                boxShadow: recommend === val ? 'none' : '0 0 0 1px #E7EDEB',
+                boxShadow: recommend === val ? 'none' : '0 0 0 1px #DCE5E3',
               }}>{lbl as string}</button>
           ))}
         </div>
@@ -140,7 +140,7 @@ export default function ReviewModal({
           rows={3} maxLength={600}
           style={{
             width: '100%', marginTop: 7, padding: 11, borderRadius: 12, resize: 'vertical',
-            border: '1.5px solid #E7EDEB', fontFamily: 'Inter, sans-serif', fontSize: 13.5,
+            border: '1.5px solid #DCE5E3', fontFamily: 'Inter, sans-serif', fontSize: 13.5,
             color: '#123644', outline: 'none',
           }} />
       </div>
@@ -156,7 +156,7 @@ export default function ReviewModal({
                 flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 11, border: 'none', cursor: 'pointer',
                 fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5,
                 background: tip === c ? '#123644' : '#fff', color: tip === c ? '#fff' : '#123644',
-                boxShadow: tip === c ? 'none' : '0 0 0 1px #E7EDEB',
+                boxShadow: tip === c ? 'none' : '0 0 0 1px #DCE5E3',
               }}>{c === 0 ? 'Aucun' : `${c / 100} €`}</button>
           ))}
         </div>

@@ -39,7 +39,7 @@ const actBtn: React.CSSProperties = {
   cursor: 'pointer', fontFamily: 'inherit', padding: '0 8px',
 }
 const pill = (on: boolean): React.CSSProperties => ({
-  minHeight: 44, minWidth: 64, padding: '0 14px', borderRadius: 999, border: on ? 'none' : '1px solid #E7EDEB',
+  minHeight: 44, minWidth: 64, padding: '0 14px', borderRadius: 999, border: on ? 'none' : '1px solid #DCE5E3',
   background: on ? INK : '#fff', color: on ? '#fff' : INK, fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit',
 })
 
@@ -224,7 +224,7 @@ export default function FacturesList({ mode, uid, rows, names = {}, services = {
                   <td style={{ padding: '10px 0 10px 6px', textAlign: 'right', color: MUT, whiteSpace: 'nowrap' }}>{EUR(l.feeCents)}</td>
                 </tr>
               ))}
-              <tr style={{ borderTop: '1.5px solid #E7EDEB' }}>
+              <tr style={{ borderTop: '1.5px solid #DCE5E3' }}>
                 <td style={{ padding: '10px 6px 10px 0', fontWeight: 700, color: INK }}>Total</td>
                 <td style={{ padding: '10px 6px', textAlign: 'right', fontWeight: 700, color: INK }}>{clientAnnual.count}</td>
                 <td style={{ padding: '10px 6px', textAlign: 'right', fontWeight: 700, color: INK, whiteSpace: 'nowrap' }}>{EUR(clientAnnual.rows[0].cents)}</td>
@@ -338,7 +338,7 @@ export default function FacturesList({ mode, uid, rows, names = {}, services = {
 
       {docsLink && (
         <button type="button" onClick={() => router.push('/documents')}
-          style={{ display: 'block', width: '100%', minHeight: 52, marginTop: 28, border: '1px solid #E7EDEB', background: '#fff', borderRadius: 999, padding: '0 16px', fontWeight: 700, fontSize: 16, color: INK, cursor: 'pointer', fontFamily: 'inherit' }}>
+          style={{ display: 'block', width: '100%', minHeight: 52, marginTop: 28, border: '1px solid #DCE5E3', background: '#fff', borderRadius: 999, padding: '0 16px', fontWeight: 700, fontSize: 16, color: INK, cursor: 'pointer', fontFamily: 'inherit' }}>
           Mes opérations : tous les documents
         </button>
       )}

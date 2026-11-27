@@ -29,7 +29,7 @@ function Action({ label, href, primary }: { label: string; href: string; primary
   return (
     <button type="button" onClick={() => router.push(href)}
       style={{ flex: '1 1 0', minWidth: 0, minHeight: 44, padding: '0 6px', borderRadius: 12, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 15,
-        border: primary ? 'none' : '1.5px solid #E7EDEB', background: primary ? '#0B8374' : '#fff', color: primary ? '#fff' : '#123644' }}>
+        border: primary ? 'none' : '1.5px solid #DCE5E3', background: primary ? '#0B8374' : '#fff', color: primary ? '#fff' : '#123644' }}>
       {label}
     </button>
   )
@@ -62,7 +62,7 @@ export function DaySheet({ day, lines, onClose }: { day: Date | null; lines: Mis
   const title = day ? day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : ''
   return (
     <Modal open={!!day} onClose={onClose} title={title ? title.charAt(0).toUpperCase() + title.slice(1) : undefined}
-      footer={<button type="button" onClick={onClose} style={{ width: '100%', minHeight: 48, borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Fermer</button>}>
+      footer={<button type="button" onClick={onClose} style={{ width: '100%', minHeight: 48, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Fermer</button>}>
       <div data-day-detail>
         {lines.length === 0
           ? <p style={{ fontSize: 16, lineHeight: 1.55, color: '#4E6470', margin: '8px 0 16px' }}>Aucune mission ce jour-là.</p>

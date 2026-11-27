@@ -336,7 +336,7 @@ export default function ProTarifsPage() {
                           )}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <button type="button" onClick={() => fileRef.current?.click()}
-                              style={{ minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                              style={{ minHeight: 44, padding: '0 16px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                               {shownPhoto ? 'Changer la photo' : 'Ajouter une photo'}
                             </button>
                             {shownPhoto && (
@@ -379,7 +379,7 @@ export default function ProTarifsPage() {
                   style={{ minHeight: 48, padding: '12px 16px', borderRadius: 999, border: '1.5px solid #F3D3CC', background: '#fff', color: '#B3402F', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Retirer</button>
               )}
               <button type="button" onClick={close}
-                style={{ flex: 1, minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
+                style={{ flex: 1, minHeight: 48, padding: 12, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>Annuler</button>
               <button type="button" onClick={save} disabled={saving}
                 style={{ flex: 1.4, minHeight: 48, padding: 12, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', opacity: saving ? .6 : 1 }}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}

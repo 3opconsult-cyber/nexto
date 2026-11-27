@@ -468,7 +468,7 @@ svg{display:block}
 
 /* Étoiles au prorata de la note */
 .ping-stars-r{color:var(--gold);letter-spacing:1px;position:relative;display:inline-block;white-space:nowrap;line-height:1;vertical-align:-1px}
-.ping-stars-r .st0{color:#E7EDEB}
+.ping-stars-r .st0{color:#DCE5E3}
 .ping-stars-r .st1{position:absolute;left:0;top:0;overflow:hidden;color:var(--gold)}
 
 /* Carte de demande (prestataire) */

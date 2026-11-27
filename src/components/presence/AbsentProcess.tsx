@@ -53,7 +53,7 @@ function StickyCta({ children, onClick, disabled, above }: { children: React.Rea
       <div aria-hidden style={{ height: above ? 96 : 8 }} />
       <div style={{
         position: 'fixed', left: 0, right: 0, bottom: 'var(--tabbar-h, 0px)', zIndex: 30, maxWidth: 480, margin: '0 auto',
-        background: '#fff', borderTop: '1px solid #E7EDEB', boxShadow: '0 -6px 16px rgba(18,54,68,.06)',
+        background: '#fff', borderTop: '1px solid #DCE5E3', boxShadow: '0 -6px 16px rgba(18,54,68,.06)',
         padding: '8px 16px calc(10px + env(safe-area-inset-bottom, 0px))', boxSizing: 'border-box',
       }}>
         {above}
@@ -211,7 +211,7 @@ export default function AbsentProcess({ txId, uid, phase, clientName, remote, pr
       {label}
       <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
         inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000"
-        style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: compact ? 3 : 5, minHeight: 48, borderRadius: 12, border: '1.5px solid #E7EDEB', padding: '0 12px', fontSize: 20, letterSpacing: 6, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
+        style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: compact ? 3 : 5, minHeight: 48, borderRadius: 12, border: '1.5px solid #DCE5E3', padding: '0 12px', fontSize: 20, letterSpacing: 6, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
     </label>
   )
   const codeBox = (label: string, inSticky: boolean) => (

@@ -80,7 +80,7 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
   if (!v2 && phase === 'fin') return null
 
   const ghost: React.CSSProperties = {
-    width: '100%', border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', borderRadius: 999,
+    width: '100%', border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999,
     padding: '11px 0', minHeight: 44, fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer',
   }
 
@@ -132,7 +132,7 @@ export default function RemotePresence({ txId, phase, v2, remote, onDone, initia
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <input value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" aria-label="Code du client"
-              style={{ flex: 1, minWidth: 0, borderRadius: 10, border: '1.5px solid #E7EDEB', padding: '9px 10px', fontSize: 17, letterSpacing: 4, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
+              style={{ flex: 1, minWidth: 0, borderRadius: 10, border: '1.5px solid #DCE5E3', padding: '9px 10px', fontSize: 17, letterSpacing: 4, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }} />
             <button onClick={submitCode} disabled={busy || code.length !== 6} style={{
               border: 'none', borderRadius: 999, padding: '9px 16px', background: '#0B8374', color: '#fff', fontWeight: 700,
               opacity: code.length === 6 && !busy ? 1 : .6, cursor: 'pointer',

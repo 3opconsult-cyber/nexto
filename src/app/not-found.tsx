@@ -24,7 +24,7 @@ export default function NotFound() {
     }}>
       <div style={{
         width: '100%', maxWidth: 420, background: '#fff', borderRadius: 18,
-        border: '1px solid #E7EDEB', padding: '28px 22px', textAlign: 'center',
+        border: '1px solid #DCE5E3', padding: '28px 22px', textAlign: 'center',
         boxShadow: '0 1px 2px rgba(18,54,68,.06)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
@@ -47,7 +47,7 @@ export default function NotFound() {
           <Link href="/pro/carte" style={{
             display: 'block', background: '#fff', color: '#123644', textDecoration: 'none',
             fontFamily: 'var(--font-quicksand), Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5,
-            padding: 13, borderRadius: 999, boxShadow: '0 0 0 1px #E7EDEB',
+            padding: 13, borderRadius: 999, boxShadow: '0 0 0 1px #DCE5E3',
           }}>Je suis prestataire</Link>
           <Link href="/support" style={{ color: '#0B8374', fontWeight: 600, fontSize: 13, marginTop: 6 }}>
             Contacter le support PING

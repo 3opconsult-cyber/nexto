@@ -123,7 +123,7 @@ export default function ScanQR() {
   const done = status === 'ok' && params.phase === 'complete'
   return (
     <div style={{ minHeight: '100vh', background: '#F3F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ background: '#fff', border: '1px solid #E7EDEB', borderRadius: 20, padding: 28, maxWidth: 360, width: '100%', textAlign: 'center' }}>
+      <div style={{ background: '#fff', border: '1px solid #DCE5E3', borderRadius: 20, padding: 28, maxWidth: 360, width: '100%', textAlign: 'center' }}>
         <div style={{
           width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px', display: 'grid', placeItems: 'center',
           background: status === 'ok' ? 'rgba(18,179,156,.12)' : status === 'error' ? 'rgba(255,122,102,.12)' : '#F3F6F5',
@@ -146,7 +146,7 @@ export default function ScanQR() {
               {done ? 'Voir la facture' : 'Mission du jour'}
             </button>
             <button onClick={() => router.push(`/mission/${params.id}/chat`)}
-              style={{ width: '100%', marginTop: 8, padding: 12, borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              style={{ width: '100%', marginTop: 8, padding: 12, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
               Retour à la conversation
             </button>
           </>

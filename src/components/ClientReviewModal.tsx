@@ -22,7 +22,7 @@ function Stars({ value, onChange, label, optional }: { value: number; onChange: 
       <div style={{ display: 'flex', gap: 4 }} role="radiogroup" aria-label={label}>
         {[1, 2, 3, 4, 5].map(n => (
           <button key={n} type="button" onClick={() => onChange(n)} role="radio" aria-checked={value === n} aria-label={`${n} sur 5`}
-            style={{ width: 44, height: 44, display: 'grid', placeItems: 'center', border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 32, lineHeight: 1, color: n <= value ? '#F2A93B' : '#E7EDEB' }}>★</button>
+            style={{ width: 44, height: 44, display: 'grid', placeItems: 'center', border: 'none', background: 'none', padding: 0, cursor: 'pointer', fontSize: 32, lineHeight: 1, color: n <= value ? '#F2A93B' : '#DCE5E3' }}>★</button>
         ))}
       </div>
     </div>
@@ -98,7 +98,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
         {busy ? 'Enregistrement…' : isPublic ? 'Publier mon avis' : 'Enregistrer mon avis (non publié)'}
       </button>
       {missing > 0 && <div role="status" style={{ fontSize: 12, color: '#4E6470', textAlign: 'center' }}>Il manque : votre note (touchez une étoile).</div>}
-      <button type="button" onClick={later} style={{ width: '100%', minHeight: 44, padding: 12, borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+      <button type="button" onClick={later} style={{ width: '100%', minHeight: 44, padding: 12, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
         Plus tard
       </button>
     </>}>
@@ -113,7 +113,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         {[true, false].map(v => (
           <button key={String(v)} onClick={() => setRecommend(recommend === v ? null : v)} aria-pressed={recommend === v}
-            style={{ flex: 1, padding: 11, minHeight: 44, borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13.5, border: recommend === v ? 'none' : '1px solid #E7EDEB', background: recommend === v ? (v ? '#12B39C' : '#123644') : '#fff', color: recommend === v ? '#fff' : '#123644' }}>
+            style={{ flex: 1, padding: 11, minHeight: 44, borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13.5, border: recommend === v ? 'none' : '1px solid #DCE5E3', background: recommend === v ? (v ? '#12B39C' : '#123644') : '#fff', color: recommend === v ? '#fff' : '#123644' }}>
             {v ? 'Oui' : 'Non'}
           </button>
         ))}
@@ -125,7 +125,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
           const on = tags.includes(t.key)
           return (
             <button key={t.key} onClick={() => setTags(on ? tags.filter(x => x !== t.key) : [...tags, t.key])} aria-pressed={on}
-              style={{ padding: '7px 12px', minHeight: 44, borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, border: on ? '1.5px solid #12B39C' : '1px solid #E7EDEB', background: on ? 'rgba(18,179,156,.1)' : '#fff', color: on ? '#0B8374' : '#4E6470' }}>
+              style={{ padding: '7px 12px', minHeight: 44, borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 700, border: on ? '1.5px solid #12B39C' : '1px solid #DCE5E3', background: on ? 'rgba(18,179,156,.1)' : '#fff', color: on ? '#0B8374' : '#4E6470' }}>
               {t.label}
             </button>
           )
@@ -134,7 +134,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
 
       <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Mon commentaire sur ce client <span style={{ color: '#4E6470', fontWeight: 600 }}>facultatif</span></label>
       <textarea value={comment} onChange={e => setComment(e.target.value)} rows={3}
-        style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 14, fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
+        style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box' }} />
 
       <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 4, minHeight: 44 }}>
         <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} style={{ margin: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
@@ -149,7 +149,7 @@ export default function ClientReviewModal({ open, onClose, transactionId, raterI
       <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 6 }}>Note personnelle (jamais publiée) <span style={{ color: '#4E6470', fontWeight: 600 }}>facultatif</span></label>
       <textarea value={privateNote} onChange={e => setPrivateNote(e.target.value)} rows={3} maxLength={1000}
         placeholder="Pensez à prendre un escabeau la prochaine fois. Accès difficile, prévenir le client pour se garer."
-        style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 14, fontFamily: 'inherit', marginBottom: 6, boxSizing: 'border-box' }} />
+        style={{ width: '100%', padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', marginBottom: 6, boxSizing: 'border-box' }} />
       <p style={{ fontSize: 11.5, color: '#4E6470', margin: '0 0 14px' }}>
         Pense-bête pour vous seul : ni le client ni les autres utilisateurs ne la voient. Elle vous est rappelée lors d&apos;une prochaine mission avec ce client.
       </p>

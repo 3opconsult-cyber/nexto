@@ -107,11 +107,11 @@ export default function FeedbackBubble() {
             </div>
 
             <textarea autoFocus value={text} onChange={e => setText(e.target.value)} rows={3}
-              style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} />
+              style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button onClick={() => setOpen(false)} style={{ flex: 1, padding: 13, borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 14 }}>Fermer</button>
+              <button onClick={() => setOpen(false)} style={{ flex: 1, padding: 13, borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 14 }}>Fermer</button>
               <button onClick={sendComment} disabled={!text.trim() || sending}
-                style={{ flex: 2, padding: 13, borderRadius: 999, border: 'none', background: (!text.trim() || sending) ? '#E7EDEB' : '#123644', color: '#fff', fontWeight: 700, fontSize: 14 }}>
+                style={{ flex: 2, padding: 13, borderRadius: 999, border: 'none', background: (!text.trim() || sending) ? '#DCE5E3' : '#123644', color: '#fff', fontWeight: 700, fontSize: 14 }}>
                 {sending ? 'Envoi…' : 'Envoyer'}
               </button>
             </div>

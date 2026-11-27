@@ -44,7 +44,7 @@ export default function ClientProofCard({ txId, phase, v2, legacyToken }: {
           : 'Le prestataire le scanne en partant : la durée réelle et la facture en découlent.'}
       </p>
       {token ? (
-        <div style={{ width: 196, margin: '12px auto 0', padding: 12, borderRadius: 16, border: '1px solid #E7EDEB', background: '#fff' }}>
+        <div style={{ width: 196, margin: '12px auto 0', padding: 12, borderRadius: 16, border: '1px solid #DCE5E3', background: '#fff' }}>
           <QrCode data={path + token} size={170} />
         </div>
       ) : (

@@ -159,7 +159,7 @@ export default function ProDashboard() {
   const identityName = pro ? (pro.company_name || `Entreprise de ${firstName || ''}`.trim()) : ''
 
   return (
-    <div className="aere aere-pro a-lift a-navy" style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif', paddingBottom: 100 }}>
+    <div className="aere aere-pro a-lift a-navy" style={{ minHeight: '100vh', background: '#123644', fontFamily: 'Inter, sans-serif' }}>
       {tab === 'hub' ? (
         <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <NavDrawer />
@@ -183,7 +183,7 @@ export default function ProDashboard() {
         </>
       )}
 
-      <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '24px 20px 28px', minHeight: '70vh' }}>
+      <div style={{ background: '#fff', borderRadius: '18px 18px 0 0', padding: '24px 20px 128px', minHeight: '70vh' }}>
         {tab === 'hub' && pro && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '4px 2px 0' }}>
             <ProSuspensionBanner />
@@ -295,10 +295,13 @@ export default function ProDashboard() {
               )
             })()}
 
-            {/* Trois accès en tête ; tout le reste de la page est derrière « Voir plus » (un appui), rien n'est retiré. */}
+            {/* Les tâches courantes en tête (audit 27/11 : services, factures, coordonnées sans « Voir plus ») ; tout le reste de la page est derrière « Voir plus » (un appui), rien n'est retiré. */}
             <HubGroup>
               <HubRow icon={HUB_ICONS.eye} label="Mon annonce" sub="Modifier, mettre en pause, aperçu" onClick={() => router.push('/pro/annonce')} />
+              <HubRow icon={HUB_ICONS.euro} label="Mes services et tarifs" sub="Ajouter, modifier ou retirer un service" onClick={() => router.push('/pro/tarifs')} />
               <HubRow icon={HUB_ICONS.agenda} label="Agenda et disponibilités" onClick={() => router.push('/pro/disponibilites')} />
+              <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
+              <HubRow icon={HUB_ICONS.pin} label="Coordonnées et statut" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
               <HubRow icon={HUB_ICONS.chart} label="Mes revenus" onClick={() => router.push('/pro/revenus')} />
               <HubRow icon={HUB_ICONS.id} label="Mes pièces"
                 badge={docAlerts.length ? { text: 'à mettre à jour', tone: 'todo' } : idOk && rcOk ? { text: 'à jour', tone: 'ok' } : { text: 'à compléter', tone: 'todo' }}
@@ -320,8 +323,6 @@ export default function ProDashboard() {
             <HubGroup title="Mon activité">
               <HubRow icon={HUB_ICONS.history} label="Historique de mes missions" sub="Statut et montant net, mission par mission" onClick={() => setTab('missions')} />
               <HubRow icon={HUB_ICONS.alert} label="Litiges" sub="Réclamations ouvertes sur vos missions" onClick={() => router.push('/litiges')} />
-              <HubRow icon={HUB_ICONS.doc} label="Mes opérations" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />
-              <HubRow icon={HUB_ICONS.pin} label="Coordonnées" sub={[legalFormLabel(pro.legal_form) || legalLabel(pro.legal_status), city, pro.website ? String(pro.website).replace(/^https?:\/\//, '').replace(/\/$/, '') : null].filter(Boolean).join(' · ') || 'Adresse, site internet et statut'} onClick={() => router.push('/pro/onboarding')} />
             </HubGroup>
 
             <HubGroup title="Paiements et fiscalité">

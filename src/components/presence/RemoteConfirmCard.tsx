@@ -74,7 +74,7 @@ export default function RemoteConfirmCard({ txId, phase, req, onDone }: {
       </button>
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         {req.code && (
-          <button onClick={() => setShowCode(s => !s)} style={{ flex: 1, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', borderRadius: 999, padding: '9px 0', minHeight: 44, fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
+          <button onClick={() => setShowCode(s => !s)} style={{ flex: 1, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999, padding: '9px 0', minHeight: 44, fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>
             {showCode ? 'Masquer le code' : 'Code à lui dicter'}
           </button>
         )}

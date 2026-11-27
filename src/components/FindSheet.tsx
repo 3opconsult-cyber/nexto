@@ -18,7 +18,7 @@ export type FindService = { key: string; label: string; icon: string }
 type When = 'asap' | 'today' | 'date'
 type Step = 'need' | 'when' | 'result' | 'list'
 
-const C = { navy: '#123644', teal: '#0B8374', tealBright: '#12B39C', line: '#E7EDEB', slate: '#4E6470', soft: '#F3F6F5' }
+const C = { navy: '#123644', teal: '#0B8374', tealBright: '#12B39C', line: '#DCE5E3', slate: '#4E6470', soft: '#F3F6F5' }
 const pad = (n: number) => String(n).padStart(2, '0')
 const hm = (v: string) => (v ? v.split('T')[1] : '')
 const distLabel = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1).replace('.', ',')} km`)

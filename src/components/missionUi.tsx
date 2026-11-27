@@ -2,7 +2,7 @@
 import type { CancellationState } from '@/lib/cancellation'
 
 /** Styles et petits éléments partagés par MissionActions et MissionSheets (fenêtres chargées à la demande). */
-export const C = { navy: '#123644', teal: '#0B8374', danger: '#B3402F', slate: '#4E6470', line: '#E7EDEB', amber: '#B54708', amberBg: '#FFF7ED', amberLine: '#F2A93B' }
+export const C = { navy: '#123644', teal: '#0B8374', danger: '#B3402F', slate: '#4E6470', line: '#DCE5E3', amber: '#B54708', amberBg: '#FFF7ED', amberLine: '#F2A93B' }
 export const btn = (bg: string, fg: string, border?: string): React.CSSProperties => ({
   minHeight: 44, padding: '0 16px', borderRadius: 999, border: border ? `1.5px solid ${border}` : 'none', background: bg, color: fg,
   fontWeight: 700, fontSize: 13.5, cursor: 'pointer', fontFamily: 'Inter, sans-serif',

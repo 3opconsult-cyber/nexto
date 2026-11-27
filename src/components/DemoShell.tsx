@@ -528,7 +528,7 @@ export default function DemoShell({ initialView = 'v_map' }: { initialView?: str
                 {/* Volet de la liste (mobile) : remplacé par l'aperçu quand un prestataire est choisi. */}
                 {!pvShow && (
                   <MapSheet snap={sheet} onSnap={setSheet} title={sheetTitle}
-                    footer={<button type="button" onClick={() => router.push('/client/demandes/new')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, border: '1.5px solid #E7EDEB', borderRadius: 999, background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}><Ic name="plus" size={16} />Déposer une demande</button>}>
+                    footer={<button type="button" onClick={() => router.push('/client/demandes/new')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, border: '1.5px solid #DCE5E3', borderRadius: 999, background: '#fff', color: '#123644', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14.5, cursor: 'pointer' }}><Ic name="plus" size={16} />Déposer une demande</button>}>
                     {sheet !== 'peek' && (<>
                       <div style={{ margin: '0 0 20px' }}><ReferenceAddressLine kind="client" address={refAddr.address} uid={refAddr.uid} loaded={refAddr.loaded}
                         onSaved={(l, pt) => { refAddr.setAddress(l); chooseLoc(pt, undefined, 'profile'); setRecenterTick(t => t + 1) }} /></div>

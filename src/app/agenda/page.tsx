@@ -296,7 +296,7 @@ export default function AgendaPage() {
           )}
 {incidentOpen(t) && (
           <button type="button" onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat?signaler`) }}
-            style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: z(13, 15), cursor: 'pointer' }}>
+            style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: z(13, 15), cursor: 'pointer' }}>
             Signaler un problème
           </button>
           )}
@@ -454,7 +454,7 @@ export default function AgendaPage() {
               {stale.length > 0 && (
                 <>
                   <button type="button" onClick={() => setShowStale(v => !v)} aria-expanded={showStale}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, textAlign: 'left', border: A ? 'none' : '1px dashed #E7EDEB', background: 'transparent', borderRadius: 14, padding: '10px 14px', marginBottom: 10, fontSize: z(12.5, 15), fontWeight: 600, color: '#4E6470', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', minHeight: 44, textAlign: 'left', border: A ? 'none' : '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '10px 14px', marginBottom: 10, fontSize: z(12.5, 15), fontWeight: 600, color: '#4E6470', cursor: 'pointer', fontFamily: 'inherit' }}>
                     <span style={{ flex: 1 }}>{stale.length} mission{stale.length > 1 ? 's' : ''} passée{stale.length > 1 ? 's' : ''} sans clôture</span>
                     <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} style={{ transform: showStale ? 'rotate(90deg)' : 'none' }}><path d="M9 6l6 6-6 6" /></svg>
                   </button>
@@ -462,7 +462,7 @@ export default function AgendaPage() {
                 </>
               )}
               {pendingTalks > 0 && (
-                <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', minHeight: 44, textAlign: 'left', border: A ? 'none' : '1px dashed #E7EDEB', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: z(12.5, 15), lineHeight: 1.5, color: '#4E6470', cursor: 'pointer' }}>
+                <button onClick={() => router.push('/messages')} style={{ display: 'block', width: '100%', minHeight: 44, textAlign: 'left', border: A ? 'none' : '1px dashed #DCE5E3', background: 'transparent', borderRadius: 14, padding: '11px 14px', marginBottom: 20, fontSize: z(12.5, 15), lineHeight: 1.5, color: '#4E6470', cursor: 'pointer' }}>
                   {pendingTalks} conversation{pendingTalks > 1 ? 's' : ''} en attente d&apos;un tarif validé — voir les messages
                 </button>
               )}
@@ -510,7 +510,7 @@ export default function AgendaPage() {
                                 )}
                                 {incidentOpen(t) && (
                                   <button type="button" onClick={() => router.push(`/mission/${t.id}/chat?signaler`)}
-                                    style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+                                    style={{ flex: 1, minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1.5px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
                                     Signaler un problème
                                   </button>
                                 )}

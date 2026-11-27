@@ -66,7 +66,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
         />
       </head>
-      <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`} style={{ background: '#E7EDEB' }}>
+      <body className={`${quicksand.variable} ${inter.variable} font-nunito bg-cream text-navy antialiased`} style={{ background: '#DCE5E3' }}>
         <PageViewTracker />
         <ChunkReload />
         <DesktopShell>

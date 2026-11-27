@@ -102,7 +102,7 @@ export default function SupportPage() {
       <div style={{ padding: '12px 16px', background: '#fff', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #E7EDEB' }}>
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #E7EDEB', outline: 'none', background: '#F3F6F5' }}
+          style={{ flex: 1, padding: '11px 16px', borderRadius: 999, fontSize: 13.5, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send}
           style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0B8374', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

@@ -125,7 +125,7 @@ export default function ShareInvoiceSheet({ open, onClose, title, subject, text,
           <label style={{ display: 'block', margin: '0 0 16px' }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: '#123644' }}>E-mail de mon comptable</span>
             <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e => saveEmail(e.target.value)}
-              style={{ width: '100%', minHeight: 48, marginTop: 8, padding: '11px 13px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 16, boxSizing: 'border-box', background: '#fff' }} />
+              style={{ width: '100%', minHeight: 48, marginTop: 8, padding: '11px 13px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 16, boxSizing: 'border-box', background: '#fff' }} />
             <span style={{ display: 'block', fontSize: 15, color: '#4E6470', marginTop: 6 }}>Mémorisée sur cet appareil uniquement.</span>
           </label>
         )}
@@ -139,7 +139,7 @@ export default function ShareInvoiceSheet({ open, onClose, title, subject, text,
         {err && <p role="alert" style={{ color: '#B3402F', fontSize: 15, fontWeight: 600, margin: '6px 0 0' }}>{err}</p>}
         {done && <p role="status" style={{ color: '#0B8374', fontSize: 15, fontWeight: 600, margin: '6px 0 0', overflowWrap: 'anywhere' }}>{done}</p>}
         <button type="button" onClick={onClose}
-          style={{ width: '100%', minHeight: 52, marginTop: 14, padding: 12, borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Fermer</button>
+          style={{ width: '100%', minHeight: 52, marginTop: 14, padding: 12, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Fermer</button>
       </div>
     </div>
   )

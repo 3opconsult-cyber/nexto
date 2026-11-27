@@ -97,7 +97,7 @@ export default function DocumentsPage() {
               <div style={{ display: 'flex', gap: 6 }}>
                 {years.map(y => (
                   <button key={y} type="button" onClick={() => setYear(y)} aria-pressed={y === year}
-                    style={{ minHeight: 44, minWidth: 64, padding: '0 14px', borderRadius: 999, border: y === year ? 'none' : '1px solid #E7EDEB', background: y === year ? '#123644' : '#fff', color: y === year ? '#fff' : '#123644', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>{y}</button>
+                    style={{ minHeight: 44, minWidth: 64, padding: '0 14px', borderRadius: 999, border: y === year ? 'none' : '1px solid #DCE5E3', background: y === year ? '#123644' : '#fff', color: y === year ? '#fff' : '#123644', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>{y}</button>
                 ))}
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function DocumentsPage() {
                 { t: 'Frais de service PING · Ménage', n: 'PING-C-2026-00012 · reçu de PING', a: 720 },
                 { t: 'Facture · Repassage', n: 'FACT-2026-00011 · reçue de Karim B.', a: 6000 },
               ]).map(x => (
-                <div key={x.n} style={{ background: '#fff', border: '1px dashed #E7EDEB', borderRadius: 14, padding: 14 }}>
+                <div key={x.n} style={{ background: '#fff', border: '1px dashed #DCE5E3', borderRadius: 14, padding: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 13.5 }}>{x.t}</span>
                     <span style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, color: '#0B8374' }}>{EUR(x.a)}</span>

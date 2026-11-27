@@ -13,7 +13,7 @@ function Stars({ value, onChange }: { value: number; onChange: (n: number) => vo
     <div style={{ display: 'flex', gap: 6 }} role="radiogroup">
       {[1, 2, 3, 4, 5].map(n => (
         <button key={n} type="button" onClick={() => onChange(n)} role="radio" aria-checked={value === n}
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 1, fontSize: 30, color: n <= value ? '#F2A93B' : '#E7EDEB' }}>★</button>
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 1, fontSize: 30, color: n <= value ? '#F2A93B' : '#DCE5E3' }}>★</button>
       ))}
     </div>
   )
@@ -119,14 +119,14 @@ export default function EssaiAvis() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#123644', marginBottom: 7 }}>Un commentaire ? (facultatif)</div>
             <textarea value={commentaire} onChange={e => setCommentaire(e.target.value)} rows={3}
-              style={{ width: '100%', border: '1px solid #E7EDEB', borderRadius: 12, padding: '11px 13px', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} />
+              style={{ width: '100%', border: '1px solid #DCE5E3', borderRadius: 12, padding: '11px 13px', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} />
           </div>
 
           {error && <p style={{ color: '#B3402F', fontSize: 12.5, marginTop: 12 }}>{error}</p>}
 
           <button onClick={submit} disabled={!complete || sending}
             style={{ width: '100%', marginTop: 20, padding: 15, borderRadius: 999, border: 'none',
-              background: (!complete || sending) ? '#E7EDEB' : '#12B39C', color: '#fff',
+              background: (!complete || sending) ? '#DCE5E3' : '#12B39C', color: '#fff',
               fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 15, cursor: complete ? 'pointer' : 'default' }}>
             {sending ? 'Envoi…' : 'Envoyer mon avis'}
           </button>

@@ -136,18 +136,19 @@ export default function ClientProfil() {
             <div className="a-block">
               <h2 className="a-h2">Mon activité</h2>
               <div className="a-list">
+                <AereRow icon={HUB_ICONS.list} label="Déposer une demande" sub="Une annonce à votre adresse, les prestataires proches répondent" onClick={() => router.push('/client/demandes/new')} />
                 <AereRow icon={HUB_ICONS.list} label="Mes demandes" onClick={() => router.push('/client/demandes')} />
+                <AereRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
                 <AereRow icon={HUB_ICONS.card} label="Paiements" sub={toPay > 0 ? `${toPay} à régler` : undefined} onClick={() => router.push('/client/paiements')} />
                 {!hasId && <AereRow icon={HUB_ICONS.id} label="Pièce d'identité" badge={{ text: 'à fournir', tone: 'todo' }} onClick={() => router.push('/client/documents')} />}
               </div>
-              {!more && <button type="button" onClick={() => setMore(true)} aria-expanded={false} className="a-btn sec" style={{ marginTop: 28 }}>Voir plus : factures, compte, aide</button>}
+              {!more && <button type="button" onClick={() => setMore(true)} aria-expanded={false} className="a-btn sec" style={{ marginTop: 28 }}>Voir plus : compte, aide</button>}
               {!more && <div className="a-center" style={{ marginTop: 20 }}><button type="button" onClick={logout} className="a-link" style={{ color: 'var(--slate)' }}>Se déconnecter</button></div>}
             </div>
 
             {more && <>
               <div className="a-block">
                 <div className="a-list">
-                  <AereRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures et reçus" onClick={() => router.push('/documents')} />
                   <AereRow icon={HUB_ICONS.alert} label="Mes réclamations" sub="Litiges ouverts sur vos missions" onClick={() => router.push('/litiges')} />
                   <AereRow icon={HUB_ICONS.heart} label="Mes favoris" sub="Prestataires gardés" onClick={() => router.push('/client/favoris')} />
                 </div>
@@ -169,7 +170,6 @@ export default function ClientProfil() {
               <div className="a-block">
                 <h2 className="a-h2">Plus</h2>
                 <div className="a-list">
-                  <AereRow icon={HUB_ICONS.doc} label="Déposer une demande" sub="Une annonce à votre adresse" onClick={() => router.push('/client/demandes/new')} />
                   <AereRow icon={HUB_ICONS.star} label="Avis publiés" onClick={() => router.push('/client/avis')} />
                   <AereRow icon={HUB_ICONS.euro} label="Crédit d'impôt immédiat" sub="Ne payez que 50 % du ménage et du repassage" onClick={() => router.push('/client/avance-immediate')} />
                   <AereRow icon={HUB_ICONS.gift} label="Mon parrainage" sub="Invitez vos proches" onClick={() => router.push('/client/parrainage')} />

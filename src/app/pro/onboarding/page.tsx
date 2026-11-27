@@ -329,7 +329,7 @@ export default function ProOnboarding() {
   }
 
   const inputStyle: React.CSSProperties = {
-    display: 'block', width: '100%', border: '1px solid #E7EDEB', borderRadius: 12,
+    display: 'block', width: '100%', border: '1px solid #DCE5E3', borderRadius: 12,
     padding: '13px 14px', fontSize: 15, fontFamily: 'inherit', color: '#123644',
   }
   const bigChoiceStyle = (active: boolean): React.CSSProperties => ({
@@ -456,7 +456,7 @@ export default function ProOnboarding() {
           <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 5 }}>Si vous l'avez, vos clients peuvent bénéficier du crédit d'impôt de 50 %. Pas de déclaration ? Vous pouvez continuer sans, et la renseigner plus tard.</span>
         </label>
         {services.some(cesuEligible) && (
-          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: acceptsCesu ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: acceptsCesu ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: acceptsCesu ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: acceptsCesu ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
             <input type="checkbox" checked={acceptsCesu} onChange={e => setAcceptsCesu(e.target.checked)} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
             <span style={{ fontSize: 13, color: '#123644', lineHeight: 1.5 }}>
               <b>J&apos;accepte le CESU préfinancé</b>
@@ -500,7 +500,7 @@ export default function ProOnboarding() {
             <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>N° de TVA intracommunautaire</span>
             <input value={vatNumber} onChange={e => setVatNumber(e.target.value)} onBlur={() => vatNumber.trim() && setVatTouched(true)}
               autoCapitalize="characters" aria-invalid={vatTouched && !vatNumberValid(vatNumber)}
-              style={{ ...inputStyle, marginTop: 6, borderColor: vatTouched && !vatNumberValid(vatNumber) ? '#B3402F' : '#E7EDEB' }} />
+              style={{ ...inputStyle, marginTop: 6, borderColor: vatTouched && !vatNumberValid(vatNumber) ? '#B3402F' : '#DCE5E3' }} />
             {vatTouched && !vatNumberValid(vatNumber) && (
               <span style={{ display: 'block', fontSize: 11.5, color: '#B3402F', marginTop: 5, fontWeight: 600 }}>Numéro invalide : FR suivi de 11 caractères (ex. FR 12 345678901).</span>
             )}
@@ -551,7 +551,7 @@ export default function ProOnboarding() {
           <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Téléphone</span>
           <input value={phone} onChange={e => setPhone(e.target.value)} onBlur={() => phone.trim() && setPhoneTouched(true)}
             type="tel" inputMode="tel" autoComplete="tel" aria-invalid={phoneTouched && !phoneValid(phone)}
-            style={{ ...inputStyle, marginTop: 6, borderColor: phoneTouched && !phoneValid(phone) ? '#B3402F' : '#E7EDEB' }} />
+            style={{ ...inputStyle, marginTop: 6, borderColor: phoneTouched && !phoneValid(phone) ? '#B3402F' : '#DCE5E3' }} />
           {phoneTouched && !phoneValid(phone)
             ? <span style={{ display: 'block', fontSize: 11.5, color: '#B3402F', marginTop: 5, fontWeight: 600 }}>Numéro invalide : saisissez 10 chiffres commençant par 0, ou un numéro en +33.</span>
             : <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 5 }}>Obligatoire. Visible uniquement par PING, jamais publié.</span>}
@@ -583,7 +583,7 @@ export default function ProOnboarding() {
         Ce texte est public. Pour votre sécurité, n'y indiquez ni numéro de téléphone ni nom d'enseigne —
         les échanges et paiements passent par PING.
       </p>
-      <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: cgvOk ? '1.5px solid #12B39C' : '1.5px solid #E7EDEB', background: cgvOk ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
+      <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 16, padding: 12, borderRadius: 12, border: cgvOk ? '1.5px solid #12B39C' : '1.5px solid #DCE5E3', background: cgvOk ? 'rgba(18,179,156,.06)' : '#fff', cursor: 'pointer' }}>
         <input type="checkbox" checked={cgvOk} onChange={e => { setCgvOk(e.target.checked); setError('') }} style={{ marginTop: 0, width: 24, height: 24, accentColor: '#12B39C', flexShrink: 0 }} />
         <span style={{ fontSize: 12.5, color: '#123644', lineHeight: 1.5 }}>
           J&apos;accepte les <a href="/cgu#prestataires" target="_blank" rel="noreferrer" style={{ color: '#0B8374', fontWeight: 700 }}>CGV prestataires et le contrat de commission</a> :

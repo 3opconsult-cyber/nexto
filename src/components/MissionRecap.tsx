@@ -39,7 +39,7 @@ function Stars({ n, size = 15 }: { n: number; size?: number }) {
   return (
     <span aria-label={`${n} sur 5`} style={{ display: 'inline-flex', gap: 1 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= n ? C.gold : '#E7EDEB'}><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z" /></svg>
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24" fill={i <= n ? C.gold : '#DCE5E3'}><path d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z" /></svg>
       ))}
     </span>
   )

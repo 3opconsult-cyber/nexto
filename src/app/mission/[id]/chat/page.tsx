@@ -747,7 +747,7 @@ export default function ChatPage() {
 
       {/* Notes personnelles du prestataire sur ce client (jamais visibles du client). */}
       {tx && userId === tx.seller_id && clientNotes.length > 0 && (
-        <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: '#fff', border: '1.5px solid #E7EDEB' }}>
+        <div style={{ margin: '10px 16px 0', padding: '10px 14px', borderRadius: 14, background: '#fff', border: '1.5px solid #DCE5E3' }}>
           <div style={{ fontSize: 10.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 4 }}>
             Vos notes personnelles sur ce client · visibles de vous seul
           </div>
@@ -812,7 +812,7 @@ export default function ChatPage() {
           <div style={{ fontSize: 14, fontWeight: 700, color: '#123644', marginBottom: 10 }}>{maskAddress(reqAddr)}</div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => answerAddress(true)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Accepter</button>
-            <button onClick={() => answerAddress(false)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
+            <button onClick={() => answerAddress(false)} disabled={addrBusy} style={{ flex: 1, minHeight: 44, padding: 11, borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
           </div>
         </div>
       )}
@@ -952,11 +952,11 @@ export default function ChatPage() {
               <>
                 <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: 16, color: '#123644', marginBottom: 4 }}>Signaler</h3>
                 <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 14 }}>Que souhaitez-vous faire ?</p>
-                <button type="button" onClick={() => setReportKind('signalement')} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', marginBottom: 10, cursor: 'pointer' }}>
+                <button type="button" onClick={() => setReportKind('signalement')} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: 14, border: '1px solid #DCE5E3', background: '#fff', marginBottom: 10, cursor: 'pointer' }}>
                   <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 14.5, color: '#123644' }}>Signaler l&apos;échange à PING</b>
                   <span style={{ display: 'block', fontSize: 12.5, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>Propos déplacés, coordonnées partagées, demande suspecte. Privé : seul PING le lit, l&apos;autre personne n&apos;est pas prévenue.</span>
                 </button>
-                <button type="button" onClick={() => setReportKind('litige')} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: 14, border: '1px solid #E7EDEB', background: '#fff', marginBottom: 6, cursor: 'pointer' }}>
+                <button type="button" onClick={() => setReportKind('litige')} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: 14, border: '1px solid #DCE5E3', background: '#fff', marginBottom: 6, cursor: 'pointer' }}>
                   <b style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontSize: 14.5, color: '#123644' }}>Ouvrir un litige sur la prestation</b>
                   <span style={{ display: 'block', fontSize: 12.5, color: '#4E6470', marginTop: 3, lineHeight: 1.45 }}>Prestation non réalisée, qualité, retard, montant. Visible des deux parties, qui ont 48 h pour répondre.</span>
                 </button>
@@ -974,13 +974,13 @@ export default function ChatPage() {
                   <p style={{ fontSize: 12.5, color: '#4E6470', marginBottom: 12 }}>Privé : seul PING lit ce signalement.</p>
                   <label htmlFor="sig-cat" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Motif</label>
                   <select id="sig-cat" value={sigCat} onChange={e => { setSigCat(e.target.value); setSigErr('') }}
-                    style={{ width: '100%', padding: '12px 12px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 14, marginBottom: 10, background: '#fff', fontFamily: 'inherit' }}>
+                    style={{ width: '100%', padding: '12px 12px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, background: '#fff', fontFamily: 'inherit' }}>
                     <option value="">Choisir…</option>
                     {REPORT_CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
                   </select>
                   <label htmlFor="sig-body" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Ce qui s&apos;est passé</label>
                   <textarea id="sig-body" value={sigBody} onChange={e => { setSigBody(e.target.value); setSigErr('') }} rows={4} maxLength={2000}
-                    style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 14, marginBottom: 12, fontFamily: 'inherit' }} />
+                    style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 12, fontFamily: 'inherit' }} />
                   {sigErr && <p role="alert" style={{ color: '#B3402F', fontSize: 12, margin: '-4px 0 10px' }}>{sigErr}</p>}
                   <button onClick={submitSignalement} disabled={sigBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#123644', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: sigBusy ? .6 : 1 }}>
                     {sigBusy ? 'Envoi…' : 'Envoyer à PING'}
@@ -1007,7 +1007,7 @@ export default function ChatPage() {
                 <label htmlFor="dispute-reason" style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Ce qui ne va pas</label>
                 <textarea id="dispute-reason" value={reportReason} onChange={e => { setReportReason(e.target.value); setReportError('') }} rows={3} maxLength={2000}
                   placeholder="Décrivez les faits : ce qui était prévu, ce qui s’est passé."
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '13px 14px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 14, fontFamily: 'inherit' }} />
                 {reportError && <p style={{ color: '#B3402F', fontSize: 12, margin: '-6px 0 10px' }}>{reportError}</p>}
                 <button onClick={submitReport} disabled={reportBusy} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: '#FF7A66', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14, opacity: reportBusy ? .6 : 1 }}>
                   {reportBusy ? 'Envoi…' : 'Ouvrir le litige'}
@@ -1031,7 +1031,7 @@ export default function ChatPage() {
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Montant (€)</label>
             <input type="number" inputMode="decimal" value={newAmount} onChange={e => { setNewAmount(e.target.value); setOfferErr(''); setOfferHighOk(false) }} min="0" step="0.5"
               placeholder={amountPlaceholder} onFocus={e => e.currentTarget.select()} aria-describedby="offer-amount-hint"
-              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 15, marginBottom: 4 }} />
+              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 15, marginBottom: 4 }} />
             <p id="offer-amount-hint" style={{ fontSize: 11.5, color: '#4E6470', margin: '0 0 10px' }}>
               {!(Number(newAmount) > 0) ? 'Indiquez un montant pour envoyer la proposition.'
                 : (() => { const sug = !lastOfferCents && userId === tx?.seller_id ? offerSuggestion() : null
@@ -1041,19 +1041,19 @@ export default function ChatPage() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Heures incluses</label>
                 <input type="number" inputMode="decimal" value={newIncludedHours} onChange={e => { setNewIncludedHours(e.target.value); setOfferErr('') }} min="0" step="0.5"
-                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 13.5 }} />
+                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Tarif horaire (€/h)</label>
                 <input type="number" inputMode="decimal" value={newHourly} onChange={e => { setNewHourly(e.target.value); setOfferErr('') }} min="0" step="0.5"
-                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 13.5 }} />
+                  style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 13.5 }} />
               </div>
             </div>
             <p style={{ fontSize: 11, color: '#4E6470', marginBottom: 10 }}>Les deux vides : prix fixe. Tarif horaire seul : le montant est une estimation, la facture suit les heures réelles. Les deux remplis : forfait avec dépassement au-delà des heures incluses.</p>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.03em', margin: '0 0 5px' }}>Motif (facultatif)</label>
             <textarea value={newAmountReason} onChange={e => setNewAmountReason(e.target.value)} rows={2}
-              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #E7EDEB', fontSize: 14, marginBottom: 10, fontFamily: 'inherit' }} />
-            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 12, border: '1px dashed #E7EDEB', marginBottom: 14, cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '13px 14px', borderRadius: 12, border: '1px solid #DCE5E3', fontSize: 14, marginBottom: 10, fontFamily: 'inherit' }} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 12, border: '1px dashed #DCE5E3', marginBottom: 14, cursor: 'pointer' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="12" cy="12" r="3" /></svg>
               <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>{newAmountPhoto ? newAmountPhoto.name : 'Ajouter une photo à l\u2019appui (facultatif)'}</span>
               <input type="file" accept="image/*" onChange={e => setNewAmountPhoto(e.target.files?.[0] || null)} style={{ display: 'none' }} />
@@ -1067,7 +1067,7 @@ export default function ChatPage() {
               <p style={{ color: '#B3402F', fontSize: 12, margin: '0 0 10px' }}>Heures incluses sans tarif horaire : indiquez le tarif appliqué au-delà, ou videz « Heures incluses ».</p>
             )}
             {offerErr && !hoursWithoutRate && <p style={{ color: '#B3402F', fontSize: 12, margin: '0 0 10px' }}>{offerErr}</p>}
-            <button onClick={proposeOffer} disabled={sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: (sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate) ? '#E7EDEB' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
+            <button onClick={proposeOffer} disabled={sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate} style={{ width: '100%', padding: 14, borderRadius: 999, border: 'none', background: (sendingOffer || !(Number(newAmount) > 0) || hoursWithoutRate) ? '#DCE5E3' : '#12B39C', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 14 }}>
               {sendingOffer ? 'Envoi…' : offerHighOk ? 'Envoyer quand même' : 'Envoyer la proposition'}
             </button>
           </div>
@@ -1092,7 +1092,7 @@ export default function ChatPage() {
             <span style={{ fontSize: 11.5, fontWeight: 700, color: '#4E6470' }}>Attestation d&apos;assurance demandée au prestataire</span>
           ) : (
             <button onClick={requestInsurance} disabled={insuranceBusy}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', borderRadius: 999, padding: '0 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', borderRadius: 999, padding: '0 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: insuranceBusy ? .6 : 1 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7z" /></svg>
               {insuranceBusy ? 'Envoi…' : 'Demander l’attestation d’assurance'}
             </button>
@@ -1115,7 +1115,7 @@ export default function ChatPage() {
                 : ['Bonjour, merci pour votre demande.', 'Quelle est la surface à traiter ?', 'Quel jour vous arrangerait ?']
               ).map(t => (
                 <button key={t} type="button" onClick={() => setInput(t)}
-                  style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#123644', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>{t}</button>
+                  style={{ minHeight: 44, padding: '0 14px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#123644', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>{t}</button>
               ))}
             </div>
           </div>
@@ -1173,14 +1173,14 @@ export default function ChatPage() {
                 )}
                 {m.offer_status === 'pending' && !priceLocked && !mine && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                    <button onClick={() => counterOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
+                    <button onClick={() => counterOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#4E6470', fontWeight: 700, fontSize: 12.5 }}>Refaire une proposition</button>
                     <button onClick={() => acceptOffer(m)} style={{ flex: 1, minHeight: 44, padding: '0 10px', borderRadius: 999, border: 'none', background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: 12.5 }}>Accepter</button>
                   </div>
                 )}
                 {m.offer_status === 'pending' && !priceLocked && mine && (
                   <div style={{ marginTop: 10 }}>
                     <div style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginBottom: 8 }}>En attente de validation</div>
-                    <button onClick={() => counterOffer(m)} style={{ width: '100%', minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1px solid #E7EDEB', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
+                    <button onClick={() => counterOffer(m)} style={{ width: '100%', minHeight: 44, padding: '0 12px', borderRadius: 999, border: '1px solid #DCE5E3', background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}>Modifier ma proposition</button>
                   </div>
                 )}
                 {m.offer_status === 'accepted' && (
@@ -1302,18 +1302,18 @@ export default function ChatPage() {
           <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #F2A93B', borderRadius: 16, padding: '14px 18px' }}>
             <div style={{ fontSize: 10.5, fontWeight: 700, color: '#8a6520', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>Votre avis</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 18, color: '#F2A93B', letterSpacing: 1 }}>{'★'.repeat(myReview.stars)}<span style={{ color: '#E7EDEB' }}>{'★'.repeat(5 - myReview.stars)}</span></span>
+              <span style={{ fontSize: 18, color: '#F2A93B', letterSpacing: 1 }}>{'★'.repeat(myReview.stars)}<span style={{ color: '#DCE5E3' }}>{'★'.repeat(5 - myReview.stars)}</span></span>
               <span style={{ fontSize: 12.5, fontWeight: 700, color: '#123644' }}>{myReview.stars}/5</span>
             </div>
             {myReview.comment && <p style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5, margin: '8px 0 0' }}>{myReview.comment}</p>}
           </div>
         )}
         {myClientReview && (
-          <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #E7EDEB', borderRadius: 16, padding: '14px 18px' }}>
+          <div style={{ alignSelf: 'center', maxWidth: '90%', width: '100%', background: '#fff', border: '1.5px solid #DCE5E3', borderRadius: 16, padding: '14px 18px' }}>
             <div style={{ fontSize: 10.5, fontWeight: 700, color: '#4E6470', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>
               Mon avis sur le client · {myClientReview.is_public ? 'commentaire publié' : 'non publié'}
             </div>
-            <span style={{ fontSize: 18, color: '#F2A93B', letterSpacing: 1 }}>{'★'.repeat(myClientReview.stars)}<span style={{ color: '#E7EDEB' }}>{'★'.repeat(5 - myClientReview.stars)}</span></span>
+            <span style={{ fontSize: 18, color: '#F2A93B', letterSpacing: 1 }}>{'★'.repeat(myClientReview.stars)}<span style={{ color: '#DCE5E3' }}>{'★'.repeat(5 - myClientReview.stars)}</span></span>
             {myClientReview.tags?.length > 0 && <div style={{ fontSize: 12, color: '#4E6470', marginTop: 6 }}>{myClientReview.tags.map(k => CLIENT_TAGS.find(t => t.key === k)?.label || k).join(' · ')}</div>}
             {myClientReview.comment && <p style={{ fontSize: 13, color: '#3d5560', lineHeight: 1.5, margin: '6px 0 0' }}>{myClientReview.comment}</p>}
             {myClientReview.private_note && <p style={{ fontSize: 12.5, color: '#4E6470', lineHeight: 1.5, margin: '6px 0 0' }}>Note personnelle (jamais publiée) : {myClientReview.private_note}</p>}
@@ -1350,7 +1350,7 @@ export default function ChatPage() {
       <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 5, padding: '12px 16px', background: '#fff', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid #E7EDEB' }}>
         <input className="a-keep" placeholder="Votre message" value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          style={{ flex: 1, boxSizing: 'border-box', padding: '12px 18px', minHeight: 48, borderRadius: 999, fontSize: 16, border: '1px solid #E7EDEB', outline: 'none', background: '#F3F6F5' }}
+          style={{ flex: 1, boxSizing: 'border-box', padding: '12px 18px', minHeight: 48, borderRadius: 999, fontSize: 16, border: '1px solid #DCE5E3', outline: 'none', background: '#F3F6F5' }}
  />
         <button onClick={send} aria-label="Envoyer le message"
           style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: '#0B8374', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

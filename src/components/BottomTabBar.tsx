@@ -118,7 +118,7 @@ export default function BottomTabBar() {
           </button>
         </div>
       )}
-      <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: 480, display: 'flex', background: '#fff', borderTop: '1px solid #E7EDEB', boxShadow: '0 -4px 16px rgba(18,54,68,.06)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: 480, display: 'flex', background: '#fff', borderTop: '1px solid #DCE5E3', boxShadow: '0 -4px 16px rgba(18,54,68,.06)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {tabs.map((t, i) => {
           const missionBtn = i === 2 && today ? (
             <button key="mission" onClick={() => router.push(`/mission/${today.id}/jour`)} aria-label={today.urgent ? 'Mission du jour, action attendue' : 'Mission du jour'}

@@ -130,7 +130,7 @@ function pinIcon(color: string, label: string | null, i = 0, inner = '', state: 
   if (hit) return hit
   const labBg = state === 'sel' ? '#12B39C' : state === 'off' ? '#fff' : '#123644'
   const labFg = state === 'off' ? '#4E6470' : '#fff'
-  const labBd = state === 'off' ? '#E7EDEB' : '#fff'
+  const labBd = state === 'off' ? '#DCE5E3' : '#fff'
   const tag = label
     ? `<div style="background:${labBg};color:${labFg};font-family:Quicksand,sans-serif;font-weight:700;font-size:12px;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(18,54,68,.3);border:1px solid ${labBd};margin-bottom:2px" class="pin-tag">${label}</div>`
     : ''
