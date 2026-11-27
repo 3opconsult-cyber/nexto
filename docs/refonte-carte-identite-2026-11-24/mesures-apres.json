@@ -98,7 +98,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"14eaef49-87b4-4bdb-8633-78d6c37a5bfd\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
+     "body": "{\"session_id\":\"676d922c-7497-4d4a-8479-d0c98928fc25\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -165,7 +165,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"14eaef49-87b4-4bdb-8633-78d6c37a5bfd\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
+     "body": "{\"session_id\":\"676d922c-7497-4d4a-8479-d0c98928fc25\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -250,7 +250,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"14eaef49-87b4-4bdb-8633-78d6c37a5bfd\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
+     "body": "{\"session_id\":\"676d922c-7497-4d4a-8479-d0c98928fc25\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -276,7 +276,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"14eaef49-87b4-4bdb-8633-78d6c37a5bfd\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
+     "body": "{\"session_id\":\"676d922c-7497-4d4a-8479-d0c98928fc25\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -311,7 +311,7 @@
   {
    "m": "POST",
    "t": "events",
-   "body": "{\"session_id\":\"14eaef49-87b4-4bdb-8633-78d6c37a5bfd\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
+   "body": "{\"session_id\":\"676d922c-7497-4d4a-8479-d0c98928fc25\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
   }
  ],
  "mesures": {

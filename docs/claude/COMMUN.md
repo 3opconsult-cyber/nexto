@@ -27,13 +27,12 @@ Composants partagés : `DesktopShell.tsx`, `NavDrawer.tsx`, `BottomTabBar.tsx`, 
 | Litige | l'une des parties | admin PING (Décision) | les deux, paiement bloqué |
 | Support visuel | création-matériel | Romain | prospection |
 
-## État (27/11/2026, fin de bloc)
-- Palette unique (celle de l'application) partout : vert foncé #0B8374, gris #4E6470, trait #E7EDEB, rouge #B3402F. `brand/tokens.css` aligné (Design tient les couleurs ; Prospection les supports). MP4 et PDF non régénérés.
-- Admin (`admin.html`) : boutons 15 px / 44 px vert foncé, logo PING (anneaux) au lieu de l'avion. Non vu connecté (pas de compte admin de test).
-- Audit de bout en bout en production (scripts `audit-design.mjs`, `audit-fiche.mjs`) : toutes les pages s'ouvrent à 390 et 1 280 px, rien de caché sous la barre du bas, carte -> épingle -> fiche -> réservation bons. Détail : `AUDIT-DESIGN-2026-11-27.md`.
-- Corrigé : « Mission du jour » (lecture limitée aux missions récentes, `todayMission.ts`), liens Retour 44 px, petits textes Litiges / Parrainage, en-tête de carte identique client / pro au bureau.
-- Non-régression 27/11 après-midi : 8 verts sur 9, A 34/34, B 42/42. Rouge restant : agenda « À accepter » faute de réservation en attente dans les comptes de test (donnée, pas écran).
-- Reste : couleurs en dur -> variables, carte commune, ★ ✓ ✕ en SVG, petits textes de `ping-ui.css`, pages `landing-*.html` (Prospection).
+## État (27/11/2026, fin de bloc, 15 h 30)
+- Palette unique (celle de l'application) : vert foncé #0B8374, gris #4E6470, rouge #B3402F. Trait : #E7EDEB (léger) et #DCE5E3 (gardé exprès : `aere.css` grise les boutons qui le portent). `brand/tokens.css` aligné ; MP4 et PDF non régénérés.
+- Admin : boutons 15 px / 44 px, logo PING. Non vu connecté (pas de compte admin de test).
+- Tâches courantes en 1 ou 2 appuis (tableau dans `AUDIT-DESIGN-2026-11-27.md`) : profil client (Déposer une demande, Mes factures en tête), Mon entreprise (Mes services et tarifs, Mes factures, Coordonnées et statut en tête). « Mission du jour » corrigé (`todayMission.ts`).
+- Non-régression 27/11, 15 h : 8 sur 9 verts, A 34/34, B 42/42 ; rouge restant = agenda « À accepter » faute de réservation en attente dans les comptes de test.
+- Reste (Design) : Mon annonce (deux en-têtes, page très longue, aperçu en double), Mon entreprise trop longue, « Confirmer » visible avant l'heure, Coordonnées qui ouvre l'inscription, couleurs en dur -> variables, carte commune, ★ ✓ ✕ en SVG.
 
 ## À faire et notes
 Voir `A-FAIRE.md`, sections Design.

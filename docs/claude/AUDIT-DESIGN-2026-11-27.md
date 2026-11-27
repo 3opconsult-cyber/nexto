@@ -47,3 +47,25 @@ Scripts : `scripts/e2e/audit-design.mjs` (40 écrans × 390 px et 1 280 px, comp
 - Corrigé : « Mission du jour » absent quand le compte a plus de 30 missions anciennes restées ouvertes (`todayMission.ts`) ; liens Retour et « Parcourir la carte » à 44 px ; petits textes de Litiges et Parrainage ; logo répété sur la carte client au bureau ; cloche au lieu de Messages sur la carte pro ; logo de l'admin (avion -> anneaux PING).
 - Non corrigé, à décider : pages d'accueil `landing-*.html` (liens du haut de 15 px, générées par `brand/`, session Prospection) ; attribution de la carte (petite, imposée par les licences) ; admin non testé connecté (pas de compte admin de test, règle 1).
 - Test « agenda : réservation à accepter » : dépend d'une réservation en attente dans les comptes de test, il n'y en a plus ; ce n'est pas un défaut de l'écran.
+
+## Audit sévère « simple, limpide, facile » (27/11, 15 h) — nombre d'appuis depuis l'écran d'accueil
+Mesuré en production à 390 px (`scripts/e2e/audit-taches.mjs`), comptes audit.
+| Tâche | Avant | Après correction | Reste à améliorer |
+|---|---|---|---|
+| Client : réserver | 5 (épingle, Réserver, jour, heure, Confirmer) | 5 | « Confirmer » visible avant le choix de l'heure |
+| Client : ouvrir le chat | 2 (Messages, conversation) | 2 | — |
+| Client : déposer une demande | 3 (Profil, Voir plus, Déposer) ou caché dans la liste de la carte | 2 (Profil, Déposer) | — |
+| Client : factures | 3 (Profil, Voir plus, Mes factures) | 2 | — |
+| Agenda (les deux) | 1 | 1 | — |
+| QR / code d'arrivée, fin (les deux) | 1 (bouton Mission) ; absent côté pro avec beaucoup de missions anciennes | 1, corrigé | — |
+| Pro : mon annonce | 2 | 2 | page de 3 675 px, deux en-têtes (Menu puis Retour), « Voir comme un client » et « Aperçu client » en double |
+| Pro : ajouter / retirer un service | 3 (Entreprise, Mon annonce, Gérer mes tarifs) | 2 (Entreprise, Mes services et tarifs) | — |
+| Pro : coordonnées et statut | 3 (derrière Voir plus) | 2 | ouvre le parcours d'inscription : trop lourd pour une modification |
+| Pro : factures | 3 (derrière Voir plus) | 2 | — |
+
+Autres défauts vus (non corrigés, à décider) :
+1. « Mon entreprise » fait près de 3 écrans ; « Mon annonce » y figure deux fois (encart et ligne).
+2. Profil client : « Ville non renseignée » mais « Profil complet : 4 sur 4 ».
+3. Avatar du client corail, du pro vert : à unifier si ce n'est pas voulu.
+4. Comptes de test encombrés (« Votre prestataire est arrivé : confirmez » permanent, 49 à 51 missions passées sans clôture) : gêne les mesures ; nettoyage sur accord (Données SQL).
+5. Effet de bord corrigé : le remplacement de la bordure #DCE5E3 rendait blancs des boutons gris (règle `aere.css`) ; bordure d'origine rétablie (118 endroits). Deux teintes de trait restent donc voulues : #E7EDEB (léger) et #DCE5E3 (boutons gris des écrans aérés).
