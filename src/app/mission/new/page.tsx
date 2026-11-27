@@ -666,7 +666,7 @@ function MissionForm() {
 
         {/* Bouton collant au-dessus de la barre du bas : jamais sous le pli (audit 19/11, correction 10). */}
         <div style={{ position: 'sticky', bottom: 'var(--tabbar-h, 0px)', zIndex: 20, margin: '0 -20px', padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))', background: '#fff', boxShadow: '0 -1px 0 #EEF2F1' }}>
-          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService || !!results} style={{ width: '100%', minHeight: 56, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 14, borderRadius: 16, opacity: creating || results ? 0.7 : 1 }}>
+          <button onClick={onConfirmClick} disabled={!pro || !mode || creating || paymentsOn === null || missingService || !!results} style={{ width: '100%', minHeight: 56, border: 'none', background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, padding: 14, borderRadius: 16, opacity: creating || results ? 0.7 : (!chosen && !wantedAt) ? 0.55 : 1 }}>
             {creating ? 'Confirmation…' : weekly && planOk > 1 && totalTtc > 0 ? `Confirmer les ${planOk} réservations · ${EUR(totalTtc * planOk)}` : `Confirmer la réservation${totalTtc > 0 ? ` · ${EUR(totalTtc)}` : ''}`}
           </button>
         </div>
