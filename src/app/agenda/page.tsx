@@ -205,7 +205,7 @@ export default function AgendaPage() {
       id: t.id, name: names[t.id] || (mode === 'pro' ? 'Client' : 'Prestataire'),
       service: t.requests?.category ? (TRAD[t.requests.category] || t.requests.category) : 'Mission',
       time: when === 'time' ? hhmm(iso) : new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-      state, tone, hasInvoice: invoiceTx.has(t.id),
+      state, tone, hasInvoice: invoiceTx.has(t.id), today: isTodayMission(t),
     }
   }
   const dayLines: MissionLine[] = dayPick
@@ -256,6 +256,11 @@ export default function AgendaPage() {
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/jour`) }} style={{
               border: 'none', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#0B8374', color: '#fff', fontWeight: 700, fontSize: z(12, 15), cursor: 'pointer', whiteSpace: 'nowrap',
             }}>Mission du jour</button>
+          )}
+          {isTodayMission(t) && lean !== 'more' && (
+            <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/chat`) }} style={{
+              border: '1.5px solid #0B8374', borderRadius: 999, padding: '0 14px', minHeight: 44, background: '#fff', color: '#0B8374', fontWeight: 700, fontSize: z(12, 15), cursor: 'pointer', whiteSpace: 'nowrap',
+            }}>Conversation</button>
           )}
           {!muted && !isTodayMission(t) && !bookingPending(t) && rowHasPresence(t) && t.buyer_id === uid && t.price_confirmed && t.status === 'pending' && !t.client_presence && t.scheduled_at && (
             <button onClick={e => { e.stopPropagation(); router.push(`/mission/${t.id}/commande`) }} style={{

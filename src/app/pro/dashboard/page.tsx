@@ -297,7 +297,6 @@ export default function ProDashboard() {
 
             {/* Les tâches courantes en tête (audit 27/11 : services, factures, coordonnées sans « Voir plus ») ; tout le reste de la page est derrière « Voir plus » (un appui), rien n'est retiré. */}
             <HubGroup>
-              <HubRow icon={HUB_ICONS.eye} label="Mon annonce" sub="Modifier, mettre en pause, aperçu" onClick={() => router.push('/pro/annonce')} />
               <HubRow icon={HUB_ICONS.euro} label="Mes services et tarifs" sub="Ajouter, modifier ou retirer un service" onClick={() => router.push('/pro/tarifs')} />
               <HubRow icon={HUB_ICONS.agenda} label="Agenda et disponibilités" onClick={() => router.push('/pro/disponibilites')} />
               <HubRow icon={HUB_ICONS.doc} label="Mes factures" sub="Factures émises et commissions" onClick={() => router.push('/documents')} />

@@ -4,7 +4,7 @@ import Modal from '@/components/Modal'
 
 /**
  * Lignes de mission de l'historique (24/11, remarque de Romain) : l'agenda est un point d'entrée de recherche.
- * Une ligne = heure, autre partie, service, état + 3 actions d'un appui (Conversation, Facture si elle existe, Mission).
+ * Une ligne = heure, autre partie, service, état + actions d'un appui (Conversation, QR et code le jour même, Facture si elle existe, Mission).
  * Utilisé par la feuille « jour » du calendrier et par l'onglet « Terminées » de /agenda.
  * Aucun calcul : tout vient de la page (états, noms, factures déjà lues dans le mode courant).
  */
@@ -16,6 +16,8 @@ export type MissionLine = {
   state: string       // « À accepter », « Confirmée », « Terminée », « Litige »…
   tone?: 'warn' | 'ok' | 'muted' | 'alert'
   hasInvoice: boolean
+  /** Mission du jour : ajoute l'accès direct au QR et au code (audit 27/11). */
+  today?: boolean
   extra?: React.ReactNode
 }
 
@@ -49,8 +51,9 @@ export function MissionLineRow({ m, first }: { m: MissionLine; first?: boolean }
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
         <Action label="Conversation" href={`/mission/${m.id}/chat`} primary />
+        {m.today && <Action label="QR et code" href={`/mission/${m.id}/jour`} primary />}
         {m.hasInvoice && <Action label="Facture" href={`/mission/${m.id}/facture`} />}
-        <Action label="Mission" href={`/mission/${m.id}/commande`} />
+        {!m.today && <Action label="Mission" href={`/mission/${m.id}/commande`} />}
       </div>
       {m.extra && <div style={{ marginTop: 12 }}>{m.extra}</div>}
     </div>

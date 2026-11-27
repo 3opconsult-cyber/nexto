@@ -416,8 +416,9 @@ export default function MonAnnoncePage() {
           .ann-seg{display:none}
         }
       `}</style>
-      <div style={{ padding: '16px 20px 0' }}><NavDrawer /></div>
-      <div style={{ padding: '20px 20px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      {/* Une seule ligne d'en-tête (audit 27/11) : menu, retour et titre, au lieu de deux lignes empilées. */}
+      <div style={{ padding: '16px 20px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <NavDrawer />
         <div onClick={() => router.push('/pro/dashboard')} role="button" aria-label="Retour à Mon entreprise"
           style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,.1)', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M15 6l-6 6 6 6" /></svg>
