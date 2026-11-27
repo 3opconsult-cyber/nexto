@@ -34,8 +34,8 @@
   {
    "k": "PING client : providers_nearby repart",
    "v": {
-    "avant": 4,
-    "apres": 5
+    "avant": 8,
+    "apres": 10
    },
    "ok": true
   },
@@ -98,7 +98,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"25d408ce-8271-4db1-9981-5c1ee0a68383\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+     "body": "{\"session_id\":\"2e0a39df-3650-4456-b402-bf1038341ea2\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -165,7 +165,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"25d408ce-8271-4db1-9981-5c1ee0a68383\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+     "body": "{\"session_id\":\"2e0a39df-3650-4456-b402-bf1038341ea2\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -250,7 +250,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"25d408ce-8271-4db1-9981-5c1ee0a68383\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+     "body": "{\"session_id\":\"2e0a39df-3650-4456-b402-bf1038341ea2\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -276,7 +276,7 @@
     {
      "m": "POST",
      "t": "events",
-     "body": "{\"session_id\":\"25d408ce-8271-4db1-9981-5c1ee0a68383\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+     "body": "{\"session_id\":\"2e0a39df-3650-4456-b402-bf1038341ea2\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
     }
    ],
    "ok": true
@@ -311,7 +311,7 @@
   {
    "m": "POST",
    "t": "events",
-   "body": "{\"session_id\":\"25d408ce-8271-4db1-9981-5c1ee0a68383\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36\"}"
+   "body": "{\"session_id\":\"2e0a39df-3650-4456-b402-bf1038341ea2\",\"user_id\":\"b9f8cd9a-16de-4a36-afd8-10a2135ab970\",\"event_type\":\"page_view\",\"path\":\"/client/profil\",\"qr_code\":null,\"metadata\":{\"mode\":\"particulier\"},\"user_agent\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.36 Safari/537.36\"}"
   }
  ],
  "mesures": {
