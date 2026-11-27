@@ -25,5 +25,14 @@ Registre : nom | rubrique responsable | déclencheur | fréquence | statut | der
 3. Contenu : variantes de textes et visuels à valider (file, jamais de publication directe).
 4. Prospection : séquences e-mail et calendrier de contenu, après décisions ci-dessous.
 
+## État de la chaîne facture, séquestre, litige, Jeffrey CRM (relevé le 27/11/2026, lecture du code seulement, rien testé en production)
+- Facture : émise par le SQL `generate_invoices` au passage de la mission à « terminée » (fin d'intervention), pas à la validation du client. 3 documents : prestataire -> client, PING -> client, PING -> prestataire.
+- Pas d'envoi automatique : `notifyServer.ts` (Resend) non branché. Les factures sont seulement rangées dans l'app (`FacturesList`, tri par `issued_at`).
+- Frais PING : aucune ligne TVA ni HT/TTC (pas de 20 %), une ligne « Frais de mise en relation ». Pas de facture mensuelle groupée.
+- Séquestre : code `settle()` prêt (24 h, litige ouvert bloque, montant litige appliqué) mais ÉTEINT : `paymentsProvider()` renvoie null, le cron `/api/payments/release` répond « actif: false ».
+- Litige : fenêtre 24 h (055), montant rendu = arrangement accepté ou décision PING (`disputeRefundCents`). Aucun déclencheur « client silencieux après 24 h » propre : le silence libère le paiement par le délai.
+- Jeffrey CRM : rien dans le code (ni route, ni jeton, ni export). `jeffrey-crm` existe sur Vercel, lien non tranché (A-TRANCHER i).
+- Détail et propositions : réponse du 27/11/2026 à Romain ; rien construit.
+
 ## À faire et notes (décisions qui appartiennent à Romain, « en attente »)
 Variables Vercel (RESEND_API_KEY, NOTIFY_FROM, SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET) ; outil d'envoi et domaine d'e-mail ; comptes de réseaux sociaux ; plafonds de dépense ; validateurs.
