@@ -2,6 +2,8 @@
 
 Lien direct : https://supabase.com/dashboard/project/wmiawwaxwlvascyflpba/sql/new
 
+**27/11/2026 : pour 061 à 066, coller le seul fichier `PING-A-POUSSER-SUPABASE.sql` (tout est dedans, dans l'ordre).**
+
 ## Ordre de collage (mis à jour le 20/11/2026)
 
 **À coller (process de commande, 19/11/2026)** : `048_process_commande.sql`, juste après `038_arrivee_depart_securise.sql`
