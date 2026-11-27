@@ -32,7 +32,8 @@ Composants partagés : `DesktopShell.tsx`, `NavDrawer.tsx`, `BottomTabBar.tsx`, 
 - Admin : boutons 15 px / 44 px, logo PING. Non vu connecté (pas de compte admin de test).
 - Tâches courantes en 1 ou 2 appuis (tableau dans `AUDIT-DESIGN-2026-11-27.md`) : profil client (Déposer une demande, Mes factures en tête), Mon entreprise (Mes services et tarifs, Mes factures, Coordonnées et statut en tête). « Mission du jour » corrigé (`todayMission.ts`).
 - Non-régression 27/11, 15 h : 8 sur 9 verts, A 34/34, B 42/42 ; rouge restant = agenda « À accepter » faute de réservation en attente dans les comptes de test.
-- Reste (Design) : Mon annonce (deux en-têtes, page très longue, aperçu en double), Mon entreprise trop longue, « Confirmer » visible avant l'heure, Coordonnées qui ouvre l'inscription, couleurs en dur -> variables, carte commune, ★ ✓ ✕ en SVG.
+- 16 h : agenda -> date -> liste du jour avec « Conversation » et « QR et code » (mission du jour) ; carte Aujourd'hui avec « Conversation » ; Mon annonce sur une ligne d'en-tête ; doublon « Mon annonce » retiré ; « Confirmer » estompé avant l'heure. Non-régression : A 34/34, B 42/42, inscription verte rejouée seule, agenda « À accepter » toujours rouge (donnée).
+- Reste (Design) : onglets de l'agenda sur 2 lignes côté pro, flèche Retour de l'agenda client seulement, Mon annonce et Mon entreprise encore longues, Coordonnées qui ouvre l'inscription, couleurs en dur -> variables, carte commune, ★ ✓ ✕ en SVG. Bouton PING pour le QR : proposition en attente de Romain.
 
 ## À faire et notes
 Voir `A-FAIRE.md`, sections Design.

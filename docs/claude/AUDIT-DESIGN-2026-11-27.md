@@ -69,3 +69,12 @@ Autres défauts vus (non corrigés, à décider) :
 3. Avatar du client corail, du pro vert : à unifier si ce n'est pas voulu.
 4. Comptes de test encombrés (« Votre prestataire est arrivé : confirmez » permanent, 49 à 51 missions passées sans clôture) : gêne les mesures ; nettoyage sur accord (Données SQL).
 5. Effet de bord corrigé : le remplacement de la bordure #DCE5E3 rendait blancs des boutons gris (règle `aere.css`) ; bordure d'origine rétablie (118 endroits). Deux teintes de trait restent donc voulues : #E7EDEB (léger) et #DCE5E3 (boutons gris des écrans aérés).
+
+## Agenda, chat, QR (27/11, 16 h)
+- Appui sur une date (vue Mois) : liste du jour, chaque mission avec « Conversation », « Facture » (si elle existe) et « Mission » ; la mission du jour montre « QR et code » à la place de « Mission ». Vu en production.
+- Carte « Aujourd'hui » de l'onglet En cours : « Mission du jour » + « Conversation » (nouveau). Appui sur la carte : la conversation, comme avant.
+- Appui sur un rendez-vous dans la vue Jour ou Semaine : la conversation.
+- QR et code : bouton rond « Mission » au centre de la barre du bas (client et pro, même place), billet de mission dans le chat, et désormais l'agenda.
+- Bouton PING de la carte : non doublé avec le QR (le bouton Mission occupe déjà la même fonction au même endroit pour les deux espaces) ; proposition à valider par Romain.
+- Mon annonce : une seule ligne d'en-tête ; Mon entreprise : ligne « Mon annonce » en double retirée ; réservation : « Confirmer » estompé tant que l'heure n'est pas choisie.
+- Reste : onglets de l'agenda sur 2 lignes côté pro (1 ligne côté client), flèche Retour présente côté client et absente côté pro ; « Coordonnées et statut » ouvre l'inscription.
