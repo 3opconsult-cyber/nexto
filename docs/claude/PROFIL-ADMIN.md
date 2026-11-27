@@ -7,6 +7,9 @@ Session « PING · Admin ». Zone de code : `public/admin.html` (servi sur `/adm
 - Bouton rond « Hub » : `src/components/HubReturn.tsx` (layout) et script en fin de `public/admin.html`. Visible seulement si le Hub a été ouvert sur l'appareil (`localStorage ping_hub`), réglable dans le Hub.
 - Vérifié en local : `tsc`, `build`, capture 390 px, pré-remplissage de l'adresse. NON vérifié : en production, connexion réelle, WhatsApp, bouton Hub dans l'admin.
 
+## Audit du 27/11/2026
+Voir `AUDIT-ADMIN-2026-11-27.md` (sécurité S1 à S7, fonctions F1 à F9, téléphone, cartes). Rien corrigé sauf le bouton Hub. S1 (promotion admin) à confirmer en base en premier.
+
 ## Ce qui est propre
 Décision PING sur un litige (curseur + champ), commission réglable, paiements et rapprochement des virements, validation des pièces, alertes, parcours et visites, prospection et campagnes (écrans de suivi).
 
