@@ -27,5 +27,12 @@ Composants partagés : `DesktopShell.tsx`, `NavDrawer.tsx`, `BottomTabBar.tsx`, 
 | Litige | l'une des parties | admin PING (Décision) | les deux, paiement bloqué |
 | Support visuel | création-matériel | Romain | prospection |
 
+## État (27/11/2026)
+- Audit d'homogénéité fait sur le code (pas de capture) : `AUDIT-DESIGN-2026-11-27.md`.
+- Particulier et prestataire : base commune (`ping-ui.css`, `.card`, bouton 44 px). Admin : style à part (`admin.html` + pages `/admin/*` sans `NavDrawer`).
+- Trois palettes : marque (`brand/tokens.css`) et admin gardent #0C8F7E / #6E8592 ; l'application est passée à #0B8374 / #4E6470.
+- Couleurs en dur massives dans `src` ; 5 rouges d'erreur ; 2 boutons Retour (`BackHeader`, `RetourLink`).
+- Rien modifié dans le style. En attente : choix de la palette unique et propriétaire de `brand/tokens.css` (question à Romain).
+
 ## À faire et notes
 Voir `A-FAIRE.md`, sections Design.
