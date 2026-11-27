@@ -37,3 +37,13 @@ Le fichier `brand/tokens.css` est-il possédé par Design (le style) ou par Pros
 
 ## Suite (27/11, accord de Romain)
 Fait : points 1, 2, 4 et 6, et le rouge unique du point 3. Reste : couleurs en dur en variables, carte commune, pictogrammes SVG, petits textes. MP4 et PDF à régénérer (Prospection). La page `landing-pro` dit « Paiement sous séquestre » alors que le séquestre est éteint (A-TRANCHER d, Prospection).
+
+## Audit de bout en bout en production (27/11, après-midi)
+Scripts : `scripts/e2e/audit-design.mjs` (40 écrans × 390 px et 1 280 px, comptes audit) et `audit-fiche.mjs` (carte -> épingle -> fiche -> réserver).
+- Toutes les pages s'ouvrent (aucune erreur, aucun défilement horizontal). Une erreur de chargement sur Disponibilités venait d'un déploiement en cours ; rejouée : bonne.
+- Barre du bas : aucun bouton caché en fin de page (vérifié en descendant jusqu'en bas sur 9 écrans).
+- Carte : 16 prestataires affichés près de Nice, épingle -> aperçu (nom, métiers, note, distance, prix, Réserver, Voir la fiche) -> fiche lisible (prestations et prix, règle du prix figé, statut et paiement, repères, avis) -> réservation avec prestations du pro, créneaux ouverts, adresse, paiement, prix.
+- Parcours complet A et B (devis, accord, rendez-vous, commande dans le chat, Je pars, QR, fin, 3 factures, avis) : bon sauf le raccourci « Mission du jour ».
+- Corrigé : « Mission du jour » absent quand le compte a plus de 30 missions anciennes restées ouvertes (`todayMission.ts`) ; liens Retour et « Parcourir la carte » à 44 px ; petits textes de Litiges et Parrainage ; logo répété sur la carte client au bureau ; cloche au lieu de Messages sur la carte pro ; logo de l'admin (avion -> anneaux PING).
+- Non corrigé, à décider : pages d'accueil `landing-*.html` (liens du haut de 15 px, générées par `brand/`, session Prospection) ; attribution de la carte (petite, imposée par les licences) ; admin non testé connecté (pas de compte admin de test, règle 1).
+- Test « agenda : réservation à accepter » : dépend d'une réservation en attente dans les comptes de test, il n'y en a plus ; ce n'est pas un défaut de l'écran.

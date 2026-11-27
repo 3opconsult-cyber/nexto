@@ -87,7 +87,7 @@
     "11.5px PING",
     "10px 9+"
    ],
-   "bordures": 7,
+   "bordures": 8,
    "ciblesSous44": [
     "64x11 OpenFreeMap",
     "65x11 OpenMapTiles",
@@ -104,7 +104,7 @@
     "11.5px PING",
     "10px 9+"
    ],
-   "bordures": 8,
+   "bordures": 9,
    "ciblesSous44": [
     "64x11 OpenFreeMap",
     "65x11 OpenMapTiles",
@@ -116,7 +116,7 @@
    "textesSous12px": [
     "10px 9+"
    ],
-   "bordures": 4,
+   "bordures": 5,
    "ciblesSous44": []
   },
   "agendaMoisPro": {
@@ -124,10 +124,10 @@
    "textesSous12px": [
     "10px 9+"
    ],
-   "bordures": 2,
+   "bordures": 3,
    "ciblesSous44": []
   },
-  "agenda_mois_pro": "Aujourd'hui | Novembre 2026 | Jour | Semaine | Mois | Lun | Mar | Mer | Jeu | Ven | Sam | Dim | 26 | 27 | 28 | 1 RDV | 29 | 1 RDV | 30 | 1 RDV | 31 | 1 RDV | 1 | 1 RDV | 2 | 3 | 2 RDV | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 1 RDV | 19 | 3 RDV | 20 | 17 RDV | 21 | 7 RDV | 22 | 6 RDV | 23 | 33 RDV | 24 | 43 RDV | 25 | 26 | 2 RDV | 27 | 3 RDV | 28 | 29 | 30 | 1 | 2 | 3 ",
+  "agenda_mois_pro": "Aujourd'hui | Novembre 2026 | Jour | Semaine | Mois | Lun | Mar | Mer | Jeu | Ven | Sam | Dim | 26 | 27 | 28 | 1 RDV | 29 | 1 RDV | 30 | 1 RDV | 31 | 1 RDV | 1 | 1 RDV | 2 | 3 | 2 RDV | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 1 RDV | 19 | 3 RDV | 20 | 17 RDV | 21 | 7 RDV | 22 | 6 RDV | 23 | 33 RDV | 24 | 43 RDV | 25 | 26 | 2 RDV | 27 | 5 RDV | 28 | 29 | 30 | 1 | 2 | 3 ",
   "agenda_semaine_pro": "Aujourd'hui | 23 Nov. – 29 Nov. 2026 | Jour | Semaine | Mois | L | 23 | M | 24 | M | 25 | J | 26 | V | 27 | S | 28 | D | 29 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 3 rendez-vous de 10:33 à 10:51 + | 4 rendez-vous à 12:30 + | 8 rendez-vous de 15:00 à 16:00 + | 18 rendez-vous de 18:00 à 19:30 + | 9 rendez-vous à 08:00 + | 34 ren",
   "agenda_jour_pro": "Aujourd'hui | Jeudi 3 Décembre 2026 | Jour | Semaine | Mois | jeu. | 3 | 00:00 | 01:00 | 02:00 | 03:00 | 04:00 | 05:00 | 06:00 | 07:00 | 08:00 | 09:00 | 10:00 | 11:00 | 12:00 | 13:00 | 14:00 | 15:00 | 16:00 | 17:00 | 18:00 | 19:00 | 20:00 | 21:00 | 22:00 | 23:00 | Confirmé | À accepter | Mes créneaux libres | Gérer | Publiez vos disponibilités pour être réservé en un clic.",
   "annonce_en-ligne": "Mon annonce | En ligne · visible sur la carte | Complète à 50 % | Mettre en pause | Modifier | Aperçu | Retirer de la carte",
@@ -135,5 +135,5 @@
   "annonce_suspendue": "Mon annonce | Suspendue par PING | Compte suspendu : contactez le support PING pour régulariser. | Complète à 50 % | Contacter le support PING | Modifier | Aperçu",
   "agenda_client": "Aujourd'hui | 23 Nov. – 29 Nov. 2026 | Jour | Semaine | Mois | L | 23 | M | 24 | M | 25 | J | 26 | V | 27 | S | 28 | D | 29 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 10:33 | 10:37 | 10:51 | 12:30 | 12:30 | 12:30 | 12:30 | 15:00 | "
  },
- "commandes": "Commandes en cours\nAudit C.\nNettoyage · jeu. 29 oct. · 09h00\nLitige ouvert\nAudit C.\nMénage · ven. 20 nov. · 00h35\nLitige ouvert\nAudit C.\nMénage · ven. 20 nov. · 13h39\nLitige ouvert\nVoir les 9 autres"
+ "commandes": "Commandes en cours\nAudit C.\nNettoyage · jeu. 29 oct. · 09h00\nLitige ouvert\nAudit C.\nMénage · ven. 20 nov. · 00h35\nLitige ouvert\nAudit C.\nMénage · ven. 20 nov. · 13h39\nLitige ouvert\nVoir les 11 autres"
 }

@@ -95,4 +95,4 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 
 ## À classer
 - Moyen de paiement (choix du prestataire de paiement, séquestre) et médiateur : session « PING · Paiement et médiation » ouverte le 26/11 (voir D-19, A-TRANCHER).
-- Non-régression du 27/11 (12 h, après la palette unique) : parcours A et B rouges sur « bouton Mission du jour dans la barre du bas » (rejoué seul : même résultat) ; prestataire-ecrans rouge sur l'agenda « À accepter » / « En attente » (aucune réservation en attente dans les comptes de test ?). Le changement du jour ne touche que des couleurs ; cause non trouvée, peut-être antérieure. Question : session Prestataire ou Particulier (voir aussi Design).
+- Non-régression du 27/11 : « Mission du jour » corrigé (Design, `todayMission.ts`) ; reste le test agenda « À accepter » qui a besoin d'une réservation en attente dans les comptes de test (session Données SQL ou Prestataire : recréer la donnée de test).

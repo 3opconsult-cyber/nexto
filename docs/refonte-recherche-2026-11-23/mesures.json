@@ -53,7 +53,7 @@
     },
     {
       "k": "une carte « meilleur choix » + un gros bouton Réserver",
-      "v": "Le meilleur choix pour vous Ménage · dès que possible A Audit Pro ☆☆☆☆☆ ★★★★★ 5 (61) · à 0 m Nouveau · pièces en cours de contrôle 100 € Réserver · 100 € Voir l",
+      "v": "Le meilleur choix pour vous Ménage · dès que possible A Audit Pro ☆☆☆☆☆ ★★★★★ 5 (63) · à 0 m Nouveau · pièces en cours de contrôle 100 € Réserver · 100 € Voir l",
       "ok": true
     },
     {
@@ -68,12 +68,12 @@
     },
     {
       "k": "URL de réservation préremplie (pro, métier, moment)",
-      "v": "/mission/new?pro=b9f8cd9a-16de-4a36-afd8-10a2135ab970&trade=menage&when=2026-11-27T13%3A00",
+      "v": "/mission/new?pro=b9f8cd9a-16de-4a36-afd8-10a2135ab970&trade=menage&when=2026-11-27T15%3A00",
       "ok": true
     },
     {
       "k": "écran de confirmation atteint, bouton de confirmation visible",
-      "v": "Confirmer la réservation · 108,00 € Carte 9+ Mess",
+      "v": "Confirmer la réservation · 108,00 € Votre prestat",
       "ok": true
     },
     {
@@ -136,7 +136,7 @@
       "v": {
         "dot": {
           "x": 142,
-          "y": 156
+          "y": 128
         },
         "pins": 3
       },
@@ -153,8 +153,8 @@
     {
       "k": "pincement : zoom autour du point touché (rapport > 1,5, direction conservée)",
       "v": {
-        "rapport": 2.01,
-        "ecartAngleDeg": 4.1
+        "rapport": 2,
+        "ecartAngleDeg": 3.8
       },
       "ok": true
     },
@@ -183,7 +183,7 @@
       "k": "« Recentrer » ramène la position à l’écran (centre de la zone visible)",
       "v": {
         "x": 195,
-        "y": 358
+        "y": 330
       },
       "ok": true
     },

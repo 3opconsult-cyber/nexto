@@ -28,12 +28,12 @@ Composants partagés : `DesktopShell.tsx`, `NavDrawer.tsx`, `BottomTabBar.tsx`, 
 | Support visuel | création-matériel | Romain | prospection |
 
 ## État (27/11/2026, fin de bloc)
-- Palette unique décidée (Romain, 27/11) : celle de l'application. Vert foncé #0B8374, gris #4E6470, trait #E7EDEB, un seul rouge d'erreur #B3402F (5 teintes avant). Appliquée dans `src`, `admin.html`, `app.html`, `client.html`, `brand/tokens.css`, sources `brand/` et pages générées (animations, plaquettes, e-mails). Les MP4 et PDF ne sont pas régénérés.
-- `brand/tokens.css` suit désormais la palette de l'application ; propriétaire : Design (couleurs), Prospection (supports qui l'utilisent).
-- Admin (`admin.html`) : boutons vert foncé, 15 px, 44 px minimum. Pages `/admin/*` toujours sans `NavDrawer`.
-- `RetourLink` (lien contextuel « Retour à mon annonce ») : 15 px, même flèche que `BackHeader`. Ce ne sont pas deux boutons pour la même chose.
-- Reste : couleurs écrites en dur (≈ 1 200) à passer en variables, cartes faites à la main (angles 10 à 18 px), ★ ✓ ✕ en texte, petits textes de `ping-ui.css`. La maquette `docs/maquette/` garde l'ancienne palette (référence, non modifiée).
-- Audit : `AUDIT-DESIGN-2026-11-27.md`.
+- Palette unique (celle de l'application) partout : vert foncé #0B8374, gris #4E6470, trait #E7EDEB, rouge #B3402F. `brand/tokens.css` aligné (Design tient les couleurs ; Prospection les supports). MP4 et PDF non régénérés.
+- Admin (`admin.html`) : boutons 15 px / 44 px vert foncé, logo PING (anneaux) au lieu de l'avion. Non vu connecté (pas de compte admin de test).
+- Audit de bout en bout en production (scripts `audit-design.mjs`, `audit-fiche.mjs`) : toutes les pages s'ouvrent à 390 et 1 280 px, rien de caché sous la barre du bas, carte -> épingle -> fiche -> réservation bons. Détail : `AUDIT-DESIGN-2026-11-27.md`.
+- Corrigé : « Mission du jour » (lecture limitée aux missions récentes, `todayMission.ts`), liens Retour 44 px, petits textes Litiges / Parrainage, en-tête de carte identique client / pro au bureau.
+- Non-régression 27/11 après-midi : 8 verts sur 9, A 34/34, B 42/42. Rouge restant : agenda « À accepter » faute de réservation en attente dans les comptes de test (donnée, pas écran).
+- Reste : couleurs en dur -> variables, carte commune, ★ ✓ ✕ en SVG, petits textes de `ping-ui.css`, pages `landing-*.html` (Prospection).
 
 ## À faire et notes
 Voir `A-FAIRE.md`, sections Design.
