@@ -12,7 +12,6 @@ import PaymentCard from '@/components/PaymentCard'
 import OrderSummary from '@/components/presence/OrderSummary'
 import PresenceChoice from '@/components/presence/PresenceChoice'
 import PresenceTag from '@/components/presence/PresenceTag'
-import { MissionSuivi } from '@/components/presence/MissionTimeline'
 import BookingCard from '@/components/BookingCard'
 import MissionActions from '@/components/MissionActions'
 import { bookingAccepted, bookingPending, bookingEnded, expireBookings, deadlineAt, deadlineLeft } from '@/lib/booking'
@@ -177,6 +176,14 @@ export default function Commande() {
         <p className="a-info">Le prix ne se modifie pas ici : il est figé, seul un litige peut le rouvrir.</p>
       </div>
 
+      {/* Déroulé (Romain 28/11) : l'historique en haut, chaque étape s'ouvre d'un appui. */}
+      {accepted && !cancelled && (
+        <div className="a-block">
+          <h2 className="a-h2" style={{ marginBottom: 4 }}>Déroulé</h2>
+          <Deroule tx={tx} invoices={invoices} isBuyer={isBuyer} go={go} back={back} />
+        </div>
+      )}
+
       {/* Réservation en attente : qui doit répondre, dans quel délai, et la suite. */}
       {pend && (
         <div className="a-block">
@@ -198,7 +205,7 @@ export default function Commande() {
         <div className="a-details">
           {row('Date et heure', tx.scheduled_at ? rdvLabel(tx.scheduled_at) : 'À fixer dans la conversation')}
           {row('Adresse', addrLine, addrNote)}
-          {row('Présence du client', presenceText)}
+          {!started && !ended && row('Présence du client', presenceText)}
         </div>
         {/* Une seule action en grand, juste après les détails. */}
         {accepted && live && (
@@ -223,8 +230,6 @@ export default function Commande() {
       <div className="a-block"><OrderSummary tx={tx} asSeller={isSeller} counterpart={name || undefined} payOn={payOn} threshold={thr} airy /></div>
       {isBuyer && payOn && accepted && !cancelled && <div className="a-block a-lift"><PaymentCard transactionId={tx.id} /></div>}
 
-      {/* Suivi de la mission. */}
-      {accepted && !cancelled && <div className="a-block"><h2 className="a-h2" style={{ marginBottom: 6 }}>Suivi</h2><MissionSuivi tx={tx} invoiced={invoices > 0} airy /></div>}
 
       {/* Présence du client (048) : modifiable tant que la mission n'a pas commencé. */}
       {isBuyer && live && accepted && v48 && (
@@ -270,7 +275,7 @@ export default function Commande() {
       {/* Accès secondaires : liens, pas de gros boutons. */}
       <div className="a-block" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
         {isBuyer && live && !started && <button type="button" className="a-link" onClick={() => setAddrOpen(true)}>Modifier l&apos;adresse</button>}
-        {invoices > 0 && <button type="button" className="a-link" onClick={() => go('facture')}>Voir la facture</button>}
+        {invoices > 0 && <button type="button" className="a-btn" style={{ width: '100%' }} onClick={() => go('facture')}>Facture : PDF, WhatsApp ou e-mail</button>}
         <button type="button" className="a-link" onClick={back}>{justSet ? 'Revenir à la conversation' : 'Ouvrir la conversation'}</button>
       </div>
       {addrOpen && <AddressEditSheet tx={tx} userId={uid} currentAddress={addr || null} onClose={() => setAddrOpen(false)}
@@ -297,5 +302,46 @@ function Shell({ title, onBack, children }: { title: string; onBack: () => void;
       </div>
       <div className="a-page" style={{ maxWidth: 480, margin: '0 auto', padding: '24px 20px 48px' }}>{children}</div>
     </div>
+  )
+}
+
+/** Déroulé de la mission (28/11) : une ligne par étape, heure si elle a eu lieu, un appui ouvre l'écran utile. */
+function Deroule({ tx, invoices, isBuyer, go, back }: { tx: any; invoices: number; isBuyer: boolean; go: (p: string) => void; back: () => void }) {
+  const fmt = (iso?: string | null) => iso ? new Date(iso).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null
+  const done = !!tx.completed_at || ['completed', 'released'].includes(tx.status)
+  const steps: { label: string; when: string | null; ok: boolean; open: () => void; action: string }[] = [
+    { label: 'Tarif accepté', when: null, ok: !!tx.price_confirmed, open: back, action: 'Voir l’accord dans la conversation' },
+    { label: 'Rendez-vous fixé', when: fmt(tx.scheduled_at), ok: !!tx.scheduled_at, open: back, action: 'Conversation' },
+    { label: 'En route', when: fmt(tx.en_route_at), ok: !!tx.en_route_at, open: () => go('jour'), action: 'Mission du jour' },
+    { label: 'Arrivée validée', when: fmt(tx.arrived_at), ok: !!tx.arrived_at, open: () => go(isBuyer ? 'qrcodes' : 'jour'), action: isBuyer ? 'Codes QR' : 'Mission du jour' },
+    { label: 'Fin validée', when: fmt(tx.completed_at), ok: done, open: () => go(isBuyer ? 'qrcodes' : 'jour'), action: isBuyer ? 'Codes QR' : 'Mission du jour' },
+    { label: 'Facture', when: null, ok: invoices > 0, open: () => go('facture'), action: 'PDF, WhatsApp, e-mail' },
+  ]
+  const cur = steps.findIndex(s => !s.ok)
+  return (
+    <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+      {steps.map((s, i) => {
+        const now = i === cur
+        const reachable = s.ok || now
+        return (
+          <li key={s.label} style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
+            <div aria-hidden style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 22, flexShrink: 0 }}>
+              <span style={{ width: 22, height: 22, marginTop: 13, borderRadius: '50%', boxSizing: 'border-box', display: 'grid', placeItems: 'center', background: s.ok ? '#12B39C' : '#fff', border: `2px solid ${s.ok ? '#12B39C' : now ? '#123644' : '#DCE5E3'}` }}>
+                {s.ok && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round"><path d="M20 6L9 17l-5-5" /></svg>}
+              </span>
+              {i < steps.length - 1 && <span style={{ flex: 1, width: 2, background: s.ok ? '#12B39C' : '#DCE5E3' }} />}
+            </div>
+            <button type="button" disabled={!reachable} onClick={s.open} aria-label={`${s.label}${s.ok ? ', fait' : now ? ', en cours' : ', à venir'} : ${s.action}`}
+              style={{ flex: 1, minWidth: 0, minHeight: 56, padding: '8px 0', border: 'none', background: 'none', textAlign: 'left', cursor: reachable ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: 10, opacity: reachable ? 1 : .55 }}>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: 'block', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 17, color: '#123644' }}>{s.label}</span>
+                <span style={{ display: 'block', fontSize: 15, color: '#4E6470' }}>{s.when || (s.ok ? 'Fait' : now ? 'En cours' : 'À venir')}{reachable ? ` · ${s.action}` : ''}</span>
+              </span>
+              {reachable && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2.4" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>}
+            </button>
+          </li>
+        )
+      })}
+    </ol>
   )
 }

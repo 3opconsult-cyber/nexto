@@ -1151,7 +1151,7 @@ export default function ChatPage() {
                   <span style={{ width: 22, height: 22, borderRadius: 7, background: 'rgba(18,179,156,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B8374" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
                   </span>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0B8374', textTransform: 'uppercase', letterSpacing: '.05em' }}>Devis</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0B8374', textTransform: 'uppercase', letterSpacing: '.05em' }}>Proposition de tarif</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 10, marginBottom: m.body ? 6 : 0 }}>
                   <span style={{ fontSize: 12, color: '#4E6470', lineHeight: 1.4 }}>{m.body}</span>
