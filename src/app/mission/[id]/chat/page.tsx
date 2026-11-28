@@ -268,6 +268,9 @@ export default function ChatPage() {
           proSide && done ? supabase.from('client_reviews').select('stars, is_public, comment, tags').eq('transaction_id', t.id).eq('rater_id', user.id).maybeSingle() : null,
         ])
         if (clientSide) { if (revR?.data) setMyReview(revR.data as any); else setAskReview(true) }
+        // Note du prestataire dans l'en-tête, côté client (audit 27/11 : « je n'ai pas vu sa fiche ni sa note »).
+        if (user.id === t.buyer_id && t.buyer_id !== t.seller_id) supabase.from('provider_profiles').select('rating, reviews_count').eq('id', t.seller_id).maybeSingle()
+          .then(({ data }: any) => { if (data?.rating && data?.reviews_count) setClientRating({ avg: Number(data.rating), n: data.reviews_count }) }, () => { })
         if (proSide) {
           const pp: any = baseR?.data
           if (pp?.base_price_cents > 0) setMyBaseCents(pp.base_price_cents)
@@ -696,17 +699,23 @@ export default function ChatPage() {
         <button type="button" className="ic" aria-label="Retour" style={{ width: 44, height: 44, minWidth: 44, borderRadius: 12, display: 'grid', placeItems: 'center', cursor: 'pointer', border: 'none', background: 'transparent', padding: 0, marginLeft: -6 }} onClick={() => router.back()}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#123644" strokeWidth="2"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
-        <b style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <b role={A && tx?.seller_id ? 'link' : undefined} tabIndex={A && tx?.seller_id ? 0 : undefined}
+          onClick={A && tx?.seller_id ? () => router.push(`/pro/${tx.seller_id}`) : undefined}
+          onKeyDown={A && tx?.seller_id ? e => { if (e.key === 'Enter') router.push(`/pro/${tx.seller_id}`) } : undefined}
+          aria-label={A && tx?.seller_id ? `${counterpart} : voir la fiche` : undefined}
+          style={{ fontFamily: 'var(--fh)', fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: A && tx?.seller_id ? 'pointer' : undefined, minHeight: 44, display: 'flex', alignItems: 'center' }}>
           {counterpart}
           {clientRating && <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11.5, fontWeight: 700, color: '#8a6520', marginLeft: 8 }}>★ {clientRating.avg.toFixed(1).replace('.', ',')} ({clientRating.n})</span>}
         </b>
         {/* Montant affiché : le prix validé, sinon l'offre en attente (et non un ancien prix de départ). */}
         {tx && (tx.price_confirmed ? tx.subtotal_cents > 0 : (pendingOffer?.offer_cents || tx.subtotal_cents > 0)) && (
-          <span style={{ padding: '6px 11px', borderRadius: 999, background: 'var(--paper)', color: 'var(--slate)', fontSize: 11.5, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap' }}>
+          <button type="button" aria-label="Détails de la mission : accord, prix, rendez-vous" onClick={() => router.push(`/mission/${transactionId}/commande`)}
+            style={{ padding: '6px 11px', minHeight: 44, border: 'none', borderRadius: 999, background: 'var(--paper)', color: 'var(--slate)', fontSize: 11.5, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             {tx.price_confirmed ? EUR(tx.subtotal_cents)
               : pendingOffer?.offer_cents ? `${EUR(pendingOffer.offer_cents)} · offre en attente`
                 : `${EUR(tx.subtotal_cents)} · à valider`}
-          </span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          </button>
         )}
         <button type="button" onClick={openReporting} aria-label="Signaler un problème" style={{ border: 'none', background: 'none', minHeight: 44, minWidth: 44, padding: '0 4px 0 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, flexShrink: 0, cursor: 'pointer', color: '#4E6470' }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4E6470" strokeWidth="2" aria-hidden="true"><path d="M5 3v18" /><path d="M5 4h11l-1.5 4L16 12H5" /></svg>

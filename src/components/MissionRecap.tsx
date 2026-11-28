@@ -98,7 +98,9 @@ export default function MissionRecap({ tx, userId, counterpart, address, refresh
       if (!inv.error) setInvoiceCount(inv.count ?? 0)
       // Virements SEPA (migration 025) : seulement ceux que ce compte doit faire ou recevoir (RLS).
       const tr = await transfersFor(supabase, tx.id)
-      if (alive) setTransfers(tr)
+      // Chacun ne voit que SES lignes (Romain 27/11) : le pro ne voit pas les frais de service du client, le client ne voit
+      // pas la commission du pro (la RLS peut en renvoyer davantage).
+      if (alive) setTransfers(tr.filter(t => t.payer_id === userId || t.payee_id === userId))
     })()
     return () => { alive = false }
   }, [tx.id, tx.status, tx.completed_at, refreshKey, settled])

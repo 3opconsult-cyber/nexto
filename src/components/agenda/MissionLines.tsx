@@ -1,4 +1,5 @@
 "use client"
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Modal from '@/components/Modal'
 
@@ -28,6 +29,8 @@ const TONE: Record<string, { bg: string; fg: string }> = {
 
 function Action({ label, href, primary }: { label: string; href: string; primary?: boolean }) {
   const router = useRouter()
+  // Écran préchargé dès l'affichage de la ligne (audit 27/11 : « les boutons des détails sont lents »).
+  useEffect(() => { try { router.prefetch(href) } catch { } }, [router, href])
   return (
     <button type="button" onClick={() => router.push(href)}
       style={{ flex: '1 1 0', minWidth: 0, minHeight: 44, padding: '0 6px', borderRadius: 12, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 15,
