@@ -161,6 +161,26 @@ export default function FacturePage() {
         {ordered.map(inv => (
         <section key={inv.number} aria-label={sectionTitle(inv)} className={printOnly && printOnly !== inv.number ? 'no-print' : undefined} style={{ marginBottom: 40 }}>
         <h2 className="no-print" style={{ font: '700 20px/1.4 Quicksand, sans-serif', color: '#123644', margin: '4px auto 16px', maxWidth: 620 }}>{sectionTitle(inv)}</h2>
+        {/* Actions en tête (Romain 28/11) : télécharger, envoyer (WhatsApp, e-mail), imprimer, avant le document. */}
+        <div className="no-print" style={{ maxWidth: 620, margin: '0 auto 24px' }}>
+          <button onClick={() => download(inv)} disabled={busy !== null} aria-label={`Télécharger le PDF : ${sectionTitle(inv)}`} style={{
+            width: '100%', minHeight: 54, border: 'none', padding: 14, borderRadius: 16, cursor: 'pointer',
+            background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif',
+            fontWeight: 700, fontSize: 17,
+            opacity: busy === inv.number ? .6 : 1,
+          }}>{busy === inv.number ? 'Génération…' : 'Télécharger le PDF'}</button>
+          {/* Mêmes actions que la liste des factures (24/11/2026) : imprimer ce document seul, l'envoyer. */}
+          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+            <button type="button" onClick={() => printOne(inv.number)} aria-label={`Imprimer : ${sectionTitle(inv)}`} style={{
+              flex: 1, minHeight: 52, borderRadius: 16, border: 'none', cursor: 'pointer', background: 'rgba(18,179,156,.10)',
+              color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
+            }}>Imprimer</button>
+            <button type="button" onClick={() => setSending(inv)} aria-label={`Envoyer : ${sectionTitle(inv)}`} style={{
+              flex: 1, minHeight: 52, borderRadius: 16, border: 'none', cursor: 'pointer', background: 'rgba(18,179,156,.10)',
+              color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
+            }}>Envoyer</button>
+          </div>
+        </div>
         {/* La prévisualisation EST la page : ce qu'on voit est ce qui s'imprime. */}
         <div className="sheet" style={{
           background: '#fff', borderRadius: 14, padding: 0,
@@ -336,25 +356,6 @@ export default function FacturePage() {
                 <p style={{ margin: 0 }}>Règlement à réception.</p>
               </>
             )}
-          </div>
-        </div>
-        <div className="no-print" style={{ maxWidth: 620, margin: '24px auto 0' }}>
-          <button onClick={() => download(inv)} disabled={busy !== null} aria-label={`Télécharger le PDF : ${sectionTitle(inv)}`} style={{
-            width: '100%', minHeight: 54, border: 'none', padding: 14, borderRadius: 16, cursor: 'pointer',
-            background: '#0B8374', color: '#fff', fontFamily: 'Quicksand, sans-serif',
-            fontWeight: 700, fontSize: 17,
-            opacity: busy === inv.number ? .6 : 1,
-          }}>{busy === inv.number ? 'Génération…' : 'Télécharger le PDF'}</button>
-          {/* Mêmes actions que la liste des factures (24/11/2026) : imprimer ce document seul, l'envoyer. */}
-          <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-            <button type="button" onClick={() => printOne(inv.number)} aria-label={`Imprimer : ${sectionTitle(inv)}`} style={{
-              flex: 1, minHeight: 52, borderRadius: 16, border: 'none', cursor: 'pointer', background: 'rgba(18,179,156,.10)',
-              color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
-            }}>Imprimer</button>
-            <button type="button" onClick={() => setSending(inv)} aria-label={`Envoyer : ${sectionTitle(inv)}`} style={{
-              flex: 1, minHeight: 52, borderRadius: 16, border: 'none', cursor: 'pointer', background: 'rgba(18,179,156,.10)',
-              color: '#0B8374', fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 16,
-            }}>Envoyer</button>
           </div>
         </div>
         </section>
