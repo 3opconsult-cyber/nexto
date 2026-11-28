@@ -30,6 +30,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Supprimer son annonce (aujourd'hui : masquer seulement) | non vérifié, à faire |
 | Métiers : catalogue en familles (Maison, Jardin, Petits travaux, Transport…), un pro = une fiche avec plusieurs métiers ; « Autre » = demande d'ajout avec proposition des métiers proches ; maquette https://claude.ai/artifact/Jt6pH946bhNcYGsdNhhGzk (Romain, 27/11 : pas de multi-rubriques pour l'instant, ménage d'abord) | en attente |
 | Retirer le tarif « Sur devis » partout (catalogue `pricing_modes`, tarifs, fiche, réservation) : une prestation, un prix, un paiement (Romain, 27/11) | à faire, voir Règles métier |
+| Multi-métiers et nouveaux services : mis de côté (Romain, 28/11), choix dans la liste existante seulement ; à repenser avec le déroulé de mission des petits travaux (moquette, parquet, BA13) | en attente |
 
 ## Admin
 | Point | Statut |
@@ -63,6 +64,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | « Sur devis » supprimé (décision Romain 27/11) ; dire si la proposition de tarif dans le chat (réponse à une demande déposée) reste permise | à trancher |
 | Missions de dernière minute de type « serveur, job d'été » : salariat, pas prestation indépendante ; risque de requalification, à vérifier avant toute ouverture | à trancher |
 | GPS client : relevé unique pour se voir sur la carte ? (règle 6) | à trancher |
+| Statut : PING est une place de marché, pas responsable des prestations ; l'auto-entrepreneur facture, entre particuliers c'est à eux (Romain, 28/11) | tranché |
+| Mot « DEVIS » sur les billets de proposition de tarif du chat : à renommer si « Sur devis » disparaît (ex. « Proposition de tarif ») | attend réponse de Romain |
 
 ## Facturation et paiement
 | Point | Statut |
@@ -76,6 +79,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Taux de TVA du prestataire assujetti : champ (20, 10, 5,5 %) dans l'inscription, codé 28/11 ; coller `067_taux_tva_prestataire.sql` après 065 ; un pro déjà inscrit devra le renseigner (écran de modification à prévoir) | codé, attend Romain (collage), non vérifié |
 | CESU : reprendre le branchement (`docs/cesu-ce-qui-manque.md`) | à faire |
 | Envoi des factures par e-mail : Resend non posé | attend Romain |
+| Une seule facture visible par partie (Romain, 28/11) : le client voit sa prestation (et ses frais de service), le pro voit sa prestation et sa commission ; jamais la commission de l'autre. Récapitulatif du chat filtré (Design, 28/11) ; vérifier la page Facture et « Mes opérations » avec un compte admin qui est aussi client ou pro | à vérifier |
 
 ## Données SQL
 | Point | Statut |
