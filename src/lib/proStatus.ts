@@ -58,4 +58,6 @@ export function isMissingColumnError(err: { code?: string; message?: string } | 
   return /column .* does not exist|could not find the .* column/i.test(err.message || '')
 }
 
-export const PRO_STATUS_COLUMNS = ['legal_form', 'vat_status', 'vat_number', 'accepts_cesu_prefinance'] as const
+export const PRO_STATUS_COLUMNS = ['legal_form', 'vat_status', 'vat_number', 'vat_rate', 'accepts_cesu_prefinance'] as const
+/** Taux de TVA proposés à un prestataire assujetti (le prix affiché est TTC ; le taux sert à calculer le hors taxe et la TVA sur la facture). */
+export const VAT_RATES = [20, 10, 5.5] as const

@@ -2,6 +2,9 @@
 Format : règle -> fichier de code qui l'applique. Détail : HISTORIQUE.md. Contradictions : A-TRANCHER.md.
 
 ## Produit
+- **But de PING (Romain, 28/11/2026)** : réduire la distance entre le souhait et l'action. Voir la personne, sa disponibilité, réserver et payer tout de suite ; remboursement si le prestataire ne vient pas ; de quoi faire un recours si la prestation n'est pas bonne. La carte ne se remplit pas pour se remplir : on regarde d'abord tout près (rayon réglable de 50 m à 10 km : 50 m, 2, 3, 5, 10 km), on n'élargit que si le client le demande.
+- **Prestataire en déplacement** : il est visible (« Ici aujourd'hui ») et voit les annonces actives autour de lui.
+- **Alerte du client (à construire)** : en lançant un PING, le client peut demander à être prévenu des prestataires susceptibles de répondre, pour constituer une liste de prestataires potentiels.
 - Mono-produit : ménage, repassage, nettoyage (+ vitres en base, non proposé). Catalogue extensible en données -> `src/lib/trades.ts`, table `service_catalog` (050).
 - Deux côtés sur un même compte : particulier et prestataire ; mode en `localStorage('ping_mode')` -> `src/lib/mode.ts`, `DesktopShell.tsx`, `NavDrawer.tsx`.
 - Menu à 4 entrées identiques dans les deux espaces ; ne plus ajouter d'entrée, ajouter une ligne Hub -> `src/components/Hub.tsx`.

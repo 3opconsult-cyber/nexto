@@ -9,7 +9,7 @@ import OnboardingStep from '@/components/OnboardingStep'
 import LocationAsk from '@/components/LocationAsk'
 import { TRADES, cesuEligible } from '@/lib/trades'
 import { useCatalog, fetchCatalog, catalogView } from '@/lib/catalog'
-import { LEGAL_FORMS, type LegalForm, type VatStatus, VAT_FRANCHISE_MENTION, guessLegalForm, legalStatusFor, cleanVat, vatNumberValid, isMissingColumnError, PRO_STATUS_COLUMNS } from '@/lib/proStatus'
+import { LEGAL_FORMS, type LegalForm, type VatStatus, VAT_FRANCHISE_MENTION, guessLegalForm, legalStatusFor, cleanVat, vatNumberValid, isMissingColumnError, VAT_RATES, PRO_STATUS_COLUMNS } from '@/lib/proStatus'
 import PricingEditor from '@/components/PricingEditor'
 import { CGV_VERSION } from '@/lib/cgv'
 import { type PricingDraft, draftFromColumns, emptyDraft, toColumns, validateDraft } from '@/lib/servicePricing'
@@ -67,6 +67,7 @@ export default function ProOnboarding() {
   const [legalForm, setLegalForm] = useState<LegalForm | null>(null)
   const [vatStatus, setVatStatus] = useState<VatStatus | null>(null)
   const [vatNumber, setVatNumber] = useState('')
+  const [vatRate, setVatRate] = useState<number | null>(null)
   const [vatTouched, setVatTouched] = useState(false)
   const [acceptsCesu, setAcceptsCesu] = useState(false)
   const [address, setAddress] = useState('')
@@ -149,6 +150,7 @@ export default function ProOnboarding() {
         else if (['eurl', 'sasu', 'sarl'].includes(pp.legal_status)) setLegalForm(pp.legal_status)
         if (pp.vat_status) setVatStatus(pp.vat_status)
         if (pp.vat_number) setVatNumber(pp.vat_number)
+        if (pp.vat_rate != null) setVatRate(Number(pp.vat_rate))
         if (pp.accepts_cesu_prefinance) setAcceptsCesu(true)
         if (pp.company_name) setCompanyQuery(pp.company_name)
         if (pp.lat != null && pp.lng != null) setCoords({ lat: pp.lat, lng: pp.lng })
@@ -265,6 +267,7 @@ export default function ProOnboarding() {
       legal_form: isPro ? legalForm : null,
       vat_status: isPro ? vatStatus : null,
       vat_number: isPro && vatStatus === 'assujetti' && vatNumber.trim() ? cleanVat(vatNumber) : null,
+      vat_rate: isPro && vatStatus === 'assujetti' ? vatRate : null,
       accepts_cesu_prefinance: isPro && offersCesu && acceptsCesu,
     }
 
@@ -469,7 +472,7 @@ export default function ProOnboarding() {
   }
 
   if (stepKey === 'forme') {
-    const vatOk = vatStatus === 'franchise' || (vatStatus === 'assujetti' && vatNumberValid(vatNumber))
+    const vatOk = vatStatus === 'franchise' || (vatStatus === 'assujetti' && vatNumberValid(vatNumber) && vatRate != null)
     return (
       <OnboardingStep step={stepIndex} total={visibleSteps.length} {...laterProps}
         title="Forme juridique et TVA"
@@ -505,6 +508,20 @@ export default function ProOnboarding() {
               <span style={{ display: 'block', fontSize: 11.5, color: '#B3402F', marginTop: 5, fontWeight: 600 }}>Numéro invalide : FR suivi de 11 caractères (ex. FR 12 345678901).</span>
             )}
           </label>
+        )}
+        {vatStatus === 'assujetti' && (
+          <div style={{ marginTop: 12 }}>
+            <span style={{ fontSize: 12.5, color: '#4E6470', fontWeight: 600 }}>Taux de TVA de vos prestations</span>
+            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+              {VAT_RATES.map(r => (
+                <button key={r} type="button" onClick={() => setVatRate(r)} aria-pressed={vatRate === r}
+                  style={{ flex: 1, minHeight: 44, borderRadius: 12, border: vatRate === r ? '1.5px solid #12B39C' : '1px solid #DCE5E3', background: vatRate === r ? '#E6F8F5' : '#fff', color: '#123644', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                  {String(r).replace('.', ',')} %
+                </button>
+              ))}
+            </div>
+            <span style={{ display: 'block', fontSize: 11.5, color: '#4E6470', marginTop: 6, lineHeight: 1.45 }}>Vos prix affichés sont TTC : la facture en déduit le hors taxe et la TVA.</span>
+          </div>
         )}
       </OnboardingStep>
     )

@@ -9,7 +9,7 @@
 // L'app doit marcher AVANT la migration : écrire ces champs seulement s'ils existent (voir
 // `isMissingColumnError` : on réessaie sans eux) et ne rien afficher quand ils sont absents.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PRO_STATUS_COLUMNS = exports.cleanVat = exports.legalFormInvoiceLabel = exports.legalFormLabel = exports.VAT_FRANCHISE_MENTION = exports.LEGAL_FORMS = void 0;
+exports.VAT_RATES = exports.PRO_STATUS_COLUMNS = exports.cleanVat = exports.legalFormInvoiceLabel = exports.legalFormLabel = exports.VAT_FRANCHISE_MENTION = exports.LEGAL_FORMS = void 0;
 exports.guessLegalForm = guessLegalForm;
 exports.legalStatusFor = legalStatusFor;
 exports.vatNumberValid = vatNumberValid;
@@ -69,4 +69,6 @@ function isMissingColumnError(err) {
         return true;
     return /column .* does not exist|could not find the .* column/i.test(err.message || '');
 }
-exports.PRO_STATUS_COLUMNS = ['legal_form', 'vat_status', 'vat_number', 'accepts_cesu_prefinance'];
+exports.PRO_STATUS_COLUMNS = ['legal_form', 'vat_status', 'vat_number', 'vat_rate', 'accepts_cesu_prefinance'];
+/** Taux de TVA proposés à un prestataire assujetti (le prix affiché est TTC ; le taux sert à calculer le hors taxe et la TVA sur la facture). */
+exports.VAT_RATES = [20, 10, 5.5];

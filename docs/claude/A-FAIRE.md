@@ -15,6 +15,8 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Carte client sur iPhone réel (Waze, PING, pastille) | attend capture de Romain, non vérifié |
 | Fiche du pro en bas de carte avec critères + geste Accepter / Refuser (maquette v14) | à faire après accord |
 | Carte : le point « Adresse de référence » tombe au mauvais endroit (géocodage du profil) ; le client ne se voit pas par GPS. Décider si la règle 6 autorise un relevé GPS unique côté client (Romain, 27/11) | à faire, voir Règles métier |
+| Rayon de recherche du client : 50 m, 2, 3, 5, 10 km (aujourd'hui 15 km, puis 30 et 60 km si vide) ; proximité d'abord | à faire |
+| Alerte du client au PING : être prévenu des prestataires qui peuvent répondre, liste de prestataires potentiels | à concevoir (maquette d'abord) |
 
 ## Prestataire
 | Point | Statut |
@@ -71,7 +73,7 @@ Une ligne = un point, une seule entrée. Au début de session : lire seulement l
 | Séquestre : finir le câblage complet (Romain, 27/11) pour brancher le compte dès son ouverture ; reste éteint en attendant | à faire |
 | Facture : « Reçu » pour non immatriculé, HT/TVA/TTC pour assujetti, masquer l'indemnité 40 € pour un client particulier, médiateur, test de la franchise au 01/01/2027 (AUDIT-ANNONCE-CARTE, section facture) | à faire, relecture expert-comptable |
 | Coller `065_numerotation_references.sql` (numéros continus, références, vue CRM) après 063 ; brancher le CRM sur `crm_invoices` | écrit et poussé, attend Romain (collage) |
-| Facture assujetti : saisie du taux de TVA du prestataire (colonne et champ) pour alimenter `legal.tva_taux` ; l'affichage HT/TVA est prêt | à faire |
+| Taux de TVA du prestataire assujetti : champ (20, 10, 5,5 %) dans l'inscription, codé 28/11 ; coller `067_taux_tva_prestataire.sql` après 065 ; un pro déjà inscrit devra le renseigner (écran de modification à prévoir) | codé, attend Romain (collage), non vérifié |
 | CESU : reprendre le branchement (`docs/cesu-ce-qui-manque.md`) | à faire |
 | Envoi des factures par e-mail : Resend non posé | attend Romain |
 
